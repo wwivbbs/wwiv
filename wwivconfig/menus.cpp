@@ -412,8 +412,8 @@ public:
       UserManager um(config_);
       User user{};
       if (!um.readuser(&user, 1)) {
-        user.SetSl(255);
-        user.SetDsl(255);
+        user.sl(255);
+        user.dsl(255);
       }
       const auto lines = GenerateMenuLines(config_, 255, menu_, user, menus::menu_type_t::short_menu);
       auto y = 1;

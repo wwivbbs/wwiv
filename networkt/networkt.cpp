@@ -175,7 +175,7 @@ int networkt_main(const NetworkCommandLine& net_cmdline) {
     const auto& net = net_cmdline.network();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
-    const auto status = sm.GetStatus();
+    const auto status = sm.get_status();
 
     switch (net.type) {
     case network_type_t::ftn: {

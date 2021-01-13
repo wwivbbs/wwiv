@@ -67,7 +67,7 @@ static bool WriteMsgInf(const string& title, const string& sub_name, bool is_ema
   }
 
   // line 1: Who the message is FROM
-  file.WriteLine(real_name ? user.GetRealName() : user.GetName());
+  file.WriteLine(real_name ? user.real_name() : user.name());
   if (!to_name.empty()) {
     // line 2: Who the message is TO
     file.WriteLine(to_name);

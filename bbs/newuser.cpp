@@ -195,10 +195,10 @@ void input_name() {
     } else {
       bout << "|#3Enter your full name, or your alias.\r\n";
     }
-    string temp_local_name = bin.input_upper(a()->user()->GetName(), 30);
+    string temp_local_name = bin.input_upper(a()->user()->name(), 30);
     ok = check_name(temp_local_name);
     if (ok) {
-      a()->user()->set_name(temp_local_name.c_str());
+      a()->user()->set_name(temp_local_name);
     } else {
       bout.nl();
       bout << "|#6I'm sorry, you can't use that name.\r\n";
@@ -216,24 +216,24 @@ void input_realname() {
     do {
       bout.nl();
       bout << "|#3Enter your FULL real name.\r\n";
-      string temp_local_name = bin.input_proper(a()->user()->GetRealName(), 30);
+      string temp_local_name = bin.input_proper(a()->user()->real_name(), 30);
       if (temp_local_name.empty()) {
         bout.nl();
         bout << "|#6Sorry, you must enter your FULL real name.\r\n";
       } else {
-        a()->user()->SetRealName(temp_local_name.c_str());
+        a()->user()->real_name(temp_local_name);
       }
-    } while ((a()->user()->GetRealName()[0] == '\0') && !a()->sess().hangup());
+    } while (a()->user()->real_name().empty() && !a()->sess().hangup());
   } else {
-    a()->user()->SetRealName(a()->user()->GetName());
+    a()->user()->real_name(a()->user()->name());
   }
 }
 
 static void input_callsign() {
   bout.nl();
   bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
-  string s = bin.input_upper(6);
-  a()->user()->SetCallsign(s.c_str());
+  const auto s = bin.input_upper(6);
+  a()->user()->callsign(s);
 }
 
 bool valid_phone(const string& phoneNumber) {
@@ -469,7 +469,7 @@ void input_pw(User* pUser) {
   } while (!ok && !a()->sess().hangup());
 
   if (ok) {
-    pUser->SetPassword(password);
+    pUser->password(password);
   } else {
     bout << "Password not changed.\r\n";
   }
@@ -508,10 +508,10 @@ void input_ansistat() {
       int c = ch - '0';
       int c2 = c << 4;
       for (int i = 0; i < 10; i++) {
-        if ((a()->user()->GetBWColor(i) & 0x70) == 0) {
-          a()->user()->SetBWColor(i, (a()->user()->GetBWColor(i) & 0x88) | c);
+        if ((a()->user()->bwcolor(i) & 0x70) == 0) {
+          a()->user()->bwcolor(i, (a()->user()->bwcolor(i) & 0x88) | c);
         } else {
-          a()->user()->SetBWColor(i, (a()->user()->GetBWColor(i) & 0x88) | c2);
+          a()->user()->bwcolor(i, (a()->user()->bwcolor(i) & 0x88) | c2);
         }
       }
     }
@@ -523,8 +523,8 @@ static void InsertSmallRecord(StatusMgr& sm, Names& names, int user_number, cons
   sm.Run([&](Status& s) {
     names.Add(name, user_number);
     names.Save();
-    s.IncrementNumUsers();
-    s.IncrementFileChangedFlag(Status::file_change_names);
+    s.increment_num_users();
+    s.increment_filechanged(Status::file_change_names);
   });
 }
 
@@ -543,7 +543,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
   userFile.Seek(a()->config()->userrec_length(), File::Whence::begin);
   int user_number = 1;
 
-  if (nNewUserNumber == a()->status_manager()->GetUserCount()) {
+  if (nNewUserNumber == a()->status_manager()->user_count()) {
     user_number = nNewUserNumber + 1;
   } else {
     while (user_number <= nNewUserNumber) {
@@ -565,7 +565,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
       User tu;
       userFile.Read(&tu.data, a()->config()->userrec_length());
 
-      if (tu.IsUserDeleted() && tu.GetSl() != 255) {
+      if (tu.IsUserDeleted() && tu.sl() != 255) {
         userFile.Seek(static_cast<File::size_type>(user_number * a()->config()->userrec_length()),
                       File::Whence::begin);
         userFile.Write(&pUser->data, a()->config()->userrec_length());
@@ -573,9 +573,8 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
         write_qscn(user_number, qscn, false);
         InsertSmallRecord(*a()->status_manager(), *a()->names(), user_number, pUser->GetName());
         return user_number;
-      } else {
-        user_number++;
       }
+      user_number++;
     }
   }
 
@@ -613,7 +612,7 @@ static bool CreateNewUserRecord() {
 // on here, if this function returns false, a sufficient error
 // message has already been displayed to the user.
 bool CanCreateNewUserAccountHere() {
-  if (a()->status_manager()->GetUserCount() >= a()->config()->max_users()) {
+  if (a()->status_manager()->user_count() >= a()->config()->max_users()) {
     bout.nl(2);
     bout << "I'm sorry, but the system currently has the maximum number of users it "
             "can\r\nhandle.\r\n\n";
@@ -741,13 +740,13 @@ void DoNewUserASV() {
       bout.nl();
       bout << "|#5Please enter your BBS name and number.\r\n";
       const auto note = bin.input_text(60);
-      a()->user()->SetNote(note.c_str());
-      a()->user()->SetSl(a()->asv.sl);
-      a()->user()->SetDsl(a()->asv.dsl);
-      a()->user()->SetAr(a()->asv.ar);
-      a()->user()->SetDar(a()->asv.dar);
-      a()->user()->SetExempt(a()->asv.exempt);
-      a()->user()->SetRestriction(a()->asv.restrict);
+      a()->user()->note(note);
+      a()->user()->sl(a()->asv.sl);
+      a()->user()->dsl(a()->asv.dsl);
+      a()->user()->ar_int(a()->asv.ar);
+      a()->user()->dar_int(a()->asv.dar);
+      a()->user()->exempt(a()->asv.exempt);
+      a()->user()->restriction(a()->asv.restrict);
       bout.nl();
       bout.printfile(ASV_NOEXT);
       bout.nl();
@@ -762,18 +761,18 @@ void VerifyNewUserFullInfo() {
 
   do {
     bout.nl(2);
-    bout << "|#91) Name          : |#2" << u->GetName() << wwiv::endl;
+    bout << "|#91) Name          : |#2" << u->name() << wwiv::endl;
     if (a()->config()->sysconfig_flags() & sysconfig_allow_alias) {
-      bout << "|#92) Real Name     : |#2" << u->GetRealName() << wwiv::endl;
+      bout << "|#92) Real Name     : |#2" << u->real_name() << wwiv::endl;
     }
-    bout << "|#93) Callsign      : |#2" << u->GetCallsign() << wwiv::endl;
+    bout << "|#93) Callsign      : |#2" << u->callsign() << wwiv::endl;
     bout << "|#94) Phone No.     : |#2" << u->GetVoicePhoneNumber() << wwiv::endl;
     bout << "|#95) Gender        : |#2" << u->GetGender() << wwiv::endl;
     bout << "|#96) Birthdate     : |#2" << u->birthday_mmddyy() << wwiv::endl;
     bout << "|#97) Computer type : |#2" << ctypes(u->GetComputerType()) << wwiv::endl;
     bout << "|#98) Screen size   : |#2" << u->GetScreenChars() << " X " << u->GetScreenLines()
          << wwiv::endl;
-    bout << "|#99) Password      : |#2" << u->GetPassword() << wwiv::endl;
+    bout << "|#99) Password      : |#2" << u->password() << wwiv::endl;
     if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
       bout << "|#9A) Street Address: |#2" << u->GetStreet() << wwiv::endl;
       bout << "|#9B) City          : |#2" << u->GetCity() << wwiv::endl;
@@ -865,7 +864,7 @@ static void add_phone_number(int usernum, const char* phone) {
 void WriteNewUserInfoToSysopLog() {
   const auto u = a()->user();
   sysoplog() << "** New User Information **";
-  sysoplog() << fmt::sprintf("-> %s #%ld (%s)", u->GetName(), a()->sess().user_num(), u->GetRealName());
+  sysoplog() << fmt::sprintf("-> %s #%ld (%s)", u->name(), a()->sess().user_num(), u->real_name());
   if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
     sysoplog() << "-> " << u->GetStreet();
     sysoplog() << "-> " << u->GetCity() << ", " << u->GetState() << " " << u->GetZipcode() << "  ("
@@ -877,8 +876,8 @@ void WriteNewUserInfoToSysopLog() {
   }
   sysoplog() << fmt::format("-> {} ({} yr old {})", u->birthday_mmddyy(), u->age(), u->GetGender());
   sysoplog() << fmt::format("-> Using a {} Computer", ctypes(u->GetComputerType()));
-  if (u->GetWWIVRegNumber()) {
-    sysoplog() << fmt::sprintf("-> WWIV Registration # %ld", u->GetWWIVRegNumber());
+  if (u->wwiv_regnum()) {
+    sysoplog() << fmt::sprintf("-> WWIV Registration # %ld", u->wwiv_regnum());
   }
   sysoplog() << "********";
 
@@ -895,12 +894,12 @@ void VerifyNewUserPassword() {
   do {
     bout.nl(2);
     bout << "|#9Your User Number: |#2" << a()->sess().user_num() << wwiv::endl;
-    bout << "|#9Your Password:    |#2" << a()->user()->GetPassword() << wwiv::endl;
+    bout << "|#9Your Password:    |#2" << a()->user()->password() << wwiv::endl;
     bout.nl(1);
     bout << "|#9Please write down this information, and enter your password for verification.\r\n";
     bout << "|#9You will need to know this password in order to change it to something else.\r\n\n";
     string password = bin.input_password("|#9PW: ", 8);
-    if (password == a()->user()->GetPassword()) {
+    if (password == a()->user()->password()) {
       ok = true;
     }
   } while (!ok && !a()->sess().hangup());
@@ -923,7 +922,7 @@ void SendNewUserFeedbackIfRequired() {
   }
   feedback(true);
   if (a()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
-    if (!a()->user()->GetNumEmailSent() && !a()->user()->GetNumFeedbackSent()) {
+    if (!a()->user()->email_sent() && !a()->user()->feedback_sent()) {
       bout.printfile(NOFBACK_NOEXT);
       a()->users()->delete_user(a()->sess().user_num());
       a()->Hangup();
@@ -999,7 +998,7 @@ void newuser() {
   }
 
   bout.nl(4);
-  bout << "Random password: " << a()->user()->GetPassword() << wwiv::endl << wwiv::endl;
+  bout << "Random password: " << a()->user()->password() << wwiv::endl << wwiv::endl;
   bout << "|#5Do you want a different password (Y/N)? ";
   if (bin.yesno()) {
     input_pw(a()->user());
@@ -1033,17 +1032,17 @@ void newuser() {
     // This is the #1 sysop record. Tell the sysop thank you and
     // update his user record with: s255/d255/r0
     ssm(1) << "Thank you for installing WWIV! - The WWIV Development Team.";
-    User* user = a()->user();
-    user->SetSl(255);
-    user->SetDsl(255);
-    user->SetRestriction(0);
+    auto user = a()->user();
+    user->sl(255);
+    user->dsl(255);
+    user->restriction(0);
   }
   a()->sess().user_num(static_cast<uint16_t>(usernum));
 
   WriteNewUserInfoToSysopLog();
-  ssm(1) << "You have a new user: " << a()->user()->GetName() << " #" << a()->sess().user_num();
+  ssm(1) << "You have a new user: " << a()->user()->name() << " #" << a()->sess().user_num();
 
-  LOG(INFO) << "New User Created: '" << a()->user()->GetName() << "' "
+  LOG(INFO) << "New User Created: '" << a()->user()->name() << "' "
             << "IP Address: " << a()->remoteIO()->remote_info().address;
 
   a()->UpdateTopScreen();
@@ -1174,13 +1173,13 @@ static int find_phone_number(const char* phone) {
 bool check_dupes(const char* pszPhoneNumber) {
   int user_number = find_phone_number(pszPhoneNumber);
   if (user_number && user_number != a()->sess().user_num()) {
-    string s = fmt::format("    {} entered phone # {}", a()->user()->GetName(), pszPhoneNumber);
+    string s = fmt::format("    {} entered phone # {}", a()->user()->name(), pszPhoneNumber);
     sysoplog(false) << s;
     ssm(1) << s;
 
     User user;
     a()->users()->readuser(&user, user_number);
-    s = fmt::format("      also entered by {}", user.GetName());
+    s = fmt::format("      also entered by {}", user.name());
     sysoplog(false) << s;
     ssm(1) << s;
 
@@ -1228,7 +1227,7 @@ void DoMinimalNewUser() {
     bout.cls();
     bout.litebar(StrCat(a()->config()->system_name(), " New User Registration"));
     bout << "|#1[A] Name (real or alias)    : ";
-    if (u->GetName()[0] == '\0') {
+    if (u->name().empty()) {
       auto ok = true;
       std::string temp_name;
       do {
@@ -1240,10 +1239,10 @@ void DoMinimalNewUser() {
           BackPrint("I'm sorry, you can't use that name.", 6, 20, 1000);
         }
       } while (!ok && !a()->sess().hangup());
-      u->set_name(temp_name.c_str());
+      u->set_name(temp_name);
     }
     cln_nu();
-    bout << "|#2" << u->GetName();
+    bout << "|#2" << u->name();
     bout.nl();
     bout << "|#1[B] Birth Date (MM/DD/YYYY) : ";
     bout.SavePosition();
@@ -1351,19 +1350,19 @@ void DoMinimalNewUser() {
     bout << "|#2" << u->GetCity() << ", " << u->GetState() << wwiv::endl;
     bout << "|#1[G] Internet Mail Address   : ";
     bout.SavePosition();
-    if (u->GetEmailAddress().empty()) {
+    if (u->email_address().empty()) {
       auto emailAddress = bin.input_text("", 44);
-      u->SetEmailAddress(emailAddress.c_str());
-      if (!check_inet_addr(u->GetEmailAddress())) {
+      u->email_address(emailAddress);
+      if (!check_inet_addr(u->email_address())) {
         cln_nu();
         BackPrint("Invalid address!", 6, 20, 1000);
       }
-      if (u->GetEmailAddress().empty()) {
-        u->SetEmailAddress("None");
+      if (u->email_address().empty()) {
+        u->email_address("None");
       }
     }
     cln_nu();
-    bout << "|#2" << u->GetEmailAddress() << wwiv::endl;
+    bout << "|#2" << u->email_address() << wwiv::endl;
     bout.nl();
     bout << "|#5Item to change or [Q] to Quit : |#0";
     ch = onek("QABCDEFG");
@@ -1389,11 +1388,11 @@ void DoMinimalNewUser() {
       u->SetState("");
       break;
     case 'G':
-      u->SetEmailAddress("");
+      u->email_address("");
       break;
     }
   } while (!done && !a()->sess().hangup());
-  u->SetRealName(u->GetName());
+  u->real_name(u->name());
   u->SetVoicePhoneNumber("999-999-9999");
   u->SetDataPhoneNumber(u->GetVoicePhoneNumber());
   u->SetStreet("None Requested");
@@ -1407,7 +1406,7 @@ void DoMinimalNewUser() {
 
 void new_mail() {
   auto file = FilePath(a()->config()->gfilesdir(),
-                           (a()->user()->GetSl() > a()->config()->newuser_sl()) ? NEWSYSOP_MSG
+                           (a()->user()->sl() > a()->config()->newuser_sl()) ? NEWSYSOP_MSG
                                                                                 : NEWMAIL_MSG);
 
   if (!File::Exists(file)) {
@@ -1445,6 +1444,6 @@ void new_mail() {
     email.silent_mode = true;
     sendout_email(email);
   }
-  a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() + 1);
+  a()->user()->email_waiting(a()->user()->email_waiting() + 1);
   a()->user()->SetDefaultEditor(save_ed);
 }

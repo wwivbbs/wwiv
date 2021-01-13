@@ -623,7 +623,7 @@ bool inmsg(MessageEditorData& data) {
   GetMessageAnonStatus(&real_name, &data.anonymous_flag, setanon);
   // Add author name
   if (real_name) {
-    b << a()->user()->GetRealName() << crlf;
+    b << a()->user()->real_name() << crlf;
   } else if (data.silent_mode) {
     b << a()->config()->sysop_name() << " #1" << crlf;
   } else {

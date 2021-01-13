@@ -64,7 +64,7 @@ int AcsCommand::Execute() {
   }
 
   Eval eval(expr);
-  const auto sl = user.GetSl();
+  const auto sl = user.sl();
   const auto& slr = config()->config()->sl(sl);
   eval.add("user", std::make_unique<UserValueProvider>(&user, sl, slr));
 

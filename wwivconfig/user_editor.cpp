@@ -254,7 +254,7 @@ void user_editor(const wwiv::sdk::Config& config) {
         break;
       }
       if (!dialog_yn(items.window(),
-                     StrCat("Are you sure you want to delete ", u.GetName(), "? "))) {
+                     StrCat("Are you sure you want to delete ", u.name(), "? "))) {
         break;
       }
       wwiv::sdk::UserManager um(config);

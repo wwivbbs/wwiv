@@ -212,24 +212,24 @@ int FixUsersCommand::Execute() {
     userMgr.writeuser(&user, i);
     if (!user.IsUserDeleted() && !user.IsUserInactive()) {
       smalrec sr{};
-      strcpy(reinterpret_cast<char*>(sr.name), user.GetName());
+      const auto name = user.name();
+      strcpy(reinterpret_cast<char*>(sr.name), name.c_str());
       sr.number = static_cast<uint16_t>(i);
-      std::string namestring(reinterpret_cast<char*>(sr.name));
-      if (names.find(namestring) == names.end()) {
+      if (names.find(name) == names.end()) {
         smallrecords.push_back(sr);
-        names.insert(namestring);
+        names.insert(name);
         if (arg("verbose").as_bool()) {
           LOG(INFO) << "Keeping user: " << sr.name << " #" << sr.number;
         }
       } else {
-        LOG(INFO) << "[skipping duplicate user: " << namestring << " #" << sr.number << "]";
+        LOG(INFO) << "[skipping duplicate user: " << name << " #" << sr.number << "]";
       }
     }
-  };
+  }
 
   std::sort(smallrecords.begin(), smallrecords.end(),
             [](const smalrec& a, const smalrec& b) -> bool {
-              const int equal = strcmp((char*)a.name, (char*)b.name);
+              const auto equal = strcmp((char*)a.name, (char*)b.name);
 
               // Sort by user number if names match.
               if (equal == 0) {
@@ -253,11 +253,13 @@ int FixUsersCommand::Execute() {
   } else {
     File nameFile(name_fn);
     if (nameFile.Open(File::modeReadOnly | File::modeBinary)) {
-      auto size = nameFile.length();
-      auto recs = static_cast<uint16_t>(size / sizeof(smalrec));
+      const auto size = nameFile.length();
+      const auto recs = static_cast<uint16_t>(size / sizeof(smalrec));
       if (recs != st.users) {
-        st.users = recs;
         LOG(INFO) << "STATUS.DAT contained an incorrect user count.";
+        LOG(INFO) << "status.users: " << st.users << "; expected from user.lst: " << recs;
+        st.users = recs;
+        saveStatus(config()->config()->datadir());
       } else {
         LOG(INFO) << "STATUS.DAT matches expected user count of " << st.users << " users.";
       }

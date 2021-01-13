@@ -91,10 +91,10 @@ static bool print_question(int i, int ii) {
     t += vr.numresponses;
   }
 
-  a()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->reload_status();
   const auto b = fmt::sprintf("|#9Users voting: |#2%4.1f%%\r\n",
                        static_cast<double>(t) /
-                           static_cast<double>(a()->status_manager()->GetUserCount()) * 100.0);
+                           static_cast<double>(a()->status_manager()->user_count()) * 100.0);
   bout.bpla(b, &abort);
   int t1 = (t) ? t : 1;
   bout.bpla(" |#20|#9) |#9No Comment", &abort);

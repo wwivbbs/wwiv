@@ -92,10 +92,10 @@ EditlineResult ACSEditItem::Run(CursesWindow* window) {
     last_expr = acs;
 
     wwiv::sdk::User user{};
-    user.SetSl(255);
-    user.SetDsl(255);
-    user.SetAr(0xffff);
-    user.SetDar(0xffff);
+    user.sl(255);
+    user.dsl(255);
+    user.ar_int(0xffff);
+    user.dar_int(0xffff);
     auto [result, ex, info] = wwiv::sdk::acs::validate_acs(config_, &user, 255, acs);
     window->SetColor(SchemeId::WINDOW_DATA);
     if (result) {

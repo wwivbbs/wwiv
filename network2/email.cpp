@@ -66,12 +66,12 @@ static int GetUserNumber(const std::string& name, UserManager& um) {
     if (!um.readuser_nocache(&u, i)) {
       continue;
     }
-    if (iequals(name, u.GetName())) {
+    if (iequals(name, u.name())) {
       return i;
     }
     // Try to fix emails not matching against real names
     // when coming from FTN systems.
-    const auto matches_realname = iequals(name, u.GetRealName());
+    const auto matches_realname = iequals(name, u.real_name());
     if (matches_realname && realname_pos == 0) {
       realname_pos = i;
     } else if (matches_realname && realname_pos != 0) {
@@ -155,9 +155,9 @@ bool handle_email(Context& context,
   }
   User user;
   context.user_manager.readuser(&user, d.user_number);
-  auto num_waiting = user.GetNumMailWaiting();
+  auto num_waiting = user.email_waiting();
   num_waiting++;
-  user.SetNumMailWaiting(num_waiting);
+  user.email_waiting(num_waiting);
   context.user_manager.writeuser(&user, d.user_number);
   LOG(INFO) << "    + Received Email  '" << d.title << "'";
   return true;

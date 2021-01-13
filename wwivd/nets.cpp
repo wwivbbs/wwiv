@@ -181,8 +181,8 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
     e = need_to_exit.load();
 
     if (c.do_beginday_event) {
-      const auto last_date_status = sm.GetStatus();
-      auto ld = last_date_status->GetLastDate();
+      const auto last_date_status = sm.get_status();
+      auto ld = last_date_status->last_date();
       const auto d = date();
       VLOG(4) << "Doing beginday check";
       if (d != ld) {

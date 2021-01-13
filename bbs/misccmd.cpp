@@ -263,7 +263,7 @@ void list_users(int mode) {
   int color   = 3;
   a()->WriteCurrentUser();
   write_qscn(a()->sess().user_num(), a()->sess().qsc, false);
-  a()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->reload_status();
 
   File userList(FilePath(a()->config()->datadir(), USER_LST));
   int nNumUserRecords = a()->users()->num_user_records();
@@ -341,19 +341,19 @@ void list_users(int mode) {
     if (ok) {
       found = true;
       bout.clreol();
-      if (user.GetLastBaudRate() > 32767 || user.GetLastBaudRate() < 300) {
-        user.SetLastBaudRate(33600);
+      if (user.last_bps() > 32767 || user.last_bps() < 300) {
+        user.last_bps(33600);
       }
       std::string city = "Unknown";
       if (user.GetCity()[0] != '\0') {
         city = fmt::format("{:.18}, {}", user.GetCity(), user.GetState());
       }
-      auto properName = properize(user.GetName());
+      auto properName = properize(user.name());
       const auto line = fmt::sprintf("|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 "
                                      "%-24.24s|#%d\xB3 |#1%-9s |#%d\xB3  |#3%-5u  |#%d\xB3",
                                      FRAME_COLOR, user_number, FRAME_COLOR, in_qscan ? '*' : ' ',
-                                     properName, FRAME_COLOR, city, FRAME_COLOR, user.GetLastOn(),
-                                     FRAME_COLOR, user.GetLastBaudRate(), FRAME_COLOR);
+                                     properName, FRAME_COLOR, city, FRAME_COLOR, user.laston(),
+                                     FRAME_COLOR, user.last_bps(), FRAME_COLOR);
       bout.bpla(line, &abort);
       num++;
       if (in_qscan) {
@@ -371,7 +371,7 @@ void list_users(int mode) {
         switch (ch) {
         case 'Q':
           abort = true;
-          i = a()->status_manager()->GetUserCount();
+          i = a()->status_manager()->user_count();
           break;
         case SPACE:
         case RETURN:
@@ -410,12 +410,12 @@ void time_bank() {
   // TODO(rushfan): We use 10 as a proxy for unvalidated.
   // We should come up with a better way or just remove this
   // and set it in the menu ACS.
-  if (a()->user()->GetSl() <= 10) {
+  if (a()->user()->sl() <= 10) {
     bout << "|#6You must be validated to access the timebank.\r\n";
     return;
   }
-  if (a()->user()->GetTimeBankMinutes() > a()->config()->sl(a()->sess().effective_sl()).time_per_logon) {
-    a()->user()->SetTimeBankMinutes(a()->config()->sl(a()->sess().effective_sl()).time_per_logon);
+  if (a()->user()->banktime_minutes() > a()->config()->sl(a()->sess().effective_sl()).time_per_logon) {
+    a()->user()->banktime_minutes(a()->config()->sl(a()->sess().effective_sl()).time_per_logon);
   }
 
   if (okansi()) {
@@ -433,7 +433,7 @@ void time_bank() {
     bout << "|#2W|#9)ithdraw Time\r\n";
     bout << "|#2Q|#9)uit\r\n";
     bout.nl();
-    bout << "|#9Balance: |#2" << a()->user()->GetTimeBankMinutes() << "|#9 minutes\r\n";
+    bout << "|#9Balance: |#2" << a()->user()->banktime_minutes() << "|#9 minutes\r\n";
     bout << "|#9Time Left: |#2" << static_cast<int>(nsl() / 60) << "|#9 minutes\r\n";
     bout.nl();
     bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2Time Bank|#9] Enter Command: |#2";
@@ -447,34 +447,31 @@ void time_bank() {
       i = to_number<int>(s);
       if (i > 0) {
         nsln = nsl();
-        if ((i + a()->user()->GetTimeBankMinutes()) > a()->config()->sl(
+        if ((i + a()->user()->banktime_minutes()) > a()->config()->sl(
               a()->sess().effective_sl()).time_per_logon) {
-          i = a()->config()->sl(a()->sess().effective_sl()).time_per_logon - a()->user()->GetTimeBankMinutes();
+          i = a()->config()->sl(a()->sess().effective_sl()).time_per_logon - a()->user()->banktime_minutes();
         }
         if (i > (nsln / SECONDS_PER_MINUTE)) {
           i = static_cast<int>(nsln / SECONDS_PER_MINUTE);
         }
-        a()->user()->SetTimeBankMinutes(a()->user()->GetTimeBankMinutes() +
-            static_cast<uint16_t>(i));
-        a()->user()->add_extratime(std::chrono::minutes(i));
+        a()->user()->add_banktime_minutes(i);
+        a()->user()->subtract_extratime(std::chrono::minutes(i));
         a()->tleft(false);
       }
       break;
     case 'W':
       bout.nl();
-      if (a()->user()->GetTimeBankMinutes() == 0) {
+      if (a()->user()->banktime_minutes() == 0) {
         break;
       }
       bout << "|#1Withdraw How Many Minutes: ";
       bin.input(s, 3, true);
       i = to_number<int>(s);
       if (i > 0) {
-        nsln = nsl();
-        if (i > a()->user()->GetTimeBankMinutes()) {
-          i = a()->user()->GetTimeBankMinutes();
+        if (i > a()->user()->banktime_minutes()) {
+          i = a()->user()->banktime_minutes();
         }
-        a()->user()->SetTimeBankMinutes(a()->user()->GetTimeBankMinutes() -
-            static_cast<uint16_t>(i));
+        a()->user()->subtract_banktime_minutes(i);
         a()->user()->add_extratime(std::chrono::minutes(i));
         a()->tleft(false);
       }
@@ -487,7 +484,7 @@ void time_bank() {
 }
 
 int getnetnum(const std::string& network_name) {
-  for (int i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
+  for (auto i = 0; i < wwiv::stl::size_int(a()->nets()); i++) {
     if (iequals(a()->nets()[i].name, network_name)) {
       return i;
     }

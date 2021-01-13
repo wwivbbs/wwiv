@@ -40,7 +40,7 @@ void AddLineToSysopLogImpl(log_cmd_t cmd, const string& text);
 /*
 * Creates sysop log filename in s, from date string.
 */
-string GetSysopLogFileName(const string& d) {
+string sysoplog_filename(const string& d) {
   return fmt::sprintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
 }
 
@@ -69,7 +69,7 @@ void catsl() {
     instance_text = tmplog.ReadFileIntoString();
   }
 
-  const auto basename = GetSysopLogFileName(date());
+  const auto basename = sysoplog_filename(date());
   TextFile sysoplog_fn(FilePath(a()->config()->gfilesdir(), basename), "at");
   if (sysoplog_fn) {
     sysoplog_fn.WriteLine(instance_text);

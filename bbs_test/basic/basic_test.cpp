@@ -283,12 +283,12 @@ TEST_F(BasicTest, WWIV_IO_PL) {
 }
 
 TEST_F(BasicTest, WWIV_Eval_Pass) {
-  helper.user()->SetSl(200);
+  helper.user()->sl(200);
   EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS(wwiv.eval("user.sl > 100"), TRUE) )"));
 }
 
 TEST_F(BasicTest, WWIV_Eval_Fail) {
-  helper.user()->SetSl(200);
+  helper.user()->sl(200);
   EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS(wwiv.eval("user.sl < 200"), FALSE) )"));
 }
 

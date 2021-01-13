@@ -48,7 +48,7 @@ static gati_t *gat = new gati_t[2048]();
 * Note: This is a Private method to this module.
 */
 static std::unique_ptr<File> OpenMessageFile(const string messageAreaFileName) {
-  a()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->reload_status();
 
   const auto filename =
       FilePath(a()->config()->msgsdir(), StrCat(messageAreaFileName, FILENAME_DAT_EXTENSION));
@@ -97,7 +97,7 @@ static void save_gat(File& file) {
   file.Seek(section_pos, File::Whence::begin);
   file.Write(gat, GAT_SECTION_SIZE);
   a()->status_manager()->Run([](Status& s) {
-    s.IncrementFileChangedFlag(Status::file_change_posts);
+    s.increment_filechanged(Status::file_change_posts);
   });
 }
 

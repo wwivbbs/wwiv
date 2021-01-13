@@ -107,7 +107,7 @@ void create_sysop_account(Config& config) {
   {
     Names names(config);
     names.Load();
-    names.Add(u.GetName(), 1);
+    names.Add(u.name(), 1);
     names.Save();
   }
 

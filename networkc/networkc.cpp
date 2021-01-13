@@ -179,7 +179,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
     const auto& net = net_cmdline.network();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
-    const auto status = sm.GetStatus();
+    const auto status = sm.get_status();
 
     auto num_tries = 0;
     auto found = false;
@@ -237,7 +237,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
       }
 
       // If our network files have changed, run network3 and send feedback.
-      if (need_network3(net, status->GetNetworkVersion())) {
+      if (need_network3(net, status->status_net_version())) {
         VLOG(2) << "Need to run network3";
         System(create_network_cmdline(net_cmdline, '3', ""));
         found = true;

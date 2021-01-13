@@ -216,8 +216,8 @@ void removefile() {
             if (bRemoveDlPoints && f.u().ownersys == 0) {
               a()->users()->readuser(&uu, f.u().ownerusr);
               if (!uu.IsUserDeleted()) {
-                if (date_to_daten(uu.GetFirstOn()) < f.u().daten) {
-                  uu.SetFilesUploaded(uu.GetFilesUploaded() - 1);
+                if (date_to_daten(uu.firston()) < f.u().daten) {
+                  uu.decrement_uploaded();
                   uu.set_uk(uu.uk() - bytes_to_k(f.numbytes()));
                   a()->users()->writeuser(&uu, f.u().ownerusr);
                 }

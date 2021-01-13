@@ -161,7 +161,7 @@ void voteprint() {
   votingText.Write(votingText.full_pathname());
 
   File votingDat(FilePath(a()->config()->datadir(), VOTING_DAT));
-  a()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->reload_status();
 
   for (int i1 = 0; i1 < 20; i1++) {
     if (!votingDat.Open(File::modeReadOnly | File::modeBinary)) {

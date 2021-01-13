@@ -22,25 +22,24 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
-#include "common/com.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
-#include "common/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
 #include "bbs/finduser.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
 #include "bbs/multinst.h"
-#include "common/pause.h"
 #include "bbs/read_message.h"
 #include "bbs/shortmsg.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
-#include "bbs/utility.h"
 #include "bbs/wqscn.h"
+#include "common/com.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/pause.h"
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/stl.h"
@@ -50,11 +49,12 @@
 #include "local_io/wconstants.h"
 #include "sdk/bbslist.h"
 #include "sdk/filenames.h"
-#include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/msgapi/message_utils_wwiv.h"
+
 #include <memory>
 #include <string>
 
@@ -70,36 +70,35 @@ using namespace wwiv::strings;
 using namespace wwiv::sdk::msgapi;
 
 void prstatus() {
-  a()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->reload_status();
   bout.cls();
   if (!a()->config()->newuser_password().empty()) {
     bout << "|#9New User Pass   : " << a()->config()->newuser_password() << wwiv::endl;
   }
   bout << "|#9Board is        : " << (a()->config()->closed_system() ? "Closed" : "Open") << wwiv::endl;
 
-  auto status = a()->status_manager()->GetStatus();
+  auto status = a()->status_manager()->get_status();
   const auto t = times();
-  bout << "|#9Number Users    : |#2" << status->GetNumUsers() << wwiv::endl;
-  bout << "|#9Number Calls    : |#2" << status->GetCallerNumber() << wwiv::endl;
-  bout << "|#9Last Date       : |#2" << status->GetLastDate() << wwiv::endl;
+  bout << "|#9Number Users    : |#2" << status->num_users() << wwiv::endl;
+  bout << "|#9Number Calls    : |#2" << status->caller_num() << wwiv::endl;
+  bout << "|#9Last Date       : |#2" << status->last_date() << wwiv::endl;
   bout << "|#9Time            : |#2" << t.c_str() << wwiv::endl;
-  bout << "|#9Active Today    : |#2" << status->GetMinutesActiveToday() << wwiv::endl;
-  bout << "|#9Calls Today     : |#2" << status->GetNumCallsToday() << wwiv::endl;
-  bout << "|#9Net Posts Today : |#2" << (status->GetNumMessagesPostedToday() - status->GetNumLocalPosts())
-        << wwiv::endl;
-  bout << "|#9Local Post Today: |#2" << status->GetNumLocalPosts() << wwiv::endl;
-  bout << "|#9E Sent Today    : |#2" << status->GetNumEmailSentToday() << wwiv::endl;
-  bout << "|#9F Sent Today    : |#2" << status->GetNumFeedbackSentToday() << wwiv::endl;
-  bout << "|#9Uploads Today   : |#2" << status->GetNumUploadsToday() << wwiv::endl;
+  bout << "|#9Active Today    : |#2" << status->active_today_minutes() << wwiv::endl;
+  bout << "|#9Calls Today     : |#2" << status->calls_today() << wwiv::endl;
+  bout << "|#9Net Posts Today : |#2" << (status->msgs_today() - status->localposts()) << wwiv::endl;
+  bout << "|#9Local Post Today: |#2" << status->localposts() << wwiv::endl;
+  bout << "|#9E Sent Today    : |#2" << status->email_today() << wwiv::endl;
+  bout << "|#9F Sent Today    : |#2" << status->feedback_today() << wwiv::endl;
+  bout << "|#9Uploads Today   : |#2" << status->uploads_today() << wwiv::endl;
 
   User sysop{};
-  int feedback_waiting = 0;
+  auto feedback_waiting = 0;
   if (a()->users()->readuser_nocache(&sysop, 1)) {
-    feedback_waiting = sysop.GetNumMailWaiting();
+    feedback_waiting = sysop.email_waiting();
   }
   bout << "|#9Feedback Waiting: |#2" << feedback_waiting << wwiv::endl;
   bout << "|#9Sysop           : |#2" << ((sysop2()) ? "Available" : "NOT Available") << wwiv::endl;
-  bout << "|#9Q-Scan Pointer  : |#2" << status->GetQScanPointer() << wwiv::endl;
+  bout << "|#9Q-Scan Pointer  : |#2" << status->qscanptr() << wwiv::endl;
 
   if (num_instances() > 1) {
     multi_instance();
@@ -113,17 +112,17 @@ void valuser(int user_number) {
   a()->users()->readuser(&user, user_number);
   if (!user.IsUserDeleted()) {
     bout.nl();
-    const string unn = a()->names()->UserName(user_number);
+    const auto unn = a()->names()->UserName(user_number);
     bout << "|#9Name: |#2" << unn << wwiv::endl;
-    bout << "|#9RN  : |#2" << user.GetRealName() << wwiv::endl;
+    bout << "|#9RN  : |#2" << user.real_name() << wwiv::endl;
     bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
     bout << "|#9Age : |#2" << user.age() << " " << user.GetGender() << wwiv::endl;
     bout << "|#9Comp: |#2" << ctypes(user.GetComputerType()) << wwiv::endl;
-    if (user.GetNote().empty()) {
-      bout << "|#9Note: |#2" << user.GetNote() << wwiv::endl;
+    if (user.note().empty()) {
+      bout << "|#9Note: |#2" << user.note() << wwiv::endl;
     }
-    bout << "|#9SL  : |#2" << user.GetSl() << wwiv::endl;
-    if (user.GetSl() != 255 && user.GetSl() < a()->sess().effective_sl()) {
+    bout << "|#9SL  : |#2" << user.sl() << wwiv::endl;
+    if (user.sl() != 255 && user.sl() < a()->sess().effective_sl()) {
       bout << "|#9New : ";
       bin.input(s, 3, true);
       if (s[0]) {
@@ -132,7 +131,7 @@ void valuser(int user_number) {
           nSl = -2;
         }
         if (nSl >= 0 && nSl < 255) {
-          user.SetSl(nSl);
+          user.sl(nSl);
         }
         if (nSl == -1) {
           bout.nl();
@@ -150,23 +149,23 @@ void valuser(int user_number) {
       }
     }
     bout.nl();
-    bout << "|#9DSL : |#2" << user.GetDsl() << wwiv::endl;
-    if (user.GetDsl() != 255 && user.GetDsl() < a()->user()->GetDsl()) {
+    bout << "|#9DSL : |#2" << user.dsl() << wwiv::endl;
+    if (user.dsl() != 255 && user.dsl() < a()->user()->dsl()) {
       bout << "|#9New ? ";
       bin.input(s, 3, true);
       if (s[0]) {
         int nDsl = to_number<unsigned int>(s);
-        if (!a()->at_wfc() && nDsl >= static_cast<int>(a()->user()->GetDsl())) {
+        if (!a()->at_wfc() && nDsl >= static_cast<int>(a()->user()->dsl())) {
           nDsl = -1;
         }
         if (nDsl >= 0 && nDsl < 255) {
-          user.SetDsl(nDsl);
+          user.dsl(nDsl);
         }
       }
     }
     strcpy(s3, restrict_string);
-    int ar2     = 1;
-    int dar2    = 1;
+    auto ar2     = 1;
+    auto dar2    = 1;
     ar1[0]      = RETURN;
     dar1[0]     = RETURN;
     for (int i = 0; i <= 15; i++) {
@@ -296,7 +295,7 @@ void print_net_listing(bool bForcePause) {
   bool bHadPause{false};
   int current_net{0};
 
-  a()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->reload_status();
 
   if (!wwiv::stl::ssize(a()->nets())) {
     return;
@@ -310,7 +309,7 @@ void print_net_listing(bool bForcePause) {
       a()->user()->ToggleStatusFlag(User::pauseOnPage);
     }
   }
-  bool done = false;
+  auto done = false;
   while (!done && !a()->sess().hangup()) {
     bout.cls();
     if (wwiv::stl::ssize(a()->nets()) > 1) {
@@ -389,9 +388,7 @@ void print_net_listing(bool bForcePause) {
       bout << "|#2Q|#9) = |#1Quit NetList\r\n";
       bout.nl();
       bout << "|#9Select: |#2";
-      char cmd = onek("Q1234567890");
-
-      switch (cmd) {
+      switch (auto cmd = onek("Q1234567890"); cmd) {
       case 'Q':
         if (wwiv::stl::ssize(a()->nets()) < 2) {
           done = true;
@@ -496,7 +493,7 @@ void print_net_listing(bool bForcePause) {
       bout.nl(2);
 
       for (const auto& b : bbslist.node_config()) {
-        bool matched = false;
+        auto matched = false;
         const auto& csne = b.second;
         if ((csne.forsys == WWIVNET_NO_NODE) && (cmdbit != NET_SEARCH_NOCONNECT)) {
           continue;
@@ -717,7 +714,7 @@ void mailr() {
           }
           pFileEmail->Close();
           if (!a()->sess().IsUserOnline() && m.touser == 1 && m.tosys == 0) {
-            a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() - 1);
+            a()->user()->email_waiting(a()->user()->email_waiting() - 1);
           }
         }
         bout.nl(2);
@@ -822,82 +819,81 @@ void auto_purge() {
     User user;
     a()->users()->readuser(&user, user_number);
     if (!user.IsExemptAutoDelete()) {
-      auto d = static_cast<int>((current_daten - user.GetLastOnDateNumber()) / SECONDS_PER_DAY);
+      auto d = static_cast<int>((current_daten - user.last_daten()) / SECONDS_PER_DAY);
       // if user is not already deleted && SL<NO_PURGE_SL && last_logon
       // greater than AUTO_USER_PURGE days ago
-      if (!user.IsUserDeleted() && user.GetSl() < skipsl && d > days) {
-        sysoplog(false) << "*** AUTOPURGE: Deleted User: #" << user_number << " " << user.GetName();
+      if (!user.IsUserDeleted() && user.sl() < skipsl && d > days) {
+        sysoplog(false) << "*** AUTOPURGE: Deleted User: #" << user_number << " " << user.name();
         a()->users()->delete_user(user_number);
       }
     }
     ++user_number;
-  } while (user_number <= a()->status_manager()->GetUserCount());
+  } while (user_number <= a()->status_manager()->user_count());
 }
 
 void beginday(bool displayStatus) {
   if ((a()->GetBeginDayNodeNumber() > 0)
       && (a()->instance_number() != a()->GetBeginDayNodeNumber())) {
     // If BEGINDAYNODENUMBER is > 0 or defined in WWIV.INI only handle beginday events on that node number
-    a()->status_manager()->RefreshStatusCache();
+    a()->status_manager()->reload_status();
     return;
   }
-  auto status = a()->status_manager()->BeginTransaction();
-  status->ValidateAndFixDates();
+  a()->status_manager()->Run([&](Status& status) {
+    status.ensure_dates_valid();
 
-  if (date() == status->GetLastDate()) {
-    a()->status_manager()->CommitTransaction(std::move(status));
-    return;
-  }
-  if (displayStatus) {
-    bout << "|#7* |#1Running Daily Maintenance...\r\n";
-    bout << "  |#7* |#1Updating system activity...\r\n";
-  }
-
-  zlogrec z{};
-  to_char_array(z.date, status->GetLastDate());
-  z.active = status->GetMinutesActiveToday();
-  z.calls = status->GetNumCallsToday();
-  z.posts = status->GetNumLocalPosts();
-  z.email = status->GetNumEmailSentToday();
-  z.fback = status->GetNumFeedbackSentToday();
-  z.up = status->GetNumUploadsToday();
-  status->NewDay();
-
-  if (displayStatus) {
-    bout << "  |#7* |#1Updating ZLOG information...\r\n";
-  }
-  File fileZLog(FilePath(a()->config()->datadir(), ZLOG_DAT));
-  zlogrec z1{};
-  if (!fileZLog.Open(File::modeReadWrite | File::modeBinary)) {
-    fileZLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone);
-    z1.date[0] = '\0';
-    z1.active = 0;
-    z1.calls = 0;
-    z1.posts = 0;
-    z1.email = 0;
-    z1.fback = 0;
-    z1.up = 0;
-    for (int i = 0; i < 97; i++) {
-      fileZLog.Write(&z1, sizeof(zlogrec));
+    if (date() == status.last_date()) {
+      return;
     }
-  } else {
-    for (int i = 96; i >= 1; i--) {
-      fileZLog.Seek((i - 1) * sizeof(zlogrec), File::Whence::begin);
-      fileZLog.Read(&z1, sizeof(zlogrec));
-      fileZLog.Seek(i * sizeof(zlogrec), File::Whence::begin);
-      fileZLog.Write(&z1, sizeof(zlogrec));
+    if (displayStatus) {
+      bout << "|#7* |#1Running Daily Maintenance...\r\n";
+      bout << "  |#7* |#1Updating system activity...\r\n";
     }
-  }
-  fileZLog.Seek(0L, File::Whence::begin);
-  fileZLog.Write(&z, sizeof(zlogrec));
-  fileZLog.Close();
 
-  if (displayStatus) {
-    bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
-  }
-  const int nus = a()->config()->max_users() - status->GetNumUsers();
+    zlogrec z{};
+    to_char_array(z.date, status.last_date());
+    z.active = status.active_today_minutes();
+    z.calls = status.calls_today();
+    z.posts = status.localposts();
+    z.email = status.email_today();
+    z.fback = status.feedback_today();
+    z.up = status.uploads_today();
+    status.NewDay();
 
-  a()->status_manager()->CommitTransaction(std::move(status));
+    if (displayStatus) {
+      bout << "  |#7* |#1Updating ZLOG information...\r\n";
+    }
+    File fileZLog(FilePath(a()->config()->datadir(), ZLOG_DAT));
+    zlogrec z1{};
+    if (!fileZLog.Open(File::modeReadWrite | File::modeBinary)) {
+      fileZLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone);
+      z1.date[0] = '\0';
+      z1.active = 0;
+      z1.calls = 0;
+      z1.posts = 0;
+      z1.email = 0;
+      z1.fback = 0;
+      z1.up = 0;
+      for (int i = 0; i < 97; i++) {
+        fileZLog.Write(&z1, sizeof(zlogrec));
+      }
+    } else {
+      for (int i = 96; i >= 1; i--) {
+        fileZLog.Seek((i - 1) * sizeof(zlogrec), File::Whence::begin);
+        fileZLog.Read(&z1, sizeof(zlogrec));
+        fileZLog.Seek(i * sizeof(zlogrec), File::Whence::begin);
+        fileZLog.Write(&z1, sizeof(zlogrec));
+      }
+    }
+    fileZLog.Seek(0L, File::Whence::begin);
+    fileZLog.Write(&z, sizeof(zlogrec));
+    fileZLog.Close();
+
+    if (displayStatus) {
+      bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
+    }
+  });
+  const auto status = a()->status_manager()->get_status();
+  const auto nus = a()->config()->max_users() - status->num_users();
   if (displayStatus) {
     bout << "  |#7* |#1Checking system directories and user space...\r\n";
   }

@@ -64,25 +64,25 @@ void OnlineUserEditor() {
   const auto s = StrCat("[", a()->names()->UserName(a()->sess().user_num()), "]");
   a()->localIO()->PutsXYA(wx + 1, wy - 1, 31, fmt::format("{:<30}{:>37}"," WWIV User Editor", s));
 
-  a()->localIO()->PutsXYA(wx + 2, wy + 1, 3, StrCat("Security Level(SL): ", u.GetSl()));
-  auto ar = word_to_arstr(u.GetAr(), "");
+  a()->localIO()->PutsXYA(wx + 2, wy + 1, 3, StrCat("Security Level(SL): ", u.sl()));
+  auto ar = word_to_arstr(u.ar_int(), "");
   a()->localIO()->PutsXYA(wx + 36, wy + 1, 3, StrCat("  Message AR: ", ar));
-  a()->localIO()->PutsXYA(wx + 2, wy + 2, 3, StrCat("DL Sec. Level(DSL): ", u.GetDsl()));
-  auto dar = word_to_arstr(u.GetDar(), "");
+  a()->localIO()->PutsXYA(wx + 2, wy + 2, 3, StrCat("DL Sec. Level(DSL): ", u.dsl()));
+  auto dar = word_to_arstr(u.dar_int(), "");
   a()->localIO()->PutsXYA(wx + 36, wy + 2, 3, StrCat(" Download AR: ", dar));
-  a()->localIO()->PutsXYA(wx + 2, wy + 3, 3, StrCat("   User Exemptions: ", u.GetExempt()));
+  a()->localIO()->PutsXYA(wx + 2, wy + 3, 3, StrCat("   User Exemptions: ", u.exempt()));
   a()->localIO()->PutsXYA(wx + 36, wy + 3, 3, StrCat("Restrictions: ", restrict));
   a()->localIO()->PutsXYA(wx + 2, wy + 5, 3, StrCat("         Sysop Sub: ", *a()->sess().qsc));
-  a()->localIO()->PutsXYA(wx + 36, wy + 5, 3, StrCat("   Time Bank: ", u.GetTimeBankMinutes()));
-  a()->localIO()->PutsXYA(wx + 2, wy + 6, 3, StrCat("        Ass Points: ", u.GetAssPoints()));
+  a()->localIO()->PutsXYA(wx + 36, wy + 5, 3, StrCat("   Time Bank: ", u.banktime_minutes()));
+  a()->localIO()->PutsXYA(wx + 2, wy + 6, 3, StrCat("        Ass Points: ", u.ass_points()));
   a()->localIO()->PutsXYA(wx + 36, wy + 6, 3, StrCat(" Gold Points: ", u.gold()));
   a()->localIO()->PutsXYA(wx + 2, wy + 8, 3, StrCat("       KB Uploaded: ", u.uk()));
   a()->localIO()->PutsXYA(wx + 35, wy + 8, 3, StrCat("KB Downloaded: ", u.dk()));
-  a()->localIO()->PutsXYA(wx + 2, wy + 9, 3, StrCat("    Files Uploaded: ", u.GetFilesUploaded()));
-  a()->localIO()->PutsXYA(wx + 32, wy + 9, 3, StrCat("Files Downloaded: ", u.GetFilesDownloaded()));
-  a()->localIO()->PutsXYA(wx + 2, wy + 10, 3, StrCat("   Messages Posted: ", u.GetNumMessagesPosted()));
-  a()->localIO()->PutsXYA(wx + 32, wy + 10, 3, StrCat("Number of Logons: ", u.GetNumLogons()));
-  a()->localIO()->PutsXYA(wx + 2, wy + 12, 3, StrCat("Note: ", u.GetNote()));
+  a()->localIO()->PutsXYA(wx + 2, wy + 9, 3, StrCat("    Files Uploaded: ", u.uploaded()));
+  a()->localIO()->PutsXYA(wx + 32, wy + 9, 3, StrCat("Files Downloaded: ", u.downloaded()));
+  a()->localIO()->PutsXYA(wx + 2, wy + 10, 3, StrCat("   Messages Posted: ", u.messages_posted()));
+  a()->localIO()->PutsXYA(wx + 32, wy + 10, 3, StrCat("Number of Logons: ", u.logons()));
+  a()->localIO()->PutsXYA(wx + 2, wy + 12, 3, StrCat("Note: ", u.note()));
   a()->localIO()->PutsXYA(wx + 1, wy + 14, 31,
                           "    (ENTER) Next Field   (UP-ARROW) Previous Field    (ESC) Exit    ");
   bout.curatr(3);
@@ -93,40 +93,40 @@ void OnlineUserEditor() {
     switch (cp) {
     case 0: {
       a()->localIO()->GotoXY(wx + 22, wy + 1);
-      auto sl = std::to_string(u.GetSl());
+      auto sl = std::to_string(u.sl());
       rc = a()->localIO()->EditLine(sl, 3, AllowedKeys::NUM_ONLY);
-      u.SetSl(to_number<unsigned int>(sl));
-      a()->localIO()->Format("{:3}", u.GetSl());
+      u.sl(to_number<unsigned int>(sl));
+      a()->localIO()->Format("{:3}", u.sl());
     } break;
     case 1: {
       a()->localIO()->GotoXY(wx + 50, wy + 1);
       rc = a()->localIO()->EditLine(ar, 16, AllowedKeys::SET, "ABCDEFGHIJKLMNOP ");
-      u.SetAr(str_to_arword(ar));
+      u.ar_int(str_to_arword(ar));
     } break;
     case 2: {
       a()->localIO()->GotoXY(wx + 22, wy + 2);
-      auto dsl = std::to_string(u.GetDsl());
+      auto dsl = std::to_string(u.dsl());
       rc = a()->localIO()->EditLine(dsl, 3, AllowedKeys::NUM_ONLY);
-      u.SetDsl(to_number<int>(dsl));
-      a()->localIO()->Format("{:3}", u.GetDsl());
+      u.dsl(to_number<int>(dsl));
+      a()->localIO()->Format("{:3}", u.dsl());
       } break;
     case 3: {
       a()->localIO()->GotoXY(wx + 50, wy + 2);
 
       rc = a()->localIO()->EditLine(dar, 16, AllowedKeys::SET, "ABCDEFGHIJKLMNOP ");
-      u.SetDar(str_to_arword(dar));
+      u.dar_int(str_to_arword(dar));
     } break;
     case 4: {
       a()->localIO()->GotoXY(wx + 22, wy + 3);
-      auto exempt = std::to_string(u.GetExempt());
+      auto exempt = std::to_string(u.exempt());
       rc = a()->localIO()->EditLine(exempt, 3, AllowedKeys::NUM_ONLY);
-      u.SetExempt(to_number<int>(exempt));
+      u.exempt(to_number<int>(exempt));
       a()->localIO()->Format("{:3}", exempt);
     } break;
     case 5: {
       a()->localIO()->GotoXY(wx + 50, wy + 3);
       rc = a()->localIO()->EditLine(restrict, 16, AllowedKeys::SET, restrict_string);
-      u.SetRestriction(0);
+      u.restriction(0);
       for (int i = 0; i <= 15; i++) {
         if (restrict[i] != SPACE) {
           u.SetRestrictionFlag(1 << i);
@@ -142,16 +142,16 @@ void OnlineUserEditor() {
     } break;
     case 7: {
       a()->localIO()->GotoXY(wx + 50, wy + 5);
-      auto banktime = std::to_string(u.GetTimeBankMinutes());
+      auto banktime = std::to_string(u.banktime_minutes());
       rc = a()->localIO()->EditLine(banktime, 5, AllowedKeys::NUM_ONLY);
-      u.SetTimeBankMinutes(to_number<uint16_t>(banktime));
+      u.banktime_minutes(to_number<uint16_t>(banktime));
       a()->localIO()->Format("{:5}", banktime);
     } break;
     case 8: {
       a()->localIO()->GotoXY(wx + 22, wy + 6);
-      auto ass = std::to_string(u.GetAssPoints());
+      auto ass = std::to_string(u.ass_points());
       rc = a()->localIO()->EditLine(ass, 5, AllowedKeys::NUM_ONLY);
-      u.SetAssPoints(to_number<int>(ass));
+      u.ass_points(to_number<int>(ass));
       a()->localIO()->Format("{:5}", ass);
     } break;
     case 9: {
@@ -177,38 +177,38 @@ void OnlineUserEditor() {
     } break;
     case 12: {
       a()->localIO()->GotoXY(wx + 22, wy + 9);
-      auto up = std::to_string(u.GetFilesUploaded());
+      auto up = std::to_string(u.uploaded());
       rc = a()->localIO()->EditLine(up, 5, AllowedKeys::NUM_ONLY);
-      u.SetFilesUploaded(to_number<int>(up));
+      u.uploaded(to_number<int>(up));
       a()->localIO()->Format("{:5}", up);
     } break;
     case 13: {
       a()->localIO()->GotoXY(wx + 50, wy + 9);
-      auto down = std::to_string(u.GetFilesDownloaded());
+      auto down = std::to_string(u.downloaded());
       rc = a()->localIO()->EditLine(down, 5, AllowedKeys::NUM_ONLY);
-      u.SetFilesDownloaded(to_number<int>(down));
+      u.downloaded(to_number<int>(down));
       a()->localIO()->Format("{:5}", down);
     } break;
     case 14: {
       a()->localIO()->GotoXY(wx + 22, wy + 10);
-      auto posts = std::to_string(u.GetNumMessagesPosted());
+      auto posts = std::to_string(u.messages_posted());
       rc = a()->localIO()->EditLine(posts, 5, AllowedKeys::NUM_ONLY);
-      u.SetNumMessagesPosted(to_number<int>(posts));
+      u.messages_posted(to_number<int>(posts));
       a()->localIO()->Format("{:5}", posts);
     } break;
     case 15: {
       a()->localIO()->GotoXY(wx + 50, wy + 10);
-      auto logons = std::to_string(u.GetNumLogons());
+      auto logons = std::to_string(u.logons());
       rc = a()->localIO()->EditLine(logons, 5, AllowedKeys::NUM_ONLY);
-      u.SetNumLogons(to_number<int>(logons));
-      a()->localIO()->Format("{:5}",u.GetNumLogons());
+      u.logons(to_number<int>(logons));
+      a()->localIO()->Format("{:5}",u.logons());
     } break;
     case 16: {
       a()->localIO()->GotoXY(wx + 8, wy + 12);
-      auto note = u.GetNote();
+      auto note = u.note();
       rc = a()->localIO()->EditLine(note, 60, AllowedKeys::ALL);
       StringTrimEnd(&note);
-      u.SetNote(note);
+      u.note(note);
     } break;
     default: {
       LOG(ERROR) << "Unknown case: " << cp;

@@ -77,10 +77,10 @@ static void update_filechange_status_dat(const string& datadir, bool email, bool
   sm.Run([=](Status& s)
   {
     if (email) {
-      s.IncrementFileChangedFlag(Status::file_change_email);
+      s.increment_filechanged(Status::file_change_email);
     }
     if (posts) {
-      s.IncrementFileChangedFlag(Status::file_change_posts);
+      s.increment_filechanged(Status::file_change_posts);
     }
   });
 }

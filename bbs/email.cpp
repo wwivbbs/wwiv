@@ -75,26 +75,26 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
   if (userRecord.IsUserDeleted()) {
     return false;
   }
-  if (userRecord.GetForwardUserNumber() == 0 && userRecord.GetForwardSystemNumber() == 0 &&
-      userRecord.GetForwardSystemNumber() != INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
+  if (userRecord.forward_usernum() == 0 && userRecord.forward_systemnum() == 0 &&
+      userRecord.forward_systemnum() != INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
     return false;
   }
-  if (userRecord.GetForwardSystemNumber() != 0) {
+  if (userRecord.forward_systemnum() != 0) {
     if (!userRecord.IsMailForwardedToInternet()) {
       int network_number = a()->net_num();
-      set_net_num(userRecord.GetForwardNetNumber());
-      if (!valid_system(userRecord.GetForwardSystemNumber())) {
+      set_net_num(userRecord.forward_netnum());
+      if (!valid_system(userRecord.forward_systemnum())) {
         set_net_num(network_number);
         return false;
       }
-      if (!userRecord.GetForwardUserNumber()) {
+      if (!userRecord.forward_usernum()) {
         read_inet_addr(a()->net_email_name, *pUserNumber);
         if (!check_inet_addr(a()->net_email_name)) {
           return false;
         }
       }
-      *pUserNumber = userRecord.GetForwardUserNumber();
-      *pSystemNumber = userRecord.GetForwardSystemNumber();
+      *pUserNumber = userRecord.forward_usernum();
+      *pSystemNumber = userRecord.forward_systemnum();
       return true;
     }
     read_inet_addr(a()->net_email_name, *pUserNumber);
@@ -102,7 +102,7 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
     *pSystemNumber = 0;
     return false;
   }
-  auto nCurrentUser = userRecord.GetForwardUserNumber();
+  auto nCurrentUser = userRecord.forward_usernum();
   if (nCurrentUser == -1 || nCurrentUser == std::numeric_limits<decltype(nCurrentUser)>::max()) {
     bout << "Mailbox Closed.\r\n";
     if (so()) {
@@ -117,14 +117,14 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
 
   ss[*pUserNumber] = true;
   a()->users()->readuser(&userRecord, nCurrentUser);
-  while (userRecord.GetForwardUserNumber() || userRecord.GetForwardSystemNumber()) {
-    if (userRecord.GetForwardSystemNumber()) {
-      if (!valid_system(userRecord.GetForwardSystemNumber())) {
+  while (userRecord.forward_usernum() || userRecord.forward_systemnum()) {
+    if (userRecord.forward_systemnum()) {
+      if (!valid_system(userRecord.forward_systemnum())) {
         return false;
       }
-      *pUserNumber = userRecord.GetForwardUserNumber();
-      *pSystemNumber = userRecord.GetForwardSystemNumber();
-      set_net_num(userRecord.GetForwardNetNumber());
+      *pUserNumber = userRecord.forward_usernum();
+      *pSystemNumber = userRecord.forward_systemnum();
+      set_net_num(userRecord.forward_netnum());
       return true;
     }
     if (ss[nCurrentUser]) {
@@ -143,7 +143,7 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
       }
       return false;
     }
-    nCurrentUser = userRecord.GetForwardUserNumber() ;
+    nCurrentUser = userRecord.forward_usernum() ;
     a()->users()->readuser(&userRecord, nCurrentUser);
   }
   *pSystemNumber = 0;
@@ -293,7 +293,7 @@ void sendout_email(EmailData& data) {
   if (data.system_number == 0) {
     User userRecord;
     a()->users()->readuser(&userRecord, data.user_number);
-    userRecord.SetNumMailWaiting(userRecord.GetNumMailWaiting() + 1);
+    userRecord.email_waiting(userRecord.email_waiting() + 1);
     a()->users()->writeuser(&userRecord, data.user_number);
     int i;
     if (user_online(data.user_number, &i)) {
@@ -309,7 +309,7 @@ void sendout_email(EmailData& data) {
     }
     if (data.system_number == 0 
         && a()->sess().effective_sl() > a()->config()->newuser_sl()
-        && userRecord.GetForwardSystemNumber() == 0
+        && userRecord.forward_systemnum() == 0
         && !data.silent_mode) {
       bout << "|#5Attach a file to this message? ";
       if (bin.yesno()) {
@@ -322,28 +322,28 @@ void sendout_email(EmailData& data) {
         data.system_number == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
       logMessagePart = a()->net_email_name;
     } else {
-      std::string netname = (wwiv::stl::ssize(a()->nets()) > 1) ? a()->network_name() : "";
+      auto netname = (wwiv::stl::ssize(a()->nets()) > 1) ? a()->network_name() : "";
       logMessagePart = username_system_net_as_string(data.user_number, a()->net_email_name,
                                                      data.system_number, netname);
     }
     sysoplog() << logMessage << logMessagePart;
   }
 
-  auto status = a()->status_manager()->BeginTransaction();
-  if (data.user_number == 1 && data.system_number == 0) {
-    status->IncrementNumFeedbackSentToday();
-    a()->user()->SetNumFeedbackSent(a()->user()->GetNumFeedbackSent() + 1);
-    a()->user()->SetNumFeedbackSentToday(a()->user()->GetNumFeedbackSentToday() + 1);
-  } else {
-    status->IncrementNumEmailSentToday();
-    a()->user()->SetNumEmailSentToday(a()->user()->GetNumEmailSentToday() + 1);
-    if (data.system_number == 0) {
-      a()->user()->SetNumEmailSent(a()->user()->GetNumEmailSent() + 1);
+  a()->status_manager()->Run([&](Status& status) {
+    if (data.user_number == 1 && data.system_number == 0) {
+      status.increment_feedback_today();
+      a()->user()->feedback_sent(a()->user()->feedback_sent() + 1);
+      a()->user()->feedback_today(a()->user()->feedback_today() + 1);
     } else {
-      a()->user()->SetNumNetEmailSent(a()->user()->GetNumNetEmailSent() + 1);
+      status.increment_email_today();
+      a()->user()->email_today(a()->user()->email_today() + 1);
+      if (data.system_number == 0) {
+        a()->user()->email_sent(a()->user()->email_sent() + 1);
+      } else {
+        a()->user()->email_net(a()->user()->email_net() + 1);
+      }
     }
-  }
-  a()->status_manager()->CommitTransaction(std::move(status));
+  });
   if (!data.silent_mode) {
     bout.Color(3);
     bout << logMessage;
@@ -362,12 +362,12 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
     }
     User userRecord;
     a()->users()->readuser(&userRecord, user_number);
-    if ((userRecord.GetSl() == 255 &&
-         userRecord.GetNumMailWaiting() >
+    if ((userRecord.sl() == 255 &&
+         userRecord.email_waiting() >
              (a()->config()->max_waiting() * 5)) ||
-        (userRecord.GetSl() != 255 &&
-         userRecord.GetNumMailWaiting() > a()->config()->max_waiting()) ||
-        userRecord.GetNumMailWaiting() > 200) {
+        (userRecord.sl() != 255 &&
+         userRecord.email_waiting() > a()->config()->max_waiting()) ||
+        userRecord.email_waiting() > 200) {
       if (!bForceit) {
         bout << "\r\nMailbox full.\r\n";
         return false;
@@ -389,9 +389,9 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
   }
   if (!bForceit) {
     if (((user_number == 1 && system_number == 0 &&
-          (a()->user()->GetNumFeedbackSentToday() >= 10)) ||
+          (a()->user()->feedback_today() >= 10)) ||
          ((user_number != 1 || system_number != 0) &&
-          (a()->user()->GetNumEmailSentToday() >= a()->config()->sl(a()->sess().effective_sl()).emails)))
+          (a()->user()->email_today() >= a()->config()->sl(a()->sess().effective_sl()).emails)))
         && !cs()) {
       bout << "\r\nToo much mail sent today.\r\n\n";
       return false;
@@ -759,8 +759,8 @@ void delmail(File& f, size_t loc) {
 
   if (m.tosys == 0) {
     a()->users()->readuser(&user, m.touser);
-    if (user.GetNumMailWaiting()) {
-      user.SetNumMailWaiting(user.GetNumMailWaiting() - 1);
+    if (user.email_waiting()) {
+      user.email_waiting(user.email_waiting() - 1);
       a()->users()->writeuser(&user, m.touser);
     }
   }

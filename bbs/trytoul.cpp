@@ -306,7 +306,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   }
   f.set_numbytes(file.length());
   file.Close();
-  a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
+  a()->user()->increment_uploaded();
 
   f.set_date(DateTime::now());
   auto* area = a()->current_file_area();
@@ -319,16 +319,16 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   a()->user()->set_uk(a()->user()->uk() + bytes_to_k(f.numbytes()));
 
-  auto status = a()->status_manager()->BeginTransaction();
-  status->IncrementNumUploadsToday();
-  status->IncrementFileChangedFlag(Status::file_change_upload);
-  a()->status_manager()->CommitTransaction(std::move(status));
+  a()->status_manager()->Run([&](Status& status) {
+    status.increment_uploads_today();
+    status.increment_filechanged(Status::file_change_upload);
+  });
   sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f, a()->dirs()[dn].name);
   return 0;                                 // This means success
 }
 
 int try_to_ul(const string& file_name) {
-  bool ac = false;
+  auto ac = false;
 
   if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
     ac = true;

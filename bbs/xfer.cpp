@@ -202,7 +202,7 @@ bool ratio_ok() {
 }
 
 bool dcs() {
-  return cs() || a()->user()->GetDsl() >= 100;
+  return cs() || a()->user()->dsl() >= 100;
 }
 
 void dliscan1(int directory_num) {

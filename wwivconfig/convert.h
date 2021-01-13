@@ -36,7 +36,7 @@ config_upgrade_state_t convert_config_to_52(UIWindow* window, const std::filesys
 config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
                                                const std::string& config_filename,
                                                uint32_t config_revision_number);
-uint32_t final_wwiv_config_dat_version();
+int final_wwiv_config_dat_version();
 
 ShouldContinue do_wwiv_ugprades(UIWindow* window, const std::string& bbsdir);
 

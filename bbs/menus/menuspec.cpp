@@ -143,7 +143,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
 
       if (sent) {
         if (!bFreeDL) {
-          a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
+          a()->user()->increment_downloaded();
           a()->user()->set_dk(a()->user()->dk() +
                                     static_cast<int>(bytes_to_k(f.numbytes())));
         }
@@ -157,7 +157,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
         if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
           a()->users()->readuser(&ur, f.u().ownerusr);
           if (!ur.IsUserDeleted()) {
-            if (date_to_daten(ur.GetFirstOn()) < f.u().daten) {
+            if (date_to_daten(ur.firston()) < f.u().daten) {
               const auto username_num = a()->names()->UserName(a()->sess().user_num());
               ssm(f.u().ownerusr) << username_num << " downloaded '" << f.aligned_filename() << "' on " << date();
             }

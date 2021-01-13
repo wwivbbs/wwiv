@@ -51,8 +51,8 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case '@':                               // Dir name
       return context_->session_context().current_dir().name;
     case '~':                               // Total mails/feed backs sent
-      return to_string(context_->u().GetNumEmailSent() + context_->u().GetNumFeedbackSent() +
-                       context_->u().GetNumNetEmailSent());
+      return to_string(context_->u().email_sent() + context_->u().feedback_sent() +
+                       context_->u().email_net());
     case '/':                               // Today's date
       return fulldate();
     case '%':                               // Time left today
@@ -62,9 +62,9 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case '$':                               // File points (UNUSED)
       return "0"; //to_string(u().GetFilePoints());
     case '*':                               // User reg num
-      return to_string(context_->u().GetWWIVRegNumber());
+      return to_string(context_->u().wwiv_regnum());
     case '-':                               // Aggravation points
-      return to_string(context_->u().GetAssPoints());
+      return to_string(context_->u().ass_points());
     case ':':                               // Sub number
       return a()->current_user_sub().keys;
     case ';':                               // Directory number
@@ -81,31 +81,31 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case 'B':                               // User's birthday
       return context_->u().birthday_mmddyy();
     case 'b':                               // Minutes in bank
-      return to_string(context_->u().GetTimeBankMinutes());
+      return to_string(context_->u().banktime_minutes());
     case 'C':                               // User's city
       return context_->u().GetCity();
     case 'c':                               // User's country
       return context_->u().GetCountry();
     case 'D':                               // Files downloaded
-      return to_string(context_->u().GetFilesDownloaded());
+      return to_string(context_->u().downloaded());
     case 'd':                               // User's DSL
-      return to_string(context_->u().GetDsl());
+      return to_string(context_->u().dsl());
     case 'E':                               // E-mails sent
-      return to_string(context_->u().GetNumEmailSent());
+      return to_string(context_->u().email_sent());
     case 'e':                               // Net E-mails sent
-      return to_string(context_->u().GetNumNetEmailSent());
+      return to_string(context_->u().email_net());
     case 'F':
-      return to_string(context_->u().GetNumFeedbackSent());
+      return to_string(context_->u().feedback_sent());
     case 'f':                               // First time user called
-      return context_->u().GetFirstOn();
+      return context_->u().firston();
     case 'G':                               // Messages read
-      return to_string(context_->u().GetNumMessagesRead());
+      return to_string(context_->u().messages_read());
     case 'g':                               // Gold
       return to_string(context_->u().gold());
     case 'I':                               // User's call sIgn
-      return context_->u().GetCallsign();
+      return context_->u().callsign();
     case 'i':                               // Illegal log-ons
-      return to_string(context_->u().GetNumIllegalLogons());
+      return to_string(context_->u().illegal_logons());
     case 'J': {                             // Message conference
       const int x = context_->session_context().current_user_sub_conf_num();
       if (x < 0 || x >= wwiv::stl::ssize(a()->uconfsub)) {
@@ -125,19 +125,19 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case 'k':                               // Kb downloaded
       return to_string(context_->u().dk());
     case 'L':                               // Last call
-      return context_->u().GetLastOn();
+      return context_->u().laston();
     case 'l':                               // Number of logons
-      return to_string(context_->u().GetNumLogons());
+      return to_string(context_->u().logons());
     case 'M':                               // Mail waiting
-      return to_string(context_->u().GetNumMailWaiting());
+      return to_string(context_->u().email_waiting());
     case 'm':                               // Messages posted
-      return to_string(context_->u().GetNumMessagesPosted());
+      return to_string(context_->u().messages_posted());
     case 'N':                               // User's name
-      return context_->u().GetName();
+      return context_->u().name();
     case 'n':                               // Sysop's note
-      return context_->u().GetNote();
+      return context_->u().note();
     case 'O':                               // Times on today
-      return to_string(context_->u().GetTimesOnToday());
+      return to_string(context_->u().ontoday());
     case 'o': {
       // Time on today
       const auto used_this_session =
@@ -150,11 +150,11 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case 'p':                               // User's phone
       return context_->u().GetDataPhoneNumber();
     case 'R':                               // User's real name
-      return context_->u().GetRealName();
+      return context_->u().real_name();
     case 'r':                               // Last baud rate
-      return to_string(context_->u().GetLastBaudRate());
+      return to_string(context_->u().last_bps());
     case 'S':                               // User's SL
-      return to_string(context_->u().GetSl());
+      return to_string(context_->u().sl());
     case 's':                               // User's street address
       return context_->u().GetStreet();
     case 'T':                               // User's sTate
@@ -162,7 +162,7 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case 't':                               // Current time
       return times();
     case 'U':                               // Files uploaded
-      return to_string(context_->u().GetFilesUploaded());
+      return to_string(context_->u().uploaded());
     case 'u':  {                             // Current sub
       const auto subnum = a()->current_user_sub().subnum;
       if (subnum < 0 || subnum >= wwiv::stl::ssize(a()->subs())) {

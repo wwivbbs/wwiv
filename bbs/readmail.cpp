@@ -211,7 +211,7 @@ bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m,
 
   if (!same_email(mloc[rec], m)) {
     file->Close();
-    a()->status_manager()->RefreshStatusCache();
+    a()->status_manager()->reload_status();
     if (a()->emchg_) {
       resynch_email(mloc, mw, rec, &m, del, stat);
     } else {
@@ -371,7 +371,7 @@ void readmail(int mode) {
     }
     pFileEmail->Close();
   }
-  a()->user()->SetNumMailWaiting(mw);
+  a()->user()->email_waiting(mw);
   if (mloc.empty()) {
     bout << "\r\n\n|#3You have no mail.\r\n\n";
     return;
@@ -714,15 +714,15 @@ void readmail(int mode) {
           }
           if (File::Exists(fn)) {
             LoadFileIntoWorkspace(a()->context(), fn, true);
-            num_mail = a()->user()->GetNumFeedbackSent() + a()->user()->GetNumEmailSent() +
-                       a()->user()->GetNumNetEmailSent();
+            num_mail = a()->user()->feedback_sent() + a()->user()->email_sent() +
+                       a()->user()->email_net();
             clear_quotes(a()->sess());
             if (m.fromuser != 65535) {
               email(m.title, m.fromuser, m.fromsys, false, m.anony);
             }
-            num_mail1 = static_cast<long>(a()->user()->GetNumFeedbackSent()) +
-                        static_cast<long>(a()->user()->GetNumEmailSent()) +
-                        static_cast<long>(a()->user()->GetNumNetEmailSent());
+            num_mail1 = static_cast<long>(a()->user()->feedback_sent()) +
+                        static_cast<long>(a()->user()->email_sent()) +
+                        static_cast<long>(a()->user()->email_net());
             if (num_mail != num_mail1) {
               const string userandnet =
                   a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
@@ -847,9 +847,9 @@ void readmail(int mode) {
             }
             p.msg.storage_type = static_cast<uint8_t>(a()->current_sub().storage_type);
             savefile(b, &(p.msg), a()->current_sub().filename);
-            auto status = a()->status_manager()->BeginTransaction();
-            p.qscan = status->IncrementQScanPointer();
-            a()->status_manager()->CommitTransaction(std::move(status));
+            a()->status_manager()->Run([&](Status& status) {
+              p.qscan = status.next_qscanptr();
+            });
             if (a()->GetNumMessagesInCurrentMessageArea() >= a()->current_sub().maxmsgs) {
               i1 = 1;
               i2 = 0;
@@ -865,10 +865,10 @@ void readmail(int mode) {
               delete_message(i2);
             }
             add_post(&p);
-            status = a()->status_manager()->BeginTransaction();
-            status->IncrementNumMessagesPostedToday();
-            status->IncrementNumLocalPosts();
-            a()->status_manager()->CommitTransaction(std::move(status));
+            a()->status_manager()->Run([&](Status& status) {
+              status.increment_msgs_today();
+              status.IncrementNumLocalPosts();
+            });
             close_sub();
             tmp_disable_conf(false);
             iscan(a()->current_user_sub_num());
@@ -1027,7 +1027,7 @@ void readmail(int mode) {
                 set_net_num(i);
                 s = StrCat("Forwarded mail to ", fwd_email_name);
                 if (delme) {
-                  a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() - 1);
+                  a()->user()->email_waiting(a()->user()->email_waiting() - 1);
                 }
                 bout << "Forwarding: ";
                 ::EmailData email;
@@ -1068,9 +1068,9 @@ void readmail(int mode) {
           break;
         }
         string reply_to_name;
-        num_mail = static_cast<long>(a()->user()->GetNumFeedbackSent()) +
-                   static_cast<long>(a()->user()->GetNumEmailSent()) +
-                   static_cast<long>(a()->user()->GetNumNetEmailSent());
+        num_mail = static_cast<long>(a()->user()->feedback_sent()) +
+                   static_cast<long>(a()->user()->email_sent()) +
+                   static_cast<long>(a()->user()->email_net());
         if (nn == 255) {
           bout << "|#6Deleted network.\r\n";
           i1 = 0;
@@ -1101,9 +1101,9 @@ void readmail(int mode) {
           }
           clear_quotes(a()->sess());
         }
-        num_mail1 = static_cast<long>(a()->user()->GetNumFeedbackSent()) +
-                    static_cast<long>(a()->user()->GetNumEmailSent()) +
-                    static_cast<long>(a()->user()->GetNumNetEmailSent());
+        num_mail1 = static_cast<long>(a()->user()->feedback_sent()) +
+                    static_cast<long>(a()->user()->email_sent()) +
+                    static_cast<long>(a()->user()->email_net());
         if (ch == 'A' || ch == '@') {
           if (num_mail != num_mail1) {
             string message;

@@ -151,7 +151,7 @@ std::string stuff_in(const string& commandline, const string& arg1, const string
         os << GetTimeLeft();
         break;
       case 'U':
-        os << a()->user()->GetName();
+        os << a()->user()->name();
         break;
       }
       ++iter;

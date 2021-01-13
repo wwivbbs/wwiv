@@ -81,21 +81,21 @@ void YourInfo() {
   bout.nl();
   bout << "|#9Your name      : |#2" << a()->names()->UserName(a()->sess().user_num()) << wwiv::endl;
   bout << "|#9Phone number   : |#2" << a()->user()->GetVoicePhoneNumber() << wwiv::endl;
-  if (a()->user()->GetNumMailWaiting() > 0) {
-    bout << "|#9Mail Waiting   : |#2" << a()->user()->GetNumMailWaiting() << wwiv::endl;
+  if (a()->user()->email_waiting() > 0) {
+    bout << "|#9Mail Waiting   : |#2" << a()->user()->email_waiting() << wwiv::endl;
   }
-  bout << "|#9Security Level : |#2" << a()->user()->GetSl() << wwiv::endl;
-  if (a()->sess().effective_sl() != a()->user()->GetSl()) {
+  bout << "|#9Security Level : |#2" << a()->user()->sl() << wwiv::endl;
+  if (a()->sess().effective_sl() != a()->user()->sl()) {
     bout << "|#1 (temporarily |#2" << a()->sess().effective_sl() << "|#1)";
   }
   bout.nl();
-  bout << "|#9Transfer SL    : |#2" << a()->user()->GetDsl() << wwiv::endl;
-  bout << "|#9Date Last On   : |#2" << a()->user()->GetLastOn() << wwiv::endl;
-  bout << "|#9Times on       : |#2" << a()->user()->GetNumLogons() << wwiv::endl;
-  bout << "|#9On today       : |#2" << a()->user()->GetTimesOnToday() << wwiv::endl;
-  bout << "|#9Messages posted: |#2" << a()->user()->GetNumMessagesPosted() << wwiv::endl;
-  const auto total_mail_sent = a()->user()->GetNumEmailSent() + a()->user()->GetNumFeedbackSent() +
-                         a()->user()->GetNumNetEmailSent();
+  bout << "|#9Transfer SL    : |#2" << a()->user()->dsl() << wwiv::endl;
+  bout << "|#9Date Last On   : |#2" << a()->user()->laston() << wwiv::endl;
+  bout << "|#9Times on       : |#2" << a()->user()->logons() << wwiv::endl;
+  bout << "|#9On today       : |#2" << a()->user()->ontoday() << wwiv::endl;
+  bout << "|#9Messages posted: |#2" << a()->user()->messages_posted() << wwiv::endl;
+  const auto total_mail_sent = a()->user()->email_sent() + a()->user()->feedback_sent() +
+                         a()->user()->email_net();
   bout << "|#9E-mail sent    : |#2" << total_mail_sent << wwiv::endl;
   const auto minutes_used =
       duration_cast<minutes>(a()->user()->timeon()  + a()->sess().duration_used_this_session()).count();
@@ -103,9 +103,9 @@ void YourInfo() {
 
   // Transfer Area Statistics
   bout << "|#9Uploads        : |#2" << a()->user()->uk() << "|#9k in|#2 "
-       << a()->user()->GetFilesUploaded() << " |#9files" << wwiv::endl;
+       << a()->user()->uploaded() << " |#9files" << wwiv::endl;
   bout << "|#9Downloads      : |#2" << a()->user()->dk() << "|#9k in|#2 "
-       << a()->user()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
+       << a()->user()->downloaded() << " |#9files" << wwiv::endl;
   bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
   bout.nl();
   bout.pausescr();
@@ -211,14 +211,14 @@ void feedback(bool bNewUserFeedback) {
   if (bNewUserFeedback) {
     auto title =
         fmt::sprintf("|#1Validation Feedback (|#6%d|#2 slots left|#1)",
-                     a()->config()->max_users() - a()->status_manager()->GetUserCount());
+                     a()->config()->max_users() - a()->status_manager()->user_count());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04
     email(title, 1, 0, true, 0, false);
     return;
   }
   if (a()->sess().guest_user()) {
-    a()->status_manager()->RefreshStatusCache();
+    a()->status_manager()->reload_status();
     email("Guest Account Feedback", 1, 0, true, 0, true);
     return;
   }
@@ -228,7 +228,7 @@ void feedback(bool bNewUserFeedback) {
   for (i = 2; i < 10 && i < nNumUserRecords; i++) {
     User user;
     a()->users()->readuser(&user, i);
-    if ((user.GetSl() == 255 || (a()->config()->sl(user.GetSl()).ability & ability_cosysop)) &&
+    if ((user.sl() == 255 || (a()->config()->sl(user.sl()).ability & ability_cosysop)) &&
         !user.IsUserDeleted()) {
       i1++;
     }
@@ -243,7 +243,7 @@ void feedback(bool bNewUserFeedback) {
     for (i = 1; (i < 10 && i < nNumUserRecords); i++) {
       User user;
       a()->users()->readuser(&user, i);
-      if ((user.GetSl() == 255 || a()->config()->sl(user.GetSl()).ability & ability_cosysop) &&
+      if ((user.sl() == 255 || a()->config()->sl(user.sl()).ability & ability_cosysop) &&
           !user.IsUserDeleted()) {
         bout << "|#2" << i << "|#7)|#1 " << a()->names()->UserName(i) << wwiv::endl;
         onek_str[i1++] = static_cast<char>('0' + i);

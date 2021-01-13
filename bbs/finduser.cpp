@@ -68,7 +68,7 @@ int finduser(const string& searchString) {
   if (user.IsUserDeleted()) {
     return 0;
   }
-  if (iequals(user.GetName(), "GUEST")) {
+  if (iequals(user.name(), "GUEST")) {
     a()->sess().guest_user(true);
     a()->users()->set_user_writes_allowed(false);
   }

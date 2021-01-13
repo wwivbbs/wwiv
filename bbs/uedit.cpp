@@ -23,13 +23,13 @@
 #include "sdk/user.h"
 
 void auto_val(int n, wwiv::sdk::User *u) {
-  if (u->GetSl() == 255) {
+  if (u->sl() == 255) {
     return;
   }
   const auto& avr = a()->config()->auto_val(n);
-  u->SetSl(avr.sl);
-  u->SetDsl(avr.dsl);
-  u->SetAr(avr.ar);
-  u->SetDar(avr.dar);
-  u->SetRestriction(avr.restrict);
+  u->sl(avr.sl);
+  u->dsl(avr.dsl);
+  u->ar_int(avr.ar);
+  u->dar_int(avr.dar);
+  u->restriction(avr.restrict);
 }

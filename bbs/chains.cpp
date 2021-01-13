@@ -54,7 +54,7 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
   User user{};
   const auto r = c.regby;
   const auto is_regged = r.empty() ? false : a()->users()->readuser(&user, *r.begin());
-  const std::string regname = (is_regged) ? user.GetName() : "Available";
+  const std::string regname = is_regged ? user.name() : "Available";
   if (ansi) {
     bout.bpla(
         fmt::sprintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
@@ -80,11 +80,11 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
     }
     if (ansi) {
       bout.bpla(fmt::sprintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3", FRAME_COLOR, " ",
-                             user.GetName(), FRAME_COLOR, " "),
+                             user.name(), FRAME_COLOR, " "),
                 &abort);
     } else {
       bout.bpla(fmt::sprintf(" |   |                                         |%-21.21s|     |",
-                             rb ? user.GetName() : "Available"),
+                             rb ? user.name() : "Available"),
                 &abort);
     }
   }
@@ -159,7 +159,7 @@ void run_chain(int chain_num) {
                std::to_string(a()->primary_port()), std::to_string(a()->modem_speed_), "");
 
   sysoplog() << "!Ran \"" << c.description << "\"";
-  a()->user()->SetNumChainsRun(a()->user()->GetNumChainsRun() + 1);
+  a()->user()->chains_run(a()->user()->chains_run() + 1);
 #ifdef _WIN32
   ScopeExit at_exit;
   if (c.local_console_cp437) {

@@ -78,6 +78,12 @@ void write_and_log(UIWindow* window, const std::string& m) {
   window->Puts(StrCat(m, "\n"));
 }
 
+int final_wwiv_config_dat_version() {
+  // TODO(rushfan): Update when we add a new version.
+  return 5;
+}
+
+
 static void ShowBanner(UIWindow* window, const std::string& m) {
   // TODO(rushfan): make a sub-window here but until this clear the altcharset background.
   curses_out->window()->Bkgd(' ');
@@ -510,11 +516,6 @@ config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, Config& config)
   }
   VLOG(1) << "ensure_latest_5x_config: UPGRADED";
   return config_upgrade_state_t::upgraded;
-}
-
-uint32_t final_wwiv_config_dat_version() {
-  // TODO(rushfan): Update when we add a new version.
-  return 5;
 }
 
 bool convert_config_424_to_430(UIWindow* window, const std::filesystem::path& config_filename) {

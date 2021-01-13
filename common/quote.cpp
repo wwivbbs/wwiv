@@ -181,7 +181,7 @@ void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_fo
   for (const auto& l : lines) {
     f.WriteLine(l);
   }
-  if (ctx.u().GetNumMessagesPosted() < 10) {
+  if (ctx.u().messages_posted() < 10) {
     bout.printfile(QUOTE_NOEXT);
   }
 }

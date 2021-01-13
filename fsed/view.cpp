@@ -57,7 +57,7 @@ void FsedView::macro(Context& ctx, int cc) {
   }
   std::map<int, int> macro_nums{{CD, 0}, {CF, 1}, {CA, 2}};
   const auto macro_num = macro_nums.at(cc);
-  const auto m = ctx.u().GetMacro(macro_num);
+  const auto m = ctx.u().macro(macro_num);
   if (m.empty()) {
     return;
   }

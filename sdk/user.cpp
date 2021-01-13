@@ -38,8 +38,6 @@ namespace wwiv::sdk {
 
 User::User() { ZeroUserData(); }
 
-User::~User() = default;
-
 User::User(const User& w) { memcpy(&data, &w.data, sizeof(userrec)); }
 
 User::User(const userrec& rhs) { memcpy(&data, &rhs, sizeof(userrec)); }
@@ -82,11 +80,11 @@ bool User::CreateRandomPassword() {
   std::random_device rd;
   std::mt19937 e{rd()};
   std::uniform_int_distribution<int> dist(0, wwiv::stl::size_int(chars) - 1);
-  std::string password;
+  std::string p;
   for (auto i = 0; i < 6; i++) {
-    password.push_back(chars[dist(e)]);
+    p.push_back(chars[dist(e)]);
   }
-  SetPassword(password);
+  password(p);
   return true;
 }
 
@@ -105,21 +103,21 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   u->ZeroUserData();
 
   const auto date = DateTime::now().to_string("%m/%d/%y");
-  u->SetFirstOn(date);
-  u->SetLastOn("Never.");
-  u->SetMacro(0, "Wow! This is a GREAT BBS!");
-  u->SetMacro(1, "Guess you forgot to define this one....");
-  u->SetMacro(2, "User = Monkey + Keyboard");
+  u->firston(date);
+  u->laston("Never.");
+  u->macro(0, "Wow! This is a GREAT BBS!");
+  u->macro(1, "Guess you forgot to define this one....");
+  u->macro(2, "User = Monkey + Keyboard");
 
   u->SetScreenLines(25);
   u->SetScreenChars(80);
 
-  u->SetSl(sl);
-  u->SetDsl(dsl);
+  u->sl(sl);
+  u->dsl(dsl);
 
   u->data.ontoday = 1;
   u->data.daten = 0;
-  u->SetRestriction(restr);
+  u->restriction(restr);
 
   u->SetStatusFlag(User::pauseOnPage);
   u->ClearStatusFlag(User::conference);
@@ -129,13 +127,13 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   u->SetGender('N');
 
   for (int i = 0; i <= 9; i++) {
-    u->SetColor(i, colors[i]);
-    u->SetBWColor(i, bwcolors[i]);
+    u->color(i, colors[i]);
+    u->bwcolor(i, bwcolors[i]);
   }
 
-  u->SetEmailAddress("");
+  u->email_address("");
 
-  // Set default menu set abd listplus colors.
+  // Set default menu set abd list plus colors.
   to_char_array(u->data.menu_set, "wwiv");
   u->data.hot_keys = HOTKEYS_ON;
   u->data.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
@@ -218,13 +216,13 @@ void ResetTodayUserStats(User* u) {
   u->data.ontoday = 0;
   u->data.timeontoday = 0;
   u->data.extratime = 0.0;
-  u->SetNumPostsToday(0);
-  u->SetNumEmailSentToday(0);
-  u->SetNumFeedbackSentToday(0);
+  u->posts_today(0);
+  u->email_today(0);
+  u->feedback_today(0);
 }
 
 int AddCallToday(User* u) { 
-  u->SetNumLogons(u->GetNumLogons() + 1); 
+  u->increment_logons(); 
   return ++u->data.ontoday;
 }
 

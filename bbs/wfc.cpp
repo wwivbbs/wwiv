@@ -141,7 +141,7 @@ void WFC::DrawScreen() {
   }
 
   auto nNumNewMessages = check_new_mail(sysop_usernum);
-  auto status = a()->status_manager()->GetStatus();
+  auto status = a()->status_manager()->get_status();
   if (status_ == 0) {
     a()->localIO()->SetCursor(LocalIO::cursorNone);
     a()->Cls();
@@ -160,39 +160,37 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(1 + (76 - wwiv::strings::ssize(title)) / 2, 4, 15, title);
     a()->localIO()->PutsXYA(8, 1, 14, fulldate());
     a()->localIO()->PutsXYA(40, 1, 3, StrCat("OS: ", wwiv::os::os_version_string()));
-    a()->localIO()->PutsXYA(21, 6, 14, std::to_string(status->GetNumCallsToday()));
+    a()->localIO()->PutsXYA(21, 6, 14, std::to_string(status->calls_today()));
     User sysop{};
     auto feedback_waiting = 0;
     if (a()->users()->readuser_nocache(&sysop, sysop_usernum)) {
-      feedback_waiting = sysop.GetNumMailWaiting();
+      feedback_waiting = sysop.email_waiting();
     }
     a()->localIO()->PutsXYA(21, 7, 14, std::to_string(feedback_waiting));
     if (nNumNewMessages) {
       a()->localIO()->PutsXYA(29, 7, 3, "New:");
       a()->localIO()->PutsXYA(34, 7, 12, std::to_string(nNumNewMessages));
     }
-    a()->localIO()->PutsXYA(21, 8, 14, std::to_string(status->GetNumUploadsToday()));
-    a()->localIO()->PutsXYA(21, 9, 14, std::to_string(status->GetNumMessagesPostedToday()));
-    a()->localIO()->PutsXYA(21, 10, 14, std::to_string(status->GetNumLocalPosts()));
-    a()->localIO()->PutsXYA(21, 11, 14, std::to_string(status->GetNumEmailSentToday()));
-    a()->localIO()->PutsXYA(21, 12, 14, std::to_string(status->GetNumFeedbackSentToday()));
-    const auto percent = static_cast<double>(status->GetMinutesActiveToday()) / 1440.0;
+    a()->localIO()->PutsXYA(21, 8, 14, std::to_string(status->uploads_today()));
+    a()->localIO()->PutsXYA(21, 9, 14, std::to_string(status->msgs_today()));
+    a()->localIO()->PutsXYA(21, 10, 14, std::to_string(status->localposts()));
+    a()->localIO()->PutsXYA(21, 11, 14, std::to_string(status->email_today()));
+    a()->localIO()->PutsXYA(21, 12, 14, std::to_string(status->feedback_today()));
+    const auto percent = static_cast<double>(status->active_today_minutes()) / 1440.0;
     a()->localIO()->PutsXYA(
         21, 13, 14,
-        fmt::format("{} Mins ({:.2}%)", status->GetMinutesActiveToday(),
-                     100.0 * percent));
+        fmt::format("{} Mins ({:.2}%)", status->active_today_minutes(), 100.0 * percent));
     a()->localIO()->PutsXYA(58, 6, 14, full_version());
 
-    a()->localIO()->PutsXYA(58, 7, 14, std::to_string(status->GetNetworkVersion()));
-    a()->localIO()->PutsXYA(58, 8, 14, std::to_string(status->GetNumUsers()));
-    a()->localIO()->PutsXYA(58, 9, 14, std::to_string(status->GetCallerNumber()));
-    if (status->GetDays()) {
-      a()->localIO()->PutsXYA(58, 10, 14,
-                              fmt::sprintf("%.2f", static_cast<float>(status->GetCallerNumber()) /
-                                                       static_cast<float>(status->GetDays())));
-    } else {
-      a()->localIO()->PutsXYA(58, 10, 14, "N/A");
-    }
+    a()->localIO()->PutsXYA(58, 7, 14, std::to_string(status->status_net_version()));
+    a()->localIO()->PutsXYA(58, 8, 14, std::to_string(status->num_users()));
+    a()->localIO()->PutsXYA(58, 9, 14, std::to_string(status->caller_num()));
+    const auto percent_active =
+        status->days_active() == 0
+            ? "N/A"
+            : fmt::sprintf("%.2f", static_cast<float>(status->caller_num()) /
+                                       static_cast<float>(status->days_active()));
+    a()->localIO()->PutsXYA(58, 10, 14, percent_active);
     a()->localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
 
     get_inst_info(a()->instance_number(), &ir);
@@ -271,7 +269,7 @@ WFC::~WFC() {
 std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
   auto* io = a_->localIO();
 
-  const auto last_date_status = a()->status_manager()->GetStatus();
+  const auto last_date_status = a()->status_manager()->get_status();
   for (;;) {
     sleep_for(milliseconds(100));
     yield();
@@ -281,7 +279,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     a_->set_at_wfc(true);
 
     // If the date has changed since we last checked, then then run the beginday event.
-    if (date() != last_date_status->GetLastDate()) {
+    if (date() != last_date_status->last_date()) {
       if (a_->GetBeginDayNodeNumber() == 0 ||
           a_->instance_number() == a_->GetBeginDayNodeNumber()) {
         beginday(true);
@@ -425,8 +423,8 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     // Print Log Daily logs
     case 'L': {
       Clear();
-      const auto status = a()->status_manager()->GetStatus();
-      bout.print_local_file(status->GetLogFileName(0));
+      const auto status = a()->status_manager()->get_status();
+      bout.print_local_file(status->log_filename(0));
     } break;
     // Read User Mail
     case 'M': {
@@ -508,8 +506,8 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     // Print Yesterday's Log
     case 'Y': {
       Clear();
-      const auto status = a()->status_manager()->GetStatus();
-      bout.print_local_file(status->GetLogFileName(1));
+      const auto status = a()->status_manager()->get_status();
+      bout.print_local_file(status->log_filename(1));
     } break;
     // Print Activity (Z) Log
     case 'Z': {
@@ -579,13 +577,13 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
   // We have a user number to try in unx to use for a
   // fast login.
 
-  if (unx > a_->status_manager()->GetUserCount()) {
+  if (unx > a_->status_manager()->user_count()) {
     return std::make_tuple(local_logon_t::exit, -1);
   }
 
   User tu;
   a_->users()->readuser_nocache(&tu, unx);
-  if (tu.GetSl() != 255 || tu.IsUserDeleted()) {
+  if (tu.sl() != 255 || tu.IsUserDeleted()) {
     return std::make_tuple(local_logon_t::exit, -1);
   }
 

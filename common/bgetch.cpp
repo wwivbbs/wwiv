@@ -155,7 +155,7 @@ static void HandleControlKey(char* ch, const SessionContext& context, wwiv::sdk:
       if (context.okmacro() && !bin.charbufferpointer_) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         const auto macroNum = MACRO_KEY_TABLE[static_cast<int>(c)];
-        to_char_array(bin.charbuffer, user.GetMacro(macroNum));
+        to_char_array(bin.charbuffer, user.macro(macroNum));
         c = bin.charbuffer[0];
         if (c) {
           bin.charbufferpointer_ = 1;

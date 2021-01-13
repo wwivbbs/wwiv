@@ -97,9 +97,9 @@ void multimail(int *pnUserNumber, int numu) {
       continue;
     }
     a()->users()->readuser(&user, pnUserNumber[cv]);
-    if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > a()->config()->max_waiting() * 5)) ||
-        ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->max_waiting())) ||
-        user.GetNumMailWaiting() > 200) {
+    if ((user.sl() == 255 && (user.email_waiting() > a()->config()->max_waiting() * 5)) ||
+        ((user.sl() != 255) && (user.email_waiting() > a()->config()->max_waiting())) ||
+        user.email_waiting() > 200) {
       bout << a()->names()->UserName(pnUserNumber[cv]) << " mailbox full, not sent.";
       pnUserNumber[cv] = -1;
       continue;
@@ -110,21 +110,21 @@ void multimail(int *pnUserNumber, int numu) {
       continue;
     }
     strcpy(s, "  ");
-    user.SetNumMailWaiting(user.GetNumMailWaiting() + 1);
+    user.email_waiting(user.email_waiting() + 1);
     a()->users()->writeuser(&user, pnUserNumber[cv]);
-    const string pnunn = a()->names()->UserName(pnUserNumber[cv]);
+    const auto pnunn = a()->names()->UserName(pnUserNumber[cv]);
     strcat(s, pnunn.c_str());
-    auto status = a()->status_manager()->BeginTransaction();
-    if (pnUserNumber[cv] == 1) {
-      status->IncrementNumFeedbackSentToday();
-      a()->user()->SetNumFeedbackSentToday(a()->user()->GetNumFeedbackSentToday() + 1);
-      a()->user()->SetNumFeedbackSent(a()->user()->GetNumFeedbackSent() + 1);
-    } else {
-      status->IncrementNumEmailSentToday();
-      a()->user()->SetNumEmailSent(a()->user()->GetNumEmailSent() + 1);
-      a()->user()->SetNumEmailSentToday(a()->user()->GetNumEmailSentToday() + 1);
-    }
-    a()->status_manager()->CommitTransaction(std::move(status));
+    a()->status_manager()->Run([&](Status& status) {
+      if (pnUserNumber[cv] == 1) {
+        status.increment_feedback_today();
+        a()->user()->feedback_today(a()->user()->feedback_today() + 1);
+        a()->user()->feedback_sent(a()->user()->feedback_sent() + 1);
+      } else {
+        status.increment_email_today();
+        a()->user()->email_sent(a()->user()->email_sent() + 1);
+        a()->user()->email_today(a()->user()->email_today() + 1);
+      }
+    });
     sysoplog() << s;
     bout << s;
     bout.nl();
@@ -242,9 +242,9 @@ int oneuser() {
     return 0;
   }
   a()->users()->readuser(&user, user_number);
-  if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > (a()->config()->max_waiting() * 5))) ||
-      ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->max_waiting())) ||
-      (user.GetNumMailWaiting() > 200)) {
+  if (((user.sl() == 255) && (user.email_waiting() > (a()->config()->max_waiting() * 5))) ||
+      ((user.sl() != 255) && (user.email_waiting() > a()->config()->max_waiting())) ||
+      (user.email_waiting() > 200)) {
     bout.nl();
     bout << "Mailbox full.\r\n\n";
     return 0;
@@ -304,8 +304,8 @@ void slash_e() {
     bout << "Sorry, not enough disk space left.\r\n\n";
     return;
   }
-  if (((a()->user()->GetNumFeedbackSentToday() >= 10) ||
-       (a()->user()->GetNumEmailSentToday() >= a()->config()->sl(a()->sess().effective_sl()).emails))
+  if (((a()->user()->feedback_today() >= 10) ||
+       (a()->user()->email_today() >= a()->config()->sl(a()->sess().effective_sl()).emails))
       && (!cs())) {
     bout << "Too much mail sent today.\r\n\n";
     return;

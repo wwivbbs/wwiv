@@ -119,7 +119,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
       auto nRecNum = recno(b.aligned_filename());
       if (nRecNum > 0) {
         auto f = area->ReadFile(nRecNum);
-        a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
+        a()->user()->increment_downloaded();
         a()->user()->set_dk(a()->user()->dk() + bytes_to_k(f.numbytes()));
         ++f.u().numdloads;
         if (area->UpdateFile(f, nRecNum)) {
@@ -134,7 +134,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
           User user;
           a()->users()->readuser(&user, f.u().ownerusr);
           if (!user.IsUserDeleted()) {
-            if (date_to_daten(user.GetFirstOn()) < f.u().daten) {
+            if (date_to_daten(user.firston()) < f.u().daten) {
               const auto user_name_number = a()->names()->UserName(a()->sess().user_num());
               ssm(f.u().ownerusr) << user_name_number << " downloaded|#1 \"" << f << "\" |#7on "
                                   << fulldate();
@@ -216,13 +216,13 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               f.set_numbytes(file.length());
               file.Close();
               get_file_idz(f, a()->dirs()[b.dir()]);
-              a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
+              a()->user()->increment_uploaded();
               add_to_file_database(f);
               a()->user()->set_uk(a()->user()->uk() + static_cast<int>(bytes_to_k(f.numbytes())));
               a()->status_manager()->Run([](Status& s)
               {
-                s.IncrementNumUploadsToday();
-                s.IncrementFileChangedFlag(Status::file_change_upload);
+                s.increment_uploads_today();
+                s.increment_filechanged(Status::file_change_upload);
               });
               if (area->UpdateFile(f, nRecNum)) {
                 area->Save();

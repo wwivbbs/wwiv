@@ -180,7 +180,7 @@ void post(const PostData& post_data) {
     return;
   }
   if (a()->user()->IsRestrictionPost() ||
-      a()->user()->GetNumPostsToday() >= a()->config()->sl(a()->sess().effective_sl()).posts) {
+      a()->user()->posts_today() >= a()->config()->sl(a()->sess().effective_sl()).posts) {
     bout << "\r\nToo many messages posted today.\r\n\n";
     return;
   }
@@ -257,7 +257,7 @@ void post(const PostData& post_data) {
   p.msg = m;
   p.ownersys = 0;
   p.owneruser = static_cast<uint16_t>(a()->sess().user_num());
-  a()->status_manager()->Run([&](Status& s) { p.qscan = s.IncrementQScanPointer(); });
+  a()->status_manager()->Run([&](Status& s) { p.qscan = s.next_qscanptr(); });
   p.daten = daten_t_now();
   p.status = 0;
   if (a()->user()->IsRestrictionValidate()) {
@@ -304,10 +304,10 @@ void post(const PostData& post_data) {
   }
   add_post(&p);
 
-  a()->user()->SetNumMessagesPosted(a()->user()->GetNumMessagesPosted() + 1);
-  a()->user()->SetNumPostsToday(a()->user()->GetNumPostsToday() + 1);
+  a()->user()->messages_posted(a()->user()->messages_posted() + 1);
+  a()->user()->posts_today(a()->user()->posts_today() + 1);
   a()->status_manager()->Run([](Status& s) {
-    s.IncrementNumMessagesPostedToday();
+    s.increment_msgs_today();
     s.IncrementNumLocalPosts();
   });
 
@@ -326,7 +326,7 @@ void post(const PostData& post_data) {
   sysoplog() << "+ '" << p.title << "' posted on " << a()->current_sub().name;
   bout << "Posted on " << a()->current_sub().name << wwiv::endl;
   if (!a()->current_sub().nets.empty()) {
-    a()->user()->SetNumNetPosts(a()->user()->GetNumNetPosts() + 1);
+    a()->user()->posts_net(a()->user()->posts_net() + 1);
     if (!(p.status & status_pending_net)) {
       send_net_post(&p, a()->current_sub());
     }
@@ -422,9 +422,8 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
         get_post(i)->qscan > a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()]) {
       scan(i, MsgScanOption::SCAN_OPTION_READ_MESSAGE, nextsub, false);
     } else {
-      const auto status = a()->status_manager()->GetStatus();
-      a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()] =
-          status->GetQScanPointer() - 1;
+      const auto status = a()->status_manager()->get_status();
+      a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()] = status->qscanptr() - 1;
     }
 
     a()->set_current_user_sub_num(old_subnum);
@@ -532,9 +531,9 @@ void remove_post() {
         User tu;
         a()->users()->readuser(&tu, get_post(postnum)->owneruser);
         if (!tu.IsUserDeleted()) {
-          if (date_to_daten(tu.GetFirstOn()) < get_post(postnum)->daten) {
-            if (tu.GetNumMessagesPosted()) {
-              tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - 1);
+          if (date_to_daten(tu.firston()) < get_post(postnum)->daten) {
+            if (tu.messages_posted()) {
+              tu.messages_posted(tu.messages_posted() - 1);
               a()->users()->writeuser(&tu, get_post(postnum)->owneruser);
             }
           }

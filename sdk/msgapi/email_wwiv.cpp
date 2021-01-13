@@ -67,10 +67,10 @@ static bool modify_email_waiting(const Config& config, uint16_t email_usernum, i
   if (!um.readuser(&u, email_usernum)) {
     return false;
   }
-  int newval = u.GetNumMailWaiting();
+  auto newval = u.email_waiting();
   newval += delta;
   if (newval < 0) { newval = 0; }
-  u.SetNumMailWaiting(newval);
+  u.email_waiting(newval);
   if (!um.writeuser(&u, email_usernum)) {
     return false;
   }

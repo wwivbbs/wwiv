@@ -58,8 +58,8 @@ static bool is_automessage_locked() {
 void read_automessage() {
   write_inst(INST_LOC_AMSG, 0, INST_FLAGS_NONE);
   bout.nl();
-  const auto current_status = a()->status_manager()->GetStatus();
-  const auto anonymous = current_status->IsAutoMessageAnonymous();
+  const auto current_status = a()->status_manager()->get_status();
+  const auto anonymous = current_status->automessage_anon();
 
   TextFile autoMessageFile(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "rt");
   string line;
@@ -127,8 +127,8 @@ void write_automessage() {
   bout << "|#9Is this OK? ";
   if (bin.yesno()) {
     a()->status_manager()->Run([bAnonStatus](Status& s) {
-      s.SetAutoMessageAnonymous(bAnonStatus);
-      s.SetAutoMessageAuthorUserNumber(a()->sess().user_num());
+      s.automessage_anon(bAnonStatus);
+      s.automessage_usernum(a()->sess().user_num());
     });
 
     TextFile file(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "wt");
@@ -147,7 +147,7 @@ void write_automessage() {
 static char ShowAMsgMenuAndGetInput() {
   auto bCanWrite = false;
   if (!a()->user()->IsRestrictionAutomessage()) {
-    bCanWrite = a()->user()->GetSl() > 20;
+    bCanWrite = a()->user()->sl() > 20;
   }
 
   if (cs()) {
@@ -165,10 +165,10 @@ static char ShowAMsgMenuAndGetInput() {
 
 void email_automessage_author() {
   clear_quotes(a()->sess());
-  const auto status = a()->status_manager()->GetStatus();
-  if (status->GetAutoMessageAuthorUserNumber() > 0) {
-    email("Re: AutoMessage", static_cast<uint16_t>(status->GetAutoMessageAuthorUserNumber()), 0,
-          false, status->IsAutoMessageAnonymous() ? anony_sender : 0);
+  const auto status = a()->status_manager()->get_status();
+  if (status->automessage_usernum() > 0) {
+    email("Re: AutoMessage", status->automessage_usernum(), 0,
+          false, status->automessage_anon() ? anony_sender : 0);
   }
 }
 

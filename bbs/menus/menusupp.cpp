@@ -405,10 +405,10 @@ void WWIVVersion() {
   bout << "|#9Instance      : |#2" << a()->instance_number() << wwiv::endl;
 
   if (!a()->nets().empty()) {
-    const auto status = a()->status_manager()->GetStatus();
-    a()->status_manager()->RefreshStatusCache();
+    const auto status = a()->status_manager()->get_status();
+    a()->status_manager()->reload_status();
     //bout << wwiv::endl;
-    bout << "|#9Networks      : |#2" << "net" << status->GetNetworkVersion() << wwiv::endl;
+    bout << "|#9Networks      : |#2" << "net" << status->status_net_version() << wwiv::endl;
     for (const auto& n : a()->nets().networks()) {
       if (!n.sysnum) {
         continue;
@@ -524,9 +524,9 @@ void ResetQscan() {
 }
 
 void MemoryStatus() {
-  const auto status = a()->status_manager()->GetStatus();
+  const auto status = a()->status_manager()->get_status();
   bout.nl();
-  bout << "Qscanptr        : " << status->GetQScanPointer() << wwiv::endl;
+  bout << "Qscanptr        : " << status->qscanptr() << wwiv::endl;
 }
 
 void InitVotes() {
@@ -536,7 +536,7 @@ void InitVotes() {
 }
 
 void ReadLog() {
-  const string sysop_log_file = GetSysopLogFileName(date());
+  const string sysop_log_file = sysoplog_filename(date());
   bout.print_local_file(sysop_log_file);
 }
 
@@ -564,8 +564,8 @@ void VotePrint() {
 }
 
 void YesterdaysLog() {
-  const auto status = a()->status_manager()->GetStatus();
-  bout.print_local_file(status->GetLogFileName(1));
+  const auto status = a()->status_manager()->get_status();
+  bout.print_local_file(status->log_filename(1));
 }
 
 void ZLog() {
@@ -640,18 +640,18 @@ void ClearQScan() {
   case RETURN:
     break;
   case 'A': {
-    auto status = a()->status_manager()->GetStatus();
+    auto status = a()->status_manager()->get_status();
     for (int i = 0; i < a()->config()->max_subs(); i++) {
-      a()->sess().qsc_p[i] = status->GetQScanPointer() - 1L;
+      a()->sess().qsc_p[i] = status->qscanptr() - 1L;
     }
     bout.nl();
     bout << "Q-Scan pointers cleared.\r\n";
   }
   break;
   case 'C':
-    auto status = a()->status_manager()->GetStatus();
+    const auto status = a()->status_manager()->get_status();
     bout.nl();
-    a()->sess().qsc_p[a()->current_user_sub().subnum] = status->GetQScanPointer() - 1L;
+    a()->sess().qsc_p[a()->current_user_sub().subnum] = status->qscanptr() - 1L;
     bout << "Messages on " << a()->subs().sub(a()->current_user_sub().subnum).name
          << " marked as read.\r\n";
     break;

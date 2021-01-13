@@ -59,8 +59,8 @@ void read_inet_addr(std::string& internet_address, int user_number) {
     return ;
   }
 
-  if (user_number == a()->sess().user_num() && check_inet_addr(a()->user()->GetEmailAddress())) {
-    internet_address = a()->user()->GetEmailAddress();
+  if (user_number == a()->sess().user_num() && check_inet_addr(a()->user()->email_address())) {
+    internet_address = a()->user()->email_address();
   } else {
     const auto fn = FilePath(a()->config()->datadir(), INETADDR_DAT);
     if (!File::Exists(fn)) {
@@ -81,7 +81,7 @@ void read_inet_addr(std::string& internet_address, int user_number) {
         internet_address = StrCat("User #", user_number);
         User user;
         a()->users()->readuser(&user, user_number);
-        user.SetEmailAddress("");
+        user.email_address("");
         a()->users()->writeuser(&user, user_number);
       }
     }

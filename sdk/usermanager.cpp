@@ -126,8 +126,8 @@ static void DeleteSmallRecord(StatusMgr& sm, Names& names, const char *name) {
 
   sm.Run([&](Status& s) {
     names.Remove(found_user);
-    s.DecrementNumUsers();
-    s.IncrementFileChangedFlag(Status::file_change_names);
+    s.decrement_num_users();
+    s.increment_filechanged(Status::file_change_names);
     names.Save();
   });
 }
@@ -137,8 +137,8 @@ static void InsertSmallRecord(StatusMgr& sm, Names& names, int user_number, cons
   sm.Run([&](Status& s) {
     names.Add(name, user_number);
     names.Save();
-    s.IncrementNumUsers();
-    s.IncrementFileChangedFlag(Status::file_change_names);
+    s.increment_num_users();
+    s.increment_filechanged(Status::file_change_names);
   });
 }
 
@@ -176,7 +176,7 @@ static bool deluser(int user_number, const Config& config, UserManager& um,
   ssm.delete_local_to_user(user_number);
   DeleteSmallRecord(sm, names, user.GetName());
   user.SetInactFlag(User::userDeleted);
-  user.SetNumMailWaiting(0);
+  user.email_waiting(0);
   {
     auto email = api.OpenEmail();
     email->DeleteAllMailToOrFrom(user_number);

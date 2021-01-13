@@ -95,7 +95,7 @@ FsedApplication::FsedApplication(std::unique_ptr<FsedConfig> config)
   const auto colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
   auto i = 0;
   for (const auto c : colors) {
-    u.SetColor(i++, c);
+    u.color(i++, c);
   }
 
   bus().add_handler<CheckForHangupEvent>([this]() { 

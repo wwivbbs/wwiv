@@ -586,15 +586,10 @@ bool Application::InitializeBBS(bool cleanup_network) {
   }
 
   VLOG(1) << "Reading status information.";
-  auto status = statusMgr->BeginTransaction();
-  if (!status) {
-    LOG(ERROR) << "Unable to return statusrec.dat.";
-    return false;
-  }
-
-  status->SetWWIVVersion(wwiv_config_version());
-  status->EnsureCallerNumberIsValid();
-  statusMgr->CommitTransaction(std::move(status));
+  a()->status_manager()->Run([&](Status& status) {
+    status.status_wwiv_version(wwiv_config_version());
+    status.ensure_callernum_valid();
+  });
 
   VLOG(1) << "Reading Gfiles.";
   read_gfile();
@@ -638,7 +633,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
 
   VLOG(1) << "Reading User Information.";
   ReadCurrentUser(1);
-  statusMgr->RefreshStatusCache();
+  statusMgr->reload_status();
   localIO()->topdata(LocalIO::topdata_t::user);
 
   // Set DSZLOG

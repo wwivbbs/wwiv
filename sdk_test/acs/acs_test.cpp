@@ -39,7 +39,7 @@ public:
 
   void createEval(const std::string& expr) { 
     eval = std::make_unique<Eval>(expr);
-    eval->add("user", std::make_unique<UserValueProvider>(&user_, user_.GetSl(), sl_));
+    eval->add("user", std::make_unique<UserValueProvider>(&user_, user_.sl(), sl_));
 
   }
   std::unique_ptr<Eval> eval;
@@ -48,56 +48,56 @@ public:
 };
 
 TEST_F(AcsTest, SL_GT_Pass) {
-  user_.SetSl(201);
+  user_.sl(201);
   createEval("user.sl>200");
   EXPECT_TRUE(eval->eval());
 }
 
 TEST_F(AcsTest, SL_GT_False) {
-  user_.SetSl(10);
+  user_.sl(10);
   createEval("user.sl>200");
   EXPECT_FALSE(eval->eval());
 }
 
 TEST_F(AcsTest, DummySL_LT) {
-  user_.SetSl(10);
+  user_.sl(10);
   createEval("user.sl<200");
 
   EXPECT_TRUE(eval->eval());
 }
 
 TEST_F(AcsTest, DummySL_LT_False) {
-  user_.SetSl(25);
+  user_.sl(25);
   createEval("user.sl<20");
 
   EXPECT_FALSE(eval->eval());
 }
 
 TEST_F(AcsTest, Or) {
-  user_.SetSl(201);
+  user_.sl(201);
   createEval("user.sl>200 || user.dsl > 200 || user.name == \"Rushfan\"");
   EXPECT_TRUE(eval->eval());
 }
 
 TEST_F(AcsTest, Multiple_Group_SL) {
-  user_.SetSl(201);
-  user_.SetDsl(100);
+  user_.sl(201);
+  user_.dsl(100);
   user_.set_name("SYSOP");
   createEval("(user.sl>200 || user.dsl > 200) || user.name == \"Rushfan\"");
   EXPECT_TRUE(eval->eval());
 }
 
 TEST_F(AcsTest, Multiple_Group_DSL) {
-  user_.SetSl(10);
-  user_.SetDsl(201);
+  user_.sl(10);
+  user_.dsl(201);
   user_.set_name("SYSOP");
   createEval("(user.sl>200 || user.dsl > 200) || user.name == \"Rushfan\"");
   EXPECT_TRUE(eval->eval());
 }
 
 TEST_F(AcsTest, Multiple_Group_None) {
-  user_.SetSl(22);
-  user_.SetDsl(12);
+  user_.sl(22);
+  user_.dsl(12);
   user_.set_name("SYSOP");
   createEval("(user.sl>200 || user.dsl > 200) || user.name == \"Rushfan\"");
   EXPECT_FALSE(eval->eval());
@@ -105,13 +105,13 @@ TEST_F(AcsTest, Multiple_Group_None) {
 }
 
 TEST_F(AcsTest, Ar_Pass) {
-  user_.SetAr(2);  // B
+  user_.ar_int(2);  // B
   createEval("user.ar == 'B'");
   EXPECT_TRUE(eval->eval());
 }
 
 TEST_F(AcsTest, Ar_Fail) {
-  user_.SetAr(5); // a || c
+  user_.ar_int(5); // a || c
   createEval("user.ar == 'B'");
   EXPECT_FALSE(eval->eval());
 }
@@ -131,52 +131,52 @@ TEST_F(AcsTest, BadExpression) {
 }
 
 TEST_F(AcsTest, Sysop_Pass) {
-  user_.SetSl(255);
+  user_.sl(255);
   createEval("user.sysop == \"true\"");
   EXPECT_TRUE(eval->eval());
 }
 
 TEST_F(AcsTest, Sysop_Pass_Literal) {
-  user_.SetSl(255);
+  user_.sl(255);
   createEval("user.sysop == true");
   EXPECT_TRUE(eval->eval());
 }
 
 TEST_F(AcsTest, Sysop_Fail) {
-  user_.SetSl(200);
+  user_.sl(200);
   createEval("user.sysop == true");
   EXPECT_FALSE(eval->eval());
 }
 
 TEST_F(AcsTest, Sysop_Pass_Negated) {
-  user_.SetSl(200);
+  user_.sl(200);
   createEval("user.sysop == false");
   EXPECT_TRUE(eval->eval());
 }
 
 TEST_F(AcsTest, Regnum_Pass) {
-  user_.SetSl(12);
-  user_.SetWWIVRegNumber(12345);
+  user_.sl(12);
+  user_.wwiv_regnum(12345);
   createEval("user.regnum == true");
   EXPECT_TRUE(eval->eval());
 }
 
 TEST_F(AcsTest, Regnum_Fail) {
-  user_.SetSl(12);
-  user_.SetWWIVRegNumber(0);
+  user_.sl(12);
+  user_.wwiv_regnum(0);
   createEval("user.regnum == true");
   EXPECT_FALSE(eval->eval());
 }
 
 TEST_F(AcsTest, CoSysop_Pass) {
-  user_.SetSl(200);
+  user_.sl(200);
   sl_.ability |= ability_cosysop;
   createEval("user.cosysop == true");
   EXPECT_TRUE(eval->eval());
 }
 
 TEST_F(AcsTest, CoSysop_Fail) {
-  user_.SetSl(200);
+  user_.sl(200);
   sl_.ability &= ~ability_cosysop;
   createEval("user.cosysop == true");
   EXPECT_FALSE(eval->eval());

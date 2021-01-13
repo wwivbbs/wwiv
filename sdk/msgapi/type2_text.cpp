@@ -77,7 +77,7 @@ std::optional<File> Type2Text::OpenMessageFile() const {
   // set a()->subchg if any of the subs receive a post so that 
   // resynch can work right on multi node configs.
   // 
-  // a()->status_manager()->RefreshStatusCache();
+  // a()->status_manager()->reload_status();
 
   File message_file(path_);
   if (!message_file.Open(File::modeReadWrite | File::modeBinary)) {
@@ -116,9 +116,9 @@ void Type2Text::save_gat(File& file, int section, const std::vector<gati_t>& gat
   // set a()->subchg if any of the subs receive a post so that 
   // resynch can work right on multi node configs.
   // 
-  // auto status = a()->status_manager()->BeginTransaction();
-  // status->IncrementFileChangedFlag(Status::file_change_posts);
-  // a()->status_manager()->CommitTransaction(status);
+  // a()->status_manager()->Run([&](Status& status) {
+  //   status.increment_filechanged(Status::file_change_posts);
+  // });
 }
 
 std::optional<std::string> Type2Text::readfile(const messagerec& msg) {

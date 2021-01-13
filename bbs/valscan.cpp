@@ -134,7 +134,7 @@ void valscan() {
                   User tu;
                   a()->users()->readuser(&tu, p2.owneruser);
                   if (!tu.IsUserDeleted()) {
-                    if (date_to_daten(tu.GetFirstOn()) < p2.daten) {
+                    if (date_to_daten(tu.firston()) < p2.daten) {
                       bout.nl();
                       bout << "|#2Remove how many posts credit? ";
                       char szNumCredits[ 11 ];
@@ -143,13 +143,13 @@ void valscan() {
                       if (szNumCredits[0]) {
                         num_post_credits = to_number<int>(szNumCredits);
                       }
-                      num_post_credits = std::min<int>(tu.GetNumMessagesPosted(), num_post_credits);
+                      num_post_credits = std::min<int>(tu.messages_posted(), num_post_credits);
                       if (num_post_credits) {
-                        tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<uint16_t>(num_post_credits));
+                        tu.messages_posted(tu.messages_posted() - static_cast<uint16_t>(num_post_credits));
                       }
                       bout.nl();
                       bout << "|#3Post credit removed = " << num_post_credits << wwiv::endl;
-                      tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() + 1);
+                      tu.deleted_posts(tu.deleted_posts() + 1);
                       a()->users()->writeuser(&tu, p2.owneruser);
                       a()->UpdateTopScreen();
                     }

@@ -253,8 +253,8 @@ bool fill_sec(int sn) {
     bout << "Section full.\r\n";
   }
   a()->gfiles().Save();
-  auto status = a()->status_manager()->BeginTransaction();
-  status->SetGFileDate(date());
-  a()->status_manager()->CommitTransaction(std::move(status));
+  a()->status_manager()->Run([&](Status& status) {
+    status.gfile_date(date());
+  });
   return true;
 }

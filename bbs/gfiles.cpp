@@ -403,7 +403,7 @@ static void gfile_sec(int sn) {
       auto file_name = FilePath(a()->config()->gfilesdir(),
                                 FilePath(section.filename, g[i - 1].filename));
       i1 = bout.printfile_path(file_name);
-      a()->user()->SetNumGFilesRead(a()->user()->GetNumGFilesRead() + 1);
+      a()->user()->gfiles_read(a()->user()->gfiles_read() + 1);
       if (i1 == 0) {
         sysoplog() << "Read G-file '" << g[i - 1].filename << "'";
       }

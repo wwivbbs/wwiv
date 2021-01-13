@@ -216,7 +216,7 @@ void add_post(postrec* pp) {
     return;
   }
   // get updated info
-  a()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->reload_status();
   fileSub->Seek(0L, File::Whence::begin);
   subfile_header_t p{};
   fileSub->Read(&p, sizeof(subfile_header_t));
@@ -262,7 +262,7 @@ void delete_message(int mn) {
     need_close = true;
   }
   // see if anything changed
-  a()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->reload_status();
 
   if (fileSub) {
     if (mn > 0 && mn <= a()->GetNumMessagesInCurrentMessageArea()) {
@@ -322,7 +322,7 @@ void resynch(int* msgnum, postrec* pp) {
     p = *pp1;
   }
 
-  a()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->reload_status();
 
   if (a()->subchg || pp) {
     pp1 = get_post(*msgnum);

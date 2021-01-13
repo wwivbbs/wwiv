@@ -26,6 +26,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace wwiv::sdk {
 
@@ -33,78 +34,77 @@ class Status {
   friend class StatusMgr;
 
 public:
-  Status(const std::string& datadir, const statusrec_t& s);
+  Status(std::string datadir, const statusrec_t& s);
   ~Status();
 
   /** If the caller number variable is using the old (pre 4.2) location, move it to the new location
    */
-  void EnsureCallerNumberIsValid();
+  void ensure_callernum_valid();
   /** Checks for corruption in the date strings, and try to fix if the date strings are corrupt */
-  void ValidateAndFixDates();
+  void ensure_dates_valid();
 
   /** Updates the status object for a new day.  This zeros out daily stats and updates the log file
    * names */
   bool NewDay();
 
-  [[nodiscard]] std::string GetLastDate(int days_ago = 0) const;
-  [[nodiscard]] std::string GetLogFileName(int nDaysAgo = 0) const;
-  [[nodiscard]] std::string GetGFileDate() const { return status_.gfiledate; }
-  void SetGFileDate(const std::string& s) { strings::to_char_array(status_.gfiledate, s); }
-  [[nodiscard]] char GetFileChangedFlag(int nFlag) const { return status_.filechange[nFlag]; }
-  void IncrementFileChangedFlag(int nFlag) { status_.filechange[nFlag]++; }
+  [[nodiscard]] std::string last_date(int days_ago = 0) const;
+  [[nodiscard]] std::string log_filename(int nDaysAgo = 0) const;
+  void gfile_date(const std::string& s) { strings::to_char_array(status_.gfiledate, s); }
+  [[nodiscard]] uint8_t filechanged(int nFlag) const { return status_.filechange[nFlag]; }
+  void increment_filechanged(int nFlag) { status_.filechange[nFlag]++; }
 
-  [[nodiscard]] unsigned short GetNumLocalPosts() const { return status_.localposts; }
-  [[nodiscard]] int IncrementNumLocalPosts() { return status_.localposts++; }
-  void SetNumLocalPosts(int n) { status_.localposts = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t localposts() const { return status_.localposts; }
+  void IncrementNumLocalPosts() { status_.localposts++; }
+  void localposts(int n) { status_.localposts = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] int GetNumUsers() const { return status_.users; }
-  int IncrementNumUsers() { return status_.users++; }
-  int DecrementNumUsers() { return status_.users--; }
-  void SetNumUsers(int n) { status_.users = static_cast<uint16_t>(n); }
+  [[nodiscard]] int num_users() const { return status_.users; }
+  void increment_num_users() { status_.users++; }
+  void decrement_num_users() { status_.users--; }
+  void num_users(int n) { status_.users = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] unsigned long GetCallerNumber() const { return status_.callernum1; }
-  unsigned long IncrementCallerNumber() { return status_.callernum1++; }
-  void SetCallerNumber(unsigned long l) { status_.callernum1 = l; }
+  [[nodiscard]] int caller_num() const { return status_.callernum1; }
+  void increment_caller_num() { status_.callernum1++; }
+  void caller_num(unsigned long l) { status_.callernum1 = l; }
 
-  [[nodiscard]] unsigned short GetNumCallsToday() const { return status_.callstoday; }
-  int IncrementNumCallsToday() { return status_.callstoday++; }
-  void SetNumCallsToday(int n) { status_.callstoday = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t calls_today() const { return status_.callstoday; }
+  void increment_calls_today() { status_.callstoday++; }
+  void calls_today(int n) { status_.callstoday = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] int GetNumMessagesPostedToday() const { return status_.msgposttoday; }
-  int IncrementNumMessagesPostedToday() { return status_.msgposttoday++; }
-  void SetNumMessagesPostedToday(int n) { status_.msgposttoday = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t msgs_today() const { return status_.msgposttoday; }
+  void increment_msgs_today() { status_.msgposttoday++; }
+  void msgs_today(int n) { status_.msgposttoday = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] unsigned short GetNumEmailSentToday() const { return status_.emailtoday; }
-  int IncrementNumEmailSentToday() { return status_.emailtoday++; }
-  void SetNumEmailSentToday(int n) { status_.emailtoday = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t email_today() const { return status_.emailtoday; }
+  void increment_email_today() { status_.emailtoday++; }
+  void email_today(int n) { status_.emailtoday = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] unsigned short GetNumFeedbackSentToday() const { return status_.fbacktoday; }
-  int IncrementNumFeedbackSentToday() { return status_.fbacktoday++; }
-  void SetNumFeedbackSentToday(int n) { status_.fbacktoday = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t feedback_today() const { return status_.fbacktoday; }
+  void increment_feedback_today() { status_.fbacktoday++; }
+  void feedback_today(int n) { status_.fbacktoday = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] unsigned short GetNumUploadsToday() const { return status_.uptoday; }
-  int IncrementNumUploadsToday() { return status_.uptoday++; }
-  void SetNumUploadsToday(int n) { status_.uptoday = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t uploads_today() const { return status_.uptoday; }
+  void increment_uploads_today() { status_.uptoday++; }
+  void uploads_today(int n) { status_.uptoday = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] unsigned short GetMinutesActiveToday() const { return status_.activetoday; }
-  void SetMinutesActiveToday(int n) { status_.activetoday = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t active_today_minutes() const { return status_.activetoday; }
+  void active_today_minutes(int n) { status_.activetoday = static_cast<uint16_t>(n); }
 
- [[nodiscard]]  uint32_t GetQScanPointer() const { return status_.qscanptr; }
-  uint32_t IncrementQScanPointer() { return status_.qscanptr++; }
-  void SetQScanPointer(uint32_t l) { status_.qscanptr = l; }
+  [[nodiscard]] uint32_t qscanptr() const { return status_.qscanptr; }
+  uint32_t next_qscanptr() { return status_.qscanptr++; }
+  void qscanptr(uint32_t l) { status_.qscanptr = l; }
 
-  [[nodiscard]] bool IsAutoMessageAnonymous() const { return status_.amsganon ? true : false; }
-  void SetAutoMessageAnonymous(bool b) { status_.amsganon = (b) ? 1 : 0; }
+  [[nodiscard]] bool automessage_anon() const { return status_.amsganon ? true : false; }
+  void automessage_anon(bool b) { status_.amsganon = (b) ? 1 : 0; }
 
-  [[nodiscard]] int GetAutoMessageAuthorUserNumber() const { return status_.amsguser; }
-  void SetAutoMessageAuthorUserNumber(int n) { status_.amsguser = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t automessage_usernum() const { return status_.amsguser; }
+  void automessage_usernum(int n) { status_.amsguser = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] int GetWWIVVersion() const { return status_.wwiv_version; }
-  void SetWWIVVersion(int n) { status_.wwiv_version = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t status_wwiv_version() const { return status_.wwiv_version; }
+  void status_wwiv_version(int n) { status_.wwiv_version = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] int GetNetworkVersion() const { return status_.net_version; }
-  [[nodiscard]] int GetDays() const { return status_.days; }
-  void SetDays(int n) { status_.days = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t status_net_version() const { return status_.net_version; }
+  [[nodiscard]] uint16_t  days_active() const { return status_.days; }
+  void days_active(int n) { status_.days = static_cast<uint16_t>(n); }
 
   static constexpr int file_change_names = 0;
   static constexpr int file_change_upload = 1;
@@ -129,50 +129,29 @@ public:
   /*!
    * @function StatusMgr Constructor
    */
-  StatusMgr(const std::string& datadir, status_callabck_fn callback)
-      : datadir_(datadir), callback_(std::move(callback)) {}
-  StatusMgr(const std::string& datadir)
-      : datadir_(datadir) {}
+  StatusMgr(std::string datadir, status_callabck_fn callback)
+      : datadir_(std::move(datadir)), callback_(std::move(callback)) {}
+  explicit StatusMgr(std::string datadir) : datadir_(std::move(datadir)) {}
   virtual ~StatusMgr() = default;
   /*!
-   * @function Read Loads the contents of STATUS.DAT
+   * @function Loads the contents of STATUS.DAT
+   * @return true on success
    */
-  bool RefreshStatusCache();
+  bool reload_status();
 
   /**
    * Gets the status object with no locks.  Just delete it when finished
    */
-  std::unique_ptr<Status> GetStatus();
+  std::unique_ptr<Status> get_status();
 
-  void AbortTransaction(std::unique_ptr<Status> pStatus);
-
-  /**
-   * Replacement for Lock
-   */
-  std::unique_ptr<Status> BeginTransaction();
-
-  /**
-   * Replacement for Write
-   */
-  bool CommitTransaction(std::unique_ptr<Status> pStatus);
-
-  [[nodiscard]] int GetUserCount();
+  [[nodiscard]] int user_count();
 
   bool Run(status_txn_fn fn);
 
 private:
-  std::unique_ptr<wwiv::core::File> status_file_;
   const std::string datadir_;
   status_callabck_fn callback_;
   statusrec_t statusrec_{};
-  bool Write(statusrec_t* pStatus);
-  /*!
-   * @function Get Loads the contents of STATUS.DAT with
-   *           control on failure and lock mode
-   * @param bLockFile Acquires write lock
-   * @return true on success
-   */
-  bool Get(bool bLockFile);
 };
 
 } // namespace

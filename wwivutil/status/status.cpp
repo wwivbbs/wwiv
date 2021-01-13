@@ -45,19 +45,19 @@ namespace wwiv::wwivutil {
 
 static int show_qscan(const Config& config) {
   StatusMgr mgr(config.datadir(), [](int) {});
-  const auto status = mgr.GetStatus();
-  cout << "QScan Pointer : " << status->GetQScanPointer() << std::endl;
+  const auto status = mgr.get_status();
+  cout << "QScan Pointer : " << status->qscanptr() << std::endl;
   return 0;
 }
 
 static int set_qscan(const Config& config, uint32_t qscan) {
   StatusMgr mgr(config.datadir(), [](int) {});
   mgr.Run([=](Status& s) {
-    s.SetQScanPointer(qscan);
+    s.qscanptr(qscan);
   });
 
-  const auto status = mgr.GetStatus();
-  cout << "QScan Pointer : " << status->GetQScanPointer() << std::endl;
+  const auto status = mgr.get_status();
+  cout << "QScan Pointer : " << status->qscanptr() << std::endl;
   return 0;
 }
 

@@ -91,16 +91,16 @@ void select_editor() {
 }
 
 static string GetMailBoxStatus() {
-  if (a()->user()->GetForwardSystemNumber() == 0 &&
-      a()->user()->GetForwardUserNumber() == 0) {
+  if (a()->user()->forward_systemnum() == 0 &&
+      a()->user()->forward_usernum() == 0) {
     return string("Normal");
   }
-  if (a()->user()->GetForwardSystemNumber() != 0) {
+  if (a()->user()->forward_systemnum() != 0) {
     if (a()->user()->IsMailboxForwarded()) {
       return fmt::format("Forward to #{} @{}.{}.",
-              a()->user()->GetForwardUserNumber(),
-              a()->user()->GetForwardSystemNumber(),
-              a()->nets().at(a()->user()->GetForwardNetNumber()).name);
+              a()->user()->forward_usernum(),
+              a()->user()->forward_systemnum(),
+              a()->nets().at(a()->user()->forward_netnum()).name);
     } else {
       string fwd_username;
       read_inet_addr(fwd_username, a()->sess().user_num());
@@ -113,12 +113,12 @@ static string GetMailBoxStatus() {
   }
 
   User ur;
-  a()->users()->readuser(&ur, a()->user()->GetForwardUserNumber());
+  a()->users()->readuser(&ur, a()->user()->forward_usernum());
   if (ur.IsUserDeleted()) {
-    a()->user()->SetForwardUserNumber(0);
+    a()->user()->forward_usernum(0);
     return string("Normal");
   }
-  return StrCat("Forward to ", a()->names()->UserName(a()->user()->GetForwardUserNumber()));
+  return StrCat("Forward to ", a()->names()->UserName(a()->user()->forward_usernum()));
 }
 
 static void print_cur_stat() {
@@ -152,7 +152,7 @@ static void print_cur_stat() {
   }
 
   const auto internet_email_address = 
-      ((a()->user()->GetEmailAddress().empty()) ? "None." : a()->user()->GetEmailAddress());
+      ((a()->user()->email_address().empty()) ? "None." : a()->user()->email_address());
   bout.format("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->GetOptionalVal());
   bout << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->IsUseConference()) << wwiv::endl;
   bout.format("|#1D|#9) Show Hidden Lines : |#2{:<16} ", YesNoString(a()->user()->HasStatusFlag(User::msg_show_controlcodes)));
@@ -174,8 +174,8 @@ static void print_cur_stat() {
        << wwiv::endl;
 
   string wwiv_regnum = "(None)";
-  if (a()->user()->GetWWIVRegNumber()) {
-    wwiv_regnum = std::to_string(a()->user()->GetWWIVRegNumber());
+  if (a()->user()->wwiv_regnum()) {
+    wwiv_regnum = std::to_string(a()->user()->wwiv_regnum());
   }
   bout.format("|#1U|#9) Use Msg AutoQuote : |#2{:<16} ",
                       YesNoString(a()->user()->IsUseAutoQuote()));
@@ -235,8 +235,8 @@ void color_list() {
 
 static void reset_user_colors_to_defaults() {
   for (int i = 0; i <= 9; i++) {
-    a()->user()->SetColor(i, a()->newuser_colors[i]);
-    a()->user()->SetBWColor(i, a()->newuser_bwcolors[i]);
+    a()->user()->color(i, a()->newuser_colors[i]);
+    a()->user()->bwcolor(i, a()->newuser_bwcolors[i]);
   }
 }
 
@@ -250,10 +250,10 @@ static void change_colors() {
     if (!a()->user()->HasColor()) {
       std::ostringstream os;
       os << "Monochrome base color : ";
-      if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
-        os << DisplayColorName(a()->user()->GetBWColor(1) & 0x07);
+      if ((a()->user()->bwcolor(1) & 0x70) == 0) {
+        os << DisplayColorName(a()->user()->bwcolor(1) & 0x07);
       } else {
-        os << DisplayColorName((a()->user()->GetBWColor(1) >> 4) & 0x07);
+        os << DisplayColorName((a()->user()->bwcolor(1) >> 4) & 0x07);
       }
       bout << os.str();
       bout.nl(2);
@@ -328,16 +328,16 @@ static void change_colors() {
         bout.nl();
         bout << "|#9Inversed? ";
         if (bin.yesno()) {
-          if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
-            nc = static_cast<uint8_t>(0 | ((a()->user()->GetBWColor(1) & 0x07) << 4));
+          if ((a()->user()->bwcolor(1) & 0x70) == 0) {
+            nc = static_cast<uint8_t>(0 | ((a()->user()->bwcolor(1) & 0x07) << 4));
           } else {
-            nc = static_cast<uint8_t>(a()->user()->GetBWColor(1) & 0x70);
+            nc = static_cast<uint8_t>(a()->user()->bwcolor(1) & 0x70);
           }
         } else {
-          if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
-            nc = static_cast<uint8_t>(0 | (a()->user()->GetBWColor(1) & 0x07));
+          if ((a()->user()->bwcolor(1) & 0x70) == 0) {
+            nc = static_cast<uint8_t>(0 | (a()->user()->bwcolor(1) & 0x07));
           } else {
-            nc = static_cast<uint8_t>((a()->user()->GetBWColor(1) & 0x70) >> 4);
+            nc = static_cast<uint8_t>((a()->user()->bwcolor(1) & 0x70) >> 4);
           }
         }
       }
@@ -360,9 +360,9 @@ static void change_colors() {
       if (bin.yesno()) {
         bout << "\r\nColor saved.\r\n\n";
         if (a()->user()->HasColor()) {
-          a()->user()->SetColor(color_num, nc);
+          a()->user()->color(color_num, nc);
         } else {
-          a()->user()->SetBWColor(color_num, nc);
+          a()->user()->bwcolor(color_num, nc);
         }
       } else {
         bout << "\r\nNot saved, then.\r\n\n";
@@ -563,13 +563,13 @@ static void make_macros() {
   do {
     bout.bputch(CL);
     bout << "|#4Macro A: \r\n";
-    list_macro(a()->user()->GetMacro(2));
+    list_macro(a()->user()->macro(2));
     bout.nl();
     bout << "|#4Macro D: \r\n";
-    list_macro(a()->user()->GetMacro(0));
+    list_macro(a()->user()->macro(0));
     bout.nl();
     bout << "|#4Macro F: \r\n";
-    list_macro(a()->user()->GetMacro(1));
+    list_macro(a()->user()->macro(1));
     bout.nl(2);
     bout << "|#9Macro to edit or Q:uit (A,D,F,Q) : |#0";
     ch = onek("QADF");
@@ -578,19 +578,19 @@ static void make_macros() {
     case 'A':
       macroedit(szMacro);
       if (szMacro[0]) {
-        a()->user()->SetMacro(2, szMacro);
+        a()->user()->macro(2, szMacro);
       }
       break;
     case 'D':
       macroedit(szMacro);
       if (szMacro[0]) {
-        a()->user()->SetMacro(0, szMacro);
+        a()->user()->macro(0, szMacro);
       }
       break;
     case 'F':
       macroedit(szMacro);
       if (szMacro[0]) {
-        a()->user()->SetMacro(1, szMacro);
+        a()->user()->macro(1, szMacro);
       }
       break;
     case 'Q':
@@ -609,7 +609,7 @@ static void change_password() {
 
   bout.nl();
   string password = bin.input_password("|#9You must now enter your current password.\r\n|#7: ", 8);
-  if (password != a()->user()->GetPassword()) {
+  if (password != a()->user()->password()) {
     bout << "\r\nIncorrect.\r\n\n";
     return;
   }
@@ -622,7 +622,7 @@ static void change_password() {
       bout.nl();
       bout << "|#6Password must be 3-8 characters long.\r\n|#6Password was not changed.\r\n\n";
     } else {
-      a()->user()->SetPassword(password);
+      a()->user()->password(password);
       bout << "\r\n|#1Password changed.\r\n\n";
       sysoplog() << "Changed Password.";
     }
@@ -646,18 +646,18 @@ static void modify_mailbox() {
     a()->user()->ClearMailboxForward();
     return;
   }
-  if (a()->user()->GetSl() >= a()->config()->newuser_sl()) {
+  if (a()->user()->sl() >= a()->config()->newuser_sl()) {
     int network_number = getnetnum_by_type(network_type_t::internet);
     if (network_number != -1) {
       a()->set_net_num(network_number);
       bout << "|#5Do you want to forward to your Internet address? ";
       if (bin.yesno()) {
         bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
-        auto entered_address = bin.input_text(a()->user()->GetEmailAddress(), 75);
+        const auto entered_address = bin.input_text(a()->user()->email_address(), 75);
         if (check_inet_addr(entered_address)) {
-          a()->user()->SetEmailAddress(entered_address.c_str());
+          a()->user()->email_address(entered_address);
           write_inet_addr(entered_address, a()->sess().user_num());
-          a()->user()->SetForwardNetNumber(network_number);
+          a()->user()->forward_netnum(network_number);
           a()->user()->SetForwardToInternet();
           bout << "\r\nSaved.\r\n\n";
         }
@@ -670,23 +670,23 @@ static void modify_mailbox() {
   const auto entered_forward_to = bin.input(40);
 
   auto [tu, ts] = parse_email_info(entered_forward_to);
-  a()->user()->SetForwardUserNumber(tu);
-  a()->user()->SetForwardSystemNumber(ts);
-  if (a()->user()->GetForwardSystemNumber() != 0) {
-    a()->user()->SetForwardNetNumber(a()->net_num());
-    if (a()->user()->GetForwardUserNumber() == 0) {
+  a()->user()->forward_usernum(tu);
+  a()->user()->forward_systemnum(ts);
+  if (a()->user()->forward_systemnum() != 0) {
+    a()->user()->forward_netnum(a()->net_num());
+    if (a()->user()->forward_usernum() == 0) {
       a()->user()->ClearMailboxForward();
       bout << "\r\nCan't forward to a user name, must use user number.\r\n\n";
     }
-  } else if (a()->user()->GetForwardUserNumber() == a()->sess().user_num()) {
+  } else if (a()->user()->forward_usernum() == a()->sess().user_num()) {
     bout << "\r\nCan't forward to yourself.\r\n\n";
-    a()->user()->SetForwardUserNumber(0);
+    a()->user()->forward_usernum(0);
   }
 
   bout.nl();
-  if (a()->user()->GetForwardUserNumber() == 0
-      && a()->user()->GetForwardSystemNumber() == 0) {
-    a()->user()->SetForwardNetNumber(0);
+  if (a()->user()->forward_usernum() == 0
+      && a()->user()->forward_systemnum() == 0) {
+    a()->user()->forward_netnum(0);
     bout << "Forwarding reset.";
   } else {
     bout << "Saved.";
@@ -698,7 +698,7 @@ static void optional_lines() {
   bout << "|#9You may specify your optional lines value from 0-10,\r\n"
        << "|#20 |#9being all, |#210 |#9being none.\r\n"
        << "|#2What value? ";
-  auto r = bin.input_number_hotkey(a()->user()->GetOptionalVal(), {'Q'}, 0, 10);
+  const auto r = bin.input_number_hotkey(a()->user()->GetOptionalVal(), {'Q'}, 0, 10);
   if (r.key != 'Q') {
     a()->user()->SetOptionalVal(r.num);
   }
@@ -706,8 +706,8 @@ static void optional_lines() {
 
 void enter_regnum() {
   bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
-  const auto regnum = bin.input_number(a()->user()->GetWWIVRegNumber());
-  a()->user()->SetWWIVRegNumber(regnum);
+  const auto regnum = bin.input_number(a()->user()->wwiv_regnum());
+  a()->user()->wwiv_regnum(regnum);
   changedsl();
 }
 
@@ -785,7 +785,7 @@ void defaults(bool& need_menu_reload) {
       auto internetAddress = bin.input_text(65);
       if (!internetAddress.empty()) {
         if (check_inet_addr(internetAddress)) {
-          a()->user()->SetEmailAddress(internetAddress.c_str());
+          a()->user()->email_address(internetAddress);
           write_inet_addr(internetAddress, a()->sess().user_num());
         } else {
           bout << "\r\n|#6Invalid address format.\r\n\n";
@@ -794,7 +794,7 @@ void defaults(bool& need_menu_reload) {
       } else {
         bout << "|#5Delete Internet address? ";
         if (bin.yesno()) {
-          a()->user()->SetEmailAddress("");
+          a()->user()->email_address("");
         }
       }
     }

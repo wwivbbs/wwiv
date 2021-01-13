@@ -409,13 +409,20 @@ struct legacy_configovrrec_424_t {
 
 // DYNAMIC SYSTEM STATUS
 struct statusrec_t {
-  char date1[9],     // last date active
-      date2[9],      // date before now
-      date3[9],      // two days ago
-      log1[13],      // yesterday's log
-      log2[13],      // two days ago log
-      gfiledate[9],  // date gfiles last updated
-      filechange[7]; // flags for files changing
+  // last date active
+  char date1[9];
+  // date before now
+  char date2[9];
+  // two days ago
+  char date3[9];
+  // yesterday's log
+  char log1[13];
+  // two days ago log
+  char log2[13];
+  // date gfiles last updated
+  char gfiledate[9];
+  // flags for files changing
+  uint8_t filechange[7];
 
   // how many local posts today
   uint16_t localposts;

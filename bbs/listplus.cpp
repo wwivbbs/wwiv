@@ -228,7 +228,7 @@ static void catch_divide_by_zero(int signum) {
 int listfiles_plus(int type) {
   const auto save_topdata = a()->localIO()->topdata();
   const auto save_dir = a()->current_user_dir_num();
-  const long save_status = a()->user()->GetStatus();
+  const long save_status = a()->user()->get_status();
 
   ext_is_on = a()->user()->GetFullFileDescriptions();
   signal(SIGFPE, catch_divide_by_zero);
@@ -792,16 +792,16 @@ short SelectColor(int which) {
     bout.nl();
     bout << "|#5Inversed? ";
     if (bin.yesno()) {
-      if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
-        nc = (a()->user()->GetBWColor(1) & 0x07) << 4;
+      if ((a()->user()->bwcolor(1) & 0x70) == 0) {
+        nc = (a()->user()->bwcolor(1) & 0x07) << 4;
       } else {
-        nc = a()->user()->GetBWColor(1) & 0x70;
+        nc = a()->user()->bwcolor(1) & 0x70;
       }
     } else {
-      if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
-        nc = a()->user()->GetBWColor(1) & 0x07;
+      if ((a()->user()->bwcolor(1) & 0x70) == 0) {
+        nc = a()->user()->bwcolor(1) & 0x07;
       } else {
-        nc = (a()->user()->GetBWColor(1) & 0x70) >> 4;
+        nc = (a()->user()->bwcolor(1) & 0x70) >> 4;
       }
     }
   }
@@ -1242,8 +1242,9 @@ static int remove_filename(const std::string& file_name, int dn) {
             User user;
             a()->users()->readuser(&user, f.u().ownerusr);
             if (!user.IsUserDeleted()) {
-              if (date_to_daten(user.GetFirstOn()) < f.u().daten) {
-                user.SetFilesUploaded(user.GetFilesUploaded() - 1);
+              if (date_to_daten(user.firston()) < f.u().daten) {
+                user.decrement_uploaded();
+                user.decrement_uploaded();
                 user.set_uk(user.uk() - bytes_to_k(f.numbytes()));
                 a()->users()->writeuser(&user, f.u().ownerusr);
               }
@@ -1688,7 +1689,7 @@ void request_file(const std::string& file_name) {
   bout << "|#2File missing.  Request it? ";
 
   if (bin.noyes()) {
-    ssm(1) << a()->user()->GetName() << " is requesting file " << file_name;
+    ssm(1) << a()->user()->name() << " is requesting file " << file_name;
     bout << "File request sent\r\n";
   } else {
     bout << "File request NOT sent\r\n";

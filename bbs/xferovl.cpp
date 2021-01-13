@@ -343,7 +343,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
       return false;
     }
     get_file_idz(f, a()->dirs()[directory_num]);
-    a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
+    a()->user()->increment_uploaded();
     if (!(d.mask & mask_cdrom)) {
       add_to_file_database(f);
     }
@@ -352,10 +352,10 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     if (a()->current_file_area()->AddFile(f)) {
       a()->current_file_area()->Save();
     }
-    auto status = a()->status_manager()->BeginTransaction();
-    status->IncrementNumUploadsToday();
-    status->IncrementFileChangedFlag(Status::file_change_upload);
-    a()->status_manager()->CommitTransaction(std::move(status));
+    a()->status_manager()->Run([&](Status& status) {
+      status.increment_uploads_today();
+      status.increment_filechanged(Status::file_change_upload);
+    });
     sysoplog() << "+ '" << f << "' uploaded on " << d.name;
     a()->UpdateTopScreen();
   }

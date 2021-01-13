@@ -91,7 +91,7 @@ bool build_control_dat(const sdk::qwk_config& qwk_cfg, Clock* clock, qwk_state *
   fp.WriteLine(a()->config()->sysop_name());
   fp.WriteLine(fmt::format("00000,{}", system_name));
   fp.WriteLine(date_time);
-  fp.WriteLine(a()->user()->GetName());
+  fp.WriteLine(a()->user()->name());
   fp.WriteLine("");
   fp.WriteLine("0");
   fp.WriteLine(qwk_info->qwk_rec_num);
@@ -321,9 +321,8 @@ void qwk_gather_sub(uint16_t bn, qwk_state* qwk_info) {
       }
     }
 
-    const auto status = a()->status_manager()->GetStatus();
-    a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()] =
-        status->GetQScanPointer() - 1;
+    const auto status = a()->status_manager()->get_status();
+    a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()] = status->qscanptr() - 1;
     a()->set_current_user_sub_num(os);
   } 
   bout.Color(0);
@@ -385,7 +384,7 @@ void make_pre_qwk(int msgnum, qwk_state *qwk_info) {
     set_net_num(nn);
   }
 
-  a()->user()->SetNumMessagesRead(a()->user()->GetNumMessagesRead() + 1);
+  a()->user()->messages_read(a()->user()->messages_read() + 1);
   a()->SetNumMessagesReadThisLogon(a()->GetNumMessagesReadThisLogon() + 1);
 
   if (p->qscan >
@@ -535,7 +534,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
       memcpy(qwk_info->qwk_rec.to, "ALL", 3);
     }
   } else {
-    auto temp = ToStringUpperCase(a()->user()->GetName());
+    auto temp = ToStringUpperCase(a()->user()->name());
     strncpy(qwk_info->qwk_rec.to, temp.c_str(), 25);
   }
   auto temp_from = ToStringUpperCase(stripcolors(n));
@@ -701,7 +700,7 @@ void finish_qwk(qwk_state *qwk_info) {
       }
 
       // If we want to only copy if bulletin is newer than the users laston date:
-      // if(file_daten(qwk_cfg.blt[x]) > date_to_daten(a()->user()->GetLastOnDateNumber()))
+      // if(file_daten(qwk_cfg.blt[x]) > date_to_daten(a()->user()->last_daten()))
       auto parem2 = FilePath(a()->sess().dirs().qwk_directory(), b.name);
       File::Copy(b.path, parem2);
     }

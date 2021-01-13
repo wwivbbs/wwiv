@@ -181,7 +181,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     const auto skip_net = net_cmdline.skip_net();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
-    const auto status = sm.GetStatus();
+    const auto status = sm.get_status();
 
     const auto& network_name = net_cmdline.network_name();
 
@@ -190,7 +190,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
 
     bink_config.set_skip_net(skip_net);
     bink_config.set_verbose(net_cmdline.cmdline().verbose());
-    bink_config.set_network_version(status->GetNetworkVersion());
+    bink_config.set_network_version(status->status_net_version());
 
     for (const auto& n : bink_config.networks().networks()) {
       const auto lower_case_network_name = ToStringLowerCase(n.name);

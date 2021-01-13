@@ -99,11 +99,11 @@ float ratio() {
  * Gets the current users post/call ratio.
  */
 float post_ratio() {
-  if (a()->user()->GetNumLogons() == 0) {
+  if (a()->user()->logons() == 0) {
     return 99.999f;
   }
-  const auto r = static_cast<float>(a()->user()->GetNumMessagesPosted()) /
-                 static_cast<float>(a()->user()->GetNumLogons());
+  const auto r = static_cast<float>(a()->user()->messages_posted()) /
+                 static_cast<float>(a()->user()->logons());
   return r > 99.998f ? 99.998f : r;
 }
 

@@ -151,7 +151,7 @@ bool Names::Rebuild(const UserManager& um) {
     User user;
     um.readuser(&user, i);
     if (!user.IsUserDeleted() && !user.IsUserInactive()) {
-      AddUnsorted(user.GetName(), i);
+      AddUnsorted(user.name(), i);
     }
   }
   return true;

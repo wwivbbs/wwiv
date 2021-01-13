@@ -661,7 +661,7 @@ void HandleMessageMove(int& msg_num) {
       open_sub(true);
       p2.msg.storage_type = static_cast<unsigned char>(a()->current_sub().storage_type);
       savefile(b, &(p2.msg), (a()->current_sub().filename));
-      a()->status_manager()->Run([&](Status& s) { p2.qscan = s.IncrementQScanPointer(); });
+      a()->status_manager()->Run([&](Status& s) { p2.qscan = s.next_qscanptr(); });
       if (a()->GetNumMessagesInCurrentMessageArea() >= a()->current_sub().maxmsgs) {
         auto temp_msg_num = 1;
         auto msg_to_delete = 0;
@@ -681,7 +681,7 @@ void HandleMessageMove(int& msg_num) {
       }
       if (!a()->current_sub().nets.empty()) {
         p2.status |= status_pending_net;
-        a()->user()->SetNumNetPosts(a()->user()->GetNumNetPosts() + 1);
+        a()->user()->posts_net(a()->user()->posts_net() + 1);
         send_net_post(&p2, a()->current_sub());
       }
       add_post(&p2);
@@ -776,17 +776,17 @@ static void HandleMessageDelete(int& msg_num) {
   if (tu.IsUserDeleted()) {
     return;
   }
-  if (date_to_daten(tu.GetFirstOn()) < p2.daten) {
+  if (date_to_daten(tu.firston()) < p2.daten) {
     bout.nl();
     bout << "|#2Remove how many posts credit? ";
     unsigned short num_credits =
-        bin.input_number<uint16_t>(0, 0, static_cast<uint16_t>(tu.GetNumMessagesPosted()));
+        bin.input_number<uint16_t>(0, 0, static_cast<uint16_t>(tu.messages_posted()));
     if (num_credits != 0) {
-      tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - num_credits);
+      tu.messages_posted(tu.messages_posted() - num_credits);
     }
     bout.nl();
     bout << "|#7Post credit removed = " << num_credits << endl;
-    tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() + 1);
+    tu.deleted_posts(tu.deleted_posts() + 1);
     a()->users()->writeuser(&tu, p2.owneruser);
     a()->UpdateTopScreen();
   }
@@ -874,8 +874,8 @@ static void HandleRemoveFromNewScan() {
 
   bout << "\r\n|#9Mark messages in '" << subname << "' as read? ";
   if (bin.yesno()) {
-    const auto status = a()->status_manager()->GetStatus();
-    a()->sess().qsc_p[a()->current_user_sub().subnum] = status->GetQScanPointer() - 1L;
+    const auto status = a()->status_manager()->get_status();
+    a()->sess().qsc_p[a()->current_user_sub().subnum] = status->qscanptr() - 1L;
   }
 }
 
@@ -1059,11 +1059,10 @@ static void network_validate() {
   }
 }
 
-// asks if user wants to post, returns true if done, meaning
-// user says Yes (and posts) or No.
+// Asks if user wants to post, returns true if done, meaning user says Yes (and posts) or No.
 static bool query_post() {
   if (!a()->user()->IsRestrictionPost() &&
-      (a()->user()->GetNumPostsToday() < a()->config()->sl(a()->sess().effective_sl()).posts) &&
+      a()->user()->posts_today() < a()->config()->sl(a()->sess().effective_sl()).posts &&
       wwiv::bbs::check_acs(a()->current_sub().post_acs)) {
     bout << "|#5Post on " << a()->current_sub().name << " (|#2Y/N/Q|#5) ? ";
     a()->sess().clear_irt();

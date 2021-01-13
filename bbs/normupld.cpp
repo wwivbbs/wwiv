@@ -157,7 +157,7 @@ void normalupload(int dn) {
         bout << "the sysop.\r\n\n";
         const auto message = fmt::format("Wanted to upload \"{}\"", f);
         sysoplog() << "*** ASS-PTS: " << 5 << ", Reason: [" << message << "]";
-        a()->user()->IncrementAssPoints(5);
+        a()->user()->increment_ass_points(5);
         ok = 0;
       } else {
         f.set_mask(mask_PD, true);
@@ -211,7 +211,7 @@ void normalupload(int dn) {
           if (ok == 1) {
             f.set_numbytes(file.length());
             file.Close();
-            a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
+            a()->user()->increment_uploaded();
             add_to_file_database(f);
             a()->user()->set_uk(a()->user()->uk() + bytes_to_k(f.numbytes()));
 
@@ -226,8 +226,8 @@ void normalupload(int dn) {
           }
           if (ok == 1) {
             a()->status_manager()->Run([](Status& s) {
-              s.IncrementNumUploadsToday();
-              s.IncrementFileChangedFlag(Status::file_change_upload);
+              s.increment_uploads_today();
+              s.increment_filechanged(Status::file_change_upload);
             });
             sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f, a()->dirs()[dn].name);
             bout.nl(2);

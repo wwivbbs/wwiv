@@ -376,7 +376,7 @@ static void update_filechange_status_dat(const string& datadir) {
   StatusMgr sm(datadir);
   sm.Run([=](Status& s)
   {
-    s.IncrementFileChangedFlag(Status::file_change_net);
+    s.increment_filechanged(Status::file_change_net);
   });
 
   if (auto file = DataFile<statusrec_t>(FilePath(datadir, STATUS_DAT),

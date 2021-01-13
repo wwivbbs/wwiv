@@ -21,7 +21,7 @@
 #include <string>
 #include <sstream>
 
-std::string GetSysopLogFileName(const std::string& date);
+std::string sysoplog_filename(const std::string& date);
 std::string GetTemporaryInstanceLogFileName();
 void catsl();
 void sysopchar(const std::string& text);

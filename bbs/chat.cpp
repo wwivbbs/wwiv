@@ -128,7 +128,7 @@ static int grabname(const std::string& orig, int channel) {
           continue;
         }
         a()->users()->readuser(&u, ir.user);
-        if (name == u.GetName()) {
+        if (name == u.name()) {
           node = i;
           break;
         }
@@ -366,7 +366,7 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
     const auto fn = fmt::format("CHANNEL.{}", (loc + 1 - INST_LOC_CH1));
     if (File::Exists(fn)) {
       File::Remove(fn);
-      const auto m = fmt::format("\r\n|#1[|#9{} has unsecured the channel|#1]", a()->user()->GetName());
+      const auto m = fmt::format("\r\n|#1[|#9{} has unsecured the channel|#1]", a()->user()->name());
       out_msg(m, loc);
       bout << "|#1[|#9Channel Unsecured|#1]\r\n";
     } else {
@@ -405,7 +405,7 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
     }
   }
   if (bActionHandled) {
-    const auto t = fmt::sprintf(from_message, a()->user()->GetName(), color_string, raw_message);
+    const auto t = fmt::sprintf(from_message, a()->user()->name(), color_string, raw_message);
     out_msg(t, loc);
   }
   return loc;
@@ -440,9 +440,9 @@ void intro(int loc) {
       User u;
       a()->users()->readuser(&u, nodes[i]);
       if (((nodes[0] - i) == 1) && (nodes[0] >= 2)) {
-        bout << "|#1" << u.GetName() << " |#7and ";
+        bout << "|#1" << u.name() << " |#7and ";
       } else {
-        bout << "|#1" << u.GetName() << (((nodes[0] > 1) && (i != nodes[0])) ? "|#7, " : " ");
+        bout << "|#1" << u.name() << (((nodes[0] > 1) && (i != nodes[0])) ? "|#7, " : " ");
       }
     }
   }
@@ -474,15 +474,15 @@ void ch_direct(const string& message, int loc, char* color_string, int node) {
   if (ir.loc == loc) {
     User u;
     a()->users()->readuser(&u, ir.user);
-    const string s = fmt::sprintf("|#9From %.12s|#6 [to %s]|#1: %s%s", a()->user()->GetName(),
-                                  u.GetName(), color_string, message);
+    const string s = fmt::sprintf("|#9From %.12s|#6 [to %s]|#1: %s%s", a()->user()->name(),
+                                  u.name(), color_string, message);
     for (int i = 1; i <= num_instances(); i++) {
       get_inst_info(i, &ir);
       if (ir.loc == loc && i != a()->instance_number()) {
         send_inst_str(i, s);
       }
     }
-    bout << "|#1[|#9Message directed to " << u.GetName() << "|#1\r\n";
+    bout << "|#1[|#9Message directed to " << u.name() << "|#1\r\n";
   } else {
     bout << message;
     bout.nl();
@@ -504,13 +504,13 @@ void ch_whisper(const std::string& message, char* color_string, int node) {
 
   string text = message;
   if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
-    text = fmt::sprintf("|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", a()->user()->GetName(),
+    text = fmt::sprintf("|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", a()->user()->name(),
                         color_string, message);
   }
   send_inst_str(node, text);
   User u;
   a()->users()->readuser(&u, ir.user);
-  bout << "|#1[|#9Message sent only to " << u.GetName() << "|#1]\r\n";
+  bout << "|#1[|#9Message sent only to " << u.name() << "|#1]\r\n";
 }
 
 // This function determines whether or not user N is online
@@ -523,7 +523,7 @@ int wusrinst(char* n) {
     if (ir.flags & INST_FLAGS_ONLINE) {
       User user;
       a()->users()->readuser(&user, ir.user);
-      if (iequals(user.GetName(), n)) {
+      if (iequals(user.name(), n)) {
         return i;
       }
     }
@@ -545,10 +545,10 @@ void secure_ch(int ch) {
     {
       File file(fn);
       file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeText);
-      file.Write(a()->user()->GetName(), strlen(a()->user()->GetName()));
+      file.Write(a()->user()->name());
     }
     bout << "|#1[|#9Channel Secured|#1]\r\n";
-    const auto msg = fmt::format("\r\n|#1[|#9{} has secured the channel|#1]", a()->user()->GetName());
+    const auto msg = fmt::format("\r\n|#1[|#9{} has secured the channel|#1]", a()->user()->name());
     out_msg(msg, ch);
   }
 }
@@ -604,7 +604,7 @@ void page_user(int loc) {
     const auto s = fmt::format(
         "{} is paging you from Chatroom channel {}.  Type /C from the MAIN MENU to enter the "
         "Chatroom.",
-        a()->user()->GetName(), loc);
+        a()->user()->name(), loc);
     send_inst_str(i, s);
   }
   bout << "|#1[|#9Page Sent|#1]\r\n";
@@ -616,7 +616,7 @@ void moving(bool bOnline, int loc) {
   if (is_chat_invis()) {
     return;
   }
-  const auto s = fmt::format("|#6{} {}", a()->user()->GetName(),
+  const auto s = fmt::format("|#6{} {}", a()->user()->name(),
           (bOnline ? "is on the air." : "has signed off."));
   out_msg(s, loc);
 }
@@ -805,9 +805,9 @@ void list_channels() {
         for (int i2 = 1; i2 <= nodes[0]; i2++) {
           a()->users()->readuser(&u, nodes[i2]);
           if (((nodes[0] - i2) == 1) && (nodes[0] >= 2)) {
-            bout << "|#1" << u.GetName() << " |#7and ";
+            bout << "|#1" << u.name() << " |#7and ";
           } else {
-            bout << "|#1" << u.GetName() << (((nodes[0] > 1) && (i2 != nodes[0])) ? "|#7, " : " ");
+            bout << "|#1" << u.name() << (((nodes[0] > 1) && (i2 != nodes[0])) ? "|#7, " : " ");
           }
         }
         if (secure[tl]) {
@@ -842,7 +842,7 @@ int change_channels(int loc) {
     if (!File::Exists(szMessage)) {
       ch_ok = 1;
     } else {
-      if (a()->user()->GetSl() >= g_nChatOpSecLvl || so()) {
+      if (a()->user()->sl() >= g_nChatOpSecLvl || so()) {
         bout << "|#9This channel is secured.  Are you |#1SURE|#9 you wish to enter? ";
         if (bin.yesno()) {
           ch_ok = 1;
@@ -872,10 +872,10 @@ bool check_ch(int ch) {
   unsigned short c_ar;
   char szMessage[80];
 
-  if (static_cast<int>(a()->user()->GetSl()) < channels[ch].sl && !so()) {
+  if (static_cast<int>(a()->user()->sl()) < channels[ch].sl && !so()) {
     bout << "\r\n|#9A security level of |#1" << channels[ch].sl
          << "|#9 is required to access this channel.\r\n";
-    bout << "|#9Your security level is |#1" << a()->user()->GetSl() << "|#9.\r\n";
+    bout << "|#9Your security level is |#1" << a()->user()->sl() << "|#9.\r\n";
     return false;
   }
   if (channels[ch].ar != '0') {
@@ -891,7 +891,7 @@ bool check_ch(int ch) {
   }
   char gender = channels[ch].sex;
   if (gender != 65 && a()->user()->GetGender() != gender &&
-      a()->user()->GetSl() < g_nChatOpSecLvl) {
+      a()->user()->sl() < g_nChatOpSecLvl) {
     if (gender == 77) {
       bout << "\r\n|#9Only |#1males|#9 are allowed in this channel.\r\n";
     } else if (gender == 70) {
@@ -901,12 +901,12 @@ bool check_ch(int ch) {
     }
     return false;
   }
-  if (a()->user()->age() < channels[ch].min_age && a()->user()->GetSl() < g_nChatOpSecLvl) {
+  if (a()->user()->age() < channels[ch].min_age && a()->user()->sl() < g_nChatOpSecLvl) {
     bout << "\r\n|#9You must be |#1" << channels[ch].min_age
          << "|#9 or older to enter this channel.\r\n";
     return false;
   }
-  if (a()->user()->age() > channels[ch].max_age && a()->user()->GetSl() < g_nChatOpSecLvl) {
+  if (a()->user()->age() > channels[ch].max_age && a()->user()->sl() < g_nChatOpSecLvl) {
     bout << "\r\n|#9You must be |#1" << channels[ch].max_age
          << "|#9 or younger to enter this channel.\r\n";
     return false;

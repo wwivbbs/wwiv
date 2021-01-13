@@ -150,9 +150,9 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
       // changed from 15 since computers are faster now-a-days
       bout << ".";
     }
-    auto current_user = n.number;
+    const auto current_user = n.number;
     a()->ReadCurrentUser(current_user);
-    string temp_user_name(a()->user()->GetRealName());
+    auto temp_user_name(a()->user()->real_name());
     StringUpperCase(&temp_user_name);
     if (user_name == temp_user_name && !a()->user()->IsUserDeleted()) {
       bout << "|#5Do you mean " << a()->names()->UserName(n.number) << "? ";
@@ -212,7 +212,7 @@ bool IsPhoneRequired() {
 
 bool VerifyPhoneNumber() {
   if (IsPhoneNumberUSAFormat(a()->user()) || !a()->user()->GetCountry()[0]) {
-    string phoneNumber = bin.input_password("PH: ###-###-", 4);
+    auto phoneNumber = bin.input_password("PH: ###-###-", 4);
 
     if (phoneNumber != &a()->user()->GetVoicePhoneNumber()[8]) {
       if (phoneNumber.length() == 4 && phoneNumber[3] == '-') {
@@ -227,26 +227,26 @@ bool VerifyPhoneNumber() {
 static bool VerifyPassword(string remote_password) {
   a()->UpdateTopScreen();
 
-  if (!remote_password.empty() && remote_password == a()->user()->GetPassword()) {
+  if (!remote_password.empty() && remote_password == a()->user()->password()) {
     return true;
   }
 
-  string password = bin.input_password("PW: ", 8);
-  return (password == a()->user()->GetPassword());
+  const auto password = bin.input_password("PW: ", 8);
+  return password == a()->user()->password();
 }
 
 static bool VerifySysopPassword() {
-  string password = bin.input_password("SY: ", 20);
-  return (password == a()->config()->system_password()) ? true : false;
+  const auto password = bin.input_password("SY: ", 20);
+  return password == a()->config()->system_password();
 }
 
 static void DoFailedLoginAttempt() {
-  a()->user()->SetNumIllegalLogons(a()->user()->GetNumIllegalLogons() + 1);
+  a()->user()->increment_illegal_logons();
   a()->WriteCurrentUser();
   bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
-  const string logline = StrCat("### ILLEGAL LOGON for ",
-    a()->names()->UserName(a()->sess().user_num()));
+  const auto logline = StrCat("### ILLEGAL LOGON for ",
+                              a()->names()->UserName(a()->sess().user_num()));
   sysoplog(false) << "";
   sysoplog(false) << logline;
   sysoplog(false) << "";
@@ -270,38 +270,38 @@ static void LeaveBadPasswordFeedback(int ans) {
   }
   bout.nl();
   bout << "What is your NAME or HANDLE? ";
-  auto tempName = bin.input_proper("", 31);
-  if (tempName.empty()) {
+  const auto temp_name = bin.input_proper("", 31);
+  if (temp_name.empty()) {
     return;
   }
   bout.nl();
   a()->sess().user_num(1);
-  a()->user()->set_name(tempName.c_str());
-  a()->user()->SetMacro(0, "");
-  a()->user()->SetMacro(1, "");
-  a()->user()->SetMacro(2, "");
-  a()->user()->SetSl(a()->config()->newuser_sl());
+  a()->user()->set_name(temp_name);
+  a()->user()->macro(0, "");
+  a()->user()->macro(1, "");
+  a()->user()->macro(2, "");
+  a()->user()->sl(a()->config()->newuser_sl());
   a()->user()->SetScreenChars(80);
   if (ans > 0) {
     select_editor();
   } else {
     a()->user()->SetDefaultEditor(0);
   }
-  a()->user()->SetNumEmailSent(0);
-  bool bSaveAllowCC = a()->IsCarbonCopyEnabled();
+  a()->user()->email_sent(0);
+  const auto save_allow_cc = a()->IsCarbonCopyEnabled();
   a()->SetCarbonCopyEnabled(false);
-  auto title = StrCat("** Illegal logon feedback from ", tempName);
+  const auto title = StrCat("** Illegal logon feedback from ", temp_name);
   email(title, 1, 0, true, 0, true);
-  a()->SetCarbonCopyEnabled(bSaveAllowCC);
-  if (a()->user()->GetNumEmailSent() > 0) {
+  a()->SetCarbonCopyEnabled(save_allow_cc);
+  if (a()->user()->email_sent() > 0) {
     ssm(1) << "Check your mailbox.  Someone forgot their password again!";
   }
 }
 
 static void CheckCallRestrictions() {
   if (a()->sess().user_num() > 0 && a()->user()->IsRestrictionLogon() &&
-      date() == a()->user()->GetLastOn() &&
-      a()->user()->GetTimesOnToday() > 0) {
+      date() == a()->user()->laston() &&
+      a()->user()->ontoday() > 0) {
     bout.nl();
     bout << "|#6Sorry, you can only logon once per day.\r\n";
     a()->Hangup();
@@ -384,7 +384,7 @@ void getuser() {
         set_language(0);
       }
       int nInstanceNumber;
-      if (a()->user()->GetSl() < 255 && user_online(a()->sess().user_num(), &nInstanceNumber)) {
+      if (a()->user()->sl() < 255 && user_online(a()->sess().user_num(), &nInstanceNumber)) {
         bout << "\r\n|#6You are already online on instance " << nInstanceNumber << "!\r\n\n";
         continue;
       }
@@ -402,7 +402,7 @@ void getuser() {
             ok = false;
           }
         }
-        if (a()->user()->GetSl() == 255 && a()->sess().incom() && ok) {
+        if (a()->user()->sl() == 255 && a()->sess().incom() && ok) {
           if (!VerifySysopPassword()) {
             ok = false;
           }
@@ -440,15 +440,15 @@ static void FixUserLinesAndColors() {
   if (a()->user()->GetNumExtended() > a()->max_extend_lines) {
     a()->user()->SetNumExtended(a()->max_extend_lines);
   }
-  if (a()->user()->GetColor(8) == 0 || a()->user()->GetColor(9) == 0) {
-    a()->user()->SetColor(8, a()->newuser_colors[8]);
-    a()->user()->SetColor(9, a()->newuser_colors[9]);
+  if (a()->user()->raw_color(8) == 0 || a()->user()->raw_color(9) == 0) {
+    a()->user()->color(8, a()->newuser_colors[8]);
+    a()->user()->color(9, a()->newuser_colors[9]);
   }
 }
 
 static void UpdateUserStatsForLogin() {
   to_char_array(g_szLastLoginDate, date());
-  if (a()->user()->GetLastOn() != g_szLastLoginDate) {
+  if (a()->user()->laston() != g_szLastLoginDate) {
     ResetTodayUserStats(a()->user());
   }
   AddCallToday(a()->user());
@@ -462,8 +462,8 @@ static void UpdateUserStatsForLogin() {
   }
   if (a()->sess().effective_sl() != 255 && !a()->sess().guest_user()) {
     a()->status_manager()->Run([](Status& s) {
-      s.IncrementCallerNumber();
-      s.IncrementNumCallsToday();
+      s.increment_caller_num();
+      s.increment_calls_today();
     });
   }
 }
@@ -480,8 +480,8 @@ static void PrintLogonFile() {
 
 static void PrintUserSpecificFiles() {
   const auto* user = a()->user();  // not-owned
-  bout.printfile(fmt::format("sl{}", user->GetSl()));
-  bout.printfile(fmt::format("dsl{}", user->GetDsl()));
+  bout.printfile(fmt::format("sl{}", user->sl()));
+  bout.printfile(fmt::format("dsl{}", user->dsl()));
 
   const int short_size = std::numeric_limits<uint16_t>::digits - 1;
   for (int i=0; i < short_size; i++) {
@@ -506,7 +506,7 @@ static std::string CreateLastOnLogLine(const Status& status) {
     const string f = fulldate();
     log_line = fmt::sprintf(
       "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
-      status.GetCallerNumber(),
+      status.caller_num(),
       username_num,
       t,
       f,
@@ -514,14 +514,14 @@ static std::string CreateLastOnLogLine(const Status& status) {
       a()->user()->GetState(),
       a()->user()->GetCountry(),
       a()->GetCurrentSpeed(),
-      a()->user()->GetTimesOnToday());
+      a()->user()->ontoday());
   } else {
     const string username_num = a()->names()->UserName(a()->sess().user_num());
     const string t = times();
     const string f = fulldate();
     log_line = fmt::sprintf("|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
-                            status.GetCallerNumber(), username_num, a()->sess().current_language(),
-                            t, f, a()->GetCurrentSpeed(), a()->user()->GetTimesOnToday());
+                            status.caller_num(), username_num, a()->sess().current_language(),
+                            t, f, a()->GetCurrentSpeed(), a()->user()->ontoday());
   }
   return log_line;
 }
@@ -564,25 +564,25 @@ static void UpdateLastOnFile() {
     bout.pausescr();
   }
 
-  auto status = a()->status_manager()->GetStatus();
+  auto status = a()->status_manager()->get_status();
   {
-    const string username_num = a()->names()->UserName(a()->sess().user_num());
-    string t = times();
-    string f = fulldate();
-    const string sysop_log_line = fmt::sprintf("%ld: %s %s %s   %s - %d (%u)",
-      status->GetCallerNumber(),
-      username_num,
-      t,
-      f,
-      a()->GetCurrentSpeed(),
-      a()->user()->GetTimesOnToday(),
-      a()->instance_number());
+    const auto username_num = a()->names()->UserName(a()->sess().user_num());
+    auto t = times();
+    auto f = fulldate();
+    const auto sysop_log_line = fmt::sprintf("%ld: %s %s %s   %s - %d (%u)",
+                                             status->caller_num(),
+                                             username_num,
+                                             t,
+                                             f,
+                                             a()->GetCurrentSpeed(),
+                                             a()->user()->ontoday(),
+                                             a()->instance_number());
     sysoplog(false) << "";
     sysoplog(false) << stripcolors(sysop_log_line);
     sysoplog(false) << "";
   }
   if (a()->sess().incom()) {
-    const auto remote_address = a()->remoteIO()->remote_info().address;
+    const auto& remote_address = a()->remoteIO()->remote_info().address;
     if (!remote_address.empty()) {
       sysoplog() << "Remote IP: " << remote_address;
     }
@@ -623,7 +623,7 @@ static void CheckAndUpdateUserInfo() {
     } while (a()->user()->birthday_year() == 0);
   }
 
-  if (!a()->user()->GetRealName()[0]) {
+  if (a()->user()->real_name().empty()) {
     input_realname();
   }
   if (!(a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
@@ -668,33 +668,30 @@ static std::string to_string(const net_networks_rec& n) {
 static void DisplayUserLoginInformation() {
   bout.nl();
 
-  const string username_num = a()->names()->UserName(a()->sess().user_num());
+  const auto username_num = a()->names()->UserName(a()->sess().user_num());
   bout << "|#9Name/Handle|#0....... |#2" << username_num << wwiv::endl;
   bout << "|#9Internet Address|#0.. |#2";
-  if (check_inet_addr(a()->user()->GetEmailAddress())) {
-    bout << a()->user()->GetEmailAddress() << wwiv::endl;
+  if (check_inet_addr(a()->user()->email_address())) {
+    bout << a()->user()->email_address() << wwiv::endl;
   } else {
     bout << "None.\r\n";
   }
-  auto la = a()->user()->last_address();
+  const auto la = a()->user()->last_address();
   if (!la.empty()) {
-    bout << "|#9Last IP Address|#0... |#2" << a()->user()->last_address() << wwiv::endl;
+    bout << "|#9Last IP Address|#0... |#2" << la << wwiv::endl;
   }
 
-  bout << "|#9Time allowed on|#0... |#2" << (nsl() + 30) / SECONDS_PER_MINUTE
-       << wwiv::endl;
-  if (a()->user()->GetNumIllegalLogons() > 0) {
-    bout << "|#9Illegal logons|#0.... |#2" << a()->user()->GetNumIllegalLogons()
-         << wwiv::endl;
+  bout << "|#9Time allowed on|#0... |#2" << (nsl() + 30) / SECONDS_PER_MINUTE << wwiv::endl;
+  if (a()->user()->illegal_logons() > 0) {
+    bout << "|#9Illegal logons|#0.... |#2" << a()->user()->illegal_logons() << wwiv::endl;
   }
-  if (a()->user()->GetNumMailWaiting() > 0) {
-    bout << "|#9Mail waiting|#0...... |#2" << a()->user()->GetNumMailWaiting()
-         << wwiv::endl;
+  if (a()->user()->email_waiting() > 0) {
+    bout << "|#9Mail waiting|#0...... |#2" << a()->user()->email_waiting() << wwiv::endl;
   }
-  if (a()->user()->GetTimesOnToday() == 1) {
-    bout << "|#9Date last on|#0...... |#2" << a()->user()->GetLastOn() << wwiv::endl;
+  if (a()->user()->ontoday() == 1) {
+    bout << "|#9Date last on|#0...... |#2" << a()->user()->laston() << wwiv::endl;
   } else {
-    bout << "|#9Times on today|#0.... |#2" << a()->user()->GetTimesOnToday() << wwiv::endl;
+    bout << "|#9Times on today|#0.... |#2" << a()->user()->ontoday() << wwiv::endl;
   }
   bout << "|#9Sysop currently|#0... |#2";
   if (sysop2()) {
@@ -706,7 +703,7 @@ static void DisplayUserLoginInformation() {
   bout << "|#9System is|#0......... |#2WWIV " << full_version() << "  " << wwiv::endl;
 
   /////////////////////////////////////////////////////////////////////////
-  a()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->reload_status();
   const auto screen_width = a()->user()->GetScreenChars() - 19;
   int width = 0;
   bout << "|#9Networks|#0.......... ";
@@ -723,25 +720,25 @@ static void DisplayUserLoginInformation() {
   }
   bout.nl();
 
-  bout << "|#9Host OS|#0........... |#2" << wwiv::os::os_version_string() << wwiv::endl;
+  bout << "|#9Host OS|#0........... |#2" << os_version_string() << wwiv::endl;
   bout << "|#9Instance|#0.......... |#2" << a()->instance_number() << "\r\n\n";
-  if (a()->user()->GetForwardUserNumber()) {
-    if (a()->user()->GetForwardSystemNumber() != 0) {
-      set_net_num(a()->user()->GetForwardNetNumber());
-      if (!valid_system(a()->user()->GetForwardSystemNumber())) {
+  if (a()->user()->forward_usernum()) {
+    if (a()->user()->forward_systemnum() != 0) {
+      set_net_num(a()->user()->forward_netnum());
+      if (!valid_system(a()->user()->forward_systemnum())) {
         a()->user()->ClearMailboxForward();
         bout << "Forwarded to unknown system; forwarding reset.\r\n";
       } else {
         bout << "Mail set to be forwarded to ";
         if (wwiv::stl::ssize(a()->nets()) > 1) {
-          bout << "#" << a()->user()->GetForwardUserNumber()
+          bout << "#" << a()->user()->forward_usernum()
                << " @"
-               << a()->user()->GetForwardSystemNumber()
+               << a()->user()->forward_systemnum()
                << "." << a()->network_name() << "."
                << wwiv::endl;
         } else {
-          bout << "#" << a()->user()->GetForwardUserNumber() << " @"
-               << a()->user()->GetForwardSystemNumber() << "." << wwiv::endl;
+          bout << "#" << a()->user()->forward_usernum() << " @"
+               << a()->user()->forward_systemnum() << "." << wwiv::endl;
         }
       }
     } else {
@@ -749,10 +746,10 @@ static void DisplayUserLoginInformation() {
         bout << "Your mailbox is closed.\r\n\n";
       } else {
         bout << "Mail set to be forwarded to #" 
-             << a()->user()->GetForwardUserNumber() << wwiv::endl;
+             << a()->user()->forward_usernum() << wwiv::endl;
       }
     }
-  } else if (a()->user()->GetForwardSystemNumber() != 0) {
+  } else if (a()->user()->forward_systemnum() != 0) {
     string internet_addr;
     read_inet_addr(internet_addr, a()->sess().user_num());
     bout << "Mail forwarded to Internet " << internet_addr << ".\r\n";
@@ -764,7 +761,7 @@ static void DisplayUserLoginInformation() {
 
 static void LoginCheckForNewMail() {
   bout << "|#9Scanning for new mail... ";
-  if (a()->user()->GetNumMailWaiting() > 0) {
+  if (a()->user()->email_waiting() > 0) {
     int nNumNewMessages = check_new_mail(a()->sess().user_num());
     if (nNumNewMessages) {
       bout << "|#9You have |#2" << nNumNewMessages 
@@ -774,7 +771,7 @@ static void LoginCheckForNewMail() {
         readmail(1);
       }
     } else {
-      bout << "|#9You have |#2" << a()->user()->GetNumMailWaiting() 
+      bout << "|#9You have |#2" << a()->user()->email_waiting() 
            << "|#9 old message(s) in your mailbox.\r\n";
     }
   } else {
@@ -869,17 +866,17 @@ void logon() {
 
   LoginCheckForNewMail();
 
-  if (a()->user()->GetNewScanDateNumber()) {
-    a()->sess().nscandate(a()->user()->GetNewScanDateNumber());
+  if (a()->user()->nscan_daten()) {
+    a()->sess().nscandate(a()->user()->nscan_daten());
   } else {
-    a()->sess().nscandate(a()->user()->GetLastOnDateNumber());
+    a()->sess().nscandate(a()->user()->last_daten());
   }
   a()->batch().clear();
 
   CheckUserForVotingBooth();
 
-  if ((a()->sess().incom() || sysop1()) && a()->user()->GetSl() < 255) {
-    broadcast(fmt::format("{} Just logged on!", a()->user()->GetName()));
+  if ((a()->sess().incom() || sysop1()) && a()->user()->sl() < 255) {
+    broadcast(fmt::format("{} Just logged on!", a()->user()->name()));
   }
   setiia(std::chrono::seconds(5));
 
@@ -901,7 +898,7 @@ void logon() {
 
   if (a()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN)) {
     auto nextsub = false;
-    if (a()->user()->GetSl() < 255) {
+    if (a()->user()->sl() < 255) {
       a()->sess().forcescansub(true);
       qscan(a()->GetForcedReadSubNumber(), nextsub);
       a()->sess().forcescansub(false);
@@ -913,15 +910,15 @@ void logon() {
 }
 
 void logoff() {
-  mailrec m;
+  mailrec m{};
 
   if (a()->sess().incom()) {
     play_sdf(LOGOFF_NOEXT, false);
   }
 
   if (a()->sess().user_num() > 0) {
-    if ((a()->sess().incom() || sysop1()) && a()->user()->GetSl() < 255) {
-      broadcast(fmt::format("{} Just logged off!", a()->user()->GetName()));
+    if ((a()->sess().incom() || sysop1()) && a()->user()->sl() < 255) {
+      broadcast(fmt::format("{} Just logged off!", a()->user()->name()));
     }
   }
   setiia(std::chrono::seconds(5));
@@ -939,27 +936,27 @@ void logoff() {
     sysoplog(false) << "";
     sysoplog(false) << stripcolors(text);
   }
-  a()->user()->SetLastBaudRate(a()->modem_speed_);
+  a()->user()->last_bps(a()->modem_speed_);
 
   // put this back here where it belongs... (not sure why it te
-  a()->user()->SetLastOn(g_szLastLoginDate);
+  a()->user()->laston(g_szLastLoginDate);
 
-  a()->user()->SetNumIllegalLogons(0);
+  a()->user()->illegal_logons(0);
   const auto seconds_used_duration = duration_cast<seconds>(
       std::chrono::system_clock::now() - a()->sess().system_logon_time() - a()->extratimecall());
   a()->user()->add_timeon(seconds_used_duration);
   a()->user()->add_timeon_today(seconds_used_duration);
 
   a()->status_manager()->Run([=](Status& s) {
-    const int active_today = s.GetMinutesActiveToday();
+    const int active_today = s.active_today_minutes();
     const auto minutes_used_now = std::chrono::duration_cast<std::chrono::minutes>(seconds_used_duration).count();
-    s.SetMinutesActiveToday(active_today + minutes_used_now);
+    s.active_today_minutes(active_today + minutes_used_now);
   });
 
   if (a()->sess().scanned_files()) {
-    a()->user()->SetNewScanDateNumber(a()->user()->GetLastOnDateNumber());
+    a()->user()->nscan_daten(a()->user()->last_daten());
   }
-  a()->user()->SetLastOnDateNumber(daten_t_now());
+  a()->user()->last_daten(daten_t_now());
   const auto used_this_session = (std::chrono::system_clock::now() - a()->sess().system_logon_time());
   const auto min_used = std::chrono::duration_cast<std::chrono::minutes>(used_this_session);
   sysoplog(false) << "Read: " << a()->GetNumMessagesReadThisLogon() 
@@ -967,7 +964,7 @@ void logoff() {
   {
     auto pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
-      a()->user()->SetNumMailWaiting(0);
+      a()->user()->email_waiting(0);
       const auto num_records = static_cast<int>(pFileEmail->length() / sizeof(mailrec));
       auto r = 0;
       auto w = 0;
@@ -976,8 +973,8 @@ void logoff() {
         pFileEmail->Read(&m, sizeof(mailrec));
         if (m.tosys != 0 || m.touser != 0) {
           if (m.tosys == 0 && m.touser == a()->sess().user_num()) {
-            if (a()->user()->GetNumMailWaiting() != 255) {
-              a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() + 1);
+            if (a()->user()->email_waiting() != 255) {
+              a()->user()->email_waiting(a()->user()->email_waiting() + 1);
             }
           }
           if (r != w) {
@@ -998,7 +995,7 @@ void logoff() {
       }
       pFileEmail->set_length(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w));
       a()->status_manager()->Run([](Status& s) {
-        s.IncrementFileChangedFlag(Status::file_change_email);
+        s.increment_filechanged(Status::file_change_email);
       });
       pFileEmail->Close();
     }

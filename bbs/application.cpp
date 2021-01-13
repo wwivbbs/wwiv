@@ -246,7 +246,7 @@ bool Application::ReadCurrentUser(int user_number) {
 }
 
 void Application::reset_effective_sl() {
-  sess().effective_sl(user()->GetSl());
+  sess().effective_sl(user()->sl());
 }
 
 bool Application::WriteCurrentUser() {
@@ -282,7 +282,7 @@ void Application::tleft(bool check_for_timeout) {
     return;
   }
 
-  const auto temp_sysop = user()->GetSl() != 255 && sess().effective_sl() == 255;
+  const auto temp_sysop = user()->sl() != 255 && sess().effective_sl() == 255;
   const auto sysop_available = wwiv::common::sysop1();
 
   const auto cx = localIO()->WhereX();
@@ -320,7 +320,7 @@ void Application::tleft(bool check_for_timeout) {
     if (sess().IsUserOnline()) {
       localIO()->PutsXY(18, 3, tleft_display);
     } else {
-      localIO()->PutsXY(18, 3, user()->GetPassword());
+      localIO()->PutsXY(18, 3, user()->password());
     }
   } break;
   case LocalIO::topdata_t::none:
@@ -395,7 +395,7 @@ void Application::handle_sysop_key(uint8_t key) {
         tleft(false);
         break;
       case F9: /* F9 */
-        if (user()->GetSl() != 255) {
+        if (user()->sl() != 255) {
           if (sess().effective_sl() != 255) {
             sess().effective_sl(255);
           } else {
@@ -470,7 +470,7 @@ void Application::UpdateTopScreen() {
     return;
   }
 
-  auto status = (status_manager()->GetStatus());
+  auto status = (status_manager()->get_status());
   int i;
   char sl[82], ar[17], dar[17], restrict[17], rst[17];
 
@@ -530,33 +530,33 @@ void Application::UpdateTopScreen() {
   case LocalIO::topdata_t::system: {
     localIO()->PutsXY(0, 0,
                       fmt::format("{:>50}  Activity for {:>8}:      ", config()->system_name(),
-                                  status->GetLastDate()));
+                                  status->last_date()));
 
     localIO()->PutsXY(
         0, 1,
         fmt::sprintf(
             "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
-            status->GetNumUsers(), status->GetCallerNumber(), status->GetNumCallsToday(),
-            status->GetNumLocalPosts()));
+            status->num_users(), status->caller_num(), status->calls_today(),
+            status->localposts()));
 
     const auto username_num = names()->UserName(sess().user_num());
     localIO()->PutsXY(0, 2,
                       fmt::sprintf("%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
-                                   username_num, status->GetMinutesActiveToday(),
-                                   static_cast<int>(10 * status->GetMinutesActiveToday() / 144),
-                                   status->GetNumEmailSentToday()));
+                                   username_num, status->active_today_minutes(),
+                                   static_cast<int>(10 * status->active_today_minutes() / 144),
+                                   status->email_today()));
 
     User sysop{};
     auto feedback_waiting = 0;
     if (users()->readuser_nocache(&sysop, 1)) {
-      feedback_waiting = sysop.GetNumMailWaiting();
+      feedback_waiting = sysop.email_waiting();
     }
     localIO()->PutsXY(
         0, 3,
         fmt::sprintf(
             "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
-            user()->GetSl(), user()->GetDsl(), feedback_waiting, status->GetNumUploadsToday(),
-            status->GetNumFeedbackSentToday()));
+            user()->sl(), user()->dsl(), feedback_waiting, status->uploads_today(),
+            status->feedback_today()));
   } break;
   case LocalIO::topdata_t::user: {
     to_char_array(rst, restrict_string);
@@ -581,22 +581,22 @@ void Application::UpdateTopScreen() {
     ar[16] = '\0';
     restrict[16] = '\0';
     string lo;
-    if (date() != user()->GetLastOn()) {
-      lo = user()->GetLastOn();
+    if (date() != user()->laston()) {
+      lo = user()->laston();
     } else {
-      lo = fmt::sprintf("Today:%2d", user()->GetTimesOnToday());
+      lo = fmt::sprintf("Today:%2d", user()->ontoday());
     }
 
     const auto username_num = names()->UserName(sess().user_num());
     auto line =
         fmt::sprintf("%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num,
-                     user()->GetNumMailWaiting(), user()->GetFilesUploaded(), user()->uk(),
-                     user()->GetSl(), user()->GetNumLogons(), user()->GetNumMessagesPosted());
+                     user()->email_waiting(), user()->uploaded(), user()->uk(),
+                     user()->sl(), user()->logons(), user()->messages_posted());
     localIO()->PutsXYA(0, 0, bout.curatr(), line);
 
-    string callsign_or_regnum = user()->GetCallsign();
-    if (user()->GetWWIVRegNumber()) {
-      callsign_or_regnum = std::to_string(user()->GetWWIVRegNumber());
+    string callsign_or_regnum = user()->callsign();
+    if (user()->wwiv_regnum()) {
+      callsign_or_regnum = std::to_string(user()->wwiv_regnum());
     }
     auto used_this_session = (system_clock::now() - sess().system_logon_time());
     auto used_total = used_this_session + user()->timeon();
@@ -604,23 +604,23 @@ void Application::UpdateTopScreen() {
 
     localIO()->PutsXY(0, 1,
                       fmt::sprintf("%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
-                                   user()->GetRealName(), user()->GetVoicePhoneNumber(),
-                                   callsign_or_regnum, user()->GetFilesDownloaded(),
-                                   user()->dk(), user()->GetDsl(), minutes_used.count(),
-                                   user()->GetNumEmailSent() + user()->GetNumNetEmailSent()));
+                                   user()->real_name(), user()->GetVoicePhoneNumber(),
+                                   callsign_or_regnum, user()->downloaded(),
+                                   user()->dk(), user()->dsl(), minutes_used.count(),
+                                   user()->email_sent() + user()->email_net()));
 
     localIO()->PutsXY(0, 2,
                       fmt::sprintf("ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict,
-                                   user()->GetExempt(), lo, user()->GetNumFeedbackSent()));
+                                   user()->exempt(), lo, user()->feedback_sent()));
 
     User sysop{};
     int feedback_waiting = 0;
     if (users()->readuser_nocache(&sysop, 1)) {
-      feedback_waiting = sysop.GetNumMailWaiting();
+      feedback_waiting = sysop.email_waiting();
     }
     localIO()->PutsXY(0, 3,
                       fmt::sprintf("%-40.40s %c %2u %-16.16s           FW= %3u",
-                                   user()->GetNote(), user()->GetGender(), user()->age(),
+                                   user()->note(), user()->GetGender(), user()->age(),
                                    ctypes(user()->GetComputerType()), feedback_waiting));
 
     if (sess() .chatcall()) {
@@ -910,8 +910,8 @@ int Application::Run(int argc, char* argv[]) {
   }
 
   if (cmdline.barg("beginday")) {
-    const auto status = status_manager()->GetStatus();
-    if (date() != status->GetLastDate()) {
+    const auto status = status_manager()->get_status();
+    if (date() != status->last_date()) {
       // This may be another node, but the user explicitly wanted to run the beginday
       // event from the commandline, so we'll just check the date.
       beginday(true);
@@ -1258,5 +1258,5 @@ void Application::Hangup() {
   }
   sess().hangup(true);
   VLOG(1) << "Invoked Hangup()";
-  throw wwiv::common::hangup_error(user()->GetName());
+  throw wwiv::common::hangup_error(user()->name());
 }

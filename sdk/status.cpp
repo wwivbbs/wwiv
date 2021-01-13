@@ -17,14 +17,19 @@
 /*                                                                        */
 /**************************************************************************/
 #include "sdk/status.h"
+
+#include "core/datafile.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/filenames.h"
+
 #include <memory>
 #include <string>
+#include <utility>
 
 using std::string;
 using std::unique_ptr;
@@ -34,16 +39,16 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk {
 
-static string GetSysopLogFileName(const string& d) {
+static string sysoplog_filename(const string& d) {
   return fmt::sprintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
 }
 
-Status::Status(const std::string& datadir, const statusrec_t& s)
-    : status_(s), datadir_(datadir) {}
+Status::Status(std::string datadir, const statusrec_t& s)
+    : status_(s), datadir_(std::move(datadir)) {}
 
 Status::~Status() = default;
 
-std::string Status::GetLastDate(int days_ago) const {
+std::string Status::last_date(int days_ago) const {
   DCHECK_GE(days_ago, 0);
   DCHECK_LE(days_ago, 2);
   switch (days_ago) {
@@ -58,12 +63,12 @@ std::string Status::GetLastDate(int days_ago) const {
   }
 }
 
-std::string Status::GetLogFileName(int nDaysAgo) const {
+std::string Status::log_filename(int nDaysAgo) const {
   DCHECK_GE(nDaysAgo, 0);
   switch (nDaysAgo) {
   case 0:
   {
-    return GetSysopLogFileName(DateTime::now().to_string("%m/%d/%y"));
+    return sysoplog_filename(DateTime::now().to_string("%m/%d/%y"));
   }
   case 1:
     return status_.log1;
@@ -74,14 +79,14 @@ std::string Status::GetLogFileName(int nDaysAgo) const {
   }
 }
 
-void Status::EnsureCallerNumberIsValid() {
+void Status::ensure_callernum_valid() {
   if (status_.callernum != 65535) {
-    this->SetCallerNumber(status_.callernum);
+    this->caller_num(status_.callernum);
     status_.callernum = 65535;
   }
 }
 
-void Status::ValidateAndFixDates() {
+void Status::ensure_dates_valid() {
   if (status_.date1[8] != '\0') {
     status_.date1[6] = '0';
     status_.date1[7] = '0';
@@ -122,7 +127,7 @@ bool Status::NewDay() {
   status_.days++;
 
   // Need to verify the dates aren't trashed otherwise we can crash here.
-  ValidateAndFixDates();
+  ensure_dates_valid();
 
   strcpy(status_.date3, status_.date2);
   strcpy(status_.date2, status_.date1);
@@ -130,91 +135,59 @@ bool Status::NewDay() {
   to_char_array(status_.date1, d);
   strcpy(status_.log2, status_.log1);
 
-  const auto log = GetSysopLogFileName(GetLastDate(1));
+  const auto log = sysoplog_filename(last_date(1));
   to_char_array(status_.log1, log);
   return true;
 }
 
 // StatusMgr
-bool StatusMgr::Get(bool bLockFile) {
-  if (!status_file_) {
-    status_file_.reset(new File(FilePath(datadir_, STATUS_DAT)));
-    const auto lock_mode = (bLockFile) ? (File::modeReadWrite | File::modeBinary) : (File::modeReadOnly | File::modeBinary);
-    status_file_->Open(lock_mode);
-  } else {
-    status_file_->Seek(0L, File::Whence::begin);
-  }
-  if (!status_file_->IsOpen()) {
-    return false;
-  }
-  char oldFileChangeFlags[7];
-  for (auto nFcIndex = 0; nFcIndex < 7; nFcIndex++) {
-    oldFileChangeFlags[nFcIndex] = statusrec_.filechange[nFcIndex];
-  }
-  status_file_->Read(&statusrec_, sizeof(statusrec_t));
-
-  if (!bLockFile) {
-    status_file_.reset();
-  }
-
-  for (int i = 0; i < 7; i++) {
-    if (oldFileChangeFlags[i] != statusrec_.filechange[i]) {
-      // Invoke callback on changes.
-      if (callback_) {
-        callback_(i);
-      }
+bool StatusMgr::reload_status() {
+  if (auto file = DataFile<statusrec_t>(FilePath(datadir_, STATUS_DAT),
+                                        File::modeBinary | File::modeReadWrite)) {
+    char oldFileChangeFlags[7];
+    for (auto nFcIndex = 0; nFcIndex < 7; nFcIndex++) {
+      oldFileChangeFlags[nFcIndex] = statusrec_.filechange[nFcIndex];
     }
+    if (!file.Read(0, &statusrec_)) {
+      return false;
+    }
+    if (!callback_) {
+      return true;
+    }
+    for (auto i = 0; i < 7; i++) {
+      if (oldFileChangeFlags[i] == statusrec_.filechange[i]) {
+        continue;
+      }
+      // Invoke callback on changes only if one is defined
+      callback_(i);
+    }
+    return true;
   }
-  return true;
+
+  return false;
 }
 
-bool StatusMgr::RefreshStatusCache() {
-  return this->Get(false);
-}
-
-std::unique_ptr<Status> StatusMgr::GetStatus() {
-  this->Get(false);
+std::unique_ptr<Status> StatusMgr::get_status() {
+  this->reload_status();
   return std::make_unique<Status>(datadir_, statusrec_);
 }
 
-void StatusMgr::AbortTransaction(std::unique_ptr<Status> pStatus) {
-  status_file_.reset();
-}
-
-std::unique_ptr<Status> StatusMgr::BeginTransaction() {
-  this->Get(true);
-  return std::make_unique<Status>(datadir_, statusrec_);
-}
-
-bool StatusMgr::CommitTransaction(std::unique_ptr<Status> pStatus) {
-  return this->Write(&pStatus->status_);
-}
-
-bool StatusMgr::Write(statusrec_t *pStatus) {
-  if (!status_file_) {
-    status_file_.reset(new File(FilePath(datadir_, STATUS_DAT)));
-    status_file_->Open(File::modeReadWrite | File::modeBinary);
-  } else {
-    status_file_->Seek(0L, File::Whence::begin);
-  }
-
-  if (!status_file_->IsOpen()) {
-    return false;
-  }
-  status_file_->Write(pStatus, sizeof(statusrec_t));
-  status_file_.reset();
-  return true;
-}
-
-int StatusMgr::GetUserCount() {
-  return GetStatus()->GetNumUsers();
+int StatusMgr::user_count() {
+  return get_status()->num_users();
 }
 
 bool StatusMgr::Run(status_txn_fn fn) {
-  auto status = BeginTransaction();
-  CHECK_NOTNULL(status);
-  fn(*status);
-  return CommitTransaction(std::move(status));
+  ScopeExit at_exit([&] { this->reload_status(); });
+  if (auto file = DataFile<statusrec_t>(FilePath(datadir_, STATUS_DAT),
+                                        File::modeBinary | File::modeReadWrite)) {
+    if (file.Read(0, &statusrec_)) {
+      const auto status = std::make_unique<Status>(datadir_, statusrec_);
+      fn(*status);
+      file.Write(0, &statusrec_);
+    }
+  return true;
+  }
+  return false;
 }
 
 

@@ -769,15 +769,15 @@ static void update_qscan(uint32_t qscan) {
 #ifdef UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
   uint32_t current_qscan_pointer = 0;
   {
-    auto status = a()->status_manager()->GetStatus();
+    auto status = a()->status_manager()->get_status();
     // not sure why we check this twice...
     // maybe we need a getCachedQScanPointer?
-    current_qscan_pointer = status->GetQScanPointer();
+    current_qscan_pointer = status->qscanptr();
   }
   if (qscan >= current_qscan_pointer) {
     a()->status_manager()->Run([&](Status& s) {
-      if (qscan >= s.GetQScanPointer()) {
-        s.SetQScanPointer(qscan + 1);
+      if (qscan >= s.qscanptr()) {
+        s.qscanptr(qscan + 1);
       }
     });
   }
@@ -836,7 +836,7 @@ ReadMessageResult read_post(int& msgnum, bool* next, int* val) {
     m.flags.insert(MessageFlags::PERMANENT);
   }
   if ((p.status & status_pending_net) &&
-      a()->user()->GetSl() > a()->config()->newuser_sl()) {
+      a()->user()->sl() > a()->config()->newuser_sl()) {
     *val |= 2;
     m.flags.insert(MessageFlags::NOT_NETWORK_VALIDATED);
   }
@@ -852,7 +852,7 @@ ReadMessageResult read_post(int& msgnum, bool* next, int* val) {
       set_net_num(saved_net_num);
     }
 
-    a()->user()->SetNumMessagesRead(a()->user()->GetNumMessagesRead() + 1);
+    a()->user()->messages_read(a()->user()->messages_read() + 1);
     a()->SetNumMessagesReadThisLogon(a()->GetNumMessagesReadThisLogon() + 1);
   }
 

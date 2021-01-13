@@ -571,7 +571,7 @@ void boardedit() {
   }
   showsubs();
   auto done = false;
-  a()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->reload_status();
   do {
     bout.nl();
     bout << "|#9(|#2Q|#9)uit (|#2D|#9)elete, (|#2I|#9)nsert, (|#2M|#9)odify, (|#2S|#9)wapSubs, (|#2C|#9)onferences : ";

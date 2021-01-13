@@ -23,8 +23,9 @@
 #include "core/datetime.h"
 #include "core/ip_address.h"
 #include "core/strings.h"
-#include "sdk/net/net.h"
 #include "sdk/vardec.h"
+#include "sdk/net/net.h"
+
 #include <chrono>
 #include <cstdint>
 #include <cstring>
@@ -55,7 +56,7 @@ namespace wwiv::sdk {
 /**
  * User Class - Represents a User record
  */
-class User {
+class User final {
  public:
   // Constants
 
@@ -114,7 +115,7 @@ class User {
   // Constructor and Destructor
   //
   User();
-  ~User();
+  ~User() = default;
 
   User(const User& w);
   explicit User(const userrec& rhs);
@@ -167,56 +168,56 @@ class User {
   [[nodiscard]] bool HasStatusFlag(int nFlag) const {
     return (data.sysstatus & nFlag) != 0;
   }
-  [[nodiscard]] long GetStatus() const {
+  [[nodiscard]] long get_status() const {
     return static_cast<long>(data.sysstatus);
   }
   void SetStatus(long l) {
     data.sysstatus = static_cast<uint32_t>(l);
   }
   [[nodiscard]] bool HasAnsi() const {
-    return HasStatusFlag(User::ansi);
+    return HasStatusFlag(ansi);
   }
-  [[nodiscard]] bool HasColor() const { return HasStatusFlag(User::status_color); }
+  [[nodiscard]] bool HasColor() const { return HasStatusFlag(status_color); }
   [[nodiscard]] bool HasMusic() const {
-    return HasStatusFlag(User::music);
+    return HasStatusFlag(music);
   }
   [[nodiscard]] bool HasPause() const {
-    return HasStatusFlag(User::pauseOnPage);
+    return HasStatusFlag(pauseOnPage);
   }
   [[nodiscard]] bool IsExpert() const {
-    return HasStatusFlag(User::expert);
+    return HasStatusFlag(expert);
   }
   [[nodiscard]] bool HasShortMessage() const {
-    return HasStatusFlag(User::SMW);
+    return HasStatusFlag(SMW);
   }
   [[nodiscard]] bool IsFullScreen() const {
-    return HasStatusFlag(User::fullScreen);
+    return HasStatusFlag(fullScreen);
   }
   [[nodiscard]] bool IsNewScanFiles() const {
-    return HasStatusFlag(User::nscanFileSystem);
+    return HasStatusFlag(nscanFileSystem);
   }
   [[nodiscard]] bool IsUseExtraColor() const {
-    return HasStatusFlag(User::extraColor);
+    return HasStatusFlag(extraColor);
   }
   [[nodiscard]] bool IsUseClearScreen() const {
-    return HasStatusFlag(User::clearScreen);
+    return HasStatusFlag(clearScreen);
   }
   [[nodiscard]] bool IsUseConference() const {
-    return HasStatusFlag(User::conference);
+    return HasStatusFlag(conference);
   }
   [[nodiscard]] bool IsIgnoreChatRequests() const {
-    return HasStatusFlag(User::noChat);
+    return HasStatusFlag(noChat);
   }
   [[nodiscard]] bool IsIgnoreNodeMessages() const {
-    return HasStatusFlag(User::noMsgs);
+    return HasStatusFlag(noMsgs);
   }
 
   [[nodiscard]] bool IsUseAutoQuote() const {
-    return HasStatusFlag(User::autoQuote);
+    return HasStatusFlag(autoQuote);
   }
   [[nodiscard]] bool IsUse24HourClock() const {
-    return HasStatusFlag(User::twentyFourHourClock);
-  };
+    return HasStatusFlag(twentyFourHourClock);
+  }
 
   // USERREC.exempt
   void SetExemptFlag(int nFlag) {
@@ -233,19 +234,19 @@ class User {
   }
 
   [[nodiscard]] bool IsExemptRatio() const {
-    return HasExemptFlag(User::exemptRatio);
+    return HasExemptFlag(exemptRatio);
   }
   [[nodiscard]] bool IsExemptTime() const {
-    return HasExemptFlag(User::exemptTime);
+    return HasExemptFlag(exemptTime);
   }
   [[nodiscard]] bool IsExemptPost() const {
-    return HasExemptFlag(User::exemptPost);
+    return HasExemptFlag(exemptPost);
   }
   [[nodiscard]] bool IsExemptAll() const {
-    return HasExemptFlag(User::exemptAll);
+    return HasExemptFlag(exemptAll);
   }
   [[nodiscard]] bool IsExemptAutoDelete() const {
-    return HasExemptFlag(User::exemptAutoDelete);
+    return HasExemptFlag(exemptAutoDelete);
   }
 
   // USERREC.restrict
@@ -261,55 +262,49 @@ class User {
   [[nodiscard]] bool HasRestrictionFlag(int nFlag) const noexcept {
     return (data.restrict & nFlag) != 0;
   }
-  [[nodiscard]] uint16_t GetRestriction() const {
+  [[nodiscard]] uint16_t restriction() const {
     return data.restrict;
   }
-  void SetRestriction(uint16_t n) {
+  void restriction(uint16_t n) {
     data.restrict = n;
   }
 
   [[nodiscard]] bool IsRestrictionLogon() const {
-    return HasRestrictionFlag(User::restrictLogon);
+    return HasRestrictionFlag(restrictLogon);
   }
   [[nodiscard]] bool IsRestrictionChat() const {
-    return HasRestrictionFlag(User::restrictChat);
+    return HasRestrictionFlag(restrictChat);
   }
   [[nodiscard]] bool IsRestrictionValidate() const {
-    return HasRestrictionFlag(User::restrictValidate);
+    return HasRestrictionFlag(restrictValidate);
   }
   [[nodiscard]] bool IsRestrictionAutomessage() const {
-    return HasRestrictionFlag(User::restrictAutomessage);
+    return HasRestrictionFlag(restrictAutomessage);
   }
   [[nodiscard]] bool IsRestrictionAnonymous() const {
-    return HasRestrictionFlag(User::restrictAnony);
+    return HasRestrictionFlag(restrictAnony);
   }
   [[nodiscard]] bool IsRestrictionPost() const {
-    return HasRestrictionFlag(User::restrictPost);
+    return HasRestrictionFlag(restrictPost);
   }
   [[nodiscard]] bool IsRestrictionEmail() const {
-    return HasRestrictionFlag(User::restrictEmail);
+    return HasRestrictionFlag(restrictEmail);
   }
   [[nodiscard]] bool IsRestrictionVote() const {
-    return HasRestrictionFlag(User::restrictVote);
+    return HasRestrictionFlag(restrictVote);
   }
   [[nodiscard]] bool IsRestrictionMultiNodeChat() const {
-    return HasRestrictionFlag(User::restrictMultiNodeChat);
+    return HasRestrictionFlag(restrictMultiNodeChat);
   }
   [[nodiscard]] bool IsRestrictionNet() const {
-    return HasRestrictionFlag(User::restrictNet);
+    return HasRestrictionFlag(restrictNet);
   }
   [[nodiscard]] bool IsRestrictionUpload() const {
-    return HasRestrictionFlag(User::restrictUpload);
+    return HasRestrictionFlag(restrictUpload);
   }
 
-  void SetArFlag(int nFlag) {
-    data.ar |= nFlag;
-  }
   void ToggleArFlag(int nFlag) {
     data.ar ^= nFlag;
-  }
-  void ClearArFlag(int nFlag) {
-    data.ar &= ~nFlag;
   }
   [[nodiscard]] bool HasArFlag(int ar) const {
     if (ar == 0) {
@@ -318,21 +313,15 @@ class User {
     }
     return (data.ar & ar) != 0;
   }
-  [[nodiscard]] int GetAr() const {
+  [[nodiscard]] int ar_int() const {
     return data.ar;
   }
-  void SetAr(int n) {
+  void ar_int(int n) {
     data.ar = static_cast<uint16_t>(n);
   }
 
-  void SetDarFlag(int nFlag) {
-    data.dar |= nFlag;
-  }
   void ToggleDarFlag(int nFlag) {
     data.dar ^= nFlag;
-  }
-  void ClearDarFlag(int nFlag) {
-    data.dar &= ~nFlag;
   }
   [[nodiscard]] bool HasDarFlag(int nFlag) const {
     if (nFlag == 0) {
@@ -341,30 +330,33 @@ class User {
     }
     return (data.dar & nFlag) != 0;
   }
-  [[nodiscard]] int GetDar() const {
+  [[nodiscard]] int dar_int() const {
     return data.dar;
   }
-  void SetDar(int n) {
+  void dar_int(int n) {
     data.dar = static_cast<uint16_t>(n);
   }
 
   [[nodiscard]] const char *GetName() const {
     return reinterpret_cast<const char*>(data.name);
   }
-  void set_name(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.name), s);
+  [[nodiscard]] std::string name() const {
+    return std::string(reinterpret_cast<const char*>(data.name));
   }
-  [[nodiscard]] const char *GetRealName() const {
-    return reinterpret_cast<const char*>(data.realname);
+  void set_name(const std::string& s) {
+    strcpy(reinterpret_cast<char*>(data.name), s.c_str());
   }
-  void SetRealName(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.realname), s);
+  [[nodiscard]] std::string real_name() const {
+    return std::string(reinterpret_cast<const char*>(data.realname));
   }
-  [[nodiscard]] const char *GetCallsign() const {
-    return reinterpret_cast<const char*>(data.callsign);
+  void real_name(const std::string& s) {
+    strcpy(reinterpret_cast<char*>(data.realname), s.c_str());
   }
-  void SetCallsign(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.callsign), s);
+  [[nodiscard]] std::string callsign() const {
+    return std::string(reinterpret_cast<const char*>(data.callsign));
+  }
+  void callsign(const std::string& s) {
+    strcpy(reinterpret_cast<char*>(data.callsign), s.c_str());
   }
   [[nodiscard]] const char *GetVoicePhoneNumber() const {
     return reinterpret_cast<const char*>(data.phone);
@@ -408,39 +400,39 @@ class User {
   void SetZipcode(const char *s) {
     strcpy(reinterpret_cast<char*>(data.zipcode), s);
   }
-  [[nodiscard]] const char *GetPassword() const {
-    return reinterpret_cast<const char*>(data.pw);
+  [[nodiscard]] std::string password() const {
+    return std::string(reinterpret_cast<const char*>(data.pw));
   }
-  void SetPassword(const std::string& s) {
-    wwiv::strings::to_char_array(data.pw, s);
+  void password(const std::string& s) {
+    strings::to_char_array(data.pw, s);
   }
 
-  [[nodiscard]] std::string GetLastOn() const {
+  [[nodiscard]] std::string laston() const {
     return data.laston;
   }
 
-  void SetLastOn(const std::string& s) {
-    wwiv::strings::to_char_array(data.laston, s);
+  void laston(const std::string& s) {
+    strings::to_char_array(data.laston, s);
   }
 
-  [[nodiscard]] std::string GetFirstOn() const {
+  [[nodiscard]] std::string firston() const {
     return data.firston;
   }
   
-  void SetFirstOn(const std::string& s) {
-    wwiv::strings::to_char_array(data.firston, s);
+  void firston(const std::string& s) {
+    strings::to_char_array(data.firston, s);
   }
 
-  [[nodiscard]] std::string GetNote() const {
+  [[nodiscard]] std::string note() const {
     return reinterpret_cast<const char*>(data.note);
   }
-  void SetNote(const std::string& s) {
+  void note(const std::string& s) {
     strcpy(reinterpret_cast<char*>(data.note), s.c_str());
   }
-  [[nodiscard]] std::string GetMacro(int line) const {
+  [[nodiscard]] std::string macro(int line) const {
     return std::string(reinterpret_cast<const char*>(data.macros[line]));
   }
-  void SetMacro(int nLine, const char *s) {
+  void macro(int nLine, const char *s) {
     memset(&data.macros[ nLine ][0], 0, 80);
     strcpy(reinterpret_cast<char*>(data.macros[ nLine ]), s);
   }
@@ -455,11 +447,11 @@ class User {
   void SetGender(const char c) {
     data.sex = static_cast<uint8_t>(c);
   }
-  [[nodiscard]] std::string GetEmailAddress() const {
+  [[nodiscard]] std::string email_address() const {
     return data.email;
   }
-  void SetEmailAddress(const char *s) {
-    strcpy(data.email, s);
+  void email_address(const std::string& s) {
+    strcpy(data.email, s.c_str());
   }
   [[nodiscard]] uint8_t age() const;
 
@@ -506,25 +498,25 @@ class User {
   void SetOptionalVal(int n) {
     data.optional_val = static_cast<uint8_t>(n);
   }
-  [[nodiscard]] int GetSl() const {
+  [[nodiscard]] int sl() const {
     return data.sl;
   }
-  void SetSl(int n) {
+  void sl(int n) {
     data.sl = static_cast<uint8_t>(n);
   }
-  [[nodiscard]] int GetDsl() const {
+  [[nodiscard]] int dsl() const {
     return data.dsl;
   }
-  void SetDsl(int n) {
+  void dsl(int n) {
     data.dsl = static_cast<uint8_t>(n);
   }
-  [[nodiscard]] int GetExempt() const {
+  [[nodiscard]] int exempt() const {
     return data.exempt;
   }
-  void SetExempt(int n) {
+  void exempt(int n) {
     data.exempt = static_cast<uint8_t>(n);
   }
-  [[nodiscard]] int GetColor(int n) const {
+  [[nodiscard]] int raw_color(int n) const {
     if (n < 0 || n > 9) {
       return 7; // default color
     }
@@ -539,12 +531,12 @@ class User {
     if (n < 0 || n > 9) {
       return 7; // default color
     }
-    return static_cast<uint8_t>(HasAnsi() ? GetColor(n) : GetBWColor(n));
+    return static_cast<uint8_t>(HasAnsi() ? raw_color(n) : bwcolor(n));
   }
 
   [[nodiscard]] std::vector<uint8_t> colors() const { 
     std::vector<uint8_t> c;
-    for (int i = 0; i < 10; i++) {
+    for (auto i = 0; i < 10; i++) {
       if (HasColor()) {
         c.push_back(data.colors[i]);
       } else {
@@ -553,16 +545,16 @@ class User {
     }
     return c;
   }
-  void SetColor(int nColor, unsigned int n) {
+  void color(int nColor, unsigned int n) {
     data.colors[nColor] = static_cast<uint8_t>(n);
   }
-  [[nodiscard]] unsigned char GetBWColor(int n) const {
+  [[nodiscard]] uint8_t bwcolor(int n) const {
     if (n < 0 || n > 9) {
       return 7; // default color
     }
     return data.bwcolors[n];
   }
-  void SetBWColor(int nColor, unsigned int n) {
+  void bwcolor(int nColor, unsigned int n) {
     data.bwcolors[nColor] = static_cast<uint8_t>(n);
   }
   [[nodiscard]] int GetVote(int nVote) const {
@@ -571,19 +563,24 @@ class User {
   void SetVote(int nVote, int n) {
     data.votes[nVote] = static_cast<uint8_t>(n);
   }
-  [[nodiscard]] int GetNumIllegalLogons() const {
+  [[nodiscard]] int illegal_logons() const {
     return data.illegal;
   }
-  void SetNumIllegalLogons(int n) {
+  void illegal_logons(int n) {
     data.illegal = static_cast<uint8_t>(n);
   }
-  [[nodiscard]] int GetNumMailWaiting() const {
+  void increment_illegal_logons() {
+    if (data.illegal < std::numeric_limits<decltype(data.illegal)>::max()) {
+      ++data.illegal;      
+    }
+  }
+  [[nodiscard]] int email_waiting() const {
     return data.waiting;
   }
-  void SetNumMailWaiting(unsigned int n) {
+  void email_waiting(unsigned int n) {
     data.waiting = static_cast<uint8_t>(n);
   }
-  [[nodiscard]] int GetTimesOnToday() const {
+  [[nodiscard]] int ontoday() const {
     return data.ontoday;
   }
   /** 
@@ -608,7 +605,7 @@ class User {
   }
 
   /** Gets the current user's birthday as a DateTime */
-  [[nodiscard]] wwiv::core::DateTime birthday_dt() const;
+  [[nodiscard]] core::DateTime birthday_dt() const;
 
   /** Gets the current user's birthday as a string in format "mm/dd/yy" */
   [[nodiscard]] std::string birthday_mmddyy() const;
@@ -620,145 +617,165 @@ class User {
     data.language = static_cast<uint8_t>(n);
   }
 
-  [[nodiscard]] int GetHomeUserNumber() const {
+  [[nodiscard]] int home_usernum() const {
     return data.homeuser;
   }
-  void SetHomeUserNumber(int n) {
+  void home_usernum(int n) {
     data.homeuser = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] uint16_t GetHomeSystemNumber() const {
+  [[nodiscard]] uint16_t home_systemnum() const {
     return data.homesys;
   }
-  void SetHomeSystemNumber(uint16_t n) {
+  void home_systemnum(uint16_t n) {
     data.homesys = n;
   }
-  [[nodiscard]] uint16_t GetForwardUserNumber() const {
+  [[nodiscard]] uint16_t forward_usernum() const {
     return data.forwardusr;
   }
-  void SetForwardUserNumber(uint16_t n) {
+  void forward_usernum(uint16_t n) {
     data.forwardusr = n;
   }
-  [[nodiscard]] uint16_t GetForwardSystemNumber() const {
+  [[nodiscard]] uint16_t forward_systemnum() const {
     return data.forwardsys;
   }
-  void SetForwardSystemNumber(uint16_t n) {
+  void forward_systemnum(uint16_t n) {
     data.forwardsys = n;
   }
-  [[nodiscard]] int GetForwardNetNumber() const {
+  [[nodiscard]] int forward_netnum() const {
     return data.net_num;
   }
-  void SetForwardNetNumber(int n) {
+  void forward_netnum(int n) {
     data.net_num = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] int GetNumMessagesPosted() const {
+  [[nodiscard]] int messages_posted() const {
     return data.msgpost;
   }
-  void SetNumMessagesPosted(int n) {
+  void messages_posted(int n) {
     data.msgpost = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] int GetNumEmailSent() const {
+  [[nodiscard]] int email_sent() const {
     return data.emailsent;
   }
-  void SetNumEmailSent(int n) {
+  void email_sent(int n) {
     data.emailsent = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] int GetNumFeedbackSent() const {
+  [[nodiscard]] int feedback_sent() const {
     return data.feedbacksent;
   }
-  void SetNumFeedbackSent(int n) {
+  void feedback_sent(int n) {
     data.feedbacksent = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] int GetNumFeedbackSentToday() const {
+  [[nodiscard]] int feedback_today() const {
     return data.fsenttoday1;
   }
-  void SetNumFeedbackSentToday(int n) {
+  void feedback_today(int n) {
     data.fsenttoday1 = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] int GetNumPostsToday() const {
+  [[nodiscard]] int posts_today() const {
     return data.posttoday;
   }
-  void SetNumPostsToday(int n) {
+  void posts_today(int n) {
     data.posttoday = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] int GetNumEmailSentToday() const {
+  [[nodiscard]] int email_today() const {
     return data.etoday;
   }
-  void SetNumEmailSentToday(int n) {
+  void email_today(int n) {
     data.etoday = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] int GetAssPoints() const {
+  [[nodiscard]] int ass_points() const {
     return data.ass_pts;
   }
-  void SetAssPoints(int n) {
+  void ass_points(int n) {
     data.ass_pts = static_cast<uint16_t>(n);
   }
-  void IncrementAssPoints(int n) {
+  void increment_ass_points(int n) {
     data.ass_pts = data.ass_pts + static_cast<uint16_t>(n);
   }
-  [[nodiscard]] int GetFilesUploaded() const {
+  [[nodiscard]] int uploaded() const {
     return data.uploaded;
   }
-  void SetFilesUploaded(int n) {
+  void uploaded(int n) {
     data.uploaded = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] int GetFilesDownloaded() const {
+  void increment_uploaded() {
+    ++data.uploaded;
+  }
+  void decrement_uploaded() {
+    --data.uploaded;
+  }
+  [[nodiscard]] int downloaded() const {
     return data.downloaded;
   }
-  void SetFilesDownloaded(int n) {
+  void downloaded(int n) {
     data.downloaded = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] uint16_t GetLastBaudRate() const {
+  void increment_downloaded() {
+    ++data.downloaded;
+  }
+  void decrement_downloaded() {
+    --data.downloaded;
+  }
+  [[nodiscard]] uint16_t last_bps() const {
     return data.lastrate;
   }
-  void SetLastBaudRate(int n) {
+  void last_bps(int n) {
     data.lastrate = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] uint16_t GetNumLogons() const {
+  [[nodiscard]] uint16_t logons() const {
     return data.logons;
   }
-  void SetNumLogons(int n) {
+  void increment_logons() { ++data.logons; }
+
+  void logons(int n) {
     data.logons = static_cast<uint16_t>(n);
   }
-  [[nodiscard]] uint16_t GetNumNetEmailSent() const {
+  [[nodiscard]] uint16_t email_net() const {
     return data.emailnet;
   }
-  void SetNumNetEmailSent(uint16_t n) {
+  void email_net(uint16_t n) {
     data.emailnet = n;
   }
-  [[nodiscard]] uint16_t GetNumNetPosts() const {
+  [[nodiscard]] uint16_t posts_net() const {
     return data.postnet;
   }
-  void SetNumNetPosts(uint16_t n) {
+  void posts_net(uint16_t n) {
     data.postnet = n;
   }
-  [[nodiscard]] uint16_t GetNumDeletedPosts() const {
+  [[nodiscard]] uint16_t deleted_posts() const {
     return data.deletedposts;
   }
-  void SetNumDeletedPosts(uint16_t n) {
+  void deleted_posts(uint16_t n) {
     data.deletedposts = n;
   }
-  [[nodiscard]] uint16_t GetNumChainsRun() const {
+  [[nodiscard]] uint16_t chains_run() const {
     return data.chainsrun;
   }
-  void SetNumChainsRun(uint16_t n) {
+  void chains_run(uint16_t n) {
     data.chainsrun = n;
   }
-  [[nodiscard]] uint16_t GetNumGFilesRead() const {
+  [[nodiscard]] uint16_t gfiles_read() const {
     return data.gfilesread;
   }
-  void SetNumGFilesRead(uint16_t n) {
+  void gfiles_read(uint16_t n) {
     data.gfilesread = n;
   }
-  [[nodiscard]] uint16_t GetTimeBankMinutes() const {
+  [[nodiscard]] uint16_t banktime_minutes() const {
     return data.banktime;
   }
-  void SetTimeBankMinutes(uint16_t n) {
+  void banktime_minutes(uint16_t n) {
     data.banktime = n;
   }
-  [[nodiscard]] uint16_t GetHomeNetNumber() const {
+  void add_banktime_minutes(int n) {
+    data.banktime += static_cast<uint16_t>(n);
+  }
+  void subtract_banktime_minutes(int n) {
+    data.banktime -= static_cast<uint16_t>(n);
+  }
+  [[nodiscard]] uint16_t home_netnum() const {
     return data.homenet;
   }
-  void SetHomeNetNumber(uint16_t n) {
+  void home_netnum(uint16_t n) {
     data.homenet = n;
   }
   [[nodiscard]] uint16_t GetLastSubConf() const {
@@ -786,10 +803,10 @@ class User {
     data.dirnum = n;
   }
 
-  [[nodiscard]] uint32_t GetNumMessagesRead() const {
+  [[nodiscard]] uint32_t messages_read() const {
     return data.msgread;
   }
-  void SetNumMessagesRead(uint32_t l) {
+  void messages_read(uint32_t l) {
     data.msgread = l;
   }
   [[nodiscard]] uint32_t uk() const {
@@ -804,22 +821,22 @@ class User {
   void set_dk(uint32_t l) {
     data.dk = l;
   }
-  [[nodiscard]] daten_t GetLastOnDateNumber() const {
+  [[nodiscard]] daten_t last_daten() const {
     return data.daten;
   }
-  void SetLastOnDateNumber(daten_t l) {
+  void last_daten(daten_t l) {
     data.daten = l;
   }
-  [[nodiscard]] uint32_t GetWWIVRegNumber() const {
+  [[nodiscard]] uint32_t wwiv_regnum() const {
     return data.wwiv_regnum;
   }
-  void SetWWIVRegNumber(uint32_t l) {
+  void wwiv_regnum(uint32_t l) {
     data.wwiv_regnum = l;
   }
-  [[nodiscard]] daten_t GetNewScanDateNumber() const {
+  [[nodiscard]] daten_t nscan_daten() const {
     return data.datenscan;
   }
-  void SetNewScanDateNumber(daten_t l) {
+  void nscan_daten(daten_t l) {
     data.datenscan = l;
   }
 
@@ -859,31 +876,31 @@ class User {
     data.full_desc = b ? 1 : 0;
   }
 
-  [[nodiscard]] bool IsMailboxClosed() const { return GetForwardUserNumber() == 65535; }
+  [[nodiscard]] bool IsMailboxClosed() const { return forward_usernum() == 65535; }
 
   void CloseMailbox() {
-    SetForwardSystemNumber(0);
-    SetForwardUserNumber(65535);
+    forward_systemnum(0);
+    forward_usernum(65535);
   }
   [[nodiscard]] bool IsMailForwardedToInternet() const {
-    return GetForwardUserNumber() == INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
+    return forward_usernum() == INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
   }
   [[nodiscard]] bool IsMailboxForwarded() const {
-    return GetForwardUserNumber() > 0 && GetForwardUserNumber() < INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
+    return forward_usernum() > 0 && forward_usernum() < INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
   }
   void SetForwardToInternet() {
-    SetForwardSystemNumber(INTERNET_EMAIL_FAKE_OUTBOUND_NODE);
+    forward_systemnum(INTERNET_EMAIL_FAKE_OUTBOUND_NODE);
   }
   void ClearMailboxForward() {
-    SetForwardSystemNumber(0);
-    SetForwardUserNumber(0);
+    forward_systemnum(0);
+    forward_usernum(0);
   }
 
   /** Sets the last IP address from which this user connected. */
-  void last_address(const wwiv::core::ip_address& a) { data.last_address = a; }
+  void last_address(const core::ip_address& a) { data.last_address = a; }
 
   /** Returns the last IP address from which this user connected. */
-  wwiv::core::ip_address last_address() const { return data.last_address; }
+  [[nodiscard]] core::ip_address last_address() const { return data.last_address; }
 
   /**
    * Creates a random password in the user's password field.
@@ -922,4 +939,4 @@ int years_old(const User* u, core::Clock& clock);
 
 }  // namespace wwiv::sdk
 
-#endif // __INCLUDED_PLATFORM_WUSER_H__
+#endif
