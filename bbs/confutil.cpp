@@ -134,7 +134,7 @@ bool access_at_least_one_conf(Conference& conf, const conf_set_t& e) {
 // Populates uc with the user visible subs for the current conference.
 bool clear_usersubs(Conference& conf, std::vector<usersubrec>& uc, int old_subnum) {
   if (conf.empty()) {
-    const key_t key('A');
+    const wwiv::sdk::key_t key('A');
     conf.add(conference_t{key, "General", ""});
   }
   auto new_conf_subnum = -1;
