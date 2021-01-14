@@ -20,6 +20,7 @@
 
 #include "net_core/netdat.h"
 #include "sdk/config.h"
+#include "sdk/ssm.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/net/net.h"
 #include "sdk/subxtr.h"
@@ -61,6 +62,7 @@ public:
   NetDat& netdat_;
   bool verbose{false};
   bool subs_initialized{false};
+  sdk::SSM ssm;
 };
 
 } // namespace wwiv::net::network2

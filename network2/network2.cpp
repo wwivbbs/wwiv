@@ -26,22 +26,22 @@
 #include "core/semaphore_file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "net_core/net_cmdline.h"
-#include "net_core/netdat.h"
 #include "network2/context.h"
 #include "network2/email.h"
 #include "network2/post.h"
 #include "network2/subs.h"
+#include "net_core/netdat.h"
+#include "net_core/net_cmdline.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/ssm.h"
+#include "sdk/status.h"
+#include "sdk/usermanager.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/net/networks.h"
 #include "sdk/net/packets.h"
-#include "sdk/ssm.h"
-#include "sdk/status.h"
-#include "sdk/usermanager.h"
-#include "sdk/vardec.h"
+
 #include <cstdlib>
 #include <iostream>
 #include <map>
@@ -94,8 +94,7 @@ static bool handle_ssm(Context& context, Packet& p) {
   ScopeExit at_exit(
       [] { VLOG(1) << "=============================================================="; });
   VLOG(1) << "==============================================================";
-  SSM ssm(context.config, context.user_manager);
-  if (!ssm.send_local(p.nh.touser, p.text())) {
+  if (!context.ssm.send_local(p.nh.touser, p.text())) {
     LOG(ERROR) << "    ! ERROR writing SSM: '" << p.nh.touser << "; text: '" << p.text()
                << "'; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
@@ -105,7 +104,7 @@ static bool handle_ssm(Context& context, Packet& p) {
   return true;
 }
 
-static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetInfoFileInfo info) {
+static bool write_net_received_file(Context& context, const net_networks_rec& net, Packet& p, NetInfoFileInfo info) {
   if (!info.valid) {
     LOG(ERROR) << "    ! ERROR NetInfoFileInfo is not valid; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
@@ -116,6 +115,7 @@ static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetI
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
   // we know the name.
+  context.ssm.send_local(1, StrCat("Received ", info.filename));
   const auto fn = FilePath(net.dir, info.filename);
   if (!info.overwrite && File::Exists(fn)) {
     LOG(ERROR) << "    ! ERROR File [" << fn
@@ -135,19 +135,20 @@ static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetI
   return true;
 }
 
-static bool handle_net_info_file(const net_networks_rec& net, Packet& p) {
+static bool handle_net_info_file(Context& context, const net_networks_rec& net, Packet& p) {
   const auto info = GetNetInfoFileInfo(p);
-  return write_net_received_file(net, p, info);
+  return write_net_received_file(context, net, p, info);
 }
 
-static bool handle_sub_list(const net_networks_rec& net, Packet& p) {
+static bool handle_sub_list(Context& context, Packet& p) {
+  const auto& net = context.net;
   // Handle legacy type 9 main_type_sub_list (SUBS.LST)
   NetInfoFileInfo info{};
   info.filename = SUBS_LST;
   info.data = p.text();
   info.valid = true;
   info.overwrite = true;
-  return write_net_received_file(net, p, info);
+  return write_net_received_file(context, net, p, info);
 }
 
 static bool handle_packet(Context& context, Packet& p) {
@@ -170,7 +171,7 @@ static bool handle_packet(Context& context, Packet& p) {
       email_changed = true;
       return handle_email(context, 1, p);
     }
-    return handle_net_info_file(context.net, p);
+    return handle_net_info_file(context, context.net, p);
   }
   case main_type_email:
     // This is regular email sent to a user number at this system.
@@ -215,7 +216,7 @@ static bool handle_packet(Context& context, Packet& p) {
   }
 
   case main_type_sub_list:
-    return handle_sub_list(context.net, p);
+    return handle_sub_list(context, p);
 
   // Legacy numeric only post types.
   case main_type_post:

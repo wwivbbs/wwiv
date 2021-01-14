@@ -27,6 +27,7 @@
 #include "fmt/printf.h"
 #include "network2/context.h"
 #include "sdk/config.h"
+#include "sdk/ssm.h"
 #include "sdk/net/packets.h"
 #include "sdk/net/subscribers.h"
 #include "sdk/subxtr.h"
@@ -192,25 +193,33 @@ bool handle_sub_add_req(Context& context, Packet& p) {
     return resp(sub_adddrop_error);
   }
   if (!IsHostedHere(context, subtype)) {
+    const auto msg = fmt::format("Can't add system @{} to subtype: {}, it's not hosted here",p.nh.fromsys, subtype);
+    context.ssm.send_local(1, msg);
+    LOG(ERROR) << msg;
     return resp(sub_adddrop_not_host);
   }
   const auto filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
   if (!ReadSubcriberFile(FilePath(context.net.dir, filename), subscribers)) {
-    LOG(INFO) << "Unable to read subscribers file.";
+    const std::string msg = "Unable to read subscribers file.";
+    LOG(WARNING) << msg;
     return resp(sub_adddrop_error);
   }
   const auto result = subscribers.insert(p.nh.fromsys);
   if (result.second == false) {
+    context.ssm.send_local(1, fmt::format("Can't add system @{} to subtype: {}, it's already there.",p.nh.fromsys, subtype));
     return resp(sub_adddrop_already_there);
   }
   if (!WriteSubcriberFile(FilePath(context.net.dir, filename), subscribers)) {
     LOG(INFO) << "Unable to write subscribers file.";
+    context.ssm.send_local(1, fmt::format("Can't add system @{} to subtype: {}, failed to write subscriber file.",p.nh.fromsys, subtype));
     return resp(sub_adddrop_error);
   }
 
   // success!
-  LOG(INFO) << "Added system @" << p.nh.fromsys << " to subtype: " << subtype;
+  const auto msg = fmt::format("Added System @{} to subtype: {}",p.nh.fromsys, subtype);
+  LOG(INFO) << msg;
+  context.ssm.send_local(1, msg);
   return resp(sub_adddrop_ok);
 }
 
@@ -261,7 +270,7 @@ static string SubAddDropResponseMessage(uint8_t code) {
 
 bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& add_or_drop) {
   // We want to stop at the 1st \0
-  string subname = p.text();
+  auto subname = p.text();
   StringTrimEnd(&subname);
 
   auto b = std::begin(p.text());
