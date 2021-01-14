@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*             Copyright (C)1998-2021, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -118,7 +118,7 @@ bool IsPhoneNumberUSAFormat(User *pUser) {
 
 static int GetAnsiStatusAndShowWelcomeScreen() {
   bout << "\r\nWWIV " << full_version() << wwiv::endl;
-  bout << "Copyright (c) 1998-2020, WWIV Software Services." << wwiv::endl;
+  bout << "Copyright (c) 1998-2021, WWIV Software Services." << wwiv::endl;
   bout << "All Rights Reserved." << wwiv::endl;
 
   int ans = check_ansi();

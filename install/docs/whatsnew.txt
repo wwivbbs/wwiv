@@ -11,8 +11,16 @@ Legend (starting with 5.3)
 
 What's New in WWIV 5.6 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-! config.dat has been replaced with config.json.  wwivconfig will automatically
-  upgrade to this new file.  networking utils and wwivutil will work with either.
+! config.dat has been replaced with config.json.  wwivconfig will 
+  automatically upgrade to this new file.  networking utils and wwivutil will
+  work with either.
+* Now binkp will log "RECV" messages too and not just send.
+* BinkP is quicker to notice the other side has disconnected and respond.  
+* Better handling of status.dat, making it less likely to get corrupt.
++ Added help for ACS expressions in the places where WWIV prompts for the
+  sysop to enter one for access control. (#1333)
++ Send SSM's to sysop when receiving files from wwivnet (like net37)
+
 
 What's New in WWIV 5.6 (2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -170,6 +178,27 @@ What's New in WWIV 5.6 (2020)
     qwk_upload, qwk_download, qwk_user_config, and qwk_sysop_config
 * Also refreshed the default menus and prompts to use pipe macro codes
   and wwiv color pipe codes vs. standard color codes.
+* QWK: Fixed email conference numer from being wrong whenyou have other 
+  messages.
+* QWK use wwiv file io everywhere vs POSIX IO calls.
+* preopen subs for mail packing and subslist.
+  (This gives us a 10-20x speedup on both)
++ added qwk defaults as (N) to defaults
+* Update GFiles, Network packet configs, and qwk config. (#1315) (#1316)
+* Switch install location to /opt/wwiv in 5.6 for unix (#1263)
+* Fixed min_k setting for FTN network auto callout
++ Added ability to preview menu in wwivconfig
++ Moved bbslist into it's own menu (bbslist)  (#405)
++ Validate ACS and display errors in wwivconfig.
+  Currently only the menu editor has ACS expressions that are
+  editable in wwivconfig, but the framework is in place should
+  others arise in the future
+* Fix mmkey for file areas. (#1323)
+* don't wait for key when checking if there is a key (#1324)
+* Fixed issue where logging in and there's less than 2 subs, wwiv will 
+  crash. (#1325)
++ Adds a wwivutil email command similar to wwivutil messages. (#1329)
+  It can dump, add and delete emails.
 
 What's New in WWIV 5.5.1 (2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
