@@ -80,34 +80,34 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   window->Puts("Creating Data Files.\n");
   window->SetColor(SchemeId::NORMAL);
 
-  config_t cfg430{};
+  config_t cfg{};
 
   // Set header
-  cfg430.header.config_revision_number = 5;
-  cfg430.header.written_by_wwiv_num_version = wwiv_config_version();
-  cfg430.header.last_written_date = DateTime::now().to_string();
+  cfg.header.config_revision_number = 5;
+  cfg.header.written_by_wwiv_num_version = wwiv_config_version();
+  cfg.header.last_written_date = DateTime::now().to_string();
 
-  cfg430.systempw = "SYSOP";
-  cfg430.systemname = "My WWIV BBS";
-  cfg430.systemphone = "   -   -    ";
-  cfg430.sysopname = "The New Sysop";
+  cfg.systempw = "SYSOP";
+  cfg.systemname = "My WWIV BBS";
+  cfg.systemphone = "   -   -    ";
+  cfg.sysopname = "The New Sysop";
 
-  cfg430.datadir = "data";
-  cfg430.msgsdir = "msgs";
-  cfg430.gfilesdir = "gfiles";
-  cfg430.dloadsdir = "dloads";
-  cfg430.menudir = FilePath("gfiles", "menus").string();
-  cfg430.scriptdir = "scripts";
+  cfg.datadir = "data";
+  cfg.msgsdir = "msgs";
+  cfg.gfilesdir = "gfiles";
+  cfg.dloadsdir = "dloads";
+  cfg.menudir = FilePath("gfiles", "menus").string();
+  cfg.scriptdir = "scripts";
 
-  cfg430.newusersl = 10;
-  cfg430.newuserdsl = 0;
-  cfg430.maxwaiting = 50;
+  cfg.newusersl = 10;
+  cfg.newuserdsl = 0;
+  cfg.maxwaiting = 50;
 
-  cfg430.newuploads = 0;
-  cfg430.maxusers = 500;
-  cfg430.newuser_restrict = restrict_validate;
-  cfg430.req_ratio = 0.0;
-  cfg430.newusergold = 100.0;
+  cfg.newuploads = 0;
+  cfg.maxusers = 500;
+  cfg.newuser_restrict = restrict_validate;
+  cfg.req_ratio = 0.0;
+  cfg.newusergold = 100.0;
 
   valrec v{};
   v.ar = 0;
@@ -117,7 +117,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   v.dsl = 0;
 
   for (auto i = 0; i < 10; i++) {
-    cfg430.autoval.emplace(i, v);
+    cfg.autoval.emplace(i, v);
   }
   for (auto i = 0; i < 256; i++) {
     slrec sl{};
@@ -165,26 +165,26 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
       sl.posts = 255;
       sl.emails = 255;
     }
-    cfg430.sl.emplace(i, sl);
+    cfg.sl.emplace(i, sl);
   }
 
-  cfg430.userreclen = sizeof(userrec);
-  cfg430.waitingoffset = offsetof(userrec, waiting);
-  cfg430.inactoffset = offsetof(userrec, inact);
-  cfg430.sysstatusoffset = offsetof(userrec, sysstatus);
-  cfg430.fuoffset = offsetof(userrec, forwardusr);
-  cfg430.fsoffset = offsetof(userrec, forwardsys);
-  cfg430.fnoffset = offsetof(userrec, net_num);
+  cfg.userreclen = sizeof(userrec);
+  cfg.waitingoffset = offsetof(userrec, waiting);
+  cfg.inactoffset = offsetof(userrec, inact);
+  cfg.sysstatusoffset = offsetof(userrec, sysstatus);
+  cfg.fuoffset = offsetof(userrec, forwardusr);
+  cfg.fsoffset = offsetof(userrec, forwardsys);
+  cfg.fnoffset = offsetof(userrec, net_num);
 
-  cfg430.max_subs = 64;
-  cfg430.max_dirs = 64;
-  cfg430.qscn_len =
-      4 * (1 + cfg430.max_subs + (cfg430.max_subs + 31) / 32 + (cfg430.max_dirs + 31) / 32);
+  cfg.max_subs = 64;
+  cfg.max_dirs = 64;
+  cfg.qscn_len =
+      4 * (1 + cfg.max_subs + (cfg.max_subs + 31) / 32 + (cfg.max_dirs + 31) / 32);
 
-  cfg430.post_call_ratio = 0.0;
+  cfg.post_call_ratio = 0.0;
 
-  // cfg430 is done.  Create a 5.6+ style config.json
-  Config config(bbsdir, cfg430);
+  // Create a 5.6+ style config.json
+  Config config(bbsdir, cfg);
   // Since this was not loaded from disk as JSON, mark it mutable so it can
   // be saved as JSON.
   config.set_readonly(false);
