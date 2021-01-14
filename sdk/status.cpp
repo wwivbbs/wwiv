@@ -181,11 +181,11 @@ bool StatusMgr::Run(status_txn_fn fn) {
   if (auto file = DataFile<statusrec_t>(FilePath(datadir_, STATUS_DAT),
                                         File::modeBinary | File::modeReadWrite)) {
     if (file.Read(0, &statusrec_)) {
-      const auto status = std::make_unique<Status>(datadir_, statusrec_);
-      fn(*status);
-      file.Write(0, &statusrec_);
+      Status status(datadir_, statusrec_);
+      fn(status);
+      file.Write(0, &status.status_);
     }
-  return true;
+    return true;
   }
   return false;
 }

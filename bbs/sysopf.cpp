@@ -838,12 +838,15 @@ void beginday(bool displayStatus) {
     a()->status_manager()->reload_status();
     return;
   }
+
+  const auto st = a()->status_manager()->get_status();
+  if (date() == st->last_date()) {
+    return;
+  }
+
   a()->status_manager()->Run([&](Status& status) {
     status.ensure_dates_valid();
 
-    if (date() == status.last_date()) {
-      return;
-    }
     if (displayStatus) {
       bout << "|#7* |#1Running Daily Maintenance...\r\n";
       bout << "  |#7* |#1Updating system activity...\r\n";
@@ -892,8 +895,7 @@ void beginday(bool displayStatus) {
       bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
     }
   });
-  const auto status = a()->status_manager()->get_status();
-  const auto nus = a()->config()->max_users() - status->num_users();
+  const auto nus = a()->config()->max_users() - st->num_users();
   if (displayStatus) {
     bout << "  |#7* |#1Checking system directories and user space...\r\n";
   }

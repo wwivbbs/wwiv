@@ -46,7 +46,7 @@ namespace wwiv::wwivutil {
 static int show_qscan(const Config& config) {
   StatusMgr mgr(config.datadir(), [](int) {});
   const auto status = mgr.get_status();
-  cout << "QScan Pointer : " << status->qscanptr() << std::endl;
+  std::cout << "QScan Pointer : " << status->qscanptr() << std::endl;
   return 0;
 }
 
@@ -57,14 +57,14 @@ static int set_qscan(const Config& config, uint32_t qscan) {
   });
 
   const auto status = mgr.get_status();
-  cout << "QScan Pointer : " << status->qscanptr() << std::endl;
+  std::cout << "QScan Pointer : " << status->qscanptr() << std::endl;
   return 0;
 }
 
-class StatusVersionCommand : public UtilCommand {
+class StatusQScanCommand : public UtilCommand {
 public:
-  StatusVersionCommand(): UtilCommand("qscan", "Sets or Gets the qscan high water mark.") {}
-  std::string GetUsage() const override final {
+  StatusQScanCommand(): UtilCommand("qscan", "Sets or Gets the qscan high water mark.") {}
+  [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage: " << std::endl << std::endl;
     ss << "  get : Gets the qscptr information." << std::endl << std::endl;
@@ -103,8 +103,36 @@ public:
 
 };
 
+class StatusDumpCommand : public UtilCommand {
+public:
+  StatusDumpCommand(): UtilCommand("dump", "Displays status.dat.") {}
+
+  [[nodiscard]] std::string GetUsage() const override final {
+    std::ostringstream ss;
+    ss << "Usage: " << std::endl << std::endl;
+    ss << "  dump : Displays status.dat." << std::endl << std::endl;
+    return ss.str();
+  }
+
+  int Execute() override final {
+    StatusMgr mgr(config()->config()->datadir());
+    const auto s = mgr.get_status();
+    std::cout << "num_users:     " << s->num_users() << std::endl;
+    std::cout << "caller_num:    " << s->caller_num() << std::endl;
+    std::cout << "days_active:   " << s->days_active() << std::endl;
+    std::cout << "qscanptr:      " << s->qscanptr() << std::endl;
+    return 0;
+  }
+
+  bool AddSubCommands() override final {
+    return true;
+  }
+
+};
+
 bool StatusCommand::AddSubCommands() {
-  add(make_unique<StatusVersionCommand>());
+  add(make_unique<StatusQScanCommand>());
+  add(make_unique<StatusDumpCommand>());
   return true;
 }
 

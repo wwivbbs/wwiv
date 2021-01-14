@@ -269,7 +269,7 @@ WFC::~WFC() {
 std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
   auto* io = a_->localIO();
 
-  const auto last_date_status = a()->status_manager()->get_status();
+  auto last_date_status = a()->status_manager()->get_status();
   for (;;) {
     sleep_for(milliseconds(100));
     yield();
@@ -284,6 +284,8 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
           a_->instance_number() == a_->GetBeginDayNodeNumber()) {
         beginday(true);
         Clear();
+        // Update the status for the last date now that beginday has run.
+        last_date_status = a()->status_manager()->get_status();
         continue;
       }
     }
