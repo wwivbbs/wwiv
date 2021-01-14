@@ -74,8 +74,25 @@ bool validate_acs(const std::string& expression, acs_debug_t debug) {
   return false;
 }
 
-std::string input_acs(wwiv::common::Input& in, wwiv::common::Output& out,
+std::string input_acs(common::Input& in, common::Output& out, const std::string& prompt, 
                       const std::string& orig_text, int max_length) {
+  if (!prompt.empty()) {
+    out << "|#5 WWIV ACS Help" << wwiv::endl;
+    out << "|#9 ACS expressions are of the form: |#1attribute OP value" << wwiv::endl;
+    out << "|#9 attributes are: |#1user.sl, user.dsl, user.ar, user.dar, user.name, etc " << wwiv::endl;
+    out << "|#9 OP (operators) are: |#1>, <, >=. <=, ==, !=" << wwiv::endl;
+    out << wwiv::endl;
+    out << "|#9 Expressions can be grouped with |#1() |#9and combined with "
+         << "|#1|| |#9(or) or |#1&& |#9(and)" << wwiv::endl;
+    out << wwiv::endl;
+    out << "|#9 Examples: |#2user.sl >= 20" << wwiv::endl;
+    out << "|#9           |#2user.sl > 100 || user.ar == 'A'" << wwiv::endl;
+    out << wwiv::endl;
+    out << "|#9 For full documentation see:|#7 http://docs.wwivbbs.org/en/latest/cfg/acs/" << wwiv::endl;
+    out << wwiv::endl;
+    out << "|#7" << prompt << "\r\n|#9:";
+  }
+
   auto s = in.input_text(orig_text, max_length);
 
   if (!validate_acs(s, acs_debug_t::remote)) {

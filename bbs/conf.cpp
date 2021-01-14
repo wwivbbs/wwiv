@@ -313,8 +313,7 @@ static void modify_conf(Conference& conf, char key) {
     } break;
     case 'C': {
       bout.nl();
-      bout << "|#2New ACS: ";
-      c.acs = wwiv::bbs::input_acs(bin, bout, c.acs, 60);
+      c.acs = wwiv::bbs::input_acs(bin, bout, "New ACS?", c.acs, 60);
       changed = true;
     } break;
     case 'Q':

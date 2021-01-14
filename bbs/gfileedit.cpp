@@ -127,8 +127,7 @@ void modify_sec(int n) {
     } break;
     case 'C': {
       bout.nl();
-      bout << "|#2New ACS? ";
-      r.acs = wwiv::bbs::input_acs(bin, bout, r.acs, 60);
+      r.acs = wwiv::bbs::input_acs(bin, bout, "New ACS?", r.acs, 60);
     } break;
     case 'D': {
       bout.nl();

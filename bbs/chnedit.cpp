@@ -243,8 +243,7 @@ static void modify_chain(ssize_t chain_num) {
     } break;
     case 'C': {
       bout.nl();
-      bout << "|#7New ACS? \r\n:";
-      c.acs = input_acs(bin, bout, c.acs, 78);
+      c.acs = input_acs(bin, bout, "New ACS?", c.acs, 78);
     } break;
     case 'D':
       c.ansi = !c.ansi;

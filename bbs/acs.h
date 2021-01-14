@@ -28,7 +28,7 @@ namespace wwiv::bbs {
 
 bool check_acs(const std::string& expression, sdk::acs::acs_debug_t debug = sdk::acs::acs_debug_t::none);
 bool validate_acs(const std::string& expression, sdk::acs::acs_debug_t debug = sdk::acs::acs_debug_t::none);
-std::string input_acs(common::Input& in, common::Output& out,
+std::string input_acs(common::Input& in, common::Output& out, const std::string& prompt, 
                       const std::string& orig_text, int max_length);
 
 
