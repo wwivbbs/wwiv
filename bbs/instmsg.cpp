@@ -21,6 +21,7 @@
 #include "bbs/bbs.h"
 #include "common/datetime.h"
 #include "common/pause.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/log.h"
@@ -81,9 +82,8 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
 }
 
 static void send_inst_str1(int m, int whichinst, const std::string& send_string) {
-  inst_msg_header ih;
-
   const auto tempsendstring = StrCat(send_string, "\r\n");
+  inst_msg_header ih{};
   ih.main = static_cast<uint16_t>(m);
   ih.minor = 0;
   ih.from_inst = static_cast<uint16_t>(a()->instance_number());
@@ -107,17 +107,14 @@ void send_inst_sysstr(int whichinst, const std::string& send_string) {
  * "Broadcasts" a message to all online instances.
  */
 void broadcast(const std::string& message) {
-  instancerec ir;
-
   const auto ni = num_instances();
   for (auto i = 1; i <= ni; i++) {
     if (i == a()->instance_number()) {
       continue;
     }
-    if (get_inst_info(i, &ir)) {
-      if (inst_available(&ir)) {
-        send_inst_str(i, message);
-      }
+    auto ir = get_inst_info(i);
+    if (inst_available(&ir)) {
+      send_inst_str(i, message);
     }
   }
 }
@@ -128,8 +125,6 @@ void broadcast(const std::string& message) {
  * main type of the "packet".
  */
 static int handle_inst_msg(inst_msg_header * ih, const std::string& msg) {
-  unsigned short i;
-
   if (!ih || (ih->msg_size > 0 && msg.empty())) {
     return -1;
   }
@@ -141,7 +136,6 @@ static int handle_inst_msg(inst_msg_header * ih, const std::string& msg) {
       const auto line = bout.SaveCurrentLine();
       bout.nl(2);
       if (a()->sess().in_chatroom()) {
-        i = 0;
         bout << msg << "\r\n";
         bout.RestoreCurrentLine(line);
         return ih->main;
@@ -152,7 +146,6 @@ static int handle_inst_msg(inst_msg_header * ih, const std::string& msg) {
       } else {
         bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
       }
-      i = 0;
       bout << msg << "\r\n\r\n";
       bout.RestoreCurrentLine(line);
     }
@@ -169,9 +162,9 @@ void process_inst_msgs() {
     return;
   }
   last_iia = steady_clock::now();
-  auto oiia = setiia(std::chrono::milliseconds(0));
+  const auto oiia = setiia(std::chrono::milliseconds(0));
 
-  string fndspec = fmt::sprintf("%smsg*.%3.3u", a()->config()->datadir(), a()->instance_number());
+  const auto fndspec = fmt::sprintf("%smsg*.%3.3u", a()->config()->datadir(), a()->instance_number());
   FindFiles ff(fndspec, FindFiles::FindFilesType::files);
   for (const auto& f : ff) {
     if (a()->sess().hangup()) { break; }
@@ -182,7 +175,7 @@ void process_inst_msgs() {
     }
     while (true) {
       inst_msg_header ih = {};
-      auto num_read = file.Read(&ih, sizeof(inst_msg_header));
+      const auto num_read = file.Read(&ih, sizeof(inst_msg_header));
       if (num_read == 0) {
         // End of file.
         break;
@@ -193,7 +186,7 @@ void process_inst_msgs() {
         file.Read(&m[0], ih.msg_size);
         m.resize(ih.msg_size);
       }
-      handle_inst_msg(&ih, m.c_str());
+      handle_inst_msg(&ih, m);
     }
     file.Close();
     File::Remove(file.path());
@@ -201,32 +194,26 @@ void process_inst_msgs() {
   setiia(oiia);
 }
 
-// Gets instancerec for specified instance, returns in ir.
-bool get_inst_info(int nInstanceNum, instancerec * ir) {
-  if (!ir || !a()->config() || a()->config()->datadir().empty()) {
-    return false;
+// Gets specified instance, returns in ir.
+instancerec get_inst_info(int instance_num) {
+  if (a()->config()->datadir().empty()) {
+    LOG(ERROR) << "This should never happen, config.datadir is empty";
+    return {};
   }
 
-  memset(ir, 0, sizeof(instancerec));
-
-  File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
-  if (!instFile.Open(File::modeBinary | File::modeReadOnly)) {
-    return false;
+  const auto path = FilePath(a()->config()->datadir(), INSTANCE_DAT);
+  if (auto file = DataFile<instancerec>(path, File::modeBinary | File::modeReadOnly)) {
+    instancerec ir{};
+    if (instance_num < file.number_of_records() && file.Read(instance_num, &ir)) {
+      return ir;
+    }
   }
-  auto i = instFile.length() / sizeof(instancerec);
-  if (i < static_cast<size_t>(nInstanceNum + 1)) {
-    instFile.Close();
-    return false;
-  }
-  instFile.Seek(static_cast<long>(nInstanceNum * sizeof(instancerec)), File::Whence::begin);
-  instFile.Read(ir, sizeof(instancerec));
-  instFile.Close();
-  return true;
+  return {};
 }
 
 
 /*
- * Returns 1 if inst_no has user online that can receive msgs, else 0
+ * Returns 1 if inst_no has user online that can receive messages, else 0
  */
 bool inst_available(instancerec * ir) {
   if (!ir) {
@@ -259,24 +246,23 @@ int num_instances() {
   if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
-  auto nNumInstances = static_cast<int>(instFile.length() / sizeof(instancerec)) - 1;
+  const auto n = static_cast<int>(instFile.length() / sizeof(instancerec)) - 1;
   instFile.Close();
-  return nNumInstances;
+  return n;
 }
 
 
 /*
- * Returns 1 if a()->sess().user_num() user_number is online, and returns instance user is on in
- * wi, else returns 0.
+ * Returns true if  user_number is online, and returns instance user is on in
+ * wi, else returns false.
  */
 bool user_online(int user_number, int *wi) {
-  int ni = num_instances();
-  for (int i = 1; i <= ni; i++) {
+  const int ni = num_instances();
+  for (auto i = 1; i <= ni; i++) {
     if (i == a()->instance_number()) {
       continue;
     }
-    instancerec ir;
-    get_inst_info(i, &ir);
+    const auto ir = get_inst_info(i);
     if (ir.user == user_number && (ir.flags & INST_FLAGS_ONLINE)) {
       if (wi) {
         *wi = i;
@@ -296,20 +282,16 @@ bool user_online(int user_number, int *wi) {
 */
 void write_inst(int loc, int subloc, int flags) {
   static instancerec ti{};
-  instancerec ir{};
 
-  bool re_write = false;
+  auto re_write = false;
   if (ti.user == 0) {
-    if (get_inst_info(a()->instance_number(), &ir)) {
-      ti.user = ir.user;
-    } else {
-      ti.user = 1;
-    }
+    const auto ir = get_inst_info(a()->instance_number());
+    ti.user = ir.user;
     ti.inst_started = daten_t_now();
     re_write = true;
   }
 
-  unsigned short cf = ti.flags & (~(INST_FLAGS_ONLINE | INST_FLAGS_MSG_AVAIL));
+  uint16_t cf = ti.flags & (~(INST_FLAGS_ONLINE | INST_FLAGS_MSG_AVAIL));
   if (a()->sess().IsUserOnline()) {
     cf |= INST_FLAGS_ONLINE;
     if (chat_invis) {
@@ -334,14 +316,14 @@ void write_inst(int loc, int subloc, int flags) {
         break;
       }
     }
-    uint16_t ms = static_cast<uint16_t>(a()->sess().using_modem() ? a()->modem_speed_ : 0);
+    const auto ms = static_cast<uint16_t>(a()->sess().using_modem() ? a()->modem_speed_ : 0);
     if (ti.modem_speed != ms) {
       ti.modem_speed = ms;
       re_write = true;
     }
   }
   if (flags != INST_FLAGS_NONE) {
-    if (flags & 0x8000) {
+    if (flags & INST_FLAGS_RESET) {
       // reset an option
       ti.flags &= flags;
     } else {
@@ -388,21 +370,18 @@ void write_inst(int loc, int subloc, int flags) {
     re_write = true;
     ti.loc = static_cast<uint16_t>(loc);
   }
-  if ((((ti.flags & INST_FLAGS_INVIS) && (!chat_invis)) ||
-       ((!(ti.flags & INST_FLAGS_INVIS)) && (chat_invis))) ||
-      (((ti.flags & INST_FLAGS_MSG_AVAIL) && (!chat_avail)) ||
-       ((!(ti.flags & INST_FLAGS_MSG_AVAIL)) && (chat_avail))) &&
-      (ti.loc != INST_LOC_WFC)) {
+  const auto ti_chat_invis = ti.flags & INST_FLAGS_INVIS;
+  const auto ti_msg_avail = ti.flags & INST_FLAGS_MSG_AVAIL;
+  if ((ti_chat_invis != chat_invis || ti_msg_avail != chat_avail) && ti.loc != INST_LOC_WFC) {
     re_write = true;
   }
-  if (re_write) {
+  if (!re_write) {
+    return;
+  }
+  const auto path = FilePath(a()->config()->datadir(), INSTANCE_DAT);
+  if (auto file = DataFile<instancerec>(path, File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
     ti.last_update = daten_t_now();
-    File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
-    if (instFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      instFile.Seek(static_cast<long>(a()->instance_number() * sizeof(instancerec)), File::Whence::begin);
-      instFile.Write(&ti, sizeof(instancerec));
-      instFile.Close();
-    }
+    file.Write(a()->instance_number(), &ti);
   }
 }
 
@@ -412,12 +391,12 @@ void write_inst(int loc, int subloc, int flags) {
 bool inst_msg_waiting() {
   if (iia.count() == 0) return false;
 
-  auto l = steady_clock::now();
+  const auto l = steady_clock::now();
   if ((l - last_iia) < iia) {
     return false;
   }
 
-  const string filename = fmt::sprintf("msg*.%3.3u", a()->instance_number());
+  const auto filename = fmt::sprintf("msg*.%3.3u", a()->instance_number());
   if (!File::ExistsWildcard(FilePath(a()->config()->datadir(), filename))) {
     last_iia = l;
     return false;
@@ -427,9 +406,9 @@ bool inst_msg_waiting() {
 }
 
 // Sets inter-instance availability on/off, for inter-instance messaging.
-// retruns the old iia value.
+// returns the old iia value.
 std::chrono::milliseconds setiia(std::chrono::milliseconds poll_time) {
-  auto oiia = iia;
+  const auto oiia = iia;
   iia = poll_time;
   return oiia;
 }
@@ -437,10 +416,9 @@ std::chrono::milliseconds setiia(std::chrono::milliseconds poll_time) {
 // Toggles user availability, called when ctrl-N is hit
 
 void toggle_avail() {
-  instancerec ir = {};
 
-  SavedLine line = bout.SaveCurrentLine();
-  get_inst_info(a()->instance_number(), &ir);
+  const auto line = bout.SaveCurrentLine();
+  const auto ir = get_inst_info(a()->instance_number());
   chat_avail = !chat_avail;
 
   bout << "\n\rYou are now ";
@@ -452,10 +430,8 @@ void toggle_avail() {
 // Toggles invisibility, called when ctrl-L is hit by a sysop
 
 void toggle_invis() {
-  instancerec ir;
-
-  SavedLine line = bout.SaveCurrentLine();
-  get_inst_info(a()->instance_number(), &ir);
+  const auto line = bout.SaveCurrentLine();
+  const auto ir = get_inst_info(a()->instance_number());
   chat_invis = !chat_invis;
 
   bout << "\r\n|#1You are now ";

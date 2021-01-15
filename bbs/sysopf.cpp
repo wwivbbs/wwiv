@@ -876,7 +876,7 @@ void beginday(bool displayStatus) {
       z1.email = 0;
       z1.fback = 0;
       z1.up = 0;
-      for (int i = 0; i < 97; i++) {
+      for (auto i = 0; i < 97; i++) {
         fileZLog.Write(&z1, sizeof(zlogrec));
       }
     } else {

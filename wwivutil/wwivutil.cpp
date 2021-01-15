@@ -20,6 +20,7 @@
 #include "core/log.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
+#include "instance/instance.h"
 #include "sdk/config.h"
 #include "wwivutil/acs/acs.h"
 #include "wwivutil/conf/conf.h"
@@ -49,7 +50,7 @@ using namespace wwiv::sdk;
 
 namespace wwiv::wwivutil {
 
-class WWIVUtil {
+class WWIVUtil final {
 public:
   WWIVUtil(int argc, char *argv[]) : cmdline_(argc, argv, "net") {
     LoggerConfig config(LogDirFromConfig);
@@ -69,6 +70,7 @@ public:
       Add(std::make_unique<fido::FidoCommand>());
       Add(std::make_unique<files::FilesCommand>());
       Add(std::make_unique<FixCommand>());
+      Add(std::make_unique<InstanceCommand>());
       Add(std::make_unique<MessagesCommand>());
       Add(std::make_unique<MenusCommand>());
       Add(std::make_unique<NetCommand>());

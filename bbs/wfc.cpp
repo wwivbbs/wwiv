@@ -100,10 +100,9 @@ static void wfc_update() {
     return;
   }
 
-  instancerec ir = {};
-  User u = {};
+  User u{};
 
-  get_inst_info(inst_num, &ir);
+  const auto ir = get_inst_info(inst_num);
   a()->users()->readuser_nocache(&u, ir.user);
   a()->localIO()->PutsXYA(57, 18, 15, fmt::format("{:<3}", inst_num));
   if (ir.flags & INST_FLAGS_ONLINE) {
@@ -131,8 +130,6 @@ void WFC::Clear() {
 }
 
 void WFC::DrawScreen() {
-  instancerec ir{};
-  User u;
   static steady_clock::time_point wfc_time;
   static steady_clock::time_point poll_time;
 
@@ -193,7 +190,7 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(58, 10, 14, percent_active);
     a()->localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
 
-    get_inst_info(a()->instance_number(), &ir);
+    auto ir = get_inst_info(a()->instance_number());
     if (ir.user < a()->config()->max_users() && ir.user > 0) {
       const auto unn = a()->names()->UserName(ir.user);
       a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", unn));

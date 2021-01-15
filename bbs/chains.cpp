@@ -151,7 +151,7 @@ void run_chain(int chain_num) {
       return;
     }
   }
-  write_inst(INST_LOC_CHAINS, static_cast<uint16_t>(chain_num + 1), INST_FLAGS_NONE);
+  write_inst(INST_LOC_CHAINS, chain_num + 1, INST_FLAGS_NONE);
   a()->chains->increment_chain_usage(chain_num);
   a()->chains->Save();
   const auto chainCmdLine =

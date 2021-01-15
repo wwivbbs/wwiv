@@ -7,60 +7,61 @@ set(COMMON_SOURCES
   "config.cpp"
   "config430.cpp"
   "gfiles.cpp"
+  "instance.cpp"
   "names.cpp"
   "phone_numbers.cpp"
   "qscan.cpp"
   "ssm.cpp"
   "status.cpp"
-  subxtr.cpp
-  qwk_config.cpp
-  user.cpp
-  usermanager.cpp
-  wwivd_config.cpp
-  acs/acs.cpp
-  acs/eval.cpp
-  acs/expr.cpp
-  acs/value.cpp
-  acs/valueprovider.cpp
-  acs/uservalueprovider.cpp
-  ansi/ansi.cpp
-  ansi/framebuffer.cpp
-  ansi/makeansi.cpp
-  ansi/localio_screen.cpp
-  ansi/vscreen.cpp
-  conf/conf.cpp
-  fido/fido_address.cpp
-  fido/fido_callout.cpp
-  fido/fido_directories.cpp
-  fido/fido_packets.cpp
-  fido/fido_util.cpp
-  fido/flo_file.cpp
-  fido/nodelist.cpp
-  files/allow.cpp
-  files/arc.cpp
-  files/dirs.cpp
-  files/diz.cpp
-  files/file_record.cpp
-  files/files.cpp
-  files/files_ext.cpp
-  files/tic.cpp
-  menus/menu.cpp
-  msgapi/email_wwiv.cpp
-  msgapi/message_api.cpp
-  msgapi/message_api_wwiv.cpp
-  msgapi/message_area_wwiv.cpp
-  msgapi/message_wwiv.cpp
-  msgapi/parsed_message.cpp
-  msgapi/type2_text.cpp
-  net/binkp.cpp
-  net/callout.cpp
-  net/connect.cpp
-  net/contact.cpp
-  net/ftn_msgdupe.cpp
-  net/callouts.cpp
-  net/packets.cpp
-  net/networks.cpp
-  net/subscribers.cpp
+  "subxtr.cpp"
+  "qwk_config.cpp"
+  "user.cpp"
+  "usermanager.cpp"
+  "wwivd_config.cpp"
+  "acs/acs.cpp"
+  "acs/eval.cpp"
+  "acs/expr.cpp"
+  "acs/value.cpp"
+  "acs/valueprovider.cpp"
+  "acs/uservalueprovider.cpp"
+  "ansi/ansi.cpp"
+  "ansi/framebuffer.cpp"
+  "ansi/makeansi.cpp"
+  "ansi/localio_screen.cpp"
+  "ansi/vscreen.cpp"
+  "conf/conf.cpp"
+  "fido/fido_address.cpp"
+  "fido/fido_callout.cpp"
+  "fido/fido_directories.cpp"
+  "fido/fido_packets.cpp"
+  "fido/fido_util.cpp"
+  "fido/flo_file.cpp"
+  "fido/nodelist.cpp"
+  "files/allow.cpp"
+  "files/arc.cpp"
+  "files/dirs.cpp"
+  "files/diz.cpp"
+  "files/file_record.cpp"
+  "files/files.cpp"
+  "files/files_ext.cpp"
+  "files/tic.cpp"
+  "menus/menu.cpp"
+  "msgapi/email_wwiv.cpp"
+  "msgapi/message_api.cpp"
+  "msgapi/message_api_wwiv.cpp"
+  "msgapi/message_area_wwiv.cpp"
+  "msgapi/message_wwiv.cpp"
+  "msgapi/parsed_message.cpp"
+  "msgapi/type2_text.cpp"
+  "net/binkp.cpp"
+  "net/callout.cpp"
+  "net/connect.cpp"
+  "net/contact.cpp"
+  "net/ftn_msgdupe.cpp"
+  "net/callouts.cpp"
+  "net/packets.cpp"
+  "net/networks.cpp"
+  "net/subscribers.cpp"
    )
 
 set_max_warnings()

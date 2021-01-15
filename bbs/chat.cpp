@@ -89,24 +89,21 @@ int userinst(char* user);
 bool usercomp(const char* st1, const char* st2);
 
 static int grabname(const std::string& orig, int channel) {
-  int node = 0;
+  auto node = 0;
   User u;
-  instancerec ir;
-
   if (orig.empty() || orig.front() == ' ') {
     return 0;
   }
 
-  string::size_type space = orig.find(' ', 1);
-  string message = orig.substr(0, space);
-
-  int n = to_number<int>(message);
+  auto space = orig.find(' ', 1);
+  auto message = orig.substr(0, space);
+  auto n = to_number<int>(message);
   if (n) {
     if (n < 1 || n > num_instances()) {
       bout.bprintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
       return 0;
     }
-    get_inst_info(n, &ir);
+    auto ir = get_inst_info(n);
     if ((ir.flags & INST_FLAGS_ONLINE) && ((!(ir.flags & INST_FLAGS_INVIS)) || so())) {
       if (channel && (ir.loc != channel)) {
         bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
@@ -119,10 +116,10 @@ static int grabname(const std::string& orig, int channel) {
   }
   {
     node = 0;
-    string name = message;
+    auto name = message;
     StringUpperCase(&name);
-    for (int i = 1; i <= num_instances(); i++) {
-      get_inst_info(i, &ir);
+    for (auto i = 1; i <= num_instances(); i++) {
+      auto ir = get_inst_info(i);
       if ((ir.flags & INST_FLAGS_ONLINE) && ((!(ir.flags & INST_FLAGS_INVIS)) || so())) {
         if (channel && (ir.loc != channel)) {
           continue;
@@ -199,7 +196,7 @@ void chat_room() {
       return;
     }
     loc = INST_LOC_CH1;
-    write_inst(static_cast<uint16_t>(loc), 0, INST_FLAGS_NONE);
+    write_inst(loc, 0, INST_FLAGS_NONE);
     moving(true, loc);
     intro(loc);
     bout.nl();
@@ -293,8 +290,7 @@ int f_action(int start_pos, int end_pos, char* aword) {
 // Sends out a raw_message to everyone in channel LOC
 static void out_msg(const std::string& message, int loc) {
   for (int i = 1; i <= num_instances(); i++) {
-    instancerec ir;
-    get_inst_info(i, &ir);
+    auto ir = get_inst_info(i);
     if ((ir.loc == loc) && (i != a()->instance_number())) {
       send_inst_str(i, message);
     }
@@ -413,11 +409,9 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
 
 // Fills an array with information of who's online.
 void who_online(int* nodes, int loc) {
-  instancerec ir{};
-
   int c = 0;
   for (int i = 1; i <= num_instances(); i++) {
-    get_inst_info(i, &ir);
+    const auto ir = get_inst_info(i);
     if ((!(ir.flags & INST_FLAGS_INVIS)) || so())
       if ((ir.loc == loc) && (i != a()->instance_number())) {
         c++;
@@ -469,15 +463,14 @@ void ch_direct(const string& message, int loc, char* color_string, int node) {
     return;
   }
 
-  instancerec ir = {};
-  get_inst_info(node, &ir);
+  auto ir = get_inst_info(node);
   if (ir.loc == loc) {
     User u;
     a()->users()->readuser(&u, ir.user);
-    const string s = fmt::sprintf("|#9From %.12s|#6 [to %s]|#1: %s%s", a()->user()->name(),
-                                  u.name(), color_string, message);
-    for (int i = 1; i <= num_instances(); i++) {
-      get_inst_info(i, &ir);
+    const auto s = fmt::sprintf("|#9From %.12s|#6 [to %s]|#1: %s%s", a()->user()->name(),
+                                u.name(), color_string, message);
+    for (auto i = 1; i <= num_instances(); i++) {
+      ir = get_inst_info(i);
       if (ir.loc == loc && i != a()->instance_number()) {
         send_inst_str(i, s);
       }
@@ -499,8 +492,7 @@ void ch_whisper(const std::string& message, char* color_string, int node) {
   if (!node) {
     return;
   }
-  instancerec ir;
-  get_inst_info(node, &ir);
+  auto ir = get_inst_info(node);
 
   string text = message;
   if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
@@ -518,8 +510,7 @@ void ch_whisper(const std::string& message, char* color_string, int node) {
 int wusrinst(char* n) {
 
   for (int i = 0; i <= num_instances(); i++) {
-    instancerec ir{};
-    get_inst_info(i, &ir);
+    auto ir = get_inst_info(i);
     if (ir.flags & INST_FLAGS_ONLINE) {
       User user;
       a()->users()->readuser(&user, ir.user);
@@ -572,7 +563,6 @@ void cleanup_chat() {
 // Pages a user
 
 void page_user(int loc) {
-  instancerec ir;
   int i = 0;
 
   loc = loc + 1 - INST_LOC_CH1;
@@ -591,22 +581,21 @@ void page_user(int loc) {
   if (i == a()->instance_number()) {
     bout << "|#1[|#9Cannot page the instance you are on|#1]\r\n";
     return;
-  } else {
-    get_inst_info(i, &ir);
-    if ((!(ir.flags & INST_FLAGS_ONLINE)) || ((ir.flags & INST_FLAGS_INVIS) && (!so()))) {
-      bout << "|#1[|#9There is no user on instance " << i << " |#1]\r\n";
-      return;
-    }
-    if ((!(ir.flags & INST_FLAGS_MSG_AVAIL)) && (!so())) {
-      bout << "|#1[|#9That user is not available for chat!|#1]";
-      return;
-    }
-    const auto s = fmt::format(
-        "{} is paging you from Chatroom channel {}.  Type /C from the MAIN MENU to enter the "
-        "Chatroom.",
-        a()->user()->name(), loc);
-    send_inst_str(i, s);
   }
+  auto ir = get_inst_info(i);
+  if ((!(ir.flags & INST_FLAGS_ONLINE)) || ((ir.flags & INST_FLAGS_INVIS) && (!so()))) {
+    bout << "|#1[|#9There is no user on instance " << i << " |#1]\r\n";
+    return;
+  }
+  if ((!(ir.flags & INST_FLAGS_MSG_AVAIL)) && (!so())) {
+    bout << "|#1[|#9That user is not available for chat!|#1]";
+    return;
+  }
+  const auto s = fmt::format(
+      "{} is paging you from Chatroom channel {}.  Type /C from the MAIN MENU to enter the "
+      "Chatroom.",
+      a()->user()->name(), loc);
+  send_inst_str(i, s);
   bout << "|#1[|#9Page Sent|#1]\r\n";
 }
 
@@ -693,7 +682,6 @@ void free_actions() {
 
 void exec_action(const char* message, char* color_string, int loc, int nact) {
   char tmsg[150], final[170];
-  instancerec ir;
   User u;
 
   bool bOk = (strlen(message) == 0) ? false : true;
@@ -710,7 +698,7 @@ void exec_action(const char* message, char* color_string, int loc, int nact) {
     }
   }
   if (bOk) {
-    get_inst_info(p, &ir);
+    auto ir = get_inst_info(p);
     a()->users()->readuser(&u, ir.user);
     sprintf(tmsg, actions[nact]->toperson, a()->user()->GetName());
   } else if (actions[nact]->r) {
@@ -728,7 +716,7 @@ void exec_action(const char* message, char* color_string, int loc, int nact) {
     sprintf(tmsg, actions[nact]->toall, a()->user()->GetName(), u.GetName());
     sprintf(final, "%s%s", color_string, tmsg);
     for (int c = 1; c <= num_instances(); c++) {
-      get_inst_info(c, &ir);
+      auto ir = get_inst_info(c);
       if ((ir.loc == loc) && (c != a()->instance_number()) && (c != p)) {
         send_inst_str(c, final);
       }
@@ -785,7 +773,7 @@ void list_channels() {
   }
 
   for (int i1 = 1; i1 <= num_instances(); i1++) {
-    get_inst_info(i1, &ir);
+    ir = get_inst_info(i1);
     if ((!(ir.flags & INST_FLAGS_INVIS)) || so()) {
       if ((ir.loc >= INST_LOC_CH1) && (ir.loc <= INST_LOC_CH10)) {
         check[ir.loc - INST_LOC_CH1 + 1] = 1;
@@ -856,7 +844,7 @@ int change_channels(int loc) {
         moving(false, loc);
       }
       loc = temploc + (INST_LOC_CH1 - 1);
-      write_inst(static_cast<uint16_t>(loc), 0, INST_FLAGS_NONE);
+      write_inst(loc, 0, INST_FLAGS_NONE);
       moving(true, loc);
       bout.nl();
       intro(loc);
@@ -962,14 +950,14 @@ int userinst(char* user) {
   }
   int p = wusrinst(user);
   if (p) {
-    get_inst_info(p, &ir);
+    ir = get_inst_info(p);
     if ((!(ir.flags & INST_FLAGS_INVIS)) || so()) {
       return p;
     }
   }
   p = to_number<int>(user);
   if (p > 0 && p <= num_instances()) {
-    get_inst_info(p, &ir);
+    ir = get_inst_info(p);
     if (((!(ir.flags & INST_FLAGS_INVIS)) || so()) && (ir.flags & INST_FLAGS_ONLINE)) {
       return p;
     }
