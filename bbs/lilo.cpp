@@ -121,7 +121,7 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
   bout << "Copyright (c) 1998-2021, WWIV Software Services." << wwiv::endl;
   bout << "All Rights Reserved." << wwiv::endl;
 
-  int ans = check_ansi();
+  const auto ans = check_ansi();
   if (ans > 0) {
     a()->user()->SetStatusFlag(User::ansi);
     a()->user()->SetStatusFlag(User::status_color);
