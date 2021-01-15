@@ -165,7 +165,7 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
   return 0;
 }
 
-static int ShowLoginAndGetUserNumber(string remote_username) {
+static int ShowLoginAndGetUserNumber(const std::string& remote_username) {
   bout.nl();
   bout << "Enter number or name or 'NEW'\r\n";
   bout << "NN: ";
@@ -188,8 +188,7 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
     return 0;
   }
 
-
-  auto user_number = finduser(user_name);
+  const auto user_number = finduser(user_name);
   if (user_number != 0) {
     return user_number;
   }
@@ -197,8 +196,8 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
 }
 
 bool IsPhoneRequired() {
-  IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
-              {StrCat("WWIV-", a()->instance_number()), INI_TAG});
+  const IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
+                    {StrCat("WWIV-", a()->instance_number()), INI_TAG});
   if (ini.IsOpen()) {
     if (ini.value<bool>("NEWUSER_MIN")) {
       return false;
@@ -224,7 +223,7 @@ bool VerifyPhoneNumber() {
   return true;
 }
 
-static bool VerifyPassword(string remote_password) {
+static bool VerifyPassword(const std::string& remote_password) {
   a()->UpdateTopScreen();
 
   if (!remote_password.empty() && remote_password == a()->user()->password()) {
@@ -317,7 +316,7 @@ static void logon_guest() {
   bout.pausescr();
 
   string userName, reason;
-  int count = 0;
+  auto count = 0;
   do {
     bout << "\r\n|#5Enter your real name : ";
     userName = bin.input_upper(25);
@@ -364,8 +363,8 @@ void getuser() {
   int count = 0;
   bool ok = false;
 
-  int ans = GetAnsiStatusAndShowWelcomeScreen();
-  bool first_time = true;
+  const auto ans = GetAnsiStatusAndShowWelcomeScreen();
+  auto first_time = true;
   do {
     string remote_username;
     string remote_password;
@@ -483,14 +482,14 @@ static void PrintUserSpecificFiles() {
   bout.printfile(fmt::format("sl{}", user->sl()));
   bout.printfile(fmt::format("dsl{}", user->dsl()));
 
-  const int short_size = std::numeric_limits<uint16_t>::digits - 1;
-  for (int i=0; i < short_size; i++) {
+  const auto short_size = std::numeric_limits<uint16_t>::digits - 1;
+  for (auto i=0; i < short_size; i++) {
     if (user->HasArFlag(1 << i)) {
       bout.printfile(fmt::format("ar{}", static_cast<char>('A' + i)));
     }
   }
 
-  for (int i=0; i < short_size; i++) {
+  for (auto i=0; i < short_size; i++) {
     if (user->HasDarFlag(1 << i)) {
       bout.printfile(fmt::format("dar{}", static_cast<char>('A' + i)));
     }
@@ -516,9 +515,9 @@ static std::string CreateLastOnLogLine(const Status& status) {
       a()->GetCurrentSpeed(),
       a()->user()->ontoday());
   } else {
-    const string username_num = a()->names()->UserName(a()->sess().user_num());
-    const string t = times();
-    const string f = fulldate();
+    const auto username_num = a()->names()->UserName(a()->sess().user_num());
+    const auto t = times();
+    const auto f = fulldate();
     log_line = fmt::sprintf("|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
                             status.caller_num(), username_num, a()->sess().current_language(),
                             t, f, a()->GetCurrentSpeed(), a()->user()->ontoday());
@@ -598,12 +597,12 @@ static void UpdateLastOnFile() {
       auto it = lines.begin();
       // skip over any lines over 7
       while (lines.size() - std::distance(lines.begin(), it) >= 8) {
-        it++;
+        ++it;
       }
       while (it != lines.end()) {
         lastonFile.WriteLine(*it++);
       }
-      lastonFile.Write(CreateLastOnLogLine(*status.get()));
+      lastonFile.Write(CreateLastOnLogLine(*status));
       lastonFile.Close();
     }
   }
@@ -660,9 +659,9 @@ static std::string to_string(const net_networks_rec& n) {
   case network_type_t::news:
     return fmt::format("|#9(|#2{}|#9@|#1News|#9) ", n.name);
   case network_type_t::wwivnet:
-  default:
     return fmt::format("|#9(|#2@{}|#9.|#1{}|#9) ", n.sysnum, n.name);
   }
+  return fmt::format("|#9(|#2@{}|#9.|#1{}|#9) ", n.sysnum, n.name);
 }
 
 static void DisplayUserLoginInformation() {
@@ -762,9 +761,9 @@ static void DisplayUserLoginInformation() {
 static void LoginCheckForNewMail() {
   bout << "|#9Scanning for new mail... ";
   if (a()->user()->email_waiting() > 0) {
-    int nNumNewMessages = check_new_mail(a()->sess().user_num());
-    if (nNumNewMessages) {
-      bout << "|#9You have |#2" << nNumNewMessages 
+    const auto messages = check_new_mail(a()->sess().user_num());
+    if (messages) {
+      bout << "|#9You have |#2" << messages 
            << "|#9 new message(s).\r\n\r\n"
            << "|#9Read your mail now? ";
       if (bin.noyes()) {
@@ -798,7 +797,7 @@ static vector<bool> read_voting() {
 }
 
 static void CheckUserForVotingBooth() {
-  vector<bool> questused = read_voting();
+  auto questused = read_voting();
   if (!a()->user()->IsRestrictionVote() && a()->sess().effective_sl() > a()->config()->newuser_sl()) {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && a()->user()->GetVote(i) == 0) {
@@ -1007,7 +1006,7 @@ void logoff() {
       auto r = 0;
       auto w = 0;
       while (r < num_records) {
-        shortmsgrec sm;
+        shortmsgrec sm{};
         smwFile.Seek(r * sizeof(shortmsgrec), File::Whence::begin);
         smwFile.Read(&sm, sizeof(shortmsgrec));
         if (sm.tosys != 0 || sm.touser != 0) {

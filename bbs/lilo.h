@@ -15,10 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_LILO_H__
-#define __INCLUDED_BBS_LILO_H__
+#ifndef INCLUDED_BBS_LILO_H
+#define INCLUDED_BBS_LILO_H
 
-#include "sdk/user.h"
+namespace wwiv::sdk {
+class User;
+}
 
 bool IsPhoneNumberUSAFormat(wwiv::sdk::User* pUser);
 void getuser();
@@ -26,4 +28,4 @@ void logon();
 void logoff();
 void logon_guest();
 
-#endif  // __INCLUDED_BBS_LILO_H__
+#endif
