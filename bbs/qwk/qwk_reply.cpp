@@ -461,7 +461,7 @@ void upload_reply_packet() {
     tmp_disable_conf(true);
   }
 
-  const auto rep_name = StrCat(qwk_system_name(qwk_cfg, a()->config()->system_name()), ".REP");
+  const auto rep_name = ToStringLowerCase(StrCat(qwk_system_name(qwk_cfg, a()->config()->system_name()), ".rep"));
   bout.litebar("Upload QWK Reply Packet");
   bout.nl();
   bout.format("|#9QWK Reply Packet must be named: \"|#2{}|#9\"\r\n", rep_name);
