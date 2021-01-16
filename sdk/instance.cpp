@@ -119,7 +119,7 @@ Instances::Instances(const Config& config)
 // ReSharper disable once CppMemberFunctionMayBeConst
 Instances::size_type Instances::size() {
   if (const auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
-    return std::max(0, file.number_of_records() - 1);
+    return std::max<int>(0, file.number_of_records() - 1);
   }
   return 0;
 }
