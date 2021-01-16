@@ -96,6 +96,14 @@ bool UserManager::readuser(User *pUser, int user_number) const {
   return this->readuser_nocache(pUser, user_number);
 }
 
+std::optional<User> UserManager::readuser(int user_number) const {
+  User u{};
+  if (readuser(&u, user_number)) {
+    return {u};
+  }
+  return std::nullopt;
+}
+
 bool UserManager::writeuser_nocache(User *pUser, int user_number) {
   File userList(FilePath(data_directory_, USER_LST));
   if (userList.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {

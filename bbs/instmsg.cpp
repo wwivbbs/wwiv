@@ -30,6 +30,7 @@
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/instance.h"
 #include "sdk/names.h"
 #include <chrono>
 #include <string>
@@ -45,10 +46,6 @@ using namespace wwiv::strings;
 
 static bool chat_avail;
 static bool chat_invis;
-
-// Local functions
-bool inst_available(instancerec * ir);
-bool inst_available_chat(instancerec * ir);
 
 static steady_clock::time_point last_iia;
 static std::chrono::milliseconds iia;
@@ -71,7 +68,7 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
     }
     file.Close();
 
-    for (int i = 0; i < 1000; i++) {
+    for (auto i = 0; i < 1000; i++) {
       const auto dest =
           FilePath(a()->config()->datadir(), fmt::sprintf("msg%5.5d.%3.3d", i, ih->dest_inst));
       if (!File::Rename(file.path(), dest) || (errno != EACCES)) {
@@ -109,11 +106,7 @@ void send_inst_sysstr(int whichinst, const std::string& send_string) {
 void broadcast(const std::string& message) {
   const auto ni = num_instances();
   for (auto i = 1; i <= ni; i++) {
-    if (i == a()->instance_number()) {
-      continue;
-    }
-    auto ir = get_inst_info(i);
-    if (inst_available(&ir)) {
+    if (i != a()->instance_number() && a()->instances().at(i).available()) {
       send_inst_str(i, message);
     }
   }
@@ -194,61 +187,11 @@ void process_inst_msgs() {
   setiia(oiia);
 }
 
-// Gets specified instance, returns in ir.
-instancerec get_inst_info(int instance_num) {
-  if (a()->config()->datadir().empty()) {
-    LOG(ERROR) << "This should never happen, config.datadir is empty";
-    return {};
-  }
-
-  const auto path = FilePath(a()->config()->datadir(), INSTANCE_DAT);
-  if (auto file = DataFile<instancerec>(path, File::modeBinary | File::modeReadOnly)) {
-    instancerec ir{};
-    if (instance_num < file.number_of_records() && file.Read(instance_num, &ir)) {
-      return ir;
-    }
-  }
-  return {};
-}
-
-
-/*
- * Returns 1 if inst_no has user online that can receive messages, else 0
- */
-bool inst_available(instancerec * ir) {
-  if (!ir) {
-    return false;
-  }
-
-  return ((ir->flags & INST_FLAGS_ONLINE) && (ir->flags & INST_FLAGS_MSG_AVAIL)) ? true : false;
-}
-
-
-/*
- * Returns 1 if inst_no has user online in chat, else 0
- */
-bool inst_available_chat(instancerec * ir) {
-  if (!ir) {
-    return false;
-  }
-
-  return ((ir->flags & INST_FLAGS_ONLINE) &&
-          (ir->flags & INST_FLAGS_MSG_AVAIL) &&
-          (ir->loc == INST_LOC_CHATROOM)) ? true : false;
-}
-
-
 /*
  * Returns max instance number.
  */
 int num_instances() {
-  File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
-  if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
-    return 0;
-  }
-  const auto n = static_cast<int>(instFile.length() / sizeof(instancerec)) - 1;
-  instFile.Close();
-  return n;
+  return a()->instances().size();
 }
 
 
@@ -257,13 +200,13 @@ int num_instances() {
  * wi, else returns false.
  */
 bool user_online(int user_number, int *wi) {
-  const int ni = num_instances();
+  const auto ni = a()->instances().size();
   for (auto i = 1; i <= ni; i++) {
     if (i == a()->instance_number()) {
       continue;
     }
-    const auto ir = get_inst_info(i);
-    if (ir.user == user_number && (ir.flags & INST_FLAGS_ONLINE)) {
+    const auto ir = a()->instances().at(i);
+    if (ir.user_number() == user_number && ir.online()) {
       if (wi) {
         *wi = i;
       }
@@ -281,17 +224,17 @@ bool user_online(int user_number, int *wi) {
 * some info about this instance.
 */
 void write_inst(int loc, int subloc, int flags) {
-  static instancerec ti{};
+  static Instance ti{};
 
   auto re_write = false;
-  if (ti.user == 0) {
-    const auto ir = get_inst_info(a()->instance_number());
-    ti.user = ir.user;
-    ti.inst_started = daten_t_now();
+  if (ti.user_number() == 0) {
+    const auto ir = a()->instances().at(a()->instance_number());
+    ti.ir().user = static_cast<int16_t>(ir.user_number());
+    ti.ir().inst_started = daten_t_now();
     re_write = true;
   }
 
-  uint16_t cf = ti.flags & (~(INST_FLAGS_ONLINE | INST_FLAGS_MSG_AVAIL));
+  uint16_t cf = ti.ir().flags & (~(INST_FLAGS_ONLINE | INST_FLAGS_MSG_AVAIL));
   if (a()->sess().IsUserOnline()) {
     cf |= INST_FLAGS_ONLINE;
     if (chat_invis) {
@@ -317,72 +260,65 @@ void write_inst(int loc, int subloc, int flags) {
       }
     }
     const auto ms = static_cast<uint16_t>(a()->sess().using_modem() ? a()->modem_speed_ : 0);
-    if (ti.modem_speed != ms) {
-      ti.modem_speed = ms;
+    if (ti.modem_speed() != ms) {
+      ti.ir().modem_speed = ms;
       re_write = true;
     }
   }
   if (flags != INST_FLAGS_NONE) {
-    if (flags & INST_FLAGS_RESET) {
-      // reset an option
-      ti.flags &= flags;
-    } else {
-      // set an option
-      ti.flags |= flags;
-    }
+    // set an option
+    ti.ir().flags |= flags;
   }
-  if ((ti.flags & INST_FLAGS_INVIS) && (!chat_invis)) {
+  if (ti.invisible() && !chat_invis) {
     cf = 0;
-    if (ti.flags & INST_FLAGS_ONLINE) {
+    if (ti.ir().flags & INST_FLAGS_ONLINE) {
       cf |= INST_FLAGS_ONLINE;
     }
-    if (ti.flags & INST_FLAGS_MSG_AVAIL) {
+    if (ti.ir().flags & INST_FLAGS_MSG_AVAIL) {
       cf |= INST_FLAGS_MSG_AVAIL;
     }
     re_write = true;
   }
-  if (cf != ti.flags) {
+  if (cf != ti.ir().flags) {
     re_write = true;
-    ti.flags = cf;
+    ti.ir().flags = cf;
   }
-  if (ti.number != a()->instance_number()) {
+  if (ti.ir().number != a()->instance_number()) {
     re_write = true;
-    ti.number = static_cast<int16_t>(a()->instance_number());
+    ti.ir().number = static_cast<int16_t>(a()->instance_number());
   }
   if (loc == INST_LOC_DOWN) {
     re_write = true;
   } else {
     if (a()->sess().IsUserOnline()) {
-      if (ti.user != a()->sess().user_num()) {
+      if (ti.ir().user != a()->sess().user_num()) {
         re_write = true;
         if (a()->sess().user_num() > 0 && a()->sess().user_num() <= a()->config()->max_users()) {
-          ti.user = static_cast<int16_t>(a()->sess().user_num());
+          ti.ir().user = static_cast<int16_t>(a()->sess().user_num());
         }
       }
     }
   }
 
-  if (ti.subloc != static_cast<uint16_t>(subloc)) {
+  if (ti.ir().subloc != static_cast<uint16_t>(subloc)) {
     re_write = true;
-    ti.subloc = static_cast<uint16_t>(subloc);
+    ti.ir().subloc = static_cast<uint16_t>(subloc);
   }
-  if (ti.loc != static_cast<uint16_t>(loc)) {
+  if (ti.ir().loc != static_cast<uint16_t>(loc)) {
     re_write = true;
-    ti.loc = static_cast<uint16_t>(loc);
+    ti.ir().loc = static_cast<uint16_t>(loc);
   }
-  const auto ti_chat_invis = ti.flags & INST_FLAGS_INVIS;
-  const auto ti_msg_avail = ti.flags & INST_FLAGS_MSG_AVAIL;
-  if ((ti_chat_invis != chat_invis || ti_msg_avail != chat_avail) && ti.loc != INST_LOC_WFC) {
+  const auto ti_chat_invis = ti.invisible();
+  const auto ti_msg_avail = (ti.ir().flags & INST_FLAGS_MSG_AVAIL) != 0;
+  if ((ti_chat_invis != chat_invis || ti_msg_avail != chat_avail) && ti.loc_code() != INST_LOC_WFC) {
     re_write = true;
   }
   if (!re_write) {
     return;
   }
-  const auto path = FilePath(a()->config()->datadir(), INSTANCE_DAT);
-  if (auto file = DataFile<instancerec>(path, File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
-    ti.last_update = daten_t_now();
-    file.Write(a()->instance_number(), &ti);
-  }
+
+  ti.ir().last_update = daten_t_now();
+  a()->instances().upsert(a()->instance_number(), ti);
 }
 
 /*
@@ -418,12 +354,11 @@ std::chrono::milliseconds setiia(std::chrono::milliseconds poll_time) {
 void toggle_avail() {
 
   const auto line = bout.SaveCurrentLine();
-  const auto ir = get_inst_info(a()->instance_number());
   chat_avail = !chat_avail;
 
-  bout << "\n\rYou are now ";
-  bout << (chat_avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
-  write_inst(ir.loc, a()->current_user_sub().subnum, INST_FLAGS_NONE);
+  bout.format("\r\nYou are now {}\r\n\r\n", chat_avail ? "available for chat." : "not available for chat.");
+  const auto loc = a()->instances().at(a()->instance_number()).loc_code();
+  write_inst(loc, a()->current_user_sub().subnum, INST_FLAGS_NONE);
   bout.RestoreCurrentLine(line);
 }
 
@@ -431,11 +366,10 @@ void toggle_avail() {
 
 void toggle_invis() {
   const auto line = bout.SaveCurrentLine();
-  const auto ir = get_inst_info(a()->instance_number());
   chat_invis = !chat_invis;
 
-  bout << "\r\n|#1You are now ";
-  bout << (chat_invis ? "invisible.\n\r\n" : "visible.\n\r\n");
-  write_inst(ir.loc, a()->current_user_sub().subnum, INST_FLAGS_NONE);
+  bout.format("\r\nYou are now {}\r\n\r\n", chat_invis ? "invisible." : "visible.");
+  const auto loc = a()->instances().at(a()->instance_number()).loc_code();
+  write_inst(loc, a()->current_user_sub().subnum, INST_FLAGS_NONE);
   bout.RestoreCurrentLine(line);
 }

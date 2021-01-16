@@ -102,11 +102,11 @@ static void wfc_update() {
 
   User u{};
 
-  const auto ir = get_inst_info(inst_num);
-  a()->users()->readuser_nocache(&u, ir.user);
+  const auto ir = a()->instances().at(inst_num);
+  a()->users()->readuser_nocache(&u, ir.user_number());
   a()->localIO()->PutsXYA(57, 18, 15, fmt::format("{:<3}", inst_num));
-  if (ir.flags & INST_FLAGS_ONLINE) {
-    const auto unn = a()->names()->UserName(ir.user);
+  if (ir.online()) {
+    const auto unn = a()->names()->UserName(ir.user_number());
     a()->localIO()->PutsXYA(42, 19, 14, fmt::format("{:<25}", unn));
   } else {
     a()->localIO()->PutsXYA(42, 19, 14, fmt::format("{:<25}", "Nobody"));
@@ -190,9 +190,9 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(58, 10, 14, percent_active);
     a()->localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
 
-    auto ir = get_inst_info(a()->instance_number());
-    if (ir.user < a()->config()->max_users() && ir.user > 0) {
-      const auto unn = a()->names()->UserName(ir.user);
+    auto ir = a()->instances().at(a()->instance_number());
+    if (ir.user_number() < a()->config()->max_users() && ir.user_number() > 0) {
+      const auto unn = a()->names()->UserName(ir.user_number());
       a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", unn));
     } else {
       a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", "Nobody"));

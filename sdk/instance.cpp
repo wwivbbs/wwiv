@@ -34,37 +34,133 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk {
 
-const std::filesystem::path& Instance::fn_path() const {
+const std::filesystem::path& Instances::fn_path() const {
   return path_;
 }
 
-Instance::Instance(const Config& config)
+Instance::Instance(instancerec ir)
+  : ir_(ir) {
+}
+
+Instance::Instance(int instance_num) : ir_() {
+  ir_.number = static_cast<int16_t>(instance_num);
+}
+
+Instance::Instance(Instance&& o) noexcept : ir_(o.ir_) {}
+
+Instance& Instance::operator=(const Instance& o)  = default;
+  
+Instance& Instance::operator=(Instance&& o) noexcept {
+  ir_ = o.ir_;
+  return *this;
+}
+
+const instancerec& Instance::ir() const {
+  return ir_;
+}
+
+instancerec& Instance::ir() {
+  return ir_;
+}
+
+int Instance::node_number() const noexcept {
+  return ir_.number;
+}
+
+int Instance::user_number() const noexcept {
+  return ir_.user;
+}
+
+bool Instance::available() const noexcept {
+  return online() && ir_.flags & INST_FLAGS_MSG_AVAIL;
+}
+
+bool Instance::online() const noexcept {
+ return ir_.flags & INST_FLAGS_ONLINE;
+}
+
+bool Instance::invisible() const noexcept {
+ return ir_.flags & INST_FLAGS_INVIS;
+}
+
+std::string Instance::location_description() const {
+  return instance_location(ir_);
+}
+
+int Instance::loc_code() const noexcept {
+  return ir_.loc;
+}
+
+bool Instance::in_channel() const noexcept {
+  return ir_.loc >= INST_LOC_CH1 && ir_.loc <= INST_LOC_CH10;
+}
+
+int Instance::modem_speed() const noexcept {
+  return ir_.modem_speed;
+}
+
+int Instance::subloc_code() const noexcept {
+  return ir_.subloc;
+}
+
+DateTime Instance::started() const {
+  return DateTime::from_daten(ir_.inst_started);
+}
+
+DateTime Instance::updated() const {
+  return DateTime::from_daten(ir_.last_update);
+}
+
+Instances::Instances(const Config& config)
     : datadir_(config.datadir()), path_(FilePath(datadir_, INSTANCE_DAT)) {
   initialized_ = File::Exists(path_);
 }
 
-Instance::size_type Instance::size() {
+// ReSharper disable once CppMemberFunctionMayBeConst
+Instances::size_type Instances::size() {
   if (const auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
     return std::max(0, file.number_of_records() - 1);
   }
   return 0;
 }
 
-instancerec Instance::at(size_type pos) {
+// ReSharper disable once CppMemberFunctionMayBeConst
+Instance Instances::at(size_type pos) {
   if (auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
     instancerec ir{};
     if (file.Read(pos, &ir)) {
-      return ir;
+      return Instance(ir);
+    }
+  }
+  return Instance(pos);
+}
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+std::vector<Instance> Instances::all() {
+  if (auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
+    std::vector<instancerec> ir;
+    if (file.ReadVector(ir)) {
+      std::vector<Instance> r;
+      for (const auto& i : ir) {
+        r.emplace_back(i);
+      }
+      return r;
     }
   }
   return {};
 }
 
-bool Instance::upsert(size_type pos, const instancerec& ir) {
-  if (auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
+// ReSharper disable once CppMemberFunctionMayBeConst
+bool Instances::upsert(size_type pos, const instancerec& ir) {
+  if (auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadWrite |
+                                                   File::modeCreateFile)) {
     return file.Write(pos, &ir);
   }
   return false;
+}
+
+bool Instances::upsert(size_type pos, const Instance& ir) {
+  return upsert(pos, ir.ir());
 }
 
 std::string instance_location(const instancerec& ir) {

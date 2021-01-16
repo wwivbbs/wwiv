@@ -71,6 +71,7 @@ class Config;
 class Conferences;
 class Chains;
 class GFiles;
+class Instances;
 class Names;
 class StatusMgr;
 class Subs;
@@ -274,6 +275,9 @@ public:
   [[nodiscard]] wwiv::sdk::GFiles& gfiles();
   [[nodiscard]] const wwiv::sdk::GFiles& gfiles() const;
 
+  [[nodiscard]] wwiv::sdk::Instances& instances();
+  [[nodiscard]] const wwiv::sdk::Instances& instances() const;
+
   bool read_subs();
   bool create_message_api();
 
@@ -447,6 +451,8 @@ private:
   std::unique_ptr<wwiv::sdk::files::Dirs> dirs_;
   std::unique_ptr<wwiv::sdk::Networks> nets_;
   std::unique_ptr<wwiv::sdk::GFiles> gfiles_;
+  std::unique_ptr<wwiv::sdk::Instances> instances_;
+
 
   // Former global variables and system_operation_rec members to be moved
   uint32_t flags_{0};

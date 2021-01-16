@@ -66,7 +66,7 @@ int rip_words(int start_pos, const char* cmsg, char* wd, int size, char lookfor)
 int f_action(int start_pos, int end_pos, char* aword);
 int main_loop(const char* message, char* from_message, char* color_string, char* messageSent,
               bool& bActionMode, int loc, int num_actions);
-void who_online(int* nodes, int loc);
+std::vector<int> who_online(int loc);
 void intro(int loc);
 void ch_direct(const string& message, int loc, char* color_string, int node);
 void ch_whisper(const std::string&, char* color_string, int node);
@@ -86,7 +86,6 @@ int change_channels(int loc);
 bool check_ch(int ch);
 void load_channels(IniFile& pIniFile);
 int userinst(char* user);
-bool usercomp(const char* st1, const char* st2);
 
 static int grabname(const std::string& orig, int channel) {
   auto node = 0;
@@ -97,15 +96,15 @@ static int grabname(const std::string& orig, int channel) {
 
   auto space = orig.find(' ', 1);
   auto message = orig.substr(0, space);
-  auto n = to_number<int>(message);
-  if (n) {
+
+  if (auto n = to_number<int>(message)) {
     if (n < 1 || n > num_instances()) {
       bout.bprintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
       return 0;
     }
-    auto ir = get_inst_info(n);
-    if ((ir.flags & INST_FLAGS_ONLINE) && ((!(ir.flags & INST_FLAGS_INVIS)) || so())) {
-      if (channel && (ir.loc != channel)) {
+    auto ir = a()->instances().at(n);
+    if (ir.online() && (!ir.invisible() || so())) {
+      if (channel && ir.loc_code() != channel) {
         bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
         return 0;
       }
@@ -116,15 +115,14 @@ static int grabname(const std::string& orig, int channel) {
   }
   {
     node = 0;
-    auto name = message;
-    StringUpperCase(&name);
+    auto name = ToStringUpperCase(message);
     for (auto i = 1; i <= num_instances(); i++) {
-      auto ir = get_inst_info(i);
-      if ((ir.flags & INST_FLAGS_ONLINE) && ((!(ir.flags & INST_FLAGS_INVIS)) || so())) {
-        if (channel && (ir.loc != channel)) {
+      auto ir = a()->instances().at(i);
+      if (ir.online() && (!ir.invisible() || so())) {
+        if (channel && (ir.loc_code() != channel)) {
           continue;
         }
-        a()->users()->readuser(&u, ir.user);
+        a()->users()->readuser(&u, ir.user_number());
         if (name == u.name()) {
           node = i;
           break;
@@ -147,7 +145,7 @@ static string StripName(const std::string& in) {
     return in;
   }
 
-  auto space = in.find(' ', 1);
+  const auto space = in.find(' ', 1);
   return in.substr(space);
 }
 
@@ -182,7 +180,7 @@ void chat_room() {
   }
   cleanup_chat();
   bout << "\r\n|#2Welcome to the WWIV Chatroom\n\r\n";
-  int loc = 0;
+  auto loc = 0;
   if (bShowPrompt) {
     while (!loc) {
       bout.nl();
@@ -289,9 +287,9 @@ int f_action(int start_pos, int end_pos, char* aword) {
 
 // Sends out a raw_message to everyone in channel LOC
 static void out_msg(const std::string& message, int loc) {
-  for (int i = 1; i <= num_instances(); i++) {
-    auto ir = get_inst_info(i);
-    if ((ir.loc == loc) && (i != a()->instance_number())) {
+  for (auto i = 1; i <= num_instances(); i++) {
+    auto ir = a()->instances().at(i);
+    if (ir.loc_code() == loc && i != a()->instance_number()) {
       send_inst_str(i, message);
     }
   }
@@ -408,42 +406,37 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
 }
 
 // Fills an array with information of who's online.
-void who_online(int* nodes, int loc) {
-  int c = 0;
-  for (int i = 1; i <= num_instances(); i++) {
-    const auto ir = get_inst_info(i);
-    if ((!(ir.flags & INST_FLAGS_INVIS)) || so())
-      if ((ir.loc == loc) && (i != a()->instance_number())) {
-        c++;
-        nodes[c] = ir.user;
+std::vector<int> who_online(int loc) {
+  std::vector<int> r{};
+  for (auto i = 1; i <= a()->instances().size(); i++) {
+    const auto ir = a()->instances().at(i);
+    if (!ir.invisible() || so()) {
+      if (ir.loc_code() == loc && i != a()->instance_number()) {
+        r.emplace_back(i);
       }
+    }
   }
-  nodes[0] = c;
+  return r;
 }
 
 // Displays which channel the user is in, who's in the channel with them,
 // whether or not the channel is secured, and tells the user how to obtain
 // help
 void intro(int loc) {
-  int nodes[20];
 
-  bout << "|#7You are in " << channels[loc - INST_LOC_CH1 + 1].name << wwiv::endl;
-  who_online(nodes, loc);
-  if (nodes[0]) {
-    for (int i = 1; i <= nodes[0]; i++) {
+  bout << "|#7You are in " << channels[loc - INST_LOC_CH1 + 1].name << " with: " << wwiv::endl;
+  auto users = who_online(loc);
+  if (!users.empty()) {
+    auto first = true;
+    for (const auto& usernum : users) {
       User u;
-      a()->users()->readuser(&u, nodes[i]);
-      if (((nodes[0] - i) == 1) && (nodes[0] >= 2)) {
-        bout << "|#1" << u.name() << " |#7and ";
-      } else {
-        bout << "|#1" << u.name() << (((nodes[0] > 1) && (i != nodes[0])) ? "|#7, " : " ");
+      a()->users()->readuser(&u, usernum);
+      if (!first) {
+        bout << "|#7and ";
       }
+      bout << "|#1" << u.name() << " ";
+      first = false;
     }
-  }
-  if (nodes[0] == 1) {
-    bout << "|#7is here with you.\r\n";
-  } else if (nodes[0] > 1) {
-    bout << "|#7are here with you.\r\n";
   } else {
     bout << "|#7You are the only one here.\r\n";
   }
@@ -463,15 +456,15 @@ void ch_direct(const string& message, int loc, char* color_string, int node) {
     return;
   }
 
-  auto ir = get_inst_info(node);
-  if (ir.loc == loc) {
+  auto ir = a()->instances().at(node);
+  if (ir.loc_code() == loc) {
     User u;
-    a()->users()->readuser(&u, ir.user);
+    a()->users()->readuser(&u, ir.user_number());
     const auto s = fmt::sprintf("|#9From %.12s|#6 [to %s]|#1: %s%s", a()->user()->name(),
                                 u.name(), color_string, message);
     for (auto i = 1; i <= num_instances(); i++) {
-      ir = get_inst_info(i);
-      if (ir.loc == loc && i != a()->instance_number()) {
+      ir = a()->instances().at(i);
+      if (ir.loc_code() == loc && i != a()->instance_number()) {
         send_inst_str(i, s);
       }
     }
@@ -492,30 +485,30 @@ void ch_whisper(const std::string& message, char* color_string, int node) {
   if (!node) {
     return;
   }
-  auto ir = get_inst_info(node);
 
-  string text = message;
-  if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
+  auto text = message;
+  const auto ir = a()->instances().at(node);
+  if (ir.in_channel()) {
     text = fmt::sprintf("|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", a()->user()->name(),
                         color_string, message);
   }
   send_inst_str(node, text);
-  User u;
-  a()->users()->readuser(&u, ir.user);
-  bout << "|#1[|#9Message sent only to " << u.name() << "|#1]\r\n";
+  if (auto ou = a()->users()->readuser(ir.user_number())) {
+    bout << "|#1[|#9Message sent only to " << ou.value().name() << "|#1]\r\n";
+  }
 }
 
 // This function determines whether or not user N is online
 
 int wusrinst(char* n) {
 
-  for (int i = 0; i <= num_instances(); i++) {
-    auto ir = get_inst_info(i);
-    if (ir.flags & INST_FLAGS_ONLINE) {
-      User user;
-      a()->users()->readuser(&user, ir.user);
-      if (iequals(user.name(), n)) {
-        return i;
+  for (auto i = 0; i <= num_instances(); i++) {
+    auto ir = a()->instances().at(i);
+    if (ir.online()) {
+      if (auto u = a()->users()->readuser(ir.user_number())) {
+        if (iequals(u.value().name(), n)) {
+          return i;
+        }
       }
     }
   }
@@ -547,15 +540,10 @@ void secure_ch(int ch) {
 // Eliminates unnecessary lockfiles
 
 void cleanup_chat() {
-  int nodes[10];
-
-  for (int x = INST_LOC_CH2; x <= INST_LOC_CH10; x++) {
+  for (auto x = INST_LOC_CH2; x <= INST_LOC_CH10; x++) {
     const auto fn = fmt::format("CHANNEL.%d", (x + 1 - INST_LOC_CH1));
-    if (File::Exists(fn)) {
-      who_online(nodes, x);
-      if (!nodes[0]) {
-        File::Remove(fn);
-      }
+    if (File::Exists(fn) && who_online(x).empty()) {
+      File::Remove(fn);
     }
   }
 }
@@ -582,12 +570,12 @@ void page_user(int loc) {
     bout << "|#1[|#9Cannot page the instance you are on|#1]\r\n";
     return;
   }
-  auto ir = get_inst_info(i);
-  if ((!(ir.flags & INST_FLAGS_ONLINE)) || ((ir.flags & INST_FLAGS_INVIS) && (!so()))) {
+  const auto ir = a()->instances().at(i);
+  if (!ir.online() || (!so() && ir.invisible())) {
     bout << "|#1[|#9There is no user on instance " << i << " |#1]\r\n";
     return;
   }
-  if ((!(ir.flags & INST_FLAGS_MSG_AVAIL)) && (!so())) {
+  if (!ir.available() && !so()) {
     bout << "|#1[|#9That user is not available for chat!|#1]";
     return;
   }
@@ -682,24 +670,21 @@ void free_actions() {
 
 void exec_action(const char* message, char* color_string, int loc, int nact) {
   char tmsg[150], final[170];
-  User u;
 
-  bool bOk = (strlen(message) == 0) ? false : true;
+  bool ok = (strlen(message) == 0) ? false : true;
   if (iequals(message, "?")) {
     action_help(nact);
     return;
   }
 
   int p = 0;
-  if (bOk) {
+  if (ok) {
     p = grabname(message, loc);
     if (!p) {
       return;
     }
   }
-  if (bOk) {
-    auto ir = get_inst_info(p);
-    a()->users()->readuser(&u, ir.user);
+  if (ok) {
     sprintf(tmsg, actions[nact]->toperson, a()->user()->GetName());
   } else if (actions[nact]->r) {
     bout << "This action requires a recipient.\r\n";
@@ -709,15 +694,19 @@ void exec_action(const char* message, char* color_string, int loc, int nact) {
   }
   bout << actions[nact]->toprint << wwiv::endl;
   sprintf(final, "%s%s", color_string, tmsg);
-  if (!bOk) {
+  if (!ok) {
     out_msg(final, loc);
   } else {
     send_inst_str(p, final);
-    sprintf(tmsg, actions[nact]->toall, a()->user()->GetName(), u.GetName());
+    const auto oa = a()->users()->readuser(a()->instances().at(p).user_number());
+    if (!oa) {
+      return;
+    }
+    sprintf(tmsg, actions[nact]->toall, a()->user()->GetName(), oa.value().GetName());
     sprintf(final, "%s%s", color_string, tmsg);
     for (int c = 1; c <= num_instances(); c++) {
-      auto ir = get_inst_info(c);
-      if ((ir.loc == loc) && (c != a()->instance_number()) && (c != p)) {
+      const auto ir = a()->instances().at(c);
+      if (ir.loc_code() == loc && c != a()->instance_number() && c != p) {
         send_inst_str(c, final);
       }
     }
@@ -761,55 +750,58 @@ void ga(const char* message, char* color_string, int loc, int type) {
 
 // Lists the chat channels
 void list_channels() {
-  int tl = 0, nodes[21], secure[11], check[11];
+  int tl = 0, secure[11], check[11];
   char s[12];
-  User u;
-  instancerec ir;
 
-  for (int i = 1; i <= 10; i++) {
+  for (auto i = 1; i <= 10; i++) {
     sprintf(s, "CHANNEL.%d", i);
     secure[i] = (File::Exists(s)) ? 1 : 0;
     check[i] = 0;
   }
 
-  for (int i1 = 1; i1 <= num_instances(); i1++) {
-    ir = get_inst_info(i1);
-    if ((!(ir.flags & INST_FLAGS_INVIS)) || so()) {
-      if ((ir.loc >= INST_LOC_CH1) && (ir.loc <= INST_LOC_CH10)) {
-        check[ir.loc - INST_LOC_CH1 + 1] = 1;
+  for (auto i1 = 1; i1 <= num_instances(); i1++) {
+    const auto ir = a()->instances().at(i1);
+    if (!ir.invisible() || so()) {
+      if (ir.in_channel()) {
+        check[ir.loc_code() - INST_LOC_CH1 + 1] = 1;
       }
     }
   }
 
   for (tl = 1; tl <= 10; tl++) {
     bout << "|#1" << tl << " |#7-|#9 " << channels[tl].name << wwiv::endl;
-    if (check[tl]) {
-      who_online(nodes, tl + INST_LOC_CH1 - 1);
-      if (nodes[0]) {
-        if (tl == 10) {
-          bout.bputch(SPACE);
+    if (!check[tl]) {
+      continue;
+    }
+    auto users = who_online(tl + INST_LOC_CH1 - 1);
+    if (users.empty()) {
+      continue;
+    }
+    if (tl == 10) {
+      bout.bputch(SPACE);
+    }
+    bout << "    |#9Users in channel: ";
+    auto first = true;
+    for (const auto& usernum : users) {
+      if (auto u = a()->users()->readuser(usernum)) {
+        if (!first) {
+          bout << "|#7and ";
         }
-        bout << "    |#9Users in channel: ";
-        for (int i2 = 1; i2 <= nodes[0]; i2++) {
-          a()->users()->readuser(&u, nodes[i2]);
-          if (((nodes[0] - i2) == 1) && (nodes[0] >= 2)) {
-            bout << "|#1" << u.name() << " |#7and ";
-          } else {
-            bout << "|#1" << u.name() << (((nodes[0] > 1) && (i2 != nodes[0])) ? "|#7, " : " ");
-          }
-        }
-        if (secure[tl]) {
-          bout << "|#6[SECURED]";
-        }
-        bout.nl();
+        bout << "|#1" << u.value().name() << " ";
+        first = false;
       }
     }
+    bout << " ";
+    if (secure[tl]) {
+      bout << "|#6[SECURED]";
+    }
+    bout.nl();
   }
 }
 
 // Calls list_channels() then prompts for a channel to change to.
 int change_channels(int loc) {
-  int ch_ok = 0, temploc = 0;
+  auto ch_ok = 0, temploc = 0;
   char szMessage[80];
 
   cleanup_chat();
@@ -943,33 +935,22 @@ void load_channels(IniFile& ini) {
 
 // Determines the node number a user is on
 int userinst(char* user) {
-  instancerec ir;
-
   if (strlen(user) == 0) {
     return 0;
   }
-  int p = wusrinst(user);
+  auto p = wusrinst(user);
   if (p) {
-    ir = get_inst_info(p);
-    if ((!(ir.flags & INST_FLAGS_INVIS)) || so()) {
+    auto ir = a()->instances().at(p);
+    if (!ir.invisible() || so()) {
       return p;
     }
   }
   p = to_number<int>(user);
   if (p > 0 && p <= num_instances()) {
-    ir = get_inst_info(p);
-    if (((!(ir.flags & INST_FLAGS_INVIS)) || so()) && (ir.flags & INST_FLAGS_ONLINE)) {
+    const auto ir = a()->instances().at(p);
+    if (!ir.online() && (so() || !ir.invisible())) {
       return p;
     }
   }
   return 0;
-}
-
-bool usercomp(const char* st1, const char* st2) {
-  for (size_t i = 0; i < size(st1); i++) {
-    if (st1[i] != st2[i]) {
-      return false;
-    }
-  }
-  return true;
 }

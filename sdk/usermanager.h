@@ -39,6 +39,11 @@ class UserManager {
    [[nodiscard]] int num_user_records() const;
    bool readuser_nocache(User *pUser, int user_number) const;
    bool readuser(User *pUser, int user_number) const;
+
+  /**
+    * Optionally returns the user specified by user_number.
+    */
+   [[nodiscard]] std::optional<User> readuser(int user_number) const;
    bool writeuser_nocache(User *pUser, int user_number);
    bool writeuser(User *pUser, int user_number);
 

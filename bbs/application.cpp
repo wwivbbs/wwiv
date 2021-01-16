@@ -1194,6 +1194,14 @@ const GFiles& Application::gfiles() const {
   return *gfiles_;
 }
 
+wwiv::sdk::Instances& Application::instances() {
+  return *instances_;
+}
+
+const wwiv::sdk::Instances& Application::instances() const {
+  return *instances_;
+}
+
 const net_networks_rec& Application::current_net() const {
   const static net_networks_rec empty_rec{};
   if (nets_->empty()) {

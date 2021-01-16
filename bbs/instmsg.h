@@ -22,6 +22,7 @@
 #include <chrono>
 #include <string>
 #include "core/wwivport.h"
+#include "sdk/instance.h"
 #include "sdk/vardec.h"
 
 constexpr int INST_MSG_STRING = 1;  // A string to print out to the user
@@ -40,7 +41,6 @@ constexpr int INST_FLAGS_NONE = 0x0000;  // No flags at all
 constexpr int INST_FLAGS_ONLINE = 0x0001;  // User online
 constexpr int INST_FLAGS_MSG_AVAIL = 0x0002;  // Available for inst msgs
 constexpr int INST_FLAGS_INVIS = 0x0004;  // For invisibility
-constexpr int INST_FLAGS_RESET = 0x8000;  // Used to reset an option.
 
 /* Instance primary location points */
 constexpr int INST_LOC_DOWN = 0;
@@ -135,7 +135,6 @@ struct inst_msg_header {
 void send_inst_str(int whichinst, const std::string& send_string);
 void broadcast(const std::string& message);
 void process_inst_msgs();
-instancerec get_inst_info(int instance_num);
 int  num_instances();
 bool user_online(int user_number, int *wi);
 void write_inst(int loc, int subloc = 0, int flags = INST_FLAGS_NONE);

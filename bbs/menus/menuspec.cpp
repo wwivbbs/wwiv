@@ -25,15 +25,14 @@
 #include "bbs/confutil.h"
 #include "bbs/defaults.h"
 #include "bbs/instmsg.h"
-#include "bbs/menus/menusupp.h"
 #include "bbs/mmkey.h"
-#include "bbs/msgbase1.h"
 #include "bbs/multinst.h"
 #include "bbs/shortmsg.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "bbs/menus/menusupp.h"
 #include "common/input.h"
 #include "common/output.h"
 #include "core/numbers.h"
@@ -46,6 +45,7 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/files/files.h"
+
 #include <string>
 
 namespace wwiv::bbs::menus {
@@ -213,10 +213,9 @@ static bool ValidateDoorAccess(int door_number) {
     return false;
   }
   // Check multi-instance doors.
-  auto inst = inst_ok(INST_LOC_CHAINS, door_number + 1);
-  if (inst != 0) {
-    const auto inuse_msg = fmt::format("|#2Chain {} is in use on instance {}.  ", c.description, inst);
-    if (!(c.multi_user)) {
+  if (auto inst = find_instance_by_loc(INST_LOC_CHAINS, door_number + 1); inst != 0) {
+    const auto inuse_msg = fmt::format("|#2Chain '{}' is in use on instance {}.  ", c.description, inst);
+    if (!c.multi_user) {
       bout << inuse_msg << " Try again later.\r\n";
       return false;
     }
@@ -232,7 +231,7 @@ static bool ValidateDoorAccess(int door_number) {
 /**
  * Run a Door (chain)
  *
- * pszDoor = Door description to run
+ * name = Door description to run
  * bFree  = If true, security on door will not back checked
  */
 bool MenuRunDoorName(const std::string& name, bool bFree) {

@@ -15,13 +15,17 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_MULTINT_H__
-#define __INCLUDED_BBS_MULTINT_H__
+#ifndef INCLUDED_BBS_MULTINT_H
+#define INCLUDED_BBS_MULTINT_H
 
 #include <string>
 
 std::string make_inst_str(int nInstanceNum, int nInstanceFormat);
 void multi_instance();
-int  inst_ok(int loc, int subloc);
 
-#endif  // __INCLUDED_BBS_MULTINT_H__
+/**
+ *Finds the instance number at loc and subloc, or returns 0 if none can be found.
+ */
+int  find_instance_by_loc(int loc, int subloc);
+
+#endif

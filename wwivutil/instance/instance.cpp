@@ -47,7 +47,6 @@ constexpr int INST_FLAGS_NONE = 0x0000;  // No flags at all
 constexpr int INST_FLAGS_ONLINE = 0x0001;  // User online
 constexpr int INST_FLAGS_MSG_AVAIL = 0x0002;  // Available for inst msgs
 constexpr int INST_FLAGS_INVIS = 0x0004;  // For invisibility
-constexpr int INST_FLAGS_RESET = 0x8000;  // Used to reset an option.
 
 
 class InstanceDumpCommand : public UtilCommand {
@@ -76,27 +75,24 @@ public:
   }
 
   int Execute() override final {
-    Instance inst(*config()->config());
-    if (!inst) {
+    Instances instances(*config()->config());
+    if (!instances) {
       std::cout << "Unable to read Instance information.";
       return 1;
     }
-    const auto num = inst.size();
+    const auto num = instances.size();
     std::cout << "num instances:  " << num << std::endl;
-    for (int i = 1; i <= num; ++i) {
-      const auto ir = inst.at(i);
+    for (auto i = 1; i <= num; ++i) {
+      const auto instance = instances.at(i);
       std::cout << "=======================================================================" << std::endl;
-      std::cout << "Instance    : #" << ir.number << std::endl;
-      std::cout << "User        : #" << ir.user << std::endl;
-      std::cout << "Location    : " << instance_location(ir) << std::endl;
-      std::cout << "SubLoc      : " << ir.subloc << std::endl;
-      std::cout << "Flags       : " << flags_to_string(ir.flags) << std::endl;
-      std::cout << "Modem Speed : " << ir.modem_speed << std::endl;
-      std::cout << "Started     : " << core::DateTime::from_daten(ir.inst_started).to_string() << std::endl;
-      std::cout << "Updated     : " << core::DateTime::from_daten(ir.last_update).to_string() << std::endl;
-      if (ir.extra[0]) {
-        std::cout << "Extra       : " << ir.extra << std::endl;
-      }
+      std::cout << "Instance    : #" << instance.node_number() << std::endl;
+      std::cout << "User        : #" << instance.user_number() << std::endl;
+      std::cout << "Location    : " << instance.location_description() << std::endl;
+      std::cout << "SubLoc      : " << instance.subloc_code() << std::endl;
+      std::cout << "Flags       : " << flags_to_string(instance.ir().flags) << std::endl;
+      std::cout << "Modem Speed : " << instance.modem_speed() << std::endl;
+      std::cout << "Started     : " << instance.started().to_string() << std::endl;
+      std::cout << "Updated     : " << instance.updated().to_string() << std::endl;
     }
     std::cout << "=======================================================================" << std::endl;
     return 0;

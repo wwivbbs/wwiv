@@ -138,8 +138,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
 // Executes a "chain", index number chain_num.
 void run_chain(int chain_num) {
   const auto& c = a()->chains->at(chain_num);
-  auto inst = inst_ok(INST_LOC_CHAINS, chain_num + 1);
-  if (inst != 0) {
+  if (auto inst = find_instance_by_loc(INST_LOC_CHAINS, chain_num + 1); inst != 0) {
     const auto message =
         fmt::format("|#2Chain {} is in use on instance {}.  ", c.description, inst);
     if (!c.multi_user) {

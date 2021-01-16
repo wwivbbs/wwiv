@@ -46,6 +46,7 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/gfiles.h"
+#include "sdk/instance.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
@@ -542,6 +543,8 @@ bool Application::InitializeBBS(bool cleanup_network) {
             << std::endl
             << std::endl
             << "\r\nInitializing BBS..." << std::endl;
+
+  instances_ = std::make_unique<Instances>(*config());
   use_workspace = false;
 
   bin.clearnsp();
@@ -706,7 +709,7 @@ void Application::create_phone_file() {
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
-  auto file_size = file.length();
+  const auto file_size = file.length();
   file.Close();
   const auto numOfRecords = static_cast<int16_t>(file_size / sizeof(userrec));
 
@@ -716,11 +719,13 @@ void Application::create_phone_file() {
     return;
   }
 
-  for (int16_t nTempUserNumber = 1; nTempUserNumber <= numOfRecords; nTempUserNumber++) {
-    User user;
-    users()->readuser(&user, nTempUserNumber);
-    if (!user.IsUserDeleted()) {
-      p.usernum = nTempUserNumber;
+  for (int16_t temp_user_number = 1; temp_user_number <= numOfRecords; temp_user_number++) {
+    if (auto o = users()->readuser(temp_user_number)) {
+      const auto& user = o.value();
+      if (user.IsUserDeleted()) {
+        continue;
+      }
+      p.usernum = temp_user_number;
       std::string voice_num = user.GetVoicePhoneNumber();
       std::string data_num = user.GetDataPhoneNumber();
       if (!voice_num.empty() && voice_num.find("000-") == std::string::npos) {
@@ -733,7 +738,6 @@ void Application::create_phone_file() {
       }
     }
   }
-  phoneNumFile.Close();
 }
 
 // end dupphone additions

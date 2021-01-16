@@ -80,8 +80,8 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return false;
   }
-  int size = static_cast<int>(file.length() / sizeof(shortmsgrec));
-  int pos = size - 1;
+  auto size = static_cast<int>(file.length() / sizeof(shortmsgrec));
+  auto pos = size - 1;
   shortmsgrec sm;
   if (pos >= 0) {
     file.Seek(pos * sizeof(shortmsgrec), File::Whence::begin);

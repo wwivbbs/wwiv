@@ -169,13 +169,13 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
     return false;
   }
   {
-    UserManager usermanager(config);
-    auto num_users = usermanager.num_user_records();
+    const UserManager usermanager(config);
+    const auto num_users = usermanager.num_user_records();
     for (auto n = 1; n <= num_users; n++) {
-      User u{};
-      usermanager.readuser(&u, n);
-      if (!IsUserDeleted(u)) {
-        return true;
+      if (auto u = usermanager.readuser(n)) {
+        if (!IsUserDeleted(u.value())) {
+          return true;
+        }
       }
     }
   }

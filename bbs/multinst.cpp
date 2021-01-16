@@ -30,8 +30,6 @@
 #include "sdk/files/dirs.h"
 #include "sdk/names.h"
 #include "sdk/subxtr.h"
-#include "sdk/user.h"
-#include "sdk/usermanager.h"
 
 #include <string>
 
@@ -177,25 +175,24 @@ std::string GetInstanceActivityString(instancerec& ir) {
  *     CurrUser: Sysop #1
  */
 std::string make_inst_str(int instance_num, int format) {
-  auto ir = get_inst_info(instance_num);
+  auto ir = a()->instances().at(instance_num);
 
   switch (format) {
   case INST_FORMAT_WFC:
-    return GetInstanceActivityString(ir);
+    return GetInstanceActivityString(ir.ir());
   case INST_FORMAT_OLD:
     // Not used anymore.
     return fmt::sprintf("|#1Instance %-3d: |#2", instance_num);
   case INST_FORMAT_LIST: {
     std::string user_name{"(Nobody)"};
-    if (ir.user < a()->config()->max_users() && ir.user > 0) {
-      User user;
-      if ((ir.flags & INST_FLAGS_ONLINE) != 0 && a()->users()->readuser(&user, ir.user)) {
-        user_name = a()->names()->UserName(ir.user);
+    if (ir.user_number() < a()->config()->max_users() && ir.user_number() > 0) {
+      if (ir.online()) {
+        user_name = a()->names()->UserName(ir.user_number());
       } else {
-        user_name = StrCat("Last: ", a()->names()->UserName(ir.user));
+        user_name = StrCat("Last: ", a()->names()->UserName(ir.user_number()));
       }
     }
-    const auto as = GetInstanceActivityString(ir);
+    const auto as = GetInstanceActivityString(ir.ir());
     return fmt::sprintf("|#5%-4d |#2%-35.35s |#1%-37.37s", instance_num, user_name, as);
   }
   default:
@@ -219,28 +216,20 @@ void multi_instance() {
   }
 }
 
-int inst_ok(int loc, int subloc) {
+int find_instance_by_loc(int loc, int subloc) {
   if (loc == INST_LOC_FSED) {
     return 0;
   }
 
-  int num = 0;
-  File f(FilePath(a()->config()->datadir(), INSTANCE_DAT));
-  if (!f.Open(File::modeReadOnly | File::modeBinary)) {
+  const auto instances = a()->instances().all();
+  if (instances.size() <= 1) {
     return 0;
   }
-  auto num_instances = static_cast<int>(f.length() / sizeof(instancerec));
-  f.Close();
-  for (int i = 1; i < num_instances; i++) {
-    if (f.Open(File::modeReadOnly | File::modeBinary)) {
-      f.Seek(i * sizeof(instancerec), File::Whence::begin);
-      instancerec in{};
-      f.Read(&in, sizeof(instancerec));
-      f.Close();
-      if (in.loc == loc && in.subloc == subloc && in.number != a()->instance_number()) {
-        num = in.number;
-      }
+  for (const auto& in : instances) {
+    if (in.loc_code() == loc && in.subloc_code() == subloc && in.node_number() > 0 &&
+        in.node_number() != a()->instance_number()) {
+      return in.node_number();
     }
   }
-  return num;
+  return 0;
 }
