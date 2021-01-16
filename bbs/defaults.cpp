@@ -279,7 +279,7 @@ static void change_colors() {
         os << "Note              ";
         break;
       case 4:
-        os << "bin.input( line        ";
+        os << "Input line        ";
         break;
       case 5:
         os << "Yes/No Question   ";
