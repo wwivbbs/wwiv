@@ -129,11 +129,14 @@ static void print_cur_stat() {
   const string ansi_setting =
       a()->user()->HasAnsi() ? (a()->user()->HasColor() ? "Color" : "Monochrome") : "No ANSI";
   bout.format("|#11|#9) Screen size       : |#2{:<16} ", screen_size);
-  bout << "|#12|#9) ANSI              : |#2" << ansi_setting << wwiv::endl;
+  bout.format("|#12|#9) ANSI              : |#2{}", ansi_setting);
+  bout.nl();
   bout.format("|#13|#9) Pause on screen   : |#2{:<16} ", a()->user()->HasPause() ? "On " : "Off");
-  bout << "|#14|#9) Mailbox           : |#2" << GetMailBoxStatus() << wwiv::endl;
+  bout.nl();
+  bout.format("|#14|#9) Mailbox           : |#2{}", GetMailBoxStatus());
+  bout.nl();
   bout.format("{:<45} {}\r\n", "|#15|#9) Configured Q-scan", "|#16|#9) Change password");
-
+  
   if (okansi()) {
     bout.format("{:<45} {}\r\n", "|#17|#9) Update macros", "|#18|#9) Change colors");
 
@@ -728,8 +731,7 @@ void defaults(bool& need_menu_reload) {
         allowable.push_back('G');
       }
     }
-    const auto ch = onek(allowable, true);
-    switch (ch) {
+    switch (const auto ch = onek(allowable, true); ch) {
     case 'Q':
       done = true;
       break;

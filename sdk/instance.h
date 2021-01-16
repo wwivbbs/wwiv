@@ -22,6 +22,7 @@
 
 #include <filesystem>
 #include <string>
+#include <vector>
 #include "sdk/config.h"
 #include "sdk/vardec.h"
 

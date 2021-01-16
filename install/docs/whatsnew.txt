@@ -20,7 +20,8 @@ What's New in WWIV 5.6 (2021)
 + Added help for ACS expressions in the places where WWIV prompts for the
   sysop to enter one for access control. (#1333)
 + Send SSM's to sysop when receiving files from wwivnet (like net37)
-
++ Added new "wwivutil instance" command for displaying instance
+  metadata.
 
 What's New in WWIV 5.6 (2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
