@@ -122,28 +122,29 @@ bool NewZModemSendFile(const std::filesystem::path& path) {
   return done == ZmDone;
 }
 
-bool NewZModemReceiveFile(const std::string& file_name) {
+bool NewZModemReceiveFile(const std::filesystem::path& path){
   ZModem info{};
   info.ifd = info.ofd = -1;
-  info.zrinitflags = 0;
   info.zsinitflags = 0;
   info.attn = nullptr;
   info.packetsize = 0;
   info.windowsize = 0;
   info.bufsize = 0;
+  // This is what receive uses.
+  info.zrinitflags = CANFDX|CANOVIO|CANBRK|CANFC32;
 
   ZmodemRInit(&info);
   const auto ret = doIO(&info) == ZmDone;
   if (ret) {
-    const auto fn = wwiv::sdk::files::unalign(file_name);
+    const auto fn = wwiv::sdk::files::unalign(path.filename().string());
     const auto old_fn = FilePath(a()->sess().dirs().temp_directory(), fn);
-    File::Move(old_fn, fn);
+    File::Move(old_fn, path);
   }
   return ret;
 }
 
 /**
- * printf sytle output function.  Most code should use this when writing
+ * printf style output function.  Most code should use this when writing
  * locally + remotely.
  */
 int ZModemWindowStatus(const char* fmt, ...) {
@@ -159,6 +160,8 @@ int ZModemWindowStatus(const char* fmt, ...) {
   a()->localIO()->ClrEol();
   a()->localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
   a()->localIO()->GotoXY(oldX, oldY);
+
+  zmodemlog("ZModemWindowStatus: [%s]\r\n", szBuffer);
   return 0;
 }
 
@@ -217,6 +220,10 @@ int doIO(ZModem* info) {
     if (a()->sess().hangup()) {
       return ZmErrCancel;
     }
+    if (!a()->remoteIO()->connected()) {
+      LOG(INFO) << "Lost connection during ZModem transfer.";
+      return ZmErrCancel;
+    }
 
     if (doCancel) {
       ZmodemAbort(info);
@@ -246,6 +253,7 @@ int ZXmitStr(const u_char* str, int len, ZModem* info) {
 }
 
 void ZIFlush(ZModem* info) {
+  zmodemlog("ZIFlush");
   //sleep_for(milliseconds(100));
   // puts( "ZIFlush" );
   // if( connectionType == ConnectionSerial )
@@ -253,6 +261,7 @@ void ZIFlush(ZModem* info) {
 }
 
 void ZOFlush(ZModem* info) {
+  zmodemlog("ZOFlush");
   // if( connectionType == ConnectionSerial )
   //	SerialFlush( 1 );
 }

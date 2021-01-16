@@ -447,7 +447,17 @@ void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char* buffer) 
 
   if (binary_mode()) {
     for (auto i = nStart; i < nEnd; i++) {
-      queue_.push(buffer[i]);
+      const uint8_t c = buffer[i];
+      if (c == 0xff && i < nEnd) {
+        if (static_cast<uint8_t>(buffer[i+1]) == 255) {
+          VLOG(1) << "Got an escaped 255 possibly";
+          // TODO(rushfan): If this causes problems, we can add a setting for this
+          // to only unescape this in binary mode if needed.  Seems to work fine for
+          // both syncterm and netrunner on uploads.
+          continue;
+        }
+      }
+      queue_.push(c);
     }
     return;
   }

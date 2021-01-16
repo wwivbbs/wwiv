@@ -445,7 +445,7 @@ void maybe_internal(const std::filesystem::path& path, bool* xferred, double* pe
       xymodem_receive(path.filename().string(), xferred, true);
       break;
     case WWIV_INTERNAL_PROT_ZMODEM:
-      zmodem_receive(path.filename().string(), xferred);
+      *xferred = zmodem_receive(path);
       break;
     default: break;
     }
@@ -578,7 +578,7 @@ void receive_file(const std::filesystem::path& path, int* received, const std::s
       } else {
         *received = 2;
         const BatchEntry b(sfn, dn, 0, false);
-        a()->batch().AddBatch(std::move(b));
+        a()->batch().AddBatch(b);
         bout.nl();
         bout << "File added to batch queue.\r\n\n";
         bout << "Batch upload: files - " << a()->batch().numbatchul() << "\r\n\n";

@@ -31,6 +31,7 @@
 #include "core/strings.h"
 #include "crctab.h"
 #include "zmodem.h"
+#include "fmt/format.h"
 
 #if defined(_MSC_VER)
 #pragma warning(push)
@@ -317,6 +318,9 @@ int GotFileName(ZModem* info, int crcGood) {
   if (!crcGood) {
 #if defined(_DEBUG)
     zmodemlog("GotFileName[%s]: bad crc, send ZNAK\n", sname(info));
+    parseFileName(info, reinterpret_cast<char*>(info->buffer));
+    zmodemlog("GotFileName[%s]: filename: '%s'", sname(info), info->filename);
+    zmodemlog("GotFileName[%s]: buffer: '%s'", sname(info), info->buffer);
 #endif
     info->state = RStart;
     return ZXmitHdrHex(ZNAK, zeros, info);
@@ -347,10 +351,11 @@ int ResendCrcReq(ZModem* info) {
 /* received file CRC, now we're ready to accept or reject */
 
 int GotFileCrc(ZModem* info) {
+  const auto crc = ZDec4(info->hdrData + 1);
 #if defined(_DEBUG)
-  zmodemlog("GotFileCrc[%s]: call requestFile\n", sname(info));
+  zmodemlog("GotFileCrc[%s]: call requestFile; crc: %d/%x\n", sname(info), crc, crc);
 #endif
-  return requestFile(info, ZDec4(info->hdrData + 1));
+  return requestFile(info, crc);
 }
 
 /* last ZRPOS was bad, resend it */
@@ -380,7 +385,7 @@ int GotData(ZModem* info) {
 
   /* Let's do it! */
 #if defined(_DEBUG)
-  zmodemlog("  call dataSetup\n");
+  zmodemlog("GotFileData:  call dataSetup\n");
 #endif
   return dataSetup(info);
 }
@@ -401,8 +406,29 @@ int fileError(ZModem* info, int type, int data) {
 
 /* received file data */
 
+void DumpBuffer(ZModem* info) {
+  zmodemlog("========================================================================\r\n");
+  zmodemlog("Dumping Buffer for %d chars\r\n", info->chrCount);
+  zmodemlog("========================================================================\r\n");
+  std::string s;
+  s.reserve(100);
+  for (auto i=0; i < info->chrCount; ++i) {
+    auto cur = fmt::format("{:3}  ", static_cast<int8_t>(info->buffer[i]));
+    if (i % 16 == 0) {
+      zmodemlog("%s\r\n", s.c_str());
+      s.clear();
+      s.reserve(100);
+    }
+    s.append(cur);
+  }
+  if (!s.empty()) {
+    zmodemlog(s.c_str());
+  }
+  zmodemlog("========================================================================\r\n");
+}
+
 int GotFileData(ZModem* info, int crcGood) {
-  /* OK, now what?  Fushing the buffers and executing the
+  /* OK, now what?  Flushing the buffers and executing the
    * attn sequence has likely chopped off the input stream
    * mid-packet.  Now we switch to idle mode and treat all
    * incoming stuff like noise until we get a new valid
@@ -414,17 +440,17 @@ int GotFileData(ZModem* info, int crcGood) {
 #if defined(_DEBUG)
     zmodemlog("GotFileData[%s]: bad crc, send ZRPOS(%ld), new state = RFile\n", sname(info),
               info->offset);
+    DumpBuffer(info);
 #endif
     ZStatus(DataErr, ++info->errCount, nullptr);
     if (info->errCount > MaxErrs) {
       ZmodemAbort(info);
       return ZmDataErr;
-    } else {
-      info->state = RFile;
-      info->InputState = ZModem::Idle;
-      info->chrCount = 0;
-      return fileError(info, ZRPOS, info->offset);
     }
+    info->state = RFile;
+    info->InputState = ZModem::Idle;
+    info->chrCount = 0;
+    return fileError(info, ZRPOS, info->offset);
   }
 
   if (ZWriteFile(info->buffer, info->chrCount, info->file, info)) {
@@ -452,7 +478,7 @@ int GotFileData(ZModem* info, int crcGood) {
     info->chrCount = 0;
   } else {
 #if defined(_DEBUG)
-    zmodemlog("  call dataSetup");
+    zmodemlog("GotFileData:  call dataSetup");
 #endif
     dataSetup(info);
   }

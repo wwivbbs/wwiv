@@ -15,12 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_SRRCV_H__
-#define __INCLUDED_BBS_SRRCV_H__
+#ifndef INCLUDED_BBS_SRRCV_H
+#define INCLUDED_BBS_SRRCV_H
 
+#include <filesystem>
 #include <string>
 
 void xymodem_receive(const std::string& file_name, bool *received, bool use_crc);
-void zmodem_receive(const std::string& filename, bool *received);
+bool zmodem_receive(const std::filesystem::path& path);
 
-#endif  // __INCLUDED_BBS_SRRCV_H__
+#endif

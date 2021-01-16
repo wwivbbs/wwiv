@@ -25,6 +25,7 @@
 #include "common/input.h"
 #include "common/remote_io.h"
 #include "core/numbers.h"
+#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
@@ -39,7 +40,7 @@ using namespace std::chrono;
 using namespace wwiv::strings;
 
 // From zmwwiv.cpp
-bool NewZModemReceiveFile(const std::string& file_name);
+bool NewZModemReceiveFile(const std::filesystem::path& path);
 
 // from sr.cpp
 extern unsigned char checksum;
@@ -338,13 +339,14 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
   }
 }
 
-void zmodem_receive(const std::string& filename, bool* received) {
-  const auto local_filename(wwiv::sdk::files::unalign(filename));
+bool zmodem_receive(const std::filesystem::path& path) {
 
-  const bool bOldBinaryMode = a()->remoteIO()->binary_mode();
+  const auto saved_mode = a()->remoteIO()->binary_mode();
   a()->remoteIO()->set_binary_mode(true);
-  const bool bResult = NewZModemReceiveFile(local_filename);
-  a()->remoteIO()->set_binary_mode(bOldBinaryMode);
+  ScopeExit at_exit([=]{a()->remoteIO()->set_binary_mode(saved_mode);});
 
-  *received = (bResult) ? true : false;
+  auto newpath = path;
+  const auto local_filename(wwiv::sdk::files::unalign(path.filename().string()));
+  newpath.replace_filename(local_filename);
+  return NewZModemReceiveFile(newpath);
 }

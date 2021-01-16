@@ -473,7 +473,6 @@ void upload_reply_packet() {
   if (do_it) {
     if (a()->sess().incom()) {
       qwk_receive_file(rep_path.string(), &rec, a()->user()->data.qwk_protocol);
-      sleep_for(milliseconds(500));
     } else {
       bout << "|#5Please copy the REP file to the following directory: " << wwiv::endl;
       bout << "|#2" << a()->sess().dirs().qwk_directory() << wwiv::endl;
