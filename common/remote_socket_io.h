@@ -39,9 +39,8 @@ typedef int SOCKET;
 
 namespace wwiv::common {
 
-class RemoteSocketIO : public RemoteIO {
+class RemoteSocketIO final : public RemoteIO {
  public:
-  static const char CHAR_TELNET_OPTION_IAC = '\xFF';;
   static const uint8_t TELNET_OPTION_IAC = 255;
   static const uint8_t TELNET_OPTION_NOP = 241;
   static const uint8_t TELNET_OPTION_BRK = 243;
@@ -66,7 +65,7 @@ class RemoteSocketIO : public RemoteIO {
   static bool Initialize();
 
   RemoteSocketIO(unsigned int socket_handle, bool telnet);
-  virtual ~RemoteSocketIO();
+  ~RemoteSocketIO() override;
 
   bool open() override;
   void close(bool bIsTemporary) override;
@@ -75,7 +74,7 @@ class RemoteSocketIO : public RemoteIO {
   void purgeIn() override;
   unsigned int put(unsigned char ch) override;
   unsigned int read(char *buffer, unsigned int count) override;
-  unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
+  unsigned int write(const char *buffer, unsigned int count, bool no_translation = false) override;
   bool connected() override;
   bool incoming() override;
   void StopThreads();

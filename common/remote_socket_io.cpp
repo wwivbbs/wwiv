@@ -58,7 +58,7 @@ using namespace wwiv::strings;
 
 // N.B. mutex and yield are defines in Solaris.
 
-struct socket_error : public std::runtime_error {
+struct socket_error final : std::runtime_error {
   explicit socket_error(const string& message) : std::runtime_error(message) {}
 };
 
@@ -67,11 +67,11 @@ static bool socket_avail(SOCKET sock, int seconds) {
   FD_ZERO(&fds);
   FD_SET(sock, &fds);
 
-  timeval tv = {};
+  timeval tv;
   tv.tv_sec = seconds;
   tv.tv_usec = 0;
 
-  const auto result = select(sock + 1, &fds, 0, 0, &tv);
+  const auto result = select(sock + 1, &fds, nullptr, nullptr, &tv);
   if (result == SOCKET_ERROR) {
     throw socket_error("Error on select for socket.");
   }
@@ -223,7 +223,9 @@ unsigned int RemoteSocketIO::read(char* buffer, unsigned int count) {
   return num_read;
 }
 
-unsigned int RemoteSocketIO::write(const char* buffer, unsigned int count, bool bNoTranslation) {
+static const char CHAR_TELNET_OPTION_IAC = '\xFF';
+
+unsigned int RemoteSocketIO::write(const char* buffer, unsigned int count, bool no_translation) {
   // Early return on invalid sockets.
   if (!valid_socket()) {
     return 0;
@@ -233,14 +235,14 @@ unsigned int RemoteSocketIO::write(const char* buffer, unsigned int count, bool 
   memset(tmp_buffer.get(), 0, count * 2 + 100);
   int nCount = count;
 
-  if (bNoTranslation || !memchr(buffer, CHAR_TELNET_OPTION_IAC, count)) {
+  if (no_translation || !memchr(buffer, CHAR_TELNET_OPTION_IAC, count)) {
     memcpy(tmp_buffer.get(), buffer, count);
   } else {
     // If there is a #255 then escape the #255's
-    const char* p = buffer;
-    char* p2 = tmp_buffer.get();
+    const auto* p = buffer;
+    auto* p2 = tmp_buffer.get();
     for (unsigned int i = 0; i < count; i++) {
-      if (*p == CHAR_TELNET_OPTION_IAC && !bNoTranslation) {
+      if (*p == CHAR_TELNET_OPTION_IAC && !no_translation) {
         *p2++ = CHAR_TELNET_OPTION_IAC;
         *p2++ = CHAR_TELNET_OPTION_IAC;
         nCount++;
@@ -249,7 +251,7 @@ unsigned int RemoteSocketIO::write(const char* buffer, unsigned int count, bool 
       }
       p++;
     }
-    *p2++ = '\0';
+    *p2 = '\0';
   }
 
   const auto num_sent = send(socket_, tmp_buffer.get(), nCount, 0);
@@ -286,7 +288,7 @@ void RemoteSocketIO::StopThreads() {
     stop_.store(true);
     threads_started_ = false;
   }
-  wwiv::os::yield();
+  os::yield();
 
   // Wait for read thread to exit.
   if (!read_thread_.joinable()) {
@@ -363,7 +365,7 @@ bool RemoteSocketIO::Initialize() {
 
 void RemoteSocketIO::InboundTelnetProc() {
   constexpr size_t size = 4 * 1024;
-  auto data = make_unique<char[]>(size);
+  const auto data = make_unique<char[]>(size);
   try {
     while (true) {
       if (stop_.load()) {
@@ -425,7 +427,7 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
       s[2] = TELNET_OPTION_SUPPRESSS_GA;
       s[3] = 0;
       write(s, 3, true);
-      // Sent TELNET IAC WILL SUPPRESSS GA
+      // Sent TELNET IAC WILL SUPPRESS GA
     } break;
     }
   } break;
