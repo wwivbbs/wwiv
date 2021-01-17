@@ -437,7 +437,7 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
 }
 
-void RemoteSocketIO::AddStringToInputBuffer(int start, int end, char* buffer) {
+void RemoteSocketIO::AddStringToInputBuffer(int start, int end, const char* buffer) {
   // Add the data to the input buffer
   for (auto num_sleeps = 0; num_sleeps < 10 && queue_.size() > 32678; ++num_sleeps) {
     sleep_for(milliseconds(100));

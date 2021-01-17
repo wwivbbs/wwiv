@@ -84,7 +84,7 @@ class RemoteSocketIO : public RemoteIO {
   bool valid_socket() const { return (socket_ != INVALID_SOCKET); }
 
   // VisibleForTesting
-  void AddStringToInputBuffer(int start, int end, char* buffer);
+  void AddStringToInputBuffer(int start, int end, const char* buffer);
   std::queue<char>& queue() { return queue_; }
 private:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);

@@ -19,8 +19,6 @@
 
 #include "fmt/format.h"
 #include "gtest/gtest.h"
-#include "gmock/gmock.h"
-#include "common/menu_data_util.h"
 #include "common/remote_socket_io.h"
 
 #include <string>
