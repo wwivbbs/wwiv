@@ -17,12 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/bbs.h"
+#include "bbs/prot/zmodem.h"
 #include "common/input.h"
 #include "common/output.h"
 #include "common/remote_io.h"
-#include "bbs/prot/zmodem.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "sdk/files/file_record.h"
 
 #include <chrono>
@@ -36,14 +37,48 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 
 // Local Functions
-int ZModemWindowStatus(const char* fmt, ...);
-int ZModemWindowXferStatus(const char* fmt, ...);
 int doIO(ZModem* info);
 
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4706 4127 4244 4100)
 #endif
+
+static void ZModemWindowStatusImpl(fmt::string_view format, fmt::format_args args) {
+  const auto s = fmt::vformat(format, args);
+  const auto oldX = a()->localIO()->WhereX();
+  const auto oldY = a()->localIO()->WhereY();
+  a()->localIO()->PutsXYA(0, 2, 12, s);
+  a()->localIO()->ClrEol();
+  a()->localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
+  a()->localIO()->GotoXY(oldX, oldY);
+
+  zmodemlog("ZModemWindowStatus: [%s]\r\n", s.c_str());
+}
+
+template <typename S, typename... Args>
+static void ZModemWindowStatus(const S& format, Args&&... args) {
+  ZModemWindowStatusImpl(format, fmt::make_args_checked<Args...>(format, args...));
+}
+
+/**
+ * fmtlib style output function.  Most code should use this when writing locally + remotely.
+ */
+static void ZModemWindowXferStatusImpl(fmt::string_view format, fmt::format_args args) {
+  const auto s = fmt::vformat(format, args);
+  const auto oldX = a()->localIO()->WhereX();
+  const auto oldY = a()->localIO()->WhereY();
+  a()->localIO()->PutsXYA(0, 0, 3, "ZModem Transfer Status: ");
+  a()->localIO()->PutsXYA(0, 1, 14, s);
+  a()->localIO()->ClrEol();
+  a()->localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
+  a()->localIO()->GotoXY(oldX, oldY);
+}
+
+template <typename S, typename... Args>
+static void ZModemWindowXferStatus(const S& format, Args&&... args) {
+  ZModemWindowXferStatusImpl(format, fmt::make_args_checked<Args...>(format, args...));
+}
 
 static void ProcessLocalKeyDuringZmodem() {
   if (!a()->localIO()->KeyPressed()) {
@@ -69,7 +104,7 @@ bool NewZModemSendFile(const std::filesystem::path& path) {
   sleep_for(milliseconds(500)); // Kludge -- Byte thinks this may help on his system
 
   ZmodemTInit(&info);
-  int done = doIO(&info);
+  auto done = doIO(&info);
   if (done != ZmDone) {
     zmodemlog("Returning False from doIO After ZModemTInit\r\n");
     return false;
@@ -88,13 +123,13 @@ bool NewZModemSendFile(const std::filesystem::path& path) {
   zmodemlog("NewZModemSendFile: After ZmodemTFile; done=%d\n", done);
   switch (done) {
   case 0:
-    ZModemWindowXferStatus("Sending File: %s", file_name);
+    ZModemWindowXferStatus("Sending File: {}", file_name);
     break;
   case ZmErrCantOpen:
-    ZModemWindowXferStatus("ERROR Opening File: %s", file_name);
+    ZModemWindowXferStatus("ERROR Opening File: {}", file_name);
     break;
   case ZmFileTooLong:
-    ZModemWindowXferStatus("ERROR FileName \"%s\" is too long", file_name);
+    ZModemWindowXferStatus("ERROR FileName '{}' is too long", file_name);
     break;
   case ZmDone:
     return true;
@@ -143,63 +178,17 @@ bool NewZModemReceiveFile(const std::filesystem::path& path){
   return ret;
 }
 
-/**
- * printf style output function.  Most code should use this when writing
- * locally + remotely.
- */
-int ZModemWindowStatus(const char* fmt, ...) {
-  va_list ap;
-  char szBuffer[2048];
-
-  va_start(ap, fmt);
-  vsnprintf(szBuffer, sizeof(szBuffer), fmt, ap);
-  va_end(ap);
-  const auto oldX = a()->localIO()->WhereX();
-  const auto oldY = a()->localIO()->WhereY();
-  a()->localIO()->PutsXYA(0, 2, 12, szBuffer);
-  a()->localIO()->ClrEol();
-  a()->localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
-  a()->localIO()->GotoXY(oldX, oldY);
-
-  zmodemlog("ZModemWindowStatus: [%s]\r\n", szBuffer);
-  return 0;
-}
-
-/**
- * printf sytle output function.  Most code should use this when writing
- * locally + remotely.
- */
-int ZModemWindowXferStatus(const char* fmt, ...) {
-  va_list ap;
-  char szBuffer[2048];
-
-  va_start(ap, fmt);
-  vsnprintf(szBuffer, sizeof(szBuffer), fmt, ap);
-#ifdef _DEBUG
-  //zmodemlog("Status: [%s]\n", szBuffer);
-#endif
-  va_end(ap);
-  int oldX = a()->localIO()->WhereX();
-  int oldY = a()->localIO()->WhereY();
-  a()->localIO()->PutsXYA(0, 0, 3, "ZModem Transfer Status: ");
-  a()->localIO()->PutsXYA(0, 1, 14, szBuffer);
-  a()->localIO()->ClrEol();
-  a()->localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
-  a()->localIO()->GotoXY(oldX, oldY);
-  return 0;
-}
-
 static constexpr int ZMODEM_RECEIVE_BUFFER_SIZE = 8132;
 // 21 here is just an arbitrary number
 static constexpr int ZMODEM_RECEIVE_BUFFER_PADDING = 21;
 
 int doIO(ZModem* info) {
   u_char buffer[ZMODEM_RECEIVE_BUFFER_SIZE + ZMODEM_RECEIVE_BUFFER_PADDING];
-  int done = 0;
-  bool doCancel = false; // %%TODO: make this true if the user aborts.
+  auto done = 0;
+  auto doCancel = false; // %%TODO: make this true if the user aborts.
 
   while (!done) {
-    auto tThen = time(nullptr);
+    const auto tThen = time(nullptr);
     if (info->timeout > 0) {
       zmodemlog("doIO: [%ld] Timeout = %d\n", tThen, info->timeout);
       zmodemlog("[state: %d]\n", info->state);
@@ -208,7 +197,7 @@ int doIO(ZModem* info) {
     // performance < 1k/second vs. 8-9k/second locally
     while (info->timeout > 0 && !a()->remoteIO()->incoming() && !a()->sess().hangup()) {
       sleep_for(milliseconds(100));
-      auto tNow = time(nullptr);
+      const auto tNow = time(nullptr);
       if ((tNow - tThen) > info->timeout) {
         zmodemlog("Break: [%ld] Now.  Timedout = %ld.  Time = %d\r\n", tNow, info->timeout,
                   (tNow - tThen));
@@ -236,12 +225,12 @@ int doIO(ZModem* info) {
     }
     if (const auto incomming = a()->remoteIO()->incoming(); !incomming) {
       done = ZmodemTimeout(info);
-      zmodemlog("ZmodemTimeout State [%s] [done:%d]\n", sname(info), done);
+      // zmodemlog("ZmodemTimeout State [%s] [done:%d]\n", sname(info), done);
     } else {
       const int len = a()->remoteIO()->read(reinterpret_cast<char*>(buffer), ZMODEM_RECEIVE_BUFFER_SIZE);
       zmodemlog("ZmodemRcv Before [%s:%d] [%d chars] [done:%d]\n", sname(info), info->state, len, done);
       done = ZmodemRcv(buffer, len, info);
-      zmodemlog("ZmodemRcv After [%s] [%d chars] [done:%d]\n", sname(info), len, done);
+      //zmodemlog("ZmodemRcv After [%s] [%d chars] [done:%d]\n", sname(info), len, done);
     }
   }
   zmodemlog("doIO: Done [%d]\n", done);
@@ -304,12 +293,12 @@ void ZFlowControl(int /* onoff */, ZModem* /* info */) {
 void ZStatus(int type, int value, char* msg) {
   switch (type) {
   case RcvByteCount:
-    ZModemWindowXferStatus("ZModemWindowXferStatus: %d bytes received", value);
+    ZModemWindowXferStatus("ZModemWindowXferStatus: {} bytes received", value);
     // WindowXferGauge(value);
     break;
 
   case SndByteCount:
-    ZModemWindowXferStatus("ZModemWindowXferStatus: %d bytes sent", value);
+    ZModemWindowXferStatus("ZModemWindowXferStatus: {} bytes sent", value);
     // WindowXferGauge(value);
     break;
 
@@ -318,7 +307,7 @@ void ZStatus(int type, int value, char* msg) {
     break;
 
   case SndTimeout:
-    ZModemWindowStatus("ZModemWindowStatus: %d send timeouts", value);
+    ZModemWindowStatus("ZModemWindowStatus: {} send timeouts", value);
     break;
 
   case RmtCancel:
@@ -326,31 +315,31 @@ void ZStatus(int type, int value, char* msg) {
     break;
 
   case ProtocolErr:
-    ZModemWindowStatus("ZModemWindowStatus: Protocol error, header=%d", value);
+    ZModemWindowStatus("ZModemWindowStatus: Protocol error, header={}", value);
     break;
 
   case RemoteMessage: /* message from remote end */
-    ZModemWindowStatus("ZModemWindowStatus: MESSAGE: %s", msg);
+    ZModemWindowStatus("ZModemWindowStatus: MESSAGE: {}", msg);
     break;
 
   case DataErr: /* data error, val=error count */
-    ZModemWindowStatus("ZModemWindowStatus: %d data errors", value);
+    ZModemWindowStatus("ZModemWindowStatus: {} data errors", value);
     break;
 
   case FileErr: /* error writing file, val=errno */
-    ZModemWindowStatus("ZModemWindowStatus: Cannot write file: %s", strerror(errno));
+    ZModemWindowStatus("ZModemWindowStatus: Cannot write file: {}", strerror(errno));
     break;
 
   case FileBegin: /* file transfer begins, str=name */
-    ZModemWindowStatus("ZModemWindowStatus: Transfering %s", msg);
+    ZModemWindowStatus("ZModemWindowStatus: Transfering {}", msg);
     break;
 
   case FileEnd: /* file transfer ends, str=name */
-    ZModemWindowStatus("ZModemWindowStatus: %s finished", msg);
+    ZModemWindowStatus("ZModemWindowStatus: {} finished", msg);
     break;
 
   case FileSkip: /* file transfer ends, str=name */
-    ZModemWindowStatus("ZModemWindowStatus: Skipping %s", msg);
+    ZModemWindowStatus("ZModemWindowStatus: Skipping {}", msg);
     break;
   }
 }
@@ -480,7 +469,7 @@ FILE* ZOpenFile(char* file_name, u_long /* crc */, ZModem* /* info */) {
   //
   //	/* TODO: build directory path if needed */
   //
-  //	ZModemWindowStatus("Receiving: \"%s\"", file_name);
+  //	ZModemWindowStatus("Receiving: \"{}\"", file_name);
   //
   //	WindowXferGaugeMax(info->len);
   //
@@ -520,7 +509,7 @@ int ZWriteFile(u_char* buffer, int len, FILE* file, ZModem* info) {
     zmodemlog("ZCNL\n");
 #endif // _WIN32
   }
-  return (fwrite(buffer, 1, len, file) == static_cast<unsigned int>(len)) ? 0 : ZmErrSys;
+  return fwrite(buffer, 1, len, file) == static_cast<unsigned int>(len) ? 0 : ZmErrSys;
 }
 
 int ZCloseFile(ZModem* info) {

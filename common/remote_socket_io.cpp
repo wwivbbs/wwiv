@@ -80,23 +80,16 @@ static bool socket_avail(SOCKET sock, int seconds) {
 
 RemoteSocketIO::RemoteSocketIO(unsigned int socket_handle, bool telnet)
     : socket_(static_cast<SOCKET>(socket_handle)), telnet_(telnet) {
-  // assigning the value to a static causes this only to be
-  // initialized once.
-  [[maybe_unused]] static bool once = RemoteSocketIO::Initialize();
+  // assigning the value to a static causes this only to be initialized once.
+  [[maybe_unused]] static auto once = Initialize();
 
   // Make sure our signal event is not set to the "signaled" state.
   stop_.store(false);
 
-  if (socket_handle == 0) {
+  if (socket_handle == 0 || socket_handle == INVALID_SOCKET) {
     // This means we don't have a real socket handle, for example running in local mode.
     // so we set it to INVALID_SOCKET and don't initialize anything.
     socket_ = INVALID_SOCKET;
-    return;
-  }
-  if (socket_handle == INVALID_SOCKET) {
-    // Also exit early if we have an invalid handle.
-    socket_ = INVALID_SOCKET;
-    return;
   }
 }
 
