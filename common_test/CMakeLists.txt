@@ -3,9 +3,10 @@ include_directories(${GMOCK_INCLUDE_DIR})
 include(GoogleTest)
 
 set(test_sources
-  input_range_test.cpp
-  common_test_main.cpp
-  menu_data_util_test.cpp
+  "input_range_test.cpp"
+  "common_test_main.cpp"
+  "menu_data_util_test.cpp"
+  "remote_socket_io_test.cpp"
 )
 
 set_max_warnings()

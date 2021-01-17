@@ -131,7 +131,7 @@ bool NewZModemReceiveFile(const std::filesystem::path& path){
   info.windowsize = 0;
   info.bufsize = 0;
   // This is what receive uses.
-  info.zrinitflags = CANFDX|CANBRK|CANFC32; // CANOVIO|
+  info.zrinitflags = CANFDX|CANOVIO|CANBRK|CANFC32;
 
   ZmodemRInit(&info);
   const auto ret = doIO(&info) == ZmDone;
