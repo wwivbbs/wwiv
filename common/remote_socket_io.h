@@ -85,7 +85,7 @@ class RemoteSocketIO : public RemoteIO {
 
  private:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);
-  void AddStringToInputBuffer(int nStart, int nEnd, char* buffer);
+  void AddStringToInputBuffer(int start, int end, char* buffer);
   void InboundTelnetProc();
 
   std::queue<char> queue_;

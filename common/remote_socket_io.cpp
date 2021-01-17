@@ -437,7 +437,7 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
 }
 
-void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char* buffer) {
+void RemoteSocketIO::AddStringToInputBuffer(int start, int end, char* buffer) {
   // Add the data to the input buffer
   for (auto num_sleeps = 0; num_sleeps < 10 && queue_.size() > 32678; ++num_sleeps) {
     sleep_for(milliseconds(100));
@@ -446,27 +446,36 @@ void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char* buffer) 
   lock_guard<std::mutex> lock(mu_);
 
   if (binary_mode()) {
-    for (auto i = nStart; i < nEnd; i++) {
+    bool skip_next = false;
+    for (auto i = start; i < end; i++) {
+      if (skip_next) {
+        skip_next = false;
+        continue;
+      }
       const uint8_t c = buffer[i];
-      if (c == 0xff && i < nEnd) {
+      if (c == 0xff && i < end) {
         if (static_cast<uint8_t>(buffer[i+1]) == 255) {
           VLOG(1) << "Got an escaped 255 possibly";
           // TODO(rushfan): If this causes problems, we can add a setting for this
           // to only unescape this in binary mode if needed.  Seems to work fine for
           // both syncterm and netrunner on uploads.
+          // We will skip the next char so we don't hit this again and skip all 255s
+          skip_next = true;
+          queue_.push(c);
           continue;
         }
       }
+      skip_next = false;
       queue_.push(c);
     }
     return;
   }
-  for (auto i = nStart; i < nEnd; i++) {
+  for (auto i = start; i < end; i++) {
     if (static_cast<unsigned char>(buffer[i]) == 255) {
-      if ((i + 1) < nEnd && static_cast<unsigned char>(buffer[i + 1]) == 255) {
+      if ((i + 1) < end && static_cast<unsigned char>(buffer[i + 1]) == 255) {
         queue_.push(buffer[i + 1]);
         i++;
-      } else if ((i + 2) < nEnd) {
+      } else if ((i + 2) < end) {
         HandleTelnetIAC(buffer[i + 1], buffer[i + 2]);
         i += 2;
       } else {

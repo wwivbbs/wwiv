@@ -80,7 +80,7 @@ int ZDataReceived(ZModem* info, int crcGood);
 int ZmodemRcv(u_char* str, int len, ZModem* info) {
   int err;
 
-  zmodemlog("ZmodemRcv: [%s], len=%d; rcvlen=%d; InputState=%d\r\n", sname(info), len, info->rcvlen, info->InputState);
+  zmodemlog("ZmodemRcv: [%s], len=%d; InputState=%d\r\n", sname(info), len, info->InputState);
   info->rcvlen = len;
 
   while (--info->rcvlen >= 0) {
@@ -319,10 +319,7 @@ int HdrChar(u_char c, ZModem* info) {
 int DataChar(u_char c, ZModem* info) {
   if (c == ZDLE) {
     info->escape = 1;
-    return 0;
-  }
-  if (c == ZDLE) {
-    info->escape = 1;
+    zmodemlog("DataChar: Got ZDLE at [chrCount: %d]\n", info->chrCount);
     return 0;
   }
 
@@ -335,6 +332,8 @@ int DataChar(u_char c, ZModem* info) {
     case ZCRCW:
       info->PacketType = c;
       info->crcCount = (info->DataType == ZBIN32) ? 4 : 2;
+      zmodemlog("Changing Packet Type to: [PacketType: %c] on [chrCount: %d]. [crcCount: %d] [char: %d/'%c']\n", 
+        info->PacketType, info->chrCount, info->crcCount, c, c);
       if (info->DataType == ZBIN) {
         info->crc = updcrc(c, info->crc);
       } else {
@@ -342,14 +341,22 @@ int DataChar(u_char c, ZModem* info) {
       }
       return 0;
     case ZRUB0:
+      zmodemlog("DataChar: Got ZRUB0\n");
       c = 0177;
       break;
     case ZRUB1:
+      zmodemlog("DataChar: Got ZRUB1\n");
       c = 0377;
       break;
-    default:
+    default: {
+      if (c == 0x58) {
+        zmodemlog("ZDLEE");
+      }
+      if ((c & 0x60) != 0x40) {
+        zmodemlog("DataChar: BAD c ^= 0100 [%d] [%d] [%d]\n", c, c^ 0100, 0100);
+      }
       c ^= 0100;
-      break;
+      } break;
     }
   }
 
@@ -369,7 +376,8 @@ int DataChar(u_char c, ZModem* info) {
     if (info->crcCount == 0) {
       info->buffer[info->chrCount++] = c;
     } else if (--info->crcCount == 0) {
-      zmodemlog("ZBIN32 ZDataReceived. Size: %d; crc: %x, expected: %x\r\n", info->chrCount, info->crc, 0xdebb20e3);
+      zmodemlog("ZBIN32 ZDataReceived. Size: %d; crc: %x, expected: %x [crcCount: %d]\n",
+                info->chrCount, info->crc, 0xdebb20e3, info->crcCount);
       return ZDataReceived(info, info->crc == 0xdebb20e3);
     }
     break;

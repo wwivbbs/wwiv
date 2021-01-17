@@ -131,7 +131,7 @@ bool NewZModemReceiveFile(const std::filesystem::path& path){
   info.windowsize = 0;
   info.bufsize = 0;
   // This is what receive uses.
-  info.zrinitflags = CANFDX|CANOVIO|CANBRK|CANFC32;
+  info.zrinitflags = CANFDX|CANBRK|CANFC32; // CANOVIO|
 
   ZmodemRInit(&info);
   const auto ret = doIO(&info) == ZmDone;
@@ -201,7 +201,7 @@ int doIO(ZModem* info) {
   while (!done) {
     time_t tThen = time(nullptr);
     if (info->timeout > 0) {
-      zmodemlog("[%ld] Timeout = %ld\n", tThen, info->timeout);
+      zmodemlog("doIO: [%ld] Timeout = %d [state: %d]\n", tThen, info->timeout, info->state);
     }
     // Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
     // performance < 1k/second vs. 8-9k/second locally
@@ -233,14 +233,14 @@ int doIO(ZModem* info) {
       //%%TODO: signal parent we aborted.
       return 1;
     }
-    bool bIncomming = a()->remoteIO()->incoming();
-    if (!bIncomming) {
+    if (const auto incomming = a()->remoteIO()->incoming(); !incomming) {
       done = ZmodemTimeout(info);
       // puts( "ZmodemTimeout\r\n" );
     } else {
-      int len = a()->remoteIO()->read(reinterpret_cast<char*>(buffer), ZMODEM_RECEIVE_BUFFER_SIZE);
+      const int len = a()->remoteIO()->read(reinterpret_cast<char*>(buffer), ZMODEM_RECEIVE_BUFFER_SIZE);
+      zmodemlog("ZmodemRcv Before [%s] [%d chars] [done:%d]\n", sname(info), len, done);
       done = ZmodemRcv(buffer, len, info);
-      zmodemlog("ZmodemRcv [%s] [%d chars] [done:%d]\n", sname(info), len, done);
+      zmodemlog("ZmodemRcv After [%s] [%d chars] [done:%d]\n", sname(info), len, done);
     }
   }
   zmodemlog("doIO: Done [%d]\n", done);

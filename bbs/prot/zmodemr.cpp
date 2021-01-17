@@ -385,7 +385,7 @@ int GotData(ZModem* info) {
 
   /* Let's do it! */
 #if defined(_DEBUG)
-  zmodemlog("GotFileData:  call dataSetup\n");
+  zmodemlog("GotFileData[%s]:  call dataSetup\n", sname(info));
 #endif
   return dataSetup(info);
 }
@@ -413,7 +413,7 @@ void DumpBuffer(ZModem* info) {
   std::string s;
   s.reserve(100);
   for (auto i=0; i < info->chrCount; ++i) {
-    auto cur = fmt::format("{:3}  ", static_cast<int8_t>(info->buffer[i]));
+    auto cur = fmt::format("{:3}  ", static_cast<uint8_t>(info->buffer[i]));
     if (i % 16 == 0) {
       zmodemlog("%s\r\n", s.c_str());
       s.clear();
@@ -478,7 +478,7 @@ int GotFileData(ZModem* info, int crcGood) {
     info->chrCount = 0;
   } else {
 #if defined(_DEBUG)
-    zmodemlog("GotFileData:  call dataSetup");
+    zmodemlog("GotFileData[%s]:  call dataSetup\n", sname(info));
 #endif
     dataSetup(info);
   }
