@@ -1,3 +1,4 @@
+#include <cstdint>
 #ifndef	lint
 static const char rcsid[] = "$Id$" ;
 #endif
@@ -81,7 +82,7 @@ typedef	struct {
 	  int		zdlePend ;	/* ZDLE received */
 	  int		crcCmd ;
 	  int		crclen ;
-	  u_long	crc ;
+	  uint32_t	crc ;
 	} Zinfo ;
 
 	u_char	buffer[MAXBUF] ;
@@ -432,7 +433,7 @@ assert(i < MAXHBUF) ;
 displayHeader( Zinfo *info )
 {
 	int	i ;
-	u_long	crc ;
+	uint32_t	crc ;
 	int	h32 = info->state == Header32 ;
 static	char	*names[] = {
 	  "ZRQINIT", "ZRINIT", "ZSINIT", "ZACK", "ZFILE", "ZSKIP",

@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/bbs.h"
 #include "bbs/prot/zmodem.h"
+#include "bbs/prot/zmutil.h"
 #include "common/input.h"
 #include "common/output.h"
 #include "common/remote_io.h"
@@ -27,7 +28,6 @@
 #include "sdk/files/file_record.h"
 
 #include <chrono>
-#include <cstdarg>
 #include <cstring>
 #include <filesystem>
 
@@ -53,7 +53,7 @@ static void ZModemWindowStatusImpl(fmt::string_view format, fmt::format_args arg
   a()->localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
   a()->localIO()->GotoXY(oldX, oldY);
 
-  zmodemlog("ZModemWindowStatus: [%s]\r\n", s.c_str());
+  zmodemlog("ZModemWindowStatus: [{}]\r\n", s);
 }
 
 template <typename S, typename... Args>
@@ -110,17 +110,17 @@ bool NewZModemSendFile(const std::filesystem::path& path) {
     return false;
   }
 
-  int f0 = ZCBIN;
-  int f1 = 0; // xferType | noloc
-  int f2 = 0;
-  int f3 = 0;
+  uint8_t f0 = ZCBIN;
+  uint8_t f1 = 0; // xferType | noloc
+  uint8_t f2 = 0;
+  uint8_t f3 = 0;
   int nFilesRem = 0;
   int nBytesRem = 0;
   char file_name[1024]; // was MAX_PATH
   to_char_array(file_name, path.string());
   zmodemlog("NewZModemSendFile: About to call ZmodemTFile\n");
   done = ZmodemTFile(file_name, file_name, f0, f1, f2, f3, nFilesRem, nBytesRem, &info);
-  zmodemlog("NewZModemSendFile: After ZmodemTFile; done=%d\n", done);
+  zmodemlog("NewZModemSendFile: After ZmodemTFile; [done: {}]\n", done);
   switch (done) {
   case 0:
     ZModemWindowXferStatus("Sending File: {}", file_name);
@@ -140,7 +140,7 @@ bool NewZModemSendFile(const std::filesystem::path& path) {
   if (!done) {
     done = doIO(&info);
 #if defined(_DEBUG)
-    zmodemlog("Returning %d from doIO After ZmodemTFile\n", done);
+    zmodemlog("Returning {} from doIO After ZmodemTFile\n", done);
 #endif
   }
   if (done != ZmDone) {
@@ -190,8 +190,7 @@ int doIO(ZModem* info) {
   while (!done) {
     const auto tThen = time(nullptr);
     if (info->timeout > 0) {
-      zmodemlog("doIO: [%ld] Timeout = %d\n", tThen, info->timeout);
-      zmodemlog("[state: %d]\n", info->state);
+      zmodemlog("doIO: [{}] [timeout: {}] [state: {}]\n", tThen, info->timeout, info->state);
     }
     // Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
     // performance < 1k/second vs. 8-9k/second locally
@@ -199,8 +198,8 @@ int doIO(ZModem* info) {
       sleep_for(milliseconds(100));
       const auto tNow = time(nullptr);
       if ((tNow - tThen) > info->timeout) {
-        zmodemlog("Break: [%ld] Now.  Timedout = %ld.  Time = %d\r\n", tNow, info->timeout,
-                  (tNow - tThen));
+        zmodemlog("Break: [time: {}] Now.  Timedout: {}.  Time: {}\r\n", tNow, info->timeout,
+                  tNow - tThen);
         break;
       }
       ProcessLocalKeyDuringZmodem();
@@ -225,15 +224,15 @@ int doIO(ZModem* info) {
     }
     if (const auto incomming = a()->remoteIO()->incoming(); !incomming) {
       done = ZmodemTimeout(info);
-      // zmodemlog("ZmodemTimeout State [%s] [done:%d]\n", sname(info), done);
+      // zmodemlog("ZmodemTimeout State [{}] [done:{}]\n", sname(info), done);
     } else {
       const int len = a()->remoteIO()->read(reinterpret_cast<char*>(buffer), ZMODEM_RECEIVE_BUFFER_SIZE);
-      zmodemlog("ZmodemRcv Before [%s:%d] [%d chars] [done:%d]\n", sname(info), info->state, len, done);
+      zmodemlog("ZmodemRcv Before [{}:{}] [{} chars] [done: {}]\n", sname(info), info->state, len, done);
       done = ZmodemRcv(buffer, len, info);
-      //zmodemlog("ZmodemRcv After [%s] [%d chars] [done:%d]\n", sname(info), len, done);
+      //zmodemlog("ZmodemRcv After [{}] [{} chars] [done: {}]\n", sname(info), len, done);
     }
   }
-  zmodemlog("doIO: Done [%d]\n", done);
+  zmodemlog("doIO: [done: {}]\n", done);
   return done;
 }
 
@@ -243,7 +242,8 @@ int ZXmitStr(const u_char* str, int len, ZModem* info) {
 }
 
 void ZIFlush(ZModem* info) {
-  zmodemlog("ZIFlush");
+  zmodemlog("ZIFlush\n");
+  a()->remoteIO()->purgeIn();
   //sleep_for(milliseconds(100));
   // puts( "ZIFlush" );
   // if( connectionType == ConnectionSerial )
@@ -251,12 +251,13 @@ void ZIFlush(ZModem* info) {
 }
 
 void ZOFlush(ZModem* info) {
-  zmodemlog("ZOFlush");
+  zmodemlog("ZOFlush\n");
   // if( connectionType == ConnectionSerial )
   //	SerialFlush( 1 );
 }
 
 int ZAttn(ZModem* info) {
+  zmodemlog("ZAttn\n");
   if (info->attn == nullptr) {
     return 0;
   }
@@ -344,10 +345,10 @@ void ZStatus(int type, int value, char* msg) {
   }
 }
 
-FILE* ZOpenFile(char* file_name, u_long /* crc */, ZModem* /* info */) {
+FILE* ZOpenFile(char* file_name, uint32_t /* crc */, ZModem* /* info */) {
   const auto tfn = FilePath(a()->sess().dirs().temp_directory(), file_name).string();
 #if defined(_DEBUG)
-  zmodemlog("ZOpenFile filename=%s %s\r\n", file_name, tfn.c_str());
+  zmodemlog("ZOpenFile filename='{}' [full path: {}]\r\n", file_name, tfn);
 #endif
   return fopen(tfn.c_str(), "wb");
 
@@ -399,7 +400,7 @@ FILE* ZOpenFile(char* file_name, u_long /* crc */, ZModem* /* info */) {
   //	    f1 |= ZMSKNOLOC;
   //	}
   //
-  //	zmodemlog("ZOpenFile: %s, f0=%x, f1=%x, exists=%d, size=%d/%d\n",
+  //	zmodemlog("ZOpenFile: {}, f0={:x}, f1={:x}, exists={}, size={}/{}\n",
   //	  file_name, f0,f1, exists, buf.st_size, info->len);
   //
   //	if( f0 == ZCRESUM ) {	/* if exists, and we already have it, return */
@@ -426,7 +427,7 @@ FILE* ZOpenFile(char* file_name, u_long /* crc */, ZModem* /* info */) {
   //	    break;
   //
   //	  case ZMCRC:		/* take if different CRC or length */
-  //	    zmodemlog("  ZMCRC: crc=%x, FileCrc=%x\n", crc, FileCrc(file_name) );
+  //	    zmodemlog("  ZMCRC: crc={:x}, FileCrc={:x}\n", crc, FileCrc(file_name) );
   //	    if( exists  &&  info->len == buf.st_size && crc == FileCrc(file_name) )
   //	      return nullptr;
   //	    break;
@@ -475,7 +476,7 @@ FILE* ZOpenFile(char* file_name, u_long /* crc */, ZModem* /* info */) {
   //
   //	ofile = fopen(file_name, apnd ? "a" : "w");
   //
-  //	zmodemlog("  ready to open %s/%s: apnd = %d, file = %lx\n",
+  //	zmodemlog("  ready to open {}/{}: apnd = {}, file = {:x}\n",
   //	  getcwd(path,sizeof(path)), file_name, apnd, (long)ofile);
   //
   //	return ofile;
@@ -539,9 +540,9 @@ void ZIdleStr(unsigned char* buf, int len, ZModem* info) {
 	strcpy( szBuffer, reinterpret_cast<const char *>( buf  ) );
 	szBuffer[len] = '\0';
 	if ( strlen( szBuffer ) == 1 ) {
-		zmodemlog( "ZIdleStr: #[%d]\r\n", static_cast<unsigned int>( (unsigned char ) szBuffer[0] ) );
+		zmodemlog( "ZIdleStr: #[{}]\r\n", static_cast<unsigned int>( (unsigned char ) szBuffer[0] ) );
 	} else {
-		zmodemlog( "ZIdleStr: [%s]\r\n", szBuffer );
+		zmodemlog( "ZIdleStr: [{}]\r\n", szBuffer );
 	}
 #endif
 }

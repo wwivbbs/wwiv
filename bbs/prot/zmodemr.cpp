@@ -29,8 +29,9 @@
 #include <errno.h>
 
 #include "core/strings.h"
-#include "crctab.h"
-#include "zmodem.h"
+#include "bbs/prot/zmutil.h"
+#include "bbs/prot/crctab.h"
+#include "bbs/prot/zmodem.h"
 #include "fmt/format.h"
 
 #if defined(_MSC_VER)
@@ -73,7 +74,7 @@ int ZmodemRInit(ZModem* info) {
    */
   info->timeout = 0;
 #if defined(_DEBUG)
-  zmodemlog("ZmodemRInit[%s]: flush input, new state = RStart\n", sname(info));
+  zmodemlog("ZmodemRInit[{}]: flush input, new state = RStart\n", sname(info));
 #endif
   return 0;
 }
@@ -202,7 +203,7 @@ int SendRinit(ZModem* info) {
   /* TODO: switch to Ymodem */
 #endif /* COMMENT */
 #if defined(_DEBUG)
-    zmodemlog("SendRinit[%s]: send ZRINIT\n", sname(info));
+    zmodemlog("SendRinit[{}]: send ZRINIT\n", sname(info));
 #endif
   info->timeout = ResponseTime;
   dbuf[0] = info->bufsize & 0xff;
@@ -216,7 +217,7 @@ int SendRinit(ZModem* info) {
 
 int GotSinit(ZModem* info) {
 #if defined(_DEBUG)
-  zmodemlog("GotSinit[%s]: call dataSetup\n", sname(info));
+  zmodemlog("GotSinit[{}]: call dataSetup\n", sname(info));
 #endif
   info->zsinitflags = info->hdrData[4];
   info->escCtrl = info->zsinitflags & TESCCTL;
@@ -233,7 +234,7 @@ int GotSinitData(ZModem* info, int crcGood) {
   info->state = RStart;
 
 #if defined(_DEBUG)
-  zmodemlog("GotSinitData[%s]: crcGood=%d\n", sname(info), crcGood);
+  zmodemlog("GotSinitData[{}]: crcGood={}\n", sname(info), crcGood);
 #endif
 
   if (!crcGood) {
@@ -254,7 +255,7 @@ int GotSinitData(ZModem* info, int crcGood) {
 
 int GotFile(ZModem* info) {
 #if defined(_DEBUG)
-  zmodemlog("GotFile[%s]: call dataSetup\n", sname(info));
+  zmodemlog("GotFile[{}]\n", sname(info));
 #endif
 
   info->errCount = 0;
@@ -269,19 +270,19 @@ int GotFile(ZModem* info) {
  * so, request it from sender.
  */
 
-int requestFile(ZModem* info, u_long crc) {
+int requestFile(ZModem* info, uint32_t crc) {
   info->file = ZOpenFile(reinterpret_cast<char*>(info->buffer), crc, info);
 
   if (info->file == nullptr) {
 #if defined(_DEBUG)
-    zmodemlog("requestFile[%s]: send ZSKIP\n", sname(info));
+    zmodemlog("requestFile[{}]: send ZSKIP\n", sname(info));
 #endif
     info->state = RStart;
     ZStatus(FileSkip, 0, info->filename);
     return ZXmitHdrHex(ZSKIP, zeros, info);
   } else {
 #if defined(_DEBUG)
-    zmodemlog("requestFile[%s]: send ZRPOS(%ld)\n", sname(info), info->offset);
+    zmodemlog("requestFile[{}]: send ZRPOS({})\n", sname(info), info->offset);
 #endif
     info->offset = info->f0 == ZCRESUM ? ftell(info->file) : 0;
     info->state = RFile;
@@ -317,10 +318,10 @@ int GotFileName(ZModem* info, int crcGood) {
   //#ifdef CHECK_FILENAME_CRC
   if (!crcGood) {
 #if defined(_DEBUG)
-    zmodemlog("GotFileName[%s]: bad crc, send ZNAK\n", sname(info));
+    zmodemlog("GotFileName[{}]: bad crc, send ZNAK\n", sname(info));
     parseFileName(info, reinterpret_cast<char*>(info->buffer));
-    zmodemlog("GotFileName[%s]: filename: '%s'", sname(info), info->filename);
-    zmodemlog("GotFileName[%s]: buffer: '%s'", sname(info), info->buffer);
+    zmodemlog("GotFileName[{}]: filename: '{}'", sname(info), info->filename);
+    zmodemlog("GotFileName[{}]: buffer: '{}'", sname(info), info->buffer);
 #endif
     info->state = RStart;
     return ZXmitHdrHex(ZNAK, zeros, info);
@@ -335,7 +336,7 @@ int GotFileName(ZModem* info, int crcGood) {
   }
 
 #if defined(_DEBUG)
-  zmodemlog("GotFileName[%s]: good crc, call requestFile\n", sname(info));
+  zmodemlog("GotFileName[{}]: good crc, call requestFile\n", sname(info));
 #endif
   info->state = RFile;
   return requestFile(info, 0);
@@ -343,7 +344,7 @@ int GotFileName(ZModem* info, int crcGood) {
 
 int ResendCrcReq(ZModem* info) {
 #if defined(_DEBUG)
-  zmodemlog("ResendCrcReq[%s]: send ZCRC\n", sname(info));
+  zmodemlog("ResendCrcReq[{}]: send ZCRC\n", sname(info));
 #endif
   return ZXmitHdrHex(ZCRC, zeros, info);
 }
@@ -353,7 +354,7 @@ int ResendCrcReq(ZModem* info) {
 int GotFileCrc(ZModem* info) {
   const auto crc = ZDec4(info->hdrData + 1);
 #if defined(_DEBUG)
-  zmodemlog("GotFileCrc[%s]: call requestFile; crc: %d/%x\n", sname(info), crc, crc);
+  zmodemlog("GotFileCrc[{}]: call requestFile; crc: {}/{:x}\n", sname(info), crc, crc);
 #endif
   return requestFile(info, crc);
 }
@@ -362,7 +363,7 @@ int GotFileCrc(ZModem* info) {
 
 int ResendRpos(ZModem* info) {
 #if defined(_DEBUG)
-  zmodemlog("ResendRpos[%s]: send ZRPOS(%ld)\n", sname(info), info->offset);
+  zmodemlog("ResendRpos[{}]: send ZRPOS({})\n", sname(info), info->offset);
 #endif
   return ZXmitHdrHex(ZRPOS, ZEnc4(info->offset), info);
 }
@@ -372,21 +373,18 @@ int ResendRpos(ZModem* info) {
 int GotData(ZModem* info) {
   int err;
 #if defined(_DEBUG)
-  zmodemlog("GotData[%s]:\n", sname(info));
+  zmodemlog("GotData[{}]:\n", sname(info));
 #endif
   if (ZDec4(info->hdrData + 1) != info->offset) {
     if (info->attn != nullptr && (err = ZAttn(info)) != 0)
       return err;
 #if defined(_DEBUG)
-    zmodemlog("  bad, send ZRPOS(%ld)\n", info->offset);
+    zmodemlog("  bad, send ZRPOS({})\n", info->offset);
 #endif
     return ZXmitHdrHex(ZRPOS, ZEnc4(info->offset), info);
   }
 
   /* Let's do it! */
-#if defined(_DEBUG)
-  zmodemlog("GotFileData[%s]:  call dataSetup\n", sname(info));
-#endif
   return dataSetup(info);
 }
 
@@ -408,21 +406,21 @@ int fileError(ZModem* info, int type, int data) {
 
 void DumpBuffer(ZModem* info) {
   zmodemlog("========================================================================\r\n");
-  zmodemlog("Dumping Buffer for %d chars\r\n", info->chrCount);
+  zmodemlog("Dumping Buffer for {} chars\r\n", info->chrCount);
   zmodemlog("========================================================================\r\n");
   std::string s;
   s.reserve(100);
   for (auto i=0; i < info->chrCount; ++i) {
     auto cur = fmt::format("{:3}  ", static_cast<uint8_t>(info->buffer[i]));
     if (i % 16 == 0) {
-      zmodemlog("%s\r\n", s.c_str());
+      zmodemlog("{}\r\n", s);
       s.clear();
       s.reserve(100);
     }
     s.append(cur);
   }
   if (!s.empty()) {
-    zmodemlog(s.c_str());
+    zmodemlog("{}\r\n", s);
   }
   zmodemlog("========================================================================\r\n");
 }
@@ -438,7 +436,7 @@ int GotFileData(ZModem* info, int crcGood) {
   if (!crcGood) {
     /* oh bugger, an error. */
 #if defined(_DEBUG)
-    zmodemlog("GotFileData[%s]: bad crc, send ZRPOS(%ld), new state = RFile\n", sname(info),
+    zmodemlog("GotFileData[{}]: bad crc, send ZRPOS({}), new state = RFile\n", sname(info),
               info->offset);
     DumpBuffer(info);
 #endif
@@ -463,7 +461,7 @@ int GotFileData(ZModem* info, int crcGood) {
   }
 
 #if defined(_DEBUG)
-  zmodemlog("GotFileData[%s]: %ld.%d,", sname(info), info->offset, info->chrCount);
+  zmodemlog("GotFileData[{}]: [offset: {}][count: {}]\n", sname(info), info->offset, info->chrCount);
 #endif
   info->offset += info->chrCount;
   ZStatus(RcvByteCount, info->offset, nullptr);
@@ -477,9 +475,6 @@ int GotFileData(ZModem* info, int crcGood) {
     info->InputState = ZModem::Idle;
     info->chrCount = 0;
   } else {
-#if defined(_DEBUG)
-    zmodemlog("GotFileData[%s]:  call dataSetup\n", sname(info));
-#endif
     dataSetup(info);
   }
 
@@ -489,12 +484,6 @@ int GotFileData(ZModem* info, int crcGood) {
 #endif
     return ZXmitHdrHex(ZACK, ZEnc4(info->offset), info);
   }
-#if defined(_DEBUG)
-  else {
-    zmodemlog("\n");
-  }
-#endif
-
   return 0;
 }
 
@@ -502,7 +491,7 @@ int GotFileData(ZModem* info, int crcGood) {
 
 int GotEof(ZModem* info) {
 #if defined(_DEBUG)
-  zmodemlog("GotEof[%s]: offset=%ld\n", sname(info), info->offset);
+  zmodemlog("GotEof[{}]: [offset: {}]\n", sname(info), info->offset);
 #endif
   if (ZDec4(info->hdrData + 1) != info->offset) {
 #if defined(_DEBUG)
@@ -527,7 +516,7 @@ int GotEof(ZModem* info) {
 
 int GotFin(ZModem* info) {
 #if defined(_DEBUG)
-  zmodemlog("GotFin[%s]: send ZFIN\n", sname(info));
+  zmodemlog("GotFin[{}]: send ZFIN\n", sname(info));
 #endif
   info->InputState = ZModem::Finish;
   info->chrCount = 0;

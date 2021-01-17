@@ -30,8 +30,10 @@
  */
 
 #include "core/strings.h"
-#include "crctab.h"
-#include "zmodem.h"
+#include "bbs/prot/zmutil.h"
+#include "bbs/prot/crctab.h"
+#include "bbs/prot/zmodem.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -234,7 +236,7 @@ int ZmodemTInit(ZModem* info) {
   info->timeout = 60;
 
 #if defined(_DEBUG)
-  zmodemlog("ZmodemTInit[%s]: sent ZRQINIT\n", sname(info));
+  zmodemlog("ZmodemTInit[{}]: sent ZRQINIT\n", sname(info));
 #endif
 
   return 0;
@@ -274,8 +276,8 @@ int XmodemTInit(ZModem* info) {
 
 /* called by user to begin transmission of a file */
 
-int ZmodemTFile(const char* file_name, const char* pszRemoteFileName, u_int f0, u_int f1, u_int f2,
-                u_int f3, int filesRem, int bytesRem, ZModem* info) {
+int ZmodemTFile(const char* file_name, const char* pszRemoteFileName, uint8_t f0, uint8_t f1, uint8_t f2,
+                uint8_t f3, int filesRem, int bytesRem, ZModem* info) {
   if (file_name == nullptr || (info->file = fopen(file_name, "rb")) == nullptr) {
     return ZmErrCantOpen;
   }
@@ -310,7 +312,7 @@ int ZmodemTFile(const char* file_name, const char* pszRemoteFileName, u_int f0, 
 
   info->state = FileWait;
 #if defined(_DEBUG)
-  zmodemlog("ZmodemTFile[%s]: send ZFILE(%s)\n", sname(info), info->rfilename);
+  zmodemlog("ZmodemTFile[{}]: send ZFILE({})\n", sname(info), info->rfilename);
 #endif
   return sendFilename(info);
 }
@@ -366,7 +368,7 @@ int ZmodemTFinish(ZModem* info) {
     info->buffer = nullptr;
   }
 #if defined(_DEBUG)
-  zmodemlog("ZmodemTFinish[%s]: send ZFIN\n", sname(info));
+  zmodemlog("ZmodemTFinish[{}]: send ZFIN\n", sname(info));
 #endif
   return ZXmitHdr(ZFIN, ZHEX, zeros, info);
 }
@@ -443,7 +445,7 @@ int GotRinit(ZModem* info) {
     info->Streaming = ZModem::Segmented;
   }
 
-  zmodemlog("GotRinit[%s]\n", sname(info));
+  zmodemlog("GotRinit[{}]\n", sname(info));
 
   if (AlwaysSinit || info->zsinitflags != 0 || info->attn != nullptr) {
     return SendZSInit(info);
@@ -462,23 +464,23 @@ int SendZSInit(ZModem* info) {
    * activates the specified ESC modes before reading the following
    * data subpacket." What does that mean?
    */
-  zmodemlog("SendZSInit[%s]\n", sname(info));
+  zmodemlog("SendZSInit[{}]\n", sname(info));
 
   info->state = TInit;
   fbuf[0] = fbuf[1] = fbuf[2] = 0;
   fbuf[3] = info->zsinitflags;
   if ((err = ZXmitHdr(ZSINIT, ZBIN, fbuf, info)) ||
       (err = ZXmitData(ZBIN, strlen(at) + 1, ZCRCW, (u_char*)at, info))) {
-    zmodemlog("SendZSInit ERROR [%s] [%d]\n", sname(info), err);
+    zmodemlog("SendZSInit ERROR [{}] [{}]\n", sname(info), err);
     return err;
   }
   return 0;
 }
 
 int SendFileCrc(ZModem* info) {
-  u_long crc = FileCrc(info->filename);
+  auto crc = FileCrc(info->filename);
 #if defined(_DEBUG)
-  zmodemlog("SendFileCrc[%s]: %lx\n", sname(info), crc);
+  zmodemlog("SendFileCrc[{}]: {:x}\n", sname(info), crc);
 #endif
   return ZXmitHdrHex(ZCRC, ZEnc4(crc), info);
 }
@@ -495,12 +497,12 @@ int startFileData(ZModem* info) {
   /* TODO: what if fseek fails?  Send EOF? */
 
 #if defined(_DEBUG)
-  zmodemlog("startFileData[%s]: %ld\n", sname(info), info->offset);
+  zmodemlog("startFileData[{}]: {}\n", sname(info), info->offset);
 #endif
 
   if ((err = ZXmitHdr(ZDATA, ZBIN, info->hdrData + 1, info))) {
 #if defined(_DEBUG)
-    zmodemlog("startFileData[%s]: return err", sname(info));
+    zmodemlog("startFileData[{}]: return err", sname(info));
 #endif
     return err;
   }
@@ -522,14 +524,14 @@ int SendFileData(ZModem* info) {
  * data.
  */
 int GotSendAck(ZModem* info) {
-  u_long offset = ZDec4(info->hdrData + 1);
+  uint32_t offset = ZDec4(info->hdrData + 1);
 
   if (offset > info->lastOffset) {
     info->lastOffset = offset;
   }
 
 #if defined(_DEBUG)
-  zmodemlog("GotSendAck[%s]: %ld\n", sname(info), info->offset);
+  zmodemlog("GotSendAck[{}]: {}\n", sname(info), info->offset);
 #endif
 
   return 0; /* DONT send more data, that will happen later anyway */
@@ -540,14 +542,14 @@ int GotSendAck(ZModem* info) {
  */
 
 int GotSendDoneAck(ZModem* info) {
-  u_long offset = ZDec4(info->hdrData + 1);
+  uint32_t offset = ZDec4(info->hdrData + 1);
 
   if (offset > info->lastOffset) {
     info->lastOffset = offset;
   }
 
 #if defined(_DEBUG)
-  zmodemlog("GotSendDoneAck[%s]: %ld\n", sname(info), info->offset);
+  zmodemlog("GotSendDoneAck[{}]: {}\n", sname(info), info->offset);
 #endif
 
   info->state = SendEof;
@@ -567,7 +569,7 @@ int GotSendNak(ZModem* info) {
   /* TODO: what if fseek fails?  Send EOF? */
 
 #if defined(_DEBUG)
-  zmodemlog("GotSendNak[%s]: %ld\n", sname(info), info->offset);
+  zmodemlog("GotSendNak[{}]: {}\n", sname(info), info->offset);
 #endif
 
   return SendMoreFileData(info);
@@ -577,7 +579,7 @@ int GotSendNak(ZModem* info) {
 
 int SkipFile(ZModem* info) {
 #if defined(_DEBUG)
-  zmodemlog("SkipFile[%s]\n", sname(info));
+  zmodemlog("SkipFile[{}]\n", sname(info));
 #endif
   fclose(info->file);
   return ZmDone;
@@ -591,7 +593,7 @@ int GotSendPos(ZModem* info) {
   ZStatus(DataErr, ++info->errCount, nullptr);
   info->waitflag = 1; /* next pkt should wait, to resync */
 #if defined(_DEBUG)
-  zmodemlog("GotSendPos[%s]\n", sname(info), info->offset);
+  zmodemlog("GotSendPos[{}]\n", sname(info), info->offset);
 #endif
   return startFileData(info);
 }
@@ -604,14 +606,14 @@ int GotSendPos(ZModem* info) {
 int GotSendWaitAck(ZModem* info) {
   int err;
 
-  u_long offset = ZDec4(info->hdrData + 1);
+  uint32_t offset = ZDec4(info->hdrData + 1);
 
   if (offset > info->lastOffset) {
     info->lastOffset = offset;
   }
 
 #if defined(_DEBUG)
-  zmodemlog("GotSendWaitAck[%s]\n", sname(info), offset);
+  zmodemlog("GotSendWaitAck[{}]\n", sname(info), offset);
 #endif
 
   if ((err = ZXmitHdr(ZDATA, ZBIN, ZEnc4(info->offset), info))) {
@@ -715,7 +717,7 @@ int SendMoreFileData(ZModem* info) {
 
   int crc32 = info->crc32;
   int c = 0, c2, atSign = 0;
-  u_long crc;
+  uint32_t crc;
   u_char* ptr = info->buffer;
 
   crc = crc32 ? 0xffffffff : 0;
@@ -954,7 +956,7 @@ int YsendChar(char c, ZModem* info) {
 int YXmitData(u_char* buffer, int len, ZModem* info) {
   u_char hdr[3];
   u_char trail[2];
-  u_long crc = 0;
+  uint32_t crc = 0;
   int i, err;
 
   hdr[0] = len == 1024 ? STX : SOH;

@@ -33,18 +33,16 @@
  *	January, 1995
  */
 
-//
-// Constants,  typedefs, externals, globals, statics, macros, block data
-//
-
 // TODO: sample input before initial send
 // TODO: more intelligent timeout dispatch
 // TODO: read all pending input before sending next data packet out
 // TODO: if received ZDATA while waiting for ZFILE/ZFIN, it's probably leftovers
 // TODO: enable flow control for zmodem, disable for X/YModem
 
-#include "crctab.h"
-#include "zmodem.h"
+#include "bbs/prot/crctab.h"
+#include "bbs/prot/zmodem.h"
+#include "bbs/prot/zmutil.h"
+
 #include <cstring>
 #include <cctype>
 #include <cerrno>
@@ -80,7 +78,7 @@ int ZDataReceived(ZModem* info, int crcGood);
 int ZmodemRcv(u_char* str, int len, ZModem* info) {
   int err;
 
-  zmodemlog("ZmodemRcv: [%s], len=%d; InputState=%d\r\n", sname(info), len, info->InputState);
+  zmodemlog("ZmodemRcv: [{}], len={}; InputState={}\n", sname(info), len, info->InputState);
   info->rcvlen = len;
 
   while (--info->rcvlen >= 0) {
@@ -98,12 +96,12 @@ int ZmodemRcv(u_char* str, int len, ZModem* info) {
 
     if (info->InputState == ZModem::Ysend) {
       if ((err = YsendChar(c, info))) {
-        zmodemlog("ZmodemRcv: Error in YsendChar [%d]\r\n", err);
+        zmodemlog("ZmodemRcv: Error in YsendChar [{}]\r\n", err);
         return err;
       }
     } else if (info->InputState == ZModem::Yrcv) {
       if ((err = YrcvChar(c, info))) {
-        zmodemlog("ZmodemRcv: Error in YrcvChar [%d]\r\n", err);
+        zmodemlog("ZmodemRcv: Error in YrcvChar [{}]\r\n", err);
         return err;
       }
     }
@@ -113,28 +111,30 @@ int ZmodemRcv(u_char* str, int len, ZModem* info) {
       switch (info->InputState) {
       case ZModem::Idle:
         if ((err = IdleChar(c, info))) {
-          zmodemlog("ZmodemRcv: Error in IdleChar [%d]\r\n", err);
+          zmodemlog("ZmodemRcv: Error in IdleChar {}d]\r\n", err);
           return err;
         }
         break;
 
       case ZModem::Inhdr:
         if ((err = HdrChar(c, info))) {
-          zmodemlog("ZmodemRcv: Error in HdrChar [%d]\r\n", err);
+          zmodemlog("ZmodemRcv: Error in HdrChar [{}]\r\n", err);
           return err;
         }
         break;
 
       case ZModem::Indata:
         if ((err = DataChar(c, info))) {
-          zmodemlog("ZmodemRcv: Error in DataChar [%d]\r\n", err);
+          zmodemlog("ZmodemRcv: Error in DataChar [{}]\r\n", err);
           return err;
         }
         break;
 
       case ZModem::Finish:
         if ((err = FinishChar(c, info))) {
-          zmodemlog("ZmodemRcv: Error in FinishChar [%d]\r\n", err);
+          if (err != ZmDone) {
+            zmodemlog("ZmodemRcv: Error in FinishChar [{}]\r\n", err);
+          }
           return err;
         }
         break;
@@ -189,7 +189,7 @@ int IdleChar(u_char c, ZModem* info) {
   return 0;
 }
 
-u_int rcvHex(u_int i, char c) {
+static uint8_t rcvHex(uint8_t i, char c) {
   if (c <= '9') {
     c -= '0';
   } else if (c <= 'F') {
@@ -240,7 +240,7 @@ int HdrChar(u_char c, ZModem* info) {
     default:
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
-      zmodemlog("Calling ZXmitHdrHex ZNAK; State [%s]\n", sname(info));
+      zmodemlog("Calling ZXmitHdrHex ZNAK; State [{}]\n", sname(info));
       return ZXmitHdrHex(ZNAK, zeros, info);
     }
     return 0;
@@ -249,7 +249,7 @@ int HdrChar(u_char c, ZModem* info) {
   switch (info->DataType) {
   /* hex header is 14 hex digits, cr, lf.  Optional xon is ignored */
   case ZHEX:
-    zmodemlog("HdrChar: [DataType: ZHEX: ch: %d/'%c' chrCount: %d]\n", c, c, info->chrCount);
+    // zmodemlog("HdrChar: [DataType: ZHEX: ch: {:d}/'{:c}' chrCount: {}]\n", c, c, info->chrCount);
     if (info->chrCount <= 14 && !isxdigit(c)) {
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
@@ -307,7 +307,7 @@ int HdrChar(u_char c, ZModem* info) {
     }
     return 0;
   default: {
-    zmodemlog("HdrChar Not handled: [Datatype: %d/'%c', char: %d/'%c', count: %d]\r\n", 
+    zmodemlog("HdrChar Not handled: [Datatype: {:d}/'{:c}', char: {:d}/'{:c}', count: {}]\r\n", 
       info->DataType, info->DataType, c, c, info->chrCount);
   } break;
   }
@@ -319,7 +319,7 @@ int HdrChar(u_char c, ZModem* info) {
 int DataChar(u_char c, ZModem* info) {
   if (c == ZDLE) {
     info->escape = 1;
-    zmodemlog("DataChar: Got ZDLE at [chrCount: %d]\n", info->chrCount);
+    // zmodemlog("DataChar: Got ZDLE at [chrCount: {}]\n", info->chrCount);
     return 0;
   }
 
@@ -332,8 +332,8 @@ int DataChar(u_char c, ZModem* info) {
     case ZCRCW:
       info->PacketType = c;
       info->crcCount = (info->DataType == ZBIN32) ? 4 : 2;
-      zmodemlog("Changing Packet Type to: [PacketType: %c] on [chrCount: %d]. [crcCount: %d] [char: %d/'%c']\n", 
-        info->PacketType, info->chrCount, info->crcCount, c, c);
+      //zmodemlog("Changing Packet Type to: [PacketType: {:c}] on [chrCount: {}]. [crcCount: {}] [char: {:d}/'{:c}']\n", 
+      //  info->PacketType, info->chrCount, info->crcCount, c, c);
       if (info->DataType == ZBIN) {
         info->crc = updcrc(c, info->crc);
       } else {
@@ -341,19 +341,16 @@ int DataChar(u_char c, ZModem* info) {
       }
       return 0;
     case ZRUB0:
-      zmodemlog("DataChar: Got ZRUB0\n");
+      // zmodemlog("DataChar: Got ZRUB0\n");
       c = 0177;
       break;
     case ZRUB1:
-      zmodemlog("DataChar: Got ZRUB1\n");
+      // zmodemlog("DataChar: Got ZRUB1\n");
       c = 0377;
       break;
     default: {
-      if (c == 0x58) {
-        zmodemlog("ZDLEE");
-      }
       if ((c & 0x60) != 0x40) {
-        zmodemlog("DataChar: BAD c ^= 0100 [%d] [%d] [%d]\n", c, c^ 0100, 0100);
+        zmodemlog("DataChar: BAD c ^= 0100 [{:d}] [{:d}] [{:d}]\n", c, c^ 0100, 0100);
       }
       c ^= 0100;
       } break;
@@ -367,7 +364,7 @@ int DataChar(u_char c, ZModem* info) {
     if (info->crcCount == 0) {
       info->buffer[info->chrCount++] = c;
     } else if (--info->crcCount == 0) {
-      zmodemlog("ZBIN ZDataReceived. Size: %d; crc: %x\r\n", info->chrCount, info->crc);
+      zmodemlog("ZBIN ZDataReceived. Size: {}; crc: {:x}\r\n", info->chrCount, info->crc);
       return ZDataReceived(info, (info->crc & 0xffff) == 0);
     }
     break;
@@ -376,9 +373,12 @@ int DataChar(u_char c, ZModem* info) {
     if (info->crcCount == 0) {
       info->buffer[info->chrCount++] = c;
     } else if (--info->crcCount == 0) {
-      zmodemlog("ZBIN32 ZDataReceived. Size: %d; crc: %x, expected: %x [crcCount: %d]\n",
-                info->chrCount, info->crc, 0xdebb20e3, info->crcCount);
-      return ZDataReceived(info, info->crc == 0xdebb20e3);
+      const auto crc_matches = info->crc == 0xdebb20e3;
+      if (!crc_matches) {
+        zmodemlog("ZBIN32 ZDataReceived. Size: {}; crc: {:x}, expected: {:x} [crcCount: {}]\n",
+                  info->chrCount, info->crc, 0xdebb20e3, info->crcCount);
+      }
+      return ZDataReceived(info, crc_matches);
     }
     break;
     case ZHEX: {
@@ -426,21 +426,7 @@ int GotStderrData(ZModem* info);
  * entries to no-ops so we don't have to link zmodem[rt].o
  */
 
-#if SendOnly
-#define RStartOps DoneOps
-#define RSinitWaitOps DoneOps
-#define RFileNameOps DoneOps
-#define RCrcOps DoneOps
-#define RFileOps DoneOps
-#define RDataOps DoneOps
-#define RFinishOps DoneOps
-#define GotFileName Ignore
-#define ResendCrcReq Ignore
-#define GotSinitData Ignore
-#define ResendRpos Ignore
-#define GotFileData Ignore
-#define SendRinit Ignore
-#else
+
 extern StateTable RStartOps[];
 extern StateTable RSinitWaitOps[];
 extern StateTable RFileNameOps[];
@@ -454,20 +440,7 @@ extern int GotSinitData(ZModem* info, int crcGood);
 extern int ResendRpos(ZModem* info);
 extern int GotFileData(ZModem* info, int crcGood);
 extern int SendRinit(ZModem* info);
-#endif
 
-#if RcvOnly
-#define TStartOps DoneOps
-#define TInitOps DoneOps
-#define FileWaitOps DoneOps
-#define CrcWaitOps DoneOps
-#define SendingOps DoneOps
-#define SendDoneOps DoneOps
-#define SendWaitOps DoneOps
-#define SendEofOps DoneOps
-#define TFinishOps DoneOps
-#define SendMoreFileData Ignore
-#else
 extern StateTable TStartOps[];
 extern StateTable TInitOps[];
 extern StateTable FileWaitOps[];
@@ -478,7 +451,6 @@ extern StateTable SendWaitOps[];
 extern StateTable SendEofOps[];
 extern StateTable TFinishOps[];
 extern int SendMoreFileData(ZModem* info);
-#endif
 
 static StateTable CommandDataOps[] = {
 #ifdef COMMENT
@@ -586,10 +558,9 @@ const char* hdrnames[] = {
 int ZProtocol(ZModem* info) {
   StateTable* table;
 #if defined(_DEBUG)
-  zmodemlog("ZProtocol: State [%s] ", sname(info));
-  zmodemlog("received %s: %2.2x %2.2x %2.2x %2.2x = %lx\n", hdrnames[info->hdrData[0]],
-            info->hdrData[1], info->hdrData[2], info->hdrData[3], info->hdrData[4],
-            ZDec4(info->hdrData + 1));
+  zmodemlog("ZProtocol: State [{}] received {}: {:#04x} {:#04x} {:#04x} {:#04x} = {:#010x}\n",
+            sname(info), hdrnames[info->hdrData[0]], info->hdrData[1], info->hdrData[2],
+            info->hdrData[3], info->hdrData[4], ZDec4(info->hdrData + 1));
 #endif
   /* Flags are sent in F3 F2 F1 F0 order.  Data is sent in P0 P1 P2 P3 */
 
@@ -600,8 +571,8 @@ int ZProtocol(ZModem* info) {
   while (table->type != 99 && table->type != info->hdrData[0]) {
     ++table;
   }
-  zmodemlog("  state %s => %s, iflush=%d, oflush=%d, call %x\n", sname(info),
-            sname2(table->newstate), table->IFlush, table->OFlush, table->func);
+  zmodemlog("  state {} => {}, iflush={}, oflush={}\n", sname(info),
+            sname2(table->newstate), table->IFlush, table->OFlush);
   info->state = table->newstate;
   if (table->IFlush) {
     info->rcvlen = 0;
@@ -634,7 +605,7 @@ int ZDataReceived(ZModem* info, int crcGood) {
 int ZmodemTimeout(ZModem* info) {
   /* timed out while waiting for input */
   ++info->timeoutCount;
-  //zmodemlog("timeout %d [%s]\n", info->timeoutCount, sname(info));
+  //zmodemlog("timeout {}[{}]\n", info->timeoutCount, sname(info));
   switch (info->state) {
   /* receive */
   case RStart: /* waiting for INIT frame from other end */
@@ -710,7 +681,7 @@ int ZmodemAttention(ZModem* info) {
 }
 
 int ZmodemAbort(ZModem* info) {
-  zmodemlog("ZmodemAbort [%s]\r\n", sname(info));
+  zmodemlog("ZmodemAbort [{}]\r\n", sname(info));
   static u_char canistr[] = {CAN, CAN, CAN, CAN, CAN, CAN, CAN, CAN, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
   info->state = Done;
   ZIFlush(info);
@@ -725,14 +696,14 @@ int Ignore(ZModem* info) { return 0; }
 /* ignore header contents, return ZmDone */
 
 int RetDone(ZModem* info) {
-  zmodemlog("RetDone: [%s]\n", sname(info));
+  zmodemlog("RetDone: [{}]\n", sname(info));
   return ZmDone;
 }
 
 /* ignore header contents, return ZmErrCancel */
 
 int GotCancel(ZModem* info) {
-  zmodemlog("GotCancel [%s]\r\n", sname(info));
+  zmodemlog("GotCancel [{}]\r\n", sname(info));
   return ZmErrCancel;
 }
 
@@ -760,7 +731,7 @@ int GotCommand(ZModem* info) {
 
 int GotCommandData(ZModem* info, int crcGood) {
   /* TODO */
-  zmodemlog("GotCommandData [%s]\r\n", sname(info));
+  zmodemlog("GotCommandData [{}]\r\n", sname(info));
 
   return 0;
 }
@@ -787,7 +758,7 @@ int GotStderrData(ZModem* info) {
 
 int ZPF(ZModem* info) {
   info->waitflag = 1; /* pause any in-progress transmission */
-  zmodemlog("ZPF [%s]\r\n", sname(info));
+  zmodemlog("ZPF [{}]\r\n", sname(info));
   ZStatus(ProtocolErr, info->hdrData[0], nullptr);
   return 0;
 }
@@ -795,7 +766,7 @@ int ZPF(ZModem* info) {
 int AnswerChallenge(ZModem* info) { return ZXmitHdrHex(ZACK, info->hdrData + 1, info); }
 
 int GotAbort(ZModem* info) {
-  zmodemlog("GotAbort [%s]\r\n", sname(info));
+  zmodemlog("GotAbort [{}]\r\n", sname(info));
   ZStatus(RmtCancel, 0, nullptr);
   return ZXmitHdrHex(ZFIN, zeros, info);
 }

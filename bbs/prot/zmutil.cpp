@@ -1,4 +1,3 @@
-#define DEBUG_ZMODEMLOG
 /**********
  *	ZMUTIL - utilties used by zmodem protocol.
  *
@@ -45,48 +44,48 @@
  *		transmit buffer of data.
  *
  *
- *	u_long FileCrc(name)
+ *	uint32_t FileCrc(name)
  *		char	*name;
  *
  *		compute 32-bit crc for a file, returns 0 on not found
  *
  *
  *	u_char	*ZEnc4(n)
- *		u_long	n;
+ *		uint32_t	n;
  *
- *		convert u_long to 4 bytes.
+ *		convert uint32_t to 4 bytes.
  *
- *	u_long ZDec4(buf)
+ *	uint32_t ZDec4(buf)
  *		u_char	buf[4];
  *
- *		convert 4 bytes to u_long
+ *		convert 4 bytes to uint32_t
  *
  *
  *
  *	Copyright (c) 1995 by Edward A. Falk
  *	January, 1995
  **********/
-#include <cstdarg>
-#include <cstdio>
-#include <cstring>
-#include <ctime>
-#include <ctype.h>
+#include "bbs/prot/crctab.h"
+#include "bbs/prot/zmodem.h"
+#include "bbs/prot/zmutil.h"
+#include "core/log.h"
+#include "fmt/chrono.h"
+#include "fmt/format.h"
 
-#include "crctab.h"
-#include "zmodem.h"
+#include <cstdint>
+#include <cstdio>
+#include <ctime>
 
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4706 4127 4244 4100)
 #endif
 
-u_long ZDec4(u_char buf[4]);
-
 static const char hexChars[] = "0123456789abcdef";
-
 extern const char* hdrnames[];
 
-FILE* zmodemlogfile = nullptr;
+#define DEBUG_ZMODEMLOG
+
 
 /** put a number as two hex digits */
 u_char* putHex(u_char* ptr, u_char c) {
@@ -129,7 +128,7 @@ int ZXmitHdrHex(int type, u_char data[4], ZModem* info) {
   u_char* ptr = szBuffer;
 
 #if defined(_DEBUG)
-  zmodemlog("ZXmitHdrHex: sending  %s: %2.2x %2.2x %2.2x %2.2x = %lx\n", hdrnames[type], data[0],
+  zmodemlog("ZXmitHdrHex: sending  {}: {:#04x} {:#04x} {:#04x} {:#04x} = {:#010x}\n", hdrnames[type], data[0],
             data[1], data[2], data[3], ZDec4(data));
 #endif
 
@@ -139,7 +138,7 @@ int ZXmitHdrHex(int type, u_char data[4], ZModem* info) {
   *ptr++ = ZHEX;
 
   ptr = putHex(ptr, type);
-  u_int crc = updcrc(type, 0);
+  uint32_t crc = updcrc(type, 0);
   for (int i = 4; --i >= 0; ++data) {
     ptr = putHex(ptr, *data);
     crc = updcrc(*data, crc);
@@ -163,7 +162,7 @@ int ZXmitHdrBin(int type, u_char data[4], ZModem* info) {
   int len;
 
 #if defined(_DEBUG)
-  zmodemlog("ZXmitHdrBin: sending  %s: %2.2x %2.2x %2.2x %2.2x = %lx\n", hdrnames[type], data[0],
+  zmodemlog("ZXmitHdrBin: sending  {}}: {:#04x} {:#04x} {:#04x} {:#04x} = {:#010x}\n", hdrnames[type], data[0],
             data[1], data[2], data[3], ZDec4(data));
 #endif
 
@@ -172,7 +171,7 @@ int ZXmitHdrBin(int type, u_char data[4], ZModem* info) {
   *ptr++ = ZBIN;
 
   ptr = putZdle(ptr, type, info);
-  u_int crc = updcrc(type, 0);
+  uint32_t crc = updcrc(type, 0);
   for (len = 4; --len >= 0; ++data) {
     ptr = putZdle(ptr, *data, info);
     crc = updcrc(*data, crc);
@@ -189,11 +188,11 @@ int ZXmitHdrBin(int type, u_char data[4], ZModem* info) {
 int ZXmitHdrBin32(int type, u_char data[4], ZModem* info) {
   u_char szBuffer[128];
   u_char* ptr = szBuffer;
-  u_long crc;
+  uint32_t crc;
   int len;
 
 #if defined(_DEBUG)
-  zmodemlog("ZXmitHdrBin32: sending  %s: %2.2x %2.2x %2.2x %2.2x = %lx\n", hdrnames[type], data[0],
+  zmodemlog("ZXmitHdrBin32: sending  {}: {:#04x} {:#04x} {:#04x} {:#04x} = {:#010x}\n", hdrnames[type], data[0],
             data[1], data[2], data[3], ZDec4(data));
 #endif
 
@@ -243,10 +242,10 @@ int ZXmitData(int format, int len, u_char term, u_char* data, ZModem* info) {
   }
 
 #if defined(_DEBUG)
-  zmodemlog("ZXmiteData: fmt=%c, len=%d, term=%c\n", format, len, term);
+  zmodemlog("ZXmiteData: fmt={:c}, len={}, term={:c}\n", format, len, term);
 #endif
 
-  u_int crc = (format == ZBIN) ? 0 : 0xffffffff;
+  uint32_t crc = (format == ZBIN) ? 0 : 0xffffffff;
 
   while (--len >= 0) {
     if (format == ZBIN) {
@@ -280,7 +279,7 @@ int ZXmitData(int format, int len, u_char term, u_char* data, ZModem* info) {
 }
 
 /* compute 32-bit crc for a file, returns 0 on not found */
-u_long FileCrc(char* name) {
+uint32_t FileCrc(char* name) {
   FILE* ifile = fopen(name, "r");
   int i;
 
@@ -288,7 +287,7 @@ u_long FileCrc(char* name) {
     return 0;
   }
 
-  u_long crc = 0xffffffff;
+  uint32_t crc = 0xffffffff;
 
   while ((i = fgetc(ifile)) != EOF) {
     crc = UPDC32(i, crc);
@@ -298,7 +297,7 @@ u_long FileCrc(char* name) {
   return ~crc;
 }
 
-u_char* ZEnc4(u_long n) {
+u_char* ZEnc4(uint32_t n) {
   static u_char buf[4];
   buf[0] = static_cast<u_char>(n & 0xff);
 
@@ -314,9 +313,9 @@ u_char* ZEnc4(u_long n) {
   return buf;
 }
 
-u_long ZDec4(u_char buf[4]) { return buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24); }
+uint32_t ZDec4(u_char buf[4]) { return buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24); }
 
-const char* sname2(ZMState state) {
+std::string sname2(ZMState state) {
   static const char* names[] = {
       "RStart",      "RSinitWait", "RFileName", "RCrc",    "RFile",      "RData",
       "RDataErr",    "RFinish",    "TStart",    "TInit",   "FileWait",   "CrcWait",
@@ -327,14 +326,14 @@ const char* sname2(ZMState state) {
   return names[state];
 }
 
-const char* sname(ZModem* info) { return sname2(info->state); }
+std::string sname(ZModem* info) { return sname2(info->state); }
 
-#ifdef _DEBUG
-void zmodemlog(const char* fmt, ...) {
-#if defined(DEBUG_ZMODEMLOG)
-  va_list ap;
-  struct tm* tm;
-  static int do_ts = 1;
+void zmodemlog_impl(fmt::string_view format, fmt::format_args args) {
+#if !defined(DEBUG_ZMODEMLOG)
+  return;
+#endif
+  static auto do_ts = true;
+  static FILE* zmodemlogfile = nullptr;
 
   zmodemlogfile = fopen("zmodem_log.txt", "at");
   if (zmodemlogfile == nullptr) {
@@ -342,22 +341,24 @@ void zmodemlog(const char* fmt, ...) {
   }
 
   if (do_ts) {
-    time_t t = time(nullptr);
-    tm = localtime(&t);
-    fprintf(zmodemlogfile, "%2.2d:%2.2d:%2.2d: ", tm->tm_hour, tm->tm_min, tm->tm_sec);
+    const auto t = time(nullptr);
+    const auto ts = fmt::format("{:%Y-%m-%d %H:%M:%S} ", fmt::localtime(t));
+    fputs(ts.c_str(), zmodemlogfile);
   }
-  do_ts = strchr(fmt, '\n') != nullptr;
+  do_ts = true; // find_char_at_end(format, '\n');
 
-  va_start(ap, fmt);
-  vfprintf(zmodemlogfile, fmt, ap);
-  va_end(ap);
+  try {
+    const auto s = fmt::vformat(format, args);
+    fputs(s.c_str(), zmodemlogfile);
+  } catch (const fmt::format_error& e) {
+    const auto f = std::string(format.begin(), format.end());
+    LOG(ERROR) << "Error in zmodemerrorlog:  fmt: '" << f << "'; error: " << e.what();
+  }
 
   if (zmodemlogfile != stderr) {
     fclose(zmodemlogfile);
   }
-#endif // DEBUG_ZMODEMLOG
 }
-#endif /* DEBUG */
 
 #if defined(_MSC_VER)
 #pragma warning(pop)

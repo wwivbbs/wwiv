@@ -1,3 +1,4 @@
+#include <cstdint>
 #ifndef lint
 static const char rcsid[] = "$Id$" ;
 #endif
@@ -709,7 +710,7 @@ ZAttn(ZModem *info)
 
 
 FILE *
-ZOpenFile(char *name, u_long crc, ZModem *info)
+ZOpenFile(char *name, uint32_t crc, ZModem *info)
 {
 	struct stat	buf ;
 	int		exists ;	/* file already exists */

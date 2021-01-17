@@ -67,16 +67,14 @@
 // Causing it to bail fast on Linux though.
 #define AlwaysSinit 1
 
-#define SendOnly 0 /* compiles smaller version for send only */
-#define RcvOnly 0  /* compiles smaller version for receive only */
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // constants
 //
 //
 
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <sys/types.h>
 
 //
@@ -85,13 +83,11 @@
 #if defined(_WIN32)
 typedef unsigned char u_char;
 typedef unsigned short int u_short;
-typedef unsigned int u_int;
-typedef unsigned long int u_long;
 #endif // _WIN32
 
 /* Internal State */
 
-typedef enum zmstate {
+enum ZMState {
   /* receive */
   RStart,     /* sent RINIT, waiting for ZFILE or SINIT */
   RSinitWait, /* got SINIT, waiting for data */
@@ -132,8 +128,7 @@ typedef enum zmstate {
   YRDataWait, /* received filename, waiting for data */
   YRData,     /* receiving filename or data */
   YREOF       /* received first EOT, waiting for 2nd */
-
-} ZMState;
+};
 
 struct ZModem {
   int ifd;         /* input fd, for use by caller's routines */
@@ -152,7 +147,7 @@ struct ZModem {
   int filesRem, bytesRem;
   u_char f0, f1, f2, f3;   /* file flags */
   int len, mode, fileType; /* file flags */
-  u_long date;             /* file date */
+  uint32_t date;             /* file date */
 
   /* From here down, internal to Zmodem package */
 
@@ -170,9 +165,9 @@ struct ZModem {
   int noiseCount;     /* how many noise chars received? */
   int errorFlush;     /* ignore incoming data because of error */
   u_char* buffer;     /* data buffer */
-  u_long offset;      /* file offset */
-  u_long lastOffset;  /* last acknowledged offset */
-  u_long zrposOffset; /* last offset specified w/zrpos */
+  uint32_t offset;      /* file offset */
+  uint32_t lastOffset;  /* last acknowledged offset */
+  uint32_t zrposOffset; /* last offset specified w/zrpos */
   int ylen, bufp;     /* len,location of last Ymodem packet */
   int fileEof;        /* file eof reached */
   int packetCount;    /* # packets received */
@@ -191,7 +186,7 @@ struct ZModem {
   enum { XMODEM, YMODEM, ZMODEM } Protocol;
   u_char hdrData[9];   /* header type and data */
   u_char fileFlags[4]; /* file xfer flags */
-  u_long crc;          /* crc of incoming header/data */
+  uint32_t crc;          /* crc of incoming header/data */
   enum { Full, StrWindow, SlidingWindow, Segmented } Streaming;
 };
 
@@ -280,8 +275,8 @@ struct ZModem {
 /* zmodem-supplied functions: */
 
 extern int ZmodemTInit(ZModem* info);
-extern int ZmodemTFile(const char* file_name, const char* pszRemoteFileName, u_int f0, u_int f1,
-                       u_int f2, u_int f3, int filesRem, int bytesRem, ZModem* info);
+extern int ZmodemTFile(const char* file_name, const char* pszRemoteFileName, uint8_t f0, uint8_t f1,
+                       uint8_t f2, uint8_t f3, int filesRem, int bytesRem, ZModem* info);
 extern int ZmodemTFinish(ZModem* info);
 extern int ZmodemAbort(ZModem* info);
 extern int ZmodemRInit(ZModem* info);
@@ -292,18 +287,6 @@ extern int ZmodemAttention(ZModem* info);
 extern int YmodemTInit(ZModem* info);
 extern int XmodemTInit(ZModem* info);
 extern int YmodemRInit(ZModem* info);
-extern int XmodemRInit(ZModem* info);
-
-extern u_long FileCrc(char* name);
-extern const char* sname(ZModem*);
-extern const char* sname2(ZMState);
-
-#ifdef _DEBUG
-extern FILE* zmodemlogfile;
-extern void zmodemlog(const char*, ...);
-#else
-#define zmodemlog
-#endif
 
 /* caller-supplied functions: */
 
@@ -312,7 +295,7 @@ extern void ZIFlush(ZModem* info);
 extern void ZOFlush(ZModem* info);
 extern int ZAttn(ZModem* info);
 extern void ZStatus(int type, int value, char* status);
-extern FILE* ZOpenFile(char* name, u_long crc, ZModem* info);
+extern FILE* ZOpenFile(char* name, uint32_t crc, ZModem* info);
 
 /* From here on down, internal to Zmodem package */
 
@@ -381,8 +364,8 @@ int ZXmitHdrBin(int type, u_char data[4], ZModem* info);
 int ZXmitHdrBin32(int type, u_char data[4], ZModem* info);
 extern u_char* putZdle(u_char* ptr, u_char c, ZModem* info);
 
-extern u_char* ZEnc4(u_long n);
-extern u_long ZDec4(u_char buf[4]);
+extern u_char* ZEnc4(uint32_t n);
+extern uint32_t ZDec4(u_char buf[4]);
 
 /* state table entry.  There is one row of the table per
  * possible state.  Each row is a row of all reasonable

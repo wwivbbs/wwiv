@@ -1,3 +1,4 @@
+#include <cstdint>
 #ifndef	lint
 static const char rcsid[] = "$Id$" ;
 #endif
@@ -98,9 +99,9 @@ static	int	addcrc(int data, int crc) ;
 main()
 {
 	u_short	crc16 ;
-	u_long	crc32 ;
+	uint32_t	crc32 ;
 	int	i,j ;
-	u_long	k ;
+	uint32_t	k ;
 	u_char	*msg = msg0 ;
 	int	len = sizeof(msg0) ;
 

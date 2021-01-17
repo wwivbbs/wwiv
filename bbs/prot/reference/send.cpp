@@ -1,3 +1,4 @@
+#include <cstdint>
 #ifndef	lint
 static const char rcsid[] = "$Id$" ;
 #endif
@@ -308,7 +309,7 @@ ZOpenFile(name, f0,f1,f2,f3, len, date, mode, filesRem, bytesRem, crc)
 	char	*name ;
 	int	f0,f1,f2,f3, len, mode, filesRem, bytesRem ;
 	long	date ;
-	u_long	crc ;
+	uint32_t	crc ;
 {
 }
 
