@@ -199,15 +199,16 @@ int doIO(ZModem* info) {
   bool doCancel = false; // %%TODO: make this true if the user aborts.
 
   while (!done) {
-    time_t tThen = time(nullptr);
+    auto tThen = time(nullptr);
     if (info->timeout > 0) {
-      zmodemlog("doIO: [%ld] Timeout = %d [state: %d]\n", tThen, info->timeout, info->state);
+      zmodemlog("doIO: [%ld] Timeout = %d\n", tThen, info->timeout);
+      zmodemlog("[state: %d]\n", info->state);
     }
     // Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
     // performance < 1k/second vs. 8-9k/second locally
     while (info->timeout > 0 && !a()->remoteIO()->incoming() && !a()->sess().hangup()) {
       sleep_for(milliseconds(100));
-      time_t tNow = time(nullptr);
+      auto tNow = time(nullptr);
       if ((tNow - tThen) > info->timeout) {
         zmodemlog("Break: [%ld] Now.  Timedout = %ld.  Time = %d\r\n", tNow, info->timeout,
                   (tNow - tThen));
@@ -235,10 +236,10 @@ int doIO(ZModem* info) {
     }
     if (const auto incomming = a()->remoteIO()->incoming(); !incomming) {
       done = ZmodemTimeout(info);
-      // puts( "ZmodemTimeout\r\n" );
+      zmodemlog("ZmodemTimeout State [%s] [done:%d]\n", sname(info), done);
     } else {
       const int len = a()->remoteIO()->read(reinterpret_cast<char*>(buffer), ZMODEM_RECEIVE_BUFFER_SIZE);
-      zmodemlog("ZmodemRcv Before [%s] [%d chars] [done:%d]\n", sname(info), len, done);
+      zmodemlog("ZmodemRcv Before [%s:%d] [%d chars] [done:%d]\n", sname(info), info->state, len, done);
       done = ZmodemRcv(buffer, len, info);
       zmodemlog("ZmodemRcv After [%s] [%d chars] [done:%d]\n", sname(info), len, done);
     }
