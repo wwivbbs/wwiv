@@ -192,8 +192,8 @@ TEST(WWIVParsedMessageTest, ToLines_Smoke) {
 
 TEST(WWIVParsedMessageTest, ToLines_ReattributeQuote) {
   const std::string cz(1, static_cast<char>(CZ));
-  const std::string text =     "RF> This is a long line of text\r\nRF> line of the text";
-  const std::string expected = "RF> This is a long\x1|RF> line of text|RF> line of the text|";
+  const std::string text =     "RF> This is a long line of text\r\nRF> xxxx of the text";
+  const std::string expected = "RF> This is a long\x1|RF> line of text|RF> xxxx of the text|";
 
   WWIVParsedMessageText p(text);
   parsed_message_lines_style_t style{};

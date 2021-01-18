@@ -45,65 +45,35 @@ class QwkTest : public ::testing::Test {
 protected:
   void SetUp() override {
     helper.SetUp();
-    filename = FilePath(helper.data(), QWK_CFG);
+    qwk_config_filename = FilePath(helper.data(), QWK_JSON);
   }
 
   BbsHelper helper{};
-  std::filesystem::path filename;
+  std::filesystem::path qwk_config_filename;
 };
 
 TEST_F(QwkTest, ReadQwkConfig_Read_NoBulletins) {
 
-  {
-    const auto datadir = helper.data();
-    DataFile<qwk_config_430> f(FilePath(helper.data(), QWK_CFG), 
-	File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
-    ASSERT_TRUE(f);
-    qwk_config_430 qc{};
-    to_char_array(qc.packet_name, "RUSHFAN");
-    EXPECT_TRUE(f.Write(&qc));
-    f.Close();
-  }
+  qwk_config qc{};
+  qc.packet_name = "PAKTNAME";
+  write_qwk_cfg(*helper.config_, qc);
 
   auto q = read_qwk_cfg(*helper.config_);
-  EXPECT_EQ("RUSHFAN", q.packet_name);
-  EXPECT_EQ(0, q.amount_blts);
+  EXPECT_EQ("PAKTNAME", q.packet_name);
   EXPECT_EQ(0u, q.bulletins.size());
 }
 
-
 TEST_F(QwkTest, ReadQwkConfig_Read_TwoBulletins) {
   {
-    const auto datadir = helper.data();
-    DataFile<qwk_config_430> f(filename, 
-	File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
-    ASSERT_TRUE(f);
-    qwk_config_430 qc{};
-    to_char_array(qc.packet_name, "RUSHFAN");
-    qc.amount_blts = 2;
-    EXPECT_TRUE(f.Write(&qc));
-    f.Close();
-  }
-
-  {
-    File f(filename);
-    ASSERT_TRUE(f.Open(File::modeCreateFile | File::modeWriteOnly));
-    f.Seek(656 /* sizeof (qwk_config_430) */, File::Whence::begin);
-    char path[BULL_SIZE];
-    char name[BNAME_SIZE];
-    to_char_array(path, "path1");
-    f.Write(path, BULL_SIZE);
-    to_char_array(path, "path2");
-    f.Write(path, BULL_SIZE);
-    to_char_array(name, "name1");
-    f.Write(name, BNAME_SIZE);
-    to_char_array(name, "name2");
-    f.Write(name, BNAME_SIZE);
+    qwk_config qc{};
+    qc.packet_name = "PAKTNAME";
+    qc.bulletins.emplace_back(qwk_bulletin{"name1", "path1"});
+    qc.bulletins.emplace_back(qwk_bulletin{"name2", "path2"});
+    write_qwk_cfg(*helper.config_, qc);
   }
 
   auto q = read_qwk_cfg(*helper.config_);
-  EXPECT_EQ("RUSHFAN", q.packet_name);
-  EXPECT_EQ(2, q.amount_blts) << filename;
+  EXPECT_EQ("PAKTNAME", q.packet_name);
   EXPECT_EQ(2u, q.bulletins.size());
 
   auto b = q.bulletins.begin();
@@ -115,44 +85,34 @@ TEST_F(QwkTest, ReadQwkConfig_Read_TwoBulletins) {
 }
 
 TEST_F(QwkTest, ReadQwkConfig_Write_NoBulletins) {
-  wwiv::sdk::qwk_config c{};
+  qwk_config c{};
   c.packet_name = "TESTPAKT";
 
-  ASSERT_FALSE(File::Exists(filename));
-  wwiv::sdk::write_qwk_cfg(*helper.config_, c);
-  ASSERT_TRUE(File::Exists(filename));
+  ASSERT_FALSE(File::Exists(qwk_config_filename));
+  write_qwk_cfg(*helper.config_, c);
+  ASSERT_TRUE(File::Exists(qwk_config_filename));
 
-  {
-    File f(filename);
-    EXPECT_EQ(656, f.length());
-  }
-
-  {
-    DataFile<qwk_config_430> f(filename, File::modeReadOnly | File::modeBinary);
-    ASSERT_TRUE(f);
-    qwk_config_430 q4{};
-    ASSERT_TRUE(f.Read(&q4));
-
-    EXPECT_STREQ("TESTPAKT", q4.packet_name);
-  }
+  auto q = read_qwk_cfg(*helper.config_);
+  EXPECT_EQ("TESTPAKT", q.packet_name);
 }
 
-TEST_F(QwkTest, ReadQwkConfig_Write_TwoBulletins) {
+TEST_F(QwkTest, ReadQwkConfig_Write_OneBulletins) {
   qwk_config c{};
   c.packet_name = "TESTPAKT";
   qwk_bulletin b{"name1", "path1"};
   c.bulletins.emplace_back(b);
 
-  ASSERT_FALSE(File::Exists(filename));
+  ASSERT_FALSE(File::Exists(qwk_config_filename));
   write_qwk_cfg(*helper.config_, c);
+  ASSERT_TRUE(File::Exists(qwk_config_filename));
 
-  ASSERT_TRUE(File::Exists(filename));
-  File f(filename);
-  EXPECT_EQ(656 + BULL_SIZE + BNAME_SIZE, f.length());
+  auto q = read_qwk_cfg(*helper.config_);
+  EXPECT_EQ(1u, q.bulletins.size());
 }
 
 TEST(Qwk1Test, TestGetQwkFromMessage) {
-  const auto* const QWKFrom = "\x04""0QWKFrom:";
+  const auto* const QWKFrom = "\x04"
+                              "0QWKFrom:";
 
   const auto message = StrCat("\x3", "0Thisis a test\r\n", QWKFrom,
                               " Rushfan #1 @561\r\nTitle\r\nDate\r\nThis is the message");
@@ -171,7 +131,8 @@ TEST(Qwk1Test, TestGetQwkFromMessage_NotFound) {
 }
 
 TEST(Qwk1Test, TestGetQwkFromMessage_Malformed_AtEndOfLine) {
-  const auto* const QWKFrom = "\x04""0QWKFrom:";
+  const auto* const QWKFrom = "\x04"
+                              "0QWKFrom:";
   const auto message = StrCat("\x3", "0Thisis a test\r\n",
                               " Rushfan #1 @561\r\nTitle\r\nDate\r\nThis is the message", QWKFrom);
   const auto opt_to = get_qwk_from_message(message);

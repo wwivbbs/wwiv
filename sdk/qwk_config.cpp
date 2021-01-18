@@ -109,7 +109,6 @@ static qwk_config read_qwk_cfg_430(const Config& config) {
   c.news = o.news;
   c.bye = o.bye;
   c.packet_name = o.packet_name;
-  c.amount_blts = o.amount_blts;
   return c;
 }
 

@@ -139,7 +139,6 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
       // Delete the one at the right position.
       if (x >= 0 && x < stl::size_int(qwk_cfg.bulletins)) {
         stl::erase_at(qwk_cfg.bulletins, x);
-        --qwk_cfg.amount_blts;
       }
     } break;
     case 'A': {
@@ -164,7 +163,6 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
 
       sdk::qwk_bulletin b{t, s};
       qwk_cfg.bulletins.emplace_back(b);
-      ++qwk_cfg.amount_blts;
     } break;
     case '?': {
       int x = 1;

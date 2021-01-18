@@ -355,7 +355,7 @@ void qwk_config_sysop() {
     bout.format("|#24|#9) Packet name    : |#5{}\r\n", sn);
     const auto max_msgs = c.max_msgs == 0 ? "(Unlimited)" : std::to_string(c.max_msgs);
     bout.format("|#25|#9) Max Msgs/Packet: |#5{}\r\n", max_msgs);
-    bout.format("|#26|#9) Modify Bulletins ({})\r\n", c.amount_blts);
+    bout.format("|#26|#9) Modify Bulletins ({})\r\n", c.bulletins.size());
     bout.format("|#2Q|#9) Quit\r\n");
     bout.nl();
     bout << "|#9Selection? ";

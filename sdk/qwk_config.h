@@ -43,7 +43,6 @@ struct qwk_config {
   std::string bye;
   std::string packet_name;
 
-  int amount_blts;
   std::vector<qwk_bulletin> bulletins;
 };
 

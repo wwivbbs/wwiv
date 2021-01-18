@@ -203,7 +203,7 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
         if (pos == 0) {
           pos = style.line_length;
         }
-        if (pos < 20) {
+        if (pos < 16) {
           // We have nothing useful here.  Just dump what we can of L
           VLOG(1) << "LOOP on line: '" << l << "'";
           out.push_back(l.substr(0, style.line_length));
