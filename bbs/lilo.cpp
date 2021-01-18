@@ -1021,8 +1021,8 @@ void logoff() {
         }
         ++r;
       }
-      smwFile.set_length(w * sizeof(shortmsgrec));
       smwFile.Close();
+      smwFile.set_length(w * sizeof(shortmsgrec));
     }
   }
   a()->WriteCurrentUser();

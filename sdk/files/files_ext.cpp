@@ -149,8 +149,8 @@ bool FileAreaExtendedDesc::DeleteExtended(const std::string& file_name) {
     }
     r += sizeof(ext_desc_type) + ed.len;
   }
-  file.set_length(w);
   file.Close();
+  file.set_length(w);
 
   return Close();
 }
