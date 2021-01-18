@@ -22,6 +22,11 @@ What's New in WWIV 5.6 (2021)
 + Send SSM's to sysop when receiving files from wwivnet (like net37)
 + Added new "wwivutil instance" command for displaying instance
   metadata.
+* Finish instance SDK class and use it in the BBS (#1335)
+* Fix Color description messed up in defaults for color 4 #(1340)
+* In defaults move (4) to a new line of it's own (#1341)
+* More fixes and work on internal zmodem.  Fixed uploads with either one
+  or more IAC codes embedded in the file.
 
 What's New in WWIV 5.6 (2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

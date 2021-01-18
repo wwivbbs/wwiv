@@ -48,7 +48,7 @@ int select_qwk_archiver(qwk_state* qwk_info, int ask) {
   for (const auto& arc : a()->arcs) {
     std::string ext = arc.extension;
     ++num;
-    if (!strings::StringTrim(ext).empty() && ext != "EXT") {
+    if (!StringTrim(ext).empty() && ext != "EXT") {
       allowed.append(std::to_string(num));
       bout.format("|#2{}|#9) {}\r\n", num, ext);
     }
@@ -165,7 +165,7 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
       qwk_cfg.bulletins.emplace_back(b);
     } break;
     case '?': {
-      int x = 1;
+      auto x = 1;
       for (const auto& b : qwk_cfg.bulletins) {
         if (bin.checka()) {
           break;
@@ -183,32 +183,13 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
   }
 }
 
-int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
-  bout.cls();
+bool get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
   bout.nl();
-  bout.Color(2);
-  bout << "Largest packet you want, in msgs? (0=Unlimited) : ";
-  bout.mpl(5);
-
-  char temp[6];
-  bin.input(temp, 5);
-
-  if (!temp[0]) {
-    return 0;
-  }
-
-  *qwk_max_msgs = strings::to_number<uint16_t>(temp);
-
-  bout << "Most messages you want per sub? ";
-  bout.mpl(5);
-  bin.input(temp, 5);
-
-  if (!temp[0]) {
-    return 0;
-  }
-
-  *max_per_sub = strings::to_number<uint16_t>(temp);
-  return 1;
+  bout << "|#9(0=Unlimited) Most messages you want per sub? ";
+  *max_per_sub = bin.input_number(*max_per_sub);
+  bout << "|#9(0=Unlimited) Most messages per packet?       ";
+  *qwk_max_msgs = bin.input_number(*qwk_max_msgs);
+  return true;
 }
 
 }

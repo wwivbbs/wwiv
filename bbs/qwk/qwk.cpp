@@ -257,17 +257,17 @@ void qwk_config_user() {
   while (!done && !a()->sess().hangup()) {
     bout.cls();
     bout.litebar("QWK Preferences");
-    bout << "|#1A|#9) Include E-Mail:             |#2" << qwk_current_text(0) << wwiv::endl;
-    bout << "|#1B|#9) Delete Included E-Mail:     |#2" << qwk_current_text(1) << wwiv::endl;
-    bout << "|#1C|#9) Update Last Read Pointer:   |#2" << qwk_current_text(2) << wwiv::endl;
-    bout << "|#1D|#9) Remove WWIV color codes:    |#2" << qwk_current_text(3) << wwiv::endl;
+    bout << "|#1A|#9) Include E-Mail            : |#2" << qwk_current_text(0) << wwiv::endl;
+    bout << "|#1B|#9) Delete Included E-Mail    : |#2" << qwk_current_text(1) << wwiv::endl;
+    bout << "|#1C|#9) Update Last Read Pointer  : |#2" << qwk_current_text(2) << wwiv::endl;
+    bout << "|#1D|#9) Remove WWIV color codes   : |#2" << qwk_current_text(3) << wwiv::endl;
     bout << "|#1E|#9) Convert WWIV color to ANSI: |#2" << qwk_current_text(4) << wwiv::endl;
-    bout << "|#1F|#9) Include Bulletins:          |#2" << qwk_current_text(5) << wwiv::endl;
-    // bout << "|#1G|#9) Scan New Files:             |#2" << qwk_current_text(6) << wwiv::endl;
+    bout << "|#1F|#9) Include Bulletins         : |#2" << qwk_current_text(5) << wwiv::endl;
+    // bout << "|#1G|#9) Scan New Files         : |#2" << qwk_current_text(6) << wwiv::endl;
     bout << "|#1H|#9) Remove Routing Information: |#2" << qwk_current_text(7) << wwiv::endl;
-    bout << "|#1I|#9) Default Compression Type :  |#2" << qwk_current_text(8) << wwiv::endl;
-    bout << "|#1J|#9) Default Transfer Protocol:  |#2" << qwk_current_text(9) << wwiv::endl;
-    bout << "|#1K|#9) Max Messages To Include:    |#2" << qwk_current_text(10) << wwiv::endl;
+    bout << "|#1I|#9) Default Compression Type  : |#2" << qwk_current_text(8) << wwiv::endl;
+    bout << "|#1J|#9) Default Transfer Protocol : |#2" << qwk_current_text(9) << wwiv::endl;
+    bout << "|#1K|#9) Max Messages To Include   : |#2" << qwk_current_text(10) << wwiv::endl;
     bout << "|#1Q|#9) Done" << wwiv::endl;
     bout.nl();
     bout.nl();
@@ -326,9 +326,9 @@ void qwk_config_user() {
       }
     } break;
     case 10: {
-      uint16_t max_msgs, max_per_sub;
-
-      if (get_qwk_max_msgs(&max_msgs, &max_per_sub)) {
+      if (auto max_msgs = a()->user()->data.qwk_max_msgs,
+          max_per_sub = a()->user()->data.qwk_max_msgs_per_sub;
+          get_qwk_max_msgs(&max_msgs, &max_per_sub)) {
         a()->user()->data.qwk_max_msgs = max_msgs;
         a()->user()->data.qwk_max_msgs_per_sub = max_per_sub;
       }

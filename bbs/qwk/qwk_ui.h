@@ -30,7 +30,7 @@ int select_qwk_archiver(qwk_state* qwk_info, int ask);
 std::string qwk_which_protocol();
 unsigned short select_qwk_protocol(qwk_state *qwk_info);
 void modify_bulletins(sdk::qwk_config& qwk_cfg);
-int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub);
+bool get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub);
 
 
 }
