@@ -234,20 +234,24 @@ DateTime::DateTime()
   : DateTime(static_cast<time_t>(0)) {
 }
 
-DateTime::DateTime(const DateTime& other) : DateTime(other.to_time_t()) {}
+DateTime::DateTime(const DateTime& other) : DateTime(other.to_time_t()) {
+  millis_ = other.millis_;
+}
 
-DateTime::DateTime(DateTime&& other) noexcept : DateTime(other.to_time_t()) {}
+DateTime::DateTime(DateTime&& other) noexcept : DateTime(other.to_time_t()) {
+  millis_ = other.millis_;
+}
 
 DateTime& DateTime::operator=(const DateTime& o) {
   t_ = o.to_time_t();
-  millis_ = 0;
+  millis_ = o.millis_;
   update_tm();
   return *this;
 }
 
 DateTime& DateTime::operator=(DateTime&& o) noexcept {
   t_ = o.to_time_t();
-  millis_ = 0;
+  millis_ = o.millis_;
   update_tm();
   return *this;
 }

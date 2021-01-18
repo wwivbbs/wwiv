@@ -270,6 +270,7 @@ TEST(DataFileTest, WriteVectorAndTruncate) {
     DataFile<T> datafile(path, File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE(static_cast<bool>(datafile));
     datafile.WriteVectorAndTruncate({t1});
+    datafile.Close();
     ASSERT_EQ(f.length(), static_cast<File::size_type>(sizeof(T)));
   }
 

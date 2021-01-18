@@ -299,9 +299,14 @@ bool File::Exists() const noexcept {
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
-void File::set_length(size_type l) {
+bool File::set_length(size_type l) {
   std::error_code ec;
   resize_file(full_path_name_, l, ec);
+  if (ec.value() != 0) {
+    LOG(WARNING) << "Errror on resize_file: " << ec.value() << "; " << ec.message();
+    return false;
+  }
+  return true;
 }
 
 // static

@@ -102,6 +102,7 @@ public:
     if (!WriteVector(records, max_records)) {
       return false;
     }
+    file_.Close();
     file_.set_length(wwiv::stl::ssize(records) * SIZE);
     return true;
   }

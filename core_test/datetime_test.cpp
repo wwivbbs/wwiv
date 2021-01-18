@@ -162,12 +162,12 @@ TEST(DateTime, Comparisons) {
   EXPECT_FALSE(t1 == t2);
   EXPECT_NE(t1, t2);
 
-  EXPECT_TRUE(t2 > t1);
-  EXPECT_TRUE(t1 < t2);
-  EXPECT_TRUE(t1 <= t2);
-  EXPECT_TRUE(t1 <= t1a);
-  EXPECT_TRUE(t2 >= t1);
-  EXPECT_TRUE(t1 >= t1a);
+  EXPECT_GT(t2, t1);
+  EXPECT_LT(t1, t2);
+  EXPECT_LE(t1, t2);
+  EXPECT_LE(t1, t1a) << "t1: " << t1.to_string() << "; t1a: " << t1a.to_string();
+  EXPECT_GE(t2, t1);
+  EXPECT_GE(t1, t1a);
 }
 
 TEST(DateTime, YearsOld_AfterBirthday) {

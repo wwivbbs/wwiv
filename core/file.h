@@ -122,7 +122,7 @@ public:
 
   [[nodiscard]] size_type length() const noexcept;
   size_type Seek(size_type offset, Whence whence);
-  void set_length(size_type l);
+  bool set_length(size_type l);
   [[nodiscard]] size_type current_position() const;
 
   [[nodiscard]] bool Exists() const noexcept;
