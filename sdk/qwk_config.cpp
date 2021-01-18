@@ -59,15 +59,13 @@ std::string qwk_system_name(const qwk_config& c, const std::string& system_name)
   }
   std::replace( qwkname.begin(), qwkname.end(), ' ', '-' );
   std::replace( qwkname.begin(), qwkname.end(), '.', '-' );
-  return ToStringUpperCase(qwkname);
+  return ToStringLowerCase(qwkname);
 }
 
 #define BULL_SIZE     81
 #define BNAME_SIZE    13
 
 static qwk_config read_qwk_cfg_430(const Config& config) {
-  qwk_config_430 o{};
-
   const auto filename = FilePath(config.datadir(), QWK_CFG);
   File f(filename);
 
@@ -75,6 +73,7 @@ static qwk_config read_qwk_cfg_430(const Config& config) {
     return {};
   }
 
+  qwk_config_430 o{};
   if (f.Read(&o, sizeof(qwk_config_430)) != sizeof(qwk_config_430)) {
     LOG(ERROR) << "Read failed on: " << f;
     return {};

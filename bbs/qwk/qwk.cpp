@@ -384,9 +384,9 @@ void qwk_config_sysop() {
       bout.format("|#9 Current Packet Name:  |#1{}\r\n", sn);
       bout << "|#9Enter new packet name: ";
       bout.mpl(8);
-      sn = bin.input_upper(sn, 8);
+      sn = bin.input_text(sn, 8);
       if (!sn.empty()) {
-        c.packet_name = sn;
+        c.packet_name = ToStringLowerCase(sn);
       }
       write_qwk_cfg(*a()->config(), c);
     } break;

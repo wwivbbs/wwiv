@@ -42,6 +42,7 @@
 #include "common/input.h"
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/findfiles.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
@@ -107,7 +108,14 @@ static std::filesystem::path ready_reply_packet(const std::string& packet_name, 
   const auto command = stuff_in(archiver.arce, packet_name, msg_name, "", "", "");
 
   ExecuteExternalProgram(command, EFLAG_QWK_DIR);
-  return FilePath(a()->sess().dirs().qwk_directory(), msg_name);
+
+  const auto mask = FilePath(a()->sess().dirs().qwk_directory(), msg_name);
+  FindFiles ff(mask, FindFiles::FindFilesType::files);
+  if (ff.empty()) {
+    return FilePath(a()->sess().dirs().qwk_directory(), msg_name);
+  }
+  const auto fn = *ff.begin();
+  return FilePath(a()->sess().dirs().qwk_directory(), fn.name); 
 }
 
 static void qwk_post_text(std::string text, const std::string& to, const std::string& title,
@@ -461,7 +469,7 @@ void upload_reply_packet() {
     tmp_disable_conf(true);
   }
 
-  const auto rep_name = ToStringLowerCase(StrCat(qwk_system_name(qwk_cfg, a()->config()->system_name()), ".rep"));
+  const auto rep_name = StrCat(qwk_system_name(qwk_cfg, a()->config()->system_name()), ".rep");
   bout.litebar("Upload QWK Reply Packet");
   bout.nl();
   bout.format("|#9QWK Reply Packet must be named: \"|#2{}|#9\"\r\n", rep_name);
@@ -480,7 +488,8 @@ void upload_reply_packet() {
     }
 
     if (rec) {
-      const auto msg_name = StrCat(qwk_system_name(qwk_cfg, a()->config()->system_name()), ".MSG");
+      // The MSG file is always upper case.
+      const auto msg_name = ToStringUpperCase(StrCat(qwk_system_name(qwk_cfg, a()->config()->system_name()), ".MSG"));
       auto msg_path = ready_reply_packet(rep_path.string(), msg_name);
       process_reply_dat(msg_path.string());
     } else {
