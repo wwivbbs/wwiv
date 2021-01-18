@@ -33,7 +33,7 @@ What's New in WWIV 5.6 (2020)
 + Remove WSL stanzas, that makes MSVC 16.6 and newer unhappy (#1268)
 * Update instance.dat when a node exits. 
 + Implemented WWIVfsed. WWIV's internal FSED as an external.
-! Arguments on linux must not start with '-'' and not '/', this is also
+! Arguments on linux must start with '-'' and not '/', this is also
   how standard arguments work on Linux.  Windows still accepts arguments
   either like "/N" or "-N". (#1273)
 * Don't throw an exception when no dirs are visible. (#1276)
