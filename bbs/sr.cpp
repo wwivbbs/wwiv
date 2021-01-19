@@ -552,7 +552,7 @@ void send_file(const std::filesystem::path& path, bool* sent, bool* abort, const
 
 void receive_file(const std::filesystem::path& path, int* received, const std::string& sfn, int dn) {
   bool bReceived;
-  const int nProtocol = get_protocol(dn == -1 ? xfertype::xf_up_temp : xfertype::xf_up);
+  const auto nProtocol = get_protocol(dn == -1 ? xfertype::xf_up_temp : xfertype::xf_up);
 
   switch (nProtocol) {
   case -1:

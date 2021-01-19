@@ -27,6 +27,7 @@
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "common/input.h"
+#include "core/findfiles.h"
 #include "core/numbers.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -184,12 +185,19 @@ void normalupload(int dn) {
         a()->user()->add_extratime(used);
       }
       if (ok) {
+        if (auto o = FindFile(receive_fn); o.value() != receive_fn) {
+          // make case match.
+          LOG(INFO) << "Move file: " << o.value().string();
+          LOG(INFO) << "Move to  : " << receive_fn.string();
+          File::Move(o.value(), receive_fn);
+        }
         File file(receive_fn);
         if (ok == 1) {
           if (!file.Open(File::modeBinary | File::modeReadOnly)) {
             ok = 0;
             bout.nl(2);
-            bout << "OS error - File not found.\r\n\n";
+            bout << "OS error - File not found: \r\n";
+            LOG(ERROR) << "OS error - File not found: " << receive_fn.string();
             if (f.mask(mask_extended)) {
               a()->current_file_area()->DeleteExtendedDescription(f.filename());
             }
