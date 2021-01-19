@@ -410,12 +410,14 @@ void DumpBuffer(ZModem* info) {
   zmodemlog("========================================================================\r\n");
   std::string s;
   s.reserve(100);
+  auto offset = info->offset;
   for (auto i=0; i < info->chrCount; ++i) {
-    auto cur = fmt::format("{:3}  ", static_cast<uint8_t>(info->buffer[i]));
-    if (i % 16 == 0) {
-      zmodemlog("{}\r\n", s);
+    auto cur = fmt::format("{:3} ", static_cast<uint8_t>(info->buffer[i]));
+    if ((i % 16 == 0) && !s.empty()) {
+      zmodemlog("{:07d} {}\r\n", offset + i, s);
       s.clear();
       s.reserve(100);
+      offset = info->offset + i;
     }
     s.append(cur);
   }
