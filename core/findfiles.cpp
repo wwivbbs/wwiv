@@ -73,5 +73,14 @@ FindFiles::FindFiles(const std::filesystem::path& mask, const FindFilesType type
 FindFiles::FindFiles(const std::filesystem::path& mask, FindFilesType type)
 : FindFiles(mask, type, WinNameType::short_name) {}
 
+std::optional<std::filesystem::path> FindFile(const std::filesystem::path& candidate) {
+  FindFiles ff(candidate, FindFiles::FindFilesType::files);
+  if (ff.empty()) {
+    return std::nullopt;
+  }
+  auto path = candidate;
+  return { path.replace_filename(ff.begin()->name) };
+}
+
 
 }

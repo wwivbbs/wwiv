@@ -22,7 +22,6 @@
 #include "core/findfiles.h"
 #include "core/strings.h"
 
-#include <iostream>
 #include <string>
 
 using std::string;
@@ -35,7 +34,7 @@ TEST(FindFiles, Suffix) {
   FindFiles ff(FilePath(helper.TempDir(), "msg*"), FindFiles::FindFilesType::any);
   auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
-  f++;
+  ++f;
   EXPECT_EQ(f, ff.end());
 }
 
@@ -45,7 +44,7 @@ TEST(FindFiles, Prefix) {
   FindFiles ff(FilePath(helper.TempDir(), "*001"), FindFiles::FindFilesType::files);
   auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
-  f++;
+  ++f;
   EXPECT_EQ(f, ff.end());
 }
 
@@ -55,7 +54,7 @@ TEST(FindFiles, SingleCharSuffix) {
   FindFiles ff(FilePath(helper.TempDir(), "msg00000.00?"), FindFiles::FindFilesType::files);
   auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
-  f++;
+  ++f;
   EXPECT_EQ(f, ff.end());
 }
 
@@ -65,7 +64,7 @@ TEST(FindFiles, SingleCharPrefix) {
   FindFiles ff(FilePath(helper.TempDir(), "?sg00000.001"), FindFiles::FindFilesType::files);
   auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
-  f++;
+  ++f;
   EXPECT_EQ(f, ff.end());
 }
 
@@ -75,6 +74,14 @@ TEST(FindFiles, SingleCharExtensionPrefix) {
   FindFiles ff(FilePath(helper.TempDir(), "msg00000.?01"), FindFiles::FindFilesType::files);
   auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
-  f++;
+  ++f;
   EXPECT_EQ(f, ff.end());
+}
+
+TEST(FindFileTest, Smoke) {
+  FileHelper helper;
+  helper.CreateTempFile("FOO", "");
+  EXPECT_TRUE(FindFile(FilePath(helper.TempDir(),"FOO")));
+  EXPECT_TRUE(FindFile(FilePath(helper.TempDir(),"foo")));
+  EXPECT_FALSE(FindFile(FilePath(helper.TempDir(),"bad")));
 }

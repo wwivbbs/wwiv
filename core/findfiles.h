@@ -21,6 +21,7 @@
 #define INCLUDED_CORE_FINDFILES_H
 
 #include <filesystem>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -67,6 +68,8 @@ private:
   std::set<FileEntry> entries_;
   
 };
+
+std::optional<std::filesystem::path> FindFile(const std::filesystem::path& candidate);
 
 }
 
