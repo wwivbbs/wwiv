@@ -185,12 +185,6 @@ void normalupload(int dn) {
         a()->user()->add_extratime(used);
       }
       if (ok) {
-        if (auto o = FindFile(receive_fn); o.value() != receive_fn) {
-          // make case match.
-          LOG(INFO) << "Move file: " << o.value().string();
-          LOG(INFO) << "Move to  : " << receive_fn.string();
-          File::Move(o.value(), receive_fn);
-        }
         File file(receive_fn);
         if (ok == 1) {
           if (!file.Open(File::modeBinary | File::modeReadOnly)) {

@@ -22,6 +22,7 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "common/remote_io.h"
+#include "core/findfiles.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "fmt/format.h"
@@ -173,7 +174,14 @@ bool NewZModemReceiveFile(const std::filesystem::path& path){
   if (ret) {
     const auto fn = wwiv::sdk::files::unalign(path.filename().string());
     const auto old_fn = FilePath(a()->sess().dirs().temp_directory(), fn);
-    File::Move(old_fn, path);
+
+    if (auto o = FindFile(old_fn)) {
+      // make case match.
+      LOG(INFO) << "Move file: " << o.value().string();
+      LOG(INFO) << "Move to  : " << path;
+      File::Move(o.value(), path);
+    }
+
   }
   return ret;
 }

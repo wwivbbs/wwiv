@@ -339,6 +339,10 @@ time_t File::last_write_time(const std::filesystem::path& path) {
 }
 
 bool File::Rename(const std::filesystem::path& o, const std::filesystem::path& n) {
+  if (o == n) {
+    // Nothing to do.
+    return true;
+  }
   std::error_code ec{};
   std::filesystem::rename(o, n, ec);
   return ec.value() == 0;
