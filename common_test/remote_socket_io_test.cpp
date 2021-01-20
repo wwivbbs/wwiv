@@ -44,6 +44,20 @@ TEST(RemoteSocketIOTest, OneFF) {
   EXPECT_EQ(io.queue().size(), 4u) << DumpQueue(io.queue());
 }
 
+TEST(RemoteSocketIOTest, OneFFAtEnd) {
+  RemoteSocketIO io(1, true);
+  io.set_binary_mode(true);
+  io.AddStringToInputBuffer(0, 4, "\x1\x0\x2\xff");
+  EXPECT_EQ(io.queue().size(), 4u) << DumpQueue(io.queue());
+}
+
+TEST(RemoteSocketIOTest, OneFFAtEndAndOnePast) {
+  RemoteSocketIO io(1, true);
+  io.set_binary_mode(true);
+  io.AddStringToInputBuffer(0, 4, "\x1\x0\x2\xff\xff\xff");
+  EXPECT_EQ(io.queue().size(), 4u) << DumpQueue(io.queue());
+}
+
 TEST(RemoteSocketIOTest, TwoFF) {
   RemoteSocketIO io(1, true);
   io.set_binary_mode(true);
@@ -51,4 +65,11 @@ TEST(RemoteSocketIOTest, TwoFF) {
   EXPECT_EQ(io.queue().size(), 4u) << DumpQueue(io.queue());
 }
 
+
+TEST(RemoteSocketIOTest, TwoFFAtEnd) {
+  RemoteSocketIO io(1, true);
+  io.set_binary_mode(true);
+  io.AddStringToInputBuffer(0, 5, "\x1\x0\x2\xff\xff");
+  EXPECT_EQ(io.queue().size(), 4u) << DumpQueue(io.queue());
+}
 
