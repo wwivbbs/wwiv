@@ -95,6 +95,7 @@ std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
     description = strings::StringTrim(ss);
     // Only bail here if we have nothing.
     if (description.empty()) {
+      VLOG(1) << "Description is empty, failed to parse.";
       return std::nullopt;
     }
 
