@@ -65,12 +65,13 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
     return true;
   }
   const auto comport = std::to_string(a()->sess().incom() ? a()->primary_port() : 0);
-  const auto cmdLine =
-      stuff_in(a()->upload_cmd, create_chain_file(), a()->dirs()[directory_num].path,
-               FileName(u->filename).unaligned_filename(), comport, "");
+  const auto& d = a()->dirs()[directory_num];
+  const auto dir_path = File::absolute(a()->bbspath(), d.path);
+  const auto cmdLine = stuff_in(a()->upload_cmd, create_chain_file(), dir_path.string(),
+                                FileName(u->filename).unaligned_filename(), comport, "");
   ExecuteExternalProgram(cmdLine, a()->spawn_option(SPAWNOPT_ULCHK));
 
-  const auto file = FilePath(a()->dirs()[directory_num].path, FileName(u->filename));
+  const auto file = FilePath(dir_path, FileName(u->filename));
   if (!File::Exists(file)) {
     sysoplog() << "File \"" << u->filename << "\" to " << a()->dirs()[directory_num].name << " deleted by UL event.";
     bout << u->filename << " was deleted by the upload event.\r\n";
@@ -260,7 +261,8 @@ void printinfo(uploadsrec * u, bool *abort) {
 
   const auto& dir = a()->dirs()[a()->udir[a()->current_user_dir_num()].subnum];
   if (!(dir.mask & mask_cdrom)) {
-    if (!File::Exists(FilePath(dir.path, FileName(u->filename)))) {
+    const auto dir_path = File::absolute(a()->bbspath(), dir.path);
+    if (!File::Exists(FilePath(dir_path, FileName(u->filename)))) {
       size = "N/A";
     }
   }
@@ -572,7 +574,8 @@ int printfileinfo(const uploadsrec* u, const wwiv::sdk::files::directory_t& dir)
     bout.nl();
     bout << "|#3CD ROM DRIVE\r\n";
   } else {
-    if (!File::Exists(FilePath(dir.path, FileName(u->filename)))) {
+    const auto dir_path = File::absolute(a()->bbspath(), dir.path);
+    if (!File::Exists(FilePath(dir_path, FileName(u->filename)))) {
       bout << "\r\n-=>FILE NOT THERE<=-\r\n\n";
       return -1;
     }

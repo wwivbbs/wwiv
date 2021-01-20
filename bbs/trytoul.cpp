@@ -184,7 +184,8 @@ static int try_to_ul_wh(const string& orig_file_name) {
   to_char_array(f.u().upby, unn);
   f.set_date(DateTime::now());
 
-  if (File::Exists(StrCat(d.path, files::unalign(aligned_file_name)))) {
+  const auto dir_path = File::absolute(a()->bbspath(), d.path);
+  if (File::Exists(FilePath(dir_path, files::unalign(aligned_file_name)))) {
     if (dcs()) {
       bout.nl(2);
       bout << "File already exists.\r\n|#5Add to database anyway? ";
@@ -198,7 +199,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     }
   }
   const auto src = FilePath(a()->sess().dirs().batch_directory(), file_name);
-  const auto dest = FilePath(d.path, file_name);
+  const auto dest = FilePath(dir_path, file_name);
 
   if (File::Exists(dest)) {
     File::Remove(dest);
@@ -283,7 +284,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   bout.nl(3);
 
-  File file(FilePath(d.path, files::unalign(aligned_file_name)));
+  File file(FilePath(dir_path, files::unalign(aligned_file_name)));
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     // dos error, file not found
     if (f.mask(mask_extended)) {

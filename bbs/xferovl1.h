@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_XFEROVL1_H__
-#define __INCLUDED_BBS_XFEROVL1_H__
+#ifndef INCLUDED_BBS_XFEROVL1_H
+#define INCLUDED_BBS_XFEROVL1_H
 
 #include <string>
 
@@ -44,4 +44,4 @@ void SetNewFileScanDate();
 void removefilesnotthere(int dn, int* autodel);
 void removenotthere();
 
-#endif  // __INCLUDED_BBS_XFEROVL1_H__
+#endif

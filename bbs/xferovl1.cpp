@@ -226,20 +226,19 @@ bool get_file_idz(FileRecord& fr, const directory_t& dir) {
     return false;
   }
 
-  fr.set_date(DateTime::from_time_t(File::last_write_time(FilePath(dir.path, fr))));
-  auto o = PathToTempdDiz(FilePath(dir.path, fr));
+  const auto dir_path = File::absolute(a()->bbspath(), dir.path);
+  fr.set_date(DateTime::from_time_t(File::last_write_time(FilePath(dir_path, fr))));
+  auto o = PathToTempdDiz(FilePath(dir_path, fr));
   if (!o) {
     return true;
   }
-  const auto diz_fn = o.value();
+  const auto& diz_fn = o.value();
   bout.nl();
   bout << "|#9Reading in |#2" << diz_fn.filename() << "|#9 as extended description...";
   const auto old_ext = a()->current_file_area()->ReadExtendedDescriptionAsString(fr).value_or("");
 
-  DizParser dp(a()->HasConfigFlag(OP_FLAGS_IDZ_DESC));
-  auto odiz = dp.parse(diz_fn);
-
-  if (odiz.has_value()) {
+  const DizParser dp(a()->HasConfigFlag(OP_FLAGS_IDZ_DESC));
+  if (auto odiz = dp.parse(diz_fn)) {
     auto& diz = odiz.value();
     fr.set_description(diz.description());
     const auto ext_desc = diz.extended_description();
