@@ -194,6 +194,7 @@ static bool has_arc_cmd_for_ext(const std::string& ext) {
 }
 
 static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem::path& p) {
+  VLOG(1) << "PathToTempDiz: " << p;
   File::Remove(FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ));
   File::Remove(FilePath(a()->sess().dirs().temp_directory(), DESC_SDI));
 
@@ -210,11 +211,13 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
   auto diz_fn = FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ);
   VLOG(1) << "Checking for diz: " << diz_fn;
   if (auto o = FindFile(diz_fn)) {
+    VLOG(1) << "Found: " << diz_fn;
     return { o.value() };
   }
   diz_fn = FilePath(a()->sess().dirs().temp_directory(), DESC_SDI);
   VLOG(1) << "Checking for diz: " << diz_fn;
   if (auto o = FindFile(diz_fn)) {
+    VLOG(1) << "Found: " << diz_fn;
     return { o.value() };
   }
   VLOG(1) << "No diz.";
@@ -259,7 +262,7 @@ bool get_file_idz(FileRecord& fr, const directory_t& dir) {
       fr.set_extended_description(true);
     }
   } else {
-    VLOG(1) << "Failed to parse DIZ";
+    VLOG(1) << "Failed to parse DIZ: " << diz_fn;
   }
 
   bout << "Done!\r\n";
