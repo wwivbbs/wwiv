@@ -441,14 +441,14 @@ void RemoteSocketIO::AddStringToInputBuffer(int start, int end, const char* buff
   lock_guard<std::mutex> lock(mu_);
 
   if (binary_mode()) {
-    bool skip_next = false;
+    auto skip_next = false;
     for (auto i = start; i < end; i++) {
       if (skip_next) {
         skip_next = false;
         continue;
       }
       const uint8_t c = buffer[i];
-      if (c == 0xff && i < end) {
+      if (c == 0xff && i < end - 1) {
         if (static_cast<uint8_t>(buffer[i+1]) == 255) {
           VLOG(2) << "Got an escaped 255 possibly";
           // TODO(rushfan): If this causes problems, we can add a setting for this
@@ -459,6 +459,11 @@ void RemoteSocketIO::AddStringToInputBuffer(int start, int end, const char* buff
           queue_.push(c);
           continue;
         }
+      } else if (c == 0xff && i == (end - 1)) {
+        // Have this at the end.
+        VLOG(1) << "Got an escaped 255 possibly as the LAST char";
+      } else if (c == 0xff && i == start) {
+        VLOG(1) << "Got an escaped 255 possibly as the FIRST char";
       }
       skip_next = false;
       queue_.push(c);

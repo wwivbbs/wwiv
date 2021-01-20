@@ -36,12 +36,6 @@ std::string DumpQueue(std::queue<char>& q) {
   return ss.str();
 }
 
-TEST(RemoteSocketIOTest, Smoke) {
-  RemoteSocketIO io(1, true);
-  io.set_binary_mode(true);
-  io.AddStringToInputBuffer(0, 5, "\x1\xfc\xfa\x0\x2");
-  EXPECT_EQ(io.queue().size(), 5u) << DumpQueue(io.queue());
-}
 
 TEST(RemoteSocketIOTest, OneFF) {
   RemoteSocketIO io(1, true);
@@ -57,9 +51,4 @@ TEST(RemoteSocketIOTest, TwoFF) {
   EXPECT_EQ(io.queue().size(), 4u) << DumpQueue(io.queue());
 }
 
-TEST(RemoteSocketIOTest, FourFF) {
-  RemoteSocketIO io(1, true);
-  io.set_binary_mode(true);
-  io.AddStringToInputBuffer(0, 7, "\x1\xff\xff\xff\xff\x0\x2");
-  EXPECT_EQ(io.queue().size(), 5u) << DumpQueue(io.queue());
-}
+
