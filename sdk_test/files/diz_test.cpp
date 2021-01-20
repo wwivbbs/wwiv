@@ -92,7 +92,8 @@ TEST_F(DizTest, BlockChars) {
 
 
 TEST_F(DizTest, X) {
-  const auto* kTEXT = R"(  <<< null e-magazine x00A (exec edition) >>>
+  const auto* kTEXT = R"(
+  <<< null e-magazine x00A (exec edition) >>>
       ____  _____          _____   _____
   ___/.   \/    /_________/.   /__/.   /__jp!_
  //_       \    .   /         /   \   /    _//
