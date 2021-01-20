@@ -248,6 +248,9 @@ bool get_file_idz(FileRecord& fr, const directory_t& dir) {
     auto& diz = odiz.value();
     fr.set_description(diz.description());
     const auto ext_desc = diz.extended_description();
+
+    VLOG(1) << "Diz Desc: " << diz.description();
+    VLOG(1) << "Diz Ext:  " << ext_desc;
     if (!ext_desc.empty()) {
       if (!old_ext.empty()) {
         a()->current_file_area()->DeleteExtendedDescription(fr.filename());
@@ -255,6 +258,8 @@ bool get_file_idz(FileRecord& fr, const directory_t& dir) {
       a()->current_file_area()->AddExtendedDescription(fr.filename(), ext_desc);
       fr.set_extended_description(true);
     }
+  } else {
+    VLOG(1) << "Failed to parse DIZ";
   }
 
   bout << "Done!\r\n";
