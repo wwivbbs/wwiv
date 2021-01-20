@@ -177,7 +177,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
-  wwiv::sdk::files::FileRecord f;
+  files::FileRecord f;
   f.set_filename(aligned_file_name);
   f.u().ownerusr = static_cast<uint16_t>(a()->sess().user_num());
   const auto unn = a()->names()->UserName(a()->sess().user_num());
@@ -207,7 +207,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   // s1 and s2 should remain set,they are used below
   File::Move(src, dest);
   f.set_description("NO DESCRIPTION GIVEN");
-  bool file_id_avail = get_file_idz(f, a()->dirs()[dn]);
+  auto file_id_avail = get_file_idz(f, a()->dirs()[dn]);
   done = false;
 
   while (!done && !a()->sess().hangup() && !file_id_avail) {

@@ -128,7 +128,9 @@ void normalupload(int dn) {
       ok = 0;
     }
   }
-  const auto receive_fn = FilePath(d.path, files::unalign(input_fn));
+
+  const auto dir_path = File::absolute(a()->bbspath(), d.path);
+  const auto receive_fn = FilePath(dir_path, files::unalign(input_fn));
   if (ok && bin.yesno()) {
     if (File::Exists(receive_fn)) {
       if (dcs()) {
