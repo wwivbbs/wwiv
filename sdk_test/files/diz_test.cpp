@@ -91,7 +91,7 @@ TEST_F(DizTest, BlockChars) {
 }
 
 
-TEST_F(DizTest, X) {
+TEST_F(DizTest, EmptyLinesAtStart) {
   const auto* kTEXT = R"(
   <<< null e-magazine x00A (exec edition) >>>
       ____  _____          _____   _____

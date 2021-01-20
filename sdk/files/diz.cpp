@@ -67,11 +67,19 @@ std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
 
   TextFile file(path, "rt");
   auto lines = file.ReadFileIntoVector();
+  auto iter = std::begin(lines);
+  const auto end = std::end(lines);
+  while (iter != end && iter->empty()) {
+    // skip over any empty lines at the start.
+    ++iter;
+  }
+  // Save off the first non empty line.
+  const auto first_real_line = iter;
   if (lines.empty()) {
     VLOG(1) << "DizParser::parse: lines empty";
     return std::nullopt;
   }
-  auto iter = std::begin(lines);
+
   if (firstline_as_desc_) {
     auto ss = *iter;
     if (!ss.empty()) {
@@ -84,8 +92,7 @@ std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
         do {
           ++iter;
           ss = *iter;
-        }
-        while (!valid_desc(ss) && iter != std::end(lines));
+        } while (!valid_desc(ss) && iter != end);
       }
     }
     if (!ss.empty() && ss.back() == '\r') {
@@ -101,10 +108,10 @@ std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
 
     ++iter;
   } else {
-    iter = std::begin(lines);
+    iter = first_real_line;
   }
   std::string ext;
-  for (; iter != std::end(lines); ++iter) {
+  for (; iter != end; ++iter) {
     ext.append(fixup_diz_string(*iter));
     ext.append("\n");
   }
