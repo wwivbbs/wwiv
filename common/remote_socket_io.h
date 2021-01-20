@@ -85,6 +85,9 @@ class RemoteSocketIO final : public RemoteIO {
   // VisibleForTesting
   void AddStringToInputBuffer(int start, int end, const char* buffer);
   std::queue<char>& queue() { return queue_; }
+
+  void set_binary_mode(bool b) override;
+
 private:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);
   void InboundTelnetProc();
@@ -97,6 +100,7 @@ private:
   std::atomic<bool> stop_;
   bool threads_started_{false};
   bool telnet_{true};
+  bool skip_next_{false};
 };
 
 

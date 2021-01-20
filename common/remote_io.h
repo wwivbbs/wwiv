@@ -68,7 +68,7 @@ class RemoteIO {
   [[nodiscard]] virtual unsigned int GetHandle() const = 0;
   [[nodiscard]] virtual unsigned int GetDoorHandle() const { return GetHandle(); }
 
-  void set_binary_mode(bool b) { binary_mode_ = b; }
+  virtual void set_binary_mode(bool b);
   [[nodiscard]] bool binary_mode() const { return binary_mode_; }
 
   virtual RemoteInfo& remote_info() { return remote_info_; }

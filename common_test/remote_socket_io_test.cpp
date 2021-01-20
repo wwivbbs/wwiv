@@ -65,6 +65,13 @@ TEST(RemoteSocketIOTest, TwoFF) {
   EXPECT_EQ(io.queue().size(), 4u) << DumpQueue(io.queue());
 }
 
+TEST(RemoteSocketIOTest, SplitTwoFF) {
+  RemoteSocketIO io(1, true);
+  io.set_binary_mode(true);
+  io.AddStringToInputBuffer(0, 2, "\x1\xff");
+  io.AddStringToInputBuffer(0, 3,"\xff\x0\x2");
+  EXPECT_EQ(io.queue().size(), 4u) << DumpQueue(io.queue());
+}
 
 TEST(RemoteSocketIOTest, TwoFFAtEnd) {
   RemoteSocketIO io(1, true);

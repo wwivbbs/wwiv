@@ -29,6 +29,10 @@ namespace wwiv::common {
 // static
 std::string RemoteIO::error_text_;
 
+void RemoteIO::set_binary_mode(bool b) {
+  binary_mode_ = b;
+}
+
 std::string RemoteIO::GetLastErrorText() {
 #if defined ( _WIN32 )
   char* error_text;
