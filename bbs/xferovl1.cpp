@@ -207,13 +207,17 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
   }
   ExecuteExternalProgram(cmd.value().cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
   auto diz_fn = FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ);
-  if (!File::Exists(diz_fn)) {
-    diz_fn = FilePath(a()->sess().dirs().temp_directory(), DESC_SDI);
+  VLOG(1) << "Checking for diz: " << diz_fn;
+  if (File::Exists(diz_fn)) {
+    return { diz_fn };
   }
-  if (!File::Exists(diz_fn)) {
-    return std::nullopt;
+  diz_fn = FilePath(a()->sess().dirs().temp_directory(), DESC_SDI);
+  VLOG(1) << "Checking for diz: " << diz_fn;
+  if (File::Exists(diz_fn)) {
+    return { diz_fn };
   }
-  return {diz_fn};
+  VLOG(1) << "No diz.";
+  return std::nullopt;
 }
 
 bool get_file_idz(FileRecord& fr, const directory_t& dir) {
@@ -230,6 +234,7 @@ bool get_file_idz(FileRecord& fr, const directory_t& dir) {
   fr.set_date(DateTime::from_time_t(File::last_write_time(FilePath(dir_path, fr))));
   auto o = PathToTempdDiz(FilePath(dir_path, fr));
   if (!o) {
+    LOG(INFO) << "File had no DIZ: " << fr;
     return true;
   }
   const auto& diz_fn = o.value();
