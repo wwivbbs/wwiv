@@ -18,6 +18,7 @@
 #include "sdk/files/diz.h"
 
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include <utility>
@@ -58,6 +59,7 @@ static std::string fixup_diz_string(const std::string& orig) {
 std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
     const std::filesystem::path& path) const {
   if (!core::File::Exists(path)) {
+    VLOG(1) << ":DizParser::parse: path not exist: " << path;
     return std::nullopt;
   }
 
@@ -66,6 +68,7 @@ std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
   TextFile file(path, "rt");
   auto lines = file.ReadFileIntoVector();
   if (lines.empty()) {
+    VLOG(1) << "DizParser::parse: lines empty";
     return std::nullopt;
   }
   auto iter = std::begin(lines);

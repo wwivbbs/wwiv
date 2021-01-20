@@ -37,7 +37,7 @@ TEST_F(DizTest, Smoke) {
 Line2
 Line3)";
 
-  const auto file = helper.CreateTempFile("file_id.diz", kDIZ);
+  const auto file = helper.CreateTempFile("FILE_ID.DIZ", kDIZ);
 
   wwiv::sdk::files::DizParser p(true);
   auto o = p.parse(file);
@@ -53,7 +53,7 @@ TEST_F(DizTest, Smoke_NotDescription) {
 Line2
 Line3)";
 
-  const auto file = helper.CreateTempFile("file_id.diz", kDIZ);
+  const auto file = helper.CreateTempFile("FILE_ID.DIZ", kDIZ);
 
   wwiv::sdk::files::DizParser p(false);
   auto o = p.parse(file);
@@ -77,7 +77,7 @@ TEST_F(DizTest, BlockChars) {
 � MegaStuff BBS % (317) 873-5173 % 8am-5pm �
 읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸)"; 
 
-  const auto file = helper.CreateTempFile("file_id.diz", kTEXT);
+  const auto file = helper.CreateTempFile("FILE_ID.DIZ", kTEXT);
 
   wwiv::sdk::files::DizParser p(true);
   auto o = p.parse(file);
@@ -89,3 +89,31 @@ TEST_F(DizTest, BlockChars) {
   auto v = wwiv::strings::SplitString(d.extended_description(), "\n");
   EXPECT_EQ(10u, v.size());
 }
+
+
+TEST_F(DizTest, X) {
+  const auto* kTEXT = R"(  <<< null e-magazine x00A (exec edition) >>>
+      ____  _____          _____   _____
+  ___/.   \/    /_________/.   /__/.   /__jp!_
+ //_       \    .   /         /   \   /    _//
+   /____/\____/    /    /__________________\
+    +--- ---- \________/ --- -------- ----+
+    : bbs scene and retro computing e-mag .
+    :     https://github.com/xqtr/null    :
+    '  telnet // andr01d.zapto.org:9999   :
+    +---- -  ---------  ---------- -------+)"; 
+
+  const auto file = helper.CreateTempFile("FILE_ID.DIZ", kTEXT);
+
+  wwiv::sdk::files::DizParser p(true);
+  auto o = p.parse(file);
+  ASSERT_TRUE(o);
+
+  const auto& d = o.value();
+  EXPECT_EQ(d.description(), "<<< null e-magazine x00A (exec edition) >>>");
+}
+
+/**
+
+
+ */
