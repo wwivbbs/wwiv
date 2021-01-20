@@ -141,8 +141,10 @@ if(UNIX)
   endif()
 
   set(PLATFORM_LIBS
-        z
+    z
+    ${CMAKE_DL_LIBS}
   )
+
 endif()
 
 if(WIN32)
