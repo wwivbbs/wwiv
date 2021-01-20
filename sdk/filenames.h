@@ -69,7 +69,7 @@ const constexpr auto CHAINS_JSON = "chains.json";
 
 #define DEAD_NET "dead.net"
 #define DEFAULTS_NOEXT "defaults"
-#define DESC_SDI "desc.sdi"
+#define DESC_SDI "DESC.SDI"
 #define DESCRIPT_ION "descript.ion"
 
 #define DIRS_DAT "dirs.dat"
@@ -90,7 +90,7 @@ const constexpr auto CHAINS_JSON = "chains.json";
 #define FIDO_CALLOUT_JSON "fido_callout.json"
 #define FILESDL_NOEXT "filesdl"
 #define FILESUL_NOEXT "filesul"
-#define FILE_ID_DIZ "file_id.diz"
+#define FILE_ID_DIZ "FILE_ID.DIZ"
 #define FSED_NOEXT "fsed"
 
 #define FORMASV_MSG "formasv.msg"

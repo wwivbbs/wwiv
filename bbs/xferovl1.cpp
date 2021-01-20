@@ -39,6 +39,7 @@
 #include "common/pause.h"
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/findfiles.h"
 #include "core/numbers.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
@@ -208,13 +209,13 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
   ExecuteExternalProgram(cmd.value().cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
   auto diz_fn = FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ);
   VLOG(1) << "Checking for diz: " << diz_fn;
-  if (File::Exists(diz_fn)) {
-    return { diz_fn };
+  if (auto o = FindFile(diz_fn)) {
+    return { o.value() };
   }
   diz_fn = FilePath(a()->sess().dirs().temp_directory(), DESC_SDI);
   VLOG(1) << "Checking for diz: " << diz_fn;
-  if (File::Exists(diz_fn)) {
-    return { diz_fn };
+  if (auto o = FindFile(diz_fn)) {
+    return { o.value() };
   }
   VLOG(1) << "No diz.";
   return std::nullopt;
