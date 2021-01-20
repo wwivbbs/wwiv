@@ -398,10 +398,12 @@ int WWIVConfigApplication::Main(int argc, char** argv) const {
     return 1;
   }
 
-  CreateSysopAccountIfNeeded(bbsdir);
   if (forced_initialize) {
     return 0;
   }
+
+  // This has to happen after --initialize since it needs a real curses UI.
+  CreateSysopAccountIfNeeded(bbsdir);
 
   // Check for Upgrades needed.
   if (do_wwiv_ugprades(window, bbsdir) == ShouldContinue::EXIT) {
