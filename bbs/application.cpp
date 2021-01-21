@@ -1094,11 +1094,17 @@ void Application::set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config)
 Names* Application::names() const { return names_.get(); }
 
 msgapi::MessageApi* Application::msgapi(int type) const {
+  if (type == 0) {
+    return msgapis_.at(2).get();
+  }
   return msgapis_.at(type).get();
 }
 
 msgapi::MessageApi* Application::msgapi() const {
-  return msgapis_.at(current_sub().storage_type).get();
+  if (current_sub().storage_type == 0) {
+    LOG(ERROR) << "Invalid storage type on sub: " << current_sub().filename;
+  }
+  return msgapi(current_sub().storage_type);
 }
 
 msgapi::WWIVMessageApi* Application::msgapi_email() const {

@@ -9,6 +9,10 @@ Legend (starting with 5.3)
 - Feature removed
 * Change or cleanup
 
+What's New in WWIV 5.6.1 (2021)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 What's New in WWIV 5.6 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ! config.dat has been replaced with config.json.  wwivconfig will 
