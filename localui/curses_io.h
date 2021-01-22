@@ -65,7 +65,7 @@ class CursesIO final {
   [[nodiscard]] CursesWindow* header() const { return header_.get(); }
   void SetIndicatorMode(IndicatorMode mode);
 
-  [[nodiscard]] CursesWindow* CreateBoxedWindow(const std::string& title, int nlines, int ncols);
+  [[nodiscard]] CursesWindow* CreateBoxedWindow(const std::string& title, int nlines, int ncols) const;
 
   [[nodiscard]] ColorScheme* color_scheme() const { return color_scheme_.get(); }
   static void Init(const std::string& title);

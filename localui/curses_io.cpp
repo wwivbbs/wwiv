@@ -154,6 +154,7 @@ CursesIO::~CursesIO() {
 #endif  // _WIN32
 }
 
+// ReSharper disable once CppMemberFunctionMayBeStatic
 void CursesIO::InitDosColorPairs(short start) {
   std::vector<short> lowbit_colors = {COLOR_BLACK, COLOR_BLUE,    COLOR_GREEN,  COLOR_CYAN,
                                       COLOR_RED,   COLOR_MAGENTA, COLOR_YELLOW, COLOR_WHITE};
@@ -165,8 +166,10 @@ void CursesIO::InitDosColorPairs(short start) {
   }
 }
 
+// ReSharper disable once CppMemberFunctionMayBeStatic
 void CursesIO::DisableLocalIO() { endwin(); }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void CursesIO::ReenableLocalIO() {
   refresh();
   footer()->window()->RedrawWin();
@@ -177,10 +180,10 @@ void CursesIO::ReenableLocalIO() {
   window()->Refresh();
 }
 
-
 /**
  * Clears the local logical screen
  */
+// ReSharper disable once CppMemberFunctionMayBeConst
 void CursesIO::Cls(uint32_t background_char) {
   window_->SetColor(SchemeId::NORMAL);
   window_->Bkgd(background_char);
@@ -204,7 +207,8 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
   indicator_mode_ = mode;
 }
 
-CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, int ncols) {
+CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, int ncols) const {
+  ncols = std::max<int>(ncols, title.size() + 6);
   unique_ptr<CursesWindow> window(new CursesWindow(window_.get(), color_scheme_.get(), nlines, ncols));
   window->SetColor(SchemeId::WINDOW_BOX);
   window->Box(0, 0);
@@ -225,12 +229,12 @@ CursesIO* CursesIO::Get() {
 }
 
 
-// static
-
+// ReSharper disable once CppMemberFunctionMayBeStatic
 int CursesIO::GetMaxX() const {
   return getmaxx(stdscr);
 }
 
+// ReSharper disable once CppMemberFunctionMayBeStatic
 int CursesIO::GetMaxY() const {
   return getmaxy(stdscr);
 }
