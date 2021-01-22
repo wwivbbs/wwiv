@@ -65,26 +65,25 @@ static bool external_edit_internal(const string& edit_filename, const std::files
 
   make_abs_cmd(a()->bbspath(), &editorCommand);
 
-  auto strippedFileName{stripfn(edit_filename)};
+  const auto stripped_file_name{stripfn(edit_filename)};
   ScopeExit on_exit([=] { File::set_current_directory(a()->bbspath()); });
   if (!working_directory.empty()) {
     File::set_current_directory(working_directory);
   }
 
-  const auto tft_fn = FilePath(File::current_directory(), strippedFileName);
-  File fileTempForTime(tft_fn);
-  auto tFileTime = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
+  const auto tft_fn = FilePath(File::current_directory(), stripped_file_name);
+  const auto orig_file_time = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
 
-  auto num_screen_lines = a()->user()->GetScreenLines();
-  const auto cmdLine = stuff_in(editorCommand, fileTempForTime.full_pathname(),
+  const auto num_screen_lines = a()->user()->GetScreenLines();
+  const auto cmdLine = stuff_in(editorCommand, tft_fn.string(),
                                 std::to_string(a()->user()->GetScreenChars()),
                                 std::to_string(num_screen_lines), std::to_string(numlines), "");
 
   ExecuteExternalProgram(cmdLine, ansir_to_flags(editor.ansir) | EFLAG_NO_CHANGE_DIR);
   bout.clear_lines_listed();
 
-  auto tFileTime1 = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
-  return File::Exists(tft_fn) && tFileTime != tFileTime1;
+  const auto file_time_now = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
+  return File::Exists(tft_fn) && orig_file_time != file_time_now;
 }
 
 static std::unique_ptr<ExternalMessageEditor>
@@ -132,9 +131,10 @@ bool external_text_edit(const string& edit_filename, const std::filesystem::path
   const auto& editor = a()->editors[editor_number];
   MessageEditorData data(a()->names()->UserName(a()->sess().user_num()));
   data.msged_flags = flags;
-  int setanon = 0;
-  auto eme = CreateExternalMessageEditor(editor, data, numlines, &setanon, a()->sess().dirs().temp_directory());
-  if (!eme->Before()) {
+  auto setanon = 0;
+  if (auto eme = CreateExternalMessageEditor(editor, data, numlines, &setanon,
+                                             a()->sess().dirs().temp_directory());
+      !eme->Before()) {
     return false;
   }
   
@@ -142,7 +142,7 @@ bool external_text_edit(const string& edit_filename, const std::filesystem::path
 }
 
 bool fsed_text_edit(const std::string& edit_filename, const std::filesystem::path& new_directory,
-  int numlines, int flags) {
+                    int numlines, int flags) {
   if (ok_external_fsed()) {
     return external_text_edit(edit_filename, new_directory, numlines, flags);
   }

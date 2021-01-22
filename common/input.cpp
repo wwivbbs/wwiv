@@ -172,7 +172,7 @@ char Input::ynq() {
 // Returns: length of string
 //==================================================================
 void Input::Input1(char* out_text, const string& orig_text, int max_length, bool insert,
-                   InputMode mode) {
+                   InputMode mode, bool auto_mpl) {
   char szTemp[255];
   static const auto dash = '-';
   static const auto slash = '/';
@@ -197,20 +197,22 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
   szTemp[0] = '\0';
 
   max_length = std::min<int>(max_length, 78);
-  bout.Color(4);
 
   bout.SavePosition();
-  for (auto i = 0; i < max_length; i++) {
-    bout.bputch(input_background_char);
+  if (auto_mpl) {
+    bout.Color(4);
+    for (auto i = 0; i < max_length; i++) {
+      bout.bputch(input_background_char);
+    }
+    bout.RestorePosition();
+    bout.SavePosition();
   }
-  bout.RestorePosition();
-  bout.SavePosition();
   if (!orig_text.empty()) {
     to_char_array(szTemp, orig_text);
     bout << szTemp;
     bout.RestorePosition();
     bout.SavePosition();
-    pos = nLength = wwiv::strings::ssize(szTemp);
+    pos = nLength = strings::ssize(szTemp);
   }
 
   auto done = false;
@@ -332,7 +334,7 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
         if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME ||
             mode == InputMode::CMDLINE) {
           if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
-            // Force lowercase filenames but not commandlines.
+            // Force lowercase filenames but not command lines.
             c = to_lower_case<unsigned char>(static_cast<unsigned char>(c));
           }
           if (mode == InputMode::FILENAME && strchr("/\\<>|*?\";:", c)) {
@@ -412,9 +414,9 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
   bout.nl();
 }
 
-string Input::Input1(const string& orig_text, int max_length, bool bInsert, InputMode mode) {
-  auto line = std::make_unique<char[]>(max_length + 1);
-  Input1(line.get(), orig_text, max_length, bInsert, mode);
+string Input::Input1(const string& orig_text, int max_length, bool bInsert, InputMode mode, bool auto_mpl) {
+  const auto line = std::make_unique<char[]>(max_length + 1);
+  Input1(line.get(), orig_text, max_length, bInsert, mode, auto_mpl);
   return line.get();
 }
 
@@ -714,33 +716,33 @@ input_result_t<int64_t> Input::input_number_or_key_raw(int64_t cur, int64_t minv
 }
 
 std::string Input::input_filename(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::FILENAME);
+  return Input1(orig_text, max_length, true, InputMode::FILENAME, true);
 }
 
 std::string Input::input_filename(int max_length) { return input_filename("", max_length); }
 
 std::string Input::input_path(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::FULL_PATH_NAME);
+  return Input1(orig_text, max_length, true, InputMode::FULL_PATH_NAME, true);
 }
 
 std::string Input::input_path(int max_length) { return input_path("", max_length); }
 
 std::string Input::input_cmdline(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::CMDLINE);
+  return Input1(orig_text, max_length, true, InputMode::CMDLINE, true);
 }
 
 
 std::string Input::input_phonenumber(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::PHONE);
+  return Input1(orig_text, max_length, true, InputMode::PHONE, true);
 }
 
 std::string Input::input_text(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::MIXED);
+  return Input1(orig_text, max_length, true, InputMode::MIXED, true);
 }
 
 std::string Input::input_text(const std::string& orig_text, bool mpl, int max_length) {
   if (mpl) {
-    return Input1(orig_text, max_length, true, InputMode::MIXED);
+    return Input1(orig_text, max_length, true, InputMode::MIXED, mpl);
   }
   if (max_length > 255) {
     return "";
@@ -751,21 +753,25 @@ std::string Input::input_text(const std::string& orig_text, bool mpl, int max_le
 }
 
 std::string Input::input_text(int max_length) {
-  return Input1("", max_length, true, InputMode::MIXED);
+  return Input1("", max_length, true, InputMode::MIXED, true);
+}
+
+std::string Input::input_upper(const std::string& orig_text, int max_length, bool auto_mpl) {
+  return Input1(orig_text, max_length, true, InputMode::UPPER, auto_mpl);
 }
 
 std::string Input::input_upper(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::UPPER);
+  return Input1(orig_text, max_length, true, InputMode::UPPER, true);
 }
 
 std::string Input::input_upper(int max_length) { return input_upper("", max_length); }
 
 std::string Input::input_proper(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::PROPER);
+  return Input1(orig_text, max_length, true, InputMode::PROPER, true);
 }
 
 std::string Input::input_date_mmddyyyy(const std::string& orig_text) {
-  return Input1(orig_text, 10, true, InputMode::DATE);
+  return Input1(orig_text, 10, true, InputMode::DATE, true);
 }
 
 void Input::resetnsp() {

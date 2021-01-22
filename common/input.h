@@ -172,6 +172,11 @@ public:
   /**
    * Inputs random text (upper case) up to length max_length.
    */
+  std::string input_upper(const std::string& orig_text, int max_length, bool auto_mpl);
+
+  /**
+   * Inputs random text (upper case) up to length max_length.
+   */
   std::string input_upper(const std::string& orig_text, int max_length);
 
   /**
@@ -239,9 +244,9 @@ public:
 private:
   // Used by input_xxx
   void Input1(char* out_text, const std::string& orig_text, int max_length, bool insert,
-              InputMode mode);
+              InputMode mode, bool auto_mpl);
   // Used by input_xxx
-  std::string Input1(const std::string& orig_text, int max_length, bool bInsert, InputMode mode);
+  std::string Input1(const std::string& orig_text, int max_length, bool bInsert, InputMode mode, bool auto_mpl);
   // used by input_xxx
   void input1(char* out_text, int max_length, InputMode lc, bool crend, bool auto_mpl);
   // used by input_password

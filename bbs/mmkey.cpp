@@ -84,7 +84,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
     } else {
       cmd1 = ch;
     }
-    int p = 0;
+    auto p = 0;
     if (contains(xx, ch)) {
       p = 2;
     } else if (contains(x, ch)) {
@@ -94,8 +94,8 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
       bout.newline = true;
       return cmd1;
     }
-    
-    int cp = 1;
+
+    auto cp = 1;
     do {
       do {
         ch = mmkey_getch();
@@ -116,7 +116,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
         cp++;
         if (ch == '/' && cmd1[0] == '/') {
           bout.newline = true;
-          return bin.input_upper(50);
+          return bin.input_upper("", 50, false);
         }
         if (cp == p + 1) {
           bout.nl();

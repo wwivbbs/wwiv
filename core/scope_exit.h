@@ -24,19 +24,42 @@
 
 namespace wwiv::core {
 
+/**
+ * \short 
+ * A general-purpose scope guard to call the exit function <void()> when a scope
+ * is exited, either by normal exit or an exception being thrown.
+ * \note 
+ * This class is not copyable, but is movable.
+ *
+ * Example use:
+ * \code
+ *  // We need to call do_cleanup after everything else is done.
+ *  ScopeExit on_exit([=] { do_cleanup() });
+ *  if (!foo()) {
+ *    do_something()
+ *    return false
+ *  }
+ *  do_something_else();
+ *  return true;
+ *  \endcode 
+ */
 class ScopeExit final {
 public:
   ScopeExit() noexcept = default;
+  ScopeExit(const ScopeExit&) = delete;
+  ScopeExit(ScopeExit&& other) noexcept { fn_.swap(other.fn_); }
 
-  explicit ScopeExit(std::function<void()> fn)
+  ScopeExit& operator=(const ScopeExit&) = delete;
+  ScopeExit& operator=(ScopeExit&& other) noexcept { fn_.swap(other.fn_); return *this; }
+
+  /**
+   * Construct a  scope guard with the exit function "<void()>".
+   */
+  [[nodiscard]] explicit ScopeExit(std::function<void()> fn)
     : fn_(std::move(fn)) {
   }
 
   ~ScopeExit() { if (fn_) { fn_(); } }
-  // Apparently msvc always has a valid target here since this doesn't go boom:
-  // std::function<void(void)> f;
-  // if (f) { FAIL("boom"); }
-  // bool empty() const { if (fn_) return true; return false; }
   void swap(std::function<void()> fn) { fn_.swap(fn); }
 private:
   std::function<void()> fn_;

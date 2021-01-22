@@ -728,7 +728,7 @@ int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
     write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
     if (exit_level != Application::exitLevelOK && exit_level != Application::exitLevelQuit) {
       // Only log the exiting at abnormal error levels, since we see lots of exiting statements
-      // in the logs that don't correspond to sessions every being created (network probers, etc).
+      // in the logs that don't correspond to sessions every being created (network probes, etc).
       sysoplog(false) << "";
       sysoplog(false) << "WWIV " << short_version() << ", inst " << instance_number()
                       << ", taken down at " << times() << " on " << fulldate() << " with exit code "
@@ -747,7 +747,7 @@ int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
 }
 
 int Application::Run(int argc, char* argv[]) {
-  int bps = 0;
+  auto bps = 0;
   auto ooneuser = false;
   auto type = CommunicationType::NONE;
 
@@ -912,7 +912,7 @@ int Application::Run(int argc, char* argv[]) {
   if (cmdline.barg("beginday")) {
     const auto status = status_manager()->get_status();
     if (date() != status->last_date()) {
-      // This may be another node, but the user explicitly wanted to run the beginday
+      // This may be another node, but the user explicitly wanted to run the begin-day
       // event from the commandline, so we'll just check the date.
       beginday(true);
     } else {
@@ -1045,7 +1045,7 @@ int Application::Run(int argc, char* argv[]) {
           sysoplog() << le.what();
         }
       }
-    } catch (const wwiv::common::hangup_error& h) {
+    } catch (const hangup_error& h) {
       if (sess().IsUserOnline()) {
         // Don't need to log this unless the user actually made it online.
         std::cerr << h.what() << "\r\n";
