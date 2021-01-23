@@ -340,7 +340,7 @@ int Input::bgetch_handle_escape(int key) {
 
 int Input::bgetch_handle_key_translation(int key, numlock_status_t numlock_mode) {
   if (key == CBACKSPACE) {
-    return COMMAND_DELETE;
+    return BACKSPACE;
   }
   if (key == CV) {
     return COMMAND_INSERT;

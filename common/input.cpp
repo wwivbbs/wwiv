@@ -284,7 +284,7 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
       }
       bout.bputch(input_background_char);
       break;
-    // Backspace
+    // Backspace (0x08)
     case BACKSPACE:
       if (pos) {
         if (pos != nLength) {
