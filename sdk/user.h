@@ -917,6 +917,7 @@ class User final {
   /** Sets the current menu set */
   void set_menu_set(const std::string& menu_set);
 
+  bool asv(const valrec& v);
   ///////////////////////////////////////////////////////////////////////////
   // Static Helper Methods
 

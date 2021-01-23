@@ -248,7 +248,7 @@ public:
   [[nodiscard]] bool closed_system() const { return config_.closedsystem; }
   void closed_system(bool b) { config_.closedsystem = b; }
   // Auto validation record
-  [[nodiscard]] const valrec& auto_val(int n) const;
+  [[nodiscard]] valrec auto_val(int n) const;
   void auto_val(int n, const valrec& v) { config_.autoval[n] = v; }
   // Security Level information
   [[nodiscard]] const slrec& sl(int n) const;

@@ -116,7 +116,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   v.sl = 10;
   v.dsl = 0;
 
-  for (auto i = 0; i < 10; i++) {
+  for (auto i = 1; i <= 10; i++) {
     cfg.autoval.emplace(i, v);
   }
   for (auto i = 0; i < 256; i++) {

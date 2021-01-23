@@ -85,7 +85,7 @@ Config430::Config430(const config_t& c5) {
     c.sl[pos] = sl;
   }
   for (const auto& [pos, v] : c5.autoval) {
-    c.autoval[pos] = v;
+    c.autoval[pos + 1] = v;
   }
 
   // We're skipping arcs
@@ -205,7 +205,7 @@ config_t Config430::to_json_config(std::vector<arcrec> arcs) const {
     c.sl.emplace(i, config_.sl[i]);
   }
   for (auto i = 0; i < 10; i++) {
-    c.autoval.emplace(i, config_.autoval[i]);
+    c.autoval.emplace(i + 1, config_.autoval[i]);
   }
   c.userreclen = config_.userreclen;
   c.waitingoffset = config_.waitingoffset;

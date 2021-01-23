@@ -11,7 +11,10 @@ Legend (starting with 5.3)
 
 What's New in WWIV 5.6.1 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
++ Added wwivutil users asv command.  This can increase user attributes to match
+  those specified in the Auto Validation list defined in wwivconfig.
+* Don't MPL on mmkey long text input. It makes the UI go wonky
+* Don't crash when doing a title scan when the subtype is not 2.
 
 What's New in WWIV 5.6 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

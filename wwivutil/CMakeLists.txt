@@ -36,6 +36,7 @@ set(COMMAND_SOURCES
   "status/status.cpp"
   "subs/import.cpp"
   "subs/subs.cpp"
+  "users/users.cpp"
   "util.cpp"
   )
 

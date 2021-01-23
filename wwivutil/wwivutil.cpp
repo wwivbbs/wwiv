@@ -32,6 +32,7 @@
 #include "wwivutil/messages/messages.h"
 #include "wwivutil/menus/menus.h"
 #include "wwivutil/net/net.h"
+#include "wwivutil/users/users.h"
 #include "wwivutil/print/print.h"
 #include "wwivutil/status/status.h"
 #include "wwivutil/subs/subs.h"
@@ -52,6 +53,12 @@ namespace wwiv::wwivutil {
 
 class WWIVUtil final {
 public:
+  WWIVUtil() = delete;
+  WWIVUtil(const WWIVUtil&) = delete;
+  WWIVUtil(WWIVUtil&&) = delete;
+  WWIVUtil& operator=(const WWIVUtil&) = delete;
+  WWIVUtil& operator=(WWIVUtil&&) = delete;
+
   WWIVUtil(int argc, char *argv[]) : cmdline_(argc, argv, "net") {
     LoggerConfig config(LogDirFromConfig);
     Logger::Init(argc, argv, config);
@@ -77,6 +84,7 @@ public:
       Add(std::make_unique<PrintCommand>());
       Add(std::make_unique<StatusCommand>());
       Add(std::make_unique<SubsCommand>());
+      Add(std::make_unique<UsersCommand>());
       if (!cmdline_.Parse()) {
         return 1;
       }

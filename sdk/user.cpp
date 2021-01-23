@@ -96,6 +96,25 @@ std::string User::menu_set() const { return data.menu_set; }
 
 void User::set_menu_set(const std::string& menu_set) { to_char_array(data.menu_set, menu_set); }
 
+bool User::asv(const valrec& v) {
+  if (sl() < v.sl) {
+    sl(v.sl);
+  }
+  if (dsl() < v.dsl) {
+    dsl(v.dsl);
+  }
+  const auto a = ar_int();
+  ar_int(a | v.ar);
+
+  const auto d = dar_int();
+  dar_int(d | v.dar);
+
+  const auto r = restriction();
+  restriction(v.restrict & r);
+
+  return true;
+}
+
 // static
 bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
                                const std::vector<uint8_t>& colors,

@@ -61,7 +61,7 @@ static std::string create_autoval_line(Config& config, int n) {
 }
 
 static void edit_autoval(Config& config, int n) {
-  auto v = config.auto_val(n);
+  auto v = config.auto_val(n + 1);
   EditItems items{};
   auto y = 1;
   items.add(new Label("SL:"), new NumberEditItem<uint8_t>(&v.sl),
@@ -89,7 +89,7 @@ void autoval_levs(Config& config) {
   do {
     curses_out->Cls(ACS_CKBOARD);
     std::vector<ListBoxItem> items;
-    for (auto i = 0; i < 10; i++) {
+    for (auto i = 1; i <= 10; i++) {
       items.emplace_back(create_autoval_line(config, i));
     }
     ListBox list(curses_out->window(), "Select AutoVal", items);
