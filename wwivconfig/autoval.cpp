@@ -56,12 +56,12 @@ static std::string create_autoval_line(Config& config, int n) {
   r[16] = 0;
   ar[16] = 0;
   dar[16] = 0;
-  const auto key = fmt::format("ALT-F{}", n + 1);
+  const auto key = fmt::format("ALT-F{}", n);
   return fmt::sprintf("%-7s  %3d  %3d  %16s  %16s  %20s", key, v.sl, v.dsl, ar, dar, r);
 }
 
 static void edit_autoval(Config& config, int n) {
-  auto v = config.auto_val(n + 1);
+  auto v = config.auto_val(n);
   EditItems items{};
   auto y = 1;
   items.add(new Label("SL:"), new NumberEditItem<uint8_t>(&v.sl),
@@ -80,7 +80,7 @@ static void edit_autoval(Config& config, int n) {
             "System Restrictions to grant when using this auto-validation key.", 1, y);
 
   items.relayout_items_and_labels();
-  items.Run(fmt::format("Auto-validation data for: Alt-F{}", n + 1));
+  items.Run(fmt::format("Auto-validation data for: Alt-F{}", n));
   config.auto_val(n, v);
 }
 
@@ -101,7 +101,7 @@ void autoval_levs(Config& config) {
 
     if (result.type == ListBoxResultType::HOTKEY) {
     } else if (result.type == ListBoxResultType::SELECTION) {
-      edit_autoval(config, result.selected);
+      edit_autoval(config, result.selected + 1);
     } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
     }
