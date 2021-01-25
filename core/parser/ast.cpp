@@ -206,7 +206,12 @@ static std::unique_ptr<BinaryOperatorNode> createBinaryOperator(const Token& tok
 bool Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
   VLOG(2) << "Ast::reduce. Stack Size: " << stack.size();
   if (stack.size() < 3) {
-    throw parse_error(fmt::format("Can't reduce stack with < 3 elements."));
+    std::ostringstream ss;
+    while (!stack.empty()) {
+      ss << "[" << stack.top()->ToString() << "] ";
+      stack.pop();
+    }
+    throw parse_error(fmt::format("[CNTREDUCE3] Invalid expression provided: \r\nHere's what was understood: {} ", ss.str()));
   }
   auto right_ast = std::move(stack.top());
   stack.pop();
