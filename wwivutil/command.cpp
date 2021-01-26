@@ -22,6 +22,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
+
 #include <map>
 #include <memory>
 #include <string>
@@ -35,7 +36,7 @@ using namespace wwiv::sdk;
 
 namespace wwiv::wwivutil {
 
-// WWIVUTIL commands
+// WWIVutil commands
 
 UtilCommand::UtilCommand(const std::string& name, const std::string& description)
   : CommandLineCommand(name, description) {}

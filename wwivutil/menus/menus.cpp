@@ -24,6 +24,7 @@
 #include "sdk/config.h"
 #include "sdk/menus/menu.h"
 #include "wwivutil/util.h"
+
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -65,8 +66,6 @@ class MenusDumpCommand : public UtilCommand {
 public:
   MenusDumpCommand() : UtilCommand("dump", "Displays the info of a menu") {}
 
-  virtual ~MenusDumpCommand() = default;
-
   [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage:   dump --menu_set=[menu set] <menu name>" << endl;
@@ -90,7 +89,7 @@ public:
     }
     const auto& menu_name = remaining().front();
 
-    menus::Menu56 m5(config()->config()->menudir(), menu_set, menu_name);
+    const menus::Menu56 m5(config()->config()->menudir(), menu_set, menu_name);
     if (!m5.initialized()) {
       std::cout << "Unable to parse menu." << std::endl;
       return 1;
@@ -108,13 +107,11 @@ public:
   }
 };
 
-class MenusConvertCommand : public UtilCommand {
+class MenusConvertCommand final : public UtilCommand {
 public:
   MenusConvertCommand() : UtilCommand("convert", "Converts a 4.3x menu to 5.6 format") {}
 
-  virtual ~MenusConvertCommand() = default;
-
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   convert --menu_set=<menu set> <menu name>" << endl;
     ss << "Example: convert --menu_set=wwiv main" << endl;
@@ -122,7 +119,7 @@ public:
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     const auto menu_set = sarg("menu_set");
     if (menu_set.empty()) {
       std::cout << "--menu_set is missing. " << std::endl;
@@ -136,7 +133,7 @@ public:
       return 2;
     }
     const auto& menu_name = remaining().front();
-    menus::Menu430 m4(config()->config()->menudir(), menu_set, menu_name);
+    const menus::Menu430 m4(config()->config()->menudir(), menu_set, menu_name);
     if (!m4.initialized()) {
       std::cout << "Unable to 4.3 parse menu." << std::endl;
       return 1;
@@ -150,7 +147,7 @@ public:
     return 1;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument({"menu_set", "The menuset to use", "wwiv"});
     return true;
   }

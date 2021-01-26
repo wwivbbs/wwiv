@@ -15,24 +15,22 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_NET_H__
-#define __INCLUDED_WWIVUTIL_NET_H__
+#ifndef INCLUDED_WWIVUTIL_NET_H
+#define INCLUDED_WWIVUTIL_NET_H
 
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
-class NetCommand: public UtilCommand {
+class NetCommand final : public UtilCommand {
 public:
   NetCommand(): UtilCommand("net", "WWIV network commands.") {}
   virtual ~NetCommand() = default;
-  bool AddSubCommands() override final;
+  bool AddSubCommands() override;
 };
 
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace
 
 
-#endif  // __INCLUDED_WWIVUTIL_NET_H__
+#endif

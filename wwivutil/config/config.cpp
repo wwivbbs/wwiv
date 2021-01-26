@@ -83,14 +83,14 @@ class ConfigVersionCommand final : public UtilCommand {
 public:
   ConfigVersionCommand() : UtilCommand("version", "Sets or Gets the config version") {}
 
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage: " << std::endl << std::endl;
     ss << "  get : Gets the config.dat version information." << std::endl;
     ss << "  set : Sets the config.dat version information." << std::endl << std::endl;
     return ss.str();
   }
-  int Execute() override final {
+  int Execute() override {
     if (remaining().empty()) {
       std::cout << GetUsage() << GetHelp() << endl;
       return 2;
@@ -111,7 +111,7 @@ public:
     return 1;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument({"wwiv_version", "WWIV Version that created this config.dat", ""});
     add_argument({"revision", "Configuration revision number", ""});
     return true;
@@ -122,14 +122,14 @@ class ConfigConvertCommand final : public UtilCommand {
 public:
   ConfigConvertCommand() : UtilCommand("convert", "converts the config to either JSON or DAT format") {}
 
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage: " << std::endl << std::endl;
     ss << "  json : Writes a config.json." << std::endl;
     ss << "  dat : Writes a config.dat." << std::endl << std::endl;
     return ss.str();
   }
-  int Execute() override final {
+  int Execute() override {
     if (remaining().empty()) {
       std::cout << GetUsage() << GetHelp() << endl;
       return 2;
@@ -152,7 +152,7 @@ public:
     return 1;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument({"wwiv_version", "WWIV Version that created this config.dat", ""});
     add_argument({"revision", "Configuration revision number", ""});
     return true;

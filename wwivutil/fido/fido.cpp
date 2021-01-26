@@ -17,21 +17,18 @@
 /**************************************************************************/
 #include "wwivutil/fido/fido.h"
 
-#include <cstdio>
+#include "core/command_line.h"
+#include "core/file.h"
+#include "sdk/config.h"
+#include "wwivutil/fido/dump_fido_packet.h"
+#include "wwivutil/fido/dump_fido_subscribers.h"
+#include "wwivutil/fido/dump_nodelist.h"
+
 #include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "sdk/config.h"
-#include "sdk/net/net.h"
-#include "sdk/net/networks.h"
-#include "wwivutil/fido/dump_fido_packet.h"
-#include "wwivutil/fido/dump_nodelist.h"
-#include "wwivutil/fido/dump_fido_subscribers.h"
 
 using std::endl;
 using std::make_unique;
@@ -42,9 +39,7 @@ using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace wwivutil {
-namespace fido {
+namespace wwiv::wwivutil::fido {
 
 bool FidoCommand::AddSubCommands() {
   add(make_unique<DumpFidoPacketCommand>());
@@ -53,6 +48,6 @@ bool FidoCommand::AddSubCommands() {
   return true;
 }
 
-}
-}  // namespace wwivutil
-}  // namespace wwiv
+
+}  // namespace
+

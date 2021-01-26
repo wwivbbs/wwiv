@@ -5,7 +5,7 @@ WWIV is compiled with the following compilers:
   
 - MS Visual C++ 2019 Community Edition.
 - GCC 8.3 (or later) on Linux 
-  (tested on Debian10, Ubuntu 20.04, Centos8 with SCL/GCC-8)
+  (tested on Debian10, Ubuntu 20.04, Centos7 with SCL/GCC-8)
 - CMake 3.13 or newer
 
 ***
@@ -81,19 +81,22 @@ escript to ensure that the right software is installed.  This command should be 
 Here's the list of binaries that will be built in the build directory:  
 
 * bbs/bbs  
-* wwivconfig/wwivconfig  
-* wwivd/wwivd  
-* wwivutil/wwivutil  
 * network/network  
 * networkb/networkb
 * networkc/networkc
 * networkf/networkf
+* networkt/networkt
 * network1/network1
 * network2/network2
 * network3/network3
+* wwivconfig/wwivconfig  
+* wwivd/wwivd  
+* wwivutil/wwivutil  
 
 #### Getting the source from GitHub
-If you plan to have an active repo, we prefer contributors to FORK WWIVBBS repositories to their account and work from there.  
+If you plan to have an active repo, we prefer contributors to FORK WWIVBBS
+repositories to their account and work from there.  
+
 * [Fork](https://help.github.com/articles/fork-a-repo/), then clone your fork
     
     ```bash
@@ -158,5 +161,5 @@ Get Involved
 If you want to help out with WWIV BBS:
 
 * Read the [Contributors Guidelines](contributing.md)
-* Check out the [WWIVBBS Homepage](https://www.wwivbbs.org) and find us on IRC.
+* Check out the [WWIV BBS Homepage](https://www.wwivbbs.org) and find us on IRC.
 * Jump into the [Issues List](https://github.com/wwivbbs/wwiv/issues).

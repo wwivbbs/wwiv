@@ -64,7 +64,7 @@ void signal_handler(int mysignal) {
 
 void BeforeStartServer() {
   // Not the best place, but this works.
-  wwiv::core::InitializeSockets();
+  InitializeSockets();
   signal(SIGTERM, signal_handler);
   signal(SIGINT, signal_handler);
   std::cerr << "set signal handlers" << std::endl;

@@ -15,25 +15,20 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_FIDO_H__
-#define __INCLUDED_WWIVUTIL_FIDO_H__
+#ifndef INCLUDED_WWIVUTIL_FIDO_H
+#define INCLUDED_WWIVUTIL_FIDO_H
 
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
-namespace fido {
+namespace wwiv::wwivutil::fido {
 
-class FidoCommand: public UtilCommand {
+class FidoCommand final : public UtilCommand {
 public:
   FidoCommand(): UtilCommand("fido", "WWIV fido commands.") {}
-  virtual ~FidoCommand() {}
   bool AddSubCommands() override final;
 };
 
 }
-}  // namespace wwivutil
-}  // namespace wwiv
 
 
-#endif  // __INCLUDED_WWIVUTIL_FIDO_H__
+#endif

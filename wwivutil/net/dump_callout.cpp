@@ -22,6 +22,7 @@
 #include "sdk/config.h"
 #include "sdk/net/callout.h"
 #include "sdk/net/networks.h"
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -52,7 +53,7 @@ int DumpCalloutCommand::Execute() {
 
   map<const string, Callout> callouts;
   for (const auto& net : networks.networks()) {
-    string lower_case_network_name(net.name);
+    auto lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
     callouts.emplace(lower_case_network_name, Callout(net, config()->config()->max_backups()));
   }

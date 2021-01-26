@@ -53,7 +53,7 @@ private:
 
 class AutoBlocker final {
 public:
-  AutoBlocker(std::shared_ptr<BadIp> bip, const wwiv::sdk::wwivd_blocking_t& b);
+  AutoBlocker(std::shared_ptr<BadIp> bip, sdk::wwivd_blocking_t b);
   ~AutoBlocker();
   bool Connection(const std::string& ip);
 

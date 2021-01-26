@@ -15,25 +15,20 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_FILES_H__
-#define __INCLUDED_WWIVUTIL_FILES_H__
+#ifndef INCLUDED_WWIVUTIL_FILES_H
+#define INCLUDED_WWIVUTIL_FILES_H
 
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
-namespace files {
+namespace wwiv::wwivutil::files {
 
-class FilesCommand: public UtilCommand {
+class FilesCommand final : public UtilCommand {
 public:
   FilesCommand(): UtilCommand("files", "WWIV file commands.") {}
-  virtual ~FilesCommand() {}
-  bool AddSubCommands() override final;
+  bool AddSubCommands() override;
 };
 
-} // namespace files
-} // namespace wwivutil
-} // namespace wwiv
+} // namespace
 
 
-#endif  // __INCLUDED_WWIVUTIL_FILES_H__
+#endif

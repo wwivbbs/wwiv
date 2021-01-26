@@ -30,7 +30,7 @@ class FixUsersCommand final: public UtilCommand {
 public:
   FixUsersCommand()
     : UtilCommand("users", "Fix users.") {}
-  std::string GetUsage() const override final;
+  [[nodiscard]] std::string GetUsage() const override final;
   int Execute() override final;
   bool AddSubCommands() override final;
 };

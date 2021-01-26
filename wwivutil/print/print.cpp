@@ -100,7 +100,7 @@ std::string PrintCommand::GetUsage() const {
          curpipe.clear();
        }
      } break;
-     };
+     }
    } 
    out.shrink_to_fit();
    return out;

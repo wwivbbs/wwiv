@@ -15,14 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_DUMP_CALLOUT_H__
-#define __INCLUDED_WWIVUTIL_DUMP_CALLOUT_H__
+#ifndef INCLUDED_WWIVUTIL_DUMP_CALLOUT_H
+#define INCLUDED_WWIVUTIL_DUMP_CALLOUT_H
 
 #include "wwivutil/command.h"
 #include <string>
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 class DumpCalloutCommand final: public UtilCommand {
 public:
@@ -33,8 +32,7 @@ public:
   bool AddSubCommands() override { return true; }
 };
 
+}  // namespace
 
-}  // namespace wwivutil
-}  // namespace wwiv
 
-#endif  // __INCLUDED_WWIVUTIL_DUMP_CALLOUT_H__
+#endif

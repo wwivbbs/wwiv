@@ -38,12 +38,12 @@ static std::string create_autoval_line(Config& config, int n) {
   std::string res_str = restrict_string;
   for (int8_t i = 0; i <= 15; i++) {
     if (v.ar & (1 << i)) {
-      ar[i] = 'A' + i;
+      ar[i] = static_cast<char>('A' + i);
     } else {
       ar[i] = 32;
     }
     if (v.dar & (1 << i)) {
-      dar[i] = 'A' + i;
+      dar[i] = static_cast<char>('A' + i);
     } else {
       dar[i] = 32;
     }

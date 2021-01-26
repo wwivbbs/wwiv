@@ -18,13 +18,13 @@
 #ifndef INCLUDED_WWIVUTIL_COMMAND_H
 #define INCLUDED_WWIVUTIL_COMMAND_H
 
-#include <memory>
-#include <string>
-
 #include "core/command_line.h"
 #include "sdk/config.h"
 #include "sdk/net/networks.h"
+
 #include <memory>
+#include <memory>
+#include <string>
 
 namespace wwiv::wwivutil {
 
@@ -38,6 +38,12 @@ public:
   }
   ~Configuration() = default;
 
+  Configuration() = delete;
+  Configuration(const Configuration&) = delete;
+  Configuration(Configuration&&) = delete;
+  Configuration& operator=(const Configuration&) = delete;
+  Configuration& operator=(Configuration&&) = delete;
+
   [[nodiscard]] sdk::Config* config() const { return config_.get(); }
   [[nodiscard]] bool initialized() const { return initialized_; }
   [[nodiscard]] sdk::Networks networks() const { return networks_; }
@@ -49,11 +55,18 @@ private:
   bool initialized_{true};
 };
 
-/** WWIVUTIL Command */
+/** WWIVutil Command */
 class UtilCommand : public core::CommandLineCommand {
 public:
   UtilCommand(const std::string& name, const std::string& description);
   ~UtilCommand() override;
+
+  UtilCommand() = delete;
+  UtilCommand(const UtilCommand&) = delete;
+  UtilCommand(UtilCommand&&) = delete;
+  UtilCommand& operator=(const UtilCommand&) = delete;
+  UtilCommand& operator=(UtilCommand&&) = delete;
+
   // Override to add all commands.
   virtual bool AddSubCommands() = 0;
   bool add(std::shared_ptr<UtilCommand> cmd);
@@ -66,6 +79,6 @@ private:
   std::vector<std::shared_ptr<UtilCommand>> subcommands_;
 };
 
-} // namespace wwiv::wwivutil
+} // namespace
 
 #endif

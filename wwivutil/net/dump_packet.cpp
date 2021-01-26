@@ -25,6 +25,7 @@
 #include "sdk/net/net.h"
 #include "sdk/net/packets.h"
 #include "wwivutil/util.h"
+
 #include <iomanip>
 #include <iostream>
 #include <string>

@@ -22,11 +22,10 @@
 
 namespace wwiv::wwivutil {
 
-class SubsCommand: public UtilCommand {
+class SubsCommand final : public UtilCommand {
 public:
   SubsCommand(): UtilCommand("subs", "WWIV subboard commands.") {}
-  virtual ~SubsCommand() {}
-  bool AddSubCommands() override final;
+  bool AddSubCommands() override;
 };
 
 

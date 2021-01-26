@@ -61,16 +61,16 @@ static int set_qscan(const Config& config, uint32_t qscan) {
   return 0;
 }
 
-class StatusQScanCommand : public UtilCommand {
+class StatusQScanCommand final : public UtilCommand {
 public:
   StatusQScanCommand(): UtilCommand("qscan", "Sets or Gets the qscan high water mark.") {}
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage: " << std::endl << std::endl;
     ss << "  get : Gets the qscptr information." << std::endl << std::endl;
     return ss.str();
   }
-  int Execute() override final {
+  int Execute() override {
     if (remaining().empty()) {
       std::cout << GetUsage() << GetHelp() << endl;
       return 2;
@@ -97,24 +97,24 @@ public:
     return 1;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     return true;
   }
 
 };
 
-class StatusDumpCommand : public UtilCommand {
+class StatusDumpCommand final : public UtilCommand {
 public:
   StatusDumpCommand(): UtilCommand("dump", "Displays status.dat.") {}
 
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage: " << std::endl << std::endl;
     ss << "  dump : Displays status.dat." << std::endl << std::endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     StatusMgr mgr(config()->config()->datadir());
     const auto s = mgr.get_status();
     std::cout << "num_users:     " << s->num_users() << std::endl;
@@ -124,7 +124,7 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     return true;
   }
 
@@ -137,4 +137,4 @@ bool StatusCommand::AddSubCommands() {
 }
 
 
-}  // namespace wwivutil::wwiv
+}  // namespace 

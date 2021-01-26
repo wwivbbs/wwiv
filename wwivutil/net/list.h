@@ -9,20 +9,19 @@
 /*                                                                        */
 /*                http://www.apache.org/licenses/LICENSE-2.0              */
 /*                                                                        */
-/*    Unless  LISTuired  by  applicable  law  or agreed to  in writing,   */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
 /*    software  distributed  under  the  License  is  distributed on an   */
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_LIST_H__
-#define __INCLUDED_WWIVUTIL_LIST_H__
+#ifndef INCLUDED_WWIVUTIL_LIST_H
+#define INCLUDED_WWIVUTIL_LIST_H
 
 #include "wwivutil/command.h"
 #include <string>
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 class NetListCommand final: public UtilCommand {
 public:
@@ -33,7 +32,6 @@ public:
 };
 
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_WWIVUTIL_LIST_H__
+#endif

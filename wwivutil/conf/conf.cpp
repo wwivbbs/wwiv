@@ -15,15 +15,15 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "sdk/conf/conf.h"
 #include "wwivutil/conf/conf.h"
 
 #include "core/command_line.h"
-#include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/conf/conf.h"
 #include "wwivutil/util.h"
+
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -59,8 +59,6 @@ class ConfDumpCommand final : public UtilCommand {
 public:
   ConfDumpCommand() : UtilCommand("dump", "Displays the info about a conference") {}
 
-  virtual ~ConfDumpCommand() = default;
-
   [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage:   dump --conf_type=[subs|dirs] [conf key]" << endl;
@@ -69,7 +67,7 @@ public:
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     char key = 0;
     if (!remaining().empty()) {
       key = to_upper_case_char(remaining().front().front());
@@ -98,18 +96,16 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument(BooleanCommandLineArgument("full", "Display full info about every command.", false));
     add_argument({"conf_type", "The conference type ('subs' or 'dirs')", "subs"});
     return true;
   }
 };
 
-class ConfConvertCommand : public UtilCommand {
+class ConfConvertCommand final : public UtilCommand {
 public:
   ConfConvertCommand() : UtilCommand("convert", "Converts 4.3x conferences to 5.6 format") {}
-
-  virtual ~ConfConvertCommand() = default;
 
   [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
@@ -170,8 +166,6 @@ bool ConfCommand::AddSubCommands() {
     return false;
   }
 
-  
-  
   return true;
 }
 

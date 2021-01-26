@@ -15,27 +15,22 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_FILES_ALLOW_H__
-#define __INCLUDED_WWIVUTIL_FILES_ALLOW_H__
+#ifndef INCLUDED_WWIVUTIL_FILES_ALLOW_H
+#define INCLUDED_WWIVUTIL_FILES_ALLOW_H
 
 #include "wwivutil/command.h"
 #include <string>
 
-namespace wwiv {
-namespace wwivutil {
-namespace files {
+namespace wwiv::wwivutil::files {
 
 class AllowCommand final: public UtilCommand {
 public:
   AllowCommand() : UtilCommand("allow", "Manipulate allow.dat") {}
-  //int Execute() override final;
-  [[nodiscard]] std::string GetUsage() const override final;
-  bool AddSubCommands() override final;
+  [[nodiscard]] std::string GetUsage() const override;
+  bool AddSubCommands() override;
 };
 
 
-} // namespace files
-} // namespace wwivutil
-} // namespace wwiv
+} // namespace
 
-#endif  // __INCLUDED_WWIVUTIL_FILES_ALLOW_H__
+#endif

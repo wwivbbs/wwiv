@@ -25,8 +25,7 @@ namespace wwiv::wwivutil {
 class InstanceCommand final: public UtilCommand {
 public:
   InstanceCommand(): UtilCommand("instance", "WWIV status commands.") {}
-  ~InstanceCommand() override = default;
-  bool AddSubCommands() override final;
+  bool AddSubCommands() override;
 };
 
 }  // namespace

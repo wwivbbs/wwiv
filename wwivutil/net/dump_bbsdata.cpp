@@ -21,8 +21,8 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/bbslist.h"
-#include "sdk/config.h"
 #include "sdk/net/networks.h"
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -60,7 +60,7 @@ int DumpBbsDataCommand::Execute() {
 
   map<const string, BbsListNet> bbslists;
   for (const auto& net : networks.networks()) {
-    string lower_case_network_name(net.name);
+    auto lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
     if (barg("bbslist")) {
       LOG(INFO) << "Parsing bbslist.net";

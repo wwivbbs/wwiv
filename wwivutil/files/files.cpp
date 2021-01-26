@@ -15,9 +15,9 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "sdk/files/files.h"
 #include "wwivutil/files/files.h"
 
-#include "sdk/files/files.h"
 #include "core/command_line.h"
 #include "core/log.h"
 #include "core/stl.h"
@@ -27,6 +27,7 @@
 #include "wwivutil/files/allow.h"
 #include "wwivutil/files/arc.h"
 #include "wwivutil/files/tic.h"
+
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
@@ -64,8 +65,6 @@ public:
   AreasCommand()
     : UtilCommand("areas", "Lists the file areas") {}
 
-  virtual ~AreasCommand() = default;
-
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   areas" << endl;
@@ -102,8 +101,6 @@ public:
   ListCommand()
     : UtilCommand("list", "Lists the files in an area") {}
 
-  virtual ~ListCommand() = default;
-
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   list [num]" << endl;
@@ -120,7 +117,7 @@ public:
     if (!o) {
       return 2;
     }
-    const auto area_string = remaining().front();
+    const auto& area_string = remaining().front();
     if (area_string.empty()) {
       LOG(ERROR) << "No file area specified";
       return 1;
@@ -130,7 +127,7 @@ public:
       return 1;
     }
     const auto area_num = to_number<int>(area_string);
-    auto dirs = o.value();
+    const auto& dirs = o.value();
 
     if (area_num < 0 || area_num >= ssize(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";
@@ -179,20 +176,18 @@ public:
   }
 };
 
-class DeleteFileCommand : public UtilCommand {
+class DeleteFileCommand final : public UtilCommand {
 public:
   DeleteFileCommand() : UtilCommand("delete", "Deleate a file in an area") {}
 
-  virtual ~DeleteFileCommand() = default;
-
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   delete --num=NN <sub #>" << endl;
     ss << "Example: delete --num=10 1" << endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     if (remaining().empty()) {
       clog << "Missing file area #." << endl;
       cout << GetUsage() << GetHelp() << endl;
@@ -235,7 +230,7 @@ public:
     return area->Close() ? 0: 1;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument({"num", "File Number to delete.", "-1"});
     return true;
   }
@@ -263,4 +258,4 @@ bool FilesCommand::AddSubCommands() {
   return true;
 }
 
-} // namespace wwiv::wwivutil::files
+} // namespace

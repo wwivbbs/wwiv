@@ -25,6 +25,6 @@ namespace wwiv::wwivutil {
 
 void dump_char(std::ostream& out, char ch);
 
-} // namespace wwivutil::wwiv
+} // namespace 
 
-#endif // __INCLUDED_WWIVUTIL_UTIL_H__
+#endif

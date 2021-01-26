@@ -22,14 +22,13 @@
 
 namespace wwiv::wwivutil {
 
-class StatusCommand: public UtilCommand {
+class StatusCommand final : public UtilCommand {
 public:
   StatusCommand(): UtilCommand("status", "WWIV status commands.") {}
-  virtual ~StatusCommand() {}
-  bool AddSubCommands() override final;
+  bool AddSubCommands() override;
 };
 
-}  // namespace wwivutil::wwiv
+}  // namespace
 
 
 #endif

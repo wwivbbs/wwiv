@@ -92,7 +92,7 @@ protected:
 
 class Factor : public Expression {
 protected:
-  Factor(FactorType t, int v, const std::string& s);
+  Factor(FactorType t, int v, std::string s);
 
 public:
   [[nodiscard]] std::string ToString() const override { return ToString(0); };

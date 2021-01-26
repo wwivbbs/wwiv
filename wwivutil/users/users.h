@@ -25,8 +25,7 @@ namespace wwiv::wwivutil {
 class UsersCommand final: public UtilCommand {
 public:
   UsersCommand(): UtilCommand("users", "WWIV user commands.") {}
-  ~UsersCommand() override = default;
-  bool AddSubCommands() override final;
+  bool AddSubCommands() override;
 };
 
 }  // namespace

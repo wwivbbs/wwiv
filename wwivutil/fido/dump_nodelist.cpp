@@ -17,16 +17,17 @@
 /**************************************************************************/
 #include "wwivutil/fido/dump_nodelist.h"
 
-#include <chrono>
-#include <iostream>
-#include <string>
-#include <vector>
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "sdk/net/net.h"
 #include "sdk/fido/nodelist.h"
+#include "sdk/net/net.h"
+
+#include <chrono>
+#include <iostream>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -35,15 +36,13 @@ using wwiv::core::CommandLineCommand;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
-namespace fido {
+namespace wwiv::wwivutil::fido {
 
 static int dump_file(const std::string& filename) {
 
-  auto start = std::chrono::steady_clock::now();
-  Nodelist n(filename);
-  auto end = std::chrono::steady_clock::now();
+  const auto start = std::chrono::steady_clock::now();
+  const Nodelist n(filename);
+  const auto end = std::chrono::steady_clock::now();
   if (!n.initialized()) {
     LOG(ERROR) << "Unable to load nodelist: " << filename;
     return 1;
@@ -51,7 +50,7 @@ static int dump_file(const std::string& filename) {
 
   const auto& entries = n.entries();
 
-  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   cout << "Parsed " << entries.size() << " in " << elapsed.count() << " milliseconds. " << std::endl;
   cout << "Parsed " << entries.size() << " in " << elapsed.count()/1000 << " seconds. " << std::endl;
 
@@ -73,7 +72,7 @@ int DumpNodelistCommand::Execute() {
     cout << GetUsage() << GetHelp() << endl;
     return 2;
   }
-  const string filename(remaining().front());
+  const auto filename(remaining().front());
   return dump_file(filename);
 }
 
@@ -81,6 +80,4 @@ bool DumpNodelistCommand::AddSubCommands() {
   return true;
 }
 
-}
-}
 }

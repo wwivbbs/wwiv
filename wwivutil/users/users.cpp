@@ -47,7 +47,7 @@ class UsersAsvCommand final : public UtilCommand {
 public:
   UsersAsvCommand(): UtilCommand("asv", "Execute automatic sysop validation on a user.") {}
 
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage: " << std::endl << std::endl;
     ss << "  asv --user=<num> --asv=1 : Autoval user." << std::endl << std::endl;
@@ -99,7 +99,7 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument({"user", "user number to use while evaluating the expression", ""});
     add_argument({"asv", "user number to use while evaluating the expression", ""});
     return true;

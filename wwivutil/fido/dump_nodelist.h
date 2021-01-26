@@ -15,27 +15,22 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_DUMP_NODELIST_H__
-#define __INCLUDED_WWIVUTIL_DUMP_NODELIST_H__
+#ifndef INCLUDED_WWIVUTIL_DUMP_NODELIST_H
+#define INCLUDED_WWIVUTIL_DUMP_NODELIST_H
 
 #include "core/command_line.h"
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
-namespace fido {
-void dump_usage();
+namespace wwiv::wwivutil::fido {
 
-class DumpNodelistCommand final: public UtilCommand {
+class DumpNodelistCommand final : public UtilCommand {
 public:
-  DumpNodelistCommand(): UtilCommand("nodelist", "Dumps contents of a fido nodelist") {}
-  std::string GetUsage() const override final;
-  int Execute() override final;
-  bool AddSubCommands() override final;
+  DumpNodelistCommand() : UtilCommand("nodelist", "Dumps contents of a fido nodelist") {}
+  [[nodiscard]] std::string GetUsage() const override;
+  int Execute() override;
+  bool AddSubCommands() override;
 };
 
 }
-}  // namespace wwivutil
-}  // namespace wwiv
 
-#endif  // __INCLUDED_WWIVUTIL_DUMP_NODELIST_H__
+#endif

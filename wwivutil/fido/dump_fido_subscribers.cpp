@@ -17,16 +17,17 @@
 /**************************************************************************/
 #include "wwivutil/fido/dump_fido_subscribers.h"
 
-#include <chrono>
-#include <iostream>
-#include <string>
-#include <vector>
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/net/net.h"
 #include "sdk/net/subscribers.h"
+
+#include <chrono>
+#include <iostream>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -36,9 +37,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
-namespace fido {
+namespace wwiv::wwivutil::fido {
 
 static int dump_file(const std::filesystem::path& filename) {
 
@@ -47,9 +46,9 @@ static int dump_file(const std::filesystem::path& filename) {
     return 1;
   }
 
-  auto start = std::chrono::steady_clock::now();
+  const auto start = std::chrono::steady_clock::now();
   auto subscribers = ReadFidoSubcriberFile(filename);
-  auto end = std::chrono::steady_clock::now();
+  const auto end = std::chrono::steady_clock::now();
   if (subscribers.empty()) {
     LOG(INFO) << "No Subscribers: " << filename;
     return 0;
@@ -87,6 +86,5 @@ bool DumpFidoSubscribersCommand::AddSubCommands() {
   return true;
 }
 
-}
-}
+
 }

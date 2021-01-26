@@ -15,13 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "sdk/instance.h"
 #include "wwivutil/instance/instance.h"
 
-#include "sdk/instance.h"
 #include "core/command_line.h"
 #include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
+
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -45,7 +46,7 @@ namespace wwiv::wwivutil {
 /* Instance status flags */
 constexpr int INST_FLAGS_NONE = 0x0000;  // No flags at all
 constexpr int INST_FLAGS_ONLINE = 0x0001;  // User online
-constexpr int INST_FLAGS_MSG_AVAIL = 0x0002;  // Available for inst msgs
+constexpr int INST_FLAGS_MSG_AVAIL = 0x0002;  // Available for inst messages
 constexpr int INST_FLAGS_INVIS = 0x0004;  // For invisibility
 
 
@@ -60,7 +61,7 @@ public:
     return ss.str();
   }
 
-  [[nodiscard]] std::string flags_to_string(uint16_t flags) const {
+  [[nodiscard]] static std::string flags_to_string(uint16_t flags) {
     std::ostringstream ss;
     if (flags & INST_FLAGS_ONLINE) {
       ss << "[online] ";
@@ -110,4 +111,4 @@ bool InstanceCommand::AddSubCommands() {
 }
 
 
-}  // namespace wwivutil::wwiv
+}  // namespace

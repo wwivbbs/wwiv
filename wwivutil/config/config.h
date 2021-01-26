@@ -25,8 +25,7 @@ namespace wwiv::wwivutil {
 class ConfigCommand final : public UtilCommand {
 public:
   ConfigCommand(): UtilCommand("config", "WWIV config commands.") {}
-  ~ConfigCommand() = default;
-  bool AddSubCommands() override final;
+  bool AddSubCommands() override;
 };
 
 

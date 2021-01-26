@@ -20,7 +20,7 @@
 
 #include "core/log.h"
 #include "core/strings.h"
-#include "sdk/config.h"
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -40,8 +40,6 @@ class TicValidateCommand : public UtilCommand {
 public:
   TicValidateCommand() : UtilCommand("validate", "Validates the contents of a TIC file.") {}
 
-  virtual ~TicValidateCommand() = default;
-
   [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage:   list [search spec]" << endl;
@@ -55,10 +53,11 @@ public:
     }
     const std::filesystem::path fn{remaining().front()};
     const auto dir = fn.parent_path();
-    sdk::files::TicParser parser(dir);
+    const sdk::files::TicParser parser(dir);
     const auto otic = parser.parse(fn.filename().string());
     if (!otic) {
       LOG(ERROR) << "Failed to parse TIC file: " << fn.string();
+      return 1;
     }
     const auto& tic = otic.value();
     if (!tic.IsValid()) {

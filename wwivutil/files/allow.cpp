@@ -15,14 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "sdk/files/allow.h"
 #include "wwivutil/files/allow.h"
 
-#include "sdk/files/allow.h"
 #include "core/command_line.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "sdk/config.h"
 #include "sdk/filenames.h"
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -40,59 +40,27 @@ using namespace wwiv::strings;
 namespace wwiv::wwivutil::files {
 
 
-class AllowListCommand : public UtilCommand {
+class AllowListCommand final : public UtilCommand {
 public:
   AllowListCommand() : UtilCommand("list", "Lists the contents of allow.dat") {}
 
-  virtual ~AllowListCommand() {}
-
-  std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   list [search spec]" << endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     std::string pattern;
     if (!remaining().empty()) {
-      pattern = remaining().front();
+      pattern = ToStringUpperCase(remaining().front());
     }
-    Allow allow(*config()->config());
-    const auto all = allow.allow_vector();
-    for (const auto a : all) {
-      std::cout << a.a << "\n";
-    }
-    return 0;
-  }
-
-  bool AddSubCommands() override final { return true; }
-};
-
-class AllowAddCommand : public UtilCommand {
-public:
-  AllowAddCommand() : UtilCommand("add", "Add to the contents of allow.dat") {}
-  virtual ~AllowAddCommand() {}
-
-  std::string GetUsage() const override final {
-    std::ostringstream ss;
-    ss << "Usage:   add <filename>" << endl;
-    return ss.str();
-  }
-
-  int Execute() override final {
-    if (remaining().empty()) {
-      std::cerr << "missing filename";
-      return 2;
-    }
-    const auto fn = remaining().front();
-    Allow allow(*config()->config());
-    if (!allow.Add(fn)) {
-      LOG(ERROR) << "Failed to add file: " << fn;
-      return 1;
-    } else {
-      std::cout << "Added file: " << fn;
-      if (!allow.Save()) {
-        LOG(ERROR) << "Failed to save : " << ALLOW_DAT;
+    const Allow allow(*config()->config());
+    const auto& all = allow.allow_vector();
+    for (const auto& a : all) {
+      const auto fn = ToStringUpperCase(a.a);
+      if (pattern.empty() || fn.find(pattern) != std::string::npos) {
+        std::cout << a.a << "\n";
       }
     }
     return 0;
@@ -101,12 +69,43 @@ public:
   bool AddSubCommands() override final { return true; }
 };
 
-class AllowedCommand : public UtilCommand {
+class AllowAddCommand final : public UtilCommand {
+public:
+  AllowAddCommand() : UtilCommand("add", "Add to the contents of allow.dat") {}
+
+  [[nodiscard]] std::string GetUsage() const override {
+    std::ostringstream ss;
+    ss << "Usage:   add <filename>" << endl;
+    return ss.str();
+  }
+
+  int Execute() override {
+    if (remaining().empty()) {
+      std::cerr << "missing filename";
+      return 2;
+    }
+    const auto& fn = remaining().front();
+    Allow allow(*config()->config());
+    if (!allow.Add(fn)) {
+      LOG(ERROR) << "Failed to add file: " << fn;
+      return 1;
+    }
+    if (!allow.Save()) {
+      LOG(ERROR) << "Failed to add file (save failed) : " << ALLOW_DAT;
+      return 1;
+    }
+    std::cout << "Added file: " << fn;
+    return 0;
+  }
+
+  bool AddSubCommands() override final { return true; }
+};
+
+class AllowedCommand final : public UtilCommand {
 public:
   AllowedCommand() : UtilCommand("allowed", "Is the file allowed (i.e. not in the list)") {}
-  virtual ~AllowedCommand() {}
 
-  std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   allowed <filename>" << endl;
     return ss.str();
@@ -117,9 +116,9 @@ public:
       std::cerr << "missing filename";
       return 2;
     }
-    const auto fn = remaining().front();
+    const auto& fn = remaining().front();
     Allow allow(*config()->config());
-    bool allowed = allow.IsAllowed(fn);
+    const auto allowed = allow.IsAllowed(fn);
     if (allowed) {
       std::cout << "filename allowed:     " << fn;
     } else {
@@ -131,33 +130,32 @@ public:
   bool AddSubCommands() override final { return true; }
 };
 
-class AllowDeleteCommand : public UtilCommand {
+class AllowDeleteCommand final : public UtilCommand {
 public:
   AllowDeleteCommand() : UtilCommand("delete", "Delete from the contents of allow.dat") {}
-  virtual ~AllowDeleteCommand() {}
 
-  std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage:   delete <filename>" << endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     if (remaining().empty()) {
       std::cerr << "missing filename";
       return 2;
     }
-    const auto fn = remaining().front();
+    const auto& fn = remaining().front();
     Allow allow(*config()->config());
     if (!allow.Remove(fn)) {
       LOG(ERROR) << "Failed to delete file: " << fn;
       return 1;
-    } else {
-      std::cout << "Deleted file: " << fn;
-      if (!allow.Save()) {
-        LOG(ERROR) << "Failed to save : " << ALLOW_DAT;
-      }
     }
+    if (!allow.Save()) {
+      LOG(ERROR) << "Failed to save : " << ALLOW_DAT;
+      return 1;
+    }
+    std::cout << "Deleted file: " << fn;
     return 0;
   }
 

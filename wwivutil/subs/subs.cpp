@@ -27,6 +27,7 @@
 #include "sdk/net/networks.h"
 #include "wwivutil/util.h"
 #include "wwivutil/subs/import.h"
+
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -57,10 +58,11 @@ static uint32_t WWIVReadLastRead(const std::string& datadir, const std::string& 
   // open file, and create it if necessary
   postrec p{};
 
-  if (const auto sub_fn = FilePath(datadir, StrCat(sub_filename, ".sub")); !File::Exists(sub_fn)) {
+  const auto sub_fn = FilePath(datadir, StrCat(sub_filename, ".sub"));
+  if (!File::Exists(sub_fn)) {
     return 1;
   }
-  File subFile(FilePath(datadir, StrCat(sub_filename, ".sub")));
+  File subFile(sub_fn);
   if (!subFile.Open(File::modeBinary | File::modeReadOnly)) {
     return 0;
   }
@@ -79,19 +81,17 @@ static uint32_t WWIVReadLastRead(const std::string& datadir, const std::string& 
   return p.qscan;
 }
 
-class SubsListCommand : public UtilCommand {
+class SubsListCommand final : public UtilCommand {
 public:
   SubsListCommand() : UtilCommand("areas", "Lists the message areas") {}
 
-  virtual ~SubsListCommand() = default;
-
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   areas" << endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     Subs subs(config()->config()->datadir(), config()->networks().networks());
     if (!subs.Load()) {
       LOG(ERROR) << "Unable to load subs";
@@ -112,7 +112,7 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument(BooleanCommandLineArgument("full", "Display full info about every area.", false));
     return true;
   }

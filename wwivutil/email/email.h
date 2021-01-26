@@ -28,9 +28,12 @@ namespace wwiv::wwivutil {
 
 class BaseEmailSubCommand : public UtilCommand {
 public:
+  BaseEmailSubCommand() = delete;
+  BaseEmailSubCommand(const BaseEmailSubCommand&) = delete;
+  BaseEmailSubCommand& operator=(const BaseEmailSubCommand&) = delete;
+  BaseEmailSubCommand& operator=(BaseEmailSubCommand&&) = delete;
   BaseEmailSubCommand(const std::string& name, const std::string& descr)
       : UtilCommand(name, descr) {}
-  ~BaseEmailSubCommand() override = default;
   bool CreateMessageApi();
   // N.B. if this doesn't exist this message will crash.
   sdk::msgapi::WWIVMessageApi& api() noexcept;
@@ -45,14 +48,12 @@ private:
 class EmailCommand final : public UtilCommand {
 public:
   EmailCommand(): UtilCommand("email", "WWIV email commands.") {}
-  ~EmailCommand() override = default;
   bool AddSubCommands() override;
 };
 
 class EmailDumpCommand final: public BaseEmailSubCommand {
 public:
   EmailDumpCommand();
-  ~EmailDumpCommand() override = default;
   [[nodiscard]] std::string GetUsage() const override;
   int Execute() override;
   bool AddSubCommands() override;

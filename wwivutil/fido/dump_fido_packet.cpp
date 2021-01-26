@@ -26,6 +26,7 @@
 #include "sdk/net/ftn_msgdupe.h"
 #include "sdk/net/packets.h"
 #include "wwivutil/util.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -214,4 +215,4 @@ int DumpFidoPacketCommand::Execute() {
 
 bool DumpFidoPacketCommand::AddSubCommands() { return true; }
 
-} // namespace wwiv
+} 

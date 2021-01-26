@@ -15,26 +15,23 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_PRINT_H__
-#define __INCLUDED_WWIVUTIL_PRINT_H__
+#ifndef INCLUDED_WWIVUTIL_PRINT_H
+#define INCLUDED_WWIVUTIL_PRINT_H
 
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 class PrintCommand final : public UtilCommand {
 public:
   PrintCommand();
   [[nodiscard]] std::string GetUsage() const override;
-  virtual ~PrintCommand() = default;
   int Execute() override;
   bool AddSubCommands() override;
 };
 
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace
 
 
-#endif  // __INCLUDED_WWIVUTIL_PRINT_H__
+#endif

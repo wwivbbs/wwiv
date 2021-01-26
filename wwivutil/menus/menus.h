@@ -25,8 +25,7 @@ namespace wwiv::wwivutil {
 class MenusCommand final : public UtilCommand {
 public:
   MenusCommand(): UtilCommand("menus", "WWIV menu commands.") {}
-  ~MenusCommand() override = default;
-  bool AddSubCommands() override final;
+  bool AddSubCommands() override;
 };
 
 

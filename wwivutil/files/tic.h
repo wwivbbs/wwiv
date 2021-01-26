@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_FILES_TIC_H__
-#define __INCLUDED_WWIVUTIL_FILES_TIC_H__
+#ifndef INCLUDED_WWIVUTIL_FILES_TIC_H
+#define INCLUDED_WWIVUTIL_FILES_TIC_H
 
 #include "wwivutil/command.h"
 #include <string>
@@ -26,11 +26,11 @@ namespace wwiv::wwivutil::files {
 class TicCommand final: public UtilCommand {
 public:
   TicCommand() : UtilCommand("tic", "Manipulate TIC files") {}
-  [[nodiscard]] std::string GetUsage() const override final;
-  bool AddSubCommands() override final;
+  [[nodiscard]] std::string GetUsage() const override;
+  bool AddSubCommands() override;
 };
 
 
 } // namespace wwiv
 
-#endif  // __INCLUDED_WWIVUTIL_FILES_TIC_H__
+#endif

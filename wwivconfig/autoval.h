@@ -23,4 +23,4 @@
 
 void autoval_levs(wwiv::sdk::Config& config);
 
-#endif // INCLUDED_WWIVCONFIG_AUTOVAL_H
+#endif

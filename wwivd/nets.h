@@ -19,6 +19,7 @@
 #define INCLUDED_WWIVD_NETS_H
 
 #include "sdk/config.h"
+// ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/wwivd_config.h"
 
 namespace wwiv::wwivd {

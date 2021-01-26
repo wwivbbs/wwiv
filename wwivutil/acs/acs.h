@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_ACS_ACS_H__
-#define __INCLUDED_WWIVUTIL_ACS_ACS_H__
+#ifndef INCLUDED_WWIVUTIL_ACS_ACS_H
+#define INCLUDED_WWIVUTIL_ACS_ACS_H
 
 #include "wwivutil/command.h"
 
@@ -25,14 +25,19 @@ namespace wwiv::wwivutil::acs {
 class AcsCommand final : public UtilCommand {
 public:
   AcsCommand();
+  AcsCommand(const AcsCommand&) = delete;
+  AcsCommand(AcsCommand&&) = delete;
+  AcsCommand& operator=(const AcsCommand&) = delete;
+  AcsCommand& operator=(AcsCommand&&) = delete;
+
   [[nodiscard]] std::string GetUsage() const override;
-  virtual ~AcsCommand() = default;
+  ~AcsCommand() override = default;
   int Execute() override;
   bool AddSubCommands() override;
 };
 
 
-}  // namespace wwiv::wwivutil::acs
+}  // namespace
 
 
-#endif  // __INCLUDED_WWIVUTIL_PRINT_H__
+#endif

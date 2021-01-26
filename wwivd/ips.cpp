@@ -31,6 +31,7 @@
 #include <memory>
 #include <string>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace wwiv::wwivd {
@@ -98,8 +99,8 @@ bool BadIp::Block(const std::string& ip) {
   return written > 0;
 }
 
-AutoBlocker::AutoBlocker(std::shared_ptr<BadIp> bip, const wwiv::sdk::wwivd_blocking_t& b)
-    : bip_(bip), b_(b) {}
+AutoBlocker::AutoBlocker(std::shared_ptr<BadIp> bip, wwivd_blocking_t b)
+    : bip_(std::move(bip)), b_(std::move(b)) {}
 
 AutoBlocker::~AutoBlocker() = default;
 
@@ -128,12 +129,12 @@ bool AutoBlocker::Connection(const std::string& ip) {
   }
 
   if (ssize(s) > auto_bl_sessions) {
-    LOG(INFO) << "Blocking since we have " << s.size() << " sessions within "
-              << auto_bl_seconds << " seconds.";
+    LOG(INFO) << "Blocking since we have " << s.size() << " sessions within " << auto_bl_seconds
+              << " seconds.";
     bip_->Block(ip);
     return false;
   }
   return true;
 }
 
-} // namespace wwiv
+} // namespace wwiv::wwivd

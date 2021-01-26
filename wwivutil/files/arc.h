@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_FILES_ARC_H__
-#define __INCLUDED_WWIVUTIL_FILES_ARC_H__
+#ifndef INCLUDED_WWIVUTIL_FILES_ARC_H
+#define INCLUDED_WWIVUTIL_FILES_ARC_H
 
 #include "wwivutil/command.h"
 #include <string>
@@ -26,11 +26,11 @@ namespace wwiv::wwivutil::files {
 class ArcCommand final: public UtilCommand {
 public:
   ArcCommand() : UtilCommand("arc", "Manipulate archives") {}
-  [[nodiscard]] std::string GetUsage() const override final;
-  bool AddSubCommands() override final;
+  [[nodiscard]] std::string GetUsage() const override;
+  bool AddSubCommands() override;
 };
 
 
 } // namespace wwiv
 
-#endif  // __INCLUDED_WWIVUTIL_FILES_ARC_H__
+#endif

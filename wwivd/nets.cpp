@@ -22,17 +22,17 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/config.h"
+#include "sdk/status.h"
 #include "sdk/fido/fido_callout.h"
+#include "sdk/fido/fido_util.h"
 #include "sdk/net/callout.h"
 #include "sdk/net/callouts.h"
 #include "sdk/net/contact.h"
 #include "sdk/net/networks.h"
-#include "sdk/status.h"
-#include "sdk/fido/fido_util.h"
-#include "sdk/fido/flo_file.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/wwivd.h"
 #include "wwivd/wwivd_non_http.h"
+
 #include <atomic>
 #include <map>
 #include <memory>

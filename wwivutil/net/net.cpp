@@ -15,21 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "sdk/net/net.h"
 #include "wwivutil/net/net.h"
 
-#include <cstdio>
-#include <iomanip>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
 #include "core/command_line.h"
 #include "core/file.h"
-#include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/net/net.h"
-#include "sdk/net/networks.h"
-
 #include "wwivutil/net/dump_bbsdata.h"
 #include "wwivutil/net/dump_callout.h"
 #include "wwivutil/net/dump_connect.h"
@@ -40,6 +31,11 @@
 #include "wwivutil/net/req.h"
 #include "wwivutil/net/send.h"
 
+#include <iomanip>
+#include <memory>
+#include <string>
+#include <vector>
+
 using std::endl;
 using std::make_unique;
 using std::setw;
@@ -49,8 +45,7 @@ using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 bool NetCommand::AddSubCommands() {
   add(make_unique<DumpPacketCommand>());
@@ -61,10 +56,9 @@ bool NetCommand::AddSubCommands() {
   add(make_unique<wwiv::wwivutil::net::DumpSubscribersCommand>());
   add(make_unique<SubReqCommand>());
   add(make_unique<NetListCommand>());
-  add(make_unique<wwiv::wwivutil::net::SubSendCommand>());
+  add(make_unique<net::SubSendCommand>());
   return true;
 }
 
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace

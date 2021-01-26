@@ -15,17 +15,15 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_DUMP_CONNECT_H__
-#define __INCLUDED_WWIVUTIL_DUMP_CONNECT_H__
+#ifndef INCLUDED_WWIVUTIL_DUMP_CONNECT_H
+#define INCLUDED_WWIVUTIL_DUMP_CONNECT_H
 
-#include <map>
 #include <string>
 
 #include "core/command_line.h"
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 class DumpConnectCommand final: public UtilCommand {
 public:
@@ -36,7 +34,6 @@ public:
   bool AddSubCommands() override { return true; }
 };
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}
 
-#endif  // __INCLUDED_WWIVUTIL_DUMP_CONNECT_H__
+#endif

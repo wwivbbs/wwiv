@@ -15,14 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_DUMP_BBSDATA_H__
-#define __INCLUDED_WWIVUTIL_DUMP_BBSDATA_H__
+#ifndef INCLUDED_WWIVUTIL_DUMP_BBSDATA_H
+#define INCLUDED_WWIVUTIL_DUMP_BBSDATA_H
 
 #include "wwivutil/command.h"
 #include <string>
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 class DumpBbsDataCommand final: public UtilCommand {
 public:
@@ -34,7 +33,6 @@ public:
 };
 
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_WWIVUTIL_DUMP_BBSDATA_H__
+#endif

@@ -26,6 +26,7 @@
 #include <sstream>
 #include <stack>
 #include <stdexcept>
+#include <utility>
 
 using namespace wwiv::strings;
 
@@ -61,9 +62,12 @@ std::string to_string(Operator o) {
     return "or";
   case Operator::logical_and:
     return "and";
-  default:
+  case Operator::lt:
+    return "lt";
+  case Operator::UNKNOWN:
     return fmt::format("UNKNOWN ({})", static_cast<int>(o));
   }
+  return fmt::format("UNKNOWN ({})", static_cast<int>(o));
 }
 
 std::string to_symbol(Operator o) {
@@ -92,9 +96,10 @@ std::string to_symbol(Operator o) {
     return "||";
   case Operator::logical_and:
     return "&&";
-  default:
+  case Operator::UNKNOWN:
     return fmt::format("UNKNOWN ({})", static_cast<int>(o));
   }
+  return fmt::format("UNKNOWN ({})", static_cast<int>(o));
 }
 
 std::string to_string(const AstNode& n) { 
@@ -128,8 +133,8 @@ std::string to_string(AstType t) {
 ///////////////////////////////////////////////////////////////////////////
 // Factor
 
-Factor::Factor(FactorType t, int v, const std::string& s)
-    : Expression(AstType::FACTOR), factor_type_(t), val(v), sval(s) {}
+Factor::Factor(FactorType t, int v, std::string s)
+    : Expression(AstType::FACTOR), factor_type_(t), val(v), sval(std::move(s)) {}
 
 std::string to_string(FactorType t) {
   switch (t) {
@@ -203,6 +208,7 @@ static std::unique_ptr<BinaryOperatorNode> createBinaryOperator(const Token& tok
       fmt::format("Unexpected token found trying to create logical operator: ", to_string(token)));
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 bool Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
   VLOG(2) << "Ast::reduce. Stack Size: " << stack.size();
   if (stack.size() < 3) {
@@ -334,7 +340,7 @@ std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
     return std::make_unique<ErrorNode>(
         StrCat("Unable to parse expression starting at: ", it->lexeme));
   }
-  // Skip lparen
+  // Skip left paren
   ++it;
 
   std::stack<std::unique_ptr<AstNode>> stack;
@@ -369,6 +375,7 @@ std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
  * True if we need to reduce the stack.  We only allow logical_operations to trigger
  * reduce if we are between expressions (this happens at parse, not at parseExpression
  */
+// ReSharper disable once CppMemberFunctionMayBeStatic
 bool Ast::need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack, bool allow_logical) {
   if (stack.empty()) {
     return false;
@@ -513,9 +520,7 @@ void Expression::accept(AstVisitor* visitor) {
   visitor->visit(this);
 }
 
-Variable::Variable(std::string s)
-  : Factor(FactorType::variable, -1, s) {
-}
+Variable::Variable(std::string s) : Factor(FactorType::variable, -1, std::move(s)) {}
 
 std::string RootNode::ToString() const { return fmt::format("ROOT: {}\n", node->ToString()); }
 

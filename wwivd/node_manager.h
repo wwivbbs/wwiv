@@ -30,6 +30,8 @@ enum class ConnectionType { UNKNOWN, SSH, TELNET, BINKP, HTTP };
 
 /**
 * \brief
+* returns a human readable version of ConnectionType
+*
 * \param t Type of Connection
 * \return Textual description of ConnectionType
 */
@@ -46,6 +48,13 @@ class NodeManager final {
 public:
   NodeManager(const std::string& name, ConnectionType type, int start, int end);
   ~NodeManager();
+
+  // Get rid of unwanted forms.
+  NodeManager() = delete;
+  NodeManager(const NodeManager&) = delete;
+  NodeManager(NodeManager&&) = delete;
+  NodeManager& operator=(const NodeManager&) = delete;
+  NodeManager& operator=(NodeManager&&) = delete;
 
   [[nodiscard]] static std::string status_string(const NodeStatus& n);
 
@@ -80,10 +89,17 @@ private:
 };
 
 
-class ConcurrentConnections {
+class ConcurrentConnections final {
 public:
   explicit ConcurrentConnections(int max_num);
-  virtual ~ConcurrentConnections();
+  ~ConcurrentConnections();
+
+  ConcurrentConnections() = delete;
+  ConcurrentConnections(const ConcurrentConnections&) = delete;
+  ConcurrentConnections(ConcurrentConnections&&) = delete;
+  ConcurrentConnections& operator=(const ConcurrentConnections&) = delete;
+  ConcurrentConnections& operator=(ConcurrentConnections&&) = delete;
+
   bool aquire(const std::string& peer);
   bool release(const std::string& peer);
 

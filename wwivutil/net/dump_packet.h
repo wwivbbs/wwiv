@@ -15,23 +15,21 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_DUMP_PACKET_H__
-#define __INCLUDED_WWIVUTIL_DUMP_PACKET_H__
+#ifndef INCLUDED_WWIVUTIL_DUMP_PACKET_H
+#define INCLUDED_WWIVUTIL_DUMP_PACKET_H
 
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 class DumpPacketCommand final: public UtilCommand {
 public:
   DumpPacketCommand(): UtilCommand("dump", "Dumps contents of a network packet") {}
-  std::string GetUsage() const override;
+  [[nodiscard]] std::string GetUsage() const override;
   int Execute() override;
   bool AddSubCommands() override;
 };
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_WWIVUTIL_DUMP_PACKET_H__
+#endif

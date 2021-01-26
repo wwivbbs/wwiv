@@ -15,15 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_SEND_H__
-#define __INCLUDED_WWIVUTIL_SEND_H__
+#ifndef INCLUDED_WWIVUTIL_SEND_H
+#define INCLUDED_WWIVUTIL_SEND_H
 
 #include "wwivutil/command.h"
 #include <string>
 
-namespace wwiv {
-namespace wwivutil {
-namespace net {
+namespace wwiv::wwivutil::net {
 
 class SubSendCommand final: public UtilCommand {
 public:
@@ -35,8 +33,6 @@ public:
   bool AddSubCommands() override;
 };
 
-}  // namespace net
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_WWIVUTIL_SEND_H__
+#endif
