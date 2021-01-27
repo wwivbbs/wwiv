@@ -248,7 +248,7 @@ static void checkFileAreas(const wwiv::sdk::Config& config, bool /* verbose */, 
     if (!ensure_path_exists(d, dry_run)) {
       continue;
     }
-    if (d.area_tags.empty()) {
+    if (d.conf.empty()) {
       LOG(WARNING) << "** PLEASE FIX: Dir: " << d.filename << " is not part of any conference.";
     }
     auto area = api.Open(d);

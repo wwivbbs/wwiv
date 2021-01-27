@@ -54,6 +54,13 @@ public:
     }
   }
 
+  /**
+   * Returns if the set of conferences is empty.
+   */
+  [[nodiscard]] bool empty() const noexcept {
+    return data_.empty();
+  }
+
   std::set<char> data_;
 };
 }
