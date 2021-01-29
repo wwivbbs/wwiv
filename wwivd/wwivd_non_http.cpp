@@ -26,6 +26,7 @@
 #include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "fmt/format.h"
 #include "sdk/ansi/makeansi.h"
 #include "sdk/config.h"
@@ -306,16 +307,16 @@ void ConnectionHandler::HandleBinkPConnection() {
   try {
     auto result = CheckForBlockedConnection();
     if (result.action == BlockedConnectionAction::DENY) {
-      LOG(INFO) << "Sending BUSY. blocked.";
+      VLOG(1) << " BINKP BUSY (Blocked): " << result.remote_peer;
       SocketConnection conn(r.client_socket);
-      conn.send_line("BUSY\r\n", 10s);
+      conn.send_line("BUSY (Blocked)\r\n", 10s);
       closesocket(sock);
       return;
     }
     if (!data.concurrent_connections_->aquire(result.remote_peer)) {
-      LOG(INFO) << "Binkp Connection blocked by concurent connection limit.";
+      LOG(INFO) << " BINKP BUSY (Concurrent Limit Reached): " << result.remote_peer;
       SocketConnection conn(r.client_socket);
-      conn.send_line("BUSY\r\n", 10s);
+      conn.send_line("BUSY (Concurrent Limit Reached)\r\n", 10s);
       closesocket(sock);
       return;
     }
@@ -339,8 +340,9 @@ void ConnectionHandler::HandleBinkPConnection() {
 ConnectionHandler::MailerModeResult ConnectionHandler::DoMailerMode() {
   SocketConnection conn(r.client_socket, SocketConnection::ExitMode::RESET_TO_BLOCKING);
 
-  const string text = "CONNECT 2400\r\nWWIV - Server\r\nPress <ESC> twice for the BBS...\r\n";
-  LOG(INFO) << "In DoMailerMode.";
+  const auto text = fmt::format(
+      "CONNECT 2400\r\nWWIV - Server {}\r\nPress <ESC> twice for the BBS...\r\n", full_version());
+  VLOG(1) << "In DoMailerMode.";
   conn.send_line(text, 10s);
 
   const auto end = system_clock::now() + 10s;
@@ -355,8 +357,7 @@ ConnectionHandler::MailerModeResult ConnectionHandler::DoMailerMode() {
 
   conn.send("\r\n\r\n", 1s);
 
-  return num_escapes > 1 ? ConnectionHandler::MailerModeResult::ALLOW
-                         : ConnectionHandler::MailerModeResult::DENY;
+  return num_escapes > 1 ? MailerModeResult::ALLOW : MailerModeResult::DENY;
 }
 
 void ConnectionHandler::HandleConnection() {
@@ -365,14 +366,14 @@ void ConnectionHandler::HandleConnection() {
     SocketConnection conn(r.client_socket);
     auto result = CheckForBlockedConnection();
     if (result.action == BlockedConnectionAction::DENY) {
-      VLOG(2) << "HandleConnection: Blocked: " << result.remote_peer;
-      conn.send_line("BUSY\r\n", 10s);
+      VLOG(1) << "HandleConnection: BUSY (Blocked): " << result.remote_peer;
+      conn.send_line("BUSY (Blocked)\r\n", 10s);
       closesocket(sock);
       return;
     }
     if (!data.concurrent_connections_->aquire(result.remote_peer)) {
-      LOG(INFO) << " Blocked by concurrent limit: " << result.remote_peer;
-      conn.send_line("BUSY\r\n", 10s);
+      LOG(INFO) << " BUSY (Concurrent Limit Reached): " << result.remote_peer;
+      conn.send_line("BUSY (Concurrent Limit Reached)\r\n", 10s);
       closesocket(sock);
       return;
     }
@@ -426,8 +427,8 @@ void ConnectionHandler::HandleConnection() {
     } else {
       using namespace std::chrono_literals;
       LOG(INFO) << "Sending BUSY. No available node to handle connection.";
-      conn.send_line("BUSY\r\n", 10s);
-      VLOG(1) << "Exiting HandleConnection (busy)";
+      conn.send_line("BUSY (No Available Nodes)\r\n", 10s);
+      VLOG(1) << "Exiting HandleConnection: BUSY (No Available Nodes)";
     }
   } catch (const std::exception& e) {
     LOG(ERROR) << "Handled Uncaught Exception: " << e.what();
