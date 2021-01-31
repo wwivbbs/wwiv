@@ -69,7 +69,7 @@ string to_string(const std::vector<wwivd_matrix_entry_t>& elements) {
 std::string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
   string out;
 
-  for (auto it = tmpl.begin(); it != tmpl.end(); it++) {
+  for (auto it = tmpl.begin(); it != tmpl.end(); ++it) {
     if (*it == '@') {
       ++it;
       if (it == tmpl.end()) {
@@ -134,7 +134,7 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc, const st
   const auto sem_path = node_file(config, connection_type, node_number);
 
   try {
-    auto semaphore_file = SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
+    const auto semaphore_file = SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
     return launch_cmd(wc, raw_cmd, working_dir, nodes, node_number, sock, connection_type, remote_peer);
   } catch (const semaphore_not_acquired& e) {
     LOG(ERROR) << pid << "Unable to create semaphore file: " << sem_path << "; errno: " << errno
@@ -156,7 +156,7 @@ static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
   if (port == c.http_port) {
     return ConnectionType::HTTP;
   }
-  // TODO(rushfan) ???
+  LOG(WARNING) << "Defaulting to TELNET for unknown connection type for port: " << port;
   return ConnectionType::TELNET;
 }
 
@@ -164,7 +164,7 @@ static bool check_ansi(SocketConnection& conn) {
   const auto d = 3s;
   conn.send("Checking for ANSI Graphics... ", d);
   conn.send("\x1b[6n", d);
-  auto res = conn.receive_upto(10, d);
+  const auto res = conn.receive_upto(10, d);
   if (!res.empty() && res.front() == 27) {
     conn.send_line("ANSI detected.", d);
     return true;
@@ -178,7 +178,9 @@ std::string Color(int c, bool ansi) {
   if (!ansi) {
     return "";
   }
-  auto s = wwiv::sdk::ansi::makeansi(c, wwivd_curatr);
+
+  // Not const so we can move s
+  auto s = ansi::makeansi(c, wwivd_curatr);
   wwivd_curatr = 0;
   return s;
 }
@@ -186,6 +188,7 @@ std::string Color(int c, bool ansi) {
 ConnectionHandler::ConnectionHandler(ConnectionData d, accepted_socket_t a)
     : data(std::move(d)), r(a) {}
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const wwivd_config_t& c) {
 
   SocketConnection conn(r.client_socket, SocketConnection::ExitMode::LEAVE_SOCKET_OPEN);
@@ -221,7 +224,7 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const wwivd_config_t& c) {
 
     conn.send_line("\r\n", d);
     conn.send(StrCat(Color(3, ansi), "Enter Selection: "), d);
-    auto key_str = conn.receive_upto(1, std::chrono::seconds(15));
+    const auto key_str = conn.receive_upto(1, std::chrono::seconds(15));
     // dump left overs
     conn.receive_upto(1024, std::chrono::milliseconds(1));
     if (key_str.empty()) {
@@ -247,6 +250,7 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const wwivd_config_t& c) {
 }
 
 // Can throw
+// ReSharper disable once CppMemberFunctionMayBeConst
 ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedConnection() {
   const auto sock = r.client_socket;
   string remote_peer;
@@ -303,9 +307,9 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
 }
 
 void ConnectionHandler::HandleBinkPConnection() {
-  auto sock = r.client_socket;
+  const auto sock = r.client_socket;
   try {
-    auto result = CheckForBlockedConnection();
+    const auto result = CheckForBlockedConnection();
     if (result.action == BlockedConnectionAction::DENY) {
       VLOG(1) << " BINKP BUSY (Blocked): " << result.remote_peer;
       SocketConnection conn(r.client_socket);
@@ -323,7 +327,7 @@ void ConnectionHandler::HandleBinkPConnection() {
     ScopeExit at_exit([&] { data.concurrent_connections_->release(result.remote_peer); });
 
     auto& nodemgr = data.nodes->at("BINKP");
-    int node = -1;
+    auto node = -1;
     if (nodemgr->AcquireNode(node)) {
       ScopeExit at_exit2([=] {
         closesocket(sock);
@@ -337,6 +341,7 @@ void ConnectionHandler::HandleBinkPConnection() {
   }
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 ConnectionHandler::MailerModeResult ConnectionHandler::DoMailerMode() {
   SocketConnection conn(r.client_socket, SocketConnection::ExitMode::RESET_TO_BLOCKING);
 
@@ -361,10 +366,10 @@ ConnectionHandler::MailerModeResult ConnectionHandler::DoMailerMode() {
 }
 
 void ConnectionHandler::HandleConnection() {
-  auto sock = r.client_socket;
+  const auto sock = r.client_socket;
   try {
     SocketConnection conn(r.client_socket);
-    auto result = CheckForBlockedConnection();
+    const auto result = CheckForBlockedConnection();
     if (result.action == BlockedConnectionAction::DENY) {
       VLOG(1) << "HandleConnection: BUSY (Blocked): " << result.remote_peer;
       conn.send_line("BUSY (Blocked)\r\n", 10s);
@@ -381,7 +386,7 @@ void ConnectionHandler::HandleConnection() {
     const auto connection_type = connection_type_for(*data.c, r.port);
 
     if (data.c->blocking.mailer_mode && connection_type == ConnectionType::TELNET) {
-      auto mailer_result = DoMailerMode();
+      const auto mailer_result = DoMailerMode();
       if (mailer_result == MailerModeResult::DENY) {
         LOG(INFO) << "DENY (from MailerMode, didn't press ESC twice)";
         closesocket(sock);

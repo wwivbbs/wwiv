@@ -217,7 +217,7 @@ int CommandLineCommand::Parse(int start_pos) {
         if (unknown_args_allowed()) {
           continue;
         }
-        throw unknown_argument_error(StrCat("Command: ", name(), "; key=", key));
+        throw unknown_argument_error(StrCat("Command: ", name(), "; arg: ", key));
       }
       HandleCommandLineArgument(key, value);
     } else if (is_shortarg_start(s.front())) {
@@ -227,7 +227,7 @@ int CommandLineCommand::Parse(int start_pos) {
         if (unknown_args_allowed()) {
           continue;
         }
-        throw unknown_argument_error(StrCat("Command: ", name(), "; letter=", letter));
+        throw unknown_argument_error(StrCat("Command: ", name(), "; letter: '", letter, "'"));
       }
       const auto value = s.substr(2);
       HandleCommandLineArgument(key, value);
