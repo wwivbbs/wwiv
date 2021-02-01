@@ -22,6 +22,7 @@
 #include "core/strings.h"
 #include "instance/instance.h"
 #include "sdk/config.h"
+#include "wwivutil/help.h"
 #include "wwivutil/acs/acs.h"
 #include "wwivutil/conf/conf.h"
 #include "wwivutil/config/config.h"
@@ -77,6 +78,7 @@ public:
       Add(std::make_unique<fido::FidoCommand>());
       Add(std::make_unique<files::FilesCommand>());
       Add(std::make_unique<FixCommand>());
+      Add(std::make_unique<HelpCommand>());
       Add(std::make_unique<InstanceCommand>());
       Add(std::make_unique<MessagesCommand>());
       Add(std::make_unique<MenusCommand>());
@@ -115,14 +117,16 @@ private:
     subcommands_.push_back(c);
   }
 
+  // ReSharper disable once CppMemberFunctionMayBeConst
   void SetConfigs() {
     for (auto* s : subcommands_) {
       s->set_config(command_config_);
     }
+    command_config_->set_subcommands(subcommands_);
   }
-  std::vector<UtilCommand*> subcommands_;
   CommandLine cmdline_;
   std::shared_ptr<Configuration> command_config_;
+  std::vector<UtilCommand*> subcommands_;
 };
 
 }  // namespace

@@ -37,6 +37,7 @@ set(COMMAND_SOURCES
   "subs/import.cpp"
   "subs/subs.cpp"
   "users/users.cpp"
+  "help.cpp"
   "util.cpp"
   )
 

@@ -195,6 +195,8 @@ public:
   [[nodiscard]] const std::vector<std::string>& remaining() const { return remaining_; }
   [[nodiscard]] std::string ToString() const;
   int Execute() override;
+  [[nodiscard]] std::string GetHelpForArg(const CommandLineArgument&, int max_len = 25) const;
+  [[nodiscard]] std::string GetHelpForCommand(const CommandLineCommand&, int max_len = 25) const;
   [[nodiscard]] std::string GetHelp() const override;
   [[nodiscard]] std::string GetUsage() const override { return ""; }
   void set_unknown_args_allowed(bool u) { unknown_args_allowed_ = u; }
@@ -207,6 +209,21 @@ public:
    * come from INI files?
    */
   bool SetNewDefault(const std::string& key, const std::string& value);
+
+  /**
+   * Public metadata about which command line args and subcommands are allowed. This
+   * lets consumers display customized help and possibly command line completion.
+   */
+
+  /** Which arguments are allowed for this command */
+  [[nodiscard]] const std::map<const std::string, CommandLineArgument>& args_allowed() const {
+    return args_allowed_;
+  }
+
+  /** Which sub-commands are allowed for this command */
+  [[nodiscard]] const std::map<const std::string, std::shared_ptr<CommandLineCommand>>& commands_allowed() const {
+    return commands_allowed_;
+  }
 
 protected:
   /** Handles a command line argument passed on the commandline */

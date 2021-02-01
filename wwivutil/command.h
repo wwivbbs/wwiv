@@ -27,6 +27,7 @@
 #include <string>
 
 namespace wwiv::wwivutil {
+class UtilCommand;
 
 class Configuration final {
 public:
@@ -47,12 +48,15 @@ public:
   [[nodiscard]] sdk::Config* config() const { return config_.get(); }
   [[nodiscard]] bool initialized() const { return initialized_; }
   [[nodiscard]] sdk::Networks networks() const { return networks_; }
+  [[nodiscard]] const std::vector<UtilCommand*>& subcommands() const { return subcommands_; }
+  void set_subcommands(std::vector<UtilCommand*> scs) { subcommands_ = scs; }
 
 private:
   const std::string bbsdir_;
   std::unique_ptr<sdk::Config> config_;
   sdk::Networks networks_;
   bool initialized_{true};
+  std::vector<UtilCommand*> subcommands_;
 };
 
 /** WWIVutil Command */

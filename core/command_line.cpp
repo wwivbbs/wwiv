@@ -302,34 +302,53 @@ int CommandLineCommand::Execute() {
   }
 
   // Nothing was able to be executed.
-  clog << "Nothing to do for command: " << name_ << endl;
-  cout << GetUsage() << GetHelp();
+  clog << "Nothing to do for command: " << name_ << std::endl;
+  std::cout << std::endl;
+  std::cout << GetUsage() << GetHelp();
   return 1;
+}
+
+std::string CommandLineCommand::GetHelpForArg(const CommandLineArgument& c, int max_len) const {
+  std::ostringstream ss;
+  if (c.key_ != 0) {
+    ss << "-" << c.key_ << " ";
+  } else {
+    ss << "   ";
+  }
+  ss << "--" << left << setw(max_len) << c.name_ << "  ";
+  if (c.is_boolean) {
+    ss << "[boolean] ";
+  }
+  ss << c.help_text() << endl;
+  return ss.str();
+}
+
+std::string CommandLineCommand::GetHelpForCommand(const CommandLineCommand& c, int max_len) const {
+  std::ostringstream ss;
+  ss << "     " << setw(max_len) << left << c.name() << "  " << c.help_text() << endl;
+  return ss.str();
 }
 
 std::string CommandLineCommand::GetHelp() const {
   std::ostringstream ss;
-  const auto program_name = (name_.empty()) ? "program" : name_;
+  const auto program_name = name_.empty() ? "program" : name_;
   ss << program_name << " arguments:" << std::endl;
+  auto max_len = 8;
   for (const auto& [_, c] : args_allowed_) {
-    if (c.key_ != 0) {
-      ss << "-" << c.key_ << " ";
-    } else {
-      ss << "   ";
-    }
-    auto text = c.name_;
-    if (!c.is_boolean) {
-      text = StrCat(c.name_, "=value");
-    }
-    ss << "--" << left << setw(25) << text << " " << c.help_text() << endl;
+    max_len = std::max<int>(max_len, c.name_.size());
+  }
+  for (const auto& a : commands_allowed_) {
+    max_len = std::max<int>(max_len, a.second->name().size());
+  }
+
+  for (const auto& [_, c] : args_allowed_) {
+    ss << GetHelpForArg(c, max_len);
   }
   if (!commands_allowed_.empty()) {
     ss << endl;
     ss << "commands:" << std::endl;
     for (const auto& a : commands_allowed_) {
-      const auto allowed_name = a.second->name();
-      ss << "   "
-          << "  " << setw(25) << left << allowed_name << " " << a.second->help_text() << endl;
+      ss << GetHelpForCommand(*a.second, max_len);
     }
   }
   return ss.str();
