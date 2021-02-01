@@ -149,7 +149,7 @@ static void do_callout(const net_networks_rec& net, int sn) {
     return;
   }
 
-  const auto cmd = StrCat(CreateNetworkBinary("network"), " /N", sn, " .", a()->net_num());
+  const auto cmd = StrCat(CreateNetworkBinary("network"), " -n", sn, " .", a()->net_num());
   bout << "|#7Calling out to: |#2" << csne->name << " - " << net.name << " @" << sn << wwiv::endl;
   if (contact_rec->bytes_waiting() > 0) {
     bout << "|#7Amount pending: |#2" << bytes_to_k(contact_rec->bytes_waiting()) << "k"
