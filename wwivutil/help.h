@@ -30,6 +30,7 @@ public:
   int Execute() override;
 
 private:
+  [[nodiscard]] bool markdown() const;
   bool ShowHelpForPath(std::vector<std::string> path, const core::CommandLineCommand* c);
   [[nodiscard]] std::string LongHelpForArg(const core::CommandLineArgument& c,
                                                      int max_len);
@@ -38,8 +39,9 @@ private:
                                            const std::string& command_base);
   [[nodiscard]] std::string FullHelpForCommand(const CommandLineCommand& uc,
                                            const std::string& cmdpath);
-  [[nodiscard]] std::string ShortHelpForCommand(const core::CommandLineCommand& uc,
+  [[nodiscard]] std::string ShortHelpForCommand(const core::CommandLineCommand& c,
                                            const std::string& cmdpath);
+
 };
 
 }  // namespace
