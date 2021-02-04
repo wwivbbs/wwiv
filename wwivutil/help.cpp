@@ -162,10 +162,17 @@ int HelpCommand::Execute() {
     std::cout << R"(
 # WWIVutil Help
 
-    WWIVutil is WWIV's Swiss Army Knife utilty program.  It handles many different
-    types of commands for WWIV.  It's also replaces the 4.x FIX command.
+WWIVutil is WWIV's Swiss Army Knife utilty program.  It handles many different
+types of commands for WWIV.  It's also replaces the 4.x FIX command.
 
-    Here's documentation for the various commands.
+Here's documentation for the various commands.
+
+
+## Table of Contents
+
+[TOC]
+
+
 )";
   } else {
     std::cout << "WWIVutil Help" << std::endl;
