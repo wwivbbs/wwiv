@@ -178,12 +178,19 @@ void user_editor(const wwiv::sdk::Config& config) {
   y++;
   items.add(new Label("Real Name:"),
             new StringEditItem<unsigned char*>(20, user.realname, EditLineMode::ALL), "", 1, y);
+
+  // SL/DSL on same line now.
   y++;
   items.add(new Label("SL:"),
       new NumberEditItem<uint8_t>(&user.sl), "", 1, y);
-  y++;
   items.add(new Label("DSL:"),
-      new NumberEditItem<uint8_t>(&user.dsl), "", 1, y);
+      new NumberEditItem<uint8_t>(&user.dsl), "", 3, y);
+  // AR/DAR
+  y++;
+  items.add(new Label("AR:"), new ArEditItem(&user.ar), 1, y);
+  y++;
+  items.add(new Label("DAR:"), new ArEditItem(&user.dar), 1, y);
+
   y++;
   items.add(new Label("Address:"),
       new StringEditItem<char*>(30, user.street, EditLineMode::ALL), "", 1, y);
@@ -224,6 +231,7 @@ void user_editor(const wwiv::sdk::Config& config) {
   items.add(new Label("Sysop Note:"),
       new StringEditItem<char*>(57, user.note, EditLineMode::ALL), "", 1, y);
 
+  items.add_aligned_width_column(1);
   items.relayout_items_and_labels();
   items.set_navigation_extra_help_items(create_extra_help_items());
   items.create_window("User Editor");

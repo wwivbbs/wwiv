@@ -368,7 +368,6 @@ public:
 
     window->GotoXY(x_, y_);
 
-    //items.add_aligned_width_column(1);
     items.relayout_items_and_labels();
     items.Run("Generated Menu Settings");
     window->RedrawWin();
