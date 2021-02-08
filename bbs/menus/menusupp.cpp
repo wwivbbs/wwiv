@@ -793,7 +793,7 @@ void UpDirConf() {
 
 void UpDir() {
   const auto cd = a()->current_user_dir_num();
-  const auto last = a()->dirs().size() - 1;
+  const auto last = size_int(a()->udir) - 1;
   if (cd < last) {
     a()->set_current_user_dir_num(cd + 1);
   } else {
