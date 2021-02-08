@@ -237,4 +237,6 @@ void sysinfo1(wwiv::sdk::Config& config) {
   config.max_waiting(max_waiting);
   config.wwiv_reg_number(wwiv_reg_number);
   config.max_backups(max_backups);
+
+  save_status(config.datadir(), statusrec);
 }
