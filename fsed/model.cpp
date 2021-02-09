@@ -349,7 +349,7 @@ bool FsedModel::del() {
 }
 
 bool FsedModel::bs_nowrap() {
-  auto r = curline().bs(cx, mode_);
+  const auto r = curline().bs(cx, mode_);
   if (r == line_add_result_t::error) {
     return false;
   }
@@ -362,6 +362,8 @@ bool FsedModel::bs_nowrap() {
 bool FsedModel::bs() {
   const auto previous_line = curli;
   // TODO keep mode state;
+  const auto previous_cx = std::max<int>(cx - 1, 0);
+  const auto previous_cx_color = size_int(curline().cells()) > previous_cx ? curline().cells().at(previous_cx).wwiv_color : 0;
   bs_nowrap();
   if (cx > 0) {
     --cx;
@@ -392,13 +394,14 @@ bool FsedModel::bs() {
   }
   current_line_dirty(previous_line);
   view_->gotoxy(*this);
-  curline().set_wwiv_color(current_cell().wwiv_color);
+  curline().set_wwiv_color(previous_cx_color);
   return true;
 }
 
 bool FsedModel::enter() {
   const auto orig_start_line = curli;
   curline().wrapped(false);
+  const auto previous_color = curline().wwiv_color();
   // Insert inserts after the current line
   if (cx >= ssize(curline())) {
     ++curli;
@@ -415,6 +418,8 @@ bool FsedModel::enter() {
     curline().assign(ntext);
   }
   advance_cy(*this, *view_);
+  // Restore the wwiv color on the new line so we don't reset to 0.
+  curline().set_wwiv_color(previous_color);
   cx = 0;
   invalidate_to_eof(orig_start_line);
   current_line_dirty(orig_start_line);

@@ -76,7 +76,7 @@ line_add_result_t line_t::del(int x, ins_ovr_mode_t) {
     return line_add_result_t::error;
   }
   const auto result = x == size_ ? line_add_result_t::no_redraw : line_add_result_t::needs_redraw;
-  if (!wwiv::stl::erase_at(cell_, x)) {
+  if (!erase_at(cell_, x)) {
     return line_add_result_t ::error;
   }
   --size_;
@@ -105,8 +105,8 @@ int line_t::last_space_before(int maxlen) {
   if (cell_.empty()) {
     return 0;
   }
-  for (int i = maxlen - 1; i > 0; i--) {
-    char c = cell_.at(i).ch;
+  for (auto i = maxlen - 1; i > 0; i--) {
+    const auto c = cell_.at(i).ch;
     if (c == '\t' || c == ' ') {
       return i;
     }
