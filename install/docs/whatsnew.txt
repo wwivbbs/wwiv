@@ -15,6 +15,16 @@ What's New in WWIV 5.6.1 (2021)
   those specified in the Auto Validation list defined in wwivconfig.
 * Don't MPL on mmkey long text input. It makes the UI go wonky
 * Don't crash when doing a title scan when the subtype is not 2.
+* fix title display for curses windows with longer titles than contents
+* Add wwivutil users asv
+* fix display of autoval in wwivconfig
+* Add more error handling (#1354)
+* Check conf not area tags when checking for empty conf list. (#1358)
+* Write out BUSY reason when returning BUSY from WWIVd. (#1357)
+* Use - not / when calling network on UNIX (#1366)
+* Add AR/DAR to usereditor. (#1370)
+* Save statusrec after general page in wwivconfig (#1373)
+* Use size of dirs in conference, not all dirs to find last dirnum. (#1371)
 
 What's New in WWIV 5.6 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
