@@ -168,11 +168,14 @@ void FsedView::draw_bottom_bar(const FsedModel& ed) {
   const auto sc = bout_.curatr();
   static auto smode = ed.mode();
   static auto sdebug = debug;
-  if (sx != ed.cx || sy != ed.cy || sl != ed.curli || smode != ed.mode() || sdebug != debug) {
-    const auto mode = ed.mode() == ins_ovr_mode_t::ins ? "INS" : "OVR";
+  static auto sline_color = 0;
+  const auto line_color = ed.curline().wwiv_color();
+  if (sx != ed.cx || sy != ed.cy || sl != ed.curli || smode != ed.mode() || sdebug != debug ||
+      sline_color != line_color) {
+    const auto* mode = ed.mode() == ins_ovr_mode_t::ins ? "INS" : "OVR";
     const auto cell = ed.current_cell();
-    const auto text = (debug) ? fmt::format("X:{} Y:{} L:{} T:{} C:{} W:{} [{}]", ed.cx, ed.cy, ed.curli,
-                                      top_line(), static_cast<int>(cell.ch), cell.wwiv_color, mode)
+    const auto text = (debug) ? fmt::format("X:{} Y:{} L:{} T:{} C:{} WC:{} WL:{} [{}]", ed.cx, ed.cy, ed.curli,
+                                      top_line(), static_cast<int>(cell.ch), cell.wwiv_color, line_color, mode)
                         : fmt::format("[{}]", mode);
     fs_.DrawBottomBar(text);
     sx = ed.cx;
@@ -180,6 +183,7 @@ void FsedView::draw_bottom_bar(const FsedModel& ed) {
     sl = ed.curli;
     smode = ed.mode();
     sdebug = debug;
+    sline_color = line_color;
   }
   bout_.SystemColor(sc);
   gotoxy(ed);

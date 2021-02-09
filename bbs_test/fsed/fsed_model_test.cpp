@@ -16,12 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
-#include "fsed/model.h"
 #include "bbs_test/bbs_helper.h"
-#include "core/strings.h"
 #include "core/stl.h"
+#include "fsed/model.h"
+
+#include "gtest/gtest.h"
 #include <iostream>
 #include <memory>
 #include <string>
@@ -34,15 +33,16 @@ using namespace wwiv::stl;
 class FakeView : public wwiv::fsed::editor_viewport_t {
 public:
   // Inherited via editor_viewport_t
-  int max_view_lines() const override { return 10; }
-  int max_view_columns() const override { return 20; }
-  int top_line() const override { return top_line_; }
+  [[nodiscard]] int max_view_lines() const override { return 10; }
+  [[nodiscard]] int max_view_columns() const override { return 20; }
+  [[nodiscard]] int top_line() const override { return top_line_; }
   void set_top_line(int l) override { top_line_ = l; }
   void gotoxy(const wwiv::fsed::FsedModel& ed) override { 
     x_ = ed.cx;
     y_ = ed.cy;
   }
 
+private:
   int top_line_{0};
   int x_{0};
   int y_{0};
@@ -55,7 +55,7 @@ protected:
     ed.set_view(view);
   }
 
-  void Add(string s) {
+  void add(string s) {
     for (const auto& c : s) {
       if (c == '\n') {
         ed.enter();
@@ -65,9 +65,9 @@ protected:
     }
   }
 
-  void AddTestLines(int n) {
+  void add_test_lines(int n) {
     for (int i = 0; i < n; i++) {
-      Add(fmt::format("Test-{}\n", i));
+      add(fmt::format("Test-{}\n", i));
     }
   }
 
@@ -85,7 +85,7 @@ TEST_F(FsedModelTest, AddSingle_Character) {
 
 TEST_F(FsedModelTest, AddSingleline) {
   const std::string line = "Hello World";
-  Add(line);
+  add(line);
   EXPECT_EQ(0, ed.cy);
   EXPECT_EQ(ssize(line), ed.cx);
   EXPECT_EQ(0, ed.curli);
@@ -94,7 +94,7 @@ TEST_F(FsedModelTest, AddSingleline) {
 
 TEST_F(FsedModelTest, AddTwolines) {
   const std::string line = "Hello\nWorld";
-  Add(line);
+  add(line);
   EXPECT_EQ(ssize(std::string("World")), ed.cx);
   EXPECT_EQ(1, ed.curli);
   EXPECT_EQ(2, wwiv::stl::ssize(ed));
@@ -103,7 +103,7 @@ TEST_F(FsedModelTest, AddTwolines) {
 
 TEST_F(FsedModelTest, SixLines) {
   const std::string line = "Hello\nWorld\nThis\nIs\nA\nTest\n";
-  Add(line);
+  add(line);
   EXPECT_EQ(6, ed.curli);
   EXPECT_EQ(7, wwiv::stl::ssize(ed));
   EXPECT_EQ(6, ed.cy);
@@ -111,7 +111,7 @@ TEST_F(FsedModelTest, SixLines) {
 
 TEST_F(FsedModelTest, PageUp_NoScroll) {
   const std::string line = "Hello\nWorld\nThis\nIs\nA\nTest\n";
-  Add(line);
+  add(line);
   ed.cursor_pgup();
   EXPECT_EQ(0, ed.curli);
   EXPECT_EQ(7, wwiv::stl::ssize(ed));
@@ -119,7 +119,7 @@ TEST_F(FsedModelTest, PageUp_NoScroll) {
 }
 
 TEST_F(FsedModelTest, PageUp_Scroll) {
-  AddTestLines(100);
+  add_test_lines(100);
   EXPECT_EQ(100, ed.curli);
   EXPECT_EQ(10, ed.cy);
 
@@ -127,4 +127,17 @@ TEST_F(FsedModelTest, PageUp_Scroll) {
   ed.cursor_pgup();
   EXPECT_EQ(0, ed.cy);
   EXPECT_EQ(90, ed.curli);
+}
+
+TEST_F(FsedModelTest, BackSpace_Color) {
+  ed.curline().set_wwiv_color(2);
+  add("a");
+  // Still 2
+  EXPECT_EQ(2, ed.curline().wwiv_color());
+  ed.bs();
+  // Still 2 after a backspace
+  EXPECT_EQ(2, ed.curline().wwiv_color());
+  ed.bs();
+  // Now 0 since we went to the end.
+  EXPECT_EQ(0, ed.curline().wwiv_color());
 }
