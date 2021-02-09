@@ -1281,7 +1281,8 @@ static int move_filename(const std::string& file_name, int dn) {
   while (!a()->sess().hangup() && nRecNum > 0 && !done) {
     int cp = nRecNum;
     const auto& dir = a()->dirs()[dn];
-    auto f = a()->current_file_area()->ReadFile(nRecNum);
+    auto source_filearea = a()->fileapi()->Open(dir);
+    auto f = source_filearea->ReadFile(nRecNum);
     auto src_fn = FilePath(dir.path, f);
     bout.nl();
     printfileinfo(&f.u(), dir);
@@ -1368,9 +1369,9 @@ static int move_filename(const std::string& file_name, int dn) {
           f.set_date(DateTime::now());
       }
       --cp;
-      auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(f).value_or("");
-      if (a()->current_file_area()->DeleteFile(f, nRecNum)) {
-        a()->current_file_area()->Save();
+      auto ss = source_filearea->ReadExtendedDescriptionAsString(f).value_or("");
+      if (source_filearea->DeleteFile(f, nRecNum)) {
+        source_filearea->Save();
       }
       auto dest_fn = FilePath(a()->dirs()[nDestDirNum].path, f);
       dliscan1(nDestDirNum);
