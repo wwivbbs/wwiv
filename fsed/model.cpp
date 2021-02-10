@@ -135,6 +135,7 @@ editor_add_result_t FsedModel::add(char c) {
     const auto nline = line.substr(wrap_position);
     line.assign(line.substr(0, wrap_position));
     ++curli;
+    insert_line();
     curline().assign(nline);
     cx = size_int(curline());
   } else {
