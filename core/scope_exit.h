@@ -55,7 +55,12 @@ public:
   /**
    * Construct a  scope guard with the exit function "<void()>".
    */
-  [[nodiscard]] explicit ScopeExit(std::function<void()> fn)
+// GCC seems to display a warning on this, at least in 8.3.  MSVC can handle this in recent
+// builds of the compiler.
+#if defined(_MSC_VER)
+  [[nodiscard]]
+#endif // _MSC_VER
+  explicit ScopeExit(std::function<void()> fn)
     : fn_(std::move(fn)) {
   }
 

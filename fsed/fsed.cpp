@@ -23,15 +23,17 @@
 #include "common/output.h"
 #include "core/eventbus.h"
 #include "core/scope_exit.h"
-#include "fsed/commands.h"
-#include "fsed/common.h"
-#include "fsed/model.h"
-#include "fsed/line.h"
-#include "fsed/view.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "fmt/format.h"
+#include "fsed/commands.h"
+#include "fsed/common.h"
+#include "fsed/line.h"
+#include "fsed/model.h"
+#include "fsed/view.h"
+
+#include <memory>
+#include <string>
 
 using namespace wwiv::common;
 using namespace wwiv::core;
