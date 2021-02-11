@@ -43,7 +43,7 @@ using namespace wwiv::strings;
  */
 std::string ctypes(int num) {
   // The default list of computer types
-  static const vector<string> default_ctypes{
+  const std::vector<std::string> default_ctypes{
     "IBM PC (8088)",
     "IBM PS/2",
     "IBM AT (80286)",
@@ -58,7 +58,7 @@ std::string ctypes(int num) {
     "Other",
   };
 
-  IniFile iniFile(FilePath(a()->bbspath(), WWIV_INI), {"CTYPES"});
+  const IniFile iniFile(FilePath(a()->bbspath(), WWIV_INI), {"CTYPES"});
   if (iniFile.IsOpen()) {
     return iniFile.value<string>(fmt::format("COMP_TYPE[{}]", num + 1));
   }

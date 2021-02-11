@@ -99,12 +99,6 @@ static string GetAnon(const subboard_t& r) {
   }
 }
 
-static const std::vector<std::string> nettypes{
-    {"WWIVnet  "},
-    {"FTN      "},
-    {"Internet "},
-    {"Newsgroup"}};
-
 static void DisplayNetInfo(size_t nSubNum) {
   if (a()->subs().sub(nSubNum).nets.empty()) {
     bout << "|#2Not networked.\r\n";

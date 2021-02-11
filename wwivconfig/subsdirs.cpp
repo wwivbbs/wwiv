@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "wwivconfig/subsdirs.h"
 
 #include "core/file.h"
 #include "core/strings.h"
@@ -23,12 +24,9 @@
 #include "localui/input.h"
 #include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
-#include "wwivconfig/utility.h"
 
 #include <memory>
 #include <string>
-
-static constexpr int MAX_SUBS_DIRS = 4096;
 
 using std::unique_ptr;
 using std::string;
@@ -70,11 +68,11 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
     num_dirs = 32;
   }
 
-  if (num_subs > MAX_SUBS_DIRS) {
-    num_subs = MAX_SUBS_DIRS;
+  if (num_subs > max_num_subs_and_dirs) {
+    num_subs = max_num_subs_and_dirs;
   }
-  if (num_dirs > MAX_SUBS_DIRS) {
-    num_dirs = MAX_SUBS_DIRS;
+  if (num_dirs > max_num_subs_and_dirs) {
+    num_dirs = max_num_subs_and_dirs;
   }
 
   const auto nqscn_len =
@@ -179,21 +177,21 @@ void up_subs_dirs(wwiv::sdk::Config& config) {
       num_dirs = (num_dirs / 32 + 1) * 32;
     }
 
-    if (num_subs < 32) {
-      num_subs = 32;
+    if (num_subs < min_num_subs_and_dirs) {
+      num_subs = min_num_subs_and_dirs;
     }
-    if (num_dirs < 32) {
-      num_dirs = 32;
-    }
-
-    if (num_subs > MAX_SUBS_DIRS) {
-      num_subs = MAX_SUBS_DIRS;
-    }
-    if (num_dirs > MAX_SUBS_DIRS) {
-      num_dirs = MAX_SUBS_DIRS;
+    if (num_dirs < min_num_subs_and_dirs) {
+      num_dirs = min_num_subs_and_dirs;
     }
 
-    if ((num_subs != config.max_subs()) || (num_dirs != config.max_dirs())) {
+    if (num_subs > max_num_subs_and_dirs) {
+      num_subs = max_num_subs_and_dirs;
+    }
+    if (num_dirs > max_num_subs_and_dirs) {
+      num_dirs = max_num_subs_and_dirs;
+    }
+
+    if (num_subs != config.max_subs() || num_dirs != config.max_dirs()) {
       const auto text = fmt::format("Change to {} subs and {} dirs? ", num_subs, num_dirs);
       if (dialog_yn(window.get(), text)) {
         window->SetColor(SchemeId::INFO);

@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "wwivconfig/newinit.h"
 
+
+#include "subsdirs.h"
 #include "core/datafile.h"
 #include "core/datetime.h"
 #include "core/file.h"
@@ -176,8 +178,8 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   cfg.fsoffset = offsetof(userrec, forwardsys);
   cfg.fnoffset = offsetof(userrec, net_num);
 
-  cfg.max_subs = 64;
-  cfg.max_dirs = 64;
+  cfg.max_subs = default_num_subs;
+  cfg.max_dirs = default_num_dirs;
   cfg.qscn_len =
       4 * (1 + cfg.max_subs + (cfg.max_subs + 31) / 32 + (cfg.max_dirs + 31) / 32);
 
@@ -323,7 +325,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 }
 
 bool new_init(UIWindow* window, const string& bbsdir, bool unzip_files) {
-  static const vector<string> dirnames = {
+  const std::vector<std::string> dirnames = {
       "attach", "data",        "data/regions", "data/zip-city", "gfiles",  "gfiles/menus", "msgs",
       "dloads", "dloads/misc", "dloads/sysop", "temp",          "temp/1",  "temp/2",       "temp/3",
       "temp/4", "batch",       "batch/1",      "batch/2",       "batch/3", "batch/4"};

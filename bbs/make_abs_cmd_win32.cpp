@@ -34,7 +34,7 @@ using namespace wwiv::strings;
 
 void make_abs_cmd(const std::filesystem::path& root, std::string* out) {
   
-  static const vector<string> exts{
+  const std::vector<std::string> exts{
     "",
     ".com",
     ".exe",

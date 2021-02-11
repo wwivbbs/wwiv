@@ -831,7 +831,7 @@ short SelectColor(int which) {
 }
 
 static void update_user_config_screen(uploadsrec* u, int which) {
-  static const vector<string> lp_color_list{
+  const vector<string> lp_color_list{
       "Black   ",
       "Blue    ",
       "Green   ",

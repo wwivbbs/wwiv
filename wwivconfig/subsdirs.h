@@ -21,6 +21,11 @@
 
 #include "sdk/config.h"
 
+static constexpr int min_num_subs_and_dirs = 128;
+static constexpr int default_num_subs = 256;
+static constexpr int default_num_dirs = 128;
+static constexpr int max_num_subs_and_dirs = 4096;
+
 void up_subs_dirs(wwiv::sdk::Config& config);
 
 #endif // INCLUDED_WWIVCONFIG_SUBSDIRS_H
