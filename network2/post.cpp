@@ -174,7 +174,7 @@ static std::string set_to_string(const set<uint16_t>& lines) {
 
 bool send_post_to_subscribers(Context& context, Packet& template_packet,
                               const set<uint16_t>& subscribers_to_skip) {
-  LOG(INFO) << "DEBUG: send_post_to_subscribers; skipping: " << set_to_string(subscribers_to_skip);
+  VLOG(1) << "DEBUG: send_post_to_subscribers; skipping: " << set_to_string(subscribers_to_skip);
 
   if (template_packet.nh.main_type != main_type_new_post) {
     LOG(ERROR) << "Called send_post_to_subscribers on packet of wrong type.";

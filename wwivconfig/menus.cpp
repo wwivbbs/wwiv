@@ -47,22 +47,6 @@ using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static const std::vector<pair<wwiv::sdk::menus::menu_numflag_t, std::string>> numbers_action = {
-    {menus::menu_numflag_t::none, "Nothing"},
-    {menus::menu_numflag_t::subs, "Set Sub Number"},
-    {menus::menu_numflag_t::dirs, "Set Dir Number"}};
-
-static const std::vector<pair<menus::menu_logtype_t, std::string>> logging_action = {
-    {menus::menu_logtype_t::none, "Nothing"},
-    {menus::menu_logtype_t::command, "Command"},
-    {menus::menu_logtype_t::key, "Key"},
-    {menus::menu_logtype_t::description, "Description"}};
-static const std::vector<pair<menus::menu_help_display_t, std::string>> help_action = {
-    {menus::menu_help_display_t::never, "Never"},
-    {menus::menu_help_display_t::always, "Always"},
-    {menus::menu_help_display_t::on_entrance, "On Entrance"},
-    {menus::menu_help_display_t::user_choice, "User Choice"}};
-
 class ActionPickerSubDialog final : public SubDialog<std::string> {
 public:
   ActionPickerSubDialog(const Config& config, std::vector<menus::menu_command_help_t> cmds,
@@ -113,7 +97,7 @@ private:
 };
 
 static void edit_menu_action(const Config& config, menus::menu_action_56_t& a) {
-  static const auto cmds = menus::LoadCommandHelpJSON(config.datadir());
+  const auto cmds = menus::LoadCommandHelpJSON(config.datadir());
 
   EditItems items{};
   auto y = 1;
@@ -453,6 +437,23 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
     m.set_initialized(true);
     m.menu.title = "New WWIV Menu";
   }
+
+  const std::vector<pair<wwiv::sdk::menus::menu_numflag_t, std::string>> numbers_action = {
+      {menus::menu_numflag_t::none, "Nothing"},
+      {menus::menu_numflag_t::subs, "Set Sub Number"},
+      {menus::menu_numflag_t::dirs, "Set Dir Number"}};
+
+  const std::vector<pair<menus::menu_logtype_t, std::string>> logging_action = {
+      {menus::menu_logtype_t::none, "Nothing"},
+      {menus::menu_logtype_t::command, "Command"},
+      {menus::menu_logtype_t::key, "Key"},
+      {menus::menu_logtype_t::description, "Description"}};
+
+  const std::vector<pair<menus::menu_help_display_t, std::string>> help_action = {
+      {menus::menu_help_display_t::never, "Never"},
+      {menus::menu_help_display_t::always, "Always"},
+      {menus::menu_help_display_t::on_entrance, "On Entrance"},
+      {menus::menu_help_display_t::user_choice, "User Choice"}};
 
   EditItems items{};
   const auto title = StrCat("Menu: ", menu_name);

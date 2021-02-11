@@ -488,7 +488,7 @@ std::optional<std::vector<archive_entry_t>> list_archive(const std::filesystem::
     std::function<std::optional<std::vector<archive_entry_t>>(const std::filesystem::path&)> func;
   };
 
-  static const std::vector<arc_command> arc_t = {
+  const std::vector<arc_command> arc_t = {
     {"ZIP", list_archive_zip}, 
     {"ARC", list_archive_arc},
     {"LZH", list_archive_lzh},

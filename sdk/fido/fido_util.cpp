@@ -76,14 +76,13 @@ std::string bundle_name(const FidoAddress& source, const FidoAddress& dest, int 
 }
 
 std::vector<std::string> dow_prefixes() {
-  static const std::vector<string> dow = {"su", "mo", "tu", "we", "th", "fr", "sa", "su"};
-  return dow;
+  return std::vector<string> {"su", "mo", "tu", "we", "th", "fr", "sa", "su"};
 }
 
 std::string dow_extension(int dow_num, int bundle_number) {
   // TODO(rushfan): Should we assert of bundle_number > 25 (0-9=10, + a-z=26 = 0-35)
 
-  static const std::vector<string> dow = {"su", "mo", "tu", "we", "th", "fr", "sa", "su"};
+  const auto dow = dow_prefixes();
   auto ext = at(dow, dow_num);
   auto c = static_cast<char>('0' + bundle_number);
   if (bundle_number > 9) {
@@ -94,7 +93,6 @@ std::string dow_extension(int dow_num, int bundle_number) {
 }
 
 bool is_bundle_file(const std::string& name) {
-  static const std::vector<string> dow = {"su", "mo", "tu", "we", "th", "fr", "sa"};
   const auto dot = name.find_last_of('.');
   if (dot == string::npos) {
     return false;
@@ -105,6 +103,7 @@ bool is_bundle_file(const std::string& name) {
   }
   ext.pop_back();
   StringLowerCase(&ext);
+  auto dow = dow_prefixes();
   return contains(dow, ext);
 }
 

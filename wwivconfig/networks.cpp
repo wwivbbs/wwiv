@@ -17,25 +17,24 @@
 /*                                                                        */
 /**************************************************************************/
 // ReSharper disable CppAssignedValueIsNeverUsed
+#include "sdk/net/networks.h"
 #include "wwivconfig/networks.h"
 
 #include "core/file.h"
 #include "core/log.h"
-#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
 #include "localui/edit_items.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
-#include "localui/wwiv_curses.h"
-#include "sdk/fido/fido_callout.h"
 #include "sdk/filenames.h"
-#include "sdk/net/networks.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
+#include "sdk/fido/fido_callout.h"
 #include "wwivconfig/subacc.h"
 #include "wwivconfig/utility.h"
+
 #include <cstring>
 #include <memory>
 #include <string>
@@ -167,7 +166,7 @@ public:
     ++y;
     items.add(new Label("Nodelist Base:"),
               new StringEditItem<std::string&>(MAX_STRING_LEN, n->nodelist_base, EditLineMode::ALL),
-      "Base filename for the nodelist without path or extention. (e.g. FSXNET)", 1, y);
+      "Base filename for the nodelist without path or extension. (e.g. FSXNET)", 1, y);
     ++y;
     items.add(new Label("Inbound Dir:"),
               new StringFilePathItem(MAX_STRING_LEN, netdir_, n->inbound_dir), 1, y);
@@ -495,7 +494,7 @@ private:
 };
 
 static void edit_net(const Config& config, Networks& networks, int nn) {
-  static const vector<pair<network_type_t, string>> nettypes{
+  const std::vector<std::pair<network_type_t, std::string>> nettypes{
       {network_type_t::wwivnet, "WWIVnet "},
       {network_type_t::ftn, "Fido    "},
       {network_type_t::internet, "Internet"},
@@ -706,7 +705,7 @@ void networks(const wwiv::sdk::Config& config, std::set<int>& need_network3) {
               dialog_input_number(window, prompt, 1, wwiv::stl::size_int(networks.networks()) + 1);
           if (net_num > 0 && net_num <= wwiv::stl::ssize(networks.networks()) + 1) {
 
-            static const vector<string> nettypes{
+            const std::vector<std::string> nettypes{
                 {"WWIVnet "}, {"Fido    "}, {"Internet"}, {"Newsgroup (not supported yet)"}};
             const auto net_type =
                 input_select_item(window, "Select Network Type of (Q) to Quit: ", nettypes);

@@ -172,7 +172,7 @@ int WWIVMessageArea::number_of_messages() {
     return 0;
   }
 
-  const int file_num_records = static_cast<int>(sub.number_of_records());
+  const auto file_num_records = static_cast<int>(sub.number_of_records());
   const auto wwiv_header = ReadHeader(sub);
   if (!wwiv_header->initialized()) {
     // TODO: throw exception
@@ -378,10 +378,10 @@ int WWIVMessageArea::DeleteExcess() {
       return result;
     }
     if (!DeleteMessage(dm)) {
-      LOG(INFO) << "DeleteExcess: Failed to delete message #" << dm;
+      LOG(WARNING) << "DeleteExcess: Failed to delete message #" << dm;
       return result;
     }
-    LOG(INFO) << "DeleteExcess: Deleted message #" << dm;
+    VLOG(1) << "DeleteExcess: Deleted message #" << dm;
     ++result;
   }
   return result;
