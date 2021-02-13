@@ -25,6 +25,7 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace wwiv::wwivd {
@@ -41,8 +42,8 @@ public:
   enum class MailerModeResult { ALLOW, DENY };
 
   struct BlockedConnectionResult {
-    BlockedConnectionResult(const BlockedConnectionAction& a, const std::string& r)
-        : action(a), remote_peer(r) {}
+    BlockedConnectionResult(const BlockedConnectionAction& a, std::string r)
+        : action(a), remote_peer(std::move(r)) {}
     BlockedConnectionAction action{BlockedConnectionAction::ALLOW};
     std::string remote_peer;
   };

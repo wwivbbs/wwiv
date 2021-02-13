@@ -51,16 +51,26 @@ private:
   std::unordered_set<std::string> ips_;
 };
 
+struct auto_blocked_entry_t {
+  int count{0};
+  time_t expiration{0};
+};
+
 class AutoBlocker final {
 public:
-  AutoBlocker(std::shared_ptr<BadIp> bip, sdk::wwivd_blocking_t b);
+  AutoBlocker(std::shared_ptr<BadIp> bip, sdk::wwivd_blocking_t b, std::filesystem::path datadir);
   ~AutoBlocker();
+  void escalate_block(const std::string& ip);
   bool Connection(const std::string& ip);
+  bool Save();
 
 private:
+  bool Load();
   std::shared_ptr<BadIp> bip_;
   sdk::wwivd_blocking_t b_;
-  std::unordered_map<std::string, std::set<time_t>> sessions_;
+  std::filesystem::path datadir_;
+  std::map<std::string, std::set<time_t>> sessions_;
+  std::map<std::string, auto_blocked_entry_t> auto_blocked_;
 };
 
 } // namespace

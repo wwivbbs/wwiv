@@ -118,9 +118,6 @@ static void edit_blocking(const Config& config, wwivd_blocking_t& b, CursesWindo
   items.add(new Label("Use badip.txt?"), new BooleanEditItem(&b.use_badip_txt), 1, y);
 
   y++;
-  items.add(new Label("Press <ESC> for BBS?"), new BooleanEditItem(&b.mailer_mode), 1, y);
-
-  y++;
   items.add(new Label("Use CC Server?"), new BooleanEditItem(&b.use_dns_cc), 1, y);
 
   y++;
@@ -131,18 +128,36 @@ static void edit_blocking(const Config& config, wwivd_blocking_t& b, CursesWindo
   items.add(new Label("Blocked Countries:"),
             new SubDialogFunction<wwivd_blocking_t>(config, b, blocked_country_subdialog), 1, y);
 
-  y++;
-  items.add(new Label("Max Concurrent Sessions:"),
-            new NumberEditItem<int>(&b.max_concurrent_sessions), 1, y);
   y += 2;
   items.add(new Label("Enable Auto Blocking?"), new BooleanEditItem(&b.auto_blocklist), 1, y);
   y++;
-  items.add(new Label("Max Sessions Before Blocking:"),
+  items.add(new Label("# connects needed to block:"),
             new NumberEditItem<int>(&b.auto_bl_sessions), 1, y);
+  items.add(new Label("Within seconds:"), new NumberEditItem<int>(&b.auto_bl_seconds),
+            3, y);
   y++;
-  items.add(new Label("Max Seconds Before Blocking:"), new NumberEditItem<int>(&b.auto_bl_seconds),
-            1, y);
-
+  if (b.block_duration.size() < 1) {
+    b.block_duration.push_back("15m");
+  }
+  if (b.block_duration.size() < 2) {
+    b.block_duration.push_back("1h");
+  }
+  if (b.block_duration.size() < 3) {
+    b.block_duration.push_back("1d");
+  }
+  if (b.block_duration.size() < 4) {
+    b.block_duration.push_back("30d");
+  }
+  std::string t1 = "15m", t2 = "1h", t3 = "1d", t4="30d";
+  items.add(new Label("Blocking Time #1:"),
+            new StringEditItem<std::string&>(4, b.block_duration[0], EditLineMode::LOWER), 1, y);
+  items.add(new Label("#2:"),
+            new StringEditItem<std::string&>(4, b.block_duration[1], EditLineMode::LOWER), 3, y);
+  items.add(new Label("#3:"),
+            new StringEditItem<std::string&>(4, b.block_duration[2], EditLineMode::LOWER), 5, y);
+  items.add(new Label("#4:"),
+            new StringEditItem<std::string&>(4, b.block_duration[3], EditLineMode::LOWER), 7, y);
+  items.add_aligned_width_column(1);
   items.relayout_items_and_labels();
   items.Run("Blocking Configuration");
 }
@@ -294,24 +309,30 @@ void wwivd_ui(const Config& config) {
   items.add(new Label("Telnet Port:"),
             new NumberEditItem<int>(&c.telnet_port),
             "Telnet Server Port Number (or -1 to disable).", 1, y);
-  y++;
+  //y++;
   items.add(new Label("SSH Port:"),
             new NumberEditItem<int>(&c.ssh_port),
-            "SSH Server Port Number (or -1 to disable).", 1, y);
-  y++;
-  items.add(new Label("Status Port:"),
-            new NumberEditItem<int>(&c.http_port),
-            "Used for BBS node status [/status] (or -1 to disable).", 1, y);
+            "SSH Server Port Number (or -1 to disable).", 3, y);
   y++;
   items.add(
       new Label("Status Address:"),
       new StringEditItem<std::string&>(16, c.http_address, EditLineMode::ALL),
       "Network address for the BBS node status HTTP Server.", 1, y);
+  items.add(new Label("Status Port:"),
+            new NumberEditItem<int>(&c.http_port),
+            "Used for BBS node status [/status] (or -1 to disable).", 3, y);
   y++;
   items.add(new Label("BinkP Port:"),
             new NumberEditItem<int>(&c.binkp_port),
             "BINKP Server Port Number (or -1 to disable).", 1, y);
   y++;
+  items.add(new Label("Fake Mailer?"), new BooleanEditItem(&c.blocking.mailer_mode), 
+    "Emulate legacy FTN mailer with a 'Press <ESC> for BBS' prompt as a captcha.", 1, y);
+  y++;
+  items.add(new Label("Max Concurrent:"),
+            new NumberEditItem<int>(&c.blocking.max_concurrent_sessions), 
+    "Maximum number of concurrent sessions allowed per IP address.", 1, y);
+  y+=2;
   items.add(new Label("Launch Minimized:"),
             new BooleanEditItem(&c.launch_minimized),
             "Should wwivd launch bbs and network commands minimized (WIN32 Only)", 1, y);
@@ -324,7 +345,8 @@ void wwivd_ui(const Config& config) {
       new Label("BeginDay Cmd:"),
       new StringEditItem<std::string&>(52, c.beginday_cmd, EditLineMode::ALL),
       "Command to execute for the beginday event.", 1, y);
-  y++;
+
+  y+=2;
   items.add(new Label("Net Callouts:"),
             new BooleanEditItem(&c.do_network_callouts),
             "Command to execute to perform a network callout.", 1, y);
@@ -338,7 +360,7 @@ void wwivd_ui(const Config& config) {
   items.add(new Label("Net receive cmd:"),
             new StringEditItem<std::string&>(52, c.binkp_cmd, EditLineMode::ALL),
             "Command to execute for an inbound network request.", 1, y);
-  y++;
+  y+=2;
   items.add(
       new Label("Matrix Filename:"),
       new StringEditItem<std::string&>(12, c.matrix_filename, EditLineMode::ALL),
@@ -353,6 +375,7 @@ void wwivd_ui(const Config& config) {
       new SubDialogFunction<wwivd_blocking_t>(config, c.blocking, edit_blocking),
       "IP Blocking Settings.", 1, y);
 
+  items.add_aligned_width_column(1);
   items.relayout_items_and_labels();
   items.Run("wwivd Configuration");
   if (!SaveDaemonConfig(config, c)) {

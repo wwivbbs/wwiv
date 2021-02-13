@@ -138,8 +138,36 @@ std::string to_string(duration<double> dd) {
     os << ms.count() << "ms";
   }
   return os.str();
-};
+}
 
+std::optional<duration<double>> parse_time_span(const std::string& s) {
+  if (s.length() < 2) {
+    return std::nullopt;
+  }
+
+  // we don't allow negative timespans, so we'll fail on those.
+  if (!isdigit(s.front())) {
+    return std::nullopt;
+  }
+  const auto num = wwiv::strings::to_number<int>(s.substr(0, s.size() - 1));
+  if (num == 0) {
+    return std::nullopt;
+  }
+
+  const auto qchar = to_lower_case(s.back());
+  switch (qchar) {
+  case 's':
+    return seconds(num);
+  case 'm':
+    return minutes(num);
+  case 'h':
+    return hours(num);
+  case 'd':
+    return hours(num * 24);
+  default:
+    return std::nullopt;
+  }
+}
 
 int years_old(int m, int d, int y, Clock& clock) {
   const auto t = clock.Now();

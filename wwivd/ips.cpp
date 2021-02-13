@@ -99,10 +99,58 @@ bool BadIp::Block(const std::string& ip) {
   return written > 0;
 }
 
-AutoBlocker::AutoBlocker(std::shared_ptr<BadIp> bip, wwivd_blocking_t b)
-    : bip_(std::move(bip)), b_(std::move(b)) {}
+AutoBlocker::AutoBlocker(std::shared_ptr<BadIp> bip, wwivd_blocking_t b, std::filesystem::path datadir)
+    : bip_(std::move(bip)), b_(std::move(b)), datadir_(std::move(datadir)) {
+  if (b_.block_duration.empty()) {
+    b_.block_duration.emplace_back("15m");
+  }
+  if (b_.block_duration.size() < 2) {
+    b_.block_duration.emplace_back("1h");
+  }
+  if (b_.block_duration.size() < 3) {
+    b_.block_duration.emplace_back("1d");
+  }
+  if (b_.block_duration.size() < 4) {
+    b_.block_duration.emplace_back("30d");
+  }
+  auto modified = !Load();
+
+  // Cleanup the autoblock list.
+  const auto now = DateTime::now().to_time_t();
+  for (auto iter = std::begin(auto_blocked_); iter != std::end(auto_blocked_); ) {
+    if (iter->second.expiration < now) {
+      iter = auto_blocked_.erase(iter);
+      modified = true;
+    } else {
+      ++iter;
+    }
+  }
+  if (modified) {
+    Save();
+  }
+}
 
 AutoBlocker::~AutoBlocker() = default;
+
+
+void AutoBlocker::escalate_block(const std::string& ip) {
+  LOG(INFO) << "escalate_block: " << ip;
+  auto& item = auto_blocked_[ip];
+  const auto now = DateTime::now();
+  item.count++;
+  if (item.count <= 4) {
+    const auto bt = parse_time_span(at(b_.block_duration, item.count - 1)).value_or(std::chrono::minutes(60));
+    LOG(INFO) << "escalate_block: count: " << item.count << "; new blocked time: " << wwiv::core::to_string(bt);
+    const auto exp = now + bt;
+    item.expiration = exp.to_time_t();
+  } else {
+    LOG(INFO) << "escalate_block: permanent block; count: " << item.count;
+    // We've run out of auto-blocks.  Replace this with the permanent one.
+    auto_blocked_.erase(ip);
+    bip_->Block(ip);
+  }
+  Save();
+}
 
 bool AutoBlocker::Connection(const std::string& ip) {
   VLOG(1) << "AutoBlocker::Connection: " << ip;
@@ -110,13 +158,27 @@ bool AutoBlocker::Connection(const std::string& ip) {
     return true;
   }
 
+  const auto now = DateTime::now();
+
+  if (const auto iter = auto_blocked_.find(ip); iter != std::end(auto_blocked_)) {
+    if (iter->second.expiration > now.to_time_t()) {
+      // We have an auto-block and we're still blocked.
+      LOG(INFO) << "Still in auto-block for IP" << ip;
+      return false;
+    }
+    // We're good.  Remove this entry.
+    auto_blocked_.erase(iter);
+    Save();
+  }
+
+
   const auto auto_bl_sessions = b_.auto_bl_sessions;
   const auto auto_bl_seconds = b_.auto_bl_seconds;
-  const auto now = DateTime::now();
   const auto oldest_in_window = now.to_time_t() - auto_bl_seconds;
   auto& s = sessions_[ip];
   s.emplace(now.to_time_t());
   if (s.size() == 1) {
+    VLOG(1) << "OK: num sessions: " << ssize(s);
     return true;
   }
 
@@ -131,10 +193,30 @@ bool AutoBlocker::Connection(const std::string& ip) {
   if (ssize(s) > auto_bl_sessions) {
     LOG(INFO) << "Blocking since we have " << s.size() << " sessions within " << auto_bl_seconds
               << " seconds.";
-    bip_->Block(ip);
+    // Don't do the hard block here, just escalate.
+    escalate_block(ip);
     return false;
   }
+  VLOG(1) << "OK: num sessions: " << ssize(s);
   return true;
+}
+
+template <class Archive>
+void serialize(Archive & ar, auto_blocked_entry_t &a) {
+  SERIALIZE(a, count);
+  SERIALIZE(a, expiration);
+}
+
+bool AutoBlocker::Save() {
+  LOG(INFO) << "AutoBlocker: Save";
+  JsonFile<std::map<std::string, auto_blocked_entry_t>> file(FilePath(datadir_, "wwivd.autoblock.json"), "autoblock", auto_blocked_);
+  return file.Save();
+}
+
+bool AutoBlocker::Load() {
+  LOG(INFO) << "AutoBlocker: Load";
+  JsonFile<std::map<std::string, auto_blocked_entry_t>> file(FilePath(datadir_, "wwivd.autoblock.json"), "autoblock", auto_blocked_);
+  return file.Load();
 }
 
 } // namespace wwiv::wwivd

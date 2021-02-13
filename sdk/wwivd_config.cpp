@@ -63,6 +63,7 @@ void serialize(Archive& ar, wwivd_blocking_t &b) {
   SERIALIZE(b, use_dns_cc);
   SERIALIZE(b, dns_cc_server);
   SERIALIZE(b, block_cc_countries);
+  SERIALIZE(b, block_duration);
 }
 
 template <class Archive>

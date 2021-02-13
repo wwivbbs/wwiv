@@ -43,6 +43,7 @@ struct wwivd_blocking_t {
   // zz.countries.nerd.dk
   std::string dns_cc_server{"zz.countries.nerd.dk"};
   std::vector<int> block_cc_countries;
+  std::vector<std::string> block_duration;
 };
 
 struct wwivd_matrix_entry_t {

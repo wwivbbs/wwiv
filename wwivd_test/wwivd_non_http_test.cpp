@@ -70,9 +70,9 @@ TEST(AutoBlock, ShouldBlock) {
   b.auto_bl_seconds = 1;
   b.auto_bl_sessions = 1;
   FileHelper helper;
-  auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
+  const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   auto bip = std::make_shared<BadIp>(fn.string());
-  AutoBlocker blocker(bip, b);
+  AutoBlocker blocker(bip, b, helper.TempDir());
   EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");
   wwiv::os::sleep_for(1s);
@@ -86,9 +86,9 @@ TEST(AutoBlock, ShouldNotBlock) {
   b.auto_bl_seconds = 1;
   b.auto_bl_sessions = 1;
   FileHelper helper;
-  auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
+  const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   auto bip = std::make_shared<BadIp>(fn.string());
-  AutoBlocker blocker(bip, b);
+  AutoBlocker blocker(bip, b, helper.TempDir());
   EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");
   wwiv::os::sleep_for(2s);
