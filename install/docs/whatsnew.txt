@@ -9,6 +9,16 @@ Legend (starting with 5.3)
 - Feature removed
 * Change or cleanup
 
+
+What's New in WWIV 5.7.0 (2021)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Improve autoblocker in wwivd (#1359)
+  WWIV's autoblocker now gives variable automatic blocking for fixed
+  time periods 4 times before adding a permanent ban to badips.txt.
+  The way you trigger the blocking is to have more than X connections within
+  Y seconds, where X and Y are defined in wwivconfig's wwivd blocking page.
+
+
 What's New in WWIV 5.6.1 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 + Added wwivutil users asv command.  This can increase user attributes to match

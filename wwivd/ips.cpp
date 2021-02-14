@@ -166,9 +166,9 @@ bool AutoBlocker::Connection(const std::string& ip) {
       LOG(INFO) << "Still in auto-block for ip: " << ip;
       return false;
     }
-    // We're good.  Remove this entry.
-    auto_blocked_.erase(iter);
-    Save();
+    // TODO: We're good.  Remove this entry once it ages out, what'd be an appropriate age? 1d? 1week? 1 month?
+    // auto_blocked_.erase(iter);
+    // Save();
   }
 
 
