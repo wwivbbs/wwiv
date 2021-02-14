@@ -163,7 +163,7 @@ bool AutoBlocker::Connection(const std::string& ip) {
   if (const auto iter = auto_blocked_.find(ip); iter != std::end(auto_blocked_)) {
     if (iter->second.expiration > now.to_time_t()) {
       // We have an auto-block and we're still blocked.
-      LOG(INFO) << "Still in auto-block for IP" << ip;
+      LOG(INFO) << "Still in auto-block for ip: " << ip;
       return false;
     }
     // We're good.  Remove this entry.

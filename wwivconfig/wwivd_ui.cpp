@@ -112,51 +112,61 @@ static void blocked_country_subdialog(const Config&, wwivd_blocking_t& b_, Curse
 static void edit_blocking(const Config& config, wwivd_blocking_t& b, CursesWindow*) {
   EditItems items{};
   int y = 1;
-  items.add(new Label("Use goodip.txt?"), new BooleanEditItem(&b.use_goodip_txt), 1, y);
+  items.add(new Label("Use goodip.txt?"), new BooleanEditItem(&b.use_goodip_txt), 
+    "If enabled, use an allow-list in data/goodip.txt", 1, y);
 
   y++;
-  items.add(new Label("Use badip.txt?"), new BooleanEditItem(&b.use_badip_txt), 1, y);
+  items.add(new Label("Use badip.txt?"), new BooleanEditItem(&b.use_badip_txt), 
+    "If enabled, use an block-list in data/badip.txt", 1, y);
 
   y++;
-  items.add(new Label("Use CC Server?"), new BooleanEditItem(&b.use_dns_cc), 1, y);
+  items.add(new Label("Use CC Server?"), new BooleanEditItem(&b.use_dns_cc), 
+    "Use a server to lookup country codes like (zz.countries.nerd.dk)", 1, y);
 
   y++;
   items.add(new Label("DNS CC Server:"),
-            new StringEditItem<std::string&>(40, b.dns_cc_server, EditLineMode::ALL), 1, y);
+            new StringEditItem<std::string&>(40, b.dns_cc_server, EditLineMode::ALL), 
+    "DNS CC server to use (format must match that of zz.countries.nerd.dk)", 1, y);
 
   y++;
   items.add(new Label("Blocked Countries:"),
-            new SubDialogFunction<wwivd_blocking_t>(config, b, blocked_country_subdialog), 1, y);
+            new SubDialogFunction<wwivd_blocking_t>(config, b, blocked_country_subdialog), 
+    "List of ISO 3166 country codes (numeric) to block", 1, y);
 
   y += 2;
-  items.add(new Label("Enable Auto Blocking?"), new BooleanEditItem(&b.auto_blocklist), 1, y);
+  items.add(new Label("Enable Auto Blocking?"), new BooleanEditItem(&b.auto_blocklist), 
+    "Enable auto-blocking rules", 1, y);
   y++;
   items.add(new Label("# connects needed to block:"),
-            new NumberEditItem<int>(&b.auto_bl_sessions), 1, y);
+            new NumberEditItem<int>(&b.auto_bl_sessions), 
+    "Auto-block X connection within Y seconds", 1, y);
   items.add(new Label("Within seconds:"), new NumberEditItem<int>(&b.auto_bl_seconds),
-            3, y);
+            "Auto-block X connection within Y seconds", 3, y);
   y++;
-  if (b.block_duration.size() < 1) {
-    b.block_duration.push_back("15m");
+  if (b.block_duration.empty()) {
+    b.block_duration.emplace_back("15m");
   }
   if (b.block_duration.size() < 2) {
-    b.block_duration.push_back("1h");
+    b.block_duration.emplace_back("1h");
   }
   if (b.block_duration.size() < 3) {
-    b.block_duration.push_back("1d");
+    b.block_duration.emplace_back("1d");
   }
   if (b.block_duration.size() < 4) {
-    b.block_duration.push_back("30d");
+    b.block_duration.emplace_back("30d");
   }
-  std::string t1 = "15m", t2 = "1h", t3 = "1d", t4="30d";
   items.add(new Label("Blocking Time #1:"),
-            new StringEditItem<std::string&>(4, b.block_duration[0], EditLineMode::LOWER), 1, y);
+            new StringEditItem<std::string&>(4, b.block_duration[0], EditLineMode::LOWER), 
+    "Amount of time to block when banning for the nth time", 1, y);
   items.add(new Label("#2:"),
-            new StringEditItem<std::string&>(4, b.block_duration[1], EditLineMode::LOWER), 3, y);
+            new StringEditItem<std::string&>(4, b.block_duration[1], EditLineMode::LOWER), 
+    "Amount of time to block when banning for the nth time", 3, y);
   items.add(new Label("#3:"),
-            new StringEditItem<std::string&>(4, b.block_duration[2], EditLineMode::LOWER), 5, y);
+            new StringEditItem<std::string&>(4, b.block_duration[2], EditLineMode::LOWER), 
+    "Amount of time to block when banning for the nth time", 5, y);
   items.add(new Label("#4:"),
-            new StringEditItem<std::string&>(4, b.block_duration[3], EditLineMode::LOWER), 7, y);
+            new StringEditItem<std::string&>(4, b.block_duration[3], EditLineMode::LOWER), 
+    "Amount of time to block when banning for the nth time", 7, y);
   items.add_aligned_width_column(1);
   items.relayout_items_and_labels();
   items.Run("Blocking Configuration");
