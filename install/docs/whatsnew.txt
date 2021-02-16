@@ -23,7 +23,7 @@ What's New in WWIV 5.7.0 (2021)
   The first never worked, therefore neither did the second and also isn't really
   need anymore.
 * Added new setting in wwivconfig for fine grained newuser info.
-
+* Removed WFC_SCREEN from wwiv.ini, it had no effect.
 
 What's New in WWIV 5.6.1 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
