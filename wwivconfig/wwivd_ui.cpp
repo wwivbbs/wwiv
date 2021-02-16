@@ -35,26 +35,6 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-/**
- * EditItem that executes a std::function<T, CursesWindow*> to
- * edit the items. It is intended that this function will invoke
- * a new EditItem dialog or ListBox for editing.
- */
-template <class T> class SubDialogFunction final : public SubDialog<T> {
-public:
-  SubDialogFunction(const Config& c, T& t,
-                    std::function<void(const Config&, T&, CursesWindow*)> fn)
-      : SubDialog<T>(c, t), c_(c), t__(t), fn_(std::move(fn)) {}
-  ~SubDialogFunction() override = default;
-
-  void RunSubDialog(CursesWindow* window) override { fn_(c_, t__, window); }
-
-private:
-  // For some reason GCC couldn't find config() or t_ from SubDialog.
-  const Config& c_;
-  T& t__;
-  std::function<void(const Config&, T&, CursesWindow*)> fn_;
-};
 
 static void blocked_country_subdialog(const Config&, wwivd_blocking_t& b_, CursesWindow* window) {
   auto done = false;

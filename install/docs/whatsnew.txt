@@ -17,6 +17,12 @@ What's New in WWIV 5.7.0 (2021)
   time periods 4 times before adding a permanent ban to badips.txt.
   The way you trigger the blocking is to have more than X connections within
   Y seconds, where X and Y are defined in wwivconfig's wwivd blocking page.
+* Removed the following from wwiv.ini:
+  CHECK_DUP_PHONES       = N 
+  HANGUP_DUP_PHONES      = N 
+  The first never worked, therefore neither did the second and also isn't really
+  need anymore.
+* Added new setting in wwivconfig for fine grained newuser info.
 
 
 What's New in WWIV 5.6.1 (2021)

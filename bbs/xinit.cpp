@@ -186,8 +186,8 @@ static std::string to_array_key(const std::string& n, const std::string& index) 
 
 static std::vector<ini_flags_type> sysinfo_flags = {
     {INI_STR_FORCE_FBACK, OP_FLAGS_FORCE_NEWUSER_FEEDBACK},
-    {INI_STR_CHECK_DUP_PHONES, OP_FLAGS_CHECK_DUPE_PHONENUM},
-    {INI_STR_HANGUP_DUP_PHONES, OP_FLAGS_HANGUP_DUPE_PHONENUM},
+    //{INI_STR_CHECK_DUP_PHONES, OP_FLAGS_CHECK_DUPE_PHONENUM},
+    //{INI_STR_HANGUP_DUP_PHONES, OP_FLAGS_HANGUP_DUPE_PHONENUM},
     {INI_STR_USE_SIMPLE_ASV, OP_FLAGS_SIMPLE_ASV},
     {INI_STR_POSTTIME_COMPENS, OP_FLAGS_POSTTIME_COMPENSATE},
     {INI_STR_IDZ_DESC, OP_FLAGS_IDZ_DESC},
@@ -726,8 +726,8 @@ void Application::create_phone_file() {
         continue;
       }
       p.usernum = temp_user_number;
-      std::string voice_num = user.GetVoicePhoneNumber();
-      std::string data_num = user.GetDataPhoneNumber();
+      auto voice_num = user.voice_phone();
+      auto data_num = user.data_phone();
       if (!voice_num.empty() && voice_num.find("000-") == std::string::npos) {
         to_char_array(p.phone, voice_num);
         phoneNumFile.Write(&p, sizeof(phonerec));

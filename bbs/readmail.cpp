@@ -336,7 +336,6 @@ void readmail(int mode) {
   mailrec m1{};
   char ch;
   int num_mail, num_mail1;
-  net_system_list_rec* csne;
   filestatusrec fsr{};
   auto attach_exists = false;
   auto found = false;
@@ -425,7 +424,7 @@ void readmail(int mode) {
           }
         } else {
           set_net_num(nn);
-          csne = next_system(m.fromsys);
+          auto csne = next_system(m.fromsys);
           string system_name;
           if (csne) {
             system_name = csne->name;

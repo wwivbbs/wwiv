@@ -53,6 +53,20 @@ template <class Archive> void serialize(Archive& ar, valrec& n) {
   SERIALIZE(n, restrict);
 }
 
+template <class Archive> void serialize(Archive& ar, newuser_config_t& n) {
+  SERIALIZE(n, use_real_name);
+  SERIALIZE(n, use_voice_phone);
+  SERIALIZE(n, use_data_phone);
+  SERIALIZE(n, use_address_street);
+  SERIALIZE(n, use_address_city_state);
+  SERIALIZE(n, use_address_zipcode);
+  SERIALIZE(n, use_address_country);
+  SERIALIZE(n, use_callsign);
+  SERIALIZE(n, use_gender);
+  SERIALIZE(n, use_birthday);
+  SERIALIZE(n, use_computer_type);
+  SERIALIZE(n, use_email_address);
+}
 
 template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, header);
@@ -75,6 +89,7 @@ template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, newuserdsl);
   SERIALIZE(n, newusergold);
   SERIALIZE(n, newuser_restrict);
+  SERIALIZE(n, newuser_config);
 
   SERIALIZE(n, newuploads);
   SERIALIZE(n, sysconfig);

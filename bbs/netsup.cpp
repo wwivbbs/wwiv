@@ -144,7 +144,7 @@ static void do_callout(const net_networks_rec& net, int sn) {
   if (!contact_rec) {
     return;
   }
-  auto* const csne = next_system(callout_rec->sysnum);
+  auto const csne = next_system(callout_rec->sysnum);
   if (!csne) {
     return;
   }
@@ -443,7 +443,7 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   if (!ncn) {
     return;
   }
-  auto* csne = next_system(sn);
+  auto csne = next_system(sn);
   if (!csne) {
     return;
   }

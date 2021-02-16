@@ -331,10 +331,10 @@ void list_users(int mode) {
     }
     if (szFindText[0] != '\0') {
       char s5[ 41 ];
-      strcpy(s5, user.GetCity());
+      to_char_array(s5, user.city());
       if (!strstr(user.GetName(), szFindText) &&
           !strstr(strupr(s5), szFindText) &&
-          !strstr(user.GetState(), szFindText)) {
+          !strstr(user.state().c_str(), szFindText)) {
         ok = false;
       }
     }
@@ -345,8 +345,8 @@ void list_users(int mode) {
         user.last_bps(33600);
       }
       std::string city = "Unknown";
-      if (user.GetCity()[0] != '\0') {
-        city = fmt::format("{:.18}, {}", user.GetCity(), user.GetState());
+      if (!user.city().empty()) {
+        city = fmt::format("{:.18}, {}", user.city(), user.state());
       }
       auto properName = properize(user.name());
       const auto line = fmt::sprintf("|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 "

@@ -358,48 +358,54 @@ class User final {
   void callsign(const std::string& s) {
     strcpy(reinterpret_cast<char*>(data.callsign), s.c_str());
   }
-  [[nodiscard]] const char *GetVoicePhoneNumber() const {
-    return reinterpret_cast<const char*>(data.phone);
+
+  [[nodiscard]] std::string voice_phone() const {
+    return data.phone;
   }
-  void SetVoicePhoneNumber(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.phone), s);
+  void voice_phone(const std::string& s) {
+    wwiv::strings::to_char_array(data.phone, s);
   }
-  [[nodiscard]] const char *GetDataPhoneNumber() const {
-    return reinterpret_cast<const char*>(data.dataphone);
+
+  [[nodiscard]] std::string data_phone() const {
+    return data.dataphone;
   }
-  void SetDataPhoneNumber(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.dataphone), s);
+  void data_phone(const std::string& s) {
+    wwiv::strings::to_char_array(data.dataphone, s);
   }
-  [[nodiscard]] const char *GetStreet() const {
-    return reinterpret_cast<const char*>(data.street);
+
+  [[nodiscard]] const std::string street() const {
+    return data.street;
   }
-  void SetStreet(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.street), s);
+  void street(const std::string& s) {
+    wwiv::strings::to_char_array(data.street, s);
   }
-  [[nodiscard]] const char *GetCity() const {
-    return reinterpret_cast<const char*>(data.city);
+  [[nodiscard]] std::string city() const {
+    return data.city;
   }
-  void SetCity(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.city), s);
+  void city(const std::string& s) {
+    wwiv::strings::to_char_array(data.city, s);
   }
-  [[nodiscard]] const char *GetState() const {
-    return reinterpret_cast<const char*>(data.state);
+  [[nodiscard]] const std::string state() const {
+    return data.state;
   }
-  void SetState(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.state), s);
+  void state(const std::string& s) {
+    wwiv::strings::to_char_array(data.state, s);
   }
-  [[nodiscard]] const char *GetCountry() const {
-    return reinterpret_cast<const char*>(data.country);
+
+  [[nodiscard]] const std::string country() const {
+    return data.country;
   }
-  void SetCountry(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.country) , s);
+  void country(const std::string& s) {
+    wwiv::strings::to_char_array(data.country, s);
   }
-  [[nodiscard]] const char *GetZipcode() const {
-    return reinterpret_cast<const char*>(data.zipcode);
+
+  [[nodiscard]] const std::string zip_code() const {
+    return data.zipcode;
   }
-  void SetZipcode(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.zipcode), s);
+  void zip_code(const std::string& s) {
+    wwiv::strings::to_char_array(data.zipcode, s);
   }
+
   [[nodiscard]] std::string password() const {
     return std::string(reinterpret_cast<const char*>(data.pw));
   }

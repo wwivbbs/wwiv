@@ -175,7 +175,7 @@ void CreateDoorInfoDropFile() {
       f.WriteLine();
     }
     if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
-      f.WriteLine(StrCat(a()->user()->GetCity(), ", ", a()->user()->GetState()));
+      f.WriteLine(StrCat(a()->user()->city(), ", ", a()->user()->state()));
     } else {
       f.WriteLine();
     }
@@ -296,7 +296,7 @@ void CreateCallInfoBbsDropFile() {
     file.WriteLine("0");
     file.WriteLine("0");
     file.Write(fmt::sprintf("%s\n%s 00:01\nEXPERT\nN\n%s\n%d\n%d\n1\n%d\n%d\n%s\n%s\n%d\n",
-                        a()->user()->GetVoicePhoneNumber(), a()->user()->laston(),
+                        a()->user()->voice_phone(), a()->user()->laston(),
                         a()->user()->laston(), a()->user()->logons(),
                         a()->user()->GetScreenLines(), a()->user()->uploaded(),
                         a()->user()->downloaded(), "8N1",
@@ -373,10 +373,9 @@ void CreateDoorSysDropFile() {
 
   TextFile file(fileName, "wd");
   if (file.IsOpen()) {
-    char szLine[255];
     const auto cspeed = std::to_string(a()->modem_speed_);
     const auto real_name = a()->user()->real_name();
-    sprintf(szLine, "COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
+    auto line = fmt::sprintf("COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
             (a()->sess().using_modem()) ? a()->primary_port() : 0, cspeed.c_str(), '8',
             a()->instance_number(), // node
             (a()->sess().using_modem()) ? a()->modem_speed_ : 38400,
@@ -384,17 +383,17 @@ void CreateDoorSysDropFile() {
             'N', // log to printer
             'N', // page bell
             'N', // caller alarm
-            real_name.c_str(), a()->user()->GetCity(), a()->user()->GetState());
-    file.Write(szLine);
-    sprintf(szLine, "%s\n%s\n%s\n%d\n%u\n%s\n%u\n%ld\n", a()->user()->GetVoicePhoneNumber(),
+            real_name.c_str(), a()->user()->city(), a()->user()->state());
+    file.Write(line);
+    line = fmt::sprintf("%s\n%s\n%s\n%d\n%u\n%s\n%u\n%ld\n", a()->user()->voice_phone().c_str(),
             real_name.c_str(),
             "X", // a()->user()->password()
             a()->user()->sl(), a()->user()->logons(), a()->user()->laston().c_str(),
             static_cast<uint32_t>(60L * GetMinutesRemainingForDropFile()),
             GetMinutesRemainingForDropFile());
-    file.Write(szLine);
+    file.Write(line);
     const auto* const ansiStatus = okansi() ? "GR" : "NG";
-    sprintf(szLine, "%s\n%u\n%c\n%s\n%u\n%s\n%u\n%c\n%u\n%u\n%u\n%d\n", ansiStatus,
+    line = fmt::sprintf("%s\n%u\n%c\n%s\n%u\n%s\n%u\n%c\n%u\n%u\n%u\n%d\n", ansiStatus,
             a()->user()->GetScreenLines(), a()->user()->IsExpert() ? 'Y' : 'N',
             "1,2,3",                     // conferences
             a()->current_user_sub_num(), // current 'conference'
@@ -404,11 +403,11 @@ void CreateDoorSysDropFile() {
             a()->user()->uploaded(), a()->user()->downloaded(),
             0,  // kb dl today
             0); // kb dl/day max
-    file.Write(szLine);
+    file.Write(line);
     const auto birthday_date = a()->user()->birthday_mmddyy();
     const auto gfilesdir = a()->config()->gfilesdir();
     const auto t = times();
-    sprintf(szLine, "%s\n%s\n%s\n%s\n%s\n%s\n%c\n%c\n%c\n%u\n%u\n%s\n%-.5s\n%s\n", 
+    line = fmt::sprintf("%s\n%s\n%s\n%s\n%s\n%s\n%c\n%c\n%c\n%u\n%u\n%s\n%-.5s\n%s\n", 
             birthday_date.c_str(),
             a()->config()->datadir().c_str(), gfilesdir.c_str(),
             a()->config()->sysop_name().c_str(), a()->user()->GetName(),
@@ -420,13 +419,13 @@ void CreateDoorSysDropFile() {
             a()->user()->laston().c_str(), // last n-scan date
             t.c_str(),
             "00:01"); // time last call
-    file.Write(szLine);
-    sprintf(szLine, "%u\n%u\n%d\n%d\n%s\n%u\n%d\n",
+    file.Write(line);
+    line = fmt::sprintf("%u\n%u\n%d\n%d\n%s\n%u\n%d\n",
             99, // max files dl/day
             0,  // files dl today so far
             a()->user()->uk(), a()->user()->dk(), a()->user()->note().c_str(),
             a()->user()->chains_run(), a()->user()->messages_posted());
-    file.Write(szLine);
+    file.Write(line);
     file.Close();
   }
 }

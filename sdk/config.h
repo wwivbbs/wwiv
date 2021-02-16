@@ -32,6 +32,21 @@ struct config_header_t {
   int config_revision_number;
 };
 
+struct newuser_config_t {
+  bool use_real_name{true};
+  bool use_voice_phone{true};
+  bool use_data_phone{false};
+  bool use_address_street{false};
+  bool use_address_city_state{true};
+  bool use_address_zipcode{true};
+  bool use_address_country{true};
+  bool use_callsign{true};
+  bool use_gender{false};
+  bool use_birthday{true};
+  bool use_computer_type{false};
+  bool use_email_address{true};
+};
+
 struct config_t {
   config_header_t header;
 
@@ -95,6 +110,8 @@ struct config_t {
   uint32_t wwiv_reg_number;
   // New User Password
   std::string newuserpw;
+  // New user config
+  newuser_config_t newuser_config;
   // Post/Call Ratio required to access transfers
   float post_call_ratio;
   // system status offset
@@ -240,6 +257,8 @@ public:
   void newuser_gold(float f) { config_.newusergold = f; }
   // New User password (password needed to create a new user account)
   [[nodiscard]] std::string newuser_password() const { return config_.newuserpw; }
+  // New user configuration
+  [[nodiscard]] newuser_config_t& newuser_config() { return config_.newuser_config; }
   void newuser_password(const std::string&);
   // New User restrictions given by default when they sign up.
   [[nodiscard]] uint16_t newuser_restrict() const { return config_.newuser_restrict; }

@@ -408,7 +408,6 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   auto nNumUsers = 0;
   messagerec msg{};
   string destination;
-  net_system_list_rec *csne = nullptr;
   struct {
     uint16_t user_number;
     uint16_t system_number;
@@ -440,6 +439,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
     return;
   }
   std::string destination_bbs_name;
+  std::optional<net_system_list_rec> csne;
   if (system_number) {
     csne = next_system(system_number);
     destination_bbs_name = csne->name;
@@ -523,7 +523,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
     bout << "|#9Name of system: |#2" << destination_bbs_name << wwiv::endl;
     if (a()->current_net().type == network_type_t::wwivnet) {
       bout.nl();
-      CHECK_NOTNULL(csne);
+      CHECK(csne.has_value());
       bout << "|#9Number of hops: |#2" << csne->numhops << wwiv::endl;
       bout.nl();
     }

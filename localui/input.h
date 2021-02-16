@@ -907,6 +907,27 @@ protected:
  * edit the items. It is intended that this function will invoke
  * a new EditItem dialog or ListBox for editing.
  */
+template <class T> class SubDialogFunction final : public SubDialog<T> {
+public:
+  SubDialogFunction(const wwiv::sdk::Config& c, T& t,
+                    std::function<void(const wwiv::sdk::Config&, T&, CursesWindow*)> fn)
+      : SubDialog<T>(c, t), c_(c), t__(t), fn_(std::move(fn)) {}
+  ~SubDialogFunction() override = default;
+
+  void RunSubDialog(CursesWindow* window) override { fn_(c_, t__, window); }
+
+private:
+  // For some reason GCC couldn't find config() or t_ from SubDialog.
+  const wwiv::sdk::Config& c_;
+  T& t__;
+  std::function<void(const wwiv::sdk::Config&, T&, CursesWindow*)> fn_;
+};
+
+/**
+ * EditItem that executes a std::function<T, CursesWindow*> to
+ * edit the items. It is intended that this function will invoke
+ * a new EditItem dialog or ListBox for editing.
+ */
 class EditExternalFileItem : public BaseEditItem {
 public:
   explicit EditExternalFileItem(std::filesystem::path path);

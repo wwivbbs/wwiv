@@ -112,7 +112,7 @@ static void CleanUserInfo() {
 }
 
 bool IsPhoneNumberUSAFormat(User *pUser) {
-  const string country = pUser->GetCountry();
+  const auto country = pUser->country();
   return country == "USA" || country == "CAN" || country == "MEX";
 }
 
@@ -210,10 +210,10 @@ bool IsPhoneRequired() {
 }
 
 bool VerifyPhoneNumber() {
-  if (IsPhoneNumberUSAFormat(a()->user()) || !a()->user()->GetCountry()[0]) {
+  if (IsPhoneNumberUSAFormat(a()->user()) || a()->user()->country().empty()) {
     auto phoneNumber = bin.input_password("PH: ###-###-", 4);
 
-    if (phoneNumber != &a()->user()->GetVoicePhoneNumber()[8]) {
+    if (phoneNumber != &a()->user()->voice_phone()[8]) {
       if (phoneNumber.length() == 4 && phoneNumber[3] == '-') {
         bout << "\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n";
       }
@@ -509,9 +509,9 @@ static std::string CreateLastOnLogLine(const Status& status) {
       username_num,
       t,
       f,
-      a()->user()->GetCity(),
-      a()->user()->GetState(),
-      a()->user()->GetCountry(),
+      a()->user()->city(),
+      a()->user()->state(),
+      a()->user()->country(),
       a()->GetCurrentSpeed(),
       a()->user()->ontoday());
   } else {
@@ -628,22 +628,22 @@ static void CheckAndUpdateUserInfo() {
   if (!(a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
     return;
   }
-  if (!a()->user()->GetStreet()[0]) {
+  if (a()->user()->street().empty()) {
     input_street();
   }
-  if (!a()->user()->GetCity()[0]) {
+  if (a()->user()->city().empty()) {
     input_city();
   }
-  if (!a()->user()->GetState()[0]) {
+  if (a()->user()->state().empty()) {
     input_state();
   }
-  if (!a()->user()->GetCountry()[0]) {
+  if (a()->user()->country().empty()) {
     input_country();
   }
-  if (!a()->user()->GetZipcode()[0]) {
+  if (a()->user()->zip_code().empty()) {
     input_zipcode();
   }
-  if (!a()->user()->GetDataPhoneNumber()[0]) {
+  if (a()->user()->data_phone().empty()) {
     input_dataphone();
   }
   if (a()->user()->GetComputerType() == -1) {
