@@ -315,6 +315,9 @@ public:
   /** Modern header */
   [[nodiscard]] config_header_t& header() { return config_.header; }
 
+  /** Raw config_t. This should not be used outside of wwivconfig */
+  [[nodiscard]] config_t& raw_config() { return config_; }
+
   // Is this config read only.
   [[nodiscard]] bool readonly() const noexcept { return readonly_; }
   // You probably shouldn't do this unless you are upgrading a dat to JSON.

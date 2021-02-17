@@ -34,13 +34,13 @@ void setpaths(wwiv::sdk::Config& config) {
   EditItems items{};
 
   auto y = 1;
-  auto msgsdir = config.msgsdir();
-  auto gfilesdir = config.gfilesdir();
-  auto menudir = config.menudir();
-  auto datadir = config.datadir();
-  auto logdir = config.logdir();
-  auto scriptdir= config.scriptdir();
-  auto dloadsdir = config.dloadsdir();
+  auto msgsdir = config.raw_config().msgsdir;
+  auto gfilesdir = config.raw_config().gfilesdir;
+  auto menudir = config.raw_config().menudir;
+  auto datadir = config.raw_config().datadir;
+  auto logdir = config.raw_config().logdir;
+  auto scriptdir= config.raw_config().scriptdir;
+  auto dloadsdir = config.raw_config().dloadsdir;
 
   auto tempdir = config.temp_format();
   auto batchdir = config.batch_format();
@@ -62,7 +62,14 @@ void setpaths(wwiv::sdk::Config& config) {
       new StringFilePathItem(60, config.root_directory(), dloadsdir), 1, y++);
   y++;
   items.add(new Label("Temp:"),
-      new StringEditItem<std::string&>(60, tempdir, EditLineMode::ALL), 1, y++);
+      new StringEditItem<std::string&>(60, tempdir, EditLineMode::ALL), 
+    "relative path to temp dir. '%n' replaced by instance # and is required.", 1, y++);
+  items.add(new Label("Batch:"),
+      new StringEditItem<std::string&>(60, batchdir, EditLineMode::ALL), 
+    "relative path to batch dir. '%n' replaced by instance # and is required.", 1, y++);
+  items.add(new Label("Scratch:"),
+      new StringEditItem<std::string&>(60, scratchdir, EditLineMode::ALL), 
+    "relative path to scratch space. '%n' replaced by instance # and is required.", 1, y++);
   y++;
   items.add(new MultilineLabel(R"(CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.
 Changing any of these requires YOU to MANUALLY move files and/or

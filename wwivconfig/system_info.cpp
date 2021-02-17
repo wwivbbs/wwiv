@@ -147,6 +147,7 @@ void sysinfo1(wwiv::sdk::Config& config) {
   int max_waiting = config.max_waiting();
   int wwiv_reg_number = config.wwiv_reg_number();
   int max_backups = config.max_backups();
+  int num_instances = config.num_instances();
 
   auto y = 1;
   EditItems items{};
@@ -202,6 +203,11 @@ void sysinfo1(wwiv::sdk::Config& config) {
   items.add(new Label("Max Backups:"),
             new NumberEditItem<int, 3>(&max_backups),
     "Max number of backup to keep when making new datafile backups (0=unlimited)", 3, y);
+  ++y;
+  items.add(new Label("Max Instances:"),
+            new NumberEditItem<int, 3>(&num_instances),
+    "Max number of BBS instances allowed.", 1, y);
+
   y += 2;
   items.add(new Label("Newuser Settings:"),
             new NewUserSubDialog<wwiv::sdk::newuser_config_t>(config, config.newuser_config(), newuser_settings),
@@ -224,6 +230,7 @@ void sysinfo1(wwiv::sdk::Config& config) {
   config.max_waiting(max_waiting);
   config.wwiv_reg_number(wwiv_reg_number);
   config.max_backups(max_backups);
+  config.num_instances(num_instances);
 
   save_status(config.datadir(), statusrec);
 }
