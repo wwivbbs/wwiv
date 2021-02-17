@@ -230,8 +230,7 @@ std::tuple<uint16_t, uint16_t> parse_email_info(const std::string& email_address
         bout.nl();
         for (int i = 0; i < nv; i++) {
           set_net_num(ss[i]);
-          const auto* csne = next_system(sy);
-          if (csne) {
+          if (const auto csne = next_system(sy)) {
             if (i < 9) {
               onx[onxi++] = static_cast<char>(i + '1');
               onx[onxi] = 0;

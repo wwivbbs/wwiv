@@ -875,23 +875,23 @@ struct usersubrec {
 #define status_file 0x80
 
 // configrec.sysconfig
-#define unused_sysconfig_no_local 0x00001
+//#define unused_sysconfig_no_local 0x00001
 //#define unused_sysconfig_no_beep    0x00002
-#define unused_sysconfig_enable_pipes 0x00004
+//#define unused_sysconfig_enable_pipes 0x00004
 #define sysconfig_no_newuser_feedback 0x00008
-#define unused_sysconfig_two_color 0x00010
-#define unused_sysconfig_enable_mci 0x00020
+//#define unused_sysconfig_two_color 0x00010
+//#define unused_sysconfig_enable_mci 0x00020
 #define sysconfig_titlebar 0x00040
-#define unused_sysconfig_list 0x00080
+//#define unused_sysconfig_list 0x00080
 #define sysconfig_no_xfer 0x00100
 #define sysconfig_2_way 0x00200
 #define sysconfig_allow_alias 0x00400
 #define sysconfig_all_sysop 0x00800
 #define sysconfig_free_phone 0x02000
 #define sysconfig_log_dl 0x04000
-#define sysconfig_extended_info 0x08000
-#define unused_sysconfig_1 0x10000
-#define unused_sysconfig_2 0x20000
+//#define unused_sysconfig_extended_info 0x08000
+//#define unused_sysconfig_1 0x10000
+//#define unused_sysconfig_2 0x20000
 
 #define ansir_ansi 0x01
 #define ansir_no_DOS 0x02
@@ -1005,8 +1005,8 @@ constexpr const char* SPAWNOPT_LOGOFF = "LOGOFF";
 #define INI_TAG "WWIV"
 
 #define OP_FLAGS_FORCE_NEWUSER_FEEDBACK 0x00000001
-#define OP_FLAGS_CHECK_DUPE_PHONENUM 0x00000002
-#define OP_FLAGS_HANGUP_DUPE_PHONENUM 0x00000004
+// #define UNUSED_OP_FLAGS_CHECK_DUPE_PHONENUM 0x00000002
+//#define UNUSED_OP_FLAGS_HANGUP_DUPE_PHONENUM 0x00000004
 #define OP_FLAGS_SIMPLE_ASV 0x00000008
 #define OP_FLAGS_POSTTIME_COMPENSATE 0x00000010
 //#define UNUSED_OP_FLAGS_SHOW_HIER 0x00000020
@@ -1020,13 +1020,13 @@ constexpr const char* SPAWNOPT_LOGOFF = "LOGOFF";
 #define OP_FLAGS_SHOW_CITY_ST 0x00004000
 #define OP_FLAGS_UNUSED_7 0x00020000
 #define OP_FLAGS_UNUSED_5 0x00040000
-#define OP_FLAGS_WFC_SCREEN 0x00080000
+//#define UNUSED_OP_FLAGS_WFC_SCREEN 0x00080000
 #define OP_FLAGS_MSG_TAG 0x00400000
 #define OP_FLAGS_CHAIN_REG 0x00800000
 #define OP_FLAGS_CAN_SAVE_SSM 0x01000000
 #define OP_FLAGS_UNUSED_6 0x02000000
 #define OP_FLAGS_USE_FORCESCAN 0x04000000
-#define OP_FLAGS_NEWUSER_MIN 0x08000000
+//#define UNUSED_OP_FLAGS_NEWUSER_MIN 0x08000000
 #define OP_FLAGS_UNUSED_2 0x20000000
 #define OP_FLAGS_UNUSED_4 0x40000000
 

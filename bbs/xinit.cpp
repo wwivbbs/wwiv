@@ -186,8 +186,8 @@ static std::string to_array_key(const std::string& n, const std::string& index) 
 
 static std::vector<ini_flags_type> sysinfo_flags = {
     {INI_STR_FORCE_FBACK, OP_FLAGS_FORCE_NEWUSER_FEEDBACK},
-    {INI_STR_CHECK_DUP_PHONES, OP_FLAGS_CHECK_DUPE_PHONENUM},
-    {INI_STR_HANGUP_DUP_PHONES, OP_FLAGS_HANGUP_DUPE_PHONENUM},
+    //{INI_STR_CHECK_DUP_PHONES, OP_FLAGS_CHECK_DUPE_PHONENUM},
+    //{INI_STR_HANGUP_DUP_PHONES, OP_FLAGS_HANGUP_DUPE_PHONENUM},
     {INI_STR_USE_SIMPLE_ASV, OP_FLAGS_SIMPLE_ASV},
     {INI_STR_POSTTIME_COMPENS, OP_FLAGS_POSTTIME_COMPENSATE},
     {INI_STR_IDZ_DESC, OP_FLAGS_IDZ_DESC},
@@ -197,12 +197,12 @@ static std::vector<ini_flags_type> sysinfo_flags = {
     {INI_STR_FAST_TAG_RELIST, OP_FLAGS_FAST_TAG_RELIST},
     {INI_STR_MAIL_PROMPT, OP_FLAGS_MAIL_PROMPT},
     {INI_STR_SHOW_CITY_ST, OP_FLAGS_SHOW_CITY_ST},
-    {INI_STR_WFC_SCREEN, OP_FLAGS_WFC_SCREEN},
+//    {INI_STR_WFC_SCREEN, OP_FLAGS_WFC_SCREEN},
     {INI_STR_MSG_TAG, OP_FLAGS_MSG_TAG},
     {INI_STR_CHAIN_REG, OP_FLAGS_CHAIN_REG},
     {INI_STR_CAN_SAVE_SSM, OP_FLAGS_CAN_SAVE_SSM},
     {INI_STR_USE_FORCE_SCAN, OP_FLAGS_USE_FORCESCAN},
-    {INI_STR_NEWUSER_MIN, OP_FLAGS_NEWUSER_MIN},
+    //{INI_STR_NEWUSER_MIN, OP_FLAGS_NEWUSER_MIN},
 };
 
 static std::vector<ini_flags_type> sysconfig_flags = {
@@ -213,7 +213,7 @@ static std::vector<ini_flags_type> sysconfig_flags = {
     {INI_STR_CLOSE_XFER, sysconfig_no_xfer},
     {INI_STR_ALL_UL_TO_SYSOP, sysconfig_all_sysop},
     {INI_STR_ALLOW_ALIASES, sysconfig_allow_alias},
-    {INI_STR_EXTENDED_USERINFO, sysconfig_extended_info},
+    //{INI_STR_EXTENDED_USERINFO, sysconfig_extended_info},
     {INI_STR_FREE_PHONE, sysconfig_free_phone}};
 
 void Application::ReadINIFile(IniFile& ini) {
@@ -333,16 +333,15 @@ void Application::ReadINIFile(IniFile& ini) {
 }
 
 bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
-  auto temp_directory = ini.value<string>("TEMP_DIRECTORY");
+  auto temp_directory = config_->temp_format();
   if (temp_directory.empty()) {
-    LOG(ERROR) << "TEMP_DIRECTORY must be set in WWIV.INI.";
-    return false;
+    temp_directory = "e/%n/temp";
   }
-
+  auto batch_directory = config_->batch_format();
+  if (batch_directory.empty()) {
+    batch_directory = temp_directory;
+  }
   temp_directory = File::FixPathSeparators(temp_directory);
-  // TEMP_DIRECTORY is defined in wwiv.ini, also default the batch_directory to
-  // TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
-  auto batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
   batch_directory = File::FixPathSeparators(batch_directory);
 
   // Replace %n with instance number value.
@@ -360,9 +359,8 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   // Set config for macro processing.
   bbs_macro_context_.set_config(config());
 
-  const auto max_num_instances = ini.value<int>("NUM_INSTANCES", 4);
-  if (instance_number > max_num_instances) {
-    LOG(ERROR) << "Not enough instances configured (" << max_num_instances << ").";
+  if (instance_number > config_->num_instances()) {
+    LOG(ERROR) << "Not enough instances configured in wwivconfig. Currently: " << config_->num_instances();
     return false;
   }
   return true;
@@ -726,8 +724,8 @@ void Application::create_phone_file() {
         continue;
       }
       p.usernum = temp_user_number;
-      std::string voice_num = user.GetVoicePhoneNumber();
-      std::string data_num = user.GetDataPhoneNumber();
+      auto voice_num = user.voice_phone();
+      auto data_num = user.data_phone();
       if (!voice_num.empty() && voice_num.find("000-") == std::string::npos) {
         to_char_array(p.phone, voice_num);
         phoneNumFile.Write(&p, sizeof(phonerec));

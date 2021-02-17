@@ -115,7 +115,7 @@ void valuser(int user_number) {
     const auto unn = a()->names()->UserName(user_number);
     bout << "|#9Name: |#2" << unn << wwiv::endl;
     bout << "|#9RN  : |#2" << user.real_name() << wwiv::endl;
-    bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
+    bout << "|#9PH  : |#2" << user.voice_phone() << wwiv::endl;
     bout << "|#9Age : |#2" << user.age() << " " << user.GetGender() << wwiv::endl;
     bout << "|#9Comp: |#2" << ctypes(user.GetComputerType()) << wwiv::endl;
     if (user.note().empty()) {

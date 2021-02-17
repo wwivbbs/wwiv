@@ -21,7 +21,7 @@
 #include "sdk/net/net.h"
 
 bool valid_system(int ts);
-net_system_list_rec *next_system(int ts);
+std::optional<net_system_list_rec> next_system(int ts);
 void set_net_num(int network_number);
 int32_t next_system_reg(int16_t ts);
 

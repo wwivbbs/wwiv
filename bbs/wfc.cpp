@@ -81,11 +81,9 @@ static int inst_num;
 static constexpr int sysop_usernum = 1;
 
 void wfc_cls(Application* a) {
-  if (a->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
-    bout.ResetColors();
-    a->Cls();
-    a->localIO()->SetCursor(LocalIO::cursorNormal);
-  }
+  bout.ResetColors();
+  a->Cls();
+  a->localIO()->SetCursor(LocalIO::cursorNormal);
   // Every time we clear the WFC, reset the lines listed.
   bout.clear_lines_listed();
 }
@@ -96,13 +94,8 @@ static void wfc_update() {
   // Every time we update the WFC, reset the lines listed.
   bout.clear_lines_listed();
 
-  if (!a()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
-    return;
-  }
-
-  User u{};
-
   const auto ir = a()->instances().at(inst_num);
+  User u{};
   a()->users()->readuser_nocache(&u, ir.user_number());
   a()->localIO()->PutsXYA(57, 18, 15, fmt::format("{:<3}", inst_num));
   if (ir.online()) {
@@ -132,10 +125,6 @@ void WFC::Clear() {
 void WFC::DrawScreen() {
   static steady_clock::time_point wfc_time;
   static steady_clock::time_point poll_time;
-
-  if (!a()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
-    return;
-  }
 
   auto nNumNewMessages = check_new_mail(sysop_usernum);
   auto status = a()->status_manager()->get_status();
@@ -226,10 +215,8 @@ void WFC::DrawScreen() {
 
 WFC::WFC(Application* a) : a_(a) {
   a_->localIO()->SetCursor(LocalIO::cursorNormal);
-  if (a_->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
-    status_ = 0;
-    inst_num = 1;
-  }
+  status_ = 0;
+  inst_num = 1;
   Clear();
 
   a_->remoteIO()->remote_info().clear();

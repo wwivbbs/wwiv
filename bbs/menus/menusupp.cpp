@@ -236,7 +236,7 @@ void KillEMail() {
 
 void LastCallers() {
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-      (a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
+      a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
     bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
   } else {
     bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";

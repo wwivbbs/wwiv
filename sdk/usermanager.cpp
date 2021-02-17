@@ -200,8 +200,8 @@ static bool deluser(int user_number, const Config& config, UserManager& um,
   if (!pn.IsInitialized()) {
     return false;
   }
-  pn.erase(user_number, user.GetVoicePhoneNumber());
-  pn.erase(user_number, user.GetDataPhoneNumber());
+  pn.erase(user_number, user.voice_phone());
+  pn.erase(user_number, user.data_phone());
   return true;
 }
 
@@ -234,8 +234,8 @@ bool UserManager::restore_user(int user_number) {
   if (!pn.IsInitialized()) {
     return false;
   }
-  pn.insert(user_number, user.GetVoicePhoneNumber());
-  pn.insert(user_number, user.GetDataPhoneNumber());
+  pn.insert(user_number, user.voice_phone());
+  pn.insert(user_number, user.data_phone());
   return true;
 }
 

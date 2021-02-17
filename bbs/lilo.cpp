@@ -117,7 +117,7 @@ static void CleanUserInfo() {
 }
 
 bool IsPhoneNumberUSAFormat(User *pUser) {
-  const string country = pUser->GetCountry();
+  const auto country = pUser->country();
   return country == "USA" || country == "CAN" || country == "MEX";
 }
 
@@ -157,9 +157,9 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
     }
     const auto current_user = n.number;
     a()->ReadCurrentUser(current_user);
-    auto temp_user_name(a()->user()->real_name());
-    StringUpperCase(&temp_user_name);
-    if (user_name == temp_user_name && !a()->user()->IsUserDeleted()) {
+    
+    if (const auto temp_user_name = ToStringUpperCase(a()->user()->real_name());
+        temp_user_name == user_name && !a()->user()->IsUserDeleted()) {
       bout << "|#5Do you mean " << a()->names()->UserName(n.number) << "? ";
       if (bin.yesno()) {
         return current_user;
@@ -215,10 +215,10 @@ bool IsPhoneRequired() {
 }
 
 bool VerifyPhoneNumber() {
-  if (IsPhoneNumberUSAFormat(a()->user()) || !a()->user()->GetCountry()[0]) {
+  if (IsPhoneNumberUSAFormat(a()->user()) || a()->user()->country().empty()) {
     auto phoneNumber = bin.input_password("PH: ###-###-", 4);
 
-    if (phoneNumber != &a()->user()->GetVoicePhoneNumber()[8]) {
+    if (phoneNumber != &a()->user()->voice_phone()[8]) {
       if (phoneNumber.length() == 4 && phoneNumber[3] == '-') {
         bout << "\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n";
       }
@@ -504,7 +504,7 @@ static void PrintUserSpecificFiles() {
 static std::string CreateLastOnLogLine(const Status& status) {
   string log_line;
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-    (a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
+    a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
     const string username_num = a()->names()->UserName(a()->sess().user_num());
     const string t = times();
     const string f = fulldate();
@@ -514,9 +514,9 @@ static std::string CreateLastOnLogLine(const Status& status) {
       username_num,
       t,
       f,
-      a()->user()->GetCity(),
-      a()->user()->GetState(),
-      a()->user()->GetCountry(),
+      a()->user()->city(),
+      a()->user()->state(),
+      a()->user()->country(),
       a()->GetCurrentSpeed(),
       a()->user()->ontoday());
   } else {
@@ -550,7 +550,7 @@ static void UpdateLastOnFile() {
         bout << "|#1Last few callers|#7: |#0";
         bout.nl(2);
         if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-            (a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
+            a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
           bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Speed    ##" << wwiv::endl;
         } else {
           bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##" << wwiv::endl;
@@ -781,7 +781,9 @@ static void UpdateLastNetFile() {
 
 }
 static void CheckAndUpdateUserInfo() {
-  if (a()->user()->birthday_year() == 0) {
+  const auto& nc = a()->config()->newuser_config();
+
+  if (nc.use_birthday == newuser_item_type_t::required && a()->user()->birthday_year() == 0) {
     bout << "\r\nPlease enter the following information:\r\n";
     do {
       bout.nl();
@@ -794,31 +796,28 @@ static void CheckAndUpdateUserInfo() {
     } while (a()->user()->birthday_year() == 0);
   }
 
-  if (a()->user()->real_name().empty()) {
+  if (nc.use_real_name == newuser_item_type_t::required && a()->user()->real_name().empty()) {
     input_realname();
   }
-  if (!(a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
-    return;
-  }
-  if (!a()->user()->GetStreet()[0]) {
+  if (nc.use_address_street == newuser_item_type_t::required && a()->user()->street().empty()) {
     input_street();
   }
-  if (!a()->user()->GetCity()[0]) {
+  if (nc.use_address_city_state == newuser_item_type_t::required && a()->user()->city().empty()) {
     input_city();
   }
-  if (!a()->user()->GetState()[0]) {
+  if (nc.use_address_city_state == newuser_item_type_t::required && a()->user()->state().empty()) {
     input_state();
   }
-  if (!a()->user()->GetCountry()[0]) {
+  if (nc.use_address_country == newuser_item_type_t::required && a()->user()->country().empty()) {
     input_country();
   }
-  if (!a()->user()->GetZipcode()[0]) {
+  if (nc.use_address_zipcode == newuser_item_type_t::required && a()->user()->zip_code().empty()) {
     input_zipcode();
   }
-  if (!a()->user()->GetDataPhoneNumber()[0]) {
+  if (nc.use_data_phone == newuser_item_type_t::required && a()->user()->data_phone().empty()) {
     input_dataphone();
   }
-  if (a()->user()->GetComputerType() == -1) {
+  if (nc.use_computer_type == newuser_item_type_t::required && a()->user()->GetComputerType() == -1) {
     input_comptype();
   }
 }

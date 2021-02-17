@@ -22,6 +22,7 @@
 #include "core/wwivport.h"
 #include <chrono>
 #include <ctime>
+#include <optional>
 #include <string>
 
 namespace wwiv::core {
@@ -62,6 +63,26 @@ class Clock;
 
 /** Displays dd as a human readable time */
 std::string to_string(std::chrono::duration<double> dd);
+
+/**
+ * Parses a duration or timespan into a std::chrono::duration.
+ *
+ * The timespan should be of the form:
+ * \code 
+ * [integer][quantum]
+ * \endcode
+ *
+ * quantum is one of:
+ * \verbatim 
+ * +---+---------+
+ * | s | second  |
+ * | m | minute  |
+ * | h | hour    |
+ * | d | day     |
+ * +---+---------+
+ * \endverbatim
+ */
+std::optional<std::chrono::duration<double>> parse_time_span(const std::string&);
 
 class DateTime final {
 public:

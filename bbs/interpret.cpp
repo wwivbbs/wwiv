@@ -83,9 +83,9 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case 'b':                               // Minutes in bank
       return to_string(context_->u().banktime_minutes());
     case 'C':                               // User's city
-      return context_->u().GetCity();
+      return context_->u().city();
     case 'c':                               // User's country
-      return context_->u().GetCountry();
+      return context_->u().country();
     case 'D':                               // Files downloaded
       return to_string(context_->u().downloaded());
     case 'd':                               // User's DSL
@@ -148,7 +148,7 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case 'P':                               // BBS phone
       return (config_ == nullptr) ? "" : config_->system_phone();
     case 'p':                               // User's phone
-      return context_->u().GetDataPhoneNumber();
+      return context_->u().data_phone();
     case 'R':                               // User's real name
       return context_->u().real_name();
     case 'r':                               // Last baud rate
@@ -156,9 +156,9 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case 'S':                               // User's SL
       return to_string(context_->u().sl());
     case 's':                               // User's street address
-      return context_->u().GetStreet();
+      return context_->u().street();
     case 'T':                               // User's sTate
-      return context_->u().GetState();
+      return context_->u().state();
     case 't':                               // Current time
       return times();
     case 'U':                               // Files uploaded
@@ -179,7 +179,7 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case 'y':                               // Computer type
       return ctypes(context_->u().GetComputerType());
     case 'Z':                               // User's zip code
-      return context_->u().GetZipcode();
+      return context_->u().zip_code();
     default:
       return {};
     }

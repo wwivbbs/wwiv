@@ -32,6 +32,23 @@ struct config_header_t {
   int config_revision_number;
 };
 
+enum class newuser_item_type_t { unused, optional, required };
+
+struct newuser_config_t {
+  newuser_item_type_t use_real_name{newuser_item_type_t::required};
+  newuser_item_type_t use_voice_phone{newuser_item_type_t::required};
+  newuser_item_type_t use_data_phone{newuser_item_type_t::optional};
+  newuser_item_type_t use_address_street{newuser_item_type_t::optional};
+  newuser_item_type_t use_address_city_state{newuser_item_type_t::required};
+  newuser_item_type_t use_address_zipcode{newuser_item_type_t::required};
+  newuser_item_type_t use_address_country{newuser_item_type_t::required};
+  newuser_item_type_t use_callsign{newuser_item_type_t::optional};
+  newuser_item_type_t use_gender{newuser_item_type_t::required};
+  newuser_item_type_t use_birthday{newuser_item_type_t::required};
+  newuser_item_type_t use_computer_type{newuser_item_type_t::required};
+  newuser_item_type_t use_email_address{newuser_item_type_t::required};
+};
+
 struct config_t {
   config_header_t header;
 
@@ -49,6 +66,16 @@ struct config_t {
   std::string scriptdir;
   // New in 5.4: Default Log Directory to use.
   std::string logdir;
+
+  // New in 5.7 (moved from wwiv.ini): User temp directory
+  std::string tempdir_format;
+  // New in 5.7 (moved from wwiv.ini): User batch file transfer directory
+  std::string batchdir_format;
+  // New in 5.7: System scratch directory
+  std::string scratchdir_format;
+  // Number of instances (moved from wwiv.ini in 5.7)
+  int num_instances{4};
+
   // BBS system name
   std::string systemname;
   // BBS system phone number
@@ -95,6 +122,8 @@ struct config_t {
   uint32_t wwiv_reg_number;
   // New User Password
   std::string newuserpw;
+  // New user config
+  newuser_config_t newuser_config;
   // Post/Call Ratio required to access transfers
   float post_call_ratio;
   // system status offset
@@ -170,6 +199,17 @@ public:
   [[nodiscard]] std::string logdir() const { return log_dir_; }
   void logdir(const std::string& d) { config_.logdir = d; }
 
+  // moved from wwiv.ini
+  [[nodiscard]] std::string temp_format() const { return config_.tempdir_format; }
+  void temp_format(const std::string& d) { config_.tempdir_format = d; }
+  [[nodiscard]] std::string batch_format() const { return config_.batchdir_format; }
+  void batch_format(const std::string& d) { config_.batchdir_format = d; }
+  [[nodiscard]] std::string scratch_format() const { return config_.scratchdir_format; }
+  void scratch_format(const std::string& d) { config_.scratchdir_format = d; }
+  
+  [[nodiscard]] int num_instances() const { return config_.num_instances; }
+  void num_instances(int n) { config_.num_instances = n; }
+
   [[nodiscard]] std::string system_name() const { return config_.systemname; }
   void system_name(const std::string& d);
   [[nodiscard]] std::string sysop_name() const { return config_.sysopname; }
@@ -240,6 +280,8 @@ public:
   void newuser_gold(float f) { config_.newusergold = f; }
   // New User password (password needed to create a new user account)
   [[nodiscard]] std::string newuser_password() const { return config_.newuserpw; }
+  // New user configuration
+  [[nodiscard]] newuser_config_t& newuser_config() { return config_.newuser_config; }
   void newuser_password(const std::string&);
   // New User restrictions given by default when they sign up.
   [[nodiscard]] uint16_t newuser_restrict() const { return config_.newuser_restrict; }
@@ -272,6 +314,9 @@ public:
 
   /** Modern header */
   [[nodiscard]] config_header_t& header() { return config_.header; }
+
+  /** Raw config_t. This should not be used outside of wwivconfig */
+  [[nodiscard]] config_t& raw_config() { return config_; }
 
   // Is this config read only.
   [[nodiscard]] bool readonly() const noexcept { return readonly_; }

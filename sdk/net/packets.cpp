@@ -698,8 +698,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
       }
     }
   }
-  LOG(INFO) << "DEBUG: send_post_to_subscribers"
-      << "exiting with true";
+  VLOG(1) << "DEBUG: send_post_to_subscribers exiting with true";
   return true;
 }
 

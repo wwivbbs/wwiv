@@ -2,6 +2,11 @@
 # Copyright 2002-2021, WWIV Software Services
 ***
 
+# newuser
+* sysconfig_extended_info - find all uses
+* add optional, required, unused,
+* remove CLOSE_XFER - not useful
+
 # Things to add to fix.
 
 * Check for no conferences

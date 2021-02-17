@@ -200,3 +200,43 @@ TEST(DateTime, YearsOld_BeforeBirthday) {
   EXPECT_EQ(49, years_old(10, 26, 1970, clock));
 }
 
+TEST(DateTime, ParseTimeSpan_Second) {
+  auto o = parse_time_span("2s");
+  ASSERT_TRUE(o);
+
+  EXPECT_EQ(std::chrono::seconds(2), o.value());
+}
+
+TEST(DateTime, ParseTimeSpan_Minute) {
+  auto o = parse_time_span("3m");
+  ASSERT_TRUE(o);
+
+  EXPECT_EQ(std::chrono::minutes(3), o.value());
+}
+
+TEST(DateTime, ParseTimeSpan_Hour) {
+  auto o = parse_time_span("4h");
+  ASSERT_TRUE(o);
+
+  EXPECT_EQ(std::chrono::hours(4), o.value());
+}
+
+TEST(DateTime, ParseTimeSpan_Day) {
+  auto o = parse_time_span("5d");
+  ASSERT_TRUE(o);
+
+  EXPECT_EQ(std::chrono::hours(120), o.value());
+}
+
+TEST(DateTime, ParseTimeSpan_Invalid) {
+  ASSERT_FALSE(parse_time_span(""));
+  ASSERT_FALSE(parse_time_span("d1"));
+  ASSERT_FALSE(parse_time_span("1q"));
+  ASSERT_FALSE(parse_time_span("q"));
+  ASSERT_FALSE(parse_time_span("s"));
+  ASSERT_FALSE(parse_time_span("d"));
+  ASSERT_FALSE(parse_time_span("h"));
+  ASSERT_FALSE(parse_time_span("m"));
+  ASSERT_FALSE(parse_time_span("-1s"));
+}
+

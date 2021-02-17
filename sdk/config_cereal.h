@@ -26,9 +26,13 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/specialize.hpp>
 
-using namespace wwiv::sdk;
+// We want to override how we store network_type_t to store it as a string, not int.
+// This has to be in the global namespace. 
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::newuser_item_type_t, cereal::specialization::non_member_load_save_minimal);
 
 namespace cereal {
+
+using namespace wwiv::sdk;
 
 template <class Archive> void serialize(Archive& ar, config_header_t& n) {
   SERIALIZE(n, config_revision_number);
@@ -53,6 +57,29 @@ template <class Archive> void serialize(Archive& ar, valrec& n) {
   SERIALIZE(n, restrict);
 }
 
+template <class Archive>
+std::string save_minimal(Archive const &, const newuser_item_type_t& t) {
+  return to_enum_string<newuser_item_type_t>(t, {"unused", "optional", "required"});
+}
+template <class Archive> inline
+void load_minimal(Archive const &, newuser_item_type_t& t, const std::string& v) {
+  t = from_enum_string<newuser_item_type_t>(v, {"unused", "optional", "required"});
+}
+
+template <class Archive> void serialize(Archive& ar, newuser_config_t& n) {
+  SERIALIZE(n, use_real_name);
+  SERIALIZE(n, use_voice_phone);
+  SERIALIZE(n, use_data_phone);
+  SERIALIZE(n, use_address_street);
+  SERIALIZE(n, use_address_city_state);
+  SERIALIZE(n, use_address_zipcode);
+  SERIALIZE(n, use_address_country);
+  SERIALIZE(n, use_callsign);
+  SERIALIZE(n, use_gender);
+  SERIALIZE(n, use_birthday);
+  SERIALIZE(n, use_computer_type);
+  SERIALIZE(n, use_email_address);
+}
 
 template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, header);
@@ -63,6 +90,10 @@ template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, dloadsdir);
   SERIALIZE(n, scriptdir);
   SERIALIZE(n, logdir);
+  SERIALIZE(n, num_instances);
+  SERIALIZE(n, tempdir_format);
+  SERIALIZE(n, batchdir_format);
+  SERIALIZE(n, scratchdir_format);
   SERIALIZE(n, systemname);
   SERIALIZE(n, systemphone);
   SERIALIZE(n, sysopname);
@@ -75,6 +106,7 @@ template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, newuserdsl);
   SERIALIZE(n, newusergold);
   SERIALIZE(n, newuser_restrict);
+  SERIALIZE(n, newuser_config);
 
   SERIALIZE(n, newuploads);
   SERIALIZE(n, sysconfig);

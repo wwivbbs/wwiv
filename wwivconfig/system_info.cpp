@@ -24,6 +24,7 @@
 #include "localui/curses_win.h"
 #include "localui/edit_items.h"
 #include "sdk/vardec.h"
+#include "wwivconfig/new_user.h"
 #include "wwivconfig/utility.h"
 #include <cstdint>
 #include <memory>
@@ -106,6 +107,24 @@ protected:
   }
 };
 
+
+template <class T> class NewUserSubDialog final : public SubDialog<T> {
+public:
+  NewUserSubDialog(wwiv::sdk::Config& c, T& t,
+                   std::function<void(wwiv::sdk::Config&, T&, CursesWindow*)> fn)
+      : SubDialog<T>(c, t), c_(c), t__(t), fn_(std::move(fn)) {}
+  ~NewUserSubDialog() override = default;
+
+  void RunSubDialog(CursesWindow* window) override { fn_(c_, t__, window); }
+
+private:
+  // For some reason GCC couldn't find config() or t_ from SubDialog.
+  wwiv::sdk::Config& c_;
+  T& t__;
+  std::function<void(wwiv::sdk::Config&, T&, CursesWindow*)> fn_;
+};
+
+
 void sysinfo1(wwiv::sdk::Config& config) {
   statusrec_t statusrec{};
   read_status(config.datadir(), statusrec);
@@ -116,17 +135,10 @@ void sysinfo1(wwiv::sdk::Config& config) {
     save_status(config.datadir(), statusrec);
   }
 
-  auto closed_system = config.closed_system();
-  auto gold = static_cast<int>(config.newuser_gold());
-
   auto system_name = config.system_name();
   auto sysop_name = config.sysop_name();
   auto system_phone = config.system_phone();
   auto system_pw = config.system_password();
-  auto newuser_pw = config.newuser_password();
-  auto newusersl = config.newuser_sl();
-  auto newuserdsl = config.newuser_dsl();
-  auto newuser_restrict = config.newuser_restrict();
   auto sysoplowtime = config.sysop_low_time();
   auto sysophightime = config.sysop_high_time();
   auto req_ratio = config.req_ratio();
@@ -135,6 +147,7 @@ void sysinfo1(wwiv::sdk::Config& config) {
   int max_waiting = config.max_waiting();
   int wwiv_reg_number = config.wwiv_reg_number();
   int max_backups = config.max_backups();
+  int num_instances = config.num_instances();
 
   auto y = 1;
   EditItems items{};
@@ -154,28 +167,6 @@ void sysinfo1(wwiv::sdk::Config& config) {
   items.add(new Label("System PW:"),
             new StringEditItem<std::string&>(20, system_pw, EditLineMode::UPPER_ONLY),
             "Password needed to log in as sysop", 1, y);
-  y+=2;
-  items.add(new Label("Closed system?"),
-            new BooleanEditItem(&closed_system),
-    "Are users allowed to establish accounts on this BBS", 1, y);
-  items.add(
-      new Label("New User PW:"),
-      new StringEditItem<std::string&>(20, newuser_pw, EditLineMode::UPPER_ONLY),
-    "Optional password users must provide in order create an account", 3, y);
-  ++y;
-  items.add(new Label("New User SL:"),
-            new NumberEditItem<uint8_t>(&newusersl),
-    "The security level that all new users are given. The default is 10", 1, y);
-  items.add(new Label("New User DSL:"),
-            new NumberEditItem<uint8_t>(&newuserdsl),
-        "The download security level that all new users are given. The default is 10", 3, y);
-  ++y;
-  items.add(new Label("New User restrict:"),
-            new RestrictionsEditItem(&newuser_restrict),
-    "Restrictions given to new users from certain features of the system.", 1, y);
-  items.add(new Label("New User gold:"),
-            new NumberEditItem<int>(&gold),
-    "The default amount of gold given to new users", 3, y);
   y+=2;
   items.add(new Label("Sysop time: from:"),
             new TimeEditItem(&sysoplowtime),
@@ -212,23 +203,25 @@ void sysinfo1(wwiv::sdk::Config& config) {
   items.add(new Label("Max Backups:"),
             new NumberEditItem<int, 3>(&max_backups),
     "Max number of backup to keep when making new datafile backups (0=unlimited)", 3, y);
+  ++y;
+  items.add(new Label("Max Instances:"),
+            new NumberEditItem<int, 3>(&num_instances),
+    "Max number of BBS instances allowed.", 1, y);
 
+  y += 2;
+  items.add(new Label("Newuser Settings:"),
+            new NewUserSubDialog<wwiv::sdk::newuser_config_t>(config, config.newuser_config(), newuser_settings),
+            1, y);
   ++y;
 
   items.add_aligned_width_column(1);
   items.relayout_items_and_labels();
   items.Run("System Configuration");
-  config.closed_system(closed_system);
-  config.newuser_gold(static_cast<float>(gold));
 
   config.system_name(system_name);
   config.sysop_name(sysop_name);
   config.system_phone(system_phone);
   config.system_password(system_pw);
-  config.newuser_password(newuser_pw);
-  config.newuser_sl(newusersl);
-  config.newuser_dsl(newuserdsl);
-  config.newuser_restrict(newuser_restrict);
   config.sysop_low_time(sysoplowtime);
   config.sysop_high_time(sysophightime);
   config.req_ratio(req_ratio);
@@ -237,6 +230,7 @@ void sysinfo1(wwiv::sdk::Config& config) {
   config.max_waiting(max_waiting);
   config.wwiv_reg_number(wwiv_reg_number);
   config.max_backups(max_backups);
+  config.num_instances(num_instances);
 
   save_status(config.datadir(), statusrec);
 }

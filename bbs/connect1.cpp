@@ -27,22 +27,13 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-net_system_list_rec *next_system(int ts) {
-  static net_system_list_rec csne;
-
+std::optional<net_system_list_rec> next_system(int ts) {
   auto b = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
-  auto c = b.node_config_for(ts);
-  if (!c) {
-    csne = {};
-    return nullptr;
-  }
-
-  csne = *c;
-  return &csne;
+  return b.node_config_for(ts);
 }
 
 bool valid_system(int ts) {
-  return next_system(ts) != nullptr;
+  return next_system(ts).has_value();
 }
 
 void set_net_num(int network_number) {

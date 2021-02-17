@@ -207,7 +207,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
   clear_quotes(a()->sess());
 
   if (un || sy) {
-    net_system_list_rec* csne = nullptr;
+    std::optional<net_system_list_rec> csne;
 
     if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
       bout.nl();
@@ -245,7 +245,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
       send_to_name = username_system_net_as_string(un, a()->net_email_name, sy, netname);
     }
 
-    if (sy != 0) {
+    if (sy != 0 && csne.has_value()) {
       bout.nl();
       bout.format("Name of system: {}\r\n", csne->name);
       bout.format("Number of hops: {}\r\n", csne->numhops);

@@ -145,7 +145,7 @@ int Main(CommandLine& cmdline) {
     if (!data.bad_ips_) {
       data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"));
     }
-    data.auto_blocker_ = std::make_shared<AutoBlocker>(data.bad_ips_, c.blocking);
+    data.auto_blocker_ = std::make_shared<AutoBlocker>(data.bad_ips_, c.blocking, config.datadir());
   }
 
   auto telnet_or_ssh_fn = [&](accepted_socket_t r) {

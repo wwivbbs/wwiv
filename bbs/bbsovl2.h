@@ -21,7 +21,7 @@
 #include <string>
 
 void OnlineUserEditor();
-void BackPrint(const std::string& text, int nColorCode, int nCharDelay, int nStringDelay);
+void BackPrint(const std::string& text, int nColorCode = 6, int nCharDelay = 20, int nStringDelay = 1000);
 void SpinPuts(const std::string& text, int nColorCode);
 
 #endif  // __INCLUDED_BBS_BBSOVL2_H__

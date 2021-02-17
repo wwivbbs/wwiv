@@ -101,6 +101,11 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   cfg.menudir = FilePath("gfiles", "menus").string();
   cfg.scriptdir = "scripts";
 
+  cfg.tempdir_format = "e/%n/temp";
+  cfg.batchdir_format = "e/%n/batch";
+  cfg.scratchdir_format = "e/%n/scratch";
+  cfg.num_instances = 8;
+
   cfg.newusersl = 10;
   cfg.newuserdsl = 0;
   cfg.maxwaiting = 50;

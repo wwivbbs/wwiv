@@ -78,13 +78,8 @@ using namespace wwiv::strings;
 static bool CreateNewUserRecord();
 
 bool CanCreateNewUserAccountHere();
-bool UseMinimalNewUserInfo();
 void noabort(const char* file_name);
-bool check_dupes(const char* pszPhoneNumber);
-void DoMinimalNewUser();
 bool check_zip(const std::string& zipcode, int mode);
-void DoFullNewUser();
-void VerifyNewUserFullInfo();
 void VerifyNewUserPassword();
 void SendNewUserFeedbackIfRequired();
 void ExecNewUserCommand();
@@ -97,8 +92,8 @@ static void input_phone() {
   do {
     bout.nl();
     bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
-    phoneNumber = bin.input_phonenumber(a()->user()->GetVoicePhoneNumber(), 12);
-
+    phoneNumber = bin.input_phonenumber(a()->user()->voice_phone(), 12);
+    
     ok = valid_phone(phoneNumber);
     if (!ok) {
       bout.nl();
@@ -106,7 +101,7 @@ static void input_phone() {
     }
   } while (!ok && !a()->sess().hangup());
   if (!a()->sess().hangup()) {
-    a()->user()->SetVoicePhoneNumber(phoneNumber.c_str());
+    a()->user()->voice_phone(phoneNumber);
   }
 }
 
@@ -114,17 +109,16 @@ void input_dataphone() {
   bool ok = true;
   do {
     bout.nl();
-    bout << "|#3Enter your DATA phone no. in the form. \r\n";
-    bout << "|#3 ###-###-#### - Press Enter to use [" << a()->user()->GetVoicePhoneNumber()
-         << "].\r\n";
-    string data_phone_number = bin.input_phonenumber(a()->user()->GetDataPhoneNumber(), 12);
+    bout << "|#9Enter your DATA phone no. in the form. \r\n";
+    bout << "|#9 ###-###-#### - Press Enter to use [" << a()->user()->voice_phone() << "].\r\n";
+    string data_phone_number = bin.input_phonenumber(a()->user()->data_phone(), 12);
     if (data_phone_number[0] == '\0') {
-      data_phone_number = a()->user()->GetVoicePhoneNumber();
+      data_phone_number = a()->user()->voice_phone();
     }
     ok = valid_phone(data_phone_number);
 
     if (ok) {
-      a()->user()->SetDataPhoneNumber(data_phone_number.c_str());
+      a()->user()->data_phone(data_phone_number);
     } else {
       bout.nl();
       bout << "|#6Please enter a valid phone number in the correct format.\r\n";
@@ -223,16 +217,14 @@ void input_realname() {
       } else {
         a()->user()->real_name(temp_local_name);
       }
-    } while (a()->user()->real_name().empty() && !a()->sess().hangup());
-  } else {
-    a()->user()->real_name(a()->user()->name());
-  }
+    } while (a()->user()->real_name_or_empty().empty() && !a()->sess().hangup());
+  } 
 }
 
 static void input_callsign() {
   bout.nl();
   bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
-  const auto s = bin.input_upper(6);
+  const auto s = bin.input_upper(a()->user()->callsign(), 6);
   a()->user()->callsign(s);
 }
 
@@ -241,10 +233,8 @@ bool valid_phone(const string& phoneNumber) {
     return true;
   }
 
-  if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
-    if (!IsPhoneNumberUSAFormat(a()->user()) && a()->user()->GetCountry()[0]) {
-      return true;
-    }
+  if (!IsPhoneNumberUSAFormat(a()->user()) && !a()->user()->country().empty()) {
+    return true;
   }
   if (phoneNumber.length() != 12) {
     return false;
@@ -267,7 +257,7 @@ void input_street() {
   do {
     bout.nl();
     bout << "|#3Enter your street address.\r\n";
-    street = bin.input_proper(a()->user()->GetStreet(), 30);
+    street = bin.input_proper(a()->user()->street(), 30);
 
     if (street.empty()) {
       bout.nl();
@@ -275,7 +265,7 @@ void input_street() {
     }
   } while (street.empty() && !a()->sess().hangup());
   if (!a()->sess().hangup()) {
-    a()->user()->SetStreet(street.c_str());
+    a()->user()->street(street);
   }
 }
 
@@ -284,21 +274,21 @@ void input_city() {
   do {
     bout.nl();
     bout << "|#3Enter your city (i.e San Francisco). \r\n";
-    city = bin.input_proper(a()->user()->GetCity(), 30);
+    city = bin.input_proper(a()->user()->city(), 30);
 
     if (city.empty()) {
       bout.nl();
       bout << "|#6I'm sorry, you must enter your city.\r\n";
     }
   } while (city.empty() && !a()->sess().hangup());
-  a()->user()->SetCity(city.c_str());
+  a()->user()->city(city);
 }
 
 void input_state() {
   string state;
   do {
     bout.nl();
-    if (IsEquals(a()->user()->GetCountry(), "CAN")) {
+    if (iequals(a()->user()->country(), "CAN")) {
       bout << "|#3Enter your province (i.e. QC).\r\n";
     } else {
       bout << "|#3Enter your state (i.e. CA). \r\n";
@@ -311,22 +301,21 @@ void input_state() {
       bout << "|#6I'm sorry, you must enter your state or province.\r\n";
     }
   } while (state.empty() && (!a()->sess().hangup()));
-  a()->user()->SetState(state.c_str());
+  a()->user()->state(state);
 }
 
 void input_country() {
   string country;
   do {
     bout.nl();
-    bout << "|#3Enter your country (i.e. USA). \r\n";
-    bout << "|#3Hit Enter for \"USA\"\r\n";
-    bout << "|#2:";
+    bout << "|#9Enter your country.  Hit Enter for \"|#1USA|#9\"\r\n";
+    bout << "|#7: ";
     country = bin.input_upper(3);
     if (country.empty()) {
       country = "USA";
     }
   } while (country.empty() && (!a()->sess().hangup()));
-  a()->user()->SetCountry(country.c_str());
+  a()->user()->country(country);
 }
 
 void input_zipcode() {
@@ -334,7 +323,7 @@ void input_zipcode() {
   do {
     int len = 7;
     bout.nl();
-    if (IsEquals(a()->user()->GetCountry(), "USA")) {
+    if (iequals(a()->user()->country(), "USA")) {
       bout << "|#3Enter your zipcode as #####-#### \r\n";
       len = 10;
     } else {
@@ -349,7 +338,7 @@ void input_zipcode() {
       bout << "|#6I'm sorry, you must enter your zipcode.\r\n";
     }
   } while (zipcode.empty() && (!a()->sess().hangup()));
-  a()->user()->SetZipcode(zipcode.c_str());
+  a()->user()->zip_code(zipcode);
 }
 
 void input_sex() {
@@ -427,14 +416,14 @@ void input_screensize() {
   bool ok = true;
   do {
     bout.nl();
-    bout << "|#3How wide is your screen (chars, <CR>=80) ?\r\n|#2:";
+    bout << "|#9How wide is your screen (chars, <CR>=80) ?\r\n|#7: ";
     x = bin.input_number(80, 32, 80, true);
     ok = true;
   } while (!ok && !a()->sess().hangup());
 
   do {
     bout.nl();
-    bout << "|#3How tall is your screen (lines, <CR>=24) ?\r\n|#2:";
+    bout << "|#9How tall is your screen (lines, <CR>=24) ?\r\n|#7: ";
     y = bin.input_number(24, 8, 60, true);
     ok = true;
   } while (!ok && !a()->sess().hangup());
@@ -644,87 +633,6 @@ bool CanCreateNewUserAccountHere() {
   return true;
 }
 
-bool UseMinimalNewUserInfo() {
-  IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
-              {StrCat("WWIV-", a()->instance_number()), INI_TAG});
-  if (ini.IsOpen()) {
-    return ini.value<bool>("NEWUSER_MIN");
-  }
-  return false;
-}
-
-void DoFullNewUser() {
-  const auto u = a()->user();
-
-  input_name();
-  input_realname();
-  input_phone();
-  if (a()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
-    if (check_dupes(u->GetVoicePhoneNumber())) {
-      if (a()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
-        hang_it_up();
-        return;
-      }
-    }
-  }
-  if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
-    input_street();
-    const auto zip_city_dir = FilePath(a()->config()->datadir(), ZIPCITY_DIR);
-    if (File::Exists(FilePath(zip_city_dir, "zip1.dat"))) {
-      input_zipcode();
-      if (!check_zip(u->GetZipcode(), 1)) {
-        u->SetCity("");
-        u->SetState("");
-      }
-      u->SetCountry("USA");
-    }
-    if (u->GetCity()[0] == '\0') {
-      input_city();
-    }
-    if (u->GetState()[0] == '\0') {
-      input_state();
-    }
-    if (u->GetZipcode()[0] == '\0') {
-      input_zipcode();
-    }
-    if (u->GetCountry()[0] == '\0') {
-      input_country();
-    }
-    input_dataphone();
-
-    if (a()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
-      if (check_dupes(u->GetDataPhoneNumber())) {
-        if (a()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
-          a()->Hangup();
-          return;
-        }
-      }
-    }
-  }
-  input_callsign();
-  input_sex();
-  input_age(u);
-  input_comptype();
-
-  if (a()->editors.size() && u->HasAnsi()) {
-    bout.nl();
-    bout << "|#5Select a fullscreen editor? ";
-    if (bin.yesno()) {
-      select_editor();
-    }
-    bout.nl();
-  }
-  bout << "|#5Select a default transfer protocol? ";
-  if (bin.yesno()) {
-    bout.nl();
-    bout << "Enter your default protocol, or 0 for none.\r\n\n";
-    const auto protocol = get_protocol(xfertype::xf_down);
-    if (protocol) {
-      u->SetDefaultProtocol(protocol);
-    }
-  }
-}
-
 void DoNewUserASV() {
   IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
               {StrCat("WWIV-", a()->instance_number()), INI_TAG});
@@ -755,101 +663,8 @@ void DoNewUserASV() {
   }
 }
 
-void VerifyNewUserFullInfo() {
-  bool ok = false;
-  const auto u = a()->user();
-
-  do {
-    bout.nl(2);
-    bout << "|#91) Name          : |#2" << u->name() << wwiv::endl;
-    if (a()->config()->sysconfig_flags() & sysconfig_allow_alias) {
-      bout << "|#92) Real Name     : |#2" << u->real_name() << wwiv::endl;
-    }
-    bout << "|#93) Callsign      : |#2" << u->callsign() << wwiv::endl;
-    bout << "|#94) Phone No.     : |#2" << u->GetVoicePhoneNumber() << wwiv::endl;
-    bout << "|#95) Gender        : |#2" << u->GetGender() << wwiv::endl;
-    bout << "|#96) Birthdate     : |#2" << u->birthday_mmddyy() << wwiv::endl;
-    bout << "|#97) Computer type : |#2" << ctypes(u->GetComputerType()) << wwiv::endl;
-    bout << "|#98) Screen size   : |#2" << u->GetScreenChars() << " X " << u->GetScreenLines()
-         << wwiv::endl;
-    bout << "|#99) Password      : |#2" << u->password() << wwiv::endl;
-    if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
-      bout << "|#9A) Street Address: |#2" << u->GetStreet() << wwiv::endl;
-      bout << "|#9B) City          : |#2" << u->GetCity() << wwiv::endl;
-      bout << "|#9C) State         : |#2" << u->GetState() << wwiv::endl;
-      bout << "|#9D) Country       : |#2" << u->GetCountry() << wwiv::endl;
-      bout << "|#9E) Zipcode       : |#2" << u->GetZipcode() << wwiv::endl;
-      bout << "|#9F) Dataphone     : |#2" << u->GetDataPhoneNumber() << wwiv::endl;
-    }
-    bout.nl();
-    bout << "Q) No changes.\r\n";
-    bout.nl(2);
-    char ch = 0;
-    if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
-      bout << "|#9Which (1-9,A-F,Q) : ";
-      ch = onek("Q123456789ABCDEF");
-    } else {
-      bout << "|#9Which (1-9,Q) : ";
-      ch = onek("Q123456789");
-    }
-    ok = false;
-    switch (ch) {
-    case 'Q':
-      ok = true;
-      break;
-    case '1':
-      input_name();
-      break;
-    case '2':
-      if (a()->config()->sysconfig_flags() & sysconfig_allow_alias) {
-        input_realname();
-      }
-      break;
-    case '3':
-      input_callsign();
-      break;
-    case '4':
-      input_phone();
-      break;
-    case '5':
-      input_sex();
-      break;
-    case '6':
-      input_age(u);
-      break;
-    case '7':
-      input_comptype();
-      break;
-    case '8':
-      input_screensize();
-      break;
-    case '9':
-      input_pw(u);
-      break;
-    case 'A':
-      input_street();
-      break;
-    case 'B':
-      input_city();
-      break;
-    case 'C':
-      input_state();
-      break;
-    case 'D':
-      input_country();
-      break;
-    case 'E':
-      input_zipcode();
-      break;
-    case 'F':
-      input_dataphone();
-      break;
-    }
-  } while (!ok && !a()->sess().hangup());
-}
-
-static void add_phone_number(int usernum, const char* phone) {
-  if (strstr(phone, "000-")) {
+static void add_phone_number(int usernum, const std::string& phone) {
+  if (phone.find("000-") != std::string::npos) {
     return;
   }
 
@@ -864,29 +679,37 @@ static void add_phone_number(int usernum, const char* phone) {
 void WriteNewUserInfoToSysopLog() {
   const auto u = a()->user();
   sysoplog() << "** New User Information **";
-  sysoplog() << fmt::sprintf("-> %s #%ld (%s)", u->name(), a()->sess().user_num(), u->real_name());
-  if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
-    sysoplog() << "-> " << u->GetStreet();
-    sysoplog() << "-> " << u->GetCity() << ", " << u->GetState() << " " << u->GetZipcode() << "  ("
-               << u->GetCountry() << " )";
+  sysoplog() << fmt::sprintf("-> %s #%ld (%s)", u->name(), a()->sess().user_num(), u->real_name_or_empty());
+  if (a()->config()->newuser_config().use_address_street != newuser_item_type_t::unused) {
+    sysoplog() << "-> " << u->street();
   }
-  sysoplog() << fmt::format("-> {} (Voice)", u->GetVoicePhoneNumber());
-  if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
-    sysoplog() << fmt::format("-> {} (Data)", u->GetDataPhoneNumber());
+  if (a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
+    sysoplog() << "-> " << u->city() << ", " << u->state() << " " << u->zip_code() << "  ("
+               << u->country() << " )";
   }
-  sysoplog() << fmt::format("-> {} ({} yr old {})", u->birthday_mmddyy(), u->age(), u->GetGender());
-  sysoplog() << fmt::format("-> Using a {} Computer", ctypes(u->GetComputerType()));
+  if (a()->config()->newuser_config().use_voice_phone != newuser_item_type_t::unused) {
+    sysoplog() << fmt::format("-> {} (Voice)", u->voice_phone());
+    if (!u->voice_phone().empty()) {
+      add_phone_number(a()->sess().user_num(), u->voice_phone());
+    }
+  }
+  if (a()->config()->newuser_config().use_data_phone != newuser_item_type_t::unused) {
+    sysoplog() << fmt::format("-> {} (Data)", u->data_phone());
+    if (!u->data_phone().empty()) {
+      add_phone_number(a()->sess().user_num(), u->data_phone());
+    }
+  }
+  if (a()->config()->newuser_config().use_birthday != newuser_item_type_t::unused) {
+    sysoplog() << fmt::format("-> {} ({} yr old {})", u->birthday_mmddyy(), u->age(), u->GetGender());
+  }
+  if (a()->config()->newuser_config().use_computer_type != newuser_item_type_t::unused) {
+    sysoplog() << fmt::format("-> Using a {} Computer", ctypes(u->GetComputerType()));
+  }
   if (u->wwiv_regnum()) {
     sysoplog() << fmt::sprintf("-> WWIV Registration # %ld", u->wwiv_regnum());
   }
   sysoplog() << "********";
 
-  if (u->GetVoicePhoneNumber()[0]) {
-    add_phone_number(a()->sess().user_num(), u->GetVoicePhoneNumber());
-  }
-  if (u->GetDataPhoneNumber()[0]) {
-    add_phone_number(a()->sess().user_num(), u->GetDataPhoneNumber());
-  }
 }
 
 void VerifyNewUserPassword() {
@@ -945,114 +768,6 @@ void ExecNewUserCommand() {
   }
 }
 
-void newuser() {
-  sysoplog(false);
-  const auto t = times();
-  const auto f = fulldate();
-  sysoplog(false) << fmt::sprintf("*** NEW USER %s   %s    %s (%ld)", f, t, a()->GetCurrentSpeed(),
-                                  a()->instance_number());
-
-  LOG(INFO) << "New User Attempt from IP Address: " << a()->remoteIO()->remote_info().address;
-  a()->sess().num_screen_lines(25);
-
-  if (!CreateNewUserRecord()) {
-    return;
-  }
-
-  input_language();
-
-  if (!CanCreateNewUserAccountHere() || a()->sess().hangup()) {
-    a()->Hangup();
-    return;
-  }
-
-  if (check_ansi() == 1) {
-    a()->user()->SetStatusFlag(User::ansi);
-    a()->user()->SetStatusFlag(User::status_color);
-    a()->user()->SetStatusFlag(User::extraColor);
-    a()->user()->SetStatusFlag(User::fullScreenReader);
-    // 0xff is the internal FSED.
-    a()->user()->SetDefaultEditor(0xff);
-  }
-  bout.printfile(SYSTEM_NOEXT);
-  bout.nl();
-  bout.pausescr();
-  bout.printfile(NEWUSER_NOEXT);
-  bout.nl();
-  bout.pausescr();
-  bout.cls();
-  bout << "|#5Create a new user account on " << a()->config()->system_name() << "? ";
-  if (!bin.noyes()) {
-    bout << "|#6Sorry the system does not meet your needs!\r\n";
-    a()->Hangup();
-    return;
-  }
-
-  input_screensize();
-  input_country();
-  bool newuser_min = UseMinimalNewUserInfo();
-  if (newuser_min == true) {
-    DoMinimalNewUser();
-  } else {
-    DoFullNewUser();
-  }
-
-  bout.nl(4);
-  bout << "Random password: " << a()->user()->password() << wwiv::endl << wwiv::endl;
-  bout << "|#5Do you want a different password (Y/N)? ";
-  if (bin.yesno()) {
-    input_pw(a()->user());
-  }
-
-  DoNewUserASV();
-
-  if (a()->sess().hangup()) {
-    return;
-  }
-
-  if (!newuser_min) {
-    VerifyNewUserFullInfo();
-  }
-
-  if (a()->sess().hangup()) {
-    return;
-  }
-
-  bout.nl();
-  bout << "Please wait...\r\n\n";
-  auto usernum = find_new_usernum(a()->user(), a()->sess().qsc);
-  if (usernum <= 0) {
-    bout.nl();
-    bout << "|#6Error creating user account.\r\n\n";
-    a()->Hangup();
-    return;
-  } else if (usernum == 1) {
-    a()->sess().user_num(static_cast<uint16_t>(usernum));
-
-    // This is the #1 sysop record. Tell the sysop thank you and
-    // update his user record with: s255/d255/r0
-    ssm(1) << "Thank you for installing WWIV! - The WWIV Development Team.";
-    auto user = a()->user();
-    user->sl(255);
-    user->dsl(255);
-    user->restriction(0);
-  }
-  a()->sess().user_num(static_cast<uint16_t>(usernum));
-
-  WriteNewUserInfoToSysopLog();
-  ssm(1) << "You have a new user: " << a()->user()->name() << " #" << a()->sess().user_num();
-
-  LOG(INFO) << "New User Created: '" << a()->user()->name() << "' "
-            << "IP Address: " << a()->remoteIO()->remote_info().address;
-
-  a()->UpdateTopScreen();
-  VerifyNewUserPassword();
-  SendNewUserFeedbackIfRequired();
-  ExecNewUserCommand();
-  a()->reset_effective_sl();
-  changedsl();
-  new_mail();
-}
 
 /**
  * Takes an input string and reduces repeated spaces in the string to one space.
@@ -1136,58 +851,23 @@ bool check_zip(const std::string& zipcode, int mode) {
     if (mode != 2) {
       bout << "\r\n|#2" << city << ", " << state << "  USA? (y/N): ";
       if (bin.yesno()) {
-        a()->user()->SetCity(city);
-        a()->user()->SetState(state);
-        a()->user()->SetCountry("USA");
+        a()->user()->city(city);
+        a()->user()->state(state);
+        a()->user()->country("USA");
       } else {
         bout.nl();
         bout << "|#6My records show differently.\r\n\n";
         ok = false;
       }
     } else {
-      a()->user()->SetCity(city);
-      a()->user()->SetState(state);
-      a()->user()->SetCountry("USA");
+      a()->user()->city(city);
+      a()->user()->state(state);
+      a()->user()->country("USA");
     }
   }
   return ok;
 }
 
-static int find_phone_number(const char* phone) {
-  PhoneNumbers pn(*a()->config());
-  if (!pn.IsInitialized()) {
-    return 0;
-  }
-
-  auto user_number = pn.find(phone);
-  User user{};
-  if (!a()->users()->readuser(&user, user_number)) {
-    return 0;
-  }
-  if (user.IsUserDeleted()) {
-    return 0;
-  }
-  return user_number;
-}
-
-bool check_dupes(const char* pszPhoneNumber) {
-  int user_number = find_phone_number(pszPhoneNumber);
-  if (user_number && user_number != a()->sess().user_num()) {
-    string s = fmt::format("    {} entered phone # {}", a()->user()->name(), pszPhoneNumber);
-    sysoplog(false) << s;
-    ssm(1) << s;
-
-    User user;
-    a()->users()->readuser(&user, user_number);
-    s = fmt::format("      also entered by {}", user.name());
-    sysoplog(false) << s;
-    ssm(1) << s;
-
-    return true;
-  }
-
-  return false;
-}
 
 void noabort(const char* file_name) {
   bool oic = false;
@@ -1210,198 +890,526 @@ static void cln_nu() {
   bout.clreol();
 }
 
-void DoMinimalNewUser() {
-  const auto u = a()->user();
+/////////////////////////////////////////////////////////////////////////////
 
-  int m = 1, d = 1, y = 2000, ch = 0;
-  static const char* mon[12] = {"January",   "February", "March",    "April",
-                                "May",       "June",     "July",     "August",
-                                "September", "October",  "November", "December"};
+enum class NewUserItemResult { success, no_change, need_redraw };
+
+class NewUserContext {
+public:
+  NewUserContext(char l, User& u, newuser_item_type_t i, bool f) : letter(l), user(u), item_type(i), first(f) {}
+  char letter;
+  User& user;
+  newuser_item_type_t item_type;
+  bool first{true};
+};
+
+typedef std::function<NewUserItemResult(NewUserContext&)> newuser_item_fn;
+class NewUserItem {
+public:
+  NewUserItem(newuser_item_fn f, newuser_item_type_t s) : fn(std::move(f)), state(s) {}
+  newuser_item_fn fn;
+  newuser_item_type_t state;
+};
+
+NewUserItemResult DoNameOrHandle(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) Name (alias or real)    : ";
+  bout.SavePosition();
+  while (!a()->sess().hangup() && c.first) {
+    bout.SavePosition();
+    const auto temp_name = bin.input_upper(c.user.name(), 30);
+    if (check_name(temp_name)) {
+      c.user.set_name(temp_name);
+      break;
+    }
+    cln_nu();
+    BackPrint("I'm sorry, you can't use that name.", 6, 20, 1000);
+  }
+  cln_nu();
+  bout << "|#2" << c.user.name();
+  bout.nl();
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoRealName(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) Real Name               : ";
+  bout.SavePosition();
+  while (!a()->sess().hangup() && c.first) {
+    bout.SavePosition();
+    const auto temp_name = bin.input_proper(c.user.real_name_or_empty(), 30);
+    if (!temp_name.empty() || c.item_type != newuser_item_type_t::required) {
+      c.user.real_name(temp_name);
+      break;
+    }
+    cln_nu();
+    BackPrint("I'm sorry, you can't use that name.", 6, 20, 1000);
+  }
+  cln_nu();
+  bout << "|#2" << c.user.real_name();
+  bout.nl();
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoBirthDay(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) Birth Date (MM/DD/YYYY) : ";
+  bout.SavePosition();
+  if (c.user.age() == 0 && c.first) {
+    bool ok = false;
+    bout.SavePosition();
+    do {
+      ok = false;
+      cln_nu();
+      auto s = bin.input_date_mmddyyyy("");
+      if (s.size() == 10) {
+        auto m = to_number<int>(s.substr(0, 2));
+        auto d = to_number<int>(s.substr(3, 2));
+        auto y = to_number<int>(s.substr(6, 4));
+        ok = true;
+        SystemClock clock{};
+        if ((((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (d >= 31)) ||
+            ((m == 2) && (((!isleap(y)) && (d == 29)) || (d == 30))) ||
+            (years_old(m, d, y, clock) < 5) || (d > 31) || ((m == 0) || (y == 0) || (d == 0))) {
+          ok = false;
+        }
+        if (m > 12) {
+          ok = false;
+        }
+        if (ok) {
+          c.user.birthday_mdy(m, d, y);
+          cln_nu();
+          auto dt = c.user.birthday_dt().to_string("%B %d, %Y");
+          bout.format("|#2{} ({} years old)\r\n", dt, static_cast<int>(c.user.age()));
+          return NewUserItemResult::success;
+        }
+      }
+      cln_nu();
+      BackPrint("Invalid Birthdate.", 6, 20, 1000);
+      if (c.item_type != newuser_item_type_t::required) {
+        ok = true;
+      }
+    } while (!ok && !a()->sess().hangup());
+  } 
+  auto dt = c.user.birthday_dt().to_string("%B %d, %Y");
+  bout.format("|#2{} ({} years old)\r\n", dt, static_cast<int>(c.user.age()));
+  return NewUserItemResult::no_change;
+}
+
+// TODO(rushfan): This needs updating, maybe add option to quit, system defined items?
+NewUserItemResult DoGender(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) Sex (Gender)            : ";
+  bout.SavePosition();
+  if (c.user.GetGender() != 'M' && c.user.GetGender() != 'F') {
+    bout.mpl(1);
+    c.user.SetGender(onek_ncr("MF"));
+  }
+  cln_nu();
+  bout << "|#2" << (c.user.GetGender() == 'M' ? "Male" : "Female") << wwiv::endl;
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoCountry(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) Country                 : ";
+  bout.SavePosition();
+  if (c.first) {
+    auto country = bin.input_upper(c.user.country(), 3);
+    if (!country.empty()) {
+      c.user.country(country);
+    } else {
+      c.user.country("USA");
+    }
+  }
+  cln_nu();
+  bout << "|#2" << c.user.country() << wwiv::endl;
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoZipCode(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) ZIP or Postal Code      : ";
+  bout.SavePosition();
+  if (c.user.zip_code().empty() && c.first) {
+    bool ok = false;
+    do {
+      if (iequals(c.user.country(), "USA")) {
+        auto zip = bin.input_upper(c.user.zip_code(), 5);
+        check_zip(zip, 2);
+        c.user.zip_code(zip);
+      } else {
+        auto zip = bin.input_upper(c.user.zip_code(), 7);
+        c.user.zip_code(zip);
+      }
+      cln_nu();
+      if (!c.user.zip_code().empty() || c.item_type != newuser_item_type_t::required) {
+        ok = true;
+      }
+    } while (!ok && !a()->sess().hangup());
+  }
+  cln_nu();
+  bout << "|#2" << c.user.zip_code() << wwiv::endl;
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoStreet(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) Street Address          : ";
+  bout.SavePosition();
+  while (!a()->sess().hangup() && c.first) {
+    bout.SavePosition();
+    const auto st = bin.input_proper(c.user.street(), 30);
+    if (!st.empty() || c.item_type != newuser_item_type_t::required) {
+      c.user.street(st);
+      break;
+    }
+    cln_nu();
+    BackPrint("I'm sorry, you must enter your street address.", 6, 20, 1000);
+  }
+    cln_nu();
+  bout << "|#2" << c.user.street();
+  bout.nl();
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoCityState(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) City/State/Province     : ";
+  bout.SavePosition();
+  if (c.user.city().empty() && c.first) {
+    bool ok = false;
+    do {
+      auto city = bin.input_proper(c.user.city(), 30);
+      if (!city.empty() || c.item_type != newuser_item_type_t::required) {
+        c.user.city(city);
+        ok = true;
+      }
+    } while (!ok && !a()->sess().hangup());
+    bout << ", ";
+    if (c.user.state().empty()) {
+      do {
+        ok = false;
+        if (auto state = bin.input_upper(c.user.state(), 2); !state.empty() || c.item_type != newuser_item_type_t::required) {
+          c.user.state(state);
+          ok = true;
+        }
+      } while (!ok && !a()->sess().hangup());
+    }
+  }
+  cln_nu();
+  c.user.city(properize(c.user.city()));
+  bout << "|#2" << c.user.city() << ", " << c.user.state() << wwiv::endl;
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoEmailAddress(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) Internet Mail Address   : ";
+  bout.SavePosition();
+  bool done = false;
+  while (!done && c.first) {
+    c.user.email_address(bin.input_text(c.user.email_address(), 44));
+    if (!check_inet_addr(c.user.email_address())) {
+      cln_nu();
+      BackPrint("Invalid address!", 6, 20, 1000);
+      c.user.email_address("");
+    }
+    if (c.item_type != newuser_item_type_t::required || !c.user.email_address().empty()) {
+      done = true;
+    }
+  }
+  cln_nu();
+  bout << "|#2" << c.user.email_address() << wwiv::endl;
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoVoicePhone(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) Voice Phone             : ";
+  bout.SavePosition();
+  while (!a()->sess().hangup() && c.first) {
+    bout.SavePosition();
+    const auto phoneNumber = bin.input_phonenumber(c.user.voice_phone(), 12);
+    if (valid_phone(phoneNumber)) {
+      c.user.voice_phone(phoneNumber);
+      break;
+    }
+    if (!c.user.voice_phone().empty()  || c.item_type != newuser_item_type_t::required) {
+      break;
+    }
+    cln_nu();
+    BackPrint("I'm sorry, you can't use that phone number.", 6, 20, 1000);
+  }
+  cln_nu();
+  bout << "|#2" << c.user.voice_phone();
+  bout.nl();
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoDataPhone(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) Data Phone              : ";
+  bout.SavePosition();
+  while (!a()->sess().hangup() && c.first) {
+    bout.SavePosition();
+    const auto phoneNumber = bin.input_phonenumber(c.user.data_phone(), 12);
+    if (valid_phone(phoneNumber)) {
+      c.user.data_phone(phoneNumber);
+      break;
+    }
+    if (!c.user.data_phone().empty()  || c.item_type != newuser_item_type_t::required) {
+      break;
+    }
+    cln_nu();
+    BackPrint("I'm sorry, you can't use that phone number.", 6, 20, 1000);
+  }
+  cln_nu();
+  bout << "|#2" << c.user.data_phone();
+  bout.nl();
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoCallsign(NewUserContext& c) {
+  bout << "|#1" << c.letter << "|#9) Callsign                : ";
+  bout.SavePosition();
+  while (!a()->sess().hangup() && c.first) {
+    bout.SavePosition();
+    const auto s = bin.input_upper(c.user.callsign(), 6);
+    if (!s.empty() || c.item_type != newuser_item_type_t::required) {
+      c.user.callsign(s);
+      break;
+    }
+    cln_nu();
+  }
+  cln_nu();
+  bout << "|#2" << c.user.callsign() << wwiv::endl;
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoComputerType(NewUserContext& c) {
+  int ct = -1;
+
+  std::string computer_type = c.user.GetComputerType() >= 0 ? ctypes(c.user.GetComputerType()) : "Unknown";
+  if (c.user.GetComputerType() >= 0 || !c.first) {
+    bout << "|#1" << c.letter << "|#9) Computer Type           : |#2" << computer_type << wwiv::endl;
+    return NewUserItemResult::no_change;
+  }
+  bool ok = true;
+  do {
+    bout.cls();
+    bout.litebar("Known computer types: ");
+    int i = 0;
+    for (i = 1; !ctypes(i).empty(); i++) {
+      bout << i << ". " << ctypes(i) << wwiv::endl;
+    }
+    bout.nl();
+    bout << "|#9Enter your computer type, or the closest to it (ie, Compaq -> IBM).\r\n";
+    bout << "|#9: ";
+    ct = bin.input_number(1, 1, i, false);
+    ok = true;
+    if (ct < 1 || ct > i) {
+      ok = false;
+    }
+  } while (!ok && !a()->sess().hangup());
+
+  c.user.SetComputerType(ct);
+  return NewUserItemResult::need_redraw;
+}
+
+void NewUserDataEntry(const newuser_config_t& nc) {
+  auto& u = *a()->user();
 
   bout.newline = false;
-  bool done = false;
   auto saved_topdata = a()->localIO()->topdata();
   a()->localIO()->topdata(LocalIO::topdata_t::none);
   a()->UpdateTopScreen();
+  char letter = 'A';
+  std::map<char, NewUserItem> nu_items;
+  std::map<char, std::function<void(User&)>> clr_items;
+
+  nu_items.try_emplace(letter, DoNameOrHandle, newuser_item_type_t::required);
+  ++letter;
+  if (nc.use_real_name != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoRealName, nc.use_real_name);
+    ++letter;
+  }
+  if (nc.use_birthday != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoBirthDay, nc.use_birthday);
+    clr_items.try_emplace(letter, [](User& u) { u.birthday_mdy(0, 0, 0); });
+    ++letter;
+  }
+  if (nc.use_voice_phone != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoVoicePhone, nc.use_voice_phone);
+    ++letter;
+  }
+  if (nc.use_data_phone != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoDataPhone, nc.use_data_phone);
+    ++letter;
+  }
+  if (nc.use_callsign != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoCallsign, nc.use_callsign);
+    ++letter;
+  }
+  if (nc.use_gender != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoGender, nc.use_gender);
+    clr_items.try_emplace(letter, [](User& u) { u.SetGender('N'); });
+    ++letter;
+  }
+  if (nc.use_address_country != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoCountry, nc.use_address_country);
+    clr_items.try_emplace(letter, [](User& u) { u.country(""); });
+    ++letter;
+  }
+  if (nc.use_address_zipcode != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoZipCode, nc.use_address_zipcode);
+    clr_items.try_emplace(letter, [](User& u) { u.zip_code(""); });
+    ++letter;
+  }
+  if (nc.use_address_street != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoStreet, nc.use_address_street);
+    ++letter;
+  }
+  if (nc.use_address_city_state != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoCityState, nc.use_address_city_state);
+    clr_items.try_emplace(letter, [](User& u) { u.city(""); u.state(""); });
+    ++letter;
+  }
+  if (nc.use_email_address != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoEmailAddress, nc.use_email_address);
+    ++letter;
+  }
+  if (nc.use_computer_type != newuser_item_type_t::unused) {
+    u.SetComputerType(-1);
+    nu_items.try_emplace(letter, DoComputerType, nc.use_computer_type);
+    clr_items.try_emplace(letter, [](User& u) { u.SetComputerType(-1); });
+    ++letter;
+  }
+  std::set<char> letters;
   do {
     bout.cls();
     bout.litebar(StrCat(a()->config()->system_name(), " New User Registration"));
-    bout << "|#1[A] Name (real or alias)    : ";
-    if (u->name().empty()) {
-      auto ok = true;
-      std::string temp_name;
-      do {
-        bout.SavePosition();
-        temp_name = bin.input_upper("", 30);
-        ok = check_name(temp_name);
-        if (!ok) {
-          cln_nu();
-          BackPrint("I'm sorry, you can't use that name.", 6, 20, 1000);
-        }
-      } while (!ok && !a()->sess().hangup());
-      u->set_name(temp_name);
+    bool need_redraw = false;
+    for (auto& kv : nu_items) {
+      const auto is_first = letters.find(kv.first) == std::end(letters);
+      NewUserContext context(kv.first, u, kv.second.state, is_first);
+      letters.insert(kv.first);
+      auto result = kv.second.fn(context);
+      if (result == NewUserItemResult::need_redraw) {
+        need_redraw = true;
+        break;
+      }
     }
-    cln_nu();
-    bout << "|#2" << u->name();
+    if (need_redraw) {
+      continue;
+    }
     bout.nl();
-    bout << "|#1[B] Birth Date (MM/DD/YYYY) : ";
-    bout.SavePosition();
-    if (u->age() == 0) {
-      bool ok = false;
-      bout.SavePosition();
-      do {
-        ok = false;
-        cln_nu();
-        auto s = bin.input_date_mmddyyyy("");
-        if (s.size() == 10) {
-          m = to_number<int>(StrCat(s[0], s[1]));
-          d = to_number<int>(StrCat(s[3], s[4]));
-          y = to_number<int>(StrCat(s[6], s[7], s[8], s[9]));
-          ok = true;
-          SystemClock clock{};
-          if ((((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (d >= 31)) ||
-              ((m == 2) && (((!isleap(y)) && (d == 29)) || (d == 30))) ||
-              (years_old(m, d, y, clock) < 5) || (d > 31) || ((m == 0) || (y == 0) || (d == 0))) {
-            ok = false;
-          }
-          if (m > 12) {
-            ok = false;
-          }
-        }
-        if (!ok) {
-          cln_nu();
-          BackPrint("Invalid Birthdate.", 6, 20, 1000);
-        }
-      } while (!ok && !a()->sess().hangup());
+    bout << "|#5Item to change or [|#2Q|#5] to Quit : |#0";
+    std::string allowed("Q");
+    for (auto cc = 'A'; cc <= letter; cc++) {
+      allowed.push_back(cc);
     }
-    if (a()->sess().hangup()) {
-      return;
+    auto ch = onek(allowed);
+    if (ch == 'Q') {
+      break;
     }
-    u->birthday_mdy(m, d, y);
-    cln_nu();
-    auto dt = u->birthday_dt().to_string("%B %d, %Y");
+    if (auto c = clr_items.find(ch); c != std::end(clr_items) ) {
+      clr_items.at(ch)(u);
+    }
+    // Reset 'first' so it runs again vs. displays.
+    letters.erase(ch);
+  } while (!a()->sess().hangup());
 
-    bout.format("|#2{} ({} years old)\r\n", dt, static_cast<int>(u->age()));
-    bout << "|#1[C] Sex (Gender)            : ";
-    bout.SavePosition();
-    if (u->GetGender() != 'M' && u->GetGender() != 'F') {
-      bout.mpl(1);
-      u->SetGender(onek_ncr("MF"));
-    }
-    cln_nu();
-    bout << "|#2" << (u->GetGender() == 'M' ? "Male" : "Female") << wwiv::endl;
-    bout << "|#1[D] Country                 : ";
-    bout.SavePosition();
-    if (u->GetCountry()[0] == '\0') {
-      auto country = bin.input_upper("", 3);
-      if (!country.empty()) {
-        u->SetCountry(country.c_str());
-      } else {
-        u->SetCountry("USA");
-      }
-    }
-    cln_nu();
-    bout << "|#2" << u->GetCountry() << wwiv::endl;
-    bout << "|#1[E] ZIP or Postal Code      : ";
-    bout.SavePosition();
-    if (u->GetZipcode()[0] == 0) {
-      bool ok = false;
-      do {
-        if (IsEquals(u->GetCountry(), "USA")) {
-          auto zip = bin.input_upper(u->GetZipcode(), 5);
-          check_zip(zip, 2);
-          u->SetZipcode(zip.c_str());
-        } else {
-          auto zip = bin.input_upper(u->GetZipcode(), 7);
-          u->SetZipcode(zip.c_str());
-        }
-        if (u->GetZipcode()[0]) {
-          ok = true;
-        }
-      } while (!ok && !a()->sess().hangup());
-    }
-    cln_nu();
-    bout << "|#2" << u->GetZipcode() << wwiv::endl;
-    bout << "|#1[F] City/State/Province     : ";
-    bout.SavePosition();
-    if (u->GetCity()[0] == 0) {
-      bool ok = false;
-      do {
-        auto city = bin.input_proper(u->GetCity(), 30);
-        u->SetCity(city.c_str());
-        if (u->GetCity()[0]) {
-          ok = true;
-        }
-      } while (!ok && !a()->sess().hangup());
-      bout << ", ";
-      if (u->GetState()[0] == 0) {
-        do {
-          ok = false;
-          auto state = bin.input_upper(u->GetState(), 2);
-          u->SetState(state.c_str());
-          if (u->GetState()[0]) {
-            ok = true;
-          }
-        } while (!ok && !a()->sess().hangup());
-      }
-    }
-    cln_nu();
-    properize(reinterpret_cast<char*>(u->data.city));
-    bout << "|#2" << u->GetCity() << ", " << u->GetState() << wwiv::endl;
-    bout << "|#1[G] Internet Mail Address   : ";
-    bout.SavePosition();
-    if (u->email_address().empty()) {
-      auto emailAddress = bin.input_text("", 44);
-      u->email_address(emailAddress);
-      if (!check_inet_addr(u->email_address())) {
-        cln_nu();
-        BackPrint("Invalid address!", 6, 20, 1000);
-      }
-      if (u->email_address().empty()) {
-        u->email_address("None");
-      }
-    }
-    cln_nu();
-    bout << "|#2" << u->email_address() << wwiv::endl;
-    bout.nl();
-    bout << "|#5Item to change or [Q] to Quit : |#0";
-    ch = onek("QABCDEFG");
-    switch (ch) {
-    case 'Q':
-      done = true;
-      break;
-    case 'A':
-      u->set_name("");
-      break;
-    case 'B':
-      u->birthday_mdy(0, 0, 0);
-      break;
-    case 'C':
-      u->SetGender('N');
-      break;
-    case 'D':
-      u->SetCountry("");
-    case 'E':
-      u->SetZipcode("");
-    case 'F':
-      u->SetCity("");
-      u->SetState("");
-      break;
-    case 'G':
-      u->email_address("");
-      break;
-    }
-  } while (!done && !a()->sess().hangup());
-  u->real_name(u->name());
-  u->SetVoicePhoneNumber("999-999-9999");
-  u->SetDataPhoneNumber(u->GetVoicePhoneNumber());
-  u->SetStreet("None Requested");
-  if (a()->editors.size() && u->HasAnsi()) {
-    u->SetDefaultEditor(1);
+  if (a()->editors.size() && u.HasAnsi()) {
+    u.SetDefaultEditor(1);
   }
   a()->localIO()->topdata(saved_topdata);
   a()->UpdateTopScreen();
   bout.newline = true;
+}
+
+void newuser() {
+  sysoplog(false);
+  const auto t = times();
+  const auto f = fulldate();
+  sysoplog(false) << fmt::sprintf("*** NEW USER %s   %s    %s (%ld)", f, t, a()->GetCurrentSpeed(),
+                                  a()->instance_number());
+
+  LOG(INFO) << "New User Attempt from IP Address: " << a()->remoteIO()->remote_info().address;
+  a()->sess().num_screen_lines(25);
+
+  if (!CreateNewUserRecord()) {
+    return;
+  }
+
+  input_language();
+
+  if (!CanCreateNewUserAccountHere() || a()->sess().hangup()) {
+    a()->Hangup();
+    return;
+  }
+
+  if (check_ansi() == 1) {
+    a()->user()->SetStatusFlag(User::ansi);
+    a()->user()->SetStatusFlag(User::status_color);
+    a()->user()->SetStatusFlag(User::extraColor);
+    a()->user()->SetStatusFlag(User::fullScreenReader);
+    // 0xff is the internal FSED.
+    a()->user()->SetDefaultEditor(0xff);
+  }
+  bout.printfile(SYSTEM_NOEXT);
+  bout.nl();
+  bout.pausescr();
+  bout.printfile(NEWUSER_NOEXT);
+  bout.nl();
+  bout.pausescr();
+  bout.cls();
+  bout << "|#5Create a new user account on " << a()->config()->system_name() << "? ";
+  if (!bin.noyes()) {
+    bout << "|#6Sorry the system does not meet your needs!\r\n";
+    a()->Hangup();
+    return;
+  }
+
+  input_screensize();
+  input_country();
+  NewUserDataEntry(a()->config()->newuser_config());
+
+  bout.nl(4);
+  bout << "Random password: " << a()->user()->password() << wwiv::endl << wwiv::endl;
+  bout << "|#5Do you want a different password (Y/N)? ";
+  if (bin.yesno()) {
+    input_pw(a()->user());
+  }
+
+  DoNewUserASV();
+
+  if (a()->sess().hangup()) {
+    return;
+  }
+  bout.nl();
+  bout << "Please wait...\r\n\n";
+  auto usernum = find_new_usernum(a()->user(), a()->sess().qsc);
+  if (usernum <= 0) {
+    bout.nl();
+    bout << "|#6Error creating user account.\r\n\n";
+    a()->Hangup();
+    return;
+  } else if (usernum == 1) {
+    a()->sess().user_num(static_cast<uint16_t>(usernum));
+
+    // This is the #1 sysop record. Tell the sysop thank you and
+    // update his user record with: s255/d255/r0
+    ssm(1) << "Thank you for installing WWIV! - The WWIV Development Team.";
+    auto user = a()->user();
+    user->sl(255);
+    user->dsl(255);
+    user->restriction(0);
+  }
+  a()->sess().user_num(static_cast<uint16_t>(usernum));
+
+  WriteNewUserInfoToSysopLog();
+  ssm(1) << "You have a new user: " << a()->user()->name() << " #" << a()->sess().user_num();
+
+  LOG(INFO) << "New User Created: '" << a()->user()->name() << "' "
+            << "IP Address: " << a()->remoteIO()->remote_info().address;
+
+  a()->UpdateTopScreen();
+  VerifyNewUserPassword();
+  SendNewUserFeedbackIfRequired();
+  ExecNewUserCommand();
+  a()->reset_effective_sl();
+  changedsl();
+  new_mail();
 }
 
 void new_mail() {

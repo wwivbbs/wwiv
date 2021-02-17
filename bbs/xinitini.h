@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_XINITINI_H__
-#define __INCLUDED_XINITINI_H__
+#ifndef INCLUDED_BBS_XINITINI_H
+#define INCLUDED_BBS_XINITINI_H
 
 //---SYSTEM OPTIONS--
 constexpr const char* INI_STR_SPAWNOPT = "SPAWNOPT";
@@ -45,8 +45,8 @@ constexpr const char* INI_STR_FORCE_FBACK = "FORCE_FBACK";
 constexpr const char* INI_STR_FORCE_NEWUSER = "FORCE_NEWUSER";
 constexpr const char* INI_STR_USE_FORCE_SCAN = "FORCE_SCAN";
 constexpr const char* INI_STR_FORCE_SCAN_SUBNUM = "FORCE_SCAN_SUBNUM";
-constexpr const char* INI_STR_CHECK_DUP_PHONES = "CHECK_HANGUP";
-constexpr const char* INI_STR_HANGUP_DUP_PHONES = "HANGUP_DUP_PHONES";
+//constexpr const char* INI_STR_CHECK_DUP_PHONES = "CHECK_HANGUP";
+//constexpr const char* INI_STR_HANGUP_DUP_PHONES = "HANGUP_DUP_PHONES";
 constexpr const char* INI_STR_POSTTIME_COMPENS = "POSTTIME_COMPENS";
 constexpr const char* INI_STR_SHOW_HIER = "SHOW_HIER";
 constexpr const char* INI_STR_IDZ_DESC = "IDZ_DESC";
@@ -69,7 +69,7 @@ constexpr const char* INI_STR_TWO_COLOR_CHAT = "TWO_COLOR_CHAT";
 constexpr const char* INI_STR_ALLOW_ALIASES = "ALLOW_ALIASES";
 constexpr const char* INI_STR_FREE_PHONE = "FREE_PHONE";
 constexpr const char* INI_STR_EXTENDED_USERINFO = "EXTENDED_USERINFO";
-constexpr const char* INI_STR_NEWUSER_MIN = "NEWUSER_MIN";
+//constexpr const char* INI_STR_NEWUSER_MIN = "NEWUSER_MIN";
 constexpr const char* INI_STR_ALLOW_CC_BCC = "ALLOW_CC_BCC";
 constexpr const char* INI_STR_MAIL_WHO_LEN = "MAIL_WHO_LEN";
 constexpr const char* INI_STR_ATTACH_DIR = "ATTACH_DIR";
@@ -83,7 +83,7 @@ constexpr const char* INI_STR_MAX_CHAINS = "MAX_CHAINS";
 constexpr const char* INI_STR_MAX_GFILESEC = "MAX_GFILESEC";
 
 //---CALLOUT/WFC--
-constexpr const char* INI_STR_WFC_SCREEN = "WFC_SCREEN";
+//constexpr const char* INI_STR_WFC_SCREEN = "WFC_SCREEN";
 constexpr const char* INI_STR_SCREEN_SAVER_TIME = "SCREEN_SAVER_TIME";
 
 //---ASV SETTINGS---
@@ -101,4 +101,4 @@ constexpr const char* INI_STR_EXEC_LOG_SYNCFOSS = "EXEC_LOG_SYNCFOSS";
 constexpr const char* INI_STR_EXEC_CHILD_WAIT_TIME =   "EXEC_CHILD_WAIT_TIME";
 constexpr const char* INI_STR_NEW_SCAN_AT_LOGIN  = "NEW_SCAN_AT_LOGIN";
 
-#endif  // __INCLUDED_XINITINI_H__
+#endif  // INCLUDED_BBS_XINITINI_H

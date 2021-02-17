@@ -604,7 +604,7 @@ void Application::UpdateTopScreen() {
 
     localIO()->PutsXY(0, 1,
                       fmt::sprintf("%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
-                                   user()->real_name(), user()->GetVoicePhoneNumber(),
+                                   user()->real_name(), user()->voice_phone(),
                                    callsign_or_regnum, user()->downloaded(),
                                    user()->dk(), user()->dsl(), minutes_used.count(),
                                    user()->email_sent() + user()->email_net()));

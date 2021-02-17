@@ -87,8 +87,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
   }
 
   if (system_number && a()->current_net().type == network_type_t::wwivnet) {
-    auto* csne = next_system(system_number);
-    if (csne) {
+    if (auto csne = next_system(system_number)) {
       string netstatus;
       if (user_number == 1) {
         if (csne->other & other_net_coord) {
@@ -559,6 +558,11 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
   }
 }
 
+static std::string percent_read(int start, int end) {
+  const auto d = static_cast<float>(start) / static_cast<float>(end);
+  return fmt::format("{:0.0f}%", d * 100);
+}
+
 static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData& msg, char an, bool* next) {
   // Reset the color before displaying a message.
   bout.SystemColor(7);
@@ -592,7 +596,7 @@ static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData&
       display_message_text_new(lines, start, fs.message_height(), fs.screen_width(),
                                fs.lines_start());
       dirty = false;
-      fs.DrawBottomBar(start == last ? "END" : "");
+      fs.DrawBottomBar(start == last ? "END" : percent_read(start, last));
       fs.ClearCommandLine();
       fs.PutsCommandLine("|#9(|#2Q|#9=Quit, |#2?|#9=Help): ");
     }

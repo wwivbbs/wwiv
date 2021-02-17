@@ -80,7 +80,7 @@ void YourInfo() {
   bout.litebar("Your User Information");
   bout.nl();
   bout << "|#9Your name      : |#2" << a()->names()->UserName(a()->sess().user_num()) << wwiv::endl;
-  bout << "|#9Phone number   : |#2" << a()->user()->GetVoicePhoneNumber() << wwiv::endl;
+  bout << "|#9Phone number   : |#2" << a()->user()->voice_phone() << wwiv::endl;
   if (a()->user()->email_waiting() > 0) {
     bout << "|#9Mail Waiting   : |#2" << a()->user()->email_waiting() << wwiv::endl;
   }
