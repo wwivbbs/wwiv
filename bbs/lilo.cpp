@@ -60,10 +60,14 @@
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
+#include "sdk/bbslist.h"
 #include <chrono>
 #include <limits>
 #include <memory>
 #include <string>
+#include <fstream>
+
+
 
 using std::chrono::duration;
 using std::chrono::duration_cast;
@@ -78,6 +82,7 @@ using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
+
 
 static char g_szLastLoginDate[9];
 
@@ -563,6 +568,7 @@ static void UpdateLastOnFile() {
     bout.pausescr();
   }
 
+
   auto status = a()->status_manager()->get_status();
   {
     const auto username_num = a()->names()->UserName(a()->sess().user_num());
@@ -608,6 +614,172 @@ static void UpdateLastOnFile() {
   }
 }
 
+
+std::string processNetLogLine(string logLine)
+{
+    std::string networkLine = logLine;
+    std::string bbsDate = networkLine.substr(0, 8);
+    std::string bbsTime = networkLine.substr(9, 8);
+    std::string bbsNode = networkLine.substr(21, 5);
+    std::string bbsSent = networkLine.substr(30, 5);
+    std::string bbsRecd = networkLine.substr(39, 5);
+    std::string bbsDuration = networkLine.substr(55, 8);
+    std::string bbsNetwork = networkLine.substr(64, 8);
+    std::string bbsName = "Unknown System";
+    std::string bbsNetDir;
+    std::string netDir = "net/wwivnet/";
+    std::string bbsNodeName;
+    int bbsNode2;
+
+    while (bbsNode.size() && isspace(bbsNode.front()))
+        bbsNode.erase(bbsNode.begin());
+    while (bbsNetwork.size() && isspace(bbsNetwork.front()))
+        bbsNetwork.erase(bbsNetwork.begin());
+
+  
+    bbsNode2 = to_number<int>(bbsNode);
+    auto bbsdir = File::current_directory();
+    Config config(bbsdir);
+
+    Networks networks(config);
+
+    auto net = networks.at(bbsNetwork);
+    bbsNetwork = net.name;
+  
+    auto b = BbsListNet::ReadBbsDataNet(net.dir);
+   
+    if (auto o = b.node_config_for(bbsNode2)) {
+
+        auto csne = o.value();
+
+        bbsNodeName = csne.name;
+    }
+
+          
+    bbsNetDir = netDir + BBSLIST_NET;
+    bbsNode = "@" + bbsNode;
+
+    bbsNodeName.erase(std::remove(bbsNodeName.begin(), bbsNodeName.end(), '"'), bbsNodeName.end());
+   
+    bbsName = bbsNodeName;
+   
+    bbsSent.erase(std::remove(bbsSent.begin(), bbsSent.end(), ' '), bbsSent.end());
+    bbsRecd.erase(std::remove(bbsRecd.begin(), bbsRecd.end(), ' '), bbsRecd.end());
+    bbsNode.erase(std::remove(bbsNode.begin(), bbsNode.end(), ' '), bbsNode.end());
+    bbsNetwork.erase(std::remove(bbsNetwork.begin(), bbsNetwork.end(), ' '), bbsNetwork.end());
+    std::string bbsNodeNetwork = bbsNode + "." + bbsNetwork;
+    bbsDate.append(12 - bbsDate.length(), ' ');
+    bbsTime.append(12 - bbsTime.length(), ' ');
+    bbsNodeNetwork.append(17 - bbsNodeNetwork.length(), ' ');
+    bbsSent.insert(bbsSent.begin(), 4 - bbsSent.length(), ' ');
+    bbsSent.append(8 - bbsSent.length(), ' ');
+    bbsRecd.insert(bbsRecd.begin(), 4 - bbsRecd.length(), ' ');
+    bbsRecd.append(8 - bbsRecd.length(), ' ');
+    networkLine = "|11" + bbsDate + bbsTime + bbsSent + bbsRecd + bbsNodeNetwork + bbsName;
+
+    return (networkLine);
+}
+
+bool get_last_n_lines(string infile, string outfile, int n)
+{
+    std::ifstream instream;
+    instream.open(infile.c_str());
+
+    std::ofstream outstream;
+    outstream.open(outfile.c_str());
+ 
+    vector<string> v;
+    char line[256];
+    char bbsListLine;
+
+    std::string networkLine;
+    std::string newNetworkLine;
+
+    int i = 0;
+
+    if (n < 1) {
+        return false;
+    }
+    
+    while (!instream.eof()) {
+        instream.getline(line, 256);
+   
+            if (i < n) {
+                v.insert(v.end(), line);
+            }
+            else {
+                string str = line;
+                if (str.size() != 0)
+                    v.at(i % n) = line;
+            }
+
+            i++;
+            
+    }
+   
+    int j;
+    i--;
+   
+    if (i > n) {
+
+        i = i % n;
+
+        for (j = i; j < n; j++) {
+            std::string networkLine = v.at(j).c_str();
+            newNetworkLine = processNetLogLine(networkLine);
+            outstream << newNetworkLine << wwiv::endl;
+        }
+    }
+
+    for (j = 0; j < i; j++) {
+        std::string networkLine = v.at(j).c_str();
+        newNetworkLine = processNetLogLine(networkLine);
+        outstream << newNetworkLine << wwiv::endl;
+    }
+     
+    return true;
+}
+
+
+
+static void UpdateLastNetFile() {
+  const auto lastnet_txt_filename = FilePath(a()->config()->gfilesdir(), LASTNET_TXT);
+  const auto net_log_filename = FilePath(a()->config()->gfilesdir(), NET_LOG);
+  
+  get_last_n_lines(net_log_filename, lastnet_txt_filename, 6);
+ 
+  vector<string> lines;
+  {
+    TextFile lastnet_file(lastnet_txt_filename, "r");
+    lines = lastnet_file.ReadFileIntoVector();
+  }
+
+
+  if (!lines.empty()) {
+    bool needs_header = true;
+    for (const auto& line : lines) {
+      if (line.empty()) {
+        continue;
+      }
+      if (needs_header) {
+        bout.nl(2);
+        bout << "|11                      Most Recent Network Activity|#0";
+        bout.nl(2);
+        bout << "|14  Date        Time      Sent    Recd    Connection       BBS" << wwiv::endl;
+        char chLine = (okansi()) ? static_cast<char>('\xCD') : '=';
+        bout << "|#7" << std::string(79, chLine) << wwiv::endl;
+        needs_header = false;
+      }
+      bout << line << wwiv::endl;
+      if (bin.checka()) {
+        break;
+      }
+    }
+    bout.nl(2);
+    bout.pausescr();
+  }
+
+}
 static void CheckAndUpdateUserInfo() {
   if (a()->user()->birthday_year() == 0) {
     bout << "\r\nPlease enter the following information:\r\n";
@@ -840,6 +1012,7 @@ void logon() {
   UpdateUserStatsForLogin();
   PrintLogonFile();
   UpdateLastOnFile();
+  UpdateLastNetFile();  // Morgul Added
   PrintUserSpecificFiles();
 
   read_automessage();
