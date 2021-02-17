@@ -68,8 +68,6 @@ constexpr const char* INI_STR_CAN_SAVE_SSM = "CAN_SAVE_SSM";
 constexpr const char* INI_STR_TWO_COLOR_CHAT = "TWO_COLOR_CHAT";
 constexpr const char* INI_STR_ALLOW_ALIASES = "ALLOW_ALIASES";
 constexpr const char* INI_STR_FREE_PHONE = "FREE_PHONE";
-//constexpr const char* INI_STR_EXTENDED_USERINFO = "EXTENDED_USERINFO";
-//constexpr const char* INI_STR_NEWUSER_MIN = "NEWUSER_MIN";
 constexpr const char* INI_STR_ALLOW_CC_BCC = "ALLOW_CC_BCC";
 constexpr const char* INI_STR_MAIL_WHO_LEN = "MAIL_WHO_LEN";
 constexpr const char* INI_STR_ATTACH_DIR = "ATTACH_DIR";
@@ -83,7 +81,6 @@ constexpr const char* INI_STR_MAX_CHAINS = "MAX_CHAINS";
 constexpr const char* INI_STR_MAX_GFILESEC = "MAX_GFILESEC";
 
 //---CALLOUT/WFC--
-//constexpr const char* INI_STR_WFC_SCREEN = "WFC_SCREEN";
 constexpr const char* INI_STR_SCREEN_SAVER_TIME = "SCREEN_SAVER_TIME";
 
 //---ASV SETTINGS---
