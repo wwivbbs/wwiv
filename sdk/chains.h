@@ -72,11 +72,14 @@ struct chain_t {
   bool local_only{false};
   bool multi_user{false};
   bool local_console_cp437{false};
+  
 
   // who registered
   std::set<int16_t> regby;
   // number of runs
   uint16_t usage{0};
+  // pause flag
+  bool pause{false};
 };
 
 class Chains final {
