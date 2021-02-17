@@ -26,9 +26,13 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/specialize.hpp>
 
-using namespace wwiv::sdk;
+// We want to override how we store network_type_t to store it as a string, not int.
+// This has to be in the global namespace. 
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::newuser_item_type_t, cereal::specialization::non_member_load_save_minimal);
 
 namespace cereal {
+
+using namespace wwiv::sdk;
 
 template <class Archive> void serialize(Archive& ar, config_header_t& n) {
   SERIALIZE(n, config_revision_number);
@@ -51,6 +55,15 @@ template <class Archive> void serialize(Archive& ar, valrec& n) {
   SERIALIZE(n, ar);
   SERIALIZE(n, dar);
   SERIALIZE(n, restrict);
+}
+
+template <class Archive>
+std::string save_minimal(Archive const &, const newuser_item_type_t& t) {
+  return to_enum_string<newuser_item_type_t>(t, {"unused", "optional", "required"});
+}
+template <class Archive> inline
+void load_minimal(Archive const &, newuser_item_type_t& t, const std::string& v) {
+  t = from_enum_string<newuser_item_type_t>(v, {"unused", "optional", "required"});
 }
 
 template <class Archive> void serialize(Archive& ar, newuser_config_t& n) {
@@ -77,6 +90,10 @@ template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, dloadsdir);
   SERIALIZE(n, scriptdir);
   SERIALIZE(n, logdir);
+  SERIALIZE(n, num_instances);
+  SERIALIZE(n, tempdir_format);
+  SERIALIZE(n, batchdir_format);
+  SERIALIZE(n, scratchdir_format);
   SERIALIZE(n, systemname);
   SERIALIZE(n, systemphone);
   SERIALIZE(n, sysopname);

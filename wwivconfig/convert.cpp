@@ -22,6 +22,7 @@
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/findfiles.h"
+#include "core/inifile.h"
 #include "core/jsonfile.h"
 #include "core/strings.h"
 #include "core/version.h"
@@ -80,7 +81,7 @@ void write_and_log(UIWindow* window, const std::string& m) {
 
 int final_wwiv_config_dat_version() {
   // TODO(rushfan): Update when we add a new version.
-  return 5;
+  return 6;
 }
 
 
@@ -481,7 +482,49 @@ bool convert_to_v5(UIWindow* window, Config& config) {
   return true;
 }
 
-config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, Config& config) {
+static bool UseMinimalNewUserInfo(IniFile& ini) {
+  if (ini.IsOpen()) {
+    return ini.value<bool>("NEWUSER_MIN");
+  }
+  return false;
+}
+
+// This is the first one of 5.7
+bool convert_to_v6(UIWindow* window, Config& config) {
+  ShowBanner(window, "Updating to 5.7+ v6 format...");
+  IniFile ini(FilePath(config.root_directory(), WWIV_INI), {INI_TAG});
+  auto minimal = true;
+  int num_instances = 8;
+  std::string temp_directory = "e/%n/temp";
+  std::string batch_directory = "e/%n/batch";
+  std::string scratch_directory = "e/%n/scratch";
+  if (ini.IsOpen()) {
+    minimal = UseMinimalNewUserInfo(ini);
+    temp_directory = ini.value<string>("TEMP_DIRECTORY", "e/%n/temp");
+    batch_directory = ini.value<string>("BATCH_DIRECTORY", "e/%n/temp");
+    num_instances = ini.value<int>("NUM_INSTANCES", 8);
+  }
+  auto& nc = config.newuser_config();
+  if (minimal) {
+    nc.use_real_name = newuser_item_type_t::unused;
+    nc.use_voice_phone = newuser_item_type_t::unused;
+    nc.use_data_phone = newuser_item_type_t::unused;
+    nc.use_address_street = newuser_item_type_t::unused;
+    nc.use_callsign = newuser_item_type_t::unused;
+    nc.use_computer_type = newuser_item_type_t::unused;
+    nc.use_email_address = newuser_item_type_t::optional;
+  }
+
+  config.batch_format(batch_directory);
+  config.scratch_format(scratch_directory);
+  config.temp_format(temp_directory);
+  config.num_instances(num_instances);
+  // Mark config.dat as upgraded.
+  config.config_revision_number(6);
+  return true;
+}
+
+static config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, Config& config) {
   const auto config_revision_number = config.config_revision_number();
   VLOG(1) << "ensure_latest_5x_config: desired version=" << config_revision_number;
   if (config_revision_number >= final_wwiv_config_dat_version()) {
@@ -505,14 +548,19 @@ config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, Config& config)
     convert_to_v3(window, config);
   }
   if (config_revision_number < 4) {
-    // menus in JSON format.
+    // Conferences in JSON
     LOG(INFO) << "ensure_latest_5x_config: converting to v4";
     convert_to_v4(window, config);
   }
   if (config_revision_number < 5) {
     // gfiles in JSON format.
-    LOG(INFO) << "ensure_latest_5x_config: converting to v4";
+    LOG(INFO) << "ensure_latest_5x_config: converting to v5";
     convert_to_v5(window, config);
+  }
+  if (config_revision_number < 6) {
+    // Newuser info by-field.
+    LOG(INFO) << "ensure_latest_5x_config: converting to v6";
+    convert_to_v6(window, config);
   }
   VLOG(1) << "ensure_latest_5x_config: UPGRADED";
   return config_upgrade_state_t::upgraded;
@@ -570,8 +618,19 @@ bool convert_config_424_to_430(UIWindow* window, const std::filesystem::path& co
 ShouldContinue do_wwiv_ugprades(UIWindow* window, const std::string& bbsdir) {
   // Start by checking if we're already at the latest.
   if (File::Exists(FilePath(bbsdir, CONFIG_JSON))) {
-    // TODO(rushfan): Start checking version here.
-    // If we already have a config.json, nothing to do here.
+    // Good, we have a config.json already, now make sure it's at the latest 5.x config version.
+    Config config56(bbsdir);
+    if (!config56.IsInitialized()) {
+      messagebox(window, "Unable to load config.json");
+      return ShouldContinue::EXIT;
+    }
+    auto state = ensure_latest_5x_config(window, config56);
+    if (state == config_upgrade_state_t::upgraded) {
+      if (!config56.Save()) {
+        messagebox(window, "Unable to save upgrades config.json");
+        return ShouldContinue::EXIT;
+      }
+    }
     return ShouldContinue::CONTINUE;
   }
 

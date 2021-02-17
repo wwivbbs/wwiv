@@ -70,13 +70,11 @@ static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const std::string&
 
   std::vector<legacy_configovrrec_424_t> config_ovr_data;
   for (auto i = 1; i <= num_instances; i++) {
-    const auto instance_tag = fmt::format("WWIV-{}", i);
-    IniFile ini("wwiv.ini", {instance_tag, "WWIV"});
 
     // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also
     // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
-    auto temp_directory = ini.value<std::string>("TEMP_DIRECTORY", "e/%n/temp");
-    auto batch_directory = ini.value<std::string>("BATCH_DIRECTORY", temp_directory);
+    auto temp_directory = config.temp_format();
+    auto batch_directory = config.batch_format();
 
     // Replace %n with instance number value.
     const auto instance_num_string = std::to_string(i);
@@ -120,7 +118,6 @@ static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const std::string&
   constexpr auto INI_STR_ALL_UL_TO_SYSOP = "ALL_UL_TO_SYSOP";
   constexpr auto INI_STR_ALLOW_ALIASES = "ALLOW_ALIASES";
   constexpr auto INI_STR_FREE_PHONE = "FREE_PHONE";
-  constexpr auto INI_STR_EXTENDED_USERINFO = "EXTENDED_USERINFO";
   static std::vector<ini_flags_type> sysconfig_flags = {
     {INI_STR_2WAY_CHAT, sysconfig_2_way},
     {INI_STR_NO_NEWUSER_FEEDBACK, sysconfig_no_newuser_feedback},
@@ -129,7 +126,6 @@ static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const std::string&
     {INI_STR_CLOSE_XFER, sysconfig_no_xfer},
     {INI_STR_ALL_UL_TO_SYSOP, sysconfig_all_sysop},
     {INI_STR_ALLOW_ALIASES, sysconfig_allow_alias},
-    {INI_STR_EXTENDED_USERINFO, sysconfig_extended_info},
     {INI_STR_FREE_PHONE, sysconfig_free_phone}};
 
   config.set_sysconfig(oini.GetFlags(sysconfig_flags, config.sysconfig_flags()));

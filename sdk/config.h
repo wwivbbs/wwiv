@@ -32,19 +32,21 @@ struct config_header_t {
   int config_revision_number;
 };
 
+enum class newuser_item_type_t { unused, optional, required };
+
 struct newuser_config_t {
-  bool use_real_name{true};
-  bool use_voice_phone{true};
-  bool use_data_phone{false};
-  bool use_address_street{false};
-  bool use_address_city_state{true};
-  bool use_address_zipcode{true};
-  bool use_address_country{true};
-  bool use_callsign{true};
-  bool use_gender{false};
-  bool use_birthday{true};
-  bool use_computer_type{false};
-  bool use_email_address{true};
+  newuser_item_type_t use_real_name{newuser_item_type_t::required};
+  newuser_item_type_t use_voice_phone{newuser_item_type_t::required};
+  newuser_item_type_t use_data_phone{newuser_item_type_t::optional};
+  newuser_item_type_t use_address_street{newuser_item_type_t::optional};
+  newuser_item_type_t use_address_city_state{newuser_item_type_t::required};
+  newuser_item_type_t use_address_zipcode{newuser_item_type_t::required};
+  newuser_item_type_t use_address_country{newuser_item_type_t::required};
+  newuser_item_type_t use_callsign{newuser_item_type_t::optional};
+  newuser_item_type_t use_gender{newuser_item_type_t::required};
+  newuser_item_type_t use_birthday{newuser_item_type_t::required};
+  newuser_item_type_t use_computer_type{newuser_item_type_t::required};
+  newuser_item_type_t use_email_address{newuser_item_type_t::required};
 };
 
 struct config_t {
@@ -64,6 +66,16 @@ struct config_t {
   std::string scriptdir;
   // New in 5.4: Default Log Directory to use.
   std::string logdir;
+
+  // New in 5.7 (moved from wwiv.ini): User temp directory
+  std::string tempdir_format;
+  // New in 5.7 (moved from wwiv.ini): User batch file transfer directory
+  std::string batchdir_format;
+  // New in 5.7: System scratch directory
+  std::string scratchdir_format;
+  // Number of instances (moved from wwiv.ini in 5.7)
+  int num_instances{4};
+
   // BBS system name
   std::string systemname;
   // BBS system phone number
@@ -186,6 +198,17 @@ public:
   void scriptdir(const std::string& d) { config_.scriptdir = d; }
   [[nodiscard]] std::string logdir() const { return log_dir_; }
   void logdir(const std::string& d) { config_.logdir = d; }
+
+  // moved from wwiv.ini
+  [[nodiscard]] std::string temp_format() const { return config_.tempdir_format; }
+  void temp_format(const std::string& d) { config_.tempdir_format = d; }
+  [[nodiscard]] std::string batch_format() const { return config_.batchdir_format; }
+  void batch_format(const std::string& d) { config_.batchdir_format = d; }
+  [[nodiscard]] std::string scratch_format() const { return config_.scratchdir_format; }
+  void scratch_format(const std::string& d) { config_.scratchdir_format = d; }
+  
+  [[nodiscard]] int num_instances() const { return config_.num_instances; }
+  void num_instances(int n) { config_.num_instances = n; }
 
   [[nodiscard]] std::string system_name() const { return config_.systemname; }
   void system_name(const std::string& d);

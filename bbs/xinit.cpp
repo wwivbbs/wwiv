@@ -213,7 +213,7 @@ static std::vector<ini_flags_type> sysconfig_flags = {
     {INI_STR_CLOSE_XFER, sysconfig_no_xfer},
     {INI_STR_ALL_UL_TO_SYSOP, sysconfig_all_sysop},
     {INI_STR_ALLOW_ALIASES, sysconfig_allow_alias},
-    {INI_STR_EXTENDED_USERINFO, sysconfig_extended_info},
+    //{INI_STR_EXTENDED_USERINFO, sysconfig_extended_info},
     {INI_STR_FREE_PHONE, sysconfig_free_phone}};
 
 void Application::ReadINIFile(IniFile& ini) {
@@ -333,16 +333,15 @@ void Application::ReadINIFile(IniFile& ini) {
 }
 
 bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
-  auto temp_directory = ini.value<string>("TEMP_DIRECTORY");
+  auto temp_directory = config_->temp_format();
   if (temp_directory.empty()) {
-    LOG(ERROR) << "TEMP_DIRECTORY must be set in WWIV.INI.";
-    return false;
+    temp_directory = "e/%n/temp";
   }
-
+  auto batch_directory = config_->batch_format();
+  if (batch_directory.empty()) {
+    batch_directory = temp_directory;
+  }
   temp_directory = File::FixPathSeparators(temp_directory);
-  // TEMP_DIRECTORY is defined in wwiv.ini, also default the batch_directory to
-  // TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
-  auto batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
   batch_directory = File::FixPathSeparators(batch_directory);
 
   // Replace %n with instance number value.
@@ -360,9 +359,8 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   // Set config for macro processing.
   bbs_macro_context_.set_config(config());
 
-  const auto max_num_instances = ini.value<int>("NUM_INSTANCES", 4);
-  if (instance_number > max_num_instances) {
-    LOG(ERROR) << "Not enough instances configured (" << max_num_instances << ").";
+  if (instance_number > config_->num_instances()) {
+    LOG(ERROR) << "Not enough instances configured in wwivconfig. Currently: " << config_->num_instances();
     return false;
   }
   return true;

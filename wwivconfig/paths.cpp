@@ -42,6 +42,10 @@ void setpaths(wwiv::sdk::Config& config) {
   auto scriptdir= config.scriptdir();
   auto dloadsdir = config.dloadsdir();
 
+  auto tempdir = config.temp_format();
+  auto batchdir = config.batch_format();
+  auto scratchdir = config.scratch_format();
+
   items.add(new Label("Messages:"),
             new StringFilePathItem(60, config.root_directory(), msgsdir), 1, y++);
   items.add(new Label("GFiles:"),
@@ -56,6 +60,9 @@ void setpaths(wwiv::sdk::Config& config) {
       new StringFilePathItem(60, config.root_directory(), scriptdir), 1, y++);
   items.add(new Label("Downloads:"),
       new StringFilePathItem(60, config.root_directory(), dloadsdir), 1, y++);
+  y++;
+  items.add(new Label("Temp:"),
+      new StringEditItem<std::string&>(60, tempdir, EditLineMode::ALL), 1, y++);
   y++;
   items.add(new MultilineLabel(R"(CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.
 Changing any of these requires YOU to MANUALLY move files and/or
@@ -74,5 +81,9 @@ directory structures.)"), 1, y++)->set_right_justified(false);
   config.logdir(logdir);
   config.scriptdir(scriptdir);
   config.dloadsdir(dloadsdir);
+
+  config.temp_format(tempdir);
+  config.batch_format(batchdir);
+  config.scratch_format(scratchdir);
 }
 

@@ -346,7 +346,19 @@ class User final {
   void set_name(const std::string& s) {
     strcpy(reinterpret_cast<char*>(data.name), s.c_str());
   }
+
+  /**
+   * Returns the real name if exists, or handle if no real name exists.
+   */
   [[nodiscard]] std::string real_name() const {
+    auto rn = std::string(reinterpret_cast<const char*>(data.realname));
+    return (rn.empty()) ? name() : rn;
+  }
+
+  /**
+   * Returns the real name if exists, or an empty string if none exists.
+   */
+  [[nodiscard]] std::string real_name_or_empty() const {
     return std::string(reinterpret_cast<const char*>(data.realname));
   }
   void real_name(const std::string& s) {
