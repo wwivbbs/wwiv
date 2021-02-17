@@ -174,6 +174,9 @@ void run_chain(int chain_num) {
   }
   ExecuteExternalProgram(chainCmdLine, flags);
   write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
+  if (c.pause){
+     bout.pausescr();
+  }
   a()->UpdateTopScreen();
 }
 

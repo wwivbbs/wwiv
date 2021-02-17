@@ -174,7 +174,7 @@ static void modify_chain(ssize_t chain_num) {
     bout << "|#9G) Local only   : |#2" << YesNoString(c.local_only) << wwiv::endl;
     bout << "|#9H) Multi user   : |#2" << YesNoString(c.multi_user) << wwiv::endl;
     bout << "|#9I) Usage        : |#2" << c.usage << wwiv::endl;
-    std::string allowed = "QABCDEFGHIK[]";
+    std::string allowed = "QABCDEFGHIKL[]";
     if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
       const auto& r = c.regby;
       if (!r.empty()) {
@@ -201,12 +201,13 @@ static void modify_chain(ssize_t chain_num) {
       bout << "|#9K) Local CP437  : |#2" << YesNoString(c.local_console_cp437) << wwiv::endl;
     }
 #endif
+      bout << "|#9L) Pause after  : |#2" << YesNoString(c.pause) << wwiv::endl;
       bout.nl();
-      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1JK|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
+      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1JL|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
       allowed.push_back('J');
     } else {
       bout.nl();
-      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1I|#7,|#1K|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
+      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1I|#7,|#1K-L|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
     }
     const auto ch = onek(allowed, true);
     switch (ch) {
@@ -297,6 +298,10 @@ static void modify_chain(ssize_t chain_num) {
       }
 #endif
     } break;
+    case 'L': 
+      c.pause = !c.pause;
+      break;
+    
     }
   } while (!done && !a()->sess().hangup());
   a()->chains->at(chain_num) = c;
