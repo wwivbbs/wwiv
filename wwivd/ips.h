@@ -18,6 +18,7 @@
 #ifndef INCLUDED_WWIVD_IPS_H
 #define INCLUDED_WWIVD_IPS_H
 
+#include "core/clock.h"
 #include "sdk/wwivd_config.h"
 #include <ctime>
 #include <filesystem>
@@ -28,6 +29,8 @@
 #include <vector>
 
 namespace wwiv::wwivd {
+
+using namespace wwiv::core;
 
 class GoodIp {
 public:
@@ -42,13 +45,14 @@ private:
 
 class BadIp {
 public:
-  explicit BadIp(const std::filesystem::path& fn);
+  BadIp(const std::filesystem::path& fn, Clock& clock);
   [[nodiscard]] bool IsBlocked(const std::string& ip);
   bool Block(const std::string& ip);
 
 private:
   const std::filesystem::path fn_;
   std::unordered_set<std::string> ips_;
+  Clock& clock_;
 };
 
 struct auto_blocked_entry_t {
@@ -58,7 +62,7 @@ struct auto_blocked_entry_t {
 
 class AutoBlocker final {
 public:
-  AutoBlocker(std::shared_ptr<BadIp> bip, sdk::wwivd_blocking_t b, std::filesystem::path datadir);
+  AutoBlocker(std::shared_ptr<BadIp> bip, sdk::wwivd_blocking_t b, std::filesystem::path datadir, Clock& clock);
   ~AutoBlocker();
   void escalate_block(const std::string& ip);
   bool Connection(const std::string& ip);
@@ -71,6 +75,7 @@ private:
   std::filesystem::path datadir_;
   std::map<std::string, std::set<time_t>> sessions_;
   std::map<std::string, auto_blocked_entry_t> auto_blocked_;
+  Clock& clock_;
 };
 
 } // namespace

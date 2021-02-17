@@ -138,14 +138,16 @@ int Main(CommandLine& cmdline) {
   if (c.blocking.use_goodip_txt) {
     data.good_ips_ = std::make_shared<GoodIp>(FilePath(config.datadir(), "goodip.txt"));
   }
+  // This needs to stay in scople for the lifetime of the AutoBlocker
+  SystemClock clock;
   if (c.blocking.use_badip_txt) {
-    data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"));
+    data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"), clock);
   }
   if (c.blocking.auto_blocklist) {
     if (!data.bad_ips_) {
-      data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"));
+      data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"), clock);
     }
-    data.auto_blocker_ = std::make_shared<AutoBlocker>(data.bad_ips_, c.blocking, config.datadir());
+    data.auto_blocker_ = std::make_shared<AutoBlocker>(data.bad_ips_, c.blocking, config.datadir(), clock);
   }
 
   auto telnet_or_ssh_fn = [&](accepted_socket_t r) {

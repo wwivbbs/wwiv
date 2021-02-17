@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include "core/clock.h"
+#include "core/fake_clock.h"
 #include "core/file.h"
 #include "core/os.h"
 #include "core/strings.h"
@@ -49,7 +51,8 @@ TEST(GoodIps, IsAlwaysAllowed) {
 TEST(BadIps, Smoke) {
   FileHelper helper;
   auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
-  BadIp ip(fn.string());
+  FakeClock clock(DateTime::now());
+  BadIp ip(fn.string(), clock);
   EXPECT_TRUE(ip.IsBlocked("10.0.0.1"));
   EXPECT_TRUE(ip.IsBlocked("8.8.8.8"));
   EXPECT_FALSE(ip.IsBlocked("4.4.4.4"));
@@ -71,8 +74,9 @@ TEST(AutoBlock, ShouldBlock) {
   b.auto_bl_sessions = 1;
   FileHelper helper;
   const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
-  auto bip = std::make_shared<BadIp>(fn.string());
-  AutoBlocker blocker(bip, b, helper.TempDir());
+  FakeClock clock(DateTime::now());
+  auto bip = std::make_shared<BadIp>(fn.string(), clock);
+  AutoBlocker blocker(bip, b, helper.TempDir(), clock);
   EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");
   wwiv::os::sleep_for(1s);
@@ -87,8 +91,9 @@ TEST(AutoBlock, ShouldNotBlock) {
   b.auto_bl_sessions = 1;
   FileHelper helper;
   const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
-  auto bip = std::make_shared<BadIp>(fn.string());
-  AutoBlocker blocker(bip, b, helper.TempDir());
+  FakeClock clock(DateTime::now());
+  auto bip = std::make_shared<BadIp>(fn.string(), clock);
+  AutoBlocker blocker(bip, b, helper.TempDir(), clock);
   EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");
   wwiv::os::sleep_for(2s);
