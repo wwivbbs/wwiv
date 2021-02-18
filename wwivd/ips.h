@@ -68,6 +68,13 @@ public:
   bool Connection(const std::string& ip);
   bool Save();
 
+  // Used for testing
+  const std::map<std::string, std::set<time_t>>& recent_sessions() const { return sessions_; }
+  // Used for testing
+  const std::map<std::string, auto_blocked_entry_t>& auto_blocked() const { return auto_blocked_; }
+
+  [[nodiscard]] bool blocked(const std::string& ip) const;
+
 private:
   bool Load();
   std::shared_ptr<BadIp> bip_;

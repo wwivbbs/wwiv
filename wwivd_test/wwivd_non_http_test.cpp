@@ -70,17 +70,94 @@ TEST(BadIps, Smoke) {
 TEST(AutoBlock, ShouldBlock) {
   wwivd_blocking_t b{};
   b.auto_blocklist = true;
-  b.auto_bl_seconds = 1;
+  b.auto_bl_seconds = 2;
   b.auto_bl_sessions = 1;
   FileHelper helper;
   const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   FakeClock clock(DateTime::now());
   auto bip = std::make_shared<BadIp>(fn.string(), clock);
   AutoBlocker blocker(bip, b, helper.TempDir(), clock);
+  EXPECT_FALSE(blocker.blocked("1.1.1.1"));
+  blocker.Connection("1.1.1.1");
+  clock.tick(1s);
+  blocker.Connection("1.1.1.1");
+  EXPECT_TRUE(blocker.blocked("1.1.1.1"));
   EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
+}
+
+TEST(AutoBlock, Escalate1) {
+  wwivd_blocking_t b{};
+  b.auto_blocklist = true;
+  b.auto_bl_seconds = 2;
+  b.auto_bl_sessions = 1;
+  FileHelper helper;
+  const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
+  FakeClock clock(DateTime::now());
+  auto bip = std::make_shared<BadIp>(fn.string(), clock);
+  AutoBlocker blocker(bip, b, helper.TempDir(), clock);
+  EXPECT_FALSE(blocker.blocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");
-  wwiv::os::sleep_for(1s);
+  clock.tick(1s);
   blocker.Connection("1.1.1.1");
+  EXPECT_TRUE(blocker.blocked("1.1.1.1"));
+  EXPECT_EQ(1, blocker.auto_blocked().at("1.1.1.1").count);
+  // not blocked permanently yet.
+  EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
+}
+
+TEST(AutoBlock, Escalate_All) {
+  wwivd_blocking_t b{};
+  b.auto_blocklist = true;
+  b.auto_bl_seconds = 2;
+  b.auto_bl_sessions = 1;
+  b.block_duration.emplace_back("1m");
+  b.block_duration.emplace_back("2m");
+  b.block_duration.emplace_back("3m");
+  b.block_duration.emplace_back("4m");
+  FileHelper helper;
+  const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
+  FakeClock clock(DateTime::now());
+  auto bip = std::make_shared<BadIp>(fn.string(), clock);
+  AutoBlocker blocker(bip, b, helper.TempDir(), clock);
+  EXPECT_FALSE(blocker.blocked("1.1.1.1"));
+  blocker.Connection("1.1.1.1");
+  clock.tick(1s);
+  blocker.Connection("1.1.1.1");
+  EXPECT_TRUE(blocker.blocked("1.1.1.1"));
+  EXPECT_EQ(1, blocker.auto_blocked().at("1.1.1.1").count);
+  // not blocked permanently yet.
+  EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
+
+  clock.tick(61s);
+  blocker.Connection("1.1.1.1");
+  blocker.Connection("1.1.1.1");
+  EXPECT_TRUE(blocker.blocked("1.1.1.1"));
+  EXPECT_EQ(2, blocker.auto_blocked().at("1.1.1.1").count);
+  // not blocked permanently yet.
+  EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
+
+  clock.tick(121s);
+  blocker.Connection("1.1.1.1");
+  blocker.Connection("1.1.1.1");
+  EXPECT_TRUE(blocker.blocked("1.1.1.1"));
+  EXPECT_EQ(3, blocker.auto_blocked().at("1.1.1.1").count);
+  // not blocked permanently yet.
+  EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
+
+  clock.tick(181s);
+  blocker.Connection("1.1.1.1");
+  blocker.Connection("1.1.1.1");
+  EXPECT_TRUE(blocker.blocked("1.1.1.1"));
+  EXPECT_EQ(4, blocker.auto_blocked().at("1.1.1.1").count);
+  // not blocked permanently yet.
+  EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
+
+
+  clock.tick(241s);
+  blocker.Connection("1.1.1.1");
+  blocker.Connection("1.1.1.1");
+  EXPECT_FALSE(blocker.blocked("1.1.1.1"));
+  // blocked permanently yet.
   EXPECT_TRUE(bip->IsBlocked("1.1.1.1"));
 }
 
@@ -96,7 +173,7 @@ TEST(AutoBlock, ShouldNotBlock) {
   AutoBlocker blocker(bip, b, helper.TempDir(), clock);
   EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");
-  wwiv::os::sleep_for(2s);
+  clock.tick(2s);
   blocker.Connection("1.1.1.1");
   EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
 }

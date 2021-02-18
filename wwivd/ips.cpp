@@ -121,6 +121,7 @@ AutoBlocker::AutoBlocker(std::shared_ptr<BadIp> bip, wwivd_blocking_t b, std::fi
   const auto now = clock_.Now().to_time_t();
   for (auto iter = std::begin(auto_blocked_); iter != std::end(auto_blocked_); ) {
     if (iter->second.expiration < now) {
+      LOG(INFO) << "Removing Entry from autoblock list: " << iter->first;
       iter = auto_blocked_.erase(iter);
       modified = true;
     } else {
@@ -139,9 +140,9 @@ void AutoBlocker::escalate_block(const std::string& ip) {
   LOG(INFO) << "escalate_block: " << ip;
   auto& item = auto_blocked_[ip];
   const auto now = clock_.Now();
-  item.count++;
-  if (item.count <= 4) {
-    const auto bt = parse_time_span(at(b_.block_duration, item.count - 1)).value_or(std::chrono::minutes(60));
+  ++item.count;
+  if (item.count <= size_int(b_.block_duration)) {
+    const auto bt = parse_time_span(at(b_.block_duration, item.count - 1)).value_or(std::chrono::minutes(10));
     LOG(INFO) << "escalate_block: count: " << item.count << "; new blocked time: " << wwiv::core::to_string(bt);
     const auto exp = now + bt;
     item.expiration = exp.to_time_t();
@@ -162,17 +163,11 @@ bool AutoBlocker::Connection(const std::string& ip) {
 
   const auto now = clock_.Now();
 
-  if (const auto iter = auto_blocked_.find(ip); iter != std::end(auto_blocked_)) {
-    if (iter->second.expiration > now.to_time_t()) {
-      // We have an auto-block and we're still blocked.
-      LOG(INFO) << "Still in auto-block for ip: " << ip;
-      return false;
-    }
-    // TODO: We're good.  Remove this entry once it ages out, what'd be an appropriate age? 1d? 1week? 1 month?
-    // auto_blocked_.erase(iter);
-    // Save();
+  if (blocked(ip)) {
+    // We have an auto-block and we're still blocked.
+    LOG(INFO) << "Still in auto-block for ip: " << ip;
+    return false;
   }
-
 
   const auto auto_bl_sessions = b_.auto_bl_sessions;
   const auto auto_bl_seconds = b_.auto_bl_seconds;
@@ -216,8 +211,23 @@ bool AutoBlocker::Save() {
   return file.Save();
 }
 
+bool AutoBlocker::blocked(const std::string& ip) const {
+  const auto now = clock_.Now();
+  if (const auto iter = auto_blocked_.find(ip); iter != std::end(auto_blocked_)) {
+    if (iter->second.expiration > now.to_time_t()) {
+      // We have an auto-block and we're still blocked.
+      LOG(INFO) << "Still in auto-block for ip: " << ip;
+      return true;
+    }
+    // TODO: We're good.  Remove this entry once it ages out, what'd be an appropriate age? 1d? 1week? 1 month?
+    // auto_blocked_.erase(iter);
+    // Save();
+  }
+  return false;
+}
+
 bool AutoBlocker::Load() {
-  LOG(INFO) << "AutoBlocker: Load";
+  VLOG(1) << "AutoBlocker: Load";
   JsonFile<std::map<std::string, auto_blocked_entry_t>> file(FilePath(datadir_, "wwivd.autoblock.json"), "autoblock", auto_blocked_);
   return file.Load();
 }

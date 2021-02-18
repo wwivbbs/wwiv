@@ -282,8 +282,8 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
   // Check for country blocking if we have a DNS cc server defined.
   if (b.use_dns_cc && !b.dns_cc_server.empty()) {
     const auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
-    LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer
-              << "; country code: " << cc;
+    LOG(INFO) << "Validating country code for connection on port: " << r.port
+              << "; from peer: " << remote_peer << "; country code: " << cc;
     if (contains(data.c->blocking.block_cc_countries, cc)) {
       // We have a connection from a blocked country
       LOG(INFO) << "Denying connection attempt from country " << cc << " for peer: " << remote_peer;
