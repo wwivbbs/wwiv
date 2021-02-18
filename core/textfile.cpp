@@ -272,12 +272,15 @@ std::vector<std::string> TextFile::ReadLastLinesIntoVector(int num_lines) {
     }
     count++;
     if (cur_num == num_lines) {
-      int f = wwiv::stl::size_int(contents) - count;
-      contents = contents.substr(f + 1);
-      return wwiv::strings::SplitString(contents, "\n", true);
+      break;
     }
   }
-  return {};
+  auto f = wwiv::stl::size_int(contents) - count;
+  if (f > 0)  {
+    ++f;
+  }
+  contents = contents.substr(f);
+  return wwiv::strings::SplitString(contents, "\n", true);
 }
 
 std::ostream& operator<<(std::ostream& os, const TextFile& file) {
