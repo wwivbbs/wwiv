@@ -1309,8 +1309,12 @@ void NewUserDataEntry(const newuser_config_t& nc) {
     letters.erase(ch);
   } while (!a()->sess().hangup());
 
-  if (a()->editors.size() && u.HasAnsi()) {
-    u.SetDefaultEditor(1);
+  if (u.HasAnsi()) {
+    u.SetStatusFlag(User::status_color);
+    u.SetStatusFlag(User::extraColor);
+    // Enable the internal FSED and full screen reader for the sysop.
+    u.SetDefaultEditor(0xff);
+    u.SetStatusFlag(User::fullScreenReader);
   }
   a()->localIO()->topdata(saved_topdata);
   a()->UpdateTopScreen();

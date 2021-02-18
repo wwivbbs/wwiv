@@ -200,18 +200,13 @@ static int ShowLoginAndGetUserNumber(const std::string& remote_username) {
   return FindUserByRealName(user_name);
 }
 
-bool IsPhoneRequired() {
+static bool IsPhoneRequired() {
   const IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
                     {StrCat("WWIV-", a()->instance_number()), INI_TAG});
-  if (ini.IsOpen()) {
-    if (ini.value<bool>("NEWUSER_MIN")) {
-      return false;
-    }
-    if (!ini.value<bool>("LOGON_PHONE")) {
-      return false;
-    }
+  if (ini.IsOpen() && ini.value<bool>("LOGON_PHONE", false)) {
+    return true;
   }
-  return true;
+  return false;
 }
 
 bool VerifyPhoneNumber() {

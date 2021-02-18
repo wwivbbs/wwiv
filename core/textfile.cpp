@@ -21,6 +21,7 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include <cerrno>
@@ -245,6 +246,38 @@ std::vector<std::string> TextFile::ReadFileIntoVector(int64_t max_lines) {
     result.push_back(line);
   }
   return result;
+}
+
+std::vector<std::string> TextFile::ReadLastLinesIntoVector(int num_lines) {
+  fseek(file_, 0, SEEK_END);
+  const auto len = static_cast<unsigned long>(ftell(file_));
+  auto pos = std::max<int>(0, len - (num_lines * 1024));
+  // move to new pos
+  fseek(file_, pos, SEEK_SET);
+  auto size = len - pos;
+  string contents;
+  contents.resize(len);
+  const auto num_read = fread(&contents[0], 1, contents.size(), file_);
+  contents.resize(num_read);
+
+  if (contents.back() == '\n') {
+    contents.pop_back();
+  }
+
+  auto cur_num = 0;
+  auto count = 0;
+  for (auto it = std::rbegin(contents); it != std::rend(contents); ++it) {
+    if (*it == '\n') {
+      ++cur_num;
+    }
+    count++;
+    if (cur_num == num_lines) {
+      int f = wwiv::stl::size_int(contents) - count;
+      contents = contents.substr(f + 1);
+      return wwiv::strings::SplitString(contents, "\n", true);
+    }
+  }
+  return {};
 }
 
 std::ostream& operator<<(std::ostream& os, const TextFile& file) {
