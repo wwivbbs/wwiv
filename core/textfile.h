@@ -144,6 +144,14 @@ public:
    */
   [[nodiscard]] std::vector<std::string> ReadFileIntoVector(int64_t max_lines = std::numeric_limits<int64_t>::max());
 
+  /**
+   * Reads up to max_lines, the contents of the file into a vector of strings.
+   * 
+   * Note: The file position will be at the end of the file after returning.
+   * Note: max_lines defaults to max size for an int64_t.
+   */
+  [[nodiscard]] std::vector<std::string> ReadLastLinesIntoVector(int num_lines);
+
   // operators
 
   /**

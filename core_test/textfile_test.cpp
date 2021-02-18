@@ -210,3 +210,27 @@ TEST_F(TextFileTest, ReadFileIntoString_EmptyFile) {
   const auto s = file.ReadFileIntoString();
   EXPECT_EQ("", s);
 }
+
+TEST_F(TextFileTest, ReadFileNLinesIntoString) {
+  const auto path = helper_.CreateTempFile(this->test_name(), "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n");
+  TextFile file(path, "rt");
+  const auto s = file.ReadLastLinesIntoVector(4);
+  EXPECT_EQ(4u, s.size());
+}
+
+
+TEST_F(TextFileTest, ReadFileNLinesIntoString_NoCRLF) {
+  const auto path = helper_.CreateTempFile(this->test_name(), "1\n2\n3\n4\n5\n6\n7\n8\n9\n10");
+  TextFile file(path, "rt");
+  const auto s = file.ReadLastLinesIntoVector(4);
+  EXPECT_EQ(4u, s.size());
+}
+
+TEST_F(TextFileTest, ReadFileNLinesIntoString_HugeFile) {
+  std::string contents(1000, 'x');
+  contents += "1\n2\n3\n4\n5\n6\n7\n8\n9\n10";
+  const auto path = helper_.CreateTempFile(this->test_name(), contents);
+  TextFile file(path, "rt");
+  const auto s = file.ReadLastLinesIntoVector(4);
+  EXPECT_EQ(4u, s.size());
+}
