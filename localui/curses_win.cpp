@@ -182,12 +182,20 @@ int CursesWindow::GetChar(duration<double> timeout) const {
     case KEY_C2: // lower middle on Virt. keypad. Win10 Terminal started using this.
       return KEY_DOWN;
     case KEY_C3:
-      return KEY_NPAGE;
 #endif
+
 #ifdef PADENTER
     case PADENTER:
       return KEY_ENTER;
 #endif
+
+#ifdef KEY_SSAVE
+    // https://github.com/wwivbbs/wwiv/issues/1360
+    // control-Z not working through default terminal on RPI.
+    case KEY_SSAVE:
+      return 26; // Control-Z
+#endif // KEY_SSAVE
+
     default:
       return ch;
     }
