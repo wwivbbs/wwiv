@@ -4,7 +4,7 @@
         {
             "cat": "AutoMessage",
             "cmd": "AutoMessage",
-            "help": "Read the auto message"
+            "help": "Displays the legacy automessage menu"
         },
         {
             "cat": "AutoMessage",
@@ -12,8 +12,63 @@
             "help": "Read the auto message"
         },
         {
+            "cat": "AutoMessage",
+            "cmd": "amsg:delete",
+            "help": "Deletes the auto message (cosysop required)"
+        },
+        {
+            "cat": "AutoMessage",
+            "cmd": "amsg:email",
+            "help": "E-mail the author of the automessage"
+        },
+        {
+            "cat": "AutoMessage",
+            "cmd": "amsg:lock",
+            "help": "Locks the automessage (cosysop required)"
+        },
+        {
+            "cat": "AutoMessage",
+            "cmd": "amsg:read",
+            "help": "Read the auto message \n[use automessage:read instead]"
+        },
+        {
+            "cat": "AutoMessage",
+            "cmd": "amsg:unlock",
+            "help": "Unlocks the automessage (cosysop required)"
+        },
+        {
+            "cat": "AutoMessage",
+            "cmd": "amsg:write",
+            "help": "Writes a new auto message"
+        },
+        {
             "cat": "BBSList",
-            "cmd": "BBSList",
+            "cmd": "bbslist",
+            "help": "Legacy BBSList Menu"
+        },
+        {
+            "cat": "BBSList",
+            "cmd": "bbslist:add",
+            "help": "Adds a new BBS to the BBSList"
+        },
+        {
+            "cat": "BBSList",
+            "cmd": "bbslist:bbslist",
+            "help": "Legacy BBSList Menu"
+        },
+        {
+            "cat": "BBSList",
+            "cmd": "bbslist:delete",
+            "help": "Deletes a new BBS from the BBSList"
+        },
+        {
+            "cat": "BBSList",
+            "cmd": "bbslist:net",
+            "help": "Read the network bbs lists"
+        },
+        {
+            "cat": "BBSList",
+            "cmd": "bbslist:read",
             "help": "Read the bbslist"
         },
         {
@@ -304,12 +359,12 @@
         {
             "cat": "Menu",
             "cmd": "DisplayHelp",
-            "help": "<filename>\n\n  An alias for DisplayMenu. \n  This alias is deprecated, please use DisplayMenu."
+            "help": "An alias for DisplayMenu. \n  This alias is deprecated, please use menu:display."
         },
         {
             "cat": "Menu",
             "cmd": "DisplayMenu",
-            "help": "<filename>\n\n  Prints the 'novice menus' for the current menu set, or if one doesn't exist,\n  it will generate one using the menu definitions."
+            "help": "Prints the 'novice menus' for the current menu set, or if one doesn't exist,\n  it will generate one using command \"menu:generate_short\""
         },
         {
             "cat": "Menu",
@@ -320,6 +375,21 @@
             "cat": "Menu",
             "cmd": "ReturnFromMenu",
             "help": ""
+        },
+        {
+            "cat": "Menu",
+            "cmd": "menu:display",
+            "help": "Prints the 'novice menus' for the current menu set, or if one doesn't exist,\n  it will generate one using command \"menu:generate_short\""
+        },
+        {
+            "cat": "Menu",
+            "cmd": "menu:generate_long",
+            "help": "Generates the long form (one cmd per line) help text/menu for the current menu set.\nThis command does not attempt to display a .msg/.ans file."
+        },
+        {
+            "cat": "Menu",
+            "cmd": "menu:generate_short",
+            "help": "Generates the short form 'novice menus' for the current menu set.\nThis command does not attempt to display a .msg/.ans file."
         },
         {
             "cat": "Message",
@@ -634,7 +704,7 @@
         {
             "cat": "System",
             "cmd": "ToggleExpert",
-            "help": "Turn 'X'pert mode on or off (toggle)"
+            "help": "Turn 'X'pert mode on or off (toggle)\n  Can optionally pass \"quiet=on\" as the command data to suppress displaying the expert mode state."
         },
         {
             "cat": "System",

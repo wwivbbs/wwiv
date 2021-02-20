@@ -12,18 +12,39 @@ Legend (starting with 5.3)
 
 What's New in WWIV 5.7.0 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* Improve autoblocker in wwivd (#1359)
++ Improve autoblocker in wwivd (#1359)
   WWIV's autoblocker now gives variable automatic blocking for fixed
   time periods 4 times before adding a permanent ban to badips.txt.
   The way you trigger the blocking is to have more than X connections within
   Y seconds, where X and Y are defined in wwivconfig's wwivd blocking page.
+  ** You may want to delete badip.txt or rename it to something else, it likely
+     has more systems in it than you intended to block **
 * Removed the following from wwiv.ini:
   CHECK_DUP_PHONES       = N 
   HANGUP_DUP_PHONES      = N 
   The first never worked, therefore neither did the second and also isn't really
   need anymore.
-* Added new setting in wwivconfig for fine grained newuser info.
-* Removed WFC_SCREEN from wwiv.ini, it had no effect.
++ Added new setting in wwivconfig for fine grained newuser info.
+! Add granular control over which profile information must be provided by new users (#845)
+  By default wwivconfig should match what you had in wwiv.ini, but please take a look
+  also please remove teh following from wwiv.ini since they are confusing and 
+  these values are now controlled by wwivconfig:
+  * EXTENDED_USERINFO
+  * NEWUSER_MIN
+  * TEMP_DIRECTORY
+  * BATCH_DIRECTORY
+  * NUM_INSTANCES  
+  * WFC_SCREEN
++ Add new page in wwivconfig for setting which fields are required, optional, and unused.
++ Set newuser to internal fsed not first external editor
++ Added chain pause functionality (#1379) - thanks to DMXrob
+* Fix IsPhoneRequired for login. We don't have NEWUSER_MIN anymore.
++ Added yourinfo.msg to the list of gfiles/ wwiv uses.
+  This will replace the internal YourInfo hardcoded info that is displayed
+   if this file exists, otherwise we'll fall back to the hardcoded one.
++ Added @z macro to display the upload/download ratio for the user.
++ When toggling expert mode, WWIV will now display the status of expert
+  mode or not unless "quiet=on" is passed to the menu command as data.
 
 What's New in WWIV 5.6.1 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
