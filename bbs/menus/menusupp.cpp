@@ -392,7 +392,7 @@ void ToggleExpert(const std::string& data) {
   menu_data_and_options_t opts(data);
   a()->user()->ToggleStatusFlag(User::expert);
   auto o = opts.opts("quiet");
-  auto quiet = !o.empty() && *std::begin(o) == "off";
+  const auto quiet = !o.empty() && *std::begin(o) == "off";
   if (!quiet) {
     bout << "|#3Expert mode is: " << (a()->user()->IsExpert() ? "On" : "Off") << wwiv::endl;
   }
@@ -961,7 +961,7 @@ bool GuestCheck() {
 }
 
 void SetSubNumber(const MenuContext& context) {
-  for (uint16_t i = 0; i < a()->usub.size(); i++) {
+  for (auto i = 0; i < size_int(a()->usub); i++) {
     if (a()->usub[i].keys == context.data) {
       a()->set_current_user_sub_num(i);
     }

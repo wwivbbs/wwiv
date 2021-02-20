@@ -141,11 +141,9 @@ void Output::reset() {
 namespace wwiv::common {
 
 
-static void HandleControlKey(char* ch, const SessionContext& context, wwiv::sdk::User& user) {
-  auto c = *ch;
-
+static char HandleControlKey(const char c, const SessionContext& context, wwiv::sdk::User& user) {
   if (c == CBACKSPACE) {
-    c = BACKSPACE;
+    return BACKSPACE;
   }
   if (bin.okskey()) {
     switch (c) {
@@ -156,10 +154,11 @@ static void HandleControlKey(char* ch, const SessionContext& context, wwiv::sdk:
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         const auto macroNum = MACRO_KEY_TABLE[static_cast<int>(c)];
         to_char_array(bin.charbuffer, user.macro(macroNum));
-        c = bin.charbuffer[0];
-        if (c) {
+        const auto nextchar = bin.charbuffer[0];
+        if (nextchar) {
           bin.charbufferpointer_ = 1;
         }
+        return nextchar;
       }
       break;
     case CT: // CTRL - T
@@ -187,9 +186,10 @@ static void HandleControlKey(char* ch, const SessionContext& context, wwiv::sdk:
     case CY:
       user.ToggleStatusFlag(User::pauseOnPage);
       break;
+    default:
+      return c;
     }
   }
-  *ch = c;
 }
 
 /* This function checks both the local keyboard, and the remote terminal
@@ -228,7 +228,7 @@ char Input::bgetch(bool allow_extended_input) {
   }
 
   if (!allow_extended_input) {
-    HandleControlKey(&ch, sess(), user());
+    return HandleControlKey(ch, sess(), user());
   }
 
   return ch;
@@ -356,6 +356,9 @@ int Input::bgetch_handle_key_translation(int key, numlock_status_t numlock_mode)
     const auto ret = get_numpad_command(key);
     if (ret)
       return ret;
+  }
+  if (key < 127) {
+    return HandleControlKey(key, sess(), user());
   }
   return key;
 }
