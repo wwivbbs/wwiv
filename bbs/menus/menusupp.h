@@ -48,7 +48,7 @@ void RemovePost();
 void TitleScan();
 void ListUsers();
 void Vote();
-void ToggleExpert();
+void ToggleExpert(const std::string& data);
 void WWIVVersion();
 void JumpEdit();
 void BoardEdit();

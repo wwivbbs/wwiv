@@ -64,6 +64,7 @@
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
+#include "common/menu_data_util.h"
 #include "common/pause.h"
 #include "common/quote.h"
 #include "common/workspace.h"
@@ -387,8 +388,14 @@ void Vote() {
   }
 }
 
-void ToggleExpert() {
+void ToggleExpert(const std::string& data) {
+  menu_data_and_options_t opts(data);
   a()->user()->ToggleStatusFlag(User::expert);
+  auto o = opts.opts("quiet");
+  auto quiet = !o.empty() && *std::begin(o) == "off";
+  if (!quiet) {
+    bout << "|#3Expert mode is: " << (a()->user()->IsExpert() ? "On" : "Off") << wwiv::endl;
+  }
 }
 
 void WWIVVersion() {

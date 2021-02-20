@@ -462,8 +462,9 @@ This command does not attempt to display a .msg/.ans file.
                              MENU_CAT_VOTE, [](MenuContext&) { Vote(); }));
   m.emplace("ToggleExpert", MenuItem(R"(
   Turn 'X'pert mode on or off (toggle)
+  Can optionally pass "quiet=on" as the command data to suppress displaying the expert mode state.
 )",
-                                     MENU_CAT_SYS, [](MenuContext&) { ToggleExpert(); }));
+                                     MENU_CAT_SYS, [](MenuContext& c) { ToggleExpert(c.data); }));
   m.emplace("YourInfo", MenuItem(R"(
   Display the yourinfo screen
 )",
