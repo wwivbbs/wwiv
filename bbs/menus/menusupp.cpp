@@ -941,7 +941,7 @@ void UploadToSysop() {
 }
 
 void GuestApply() {
-  if (a()->sess().guest_user()) {
+  if (a()->user()->guest_user()) {
     newuser();
   } else {
     bout << "You already have an account on here!\r\n\r\n";
@@ -953,7 +953,7 @@ void AttachFile() {
 }
 
 bool GuestCheck() {
-  if (a()->sess().guest_user()) {
+  if (a()->user()->guest_user()) {
     bout << "|#6This command is only for registered users.\r\n";
     return false;
   }

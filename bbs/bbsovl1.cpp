@@ -223,7 +223,7 @@ void feedback(bool bNewUserFeedback) {
     email(title, 1, 0, true, 0, false);
     return;
   }
-  if (a()->sess().guest_user()) {
+  if (a()->user()->guest_user()) {
     a()->status_manager()->reload_status();
     email("Guest Account Feedback", 1, 0, true, 0, true);
     return;

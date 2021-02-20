@@ -15,7 +15,7 @@
             "num_newlines_at_end": 1
         },
         "title": "Visting Sysops",
-        "acs": "user.foo",
+        "acs": "",
         "password": "",
         "enter_actions": [
             {

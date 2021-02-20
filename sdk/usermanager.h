@@ -52,7 +52,7 @@ class UserManager {
 
   /**
    * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the
-   * Global guest_user variable is true.
+   * user is the guest user.
    */
   void set_user_writes_allowed(bool a) {
     allow_writes_ = a;

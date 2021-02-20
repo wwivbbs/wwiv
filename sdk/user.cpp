@@ -74,6 +74,10 @@ void User::FixUp() {
 
 void User::ZeroUserData() { memset(&data, 0, sizeof(userrec)); }
 
+bool User::guest_user() const {
+  return iequals(name(), "GUEST");
+}
+
 bool User::CreateRandomPassword() {
   std::string chars("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890");
 

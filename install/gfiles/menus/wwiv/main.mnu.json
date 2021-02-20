@@ -1341,7 +1341,7 @@
                 "help_text": "Allows GUEST to Apply for an Account",
                 "log_text": "APPLY",
                 "instance_message": "New User Logon",
-                "acs": "",
+                "acs": "user.guest == true",
                 "password": "",
                 "actions": [
                     {
@@ -1409,7 +1409,7 @@
                 "help_text": "Slash Menu",
                 "log_text": "W",
                 "instance_message": "",
-                "acs": "",
+                "acs": "user.sysop == true",
                 "password": "",
                 "actions": [
                     {
@@ -1431,7 +1431,7 @@
                 "help_text": "Display Sysop Menu",
                 "log_text": "SYSOP",
                 "instance_message": "",
-                "acs": "",
+                "acs": "user.sysop == true",
                 "password": "",
                 "actions": [
                     {
@@ -1465,7 +1465,7 @@
                 "help_text": "Configure Colors",
                 "log_text": "COLORS",
                 "instance_message": "",
-                "acs": "",
+                "acs": "user.sysop == true",
                 "password": "",
                 "actions": [
                     {
@@ -1482,7 +1482,7 @@
                 "help_text": "Edit Conferences",
                 "log_text": "CONFEDIT",
                 "instance_message": "",
-                "acs": "",
+                "acs": "user.sysop == true",
                 "password": "",
                 "actions": [
                     {
@@ -1505,23 +1505,6 @@
                     {
                         "cmd": "edit",
                         "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
-                "item_key": "YI",
-                "item_text": "YourInfo MSG",
-                "visible": true,
-                "help_text": "",
-                "log_text": "",
-                "instance_message": "",
-                "acs": "",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "PrintFile",
-                        "data": "yourinfo",
                         "acs": ""
                     }
                 ]

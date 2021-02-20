@@ -47,7 +47,6 @@ using namespace wwiv::strings;
 int finduser(const string& searchString) {
   User user;
 
-  a()->sess().guest_user(false);
   a()->users()->set_user_writes_allowed(true);
   if (searchString == "NEW") {
     return -1;
@@ -69,7 +68,6 @@ int finduser(const string& searchString) {
     return 0;
   }
   if (iequals(user.name(), "GUEST")) {
-    a()->sess().guest_user(true);
     a()->users()->set_user_writes_allowed(false);
   }
   return user_number;

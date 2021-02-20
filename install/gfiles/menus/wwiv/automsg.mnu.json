@@ -172,17 +172,6 @@
                         "acs": ""
                     }
                 ]
-            },
-            {
-                "item_key": "",
-                "item_text": "",
-                "visible": true,
-                "help_text": "",
-                "log_text": "",
-                "instance_message": "",
-                "acs": "",
-                "password": "",
-                "actions": []
             }
         ]
     }

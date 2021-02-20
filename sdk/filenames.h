@@ -45,9 +45,9 @@
 #define CATEG_NET "categ.net"
 #define CHAT_NOEXT "chat"
 #define DROPFILE_CHAIN_TXT "chain.txt"
-const constexpr auto CHAINS_DAT = "chains.dat";
-const constexpr auto CHAINS_REG = "chains.reg";
-const constexpr auto CHAINS_JSON = "chains.json";
+constexpr auto CHAINS_DAT = "chains.dat";
+constexpr auto CHAINS_REG = "chains.reg";
+constexpr auto CHAINS_JSON = "chains.json";
 
 #define CHAINS_NOEXT "chains"
 
@@ -71,12 +71,10 @@ const constexpr auto CHAINS_JSON = "chains.json";
 #define DEFAULTS_NOEXT "defaults"
 #define DESC_SDI "DESC.SDI"
 #define DESCRIPT_ION "descript.ion"
-
 #define DIRS_DAT "dirs.dat"
 #define DIRS_CNF "dirs.cnf"
 #define DIRS_JSON "dirs.json"
 #define DISABLE_TAG "disable.tag"
-
 #define DOWNLOAD_NOEXT "download"
 
 #define EDITORS_DAT "editors.dat"
@@ -162,7 +160,6 @@ const constexpr auto CHAINS_JSON = "chains.json";
 #define REGIONS_DAT "regions.dat"
 #define REGIONS_DIR "regions"
 #define REJECT_NOEXT "reject"
-#define REMOTES_DAT "remotes.dat"
 #define RESULT_ED "result.ed"
 
 #define RS_EMAIL_NOEXT "rs-email"
@@ -173,22 +170,18 @@ const constexpr auto CHAINS_JSON = "chains.json";
 #define SONLINE_NOEXT "sonline"
 #define SRESTRCT_NOEXT "srestrct"
 #define STATUS_DAT "status.dat"
-#define SUEDIT_NOEXT "suedit"
 #define SUBS_CNF "subs.cnf"
 #define SUBS_DAT "subs.dat"
 #define SUBS_JSON "subs.json"
 #define SUBS_LST "subs.lst"
 #define SUBS_NOEXT "subs"
-#define SUBS_PUB "subs.pub"
 #define SUBS_XTR "subs.xtr"
 #define SWFC_NOEXT "swfc"
 #define SYSTEM_NOEXT "system"
 
 #define SY_EMAIL_NOEXT "sy-email"
 
-#define TARCHIVE_NOEXT "tarchive"
 #define TBATCH_NOEXT "tbatch"
-#define TEMP_ION "temp.ion"
 #define TITLE_FSED_NOEXT "title-fsed"
 #define TRASHCAN_TXT "trashcan.txt"
 #define TRY2UL_NOEXT "try2ul"

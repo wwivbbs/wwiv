@@ -45,6 +45,7 @@ What's New in WWIV 5.7.0 (2021)
 + Added @z macro to display the upload/download ratio for the user.
 + When toggling expert mode, WWIV will now display the status of expert
   mode or not unless "quiet=on" is passed to the menu command as data.
+* Still allow HandleControlKey to work with bgetch_event. (#1382)
 
 What's New in WWIV 5.6.1 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

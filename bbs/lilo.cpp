@@ -205,15 +205,16 @@ static bool IsPhoneRequired() {
 }
 
 bool VerifyPhoneNumber() {
-  if (IsPhoneNumberUSAFormat(a()->user()) || a()->user()->country().empty()) {
-    auto phoneNumber = bin.input_password("PH: ###-###-", 4);
+  if (a()->user()->voice_phone().empty() || !IsPhoneNumberUSAFormat(a()->user()) || a()->user()->country().empty()) {
+    return true;
+  }
 
-    if (phoneNumber != &a()->user()->voice_phone()[8]) {
-      if (phoneNumber.length() == 4 && phoneNumber[3] == '-') {
-        bout << "\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n";
-      }
-      return false;
+  auto phone_number = bin.input_password("PH: ###-###-", 4);
+  if (phone_number != a()->user()->voice_phone().substr(8)) {
+    if (phone_number.length() == 4 && phone_number[3] == '-') {
+      bout << "\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n";
     }
+    return false;
   }
   return true;
 }
@@ -383,7 +384,7 @@ void getuser() {
         continue;
       }
       ok = true;
-      if (a()->sess().guest_user()) {
+      if (a()->user()->guest_user()) {
         logon_guest();
       } else {
         a()->sess().effective_sl(a()->config()->newuser_sl());
@@ -454,7 +455,7 @@ static void UpdateUserStatsForLogin() {
   } else {
     a()->set_current_user_dir_num(0);
   }
-  if (a()->sess().effective_sl() != 255 && !a()->sess().guest_user()) {
+  if (a()->sess().effective_sl() != 255 && !a()->user()->guest_user()) {
     a()->status_manager()->Run([](Status& s) {
       s.increment_caller_num();
       s.increment_calls_today();

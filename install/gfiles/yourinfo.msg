@@ -16,3 +16,5 @@
 |#9Uploads        : |#2|@K|#9k in |#2|@U |#9files
 |#9Downloads      : |#2|@k|#9k in |#2|@D |#9files
 |#9Transfer Ratio : |#2|@z
+
+|{pause}
