@@ -1508,6 +1508,23 @@
                         "acs": ""
                     }
                 ]
+            },
+            {
+                "item_key": "YI",
+                "item_text": "YourInfo MSG",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "PrintFile",
+                        "data": "yourinfo",
+                        "acs": ""
+                    }
+                ]
             }
         ]
     }
