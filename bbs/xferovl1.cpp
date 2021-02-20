@@ -375,11 +375,12 @@ void tag_it() {
         bout << "|#6Batch file limit of " << a()->max_batch << " has been reached.\r\n";
         bad = true;
       }
-      if (a()->config()->req_ratio() > 0.0001f && ratio() < a()->config()->req_ratio() &&
-          !a()->user()->IsExemptRatio() && !bad) {
+      if (a()->config()->req_ratio() > 0.0001f &&
+          a()->user()->ratio() < a()->config()->req_ratio() && !a()->user()->IsExemptRatio() &&
+          !bad) {
         bout.bprintf(
             "|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",
-            ratio(), a()->config()->req_ratio());
+            a()->user()->ratio(), a()->config()->req_ratio());
         bad = true;
       }
       if (!bad) {
@@ -834,7 +835,7 @@ void download() {
     }
     if (!had) {
       bout.nl();
-      bout << "Your ratio is now: " << ratio() << wwiv::endl;
+      bout << "Your ratio is now: " << a()->user()->ratio() << wwiv::endl;
     }
   }
 }

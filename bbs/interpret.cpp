@@ -175,11 +175,13 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case 'X':                               // User's sex
       return fmt::sprintf("%c", context_->u().GetGender());
     case 'Y':                               // Your BBS name
-      return (config_ == nullptr) ? "" : config_->system_name();
+      return config_ == nullptr ? "" : config_->system_name();
     case 'y':                               // Computer type
       return ctypes(context_->u().GetComputerType());
     case 'Z':                               // User's zip code
       return context_->u().zip_code();
+    case 'z':
+      return fmt::format("{:2.3f}", context_->u().ratio());
     default:
       return {};
     }

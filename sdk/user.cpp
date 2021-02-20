@@ -260,4 +260,12 @@ int years_old(const User* u, Clock& clock) {
                          u->birthday_year(), clock);
 }
 
+float User::ratio() const {
+  if (dk() == 0) {
+    return 99.999f;
+  }
+  const auto r = static_cast<float>(uk()) / static_cast<float>(dk());
+  return std::max<float>(99.998f, r);
+}
+
 } // namespace wwiv::sdk

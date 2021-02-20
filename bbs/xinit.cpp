@@ -332,7 +332,7 @@ void Application::ReadINIFile(IniFile& ini) {
   sess().set_system_bps(system_bps);
 }
 
-bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
+bool Application::ReadInstanceSettings(int instance_number) {
   auto temp_directory = config_->temp_format();
   if (temp_directory.empty()) {
     temp_directory = "e/%n/temp";
@@ -392,7 +392,7 @@ bool Application::ReadConfig() {
     return false;
   }
   ReadINIFile(ini);
-  if (!ReadInstanceSettings(instance_number(), ini)) {
+  if (!ReadInstanceSettings(instance_number())) {
     return false;
   }
 

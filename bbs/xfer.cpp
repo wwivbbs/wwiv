@@ -181,11 +181,12 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
 
 bool ratio_ok() {
   if (!a()->user()->IsExemptRatio()) {
-    if (a()->config()->req_ratio() > 0.0001f && ratio() < a()->config()->req_ratio()) {
+    if (a()->config()->req_ratio() > 0.0001f && a()->user()->ratio() < a()->config()->req_ratio()) {
       bout.cls();
       bout.nl();
-      bout.bprintf("Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
-                                        ratio(), a()->config()->req_ratio());
+      bout.bprintf(
+          "Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
+          a()->user()->ratio(), a()->config()->req_ratio());
       return false;
     }
   }
