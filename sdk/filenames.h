@@ -106,6 +106,7 @@ const constexpr auto CHAINS_JSON = "chains.json";
 
 #define LANGUAGE_DAT "language.dat"
 #define LASTON_TXT "laston.txt"
+#define LASTNET_TXT "lastnet.txt"
 #define LISTPLUS_CFG "listplus.cfg"
 #define LISTPLUS_HLP "listplus.hlp"
 #define LOCAL_NET "local.net"
@@ -140,6 +141,7 @@ const constexpr auto CHAINS_JSON = "chains.json";
 #define MUSTREAD_NOEXT "mustread"
 
 #define NAMES_LST "names.lst"
+#define NET_LOG "net.log"
 #define NETWORKS_DAT "networks.dat"
 #define NETWORKS_JSON "networks.json"
 #define NEWUSER_NOEXT "newuser"
