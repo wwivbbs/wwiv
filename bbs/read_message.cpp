@@ -840,7 +840,7 @@ ReadMessageResult read_post(int& msgnum, bool* next, int* val) {
     m.flags.insert(MessageFlags::PERMANENT);
   }
   if ((p.status & status_pending_net) &&
-      a()->user()->sl() > a()->config()->newuser_sl()) {
+      a()->user()->sl() >= a()->config()->validated_sl()) {
     *val |= 2;
     m.flags.insert(MessageFlags::NOT_NETWORK_VALIDATED);
   }

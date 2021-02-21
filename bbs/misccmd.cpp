@@ -407,10 +407,7 @@ void time_bank() {
   long nsln;
 
   bout.nl();
-  // TODO(rushfan): We use 10 as a proxy for unvalidated.
-  // We should come up with a better way or just remove this
-  // and set it in the menu ACS.
-  if (a()->user()->sl() <= 10) {
+  if (!wwiv::bbs::check_acs("user.validated == true")) {
     bout << "|#6You must be validated to access the timebank.\r\n";
     return;
   }

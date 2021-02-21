@@ -793,7 +793,7 @@ static vector<bool> read_voting() {
 
 static void CheckUserForVotingBooth() {
   auto questused = read_voting();
-  if (!a()->user()->IsRestrictionVote() && a()->sess().effective_sl() > a()->config()->newuser_sl()) {
+  if (!a()->user()->IsRestrictionVote() && a()->sess().effective_sl() >= a()->config()->validated_sl()) {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && a()->user()->GetVote(i) == 0) {
         bout.nl();
