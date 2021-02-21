@@ -818,8 +818,8 @@ static void HandleValUser(int msg_num) {
   if (cs() && get_post(msg_num)->ownersys == 0 && msg_num > 0 &&
       msg_num <= a()->GetNumMessagesInCurrentMessageArea()) {
     valuser(get_post(msg_num)->owneruser);
-  } else if (cs() && (msg_num > 0) &&
-             (msg_num <= a()->GetNumMessagesInCurrentMessageArea())) {
+  } else if (cs() && msg_num > 0 &&
+             msg_num <= a()->GetNumMessagesInCurrentMessageArea()) {
     bout.nl();
     bout << "|#6Post from another system.\r\n\n";
   }

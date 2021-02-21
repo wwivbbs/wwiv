@@ -48,6 +48,7 @@
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
+#include "sdk/arword.h"
 #include "sdk/bbslist.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
@@ -118,7 +119,6 @@ static void valuser_delete(int user_number) {
 }
 
 static void valuser_manual(User& user) {
-  char s[81], s1[81], s2[81], ar1[20], dar1[20];
   bout << "|#9SL  : |#2" << user.sl() << wwiv::endl;
   if (user.sl() < a()->sess().effective_sl()) {
     bout << "|#9New : ";
@@ -132,112 +132,65 @@ static void valuser_manual(User& user) {
     const auto dsl = bin.input_number(user.dsl(), 0, 255);
     user.dsl(dsl);
   }
-  auto ar2     = 1;
-  auto dar2    = 1;
-  ar1[0]      = RETURN;
-  dar1[0]     = RETURN;
-  for (int i = 0; i <= 15; i++) {
-    if (user.HasArFlag(1 << i)) {
-      s[i] = static_cast<char>('A' + i);
-    } else {
-      s[i] = SPACE;
-    }
-    if (a()->user()->HasArFlag(1 << i)) {
-      ar1[ar2++] = static_cast<char>('A' + i);
-    }
-    if (user.HasDarFlag(1 << i)) {
-      s1[i] = static_cast<char>('A' + i);
-    } else {
-      s1[i] = SPACE;
-    }
-    if (a()->user()->HasDarFlag(1 << i)) {
-      dar1[dar2++] = static_cast<char>('A' + i);
-    }
-    if (user.HasRestrictionFlag(1 << i)) {
-      s2[i] = restrict_string[i];
-    } else {
-      s2[i] = SPACE;
-    }
-  }
-  s[16]       = '\0';
-  s1[16]      = '\0';
-  s2[16]      = '\0';
-  ar1[ar2]    = '\0';
-  dar1[dar2]  = '\0';
   bout.nl();
-  char ch1 = '\0';
-  if (ar2 > 1) {
+  if (auto allowed_ar = word_to_arstr(a()->user()->ar_int(), ""); !allowed_ar.empty()) {
+    allowed_ar.push_back(RETURN);
     do {
-      bout << "|#9AR  : |#2" << s << wwiv::endl;
+      bout << "|#9AR  : |#2" << word_to_arstr(user.ar_int(), "") << wwiv::endl;
       bout << "|#9Togl? ";
-      ch1 = onek(ar1);
-      if (ch1 != RETURN) {
-        ch1 -= 'A';
-        if (s[ch1] == SPACE) {
-          s[ch1] = ch1 + 'A';
-        } else {
-          s[ch1] = SPACE;
-        }
-        user.ToggleArFlag(1 << ch1);
-        ch1 = 0;
+      const auto ch_ar = onek(allowed_ar);
+      if (ch_ar == RETURN) {
+        break;
       }
-    } while (!a()->sess().hangup() && ch1 != RETURN);
+      const auto ar = ch_ar - 'A';
+      user.ToggleArFlag(1 << ar);
+    } while (!a()->sess().hangup());
   }
   bout.nl();
-  ch1 = 0;
-  if (dar2 > 1) {
+  if (auto allowed_dar = word_to_arstr(a()->user()->dar_int(), ""); !allowed_dar.empty()) {
+    allowed_dar.push_back(RETURN);
     do {
-      bout << "|#9DAR : |#2" << s1 << wwiv::endl;
+      bout << "|#9DAR : |#2" << word_to_arstr(user.dar_int(), "") << wwiv::endl;
       bout << "|#9Togl? ";
-      ch1 = onek(dar1);
-      if (ch1 != RETURN) {
-        ch1 -= 'A';
-        if (s1[ch1] == SPACE) {
-          s1[ch1] = ch1 + 'A';
-        } else {
-          s1[ch1] = SPACE;
-        }
-        user.ToggleDarFlag(1 << ch1);
-        ch1 = 0;
+      const auto ch_dar = onek(allowed_dar);
+      if (ch_dar == RETURN) {
+        break;
       }
-    } while (!a()->sess().hangup() && ch1 != RETURN);
+      const auto dar = ch_dar - 'A';
+      user.ToggleDarFlag(1 << dar);
+    } while (!a()->sess().hangup());
   }
   bout.nl();
-  ch1     = 0;
-  s[0]    = RETURN;
-  s[1]    = '?';
-  strcpy(&(s[2]), restrict_string);
+
+  const std::string r{restrict_string};
+  std::string allowed{restrict_string};
+  allowed.push_back(' ');
+  allowed.push_back(RETURN);
   do {
-    bout << "      |#2" << restrict_string << wwiv::endl;
-    bout << "|#9Rstr: |#2" << s2 << wwiv::endl;
-    bout << "|#9Togl? ";
-    ch1 = onek(s);
-    if (ch1 != RETURN && ch1 != SPACE && ch1 != '?') {
-      int i = -1;
-      for (int i1 = 0; i1 < 16; i1++) {
-        if (ch1 == s[i1 + 2]) {
-          i = i1;
-        }
-      }
-      if (i > -1) {
-        user.ToggleRestrictionFlag(1 << i);
-        if (s2[i] == SPACE) {
-          s2[i] = restrict_string[i];
-        } else {
-          s2[i] = SPACE;
-        }
-      }
-      ch1 = 0;
+    std::string user_rs;
+    for (auto i = 0; i <= 15; i++) {
+      user_rs.push_back(user.HasRestrictionFlag(1 << i) ? restrict_string[i] : ' ');
     }
-    if (ch1 == '?') {
-      ch1 = 0;
+    bout << "      |#2" << restrict_string << wwiv::endl;
+    bout << "|#9Rstr: |#2" << user_rs << wwiv::endl;
+    bout << "|#9Togl? ";
+    const auto ch = onek(allowed);
+    if (ch != RETURN && ch != SPACE && ch != '?') {
+      if (const auto pos = r.find(ch); pos != std::string::npos) {
+        user.ToggleRestrictionFlag(1 << pos);
+      }
+    }
+    if (ch == RETURN) {
+      break;
+    }
+    if (ch == '?') {
       bout.print_help_file(SRESTRCT_NOEXT);
     }
-  } while (!a()->sess().hangup() && ch1 == 0);
+  } while (!a()->sess().hangup());
 }
 
 static void valuser_auto(User& user) {
-  for (int i = 1; i <= 10; i++) {
+  for (auto i = 1; i <= 10; i++) {
     const auto& v = a()->config()->auto_val(i);
     bout.format("|#2{:>2}|#9) |#1{:<30.30} |#9(SL: |#5{:<3}|#9 DSL: |#5{:<3}|#9)\r\n", i, v.name, v.sl, v.dsl);
   }
