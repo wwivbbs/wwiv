@@ -302,7 +302,7 @@ public:
 
   [[nodiscard]] bool InitializeBBS(bool cleanup_network); // old init() method
   void ReadINIFile(wwiv::core::IniFile& ini); // from xinit.cpp
-  bool ReadInstanceSettings(int instance_number, wwiv::core::IniFile& ini);
+  bool ReadInstanceSettings(int instance_number);
   bool ReadConfig();
 
 public:

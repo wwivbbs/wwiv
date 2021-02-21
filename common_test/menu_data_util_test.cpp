@@ -73,3 +73,18 @@ TEST(MenuDataUtil, TwoOpt_SameKey) {
   EXPECT_EQ(*it++, "off");
   EXPECT_EQ(std::end(pause), it);
 }
+
+TEST(MenuDataUtil, MissingOpt) {
+  menu_data_and_options_t t("filename");
+  EXPECT_EQ(t.data(), "filename");
+  ASSERT_EQ(0u, t.size());
+  auto o = t.opts("pause");
+  ASSERT_TRUE(o.empty());
+}
+
+TEST(MenuDataUtil, Nothing) {
+  menu_data_and_options_t t("");
+  ASSERT_EQ(0u, t.size());
+  auto o = t.opts("pause");
+  ASSERT_TRUE(o.empty());
+}

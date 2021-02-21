@@ -1,14 +1,20 @@
 {
     "version": 1,
     "menu": {
+        "cls": false,
         "num_action": "none",
         "logging_action": "key",
         "help_type": "always",
-        "color_title": 5,
-        "color_item_key": 2,
-        "color_item_text": 1,
-        "color_item_braces": 9,
-        "title": "AutoMessage Menu",
+        "generated_menu": {
+            "num_cols": 6,
+            "color_title": "|#4",
+            "color_item_key": "|#2",
+            "color_item_text": "|#0",
+            "color_item_braces": "|#7",
+            "show_empty_text": false,
+            "num_newlines_at_end": 0
+        },
+        "title": "",
         "acs": "",
         "password": "",
         "enter_actions": [
@@ -23,6 +29,7 @@
             {
                 "item_key": "",
                 "item_text": "",
+                "visible": true,
                 "help_text": "",
                 "log_text": "",
                 "instance_message": "",
@@ -33,6 +40,7 @@
             {
                 "item_key": "A",
                 "item_text": "Auto-reply",
+                "visible": false,
                 "help_text": "Replies via email to the AutoMessage author",
                 "log_text": "AutoReply",
                 "instance_message": "",
@@ -47,8 +55,26 @@
                 ]
             },
             {
+                "item_key": "D",
+                "item_text": "Delete",
+                "visible": true,
+                "help_text": "Delete current automessage",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "amsg:delete",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
                 "item_key": "R",
-                "item_text": "Read AutoMessage",
+                "item_text": "Read",
+                "visible": false,
                 "help_text": "Reads the current auto message",
                 "log_text": "",
                 "instance_message": "",
@@ -64,7 +90,8 @@
             },
             {
                 "item_key": "L",
-                "item_text": "Lock AutoMessage",
+                "item_text": "Lock",
+                "visible": true,
                 "help_text": "",
                 "log_text": "",
                 "instance_message": "",
@@ -80,7 +107,8 @@
             },
             {
                 "item_key": "U",
-                "item_text": "Unlock AutoMesssage",
+                "item_text": "Unlock",
+                "visible": true,
                 "help_text": "",
                 "log_text": "",
                 "instance_message": "",
@@ -96,7 +124,8 @@
             },
             {
                 "item_key": "W",
-                "item_text": "Write AutoMessage",
+                "item_text": "Write",
+                "visible": false,
                 "help_text": "",
                 "log_text": "",
                 "instance_message": "",
@@ -113,6 +142,7 @@
             {
                 "item_key": "Q",
                 "item_text": "Quit",
+                "visible": false,
                 "help_text": "Returns to the previous menu",
                 "log_text": "",
                 "instance_message": "",
@@ -128,7 +158,8 @@
             },
             {
                 "item_key": "?",
-                "item_text": "Display help",
+                "item_text": "Display Help",
+                "visible": false,
                 "help_text": "",
                 "log_text": "",
                 "instance_message": "",

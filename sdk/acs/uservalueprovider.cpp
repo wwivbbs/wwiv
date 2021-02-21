@@ -66,6 +66,9 @@ std::optional<Value> UserValueProvider::value(const std::string& name) {
     const auto cs = (sl_.ability & ability_cosysop) != 0;
     return val(so || cs);
   }
+  if (iequals(name, "guest")) {
+    return val(user_->guest_user());
+  }
   throw eval_error(fmt::format("No user attribute named 'user.{}' exists.", name));
 }
 

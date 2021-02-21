@@ -148,6 +148,11 @@ class User final {
     return (data.inact & User::userInactive) != 0;
   }
 
+  /**
+   * Is this the guest user.
+   */
+  [[nodiscard]] bool guest_user() const;
+
   // USERREC.sysstatus
   void SetStatusFlag(int nFlag, bool on) {
     if (on) {
@@ -936,6 +941,12 @@ class User final {
   void set_menu_set(const std::string& menu_set);
 
   bool asv(const valrec& v);
+
+  /**
+   * Retrurns the upload/download ratio.
+   */
+  float ratio() const;
+
   ///////////////////////////////////////////////////////////////////////////
   // Static Helper Methods
 
@@ -955,6 +966,7 @@ int AddCallToday(User* u);
 
 /** Returns the age in years for user 'u' */
 int years_old(const User* u, core::Clock& clock);
+
 
 }  // namespace wwiv::sdk
 

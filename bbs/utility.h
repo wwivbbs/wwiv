@@ -25,7 +25,6 @@
 
 void remove_from_temp(const std::string& file_name, const std::filesystem::path& directory_name,
                       bool bPrintStatus);
-float ratio();
 float post_ratio();
 void reset_disable_conf();
 bool okansi();

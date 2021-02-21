@@ -338,7 +338,7 @@ void zmbatchdl(bool bHangupAfterDl) {
   // TODO(rushfan): Rewrite this to use iterators;
   do {
     a()->tleft(true);
-    if ((a()->config()->req_ratio() > 0.0001) && (ratio() < a()->config()->req_ratio())) {
+    if (a()->config()->req_ratio() > 0.0001 && a()->user()->ratio() < a()->config()->req_ratio()) {
       bRatioBad = true;
     }
     if (a()->user()->IsExemptRatio()) {
@@ -469,7 +469,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   //TODO(rushfan): rewrite to use iterators.
   do {
     a()->tleft(true);
-    if ((a()->config()->req_ratio() > 0.0001) && (ratio() < a()->config()->req_ratio())) {
+    if ((a()->config()->req_ratio() > 0.0001) && (a()->user()->ratio() < a()->config()->req_ratio())) {
       bRatioBad = true;
     }
     if (a()->user()->IsExemptRatio()) {
@@ -746,7 +746,7 @@ int batchdl(int mode) {
           dszbatchul(hangup_after_dl, a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
                      a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
           if (!hangup_after_dl) {
-            bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
+            bout.bprintf("Your ratio is now: %-6.3f\r\n", a()->user()->ratio());
           }
         }
         done = true;
@@ -787,7 +787,7 @@ int batchdl(int mode) {
           }
           if (!hangup_after_dl) {
             bout.nl();
-            bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
+            bout.bprintf("Your ratio is now: %-6.3f\r\n", a()->user()->ratio());
           }
         }
       }

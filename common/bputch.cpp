@@ -92,7 +92,9 @@ int Output::bputch(char c, bool use_buffer) {
       x_ = 0;
       bout.lines_listed_++;
       // change Build3 + 5.0 to fix message read.
-      if (bout.lines_listed() >= (sess().num_screen_lines() - 1)) {
+      const auto ll = lines_listed();
+      const auto num_sclines = sess().num_screen_lines() - 1;
+      if (ll >= num_sclines) {
         if (user().HasPause()) {
           bout.pausescr();
         }

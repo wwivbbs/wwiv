@@ -234,3 +234,11 @@ TEST_F(TextFileTest, ReadFileNLinesIntoString_HugeFile) {
   const auto s = file.ReadLastLinesIntoVector(4);
   EXPECT_EQ(4u, s.size());
 }
+
+TEST_F(TextFileTest, ReadFileNLinesIntoString_SmallerFileThanN) {
+  const auto path = helper_.CreateTempFile(this->test_name(), "1\n2\n");
+  TextFile file(path, "rt");
+  const auto s = file.ReadLastLinesIntoVector(4);
+  EXPECT_EQ(2u, s.size());
+}
+

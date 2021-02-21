@@ -74,6 +74,10 @@ void User::FixUp() {
 
 void User::ZeroUserData() { memset(&data, 0, sizeof(userrec)); }
 
+bool User::guest_user() const {
+  return iequals(name(), "GUEST");
+}
+
 bool User::CreateRandomPassword() {
   std::string chars("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890");
 
@@ -258,6 +262,14 @@ void User::birthday_mdy(int m, int d, int y) {
 int years_old(const User* u, Clock& clock) {
   return core::years_old(u->birthday_month(), u->birthday_mday(), 
                          u->birthday_year(), clock);
+}
+
+float User::ratio() const {
+  if (dk() == 0) {
+    return 99.999f;
+  }
+  const auto r = static_cast<float>(uk()) / static_cast<float>(dk());
+  return std::max<float>(99.998f, r);
 }
 
 } // namespace wwiv::sdk

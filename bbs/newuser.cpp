@@ -411,23 +411,11 @@ void input_comptype() {
 }
 
 void input_screensize() {
-  int x = 0, y = 0;
-
-  bool ok = true;
-  do {
-    bout.nl();
-    bout << "|#9How wide is your screen (chars, <CR>=80) ?\r\n|#7: ";
-    x = bin.input_number(80, 32, 80, true);
-    ok = true;
-  } while (!ok && !a()->sess().hangup());
-
-  do {
-    bout.nl();
-    bout << "|#9How tall is your screen (lines, <CR>=24) ?\r\n|#7: ";
-    y = bin.input_number(24, 8, 60, true);
-    ok = true;
-  } while (!ok && !a()->sess().hangup());
-
+  bout.nl();
+  bout << "|#9How wide is your screen? (|#2<CR>|#9=|#180|#9): ";
+  const auto x = bin.input_number(80, 32, 80, true);
+  bout << "|#9How tall is your screen? (|#2<CR>|#9=|#124|#9): ";
+  const auto y = bin.input_number(24, 8, 60, true);
   a()->user()->SetScreenChars(x);
   a()->user()->SetScreenLines(y);
   a()->sess().num_screen_lines(y);
@@ -619,7 +607,7 @@ bool CanCreateNewUserAccountHere() {
     bool ok = false;
     int nPasswordAttempt = 0;
     do {
-      auto password = bin.input_password("New User Password :", 20);
+      auto password = bin.input_password("New User Password: ", 20);
       if (password == a()->config()->newuser_password()) {
         ok = true;
       } else {
@@ -1357,7 +1345,7 @@ void newuser() {
   bout.nl();
   bout.pausescr();
   bout.cls();
-  bout << "|#5Create a new user account on " << a()->config()->system_name() << "? ";
+  bout << "|#5Create a new user account on |#2" << a()->config()->system_name() << "|#5? ";
   if (!bin.noyes()) {
     bout << "|#6Sorry the system does not meet your needs!\r\n";
     a()->Hangup();
@@ -1365,7 +1353,6 @@ void newuser() {
   }
 
   input_screensize();
-  input_country();
   NewUserDataEntry(a()->config()->newuser_config());
 
   bout.nl(4);

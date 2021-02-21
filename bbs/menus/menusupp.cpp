@@ -64,6 +64,7 @@
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
+#include "common/menu_data_util.h"
 #include "common/pause.h"
 #include "common/quote.h"
 #include "common/workspace.h"
@@ -387,8 +388,14 @@ void Vote() {
   }
 }
 
-void ToggleExpert() {
+void ToggleExpert(const std::string& data) {
+  menu_data_and_options_t opts(data);
   a()->user()->ToggleStatusFlag(User::expert);
+  auto o = opts.opts("quiet");
+  const auto quiet = !o.empty() && *std::begin(o) == "off";
+  if (!quiet) {
+    bout << "|#3Expert mode is: " << (a()->user()->IsExpert() ? "On" : "Off") << wwiv::endl;
+  }
 }
 
 void WWIVVersion() {
@@ -934,7 +941,7 @@ void UploadToSysop() {
 }
 
 void GuestApply() {
-  if (a()->sess().guest_user()) {
+  if (a()->user()->guest_user()) {
     newuser();
   } else {
     bout << "You already have an account on here!\r\n\r\n";
@@ -946,7 +953,7 @@ void AttachFile() {
 }
 
 bool GuestCheck() {
-  if (a()->sess().guest_user()) {
+  if (a()->user()->guest_user()) {
     bout << "|#6This command is only for registered users.\r\n";
     return false;
   }
@@ -954,7 +961,7 @@ bool GuestCheck() {
 }
 
 void SetSubNumber(const MenuContext& context) {
-  for (uint16_t i = 0; i < a()->usub.size(); i++) {
+  for (auto i = 0; i < size_int(a()->usub); i++) {
     if (a()->usub[i].keys == context.data) {
       a()->set_current_user_sub_num(i);
     }

@@ -1,14 +1,20 @@
 {
     "version": 1,
     "menu": {
+        "cls": true,
         "num_action": "none",
         "logging_action": "command",
-        "help_type": "always",
-        "color_title": 0,
-        "color_item_key": 0,
-        "color_item_text": 0,
-        "color_item_braces": 0,
-        "title": "",
+        "help_type": "user_choice",
+        "generated_menu": {
+            "num_cols": 2,
+            "color_title": "|#4",
+            "color_item_key": "|#2",
+            "color_item_text": "|#0",
+            "color_item_braces": "|#1",
+            "show_empty_text": false,
+            "num_newlines_at_end": 1
+        },
+        "title": "|#5Sysop Menu",
         "acs": "user.sysop == true",
         "password": "",
         "enter_actions": [],
@@ -17,6 +23,7 @@
             {
                 "item_key": "A",
                 "item_text": "Allow Editor",
+                "visible": true,
                 "help_text": "",
                 "log_text": "AE",
                 "instance_message": "",
@@ -33,6 +40,7 @@
             {
                 "item_key": "B",
                 "item_text": "Sub Editor",
+                "visible": true,
                 "help_text": "",
                 "log_text": "BE",
                 "instance_message": "",
@@ -49,6 +57,7 @@
             {
                 "item_key": "C",
                 "item_text": "Chain Editor",
+                "visible": true,
                 "help_text": "",
                 "log_text": "CE",
                 "instance_message": "",
@@ -65,6 +74,7 @@
             {
                 "item_key": "D",
                 "item_text": "Dir Editor",
+                "visible": true,
                 "help_text": "",
                 "log_text": "DE",
                 "instance_message": "",
@@ -81,6 +91,7 @@
             {
                 "item_key": "G",
                 "item_text": "Bulletin Editor",
+                "visible": true,
                 "help_text": "",
                 "log_text": "GE",
                 "instance_message": "",
@@ -97,6 +108,7 @@
             {
                 "item_key": "I",
                 "item_text": "Instance Editor",
+                "visible": true,
                 "help_text": "",
                 "log_text": "IE",
                 "instance_message": "",
@@ -113,6 +125,7 @@
             {
                 "item_key": "J",
                 "item_text": "Conference Editor",
+                "visible": true,
                 "help_text": "",
                 "log_text": "JE",
                 "instance_message": "",
@@ -129,6 +142,7 @@
             {
                 "item_key": "T",
                 "item_text": "Text Editor",
+                "visible": true,
                 "help_text": "",
                 "log_text": "TE",
                 "instance_message": "",
@@ -145,6 +159,7 @@
             {
                 "item_key": "V",
                 "item_text": "Voting Editor",
+                "visible": true,
                 "help_text": "",
                 "log_text": "VE",
                 "instance_message": "",
@@ -161,6 +176,7 @@
             {
                 "item_key": "K",
                 "item_text": "Print Votes",
+                "visible": true,
                 "help_text": "",
                 "log_text": "VP",
                 "instance_message": "",
@@ -177,6 +193,7 @@
             {
                 "item_key": "Q",
                 "item_text": "Quit",
+                "visible": true,
                 "help_text": "",
                 "log_text": "Q",
                 "instance_message": "",
@@ -193,6 +210,7 @@
             {
                 "item_key": "?",
                 "item_text": "Display Help",
+                "visible": true,
                 "help_text": "",
                 "log_text": "?",
                 "instance_message": "",

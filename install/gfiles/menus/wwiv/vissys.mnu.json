@@ -1,13 +1,19 @@
 {
     "version": 1,
     "menu": {
+        "cls": false,
         "num_action": "none",
         "logging_action": "key",
         "help_type": "on_entrance",
-        "color_title": 0,
-        "color_item_key": 0,
-        "color_item_text": 0,
-        "color_item_braces": 0,
+        "generated_menu": {
+            "num_cols": 3,
+            "color_title": "|#4",
+            "color_item_key": "|#2",
+            "color_item_text": "|#0",
+            "color_item_braces": "|#1",
+            "show_empty_text": false,
+            "num_newlines_at_end": 1
+        },
         "title": "Visting Sysops",
         "acs": "",
         "password": "",
@@ -29,6 +35,7 @@
             {
                 "item_key": "R",
                 "item_text": "Read Messages",
+                "visible": true,
                 "help_text": "",
                 "log_text": "R",
                 "instance_message": "",
@@ -45,6 +52,7 @@
             {
                 "item_key": "Q",
                 "item_text": "Quit back to Main",
+                "visible": true,
                 "help_text": "",
                 "log_text": "Q",
                 "instance_message": "",
@@ -61,6 +69,7 @@
             {
                 "item_key": "?",
                 "item_text": "Help",
+                "visible": true,
                 "help_text": "",
                 "log_text": "?",
                 "instance_message": "",
@@ -77,6 +86,7 @@
             {
                 "item_key": "X",
                 "item_text": "Toggle Expert",
+                "visible": true,
                 "help_text": "",
                 "log_text": "X",
                 "instance_message": "",
@@ -93,6 +103,7 @@
             {
                 "item_key": "L",
                 "item_text": "List Files",
+                "visible": true,
                 "help_text": "",
                 "log_text": "L",
                 "instance_message": "",
@@ -109,6 +120,7 @@
             {
                 "item_key": "N",
                 "item_text": "List New Files",
+                "visible": true,
                 "help_text": "",
                 "log_text": "N",
                 "instance_message": "",
@@ -125,6 +137,7 @@
             {
                 "item_key": "1",
                 "item_text": "Download Asylum.ZIP",
+                "visible": true,
                 "help_text": "Download ASYLUM.ZIP - Free download",
                 "log_text": "",
                 "instance_message": "",
@@ -141,6 +154,7 @@
             {
                 "item_key": "F",
                 "item_text": "Feedback to the Sysop",
+                "visible": true,
                 "help_text": "Leave the sysop a note",
                 "log_text": "F",
                 "instance_message": "",

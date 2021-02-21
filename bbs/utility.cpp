@@ -81,20 +81,6 @@ void remove_from_temp(const std::string& file_name, const std::filesystem::path&
  */
 bool okansi() { return a()->user()->HasAnsi(); }
 
-
-/**
- * Gets the current users upload/download ratio.
- */
-float ratio() {
-  if (a()->user()->dk() == 0) {
-    return 99.999f;
-  }
-  const auto r = static_cast<float>(a()->user()->uk()) /
-             static_cast<float>(a()->user()->dk());
-
-  return r > 99.998f ? 99.998f : r;
-}
-
 /**
  * Gets the current users post/call ratio.
  */

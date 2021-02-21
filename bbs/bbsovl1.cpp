@@ -76,6 +76,12 @@ void DisplayHorizontalBar(int width, int color) {
  * Displays some basic user statistics for the current user.
  */
 void YourInfo() {
+  if (bout.printfile("yourinfo")) {
+    // We displayed the new file based yourinfo, exit here.
+    return;
+  }
+  // Legacy yourinfo used.
+  LOG(WARNING) << "Legacy yourinfo used, please add yourinfo.msg to gfiles directory.";
   bout.cls();
   bout.litebar("Your User Information");
   bout.nl();
@@ -106,7 +112,7 @@ void YourInfo() {
        << a()->user()->uploaded() << " |#9files" << wwiv::endl;
   bout << "|#9Downloads      : |#2" << a()->user()->dk() << "|#9k in|#2 "
        << a()->user()->downloaded() << " |#9files" << wwiv::endl;
-  bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
+  bout << "|#9Transfer Ratio : |#2" << a()->user()->ratio() << wwiv::endl;
   bout.nl();
   bout.pausescr();
 }
@@ -119,7 +125,7 @@ int GetMaxMessageLinesAllowed() {
   if (so()) {
     return 120;
   }
-  return (cs()) ? 100 : 80;
+  return cs() ? 100 : 80;
 }
 
 /**
@@ -130,7 +136,7 @@ void upload_post() {
   const auto max_bytes = 250 * static_cast<File::size_type>(GetMaxMessageLinesAllowed());
 
   bout << "\r\nYou may now upload a message, max bytes: " << max_bytes << wwiv::endl << wwiv::endl;
-  int i = 0;
+  auto i = 0;
   receive_file(file.full_pathname(), &i, INPUT_MSG, -1);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
     const auto file_size = file.length();
@@ -217,7 +223,7 @@ void feedback(bool bNewUserFeedback) {
     email(title, 1, 0, true, 0, false);
     return;
   }
-  if (a()->sess().guest_user()) {
+  if (a()->user()->guest_user()) {
     a()->status_manager()->reload_status();
     email("Guest Account Feedback", 1, 0, true, 0, true);
     return;

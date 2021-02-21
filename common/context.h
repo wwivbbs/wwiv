@@ -110,8 +110,6 @@ public:
 
   [[nodiscard]] bool forcescansub() const noexcept { return forcescansub_; }
   void forcescansub(bool g) { forcescansub_ = g; }
-  [[nodiscard]] bool guest_user() const noexcept { return guest_user_; }
-  void guest_user(bool g) { guest_user_ = g; }
 
   [[nodiscard]] daten_t nscandate() const noexcept { return nscandate_; }
   void nscandate(daten_t d) { nscandate_ = d; }
@@ -255,7 +253,6 @@ private:
   bool outcom_{false};
   bool okmacro_{true};
   bool forcescansub_{false};
-  bool guest_user_{false};
   daten_t nscandate_{0};
   bool disable_conf_{false};
   bool disable_pause_{false};
