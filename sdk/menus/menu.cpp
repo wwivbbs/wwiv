@@ -310,7 +310,7 @@ std::vector<std::string> GenerateMenuLines(const Config& config, int eff_sl, con
     if (mi.item_key.empty()) {
       continue;
     }
-    if (auto [result, debug_lines] = acs::check_acs(config, &user, eff_sl, mi.acs); !result) {
+    if (auto [result, debug_lines] = acs::check_acs(config, user, eff_sl, mi.acs); !result) {
       continue;
     }
     if (!g.show_empty_text && StringTrim(mi.item_text).empty()) {

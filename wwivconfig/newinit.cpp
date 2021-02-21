@@ -108,6 +108,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
   cfg.newusersl = 10;
   cfg.newuserdsl = 0;
+  cfg.validated_sl = cfg.newusersl + 1;
   cfg.maxwaiting = 50;
 
   cfg.newuploads = 0;

@@ -429,9 +429,9 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
     a()->set_current_user_sub_num(old_subnum);
     bout << "|#1< " << a()->current_sub().name << " Q-Scan Done >";
     num_lines = 4;
-  } else {
-    bout << "|#1< Nothing new on " << a()->subs().sub(sub_number).name << " "
-         << a()->usub[start_subnum].keys;
+  } else if (!a()->sess().forcescansub()) {
+    // No need to display this if we're in a forced nscan for this sub.
+    bout << "|#1< Nothing new on " << a()->subs().sub(sub_number).name;
   }
   bout.clreol();
   bout.nl();

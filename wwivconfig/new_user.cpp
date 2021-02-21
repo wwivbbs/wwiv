@@ -19,12 +19,10 @@
 #include "wwivconfig/new_user.h"
 
 #include "core/strings.h"
-#include "fmt/printf.h"
-#include "localui/input.h"
 #include "localui/curses_win.h"
 #include "localui/edit_items.h"
-#include "sdk/vardec.h"
-#include "wwivconfig/utility.h"
+#include "localui/input.h"
+
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -46,6 +44,7 @@ void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& nc
   auto newusersl = config.newuser_sl();
   auto newuserdsl = config.newuser_dsl();
   auto newuser_restrict = config.newuser_restrict();
+  auto validated_sl = config.validated_sl();
 
   auto y = 1;
   EditItems items{};
@@ -70,6 +69,10 @@ void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& nc
   items.add(new Label("Restrict:"),
             new RestrictionsEditItem(&newuser_restrict),
     "Restrictions given to new users from certain features of the system.", 3, y);
+  ++y;
+  items.add(new Label("Validated SL:"),
+            new NumberEditItem<uint8_t>(&newusersl),
+    "The lowest security level that means validated. For autoval set this == Newuser SL", 1, y);
 
   ++y;
   ++y;
@@ -114,7 +117,7 @@ void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& nc
   items.add(new Label("Callsign:"),
             new ToggleEditItem<wwiv::sdk::newuser_item_type_t>(newuser_item_type_list, &nc.use_callsign),
     "Ask callers for their amateur radio callsign (if they have one)", 3, y);
-  ++y;
+
   items.add_aligned_width_column(1);
   items.relayout_items_and_labels();
   items.Run("New User Configuration");
@@ -122,6 +125,7 @@ void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& nc
   config.newuser_password(newuser_pw);
   config.newuser_sl(newusersl);
   config.newuser_dsl(newuserdsl);
+  config.validated_sl(validated_sl);
   config.newuser_restrict(newuser_restrict);
   config.newuser_gold(static_cast<float>(newuser_gold));
 }

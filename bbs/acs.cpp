@@ -40,7 +40,7 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
     // Empty expression is always allowed.
     return true;
   }
-  auto [result, debug_info] = sdk::acs::check_acs(*a()->config(), a()->user(),
+  auto [result, debug_info] = sdk::acs::check_acs(*a()->config(), *a()->user(),
                                                   a()->sess().effective_sl(), expression, debug);
   for (const auto& l : debug_info) {
     if (debug == acs_debug_t::local) {
@@ -55,7 +55,7 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
 
 bool validate_acs(const std::string& expression, acs_debug_t debug) {
   auto [result, ex_what, debug_info] =
-      sdk::acs::validate_acs(*a()->config(), a()->user(), a()->sess().effective_sl(), expression);
+      sdk::acs::validate_acs(*a()->config(), *a()->user(), a()->sess().effective_sl(), expression);
   if (result) {
     return true;
   }

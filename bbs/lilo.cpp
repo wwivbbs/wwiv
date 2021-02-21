@@ -875,10 +875,12 @@ void logon() {
   setiia(std::chrono::seconds(5));
 
   // New Message Scan
+  auto done_newscan_all = false;
   if (a()->IsNewScanAtLogin()) {
     bout << "\r\n|#5Scan All Message Areas For New Messages? ";
     if (bin.yesno()) {
       wwiv::bbs::menus::NewMsgsAllConfs();
+      done_newscan_all = true;
     }
   }
 
@@ -890,7 +892,7 @@ void logon() {
     }
   }
 
-  if (a()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN)) {
+  if (a()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN) && !done_newscan_all) {
     auto nextsub = false;
     if (a()->user()->sl() < 255) {
       a()->sess().forcescansub(true);

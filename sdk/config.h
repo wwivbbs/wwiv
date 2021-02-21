@@ -87,6 +87,9 @@ struct config_t {
   uint8_t newusersl;
   // new user DSL
   uint8_t newuserdsl;
+  // Lowest SL given to a validated user.  If you want the BBS to
+  // not require validation, set this to the same value as newusersl.
+  uint8_t validated_sl;
   // max mail waiting
   uint8_t maxwaiting;
   // file dir new uploads go
@@ -275,6 +278,12 @@ public:
   // New User DSL
   [[nodiscard]] uint8_t newuser_dsl() const { return config_.newuserdsl; }
   void newuser_dsl(int n) { config_.newuserdsl = static_cast<uint8_t>(n); }
+  /**
+   * Lowest SL given to a validated user.  If you want the BBS to
+   * not require validation, set this to the same value as newusersl.
+   */
+  [[nodiscard]] uint8_t validated_sl() const { return config_.validated_sl; }
+  void validated_sl(int n) { config_.validated_sl = static_cast<uint8_t>(n); }
   // New User Gold given when they sign up.
   [[nodiscard]] float newuser_gold() const { return config_.newusergold; }
   void newuser_gold(float f) { config_.newusergold = f; }

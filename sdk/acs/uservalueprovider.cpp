@@ -19,8 +19,9 @@
 
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "sdk/acs/eval_error.h"
 #include "sdk/user.h"
+#include "sdk/acs/eval_error.h"
+
 #include <optional>
 #include <string>
 
@@ -38,36 +39,40 @@ template <typename T> static std::optional<Value> val(T&& v) {
 
 std::optional<Value> UserValueProvider::value(const std::string& name) {
   if (iequals(name, "sl")) {
-    return val(user_->sl());
+    return val(user_.sl());
   }
   if (iequals(name, "dsl")) {
-    return val(user_->dsl());
+    return val(user_.dsl());
   }
   if (iequals(name, "age")) {
-    return val(user_->age());
+    return val(user_.age());
   }
   if (iequals(name, "ar")) {
-    return val(Ar(user_->ar_int(), true));
+    return val(Ar(user_.ar_int(), true));
   }
   if (iequals(name, "dar")) {
-    return val(Ar(user_->dar_int(), true));
+    return val(Ar(user_.dar_int(), true));
   }
   if (iequals(name, "name")) {
-    return val(user_->name());
+    return val(user_.name());
   }
   if (iequals(name, "regnum")) {
-    return val(user_->wwiv_regnum() != 0);
+    return val(user_.wwiv_regnum() != 0);
   }
   if (iequals(name, "sysop")) {
-    return val(user_->sl() == 255);
+    // Should this also check effective_sl? Likely yes?
+    return val(user_.sl() == 255);
   }
   if (iequals(name, "cosysop")) {
-    const auto so = user_->sl() == 255;
+    const auto so = user_.sl() == 255;
     const auto cs = (sl_.ability & ability_cosysop) != 0;
     return val(so || cs);
   }
   if (iequals(name, "guest")) {
-    return val(user_->guest_user());
+    return val(user_.guest_user());
+  }
+  if (iequals(name, "validated")) {
+    return val(effective_sl_ >= config_.validated_sl());
   }
   throw eval_error(fmt::format("No user attribute named 'user.{}' exists.", name));
 }
