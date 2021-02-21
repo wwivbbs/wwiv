@@ -18,7 +18,7 @@
 #ifndef INCLUDED_SDK_CONFIG_H
 #define INCLUDED_SDK_CONFIG_H
 
-#include "sdk/vardec.h" // valrec and slrec
+#include "sdk/vardec.h" // slrec
 #include <filesystem>
 #include <map>
 #include <string>
@@ -47,6 +47,22 @@ struct newuser_config_t {
   newuser_item_type_t use_birthday{newuser_item_type_t::required};
   newuser_item_type_t use_computer_type{newuser_item_type_t::required};
   newuser_item_type_t use_email_address{newuser_item_type_t::required};
+};
+
+struct validation_config_t {
+  // Friendly name of the validation type.
+  std::string name;
+  // SL
+  uint8_t sl; 
+  // DSL
+  uint8_t dsl;
+
+  // AR
+  uint16_t ar;
+  // DAR
+  uint16_t dar;
+  // restrictions
+  uint16_t restrict; 
 };
 
 struct config_t {
@@ -114,7 +130,7 @@ struct config_t {
   // security level data
   std::map<int, slrec> sl;
   // sysop quick validation data
-  std::map<int, valrec> autoval;
+  std::map<int, validation_config_t> autoval;
   // user record length
   uint16_t userreclen;
   // mail waiting offset
@@ -299,8 +315,8 @@ public:
   [[nodiscard]] bool closed_system() const { return config_.closedsystem; }
   void closed_system(bool b) { config_.closedsystem = b; }
   // Auto validation record
-  [[nodiscard]] valrec auto_val(int n) const;
-  void auto_val(int n, const valrec& v) { config_.autoval[n] = v; }
+  [[nodiscard]] validation_config_t auto_val(int n) const;
+  void auto_val(int n, const validation_config_t& v) { config_.autoval[n] = v; }
   // Security Level information
   [[nodiscard]] const slrec& sl(int n) const;
   void sl(int n, slrec& s) { config_.sl[n] = s; }

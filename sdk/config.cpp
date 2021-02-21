@@ -167,7 +167,7 @@ void Config::newuser_password(const std::string& s) { config_.newuserpw = s; }
 
 void Config::newuser_restrict(uint16_t d) { config_.newuser_restrict = d; }
 
-valrec Config::auto_val(int n) const {
+validation_config_t Config::auto_val(int n) const {
   if (!stl::contains(config_.autoval, n)) {
     return {};
   }

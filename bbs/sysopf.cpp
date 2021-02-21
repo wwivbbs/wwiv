@@ -35,6 +35,7 @@
 #include "bbs/shortmsg.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
+#include "bbs/uedit.h"
 #include "bbs/wqscn.h"
 #include "common/com.h"
 #include "common/datetime.h"
@@ -105,171 +106,199 @@ void prstatus() {
   }
 }
 
-void valuser(int user_number) {
-  char s[81], s1[81], s2[81], s3[81], ar1[20], dar1[20];
+static void valuser_delete(int user_number) {
+  bout.nl();
+  bout << "|#5Delete? ";
+  if (bin.yesno()) {
+    a()->users()->delete_user(user_number);
+    bout << "\r\n|#6Deleted.\r\n\n";
+  } else {
+    bout << "\r\n|#3NOT deleted.\r\n";
+  }
+}
 
-  User user;
-  a()->users()->readuser(&user, user_number);
-  if (!user.IsUserDeleted()) {
+static void valuser_manual(User& user) {
+  char s[81], s1[81], s2[81], ar1[20], dar1[20];
+  bout << "|#9SL  : |#2" << user.sl() << wwiv::endl;
+  if (user.sl() < a()->sess().effective_sl()) {
+    bout << "|#9New : ";
+    const auto sl = bin.input_number(user.sl(), 0, 255);
+    user.sl(sl);
+  }
+  bout.nl();
+  bout << "|#9DSL : |#2" << user.dsl() << wwiv::endl;
+  if (user.dsl() < a()->user()->dsl()) {
+    bout << "|#9New ? ";
+    const auto dsl = bin.input_number(user.dsl(), 0, 255);
+    user.dsl(dsl);
+  }
+  auto ar2     = 1;
+  auto dar2    = 1;
+  ar1[0]      = RETURN;
+  dar1[0]     = RETURN;
+  for (int i = 0; i <= 15; i++) {
+    if (user.HasArFlag(1 << i)) {
+      s[i] = static_cast<char>('A' + i);
+    } else {
+      s[i] = SPACE;
+    }
+    if (a()->user()->HasArFlag(1 << i)) {
+      ar1[ar2++] = static_cast<char>('A' + i);
+    }
+    if (user.HasDarFlag(1 << i)) {
+      s1[i] = static_cast<char>('A' + i);
+    } else {
+      s1[i] = SPACE;
+    }
+    if (a()->user()->HasDarFlag(1 << i)) {
+      dar1[dar2++] = static_cast<char>('A' + i);
+    }
+    if (user.HasRestrictionFlag(1 << i)) {
+      s2[i] = restrict_string[i];
+    } else {
+      s2[i] = SPACE;
+    }
+  }
+  s[16]       = '\0';
+  s1[16]      = '\0';
+  s2[16]      = '\0';
+  ar1[ar2]    = '\0';
+  dar1[dar2]  = '\0';
+  bout.nl();
+  char ch1 = '\0';
+  if (ar2 > 1) {
+    do {
+      bout << "|#9AR  : |#2" << s << wwiv::endl;
+      bout << "|#9Togl? ";
+      ch1 = onek(ar1);
+      if (ch1 != RETURN) {
+        ch1 -= 'A';
+        if (s[ch1] == SPACE) {
+          s[ch1] = ch1 + 'A';
+        } else {
+          s[ch1] = SPACE;
+        }
+        user.ToggleArFlag(1 << ch1);
+        ch1 = 0;
+      }
+    } while (!a()->sess().hangup() && ch1 != RETURN);
+  }
+  bout.nl();
+  ch1 = 0;
+  if (dar2 > 1) {
+    do {
+      bout << "|#9DAR : |#2" << s1 << wwiv::endl;
+      bout << "|#9Togl? ";
+      ch1 = onek(dar1);
+      if (ch1 != RETURN) {
+        ch1 -= 'A';
+        if (s1[ch1] == SPACE) {
+          s1[ch1] = ch1 + 'A';
+        } else {
+          s1[ch1] = SPACE;
+        }
+        user.ToggleDarFlag(1 << ch1);
+        ch1 = 0;
+      }
+    } while (!a()->sess().hangup() && ch1 != RETURN);
+  }
+  bout.nl();
+  ch1     = 0;
+  s[0]    = RETURN;
+  s[1]    = '?';
+  strcpy(&(s[2]), restrict_string);
+  do {
+    bout << "      |#2" << restrict_string << wwiv::endl;
+    bout << "|#9Rstr: |#2" << s2 << wwiv::endl;
+    bout << "|#9Togl? ";
+    ch1 = onek(s);
+    if (ch1 != RETURN && ch1 != SPACE && ch1 != '?') {
+      int i = -1;
+      for (int i1 = 0; i1 < 16; i1++) {
+        if (ch1 == s[i1 + 2]) {
+          i = i1;
+        }
+      }
+      if (i > -1) {
+        user.ToggleRestrictionFlag(1 << i);
+        if (s2[i] == SPACE) {
+          s2[i] = restrict_string[i];
+        } else {
+          s2[i] = SPACE;
+        }
+      }
+      ch1 = 0;
+    }
+    if (ch1 == '?') {
+      ch1 = 0;
+      bout.print_help_file(SRESTRCT_NOEXT);
+    }
+  } while (!a()->sess().hangup() && ch1 == 0);
+}
+
+static void valuser_auto(User& user) {
+  for (int i = 1; i <= 10; i++) {
+    const auto& v = a()->config()->auto_val(i);
+    bout.format("|#2{:>2}|#9) |#1{:<30.30} |#9(SL: |#5{:<3}|#9 DSL: |#5{:<3}|#9)\r\n", i, v.name, v.sl, v.dsl);
+  }
+  bout.nl();
+  bout << "|#9(|#2Q|#9=|#1Quit|#9) Which Auto Validation: ";
+  const auto [num, key] = bin.input_number_hotkey(0, {'Q'}, 1, 10);
+  if (key == 'Q') {
+    return;
+  }
+  auto_val(num, &user);
+}
+
+void valuser(int user_number) {
+
+  bout.nl();
+  auto o = a()->users()->readuser(user_number);
+  if (!o) {
+    bout << "\r\n|#6No Such User.\r\n\n";
+    return;
+  }
+  auto user = o.value();
+  while (true) {
+    bout.cls();
+    bout.litebar("WWIV Quick User Validation");
     bout.nl();
     const auto unn = a()->names()->UserName(user_number);
     bout << "|#9Name: |#2" << unn << wwiv::endl;
-    bout << "|#9RN  : |#2" << user.real_name() << wwiv::endl;
-    bout << "|#9PH  : |#2" << user.voice_phone() << wwiv::endl;
-    bout << "|#9Age : |#2" << user.age() << " " << user.GetGender() << wwiv::endl;
-    bout << "|#9Comp: |#2" << ctypes(user.GetComputerType()) << wwiv::endl;
+    if (a()->config()->newuser_config().use_real_name != newuser_item_type_t::unused) {
+      bout << "|#9RN  : |#2" << user.real_name() << wwiv::endl;
+    }
+    if (a()->config()->newuser_config().use_voice_phone != newuser_item_type_t::unused) {
+      bout << "|#9PH  : |#2" << user.voice_phone() << wwiv::endl;
+    }
+    if (a()->config()->newuser_config().use_birthday != newuser_item_type_t::unused) {
+      bout << "|#9Age : |#2" << user.age() << " " << user.GetGender() << wwiv::endl;
+    }
+    if (a()->config()->newuser_config().use_computer_type != newuser_item_type_t::unused) {
+      bout << "|#9Comp: |#2" << ctypes(user.GetComputerType()) << wwiv::endl;
+    }
     if (user.note().empty()) {
       bout << "|#9Note: |#2" << user.note() << wwiv::endl;
     }
     bout << "|#9SL  : |#2" << user.sl() << wwiv::endl;
-    if (user.sl() != 255 && user.sl() < a()->sess().effective_sl()) {
-      bout << "|#9New : ";
-      bin.input(s, 3, true);
-      if (s[0]) {
-        int nSl = to_number<unsigned int>(s);
-        if (!a()->at_wfc() && nSl >= static_cast<int>(a()->sess().effective_sl())) {
-          nSl = -2;
-        }
-        if (nSl >= 0 && nSl < 255) {
-          user.sl(nSl);
-        }
-        if (nSl == -1) {
-          bout.nl();
-          bout << "|#9Delete? ";
-          if (bin.yesno()) {
-            a()->users()->delete_user(user_number);
-            bout.nl();
-            bout << "|#6Deleted.\r\n\n";
-          } else {
-            bout.nl();
-            bout << "|#3NOT deleted.\r\n";
-          }
-          return;
-        }
-      }
+    bout << "|#9DSL : |#2" << user.sl() << wwiv::endl;
+    bout.nl(2);
+    bout << "|#9(|#2Q|#9=|#1Quit|#9) (|#2D|#9)elete, (|#2M|#9)anual, (|#2A|#9)utoval : ";
+    switch (onek("ADMQ", true)) { 
+    case 'A':
+      valuser_auto(user);
+      break;
+    case 'D':
+      valuser_delete(user_number);
+      break;
+    case 'M':
+      valuser_manual(user);
+      break;
+    case 'Q':
+      bout.nl(2);
+      return;
     }
-    bout.nl();
-    bout << "|#9DSL : |#2" << user.dsl() << wwiv::endl;
-    if (user.dsl() != 255 && user.dsl() < a()->user()->dsl()) {
-      bout << "|#9New ? ";
-      bin.input(s, 3, true);
-      if (s[0]) {
-        int nDsl = to_number<unsigned int>(s);
-        if (!a()->at_wfc() && nDsl >= static_cast<int>(a()->user()->dsl())) {
-          nDsl = -1;
-        }
-        if (nDsl >= 0 && nDsl < 255) {
-          user.dsl(nDsl);
-        }
-      }
-    }
-    strcpy(s3, restrict_string);
-    auto ar2     = 1;
-    auto dar2    = 1;
-    ar1[0]      = RETURN;
-    dar1[0]     = RETURN;
-    for (int i = 0; i <= 15; i++) {
-      if (user.HasArFlag(1 << i)) {
-        s[i] = static_cast<char>('A' + i);
-      } else {
-        s[i] = SPACE;
-      }
-      if (a()->user()->HasArFlag(1 << i)) {
-        ar1[ar2++] = static_cast<char>('A' + i);
-      }
-      if (user.HasDarFlag(1 << i)) {
-        s1[i] = static_cast<char>('A' + i);
-      } else {
-        s1[i] = SPACE;
-      }
-      if (a()->user()->HasDarFlag(1 << i)) {
-        dar1[dar2++] = static_cast<char>('A' + i);
-      }
-      if (user.HasRestrictionFlag(1 << i)) {
-        s2[i] = s3[i];
-      } else {
-        s2[i] = SPACE;
-      }
-    }
-    s[16]       = '\0';
-    s1[16]      = '\0';
-    s2[16]      = '\0';
-    ar1[ar2]    = '\0';
-    dar1[dar2]  = '\0';
-    bout.nl();
-    char ch1 = '\0';
-    if (ar2 > 1) {
-      do {
-        bout << "|#9AR  : |#2" << s << wwiv::endl;
-        bout << "|#9Togl? ";
-        ch1 = onek(ar1);
-        if (ch1 != RETURN) {
-          ch1 -= 'A';
-          if (s[ch1] == SPACE) {
-            s[ch1] = ch1 + 'A';
-          } else {
-            s[ch1] = SPACE;
-          }
-          user.ToggleArFlag(1 << ch1);
-          ch1 = 0;
-        }
-      } while (!a()->sess().hangup() && ch1 != RETURN);
-    }
-    bout.nl();
-    ch1 = 0;
-    if (dar2 > 1) {
-      do {
-        bout << "|#9DAR : |#2" << s1 << wwiv::endl;
-        bout << "|#9Togl? ";
-        ch1 = onek(dar1);
-        if (ch1 != RETURN) {
-          ch1 -= 'A';
-          if (s1[ch1] == SPACE) {
-            s1[ch1] = ch1 + 'A';
-          } else {
-            s1[ch1] = SPACE;
-          }
-          user.ToggleDarFlag(1 << ch1);
-          ch1 = 0;
-        }
-      } while (!a()->sess().hangup() && ch1 != RETURN);
-    }
-    bout.nl();
-    ch1     = 0;
-    s[0]    = RETURN;
-    s[1]    = '?';
-    strcpy(&(s[2]), restrict_string);
-    do {
-      bout << "      |#2" << s3 << wwiv::endl;
-      bout << "|#9Rstr: |#2" << s2 << wwiv::endl;
-      bout << "|#9Togl? ";
-      ch1 = onek(s);
-      if (ch1 != RETURN && ch1 != SPACE && ch1 != '?') {
-        int i = -1;
-        for (int i1 = 0; i1 < 16; i1++) {
-          if (ch1 == s[i1 + 2]) {
-            i = i1;
-          }
-        }
-        if (i > -1) {
-          user.ToggleRestrictionFlag(1 << i);
-          if (s2[i] == SPACE) {
-            s2[i] = s3[i];
-          } else {
-            s2[i] = SPACE;
-          }
-        }
-        ch1 = 0;
-      }
-      if (ch1 == '?') {
-        ch1 = 0;
-        bout.print_help_file(SRESTRCT_NOEXT);
-      }
-    } while (!a()->sess().hangup() && ch1 == 0);
     a()->users()->writeuser(&user, user_number);
-    bout.nl();
-  } else {
-    bout << "\r\n|#6No Such User.\r\n\n";
   }
 }
 

@@ -52,6 +52,7 @@ constexpr int HOTKEYS_ON = 0;
 constexpr int HOTKEYS_OFF = 1;
 
 namespace wwiv::sdk {
+struct validation_config_t;
 
 /**
  * User Class - Represents a User record
@@ -940,10 +941,10 @@ class User final {
   /** Sets the current menu set */
   void set_menu_set(const std::string& menu_set);
 
-  bool asv(const valrec& v);
+  bool asv(const validation_config_t& v);
 
   /**
-   * Retrurns the upload/download ratio.
+   * Returns the upload/download ratio.
    */
   float ratio() const;
 

@@ -100,7 +100,7 @@ std::string User::menu_set() const { return data.menu_set; }
 
 void User::set_menu_set(const std::string& menu_set) { to_char_array(data.menu_set, menu_set); }
 
-bool User::asv(const valrec& v) {
+bool User::asv(const validation_config_t& v) {
   if (sl() < v.sl) {
     sl(v.sl);
   }
