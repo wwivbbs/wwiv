@@ -104,7 +104,6 @@ constexpr auto CHAINS_JSON = "chains.json";
 
 #define LANGUAGE_DAT "language.dat"
 #define LASTON_TXT "laston.txt"
-#define LASTNET_TXT "lastnet.txt"
 #define LISTPLUS_CFG "listplus.cfg"
 #define LISTPLUS_HLP "listplus.hlp"
 #define LOCAL_NET "local.net"
