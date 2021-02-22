@@ -543,12 +543,12 @@ void InitVotes() {
 }
 
 void ReadLog() {
-  const string sysop_log_file = sysoplog_filename(date());
+  const auto sysop_log_file = sysoplog_filename(date());
   bout.print_local_file(sysop_log_file);
 }
 
 void ReadNetLog() {
-  bout.print_local_file("net.log");
+  bout.print_local_file(NET_LOG);
 }
 
 void PrintPending() {

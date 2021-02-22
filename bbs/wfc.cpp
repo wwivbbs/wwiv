@@ -423,7 +423,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     // Print Net Log
     case 'N': {
       Clear();
-      bout.print_local_file("net.log");
+      bout.print_local_file(NET_LOG);
     } break;
     // EditTextFile
     case 'O': {
