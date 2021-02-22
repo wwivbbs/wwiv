@@ -108,6 +108,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
   cfg.newusersl = 10;
   cfg.newuserdsl = 0;
+  cfg.validated_sl = cfg.newusersl + 1;
   cfg.maxwaiting = 50;
 
   cfg.newuploads = 0;
@@ -116,14 +117,15 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   cfg.req_ratio = 0.0;
   cfg.newusergold = 100.0;
 
-  valrec v{};
+  validation_config_t v{};
+  v.sl = 10;
+  v.dsl = 0;
   v.ar = 0;
   v.dar = 0;
   v.restrict = 0;
-  v.sl = 10;
-  v.dsl = 0;
 
   for (auto i = 1; i <= 10; i++) {
+    v.name = fmt::format("Validation #{}", i);
     cfg.autoval.emplace(i, v);
   }
   for (auto i = 0; i < 256; i++) {

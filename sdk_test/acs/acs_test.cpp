@@ -16,17 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/parser/ast.h"
-#include "core/parser/lexer.h"
 #include "sdk/user.h"
 #include "sdk/acs/eval.h"
 #include "sdk/acs/uservalueprovider.h"
+
+#include "gtest/gtest.h"
 #include <string>
-#include <iostream>
 
 using std::string;
 using namespace wwiv::core;
@@ -35,14 +33,19 @@ using namespace wwiv::sdk::acs;
 
 class AcsTest : public ::testing::Test {
 public:
-  AcsTest() = default;
+  AcsTest() : config_("", wwiv::sdk::config_t{}) {
+    config_.set_initialized_for_test(true);
+    config_.newuser_sl(10);
+    config_.validated_sl(20);
+  }
 
   void createEval(const std::string& expr) { 
     eval = std::make_unique<Eval>(expr);
-    eval->add("user", std::make_unique<UserValueProvider>(&user_, user_.sl(), sl_));
+    eval->add("user", std::make_unique<UserValueProvider>(config_, user_, user_.sl(), sl_));
 
   }
   std::unique_ptr<Eval> eval;
+  wwiv::sdk::Config config_;
   wwiv::sdk::User user_{};
   slrec sl_{};
 };

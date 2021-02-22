@@ -49,7 +49,8 @@ template <class Archive> void serialize(Archive& ar, slrec& n) {
   SERIALIZE(n, ability); // todo: change to booleans?
 }
 
-template <class Archive> void serialize(Archive& ar, valrec& n) {
+template <class Archive> void serialize(Archive& ar, validation_config_t& n) {
+  SERIALIZE(n, name);
   SERIALIZE(n, sl);
   SERIALIZE(n, dsl);
   SERIALIZE(n, ar);

@@ -18,6 +18,7 @@
 #ifndef INCLUDED_SDK_ACS_USERVALUEPROVIDER_H
 #define INCLUDED_SDK_ACS_USERVALUEPROVIDER_H
 
+#include "sdk/config.h"
 #include "sdk/user.h"
 #include "sdk/acs/value.h"
 #include "sdk/acs/valueprovider.h"
@@ -35,12 +36,13 @@ public:
    * Constructs a new ValueProvider.  'user' must remain valid for 
    * the duration of this instance lifetime.
    */
-  UserValueProvider(const User* user, int effective_sl, slrec sl)
-  : ValueProvider("user"), user_(user), effective_sl_(effective_sl), sl_(sl) {}
+  UserValueProvider(const Config& config, const User& user, int effective_sl, slrec sl)
+  : ValueProvider("user"), config_(config), user_(user), effective_sl_(effective_sl), sl_(sl) {}
   [[nodiscard]] std::optional<Value> value(const std::string& name) override;
 
 private:
-  const User* user_;
+  const Config& config_;
+  const User& user_;
   int effective_sl_;
   slrec sl_;
 };

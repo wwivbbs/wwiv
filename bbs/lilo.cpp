@@ -965,7 +965,7 @@ static vector<bool> read_voting() {
 
 static void CheckUserForVotingBooth() {
   auto questused = read_voting();
-  if (!a()->user()->IsRestrictionVote() && a()->sess().effective_sl() > a()->config()->newuser_sl()) {
+  if (!a()->user()->IsRestrictionVote() && a()->sess().effective_sl() >= a()->config()->validated_sl()) {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && a()->user()->GetVote(i) == 0) {
         bout.nl();
@@ -1048,10 +1048,12 @@ void logon() {
   setiia(std::chrono::seconds(5));
 
   // New Message Scan
+  auto done_newscan_all = false;
   if (a()->IsNewScanAtLogin()) {
     bout << "\r\n|#5Scan All Message Areas For New Messages? ";
     if (bin.yesno()) {
       wwiv::bbs::menus::NewMsgsAllConfs();
+      done_newscan_all = true;
     }
   }
 
@@ -1063,7 +1065,7 @@ void logon() {
     }
   }
 
-  if (a()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN)) {
+  if (a()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN) && !done_newscan_all) {
     auto nextsub = false;
     if (a()->user()->sl() < 255) {
       a()->sess().forcescansub(true);

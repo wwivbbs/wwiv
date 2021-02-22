@@ -18,7 +18,7 @@
 #ifndef INCLUDED_SDK_CONFIG_H
 #define INCLUDED_SDK_CONFIG_H
 
-#include "sdk/vardec.h" // valrec and slrec
+#include "sdk/vardec.h" // slrec
 #include <filesystem>
 #include <map>
 #include <string>
@@ -47,6 +47,22 @@ struct newuser_config_t {
   newuser_item_type_t use_birthday{newuser_item_type_t::required};
   newuser_item_type_t use_computer_type{newuser_item_type_t::required};
   newuser_item_type_t use_email_address{newuser_item_type_t::required};
+};
+
+struct validation_config_t {
+  // Friendly name of the validation type.
+  std::string name;
+  // SL
+  uint8_t sl; 
+  // DSL
+  uint8_t dsl;
+
+  // AR
+  uint16_t ar;
+  // DAR
+  uint16_t dar;
+  // restrictions
+  uint16_t restrict; 
 };
 
 struct config_t {
@@ -87,6 +103,9 @@ struct config_t {
   uint8_t newusersl;
   // new user DSL
   uint8_t newuserdsl;
+  // Lowest SL given to a validated user.  If you want the BBS to
+  // not require validation, set this to the same value as newusersl.
+  uint8_t validated_sl;
   // max mail waiting
   uint8_t maxwaiting;
   // file dir new uploads go
@@ -111,7 +130,7 @@ struct config_t {
   // security level data
   std::map<int, slrec> sl;
   // sysop quick validation data
-  std::map<int, valrec> autoval;
+  std::map<int, validation_config_t> autoval;
   // user record length
   uint16_t userreclen;
   // mail waiting offset
@@ -275,6 +294,12 @@ public:
   // New User DSL
   [[nodiscard]] uint8_t newuser_dsl() const { return config_.newuserdsl; }
   void newuser_dsl(int n) { config_.newuserdsl = static_cast<uint8_t>(n); }
+  /**
+   * Lowest SL given to a validated user.  If you want the BBS to
+   * not require validation, set this to the same value as newusersl.
+   */
+  [[nodiscard]] uint8_t validated_sl() const { return config_.validated_sl; }
+  void validated_sl(int n) { config_.validated_sl = static_cast<uint8_t>(n); }
   // New User Gold given when they sign up.
   [[nodiscard]] float newuser_gold() const { return config_.newusergold; }
   void newuser_gold(float f) { config_.newusergold = f; }
@@ -290,8 +315,8 @@ public:
   [[nodiscard]] bool closed_system() const { return config_.closedsystem; }
   void closed_system(bool b) { config_.closedsystem = b; }
   // Auto validation record
-  [[nodiscard]] valrec auto_val(int n) const;
-  void auto_val(int n, const valrec& v) { config_.autoval[n] = v; }
+  [[nodiscard]] validation_config_t auto_val(int n) const;
+  void auto_val(int n, const validation_config_t& v) { config_.autoval[n] = v; }
   // Security Level information
   [[nodiscard]] const slrec& sl(int n) const;
   void sl(int n, slrec& s) { config_.sl[n] = s; }

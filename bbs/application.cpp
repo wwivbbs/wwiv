@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "bbs/application.h"
 
-#include "bbs/asv.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl2.h"
 #include "bbs/bbsutl.h"
@@ -67,6 +66,7 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include "bbs/chnedit.h"
 // ReSharper disable once CppUnusedIncludeDirective
+#include "bbs/uedit.h"
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
@@ -334,7 +334,10 @@ void Application::tleft(bool check_for_timeout) {
 void Application::handle_sysop_key(uint8_t key) {
   if (bin.okskey()) {
     if (key >= AF1 && key <= AF10) {
-      set_autoval(key - 104);
+      // N is the auto-val number (1-10). Add one to make it 1 based not 0 based.
+      const auto n = key - AF1 + 1;
+      auto_val(n, user());
+      reset_effective_sl();
     } else {
       switch (key) {
       case F1: /* F1 */

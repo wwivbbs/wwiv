@@ -23,6 +23,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include "fmt/format.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
@@ -85,7 +86,13 @@ Config430::Config430(const config_t& c5) {
     c.sl[pos] = sl;
   }
   for (const auto& [pos, v] : c5.autoval) {
-    c.autoval[pos + 1] = v;
+    valrec v4{};
+    v4.sl = v.sl;
+    v4.dsl = v.dsl;
+    v4.ar = v.ar;
+    v4.dar = v.dar;
+    v4.restrict = v.restrict;
+    c.autoval[pos + 1] = v4;
   }
 
   // We're skipping arcs
@@ -205,7 +212,15 @@ config_t Config430::to_json_config(std::vector<arcrec> arcs) const {
     c.sl.emplace(i, config_.sl[i]);
   }
   for (auto i = 0; i < 10; i++) {
-    c.autoval.emplace(i + 1, config_.autoval[i]);
+    const auto& v4 = config_.autoval[i];
+    validation_config_t v5{};
+    v5.name = fmt::format("AutoVal: {}", i);
+    v5.sl = v4.sl;
+    v5.dsl = v4.dsl;
+    v5.ar = v4.ar;
+    v5.dar = v4.dar;
+    v5.restrict = v4.restrict;
+    c.autoval.emplace(i + 1, v5);
   }
   c.userreclen = config_.userreclen;
   c.waitingoffset = config_.waitingoffset;

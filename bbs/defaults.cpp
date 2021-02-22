@@ -649,25 +649,24 @@ static void modify_mailbox() {
     a()->user()->ClearMailboxForward();
     return;
   }
-  if (a()->user()->sl() >= a()->config()->newuser_sl()) {
-    int network_number = getnetnum_by_type(network_type_t::internet);
-    if (network_number != -1) {
-      a()->set_net_num(network_number);
-      bout << "|#5Do you want to forward to your Internet address? ";
-      if (bin.yesno()) {
-        bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
-        const auto entered_address = bin.input_text(a()->user()->email_address(), 75);
-        if (check_inet_addr(entered_address)) {
-          a()->user()->email_address(entered_address);
-          write_inet_addr(entered_address, a()->sess().user_num());
-          a()->user()->forward_netnum(network_number);
-          a()->user()->SetForwardToInternet();
-          bout << "\r\nSaved.\r\n\n";
-        }
-        return;
+  
+  if (const auto network_number = getnetnum_by_type(network_type_t::internet); network_number != -1) {
+    a()->set_net_num(network_number);
+    bout << "|#5Do you want to forward to your Internet address? ";
+    if (bin.yesno()) {
+      bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
+      const auto entered_address = bin.input_text(a()->user()->email_address(), 75);
+      if (check_inet_addr(entered_address)) {
+        a()->user()->email_address(entered_address);
+        write_inet_addr(entered_address, a()->sess().user_num());
+        a()->user()->forward_netnum(network_number);
+        a()->user()->SetForwardToInternet();
+        bout << "\r\nSaved.\r\n\n";
       }
+      return;
     }
   }
+
   bout.nl();
   bout << "|#2Forward to? ";
   const auto entered_forward_to = bin.input(40);

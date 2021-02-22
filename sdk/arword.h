@@ -15,13 +15,25 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_ARWORD_H__
-#define __INCLUDED_BBS_ARWORD_H__
+#ifndef INCLUDED_BBS_ARWORD_H
+#define INCLUDED_BBS_ARWORD_H
 
 #include <cstdint>
 #include <string>
 
+/**
+ * Returns a proper AR string "AB             P", into the integer form.
+ */
 uint16_t str_to_arword(const std::string& arstr);
+
+/**
+ * Returns the int form of ar as proper AR string, Example: "AB             P"
+ */
 std::string word_to_arstr(int ar, const std::string& empty_ar_str);
 
-#endif  // __INCLUDED_BBS_ARWORD_H__
+/**
+ * Returns the int form of ar as a string, no padding. Example: "ABP"
+ */
+std::string word_to_arstr_nopadding(int ar, const std::string& empty_ar_str);
+
+#endif  // INCLUDED_BBS_ARWORD_H

@@ -51,11 +51,32 @@ std::string word_to_arstr(int ar, const std::string& empty_ar_str) {
   }
 
   std::string arstr;
-  for (int i = 0; i < 16; i++) {
+  for (auto i = 0; i < 16; i++) {
+    if ((1 << i) & ar) {
+      arstr.push_back(static_cast<char>('A' + i));
+    } else {
+      arstr.push_back(' ');
+    }
+  }
+  return arstr.empty() ? empty_ar_str : arstr;
+}
+
+/*
+ * Converts an int to a string representing those ARs (DARs).
+ * or '-' on an empty string.
+ */
+std::string word_to_arstr_nopadding(int ar, const std::string& empty_ar_str) {
+
+  if (!ar) {
+    return empty_ar_str;
+  }
+
+  std::string arstr;
+  for (auto i = 0; i < 16; i++) {
     if ((1 << i) & ar) {
       arstr.push_back(static_cast<char>('A' + i));
     }
   }
-  return (arstr.empty()) ? empty_ar_str : arstr;
+  return arstr.empty() ? empty_ar_str : arstr;
 }
 

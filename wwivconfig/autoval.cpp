@@ -64,6 +64,9 @@ static void edit_autoval(Config& config, int n) {
   auto v = config.auto_val(n);
   EditItems items{};
   auto y = 1;
+  items.add(new Label("Name:"), new StringEditItem<std::string&>(30, v.name, EditLineMode::ALL),
+            "Security Level (SL) to grant when using this auto-validation key.", 1, y);
+  ++y;
   items.add(new Label("SL:"), new NumberEditItem<uint8_t>(&v.sl),
             "Security Level (SL) to grant when using this auto-validation key.", 1, y);
   ++y;

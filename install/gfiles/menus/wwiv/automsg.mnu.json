@@ -48,7 +48,7 @@
                 "password": "",
                 "actions": [
                     {
-                        "cmd": "amsg:email_author",
+                        "cmd": "amsg:email",
                         "data": "",
                         "acs": ""
                     }

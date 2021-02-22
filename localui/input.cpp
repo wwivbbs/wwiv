@@ -96,7 +96,7 @@ EditlineResult ACSEditItem::Run(CursesWindow* window) {
     user.dsl(255);
     user.ar_int(0xffff);
     user.dar_int(0xffff);
-    auto [result, ex, info] = wwiv::sdk::acs::validate_acs(config_, &user, 255, acs);
+    auto [result, ex, info] = wwiv::sdk::acs::validate_acs(config_, user, 255, acs);
     window->SetColor(SchemeId::WINDOW_DATA);
     if (result) {
       curses_out->footer()->ShowContextHelp("The expression is valid.");

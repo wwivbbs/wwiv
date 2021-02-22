@@ -145,50 +145,51 @@ static char HandleControlKey(const char c, const SessionContext& context, wwiv::
   if (c == CBACKSPACE) {
     return BACKSPACE;
   }
-  if (bin.okskey()) {
-    switch (c) {
-    case CA: // CTRL-A
-    case CD: // CTRL-D
-    case CF: // CTRL-F
-      if (context.okmacro() && !bin.charbufferpointer_) {
-        static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
-        const auto macroNum = MACRO_KEY_TABLE[static_cast<int>(c)];
-        to_char_array(bin.charbuffer, user.macro(macroNum));
-        const auto nextchar = bin.charbuffer[0];
-        if (nextchar) {
-          bin.charbufferpointer_ = 1;
-        }
-        return nextchar;
+  if (!bin.okskey()) {
+    return c;
+  }
+  switch (c) {
+  case CA: // CTRL-A
+  case CD: // CTRL-D
+  case CF: // CTRL-F
+    if (context.okmacro() && !bin.charbufferpointer_) {
+      static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
+      const auto macroNum = MACRO_KEY_TABLE[static_cast<int>(c)];
+      to_char_array(bin.charbuffer, user.macro(macroNum));
+      const auto nextchar = bin.charbuffer[0];
+      if (nextchar) {
+        bin.charbufferpointer_ = 1;
       }
-      break;
-    case CT: // CTRL - T
-      bus().invoke<DisplayTimeLeft>();
-      break;
-    case CU: { // CTRL-U
-      const auto line = bout.SaveCurrentLine();
-      bout.Color(0);
-      bout.nl(2);
-      bus().invoke<DisplayMultiInstanceStatus>();
-      bout.nl();
-      bout.RestoreCurrentLine(line);
-    } break;
-    case 18: // CR
-      bout.RedrawCurrentLine();
-      break;
-    case CL: // CTRL - L
-      if (so(context)) {
-        bus().invoke<ToggleInvisble>();
-      }
-      break;
-    case CN: // CTRL - N
-      bus().invoke<ToggleAvailable>();
-      break;
-    case CY:
-      user.ToggleStatusFlag(User::pauseOnPage);
-      break;
-    default:
-      return c;
+      return nextchar;
     }
+    break;
+  case CT: // CTRL - T
+    bus().invoke<DisplayTimeLeft>();
+    break;
+  case CU: { // CTRL-U
+    const auto line = bout.SaveCurrentLine();
+    bout.Color(0);
+    bout.nl(2);
+    bus().invoke<DisplayMultiInstanceStatus>();
+    bout.nl();
+    bout.RestoreCurrentLine(line);
+  } break;
+  case 18: // CR
+    bout.RedrawCurrentLine();
+    break;
+  case CL: // CTRL - L
+    if (so(context)) {
+      bus().invoke<ToggleInvisble>();
+    }
+    break;
+  case CN: // CTRL - N
+    bus().invoke<ToggleAvailable>();
+    break;
+  case CY:
+    user.ToggleStatusFlag(User::pauseOnPage);
+    break;
+  default:
+    return c;
   }
 }
 
@@ -358,7 +359,7 @@ int Input::bgetch_handle_key_translation(int key, numlock_status_t numlock_mode)
       return ret;
   }
   if (key < 127) {
-    return HandleControlKey(key, sess(), user());
+    return static_cast<int>(HandleControlKey(key, sess(), user()));
   }
   return key;
 }

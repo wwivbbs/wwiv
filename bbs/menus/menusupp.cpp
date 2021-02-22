@@ -159,11 +159,11 @@ void UpSub() {
 void ValidateUser() {
   bout.nl(2);
   bout << "|#9Enter user name or number:\r\n:";
-  const string userName = bin.input_upper(30);
-  const int nUserNum = finduser1(userName);
-  if (nUserNum > 0) {
-    sysoplog() << "@ Validated user #" << nUserNum;
-    valuser(nUserNum);
+  const auto user_name = bin.input_upper(30);
+  const auto user_number = finduser1(user_name);
+  if (user_number > 0) {
+    sysoplog() << "@ Validated user #" << user_number;
+    valuser(user_number);
   } else {
     bout << "Unknown user.\r\n";
   }
