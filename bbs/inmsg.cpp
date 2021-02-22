@@ -363,15 +363,18 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
     }
   }
 
-  if (!title.empty() && title.front() != '"' && !fido_addr_added) {
-    // Don't add RE: line if we have a "^D0FidoAddr" line.
-    ss << "RE: " << title << crlf;
+  if (!is_email) {
+    // I don't think either RE: or BY lines should show up in email messages.
+    // Also the message SDK only has support for adding them to subs, not emails too.
+    if (!title.empty() && title.front() != '"' && !fido_addr_added) {
+      // Don't add RE: line if we have a "^D0FidoAddr" line.
+      ss << "RE: " << title << crlf;
+    }
+    if (!to_name.empty()) {
+      ss << "BY: " << to_name << crlf;
+    }
+    ss << crlf;
   }
-
-  if (!to_name.empty() && !is_email) {
-    ss << "BY: " << to_name << crlf;
-  }
-  ss << crlf;
 }
 
 static std::filesystem::path FindTagFileName() {
