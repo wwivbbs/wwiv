@@ -210,7 +210,7 @@ static std::vector<ini_flags_type> sysconfig_flags = {
     {INI_STR_NO_NEWUSER_FEEDBACK, sysconfig_no_newuser_feedback},
     {INI_STR_TITLEBAR, sysconfig_titlebar},
     {INI_STR_LOG_DOWNLOADS, sysconfig_log_dl},
-    {INI_STR_CLOSE_XFER, sysconfig_no_xfer},
+    //{INI_STR_CLOSE_XFER, sysconfig_no_xfer},
     {INI_STR_ALL_UL_TO_SYSOP, sysconfig_all_sysop},
     {INI_STR_ALLOW_ALIASES, sysconfig_allow_alias},
     //{INI_STR_EXTENDED_USERINFO, sysconfig_extended_info},

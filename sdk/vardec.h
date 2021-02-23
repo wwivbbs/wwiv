@@ -883,7 +883,7 @@ struct usersubrec {
 //#define unused_sysconfig_enable_mci 0x00020
 #define sysconfig_titlebar 0x00040
 //#define unused_sysconfig_list 0x00080
-#define sysconfig_no_xfer 0x00100
+//#define unused_sysconfig_no_xfer 0x00100
 #define sysconfig_2_way 0x00200
 #define sysconfig_allow_alias 0x00400
 #define sysconfig_all_sysop 0x00800

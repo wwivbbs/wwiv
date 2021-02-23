@@ -459,9 +459,7 @@ void nscan(uint16_t start_subnum) {
   bout.nl();
   bout.clreol();
   bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
-  if (nextsub && a()->user()->IsNewScanFiles() &&
-      (a()->config()->sysconfig_flags() & sysconfig_no_xfer) == 0 &&
-      !a()->sess().scanned_files()) {
+  if (nextsub && a()->user()->IsNewScanFiles() && !a()->sess().scanned_files()) {
     bout.clear_lines_listed();
     tmp_disable_conf(true);
     nscanall();
