@@ -1061,6 +1061,7 @@ int Application::Run(int argc, char* argv[]) {
       remove_from_temp("*.*", sess().dirs().temp_directory(), false);
       remove_from_temp("*.*", sess().dirs().batch_directory(), false);
       remove_from_temp("*.*", sess().dirs().qwk_directory(), false);
+      remove_from_temp("*.*", sess().dirs().scratch_directory(), false);
       if (!batch().entry.empty() && batch().ssize() != batch().numbatchdl()) {
         for (const auto& b : batch().entry) {
           if (!b.sending()) {

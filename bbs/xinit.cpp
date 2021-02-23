@@ -341,19 +341,26 @@ bool Application::ReadInstanceSettings(int instance_number) {
   if (batch_directory.empty()) {
     batch_directory = temp_directory;
   }
+  auto scratch_directory = config_->scratch_format();
+  if (scratch_directory.empty()) {
+    scratch_directory = temp_directory;
+  }
   temp_directory = File::FixPathSeparators(temp_directory);
   batch_directory = File::FixPathSeparators(batch_directory);
+  scratch_directory = File::FixPathSeparators(scratch_directory);
 
   // Replace %n with instance number value.
   const auto instance_num_string = std::to_string(instance_number);
   StringReplace(&temp_directory, "%n", instance_num_string);
   StringReplace(&batch_directory, "%n", instance_num_string);
-
+  StringReplace(&scratch_directory, "%n", instance_num_string);
+  
   // Set the directories (temp, batch, language)
   const auto temp = File::EnsureTrailingSlash(File::absolute(bbspath(), temp_directory));
   const auto batch = File::EnsureTrailingSlash(File::absolute(bbspath(), batch_directory));
+  const auto scratch = File::EnsureTrailingSlash(File::absolute(bbspath(), scratch_directory));
 
-  Dirs d(temp, batch, batch, config()->gfilesdir());
+  Dirs d(temp, batch, batch, config()->gfilesdir(), scratch);
   sess().dirs(d);
 
   // Set config for macro processing.
@@ -549,7 +556,6 @@ bool Application::InitializeBBS(bool cleanup_network) {
 
   // Set dirs in the session context first.
 
-  VLOG(1) << "Processing configuration file: WWIV.INI.";
   if (!File::Exists(sess().dirs().temp_directory())) {
     if (!File::mkdirs(sess().dirs().temp_directory())) {
       LOG(ERROR) << "Your temp dir isn't valid.";
@@ -562,6 +568,14 @@ bool Application::InitializeBBS(bool cleanup_network) {
     if (!File::mkdirs(sess().dirs().batch_directory())) {
       LOG(ERROR) << "Your batch dir isn't valid.";
       LOG(ERROR) << "It is now set to: '" << sess().dirs().batch_directory() << "'";
+      return false;
+    }
+  }
+
+  if (!File::Exists(sess().dirs().scratch_directory())) {
+    if (!File::mkdirs(sess().dirs().scratch_directory())) {
+      LOG(ERROR) << "Your scratch dir isn't valid.";
+      LOG(ERROR) << "It is now set to: '" << sess().dirs().scratch_directory() << "'";
       return false;
     }
   }
@@ -672,6 +686,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
   remove_from_temp("*.*", sess().dirs().temp_directory(), false);
   remove_from_temp("*.*", sess().dirs().batch_directory(), false);
   remove_from_temp("*.*", sess().dirs().qwk_directory(), false);
+  remove_from_temp("*.*", sess().dirs().scratch_directory(), false);
 
   if (cleanup_network) {
     cleanup_net();

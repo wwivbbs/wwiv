@@ -157,6 +157,17 @@ void process_inst_msgs() {
   last_iia = steady_clock::now();
   const auto oiia = setiia(std::chrono::milliseconds(0));
 
+  // Handle semaphores
+  const auto sem_fnd = FilePath(a()->sess().dirs().scratch_directory(), "*.wwiv");
+  FindFiles ffs(sem_fnd, FindFiles::FindFilesType::files, FindFiles::WinNameType::long_name);
+  for (const auto& f : ffs) {
+   if (f.name == "readuser.wwiv") {
+     LOG(INFO) << "Reread current user";
+     File::Remove(FilePath(a()->sess().dirs().scratch_directory(), f.name));
+     a()->ReadCurrentUser();
+   }
+  }
+
   const auto fndspec = fmt::sprintf("%smsg*.%3.3u", a()->config()->datadir(), a()->instance_number());
   FindFiles ff(fndspec, FindFiles::FindFilesType::files);
   for (const auto& f : ff) {
@@ -333,12 +344,16 @@ bool inst_msg_waiting() {
   }
 
   const auto filename = fmt::sprintf("msg*.%3.3u", a()->instance_number());
-  if (!File::ExistsWildcard(FilePath(a()->config()->datadir(), filename))) {
-    last_iia = l;
-    return false;
+  if (File::ExistsWildcard(FilePath(a()->config()->datadir(), filename))) {
+    return true;
   }
 
-  return true;
+  if (File::ExistsWildcard(FilePath(a()->sess().dirs().scratch_directory(), "*.wwiv"))) {
+    return true;
+  }
+
+  last_iia = l;
+  return false;
 }
 
 // Sets inter-instance availability on/off, for inter-instance messaging.

@@ -36,15 +36,17 @@ class Dirs {
 public:
   explicit Dirs(const std::filesystem::path& bbsdir);
   Dirs(const std::string& temp, const std::string& batch, const std::string& qwk,
-       std::string gfiles)
+       std::string gfiles, std::string scratch)
       : temp_directory_(temp), batch_directory_(batch), qwk_directory_(qwk),
-        gfiles_directory_(std::move(gfiles)) {}
+        gfiles_directory_(std::move(gfiles)), scratch_directory_(std::move(scratch)) {}
 
   [[nodiscard]] const std::filesystem::path& temp_directory() const noexcept { return temp_directory_; }
   void temp_directory(const std::string& d) { temp_directory_ = d; }
 
   [[nodiscard]] const std::filesystem::path& batch_directory() const noexcept { return batch_directory_; }
   void batch_directory(const std::string& d) { batch_directory_ = d; }
+
+  [[nodiscard]] const std::filesystem::path& scratch_directory() const noexcept { return scratch_directory_; }
 
   /**
    * Used instead of QWK_DIRECTORY.  Today it is the same as batch but wanted to
@@ -69,6 +71,7 @@ private:
   std::filesystem::path qwk_directory_;
   std::string language_directory_;
   std::string gfiles_directory_;
+  std::filesystem::path scratch_directory_;
 };
 
 enum class chatting_t { none, one_way, two_way };

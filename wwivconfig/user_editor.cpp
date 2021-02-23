@@ -22,6 +22,7 @@
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
 #include "localui/edit_items.h"
@@ -30,6 +31,7 @@
 #include "localui/wwiv_curses.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/instance.h"
 #include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
@@ -122,6 +124,35 @@ static int JumpToUser(CursesWindow* window, const std::string& datadir) {
     return items[result.selected].data();
   }
   return -1;
+}
+
+void write_semaphore_if_user_online(const wwiv::sdk::Config& config, int current_usernum) {
+  wwiv::sdk::Instances instances(config);
+  if (!instances) {
+    std::cout << "Unable to read Instance information.";
+    return;
+  }
+
+  for (auto i = 1; i <= instances.size(); ++i) {
+    const auto& inst = instances.at(i);
+    if (!inst.online()) {
+      continue;
+    }
+    if (inst.user_number() != current_usernum) {
+      continue;
+    }
+    // we have user.
+    auto scratch_directory = config.scratch_format();
+    StringReplace(&scratch_directory, "%n", std::to_string(inst.node_number()));
+    scratch_directory = File::FixPathSeparators(scratch_directory);
+    const auto path = FilePath(config.root_directory(), scratch_directory);
+    const auto fn = FilePath(path, "readuser.wwiv");
+    TextFile tf(fn, "wt");
+    if (tf) {
+      tf.Write("User edited in wwivconfig usereditor");
+    }
+    return;
+  }
 }
 
 void user_editor(const wwiv::sdk::Config& config) {
@@ -268,6 +299,7 @@ void user_editor(const wwiv::sdk::Config& config) {
         items.Run();
         if (dialog_yn(items.window(), "Save User?")) {
           write_user(config, current_usernum, &user);
+          write_semaphore_if_user_online(config, current_usernum);
           need_names_list_rebuilt = true;
         }
       }
