@@ -211,13 +211,13 @@ seconds User::timeontoday() const {
   return seconds(secs_used);
 }
 
-uint8_t User::age() const { 
+int User::age() const { 
   if (data.year == 0 && data.month == 0 && data.day == 0) {
     // If the birthday is unset, then the age is also unset.
     return 0;
   }
   SystemClock clock{};
-  return static_cast<uint8_t>(years_old(this, clock));
+  return years_old(this, clock);
 }
 
 [[nodiscard]] DateTime User::birthday_dt() const { 

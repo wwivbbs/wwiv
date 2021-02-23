@@ -191,6 +191,8 @@ static char HandleControlKey(const char c, const SessionContext& context, wwiv::
   default:
     return c;
   }
+  // Nothing to do here.
+  return 0;
 }
 
 /* This function checks both the local keyboard, and the remote terminal
@@ -359,7 +361,7 @@ int Input::bgetch_handle_key_translation(int key, numlock_status_t numlock_mode)
       return ret;
   }
   if (key < 127) {
-    return static_cast<int>(HandleControlKey(key, sess(), user()));
+    return HandleControlKey(static_cast<const char>(key), sess(), user());
   }
   return key;
 }

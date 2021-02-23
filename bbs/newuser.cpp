@@ -965,7 +965,7 @@ NewUserItemResult DoBirthDay(NewUserContext& c) {
           c.user.birthday_mdy(m, d, y);
           cln_nu();
           auto dt = c.user.birthday_dt().to_string("%B %d, %Y");
-          bout.format("|#2{} ({} years old)\r\n", dt, static_cast<int>(c.user.age()));
+          bout.format("|#2{} ({} years old)\r\n", dt, c.user.age());
           return NewUserItemResult::success;
         }
       }
@@ -977,7 +977,7 @@ NewUserItemResult DoBirthDay(NewUserContext& c) {
     } while (!ok && !a()->sess().hangup());
   } 
   auto dt = c.user.birthday_dt().to_string("%B %d, %Y");
-  bout.format("|#2{} ({} years old)\r\n", dt, static_cast<int>(c.user.age()));
+  bout.format("|#2{} ({} years old)\r\n", dt, c.user.age());
   return NewUserItemResult::no_change;
 }
 

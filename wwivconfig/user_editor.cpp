@@ -35,6 +35,7 @@
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
 #include "wwivconfig/utility.h"
+
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -172,6 +173,20 @@ void user_editor(const wwiv::sdk::Config& config) {
         user.year = static_cast<uint8_t>(year - 1900);
       });
 
+  auto* gender_field = new CustomEditItem(
+      1,
+      [&]() -> string {
+        return std::string(1, user.sex);
+      },
+      [&](const string& s) {
+        if (s.empty()) {
+          user.sex = 0;
+          return;
+        }
+        auto g = to_upper_case_char(s.front());
+        user.sex = (g == 'U') ? 0 : g;
+      });
+
   auto y = 1;
   EditItems items{};
   items.add(new Label("Name/Handle:"), user_name_field, "", 1, y);
@@ -218,6 +233,9 @@ void user_editor(const wwiv::sdk::Config& config) {
   y++;
   items.add(new Label("Computer Type:"),
       new NumberEditItem<int8_t>(&user.comp_type), "", 1, y);
+  y++;
+  items.add(new Label("Gender:"),
+      gender_field, "Enter (M)ale, (F)emale, (N)eed to ask again, (U)nused", 1, y);
   y++;
   items.add(new Label("Restrictions:"),
       new RestrictionsEditItem(&user.restrict), "", 1, y);

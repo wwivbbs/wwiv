@@ -107,15 +107,17 @@ void prstatus() {
   }
 }
 
-static void valuser_delete(int user_number) {
+// returns true if user deleted.
+static bool valuser_delete(int user_number) {
   bout.nl();
   bout << "|#5Delete? ";
   if (bin.yesno()) {
     a()->users()->delete_user(user_number);
     bout << "\r\n|#6Deleted.\r\n\n";
-  } else {
-    bout << "\r\n|#3NOT deleted.\r\n";
+    return true;
   }
+  bout << "\r\n|#3NOT deleted.\r\n";
+  return false;
 }
 
 static void valuser_manual(User& user) {
@@ -242,7 +244,9 @@ void valuser(int user_number) {
       valuser_auto(user);
       break;
     case 'D':
-      valuser_delete(user_number);
+      if (valuser_delete(user_number)) {
+        return;
+      }
       break;
     case 'M':
       valuser_manual(user);
@@ -251,7 +255,10 @@ void valuser(int user_number) {
       bout.nl(2);
       return;
     }
-    a()->users()->writeuser(&user, user_number);
+    if (!a()->users()->writeuser(&user, user_number)) {
+      bout << "|#6Error writing user #" << user_number << wwiv::endl;
+      bout.pausescr();
+    }
   }
 }
 

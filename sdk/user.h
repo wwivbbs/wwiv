@@ -477,7 +477,7 @@ class User final {
   void email_address(const std::string& s) {
     strcpy(data.email, s.c_str());
   }
-  [[nodiscard]] uint8_t age() const;
+  [[nodiscard]] int age() const;
 
   [[nodiscard]] int8_t GetComputerType() const {
     return data.comp_type;
