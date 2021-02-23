@@ -211,7 +211,7 @@ int num_instances() {
  * wi, else returns false.
  */
 bool user_online(int user_number, int *wi) {
-  const auto ni = a()->instances().size();
+  const auto ni = wwiv::stl::size_int(a()->instances());
   for (auto i = 1; i <= ni; i++) {
     if (i == a()->instance_number()) {
       continue;

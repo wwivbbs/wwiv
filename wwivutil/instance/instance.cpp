@@ -83,8 +83,7 @@ public:
     }
     const auto num = instances.size();
     std::cout << "num instances:  " << num << std::endl;
-    for (auto i = 1; i <= num; ++i) {
-      const auto instance = instances.at(i);
+    for (const auto& instance : instances) {
       std::cout << "=======================================================================" << std::endl;
       std::cout << "Instance    : #" << instance.node_number() << std::endl;
       std::cout << "User        : #" << instance.user_number() << std::endl;

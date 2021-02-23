@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 #include "sdk/config.h"
-#include "sdk/vardec.h"
+
 
 namespace wwiv::sdk {
 
@@ -113,7 +113,16 @@ private:
 
 class Instances final {
 public:
-  using size_type = int;
+  typedef std::vector<Instance>::iterator iterator;
+  typedef std::vector<Instance>::const_iterator const_iterator;
+  typedef std::size_t size_type;
+
+  [[nodiscard]] iterator begin() { return instances_.begin(); }
+  [[nodiscard]] const_iterator begin() const { return instances_.begin(); }
+  [[nodiscard]] const_iterator cbegin() const { return instances_.cbegin(); }
+  [[nodiscard]] iterator end() { return instances_.end(); }
+  [[nodiscard]] const_iterator end() const { return instances_.end(); }
+  [[nodiscard]] const_iterator cend() const { return instances_.cend(); }
 
   Instances() = delete;
   Instances(const Instances&) = delete;
@@ -125,7 +134,7 @@ public:
 
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
 
-  size_type size();
+  size_type size() const;
   Instance at(size_type pos);
   std::vector<Instance> all();
 
@@ -141,6 +150,7 @@ private:
   bool initialized_;
   std::string datadir_;
   const std::filesystem::path path_;
+  std::vector<Instance> instances_;
 };
 
 std::string instance_location(const instancerec& ir);

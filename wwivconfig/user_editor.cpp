@@ -133,8 +133,7 @@ void write_semaphore_if_user_online(const wwiv::sdk::Config& config, int current
     return;
   }
 
-  for (auto i = 1; i <= instances.size(); ++i) {
-    const auto& inst = instances.at(i);
+  for (const auto& inst : instances) {
     if (!inst.online()) {
       continue;
     }

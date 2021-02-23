@@ -408,7 +408,7 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
 // Fills an array with information of who's online.
 std::vector<int> who_online(int loc) {
   std::vector<int> r{};
-  for (auto i = 1; i <= a()->instances().size(); i++) {
+  for (auto i = 1; i <= wwiv::stl::size_int(a()->instances()); i++) {
     const auto ir = a()->instances().at(i);
     if (!ir.invisible() || so()) {
       if (ir.loc_code() == loc && i != a()->instance_number()) {

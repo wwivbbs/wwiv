@@ -114,10 +114,10 @@ DateTime Instance::updated() const {
 Instances::Instances(const Config& config)
     : datadir_(config.datadir()), path_(FilePath(datadir_, INSTANCE_DAT)) {
   initialized_ = File::Exists(path_);
+  instances_ = all();
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
-Instances::size_type Instances::size() {
+Instances::size_type Instances::size() const {
   if (const auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
     return std::max<int>(0, file.number_of_records() - 1);
   }
