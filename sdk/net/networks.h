@@ -76,6 +76,8 @@ private:
   std::vector<net_networks_rec> networks_;
 };
 
+std::string to_string(const net_networks_rec& n);
+
 }
 
 #endif

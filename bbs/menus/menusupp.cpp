@@ -406,21 +406,25 @@ void WWIVVersion() {
   bout << "|#9Licensed under the Apache License, Version 2.0." << wwiv::endl;
   bout << "|#9Please see |#1http://www.wwivbbs.org/ |#9for more information"
        << wwiv::endl << wwiv::endl;
-  bout << "|#9Compile Time  : |#2" << wwiv_compile_datetime() << wwiv::endl;
-  bout << "|#9SysOp Name    : |#2" << a()->config()->sysop_name() << wwiv::endl;
-  bout << "|#9OS            : |#2" << wwiv::os::os_version_string() << wwiv::endl;
-  bout << "|#9Instance      : |#2" << a()->instance_number() << wwiv::endl;
+  bout << "|#9Compile Time    : |#2" << wwiv_compile_datetime() << wwiv::endl;
+  bout << "|#9SysOp Name      : |#2" << a()->config()->sysop_name() << wwiv::endl;
+  bout << "|#9OS              : |#2" << wwiv::os::os_version_string() << wwiv::endl;
+  bout << "|#9Instance        : |#2" << a()->instance_number() << wwiv::endl;
 
   if (!a()->nets().empty()) {
     const auto status = a()->status_manager()->get_status();
     a()->status_manager()->reload_status();
-    //bout << wwiv::endl;
-    bout << "|#9Networks      : |#2" << "net" << status->status_net_version() << wwiv::endl;
+    bool first = true;
+    bout << "|#9Network Version : |#2" << "net" << status->status_net_version() << wwiv::endl;
+    bout << "|#9Networks        : ";
     for (const auto& n : a()->nets().networks()) {
-      if (!n.sysnum) {
-        continue;
+      if (n.sysnum) {
+        if (!first) {
+          bout << "                : ";
+        }
+        first = false;
+        bout << to_string(n) << wwiv::endl;
       }
-      bout.format("|#9{:<14}:|#2 @{}\r\n", n.name, n.sysnum);
     }
   }
 
