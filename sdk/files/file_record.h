@@ -39,6 +39,8 @@ public:
 
   [[nodiscard]] const std::string& aligned_filename() const noexcept;
   [[nodiscard]] const std::string& unaligned_filename() const noexcept;
+  [[nodiscard]] std::string basename() const;
+  [[nodiscard]] std::string extension() const;
 
   static std::optional<FileName> FromUnaligned(const std::string& unaligned_name);
   friend std::ostream& operator<<(std::ostream& os, const FileName& f);

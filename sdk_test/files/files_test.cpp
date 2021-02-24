@@ -389,3 +389,17 @@ TEST(FileAlignTest, UnAlign) {
   EXPECT_EQ(unalign("X       .ZZ "), "x.zz");
   EXPECT_EQ(unalign("FILENAME.ZIP"), "filename.zip");
 }
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// FileName
+//
+
+TEST(FileNameTest, Smoke) {
+  const FileName f("FOO     .BAR");
+
+  EXPECT_EQ("FOO     .BAR", f.aligned_filename());
+  EXPECT_EQ("foo.bar", f.unaligned_filename());
+  EXPECT_EQ("FOO", f.basename());
+  EXPECT_EQ("BAR", f.extension());
+}

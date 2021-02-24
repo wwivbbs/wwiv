@@ -204,7 +204,7 @@ void Output::litebar(const std::string& msg) {
     bputs(fmt::sprintf("|17|15 %-78s|#0\r\n\n", msg));
   }
   else {
-    format("|#5{}|#0\r\n\n");
+    format("|#5{}|#0\r\n\n", msg);
   }
 }
 

@@ -150,6 +150,14 @@ const std::string& FileName::unaligned_filename() const noexcept {
   return unaligned_filename_;
 }
 
+std::string FileName::basename() const {
+  return aligned_filename_.substr(0, 8);
+}
+
+std::string FileName::extension() const {
+  return aligned_filename_.substr(9);
+}
+
 //static
 std::optional<FileName> FileName::FromUnaligned(const std::string& unaligned_name) {
   return {FileName(align(unaligned_name))};

@@ -15,9 +15,6 @@
 
 # WWIVconfig
 
-* Change hte way the color schemes work in localui, reuse the init_pairs code
-  from local_io, then make the schemes point to the WWIV type color 
-  (i.e. 31 for Bold Yellow on Blue Background)
 # MCI|PIPE
 * Add tests for BbsMacroFilter (also make sure it works now)
 * Use BbsMacroFilter in wwivutil print.
@@ -89,7 +86,6 @@ jq ".number" jenkins.json
   to return an std::optional<T> as the return type.
 * Switch all BBS LocalIO subclasses to use curses KEY types not Win32 key code
   types for characters >0xff. (i.e. KEY_LEFT not LEFT)
-
 
 
 ## core::File Improvements

@@ -231,8 +231,6 @@ std::string aligns(const std::string& file_name) {
 }
 
 void printinfo(uploadsrec * u, bool *abort) {
-  char s[85];
-  int i;
   bool next;
 
   {
@@ -242,21 +240,11 @@ void printinfo(uploadsrec * u, bool *abort) {
     t.directory = subnum;
     t.dir_mask = a()->dirs()[subnum].mask;
     a()->filelist.emplace_back(t);
-    sprintf(s, "\r|#%d%2d|#%d%c",
-            a()->batch().contains_file(u->filename) ? 6 : 0,
-            size_int(a()->filelist), FRAME_COLOR, okansi() ? '\xBA' : ' '); // was |
+    const FileName fn(u->filename);
+    const auto s = fmt::format("\r|#{}{:<2} |#1{} ", a()->batch().contains_file(u->filename) ? 6 : 0,
+                               size_int(a()->filelist), fn.aligned_filename());
     bout.bputs(s, abort, &next);
   }
-  bout.Color(1);
-  strncpy(s, u->filename, 8);
-  s[8] = '\0';
-  bout.bputs(s, abort, &next);
-  strncpy(s, &((u->filename)[8]), 4);
-  s[4] = '\0';
-  bout.Color(1);
-  bout.bputs(s, abort, &next);
-  bout.Color(FRAME_COLOR);
-  bout.bputs(okansi() ? "\xBA" : " ", abort, &next); // was |
 
   auto size = humanize(u->numbytes);
 
@@ -267,31 +255,9 @@ void printinfo(uploadsrec * u, bool *abort) {
       size = "N/A";
     }
   }
-  for (i = 0; i < 5 - ssize(size); i++) {
-    s[i] = SPACE;
-  }
-  s[i] = '\0';
-  strcat(s, size.c_str());
-  bout.Color(2);
-  bout.bputs(s, abort, &next);
-
-  {
-    bout.Color(FRAME_COLOR);
-    bout.bputs(okansi() ? "\xBA" : " ", abort, &next); // was |
-    const auto numdloads = std::to_string(u->numdloads);
-
-    for (i = 0; i < 4 - ssize(numdloads); i++) {
-      s[i] = SPACE;
-    }
-    s[i] = '\0';
-    strcat(s, numdloads.c_str());
-    bout.Color(2);
-    bout.bputs(s, abort, &next);
-  }
-  bout.Color(FRAME_COLOR);
-  bout.bputs((okansi() ? "\xBA" : " "), abort, &next); // was |
-  sprintf(s, "|#%d%s", (u->mask & mask_extended) ? 1 : 2, u->description);
-  bout.bpla(trim_to_size_ignore_colors(s, a()->user()->GetScreenChars() - 28), abort);
+  const auto desc = trim_to_size_ignore_colors(u->description, a()->user()->GetScreenChars() - 28);
+  const auto s = fmt::format("|#2{:>5} {:>4} |#1{}", size, u->numdloads, desc);
+  bout.bpla(s, abort);
 
   if (*abort) {
     a()->filelist.clear();
@@ -345,8 +311,8 @@ void listfiles() {
   bout.clear_lines_listed();
 
   auto* area = a()->current_file_area();
-  bool abort = false;
-  for (int i = 1; i <= area->number_of_files() && !abort && !a()->sess().hangup(); i++) {
+  auto abort = false;
+  for (auto i = 1; i <= area->number_of_files() && !abort && !a()->sess().hangup(); i++) {
     auto f = area->ReadFile(i);
     if (wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {
       if (need_title) {
@@ -381,7 +347,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
       return;
     }
     auto* area = a()->current_file_area();
-    for (int i = 1; i <= a()->current_file_area()->number_of_files() && !*abort && !a()->sess().hangup();
+    for (auto i = 1; i <= a()->current_file_area()->number_of_files() && !*abort && !a()->sess().hangup();
          i++) {
       a()->CheckForHangup();
       auto f = area->ReadFile(i);

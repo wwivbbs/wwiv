@@ -516,14 +516,11 @@ bool uploadall(int directory_num) {
   const auto& dir = a()->dirs()[a()->udir[directory_num].subnum];
   dliscan1(dir);
 
-  const auto path_mask = FilePath(dir.path, "*.*");
-  const int maxf = dir.maxfiles;
-
-  FindFiles ff(path_mask, FindFiles::FindFilesType::files);
+  FindFiles ff(FilePath(dir.path, "*.*"), FindFiles::FindFilesType::files);
   auto aborted = false;
   for (const auto& f : ff) {
     aborted = bin.checka();
-    if (aborted || a()->sess().hangup() || a()->current_file_area()->number_of_files() >= maxf) {
+    if (aborted || a()->sess().hangup() || a()->current_file_area()->number_of_files() >= dir.maxfiles) {
       break;
     }
     if (!maybe_upload(f.name, directory_num, "")) {
@@ -534,105 +531,34 @@ bool uploadall(int directory_num) {
     bout << "|#6Aborted.\r\n";
     return false;
   }
-  if (a()->current_file_area()->number_of_files() >= maxf) {
+  if (a()->current_file_area()->number_of_files() >= dir.maxfiles) {
     bout << "directory full.\r\n";
   }
   return true;
 }
 
 void relist() {
-  char s[85];
-  bool next, abort = false;
-  int16_t tcd = -1;
-
   if (a()->filelist.empty()) {
     return;
   }
+  auto abort = false;
+  auto next = true;
+
   bout.cls();
   bout.clear_lines_listed();
-  if (a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
-    bout.Color(FRAME_COLOR);
-    bout << string(78, '-') << wwiv::endl;
-  }
-  for (size_t i = 0; i < a()->filelist.size(); i++) {
-    auto& f = a()->filelist[i];
-    if (!a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
-      if (tcd != f.directory) {
-        bout.Color(FRAME_COLOR);
-        if (tcd != -1) {
-          bout << "\r" << string(78, '-') << wwiv::endl;
-        }
-        tcd = f.directory;
-        auto tcdi = -1;
-        for (auto i1 = 0; i1 < wwiv::stl::size_int(a()->udir); i1++) {
-          if (a()->udir[i1].subnum == tcd) {
-            tcdi = i1;
-            break;
-          }
-        }
-        bout.Color(2);
-        if (tcdi == -1) {
-          bout << a()->dirs()[tcd].name << "." << wwiv::endl;
-        } else {
-          bout << a()->dirs()[tcd].name << " - #" << a()->udir[tcdi].keys << ".\r\n";
-        }
-        bout.Color(FRAME_COLOR);
-        bout << string(78, '-') << wwiv::endl;
-      }
-    }
-    sprintf(s, "%c%d%2d%c%d%c", 0x03, a()->batch().contains_file(f.u.filename) ? 6 : 0, i + 1, 0x03,
-            FRAME_COLOR,
-            okansi() ? '\xBA' : ' '); // was |
-    bout.bputs(s, &abort, &next);
-    bout.Color(1);
-    strncpy(s, f.u.filename, 8);
-    s[8] = 0;
-    bout.bputs(s, &abort, &next);
-    strncpy(s, &f.u.filename[8], 4);
-    s[4] = 0;
-    bout.Color(1);
-    bout.bputs(s, &abort, &next);
-    bout.Color(FRAME_COLOR);
-    bout.bputs((okansi() ? "\xBA" : ":"), &abort, &next);
-
-    auto numbytes = humanize(f.u.numbytes);
-    if (!a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
-      if (!(a()->dirs()[tcd].mask & mask_cdrom)) {
-        files::FileName fn(f.u.filename);
-        auto filepath = FilePath(a()->dirs()[tcd].path, fn);
-        if (!File::Exists(filepath)) {
-          numbytes = "N/A";
-        }
-      }
-    }
-    if (numbytes.size() < 5) {
-      size_t i1 = 0;
-      for (; i1 < 5 - numbytes.size(); i1++) {
-        s[i1] = SPACE;
-      }
-      s[i1] = 0;
-    }
-    strcat(s, numbytes.c_str());
-    bout.Color(2);
+  bout << string(78, '-') << wwiv::endl;
+  for (size_t i = 0; i < a()->filelist.size() && !abort; i++) {
+    const auto& f = a()->filelist[i];
+    files::FileName fn(f.u.filename);
+    const auto s =
+        fmt::format("|#{}{:<2} |#1{}", a()->batch().contains_file(f.u.filename) ? 6 : 0, i + 1,
+          fn.aligned_filename());
     bout.bputs(s, &abort, &next);
 
-    bout.Color(FRAME_COLOR);
-    bout.bputs((okansi() ? "\xBA" : "|"), &abort, &next);
-    auto numdloads = std::to_string(f.u.numdloads);
-
-    size_t i1 = 0;
-    for (; i1 < 4 - numdloads.size(); i1++) {
-      s[i1] = SPACE;
-    }
-    s[i1] = 0;
-    strcat(s, numdloads.c_str());
-    bout.Color(2);
-    bout.bputs(s, &abort, &next);
-
-    bout.Color(FRAME_COLOR);
-    bout.bputs((okansi() ? "\xBA" : "|"), &abort, &next);
-    sprintf(s, "%c%d%s", 0x03, f.u.mask & mask_extended ? 1 : 2, f.u.description);
-    bout.bpla(trim_to_size_ignore_colors(s, a()->user()->GetScreenChars() - 28), &abort);
+    const auto width = a()->user()->GetScreenChars() - 28;
+    const auto bd = fmt::format(" |#2{:>5} |#2{:>5} |#1{}", 
+      humanize(f.u.numbytes), f.u.numdloads, trim_to_size_ignore_colors(f.u.description, width));
+    bout.bpla(bd, &abort);
   }
   bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
