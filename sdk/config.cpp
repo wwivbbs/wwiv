@@ -112,6 +112,13 @@ void Config::set_config(const config_t& config, bool need_to_update_paths) {
   }
 }
 
+std::filesystem::path Config::scratch_dir(int node) const {
+  auto scratch_directory = scratch_format();
+  StringReplace(&scratch_directory, "%n", std::to_string(node));
+  scratch_directory = File::FixPathSeparators(scratch_directory);
+  return FilePath(root_directory(), scratch_directory);
+}
+
 void Config::system_name(const std::string& d) { config_.systemname = d; }
 
 void Config::sysop_name(const std::string& d) { config_.sysopname = d; }

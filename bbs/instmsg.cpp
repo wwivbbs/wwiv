@@ -29,9 +29,10 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
-#include "sdk/filenames.h"
 #include "sdk/instance.h"
+#include "sdk/instance_message.h"
 #include "sdk/names.h"
+
 #include <chrono>
 #include <string>
 
@@ -54,101 +55,51 @@ bool is_chat_invis() {
   return chat_invis; 
 }
 
-static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
-  const auto fn = fmt::sprintf("tmsg%3.3u.%3.3d", a()->instance_number(), ih->dest_inst);
-  File file(FilePath(a()->config()->datadir(), fn));
-  if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile, File::shareDenyReadWrite)) {
-    file.Seek(0L, File::Whence::end);
-    if (ih->msg_size > 0 && msg.empty()) {
-      ih->msg_size = 0;
-    }
-    file.Write(ih, sizeof(inst_msg_header));
-    if (ih->msg_size > 0) {
-      file.Write(msg.c_str(), ih->msg_size);
-    }
-    file.Close();
-
-    for (auto i = 0; i < 1000; i++) {
-      const auto dest =
-          FilePath(a()->config()->datadir(), fmt::sprintf("msg%5.5d.%3.3d", i, ih->dest_inst));
-      if (!File::Rename(file.path(), dest) || (errno != EACCES)) {
-        break;
-      }
-    }
-  }
+void send_inst_str(int whichinst, const std::string& s) {
+  send_instance_string(*a()->config(), instance_message_type_t::user, whichinst,
+                       a()->sess().user_num(), a()->instance_number(), s);
 }
 
-static void send_inst_str1(int m, int whichinst, const std::string& send_string) {
-  const auto tempsendstring = StrCat(send_string, "\r\n");
-  inst_msg_header ih{};
-  ih.main = static_cast<uint16_t>(m);
-  ih.minor = 0;
-  ih.from_inst = static_cast<uint16_t>(a()->instance_number());
-  ih.from_user = static_cast<uint16_t>(a()->sess().user_num());
-  ih.msg_size = wwiv::stl::size_int(tempsendstring) + 1;
-  ih.dest_inst = static_cast<uint16_t>(whichinst);
-  ih.daten = daten_t_now();
-
-  send_inst_msg(&ih, tempsendstring);
-}
-
-void send_inst_str(int whichinst, const std::string& send_string) {
-  send_inst_str1(INST_MSG_STRING, whichinst, send_string);
-}
-
-void send_inst_sysstr(int whichinst, const std::string& send_string) {
-  send_inst_str1(INST_MSG_SYSMSG, whichinst, send_string);
+void send_inst_sysstr(int whichinst, const std::string& s) {
+  send_instance_string(*a()->config(), instance_message_type_t::system, whichinst,
+                       a()->sess().user_num(), a()->instance_number(), s);
 }
 
 /*
  * "Broadcasts" a message to all online instances.
  */
 void broadcast(const std::string& message) {
-  const auto ni = num_instances();
-  for (auto i = 1; i <= ni; i++) {
+  for (auto i = 1; i <= num_instances(); i++) {
     if (i != a()->instance_number() && a()->instances().at(i).available()) {
       send_inst_str(i, message);
     }
   }
 }
 
-
 /*
  * Handles one inter-instance message, based on type, returns inter-instance
  * main type of the "packet".
  */
-static int handle_inst_msg(inst_msg_header * ih, const std::string& msg) {
-  if (!ih || (ih->msg_size > 0 && msg.empty())) {
-    return -1;
+static void handle_inst_msg(const instance_message_t& ih) {
+  if (a()->sess().hangup() || !a()->sess().IsUserOnline()) {
+    return;
   }
-
-  switch (ih->main) {
-  case INST_MSG_STRING:
-  case INST_MSG_SYSMSG:
-    if (ih->msg_size > 0 && a()->sess().IsUserOnline() && !a()->sess().hangup()) {
-      const auto line = bout.SaveCurrentLine();
-      bout.nl(2);
-      if (a()->sess().in_chatroom()) {
-        bout << msg << "\r\n";
-        bout.RestoreCurrentLine(line);
-        return ih->main;
-      }
-      if (ih->main == INST_MSG_STRING) {
-        const auto from_user_name = a()->names()->UserName(ih->from_user);
-        bout.bprintf("|#1%.12s (%d)|#0> |#2", from_user_name, ih->from_inst);
-      } else {
-        bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
-      }
-      bout << msg << "\r\n\r\n";
-      bout.RestoreCurrentLine(line);
-    }
-    break;
-  default:
-    break;
+  const auto line = bout.SaveCurrentLine();
+  bout.nl(2);
+  if (a()->sess().in_chatroom()) {
+    bout << ih.message << "\r\n";
+    bout.RestoreCurrentLine(line);
+    return;
   }
-  return ih->main;
+  if (ih.message_type == instance_message_type_t::system) {
+    const auto from_user_name = a()->names()->UserName(ih.from_user);
+    bout.bprintf("|#1%.12s (%d)|#0> |#2", from_user_name, ih.from_instance);
+  } else {
+    bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
+  }
+  bout << ih.message << "\r\n\r\n";
+  bout.RestoreCurrentLine(line);
 }
-
 
 void process_inst_msgs() {
   if (!inst_msg_waiting()) {
@@ -168,32 +119,9 @@ void process_inst_msgs() {
    }
   }
 
-  const auto fndspec = fmt::sprintf("%smsg*.%3.3u", a()->config()->datadir(), a()->instance_number());
-  FindFiles ff(fndspec, FindFiles::FindFilesType::files);
-  for (const auto& f : ff) {
-    if (a()->sess().hangup()) { break; }
-    File file(FilePath(a()->config()->datadir(), f.name));
-    if (!file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyReadWrite)) {
-      LOG(ERROR) << "Unable to open file: " << file;
-      continue;
-    }
-    while (true) {
-      inst_msg_header ih = {};
-      const auto num_read = file.Read(&ih, sizeof(inst_msg_header));
-      if (num_read == 0) {
-        // End of file.
-        break;
-      }
-      string m;
-      if (ih.msg_size > 0) {
-        m.resize(ih.msg_size + 1);
-        file.Read(&m[0], ih.msg_size);
-        m.resize(ih.msg_size);
-      }
-      handle_inst_msg(&ih, m);
-    }
-    file.Close();
-    File::Remove(file.path());
+  auto messages = read_all_instance_messages(*a()->config(), a()->instance_number(), 1000);
+  for (const auto& m : messages) {
+    handle_inst_msg(m);
   }
   setiia(oiia);
 }
@@ -210,24 +138,16 @@ int num_instances() {
  * Returns true if  user_number is online, and returns instance user is on in
  * wi, else returns false.
  */
-bool user_online(int user_number, int *wi) {
-  const auto ni = wwiv::stl::size_int(a()->instances());
-  for (auto i = 1; i <= ni; i++) {
+std::optional<int> user_online(int user_number) {
+  for (auto i = 1; i <= wwiv::stl::size_int(a()->instances()); i++) {
     if (i == a()->instance_number()) {
       continue;
     }
-    const auto ir = a()->instances().at(i);
-    if (ir.user_number() == user_number && ir.online()) {
-      if (wi) {
-        *wi = i;
-      }
-      return true;
+    if (const auto ir = a()->instances().at(i); ir.user_number() == user_number && ir.online()) {
+      return i;
     }
   }
-  if (wi) {
-    *wi = -1;
-  }
-  return false;
+  return std::nullopt;
 }
 
 /*
@@ -343,8 +263,7 @@ bool inst_msg_waiting() {
     return false;
   }
 
-  const auto filename = fmt::sprintf("msg*.%3.3u", a()->instance_number());
-  if (File::ExistsWildcard(FilePath(a()->config()->datadir(), filename))) {
+  if (File::ExistsWildcard(FilePath(a()->sess().dirs().scratch_directory(), "msg*.json"))) {
     return true;
   }
 

@@ -8,6 +8,7 @@ set(test_sources
   "config_test.cpp"
   "net/contact_test.cpp"
   "datetime_test.cpp"
+  "instance_message_test.cpp"
   "msgapi/email_test.cpp"
   "fido/fido_util_test.cpp"
   "fido/flo_test.cpp"

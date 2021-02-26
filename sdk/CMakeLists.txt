@@ -8,6 +8,7 @@ set(COMMON_SOURCES
   "config430.cpp"
   "gfiles.cpp"
   "instance.cpp"
+  "instance_message.cpp"
   "names.cpp"
   "phone_numbers.cpp"
   "qscan.cpp"

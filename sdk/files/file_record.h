@@ -15,18 +15,16 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_FILES_FILE_RECORD_H__
-#define __INCLUDED_SDK_FILES_FILE_RECORD_H__
+#ifndef INCLUDED_SDK_FILES_FILE_RECORD_H
+#define INCLUDED_SDK_FILES_FILE_RECORD_H
 
 #include "sdk/config.h"
 
 #include <optional>
 #include <string>
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 class DateTime;
-}
 }
 
 namespace wwiv::sdk::files {
@@ -37,9 +35,13 @@ public:
   FileName(const FileName& that);
   ~FileName() = default;
 
+  /** Returns the aligned version of the filename, this is padded and uppercase as 8.3. */
   [[nodiscard]] const std::string& aligned_filename() const noexcept;
+  /** Returns the unaligned version of the filename, this is nonpadded and lowercase. */
   [[nodiscard]] const std::string& unaligned_filename() const noexcept;
+  /** Returns the basename of the filename, this is not space padded */
   [[nodiscard]] std::string basename() const;
+  /** Returns the extension of the filename, this is not space padded */
   [[nodiscard]] std::string extension() const;
 
   static std::optional<FileName> FromUnaligned(const std::string& unaligned_name);
@@ -49,7 +51,6 @@ private:
   const std::string aligned_filename_;
   const std::string unaligned_filename_;
 };
-
 
 class FileRecord final {
 public:

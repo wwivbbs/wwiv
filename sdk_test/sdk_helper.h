@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_TEST_SDK_HELPER_H__
-#define __INCLUDED_SDK_TEST_SDK_HELPER_H__
+#ifndef INCLUDED_SDK_TEST_SDK_HELPER_H
+#define INCLUDED_SDK_TEST_SDK_HELPER_H
 
 #include <string>
 
@@ -29,15 +29,16 @@ public:
   ~SdkHelper();
   bool SetUp() { return true; }
 
-  const std::string root() const { return root_.string(); }
-  const std::string data() const { return data_.string(); }
-  const std::string dloads() const { return dloads_.string(); }
-  const std::string msgs() const { return msgs_.string(); }
-  const std::string gfiles() const { return gfiles_.string(); }
-  const std::string menus() const { return menus_.string(); }
-  const std::string scripts() const { return scripts_.string(); }
-  const std::string logs() const { return logs_.string(); }
-  FileHelper& files() { return files_; }
+  [[nodiscard]] std::string root() const { return root_.string(); }
+  [[nodiscard]] std::string data() const { return data_.string(); }
+  [[nodiscard]] std::string dloads() const { return dloads_.string(); }
+  [[nodiscard]] std::string msgs() const { return msgs_.string(); }
+  [[nodiscard]] std::string gfiles() const { return gfiles_.string(); }
+  [[nodiscard]] std::string menus() const { return menus_.string(); }
+  [[nodiscard]] std::string scripts() const { return scripts_.string(); }
+  [[nodiscard]] std::string logs() const { return logs_.string(); }
+  [[nodiscard]] std::string scratch() const { return scratch_.string(); }
+  [[nodiscard]] FileHelper& files() { return files_; }
 
   std::filesystem::path CreatePath(const std::string& name);
   FileHelper files_;
@@ -48,10 +49,11 @@ public:
   std::filesystem::path gfiles_;
   std::filesystem::path scripts_;
   std::filesystem::path logs_;
+  std::filesystem::path scratch_;
 
 private:
   const std::filesystem::path saved_dir_;
   const std::filesystem::path root_;
 };
 
-#endif  // __INCLUDED_SDK_TEST_SDK_HELPER_H__
+#endif  // INCLUDED_SDK_TEST_SDK_HELPER_H

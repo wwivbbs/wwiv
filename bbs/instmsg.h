@@ -16,14 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_INSTMSG_H__
-#define __INCLUDED_INSTMSG_H__
+#ifndef INCLUDED_INSTMSG_H
+#define INCLUDED_INSTMSG_H
 
 #include <chrono>
+#include <optional>
 #include <string>
-#include "core/wwivport.h"
 #include "sdk/instance.h"
-#include "sdk/vardec.h"
 
 constexpr int INST_MSG_STRING = 1;  // A string to print out to the user
 constexpr int UNUSED_INST_MSG_SHUTDOWN = 2;  // Hangs up, ends BBS execution
@@ -108,35 +107,12 @@ constexpr int INST_LOC_WFC = 65535;
 /****************************************************************************/
 
 
-/*
- * Structure for inter-instance messages. File would be comprised of headers
- * using the following structure, followed by the "message" (if any).
- */
-struct inst_msg_header {
-  // Message main type
-  uint16_t main;
-  // Message minor type
-  uint16_t minor;
-  // Originating instance
-  uint16_t from_inst;
-  // Originating sess->usernum
-  uint16_t from_user;
-  // Destination instance
-  uint16_t dest_inst;
-
-  // Secs-since-1970 Unix datetime
-  daten_t daten;
-  // Length of the "message"
-  int32_t msg_size;
-  // Bit-mapped flags
-  uint32_t flags;
-};
 
 void send_inst_str(int whichinst, const std::string& send_string);
 void broadcast(const std::string& message);
 void process_inst_msgs();
 int  num_instances();
-bool user_online(int user_number, int *wi);
+std::optional<int> user_online(int user_number);
 void write_inst(int loc, int subloc = 0, int flags = INST_FLAGS_NONE);
 bool inst_msg_waiting();
 std::chrono::milliseconds setiia(std::chrono::milliseconds poll_time);

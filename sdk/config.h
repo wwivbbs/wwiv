@@ -225,6 +225,11 @@ public:
   void batch_format(const std::string& d) { config_.batchdir_format = d; }
   [[nodiscard]] std::string scratch_format() const { return config_.scratchdir_format; }
   void scratch_format(const std::string& d) { config_.scratchdir_format = d; }
+
+  /**
+   * Returns the scrarch directory for a given node.
+   */
+  std::filesystem::path scratch_dir(int node) const;
   
   [[nodiscard]] int num_instances() const { return config_.num_instances; }
   void num_instances(int n) { config_.num_instances = n; }

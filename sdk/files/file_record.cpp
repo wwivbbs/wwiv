@@ -151,11 +151,11 @@ const std::string& FileName::unaligned_filename() const noexcept {
 }
 
 std::string FileName::basename() const {
-  return aligned_filename_.substr(0, 8);
+  return StringTrim(aligned_filename_.substr(0, 8));
 }
 
 std::string FileName::extension() const {
-  return aligned_filename_.substr(9);
+  return StringTrim(aligned_filename_.substr(9));
 }
 
 //static

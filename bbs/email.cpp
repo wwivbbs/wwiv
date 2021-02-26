@@ -295,9 +295,8 @@ void sendout_email(EmailData& data) {
     a()->users()->readuser(&userRecord, data.user_number);
     userRecord.email_waiting(userRecord.email_waiting() + 1);
     a()->users()->writeuser(&userRecord, data.user_number);
-    int i;
-    if (user_online(data.user_number, &i)) {
-      send_inst_sysstr(i, "You just received email.");
+    if (const auto instance = user_online(data.user_number)) {
+      send_inst_sysstr(instance.value(), "You just received email.");
     }
     if (data.an) {
       logMessage += a()->names()->UserName(data.user_number);

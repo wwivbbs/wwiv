@@ -141,10 +141,7 @@ void write_semaphore_if_user_online(const wwiv::sdk::Config& config, int current
       continue;
     }
     // we have user.
-    auto scratch_directory = config.scratch_format();
-    StringReplace(&scratch_directory, "%n", std::to_string(inst.node_number()));
-    scratch_directory = File::FixPathSeparators(scratch_directory);
-    const auto path = FilePath(config.root_directory(), scratch_directory);
+    const auto path = config.scratch_dir(inst.node_number());
     const auto fn = FilePath(path, "readuser.wwiv");
     TextFile tf(fn, "wt");
     if (tf) {

@@ -56,16 +56,16 @@
 #include "core/version.h"
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"
+#include "sdk/bbslist.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
-#include "sdk/bbslist.h"
+
 #include <chrono>
 #include <limits>
 #include <memory>
 #include <string>
-#include <fstream>
 
 using std::chrono::duration;
 using std::chrono::duration_cast;
@@ -145,8 +145,8 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
   }
 
   bout << "Searching...";
-  bool abort = false;
-  int current_count = 0;
+  auto abort = false;
+  auto current_count = 0;
   for (const auto& n : a()->names()->names_vector()) {
     if (a()->sess().hangup() || abort) { break; }
     if (++current_count % 25 == 0) {
@@ -381,9 +381,10 @@ void getuser() {
         a()->user()->SetLanguage(0);
         set_language(0);
       }
-      int nInstanceNumber;
-      if (a()->user()->sl() < 255 && user_online(a()->sess().user_num(), &nInstanceNumber)) {
-        bout << "\r\n|#6You are already online on instance " << nInstanceNumber << "!\r\n\n";
+      if (const auto instance_number = user_online(a()->sess().user_num());
+          instance_number && a()->user()->sl() < 255) {
+        bout << "\r\n|#6You are already online on instance " << instance_number.value()
+             << "!\r\n\n";
         continue;
       }
       ok = true;

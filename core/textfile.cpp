@@ -251,12 +251,11 @@ std::vector<std::string> TextFile::ReadFileIntoVector(int64_t max_lines) {
 std::vector<std::string> TextFile::ReadLastLinesIntoVector(int num_lines) {
   fseek(file_, 0, SEEK_END);
   const auto len = static_cast<unsigned long>(ftell(file_));
-  auto pos = std::max<int>(0, len - (num_lines * 1024));
+  const auto pos = std::max<int>(0, len - (num_lines * 1024));
   // move to new pos
   fseek(file_, pos, SEEK_SET);
-  auto size = len - pos;
   string contents;
-  contents.resize(len);
+  contents.resize(len - pos + 1);
   const auto num_read = fread(&contents[0], 1, contents.size(), file_);
   contents.resize(num_read);
 

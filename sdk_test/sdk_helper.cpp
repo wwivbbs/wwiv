@@ -62,6 +62,11 @@ SdkHelper::SdkHelper()
   scripts_ = CreatePath("scripts");
   dloads_ = CreatePath("dloads");
   logs_ = CreatePath("logs");
+  scratch_ = CreatePath("e/scratch");
+  CreatePath("e/scratch/1");
+  CreatePath("e/scratch/2");
+  CreatePath("e/scratch/3");
+  CreatePath("e/scratch/4");
 
   {
     wwiv::sdk::config_t c{};
@@ -71,6 +76,8 @@ SdkHelper::SdkHelper()
     c.datadir = "data";
     c.logdir = "logs";
     c.dloadsdir = "dloads";
+    c.tempdir_format = "e/temp/%n";
+    c.scratchdir_format = "e/scratch/%n";
 
     // Add header version.
     // TODO(rushfan): This really should all be done in the Config class and also used
@@ -98,7 +105,7 @@ SdkHelper::SdkHelper()
     if (!sfile.Open(File::modeBinary | File::modeCreateFile | File::modeWriteOnly)) {
       throw std::runtime_error("failed to create status.dat");
     }
-    statusrec_t s = create_status();
+    auto s = create_status();
     sfile.Write(&s, sizeof(statusrec_t));
     sfile.Close();
   }
