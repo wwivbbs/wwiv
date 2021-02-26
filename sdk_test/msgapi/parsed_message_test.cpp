@@ -176,7 +176,6 @@ TEST(WWIVParsedMessageTest, ToLines_Smoke) {
   const std::string cz(1, static_cast<char>(CZ));
   const std::string text = 
     "This is a long line and this is a long line and this is a long line and this\x1\r\n too is a long line and this too is a long line";
-  const std::string expected = "This is a long line and this is a long line and this is a long line and this too is a long line and this too is a long line";
 
   WWIVParsedMessageText p(text);
   parsed_message_lines_style_t style{};

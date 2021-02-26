@@ -210,7 +210,11 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
           break;
         }
         auto subset_of_l = l.substr(0, pos);
-        l = l.substr(pos + 1);
+        l = l.substr(pos);
+        if (!l.empty() && l.front() == ' ') {
+          // Trim any leading space char that may have been wrapped from last line.
+          l = l.substr(1);
+        }
         if (style.reattribute_quotes) {
           // Here we try to re-attribute quote by looking for quote markers
           // and adding them to the wrapped lines.
@@ -221,6 +225,10 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
             if (const auto possible_quote_start = possible_quote.find_last_of(' ');
                 possible_quote_start != std::string::npos) {
               possible_quote = possible_quote.substr(possible_quote_start + 1);
+              // Trim trailing space on quote.
+              if (possible_quote.back() == ' ') {
+                possible_quote.pop_back();
+              }
             }
             l = StrCat(possible_quote, " ", l);
             // Remove any space from before the non-wrapped line so it matches.
