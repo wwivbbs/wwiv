@@ -848,14 +848,15 @@ static int GetMaxLinesToShowForScanPlus() {
 }
 
 static void list_config_scan_plus(int first, int *amount, int type) {
-  bool bUseConf = ok_multiple_conf(a()->user(), a()->uconfsub);
+  auto& confsubdir = type == NSCAN ? a()->uconfdir : a()->uconfsub;
+  bool bUseConf = ok_multiple_conf(a()->user(), confsubdir);
 
   bout.cls();
   bout.clear_lines_listed();
 
   if (bUseConf) {
     string name;
-    if (type == 0) {
+    if (type == QSCAN) {
       name = a()->uconfsub[a()->sess().current_user_sub_conf_num()].conf_name;
     }
     else {
@@ -874,7 +875,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
 
   const auto max_lines = GetMaxLinesToShowForScanPlus();
 
-  if (type == 0) {
+  if (type == QSCAN) {
     for (size_t this_sub = first; this_sub < a()->usub.size() && *amount < max_lines * 2;
          this_sub++) {
       bout.clear_lines_listed();
@@ -898,11 +899,13 @@ static void list_config_scan_plus(int first, int *amount, int type) {
          this_dir++) {
       bout.clear_lines_listed();
       const int alias_dir = a()->udir[this_dir].subnum;
-      auto s = fmt::sprintf("|#7[|#1%c|#7] |#2%s",
-                            a()->sess().qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE'
-                                                                                            : ' ',
-        a()->dirs()[alias_dir].name);
-      s[44] = 0;
+      auto s =
+          fmt::sprintf("|#7[|#1%c|#7] |#2%s",
+                       a()->sess().qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE' : ' ',
+                       a()->dirs()[alias_dir].name);
+      if (s.length() > 44) {
+        s.resize(44);
+      }
       if (*amount >= max_lines) {
         bout.GotoXY(40, 3 + *amount - max_lines);
         bout << s;
@@ -969,7 +972,8 @@ void config_scan_plus(int type) {
   int amount = 0, pos = 0, side_pos = 0;
   side_menu_colors smc{};
 
-  int useconf = ok_multiple_conf(a()->user(), a()->uconfsub);
+  auto& confsubdir = type == NSCAN ? a()->uconfdir : a()->uconfsub;
+  int useconf = ok_multiple_conf(a()->user(), confsubdir);
   a()->localIO()->topdata(LocalIO::topdata_t::none);
   a()->UpdateTopScreen();
 
