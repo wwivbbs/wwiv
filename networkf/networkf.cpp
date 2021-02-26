@@ -208,17 +208,21 @@ bool NetworkF::import_packet_file(const std::string& dir, const std::string& nam
       return false;
     }
 
-    if (dupe().is_dupe(msg)) {
-      const auto msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
-      LOG(ERROR) << "Skipping duplicate FTN message: '" << msg.vh.subject << "' msgid: (" << msgid
-                 << ")";
-      LOG(ERROR) << "Text: " << msg.vh.text;
-      // TODO(rushfan): move this or write out saved copy?
-      continue;
+    const auto is_email = (msg.nh.attribute & MSGPRIVATE) != 0;
+    if (!is_email) {
+      // Don't check for dupes in emails since we certainly won't have a MSGID and also
+      // likely the header may match for automated responses split over multiple messages (#1395)
+      if (dupe().is_dupe(msg)) {
+        const auto msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
+        LOG(ERROR) << "Skipping duplicate FTN message: '" << msg.vh.subject << "' msgid: (" << msgid
+                   << ")";
+        LOG(ERROR) << "Text: " << msg.vh.text;
+        // TODO(rushfan): move this or write out saved copy?
+        continue;
+      }
+      dupe().add(msg);
     }
-    dupe().add(msg);
 
-    bool is_email = (msg.nh.attribute & MSGPRIVATE);
     net_header_rec nh{};
     nh.daten = static_cast<uint32_t>(fido_to_daten(msg.vh.date_time));
     nh.fromsys = FTN_FAKE_OUTBOUND_NODE;
