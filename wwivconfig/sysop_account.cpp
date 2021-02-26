@@ -81,7 +81,7 @@ void create_sysop_account(Config& config) {
             new StringEditItem<unsigned char*>(30, u.data.name, EditLineMode::UPPER_ONLY), 1, y);
   ++y;
   items.add(new Label("Real Name:"),
-            new StringEditItem<unsigned char*>(20, u.data.realname, EditLineMode::UPPER_ONLY), 1,
+            new StringEditItem<unsigned char*>(20, u.data.realname, EditLineMode::ALL), 1,
             y);
   ++y;
   items.add(new Label("Password:"),

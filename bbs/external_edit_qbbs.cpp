@@ -130,7 +130,7 @@ static bool CreateMsgTmpFromQuotesTxt(const std::filesystem::path& tmpdir) {
 bool ExternalQBBSMessageEditor::Before() {
   CleanupControlFiles();
   CreateMsgTmpFromQuotesTxt(temp_directory_);
-  bool real_name = data_.anonymous_flag & anony_real_name;
+  const bool real_name = data_.anonymous_flag & anony_real_name;
   return WriteMsgInf(data_.title, data_.sub_name, data_.is_email(), data_.to_name, real_name,
                      temp_directory_, *a()->user());
 }

@@ -82,89 +82,82 @@ char Output::GetKeyForPause() {
   return ch;
 }
 
-static bool okansi(const wwiv::sdk::User& user) { return user.HasAnsi(); }
+static bool okansi(const User& user) { return user.HasAnsi(); }
+
+void Output::pausescr_noansi() {
+  const auto stripped_size = ssize(stripcolors(str_pause));
+  bputs(str_pause);
+  GetKeyForPause();
+  for (auto i = 0; i < stripped_size; i++) {
+    bs();
+  }
+}
 
 void Output::pausescr() {
+  const auto saved_curatr = curatr();
   bin.clearnsp();
   bus().invoke<PauseProcessingInstanceMessages>();
   ScopeExit at_exit(
       [] { wwiv::core::bus().invoke<ResetProcessingInstanceMessages>(); });
-  auto* const ss = str_pause;
-  int i1;
-  const auto i2 = i1 = strlen(ss);
-  const auto com_freeze = sess().incom();
+  if (!okansi(user())) {
+    pausescr_noansi();
+    return;
+  }
 
   if (!sess().incom() && sess().outcom()) {
     sess().incom(true);
   }
 
-  if (okansi(user())) {
-    ResetColors();
+  auto* const ss = str_pause;
 
-    i1 = ssize(stripcolors(ss));
-    const auto i = curatr();
-    SystemColor(user().color(3));
-    bputs(ss);
-    Left(i1);
-    SystemColor(i);
+  ResetColors();
 
-    const auto tstart = time_t_now();
+  const auto stripped_size = ssize(stripcolors(ss));
+  const auto com_freeze = sess().incom();
+  SystemColor(user().color(3));
+  bputs(ss);
+  Left(stripped_size);
+  SystemColor(saved_curatr);
 
-    clear_lines_listed();
-    auto warned = 0;
-    char ch;
-    do {
-      while (!bin.bkbhit() && !sess().hangup()) {
-        const auto tstop = time_t_now();
-        const auto ttotal = static_cast<time_t>(difftime(tstop, tstart));
-        if (ttotal == 120) {
-          if (!warned) {
-            warned = 1;
-            bputch(CG);
-            SystemColor(user().color(6));
-            bputs(ss);
-            for (auto i3 = 0; i3 < i2; i3++) {
-              if (ss[i3] == 3 && i1 > 1) {
-                i1 -= 2;
-              }
-            }
-            Left(i1);
-            SystemColor(i);
-          }
-        } else {
-          if (ttotal > 180) {
-            bputch(CG);
-            for (auto i3 = 0; i3 < i1; i3++) {
-              bputch(' ');
-            }
-            Left(i1);
-            SystemColor(i);
-            return;
-          }
+  const auto tstart = time_t_now();
+
+  clear_lines_listed();
+  auto warned = false;
+  char ch;
+  do {
+    while (!bin.bkbhit() && !sess().hangup()) {
+      const auto tstop = time_t_now();
+      const auto ttotal = static_cast<time_t>(difftime(tstop, tstart));
+      if (ttotal == 120) {
+        if (!warned) {
+          warned = true;
+          bputch(CG);
+          SystemColor(user().color(6));
+          bputs(ss);
+          Left(stripped_size);
+          SystemColor(saved_curatr);
         }
-        sleep_for(milliseconds(50));
-        bus().invoke<CheckForHangupEvent>();
+      } else {
+        if (ttotal > 180) {
+          bputch(CG);
+          for (auto i3 = 0; i3 < stripped_size; i3++) {
+            bputch(' ');
+          }
+          Left(stripped_size);
+          SystemColor(saved_curatr);
+          return;
+        }
       }
-      ch = GetKeyForPause();
-    } while (!ch && !sess().hangup());
-    for (int i3 = 0; i3 < i1; i3++) {
-      bputch(' ');
+      sleep_for(milliseconds(50));
+      bus().invoke<CheckForHangupEvent>();
     }
-    Left(i1);
-    SystemColor(i);
-  } else {
-    // nonansi code path
-    for (int i3 = 0; i3 < i2; i3++) {
-      if ((ss[i3] == CC) && i1 > 1) {
-        i1 -= 2;
-      }
-    }
-    bputs(ss);
-    GetKeyForPause();
-    for (int i3 = 0; i3 < i1; i3++) {
-      bs();
-    }
+    ch = GetKeyForPause();
+  } while (!ch && !sess().hangup());
+  for (int i3 = 0; i3 < stripped_size; i3++) {
+    bputch(' ');
   }
+  Left(stripped_size);
+  SystemColor(saved_curatr);
 
   if (!com_freeze) {
     sess().incom(false);

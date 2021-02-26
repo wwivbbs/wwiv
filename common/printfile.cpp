@@ -195,7 +195,7 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
 
   if (sess().bps() > 0) {
     const auto elapsed_ms = duration_cast<milliseconds>(system_clock::now() - start_time);
-    const auto actual_cps = num_written * 1000 / (elapsed_ms.count() + 1);
+    const auto actual_cps = static_cast<long>(num_written) * 1000 / (elapsed_ms.count() + 1);
     VLOG(1) << "Record CPS for file: " << file_path.string() << "; CPS: " << actual_cps;
   }
   return !v.empty();

@@ -244,6 +244,10 @@ public:
 private:
   char GetKeyForPause();
 
+  // This will pause output without ANSI, displaying the [PAUSE] message, and wait a key to be hit.
+  // in pause.cpp
+  void pausescr_noansi();
+
   std::string bputch_buffer_;
   std::vector<std::pair<char, uint8_t>> current_line_;
   int x_{0};

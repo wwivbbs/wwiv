@@ -357,8 +357,8 @@ class User final {
    * Returns the real name if exists, or handle if no real name exists.
    */
   [[nodiscard]] std::string real_name() const {
-    auto rn = std::string(reinterpret_cast<const char*>(data.realname));
-    return (rn.empty()) ? name() : rn;
+    const auto rn = std::string(reinterpret_cast<const char*>(data.realname));
+    return rn.empty() ? name() : rn;
   }
 
   /**

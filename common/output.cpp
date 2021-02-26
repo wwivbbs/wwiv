@@ -348,11 +348,11 @@ int Output::bputs(const string& text) {
       if (std::isdigit(*it)) {
         const auto color = pipecode_int(it, fin, 2);
         if (color < 16) {
-          bputs(MakeSystemColor(color | (curatr() & 0xf0)));
+          SystemColor(color | (curatr() & 0xf0));
         } else {
           const auto bg = static_cast<uint8_t>(color << 4);
           const uint8_t fg = curatr() & 0x0f;
-          bputs(MakeSystemColor(bg | fg));
+          SystemColor(bg | fg);
         }
       } else if (*it == '@' || *it == '{' || *it == '[') {
         auto r = ctx.interpret(it, fin);
@@ -367,7 +367,7 @@ int Output::bputs(const string& text) {
       } else if (*it == '#') {
         ++it;
         const auto color = pipecode_int(it, fin, 1);
-        bputs(MakeColor(color));
+        Color(color);
       } else {
         bputch('|', true);
       }
@@ -377,7 +377,7 @@ int Output::bputs(const string& text) {
       if (it == fin) { bputch(CC, true);  break; }
       const unsigned char c = *it++;
       if (c >= SPACE && c <= 126) {
-        bputs(MakeColor(c - '0'));
+        Color(c-'0');
       }
     }
     else if (*it == CO) {
