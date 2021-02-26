@@ -913,7 +913,10 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
     LOG(ERROR) << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
 
+  const auto network_log_side = side_ == BinkSide::ORIGINATING ? NetworkSide::TO : NetworkSide::FROM;
+  NetworkLog net_log(config_->gfiles_directory());
   const auto end_time = system_clock::now();
+  const auto log_seconds = duration_cast<seconds>(end_time - start_time);
   if (remote_.network().type == network_type_t::wwivnet) {
     // Handle WWIVnet inbound files.
     if (file_manager_) {
@@ -925,13 +928,9 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
     }
 
     // Log to net.log
-    const auto sec = duration_cast<seconds>(end_time - start_time);
     // Update WWIVnet net.log and contact.net for WWIVnet connections.
-    const auto network_log_side =
-        side_ == BinkSide::ORIGINATING ? NetworkSide::TO : NetworkSide::FROM;
-    NetworkLog net_log(config_->gfiles_directory());
     net_log.Log(system_clock::to_time_t(start_time), network_log_side, remote_.wwivnet_node(),
-                bytes_sent_, bytes_received_, sec, remote_.network_name());
+                bytes_sent_, bytes_received_, log_seconds, remote_.network_name());
 
     // Update contact.net
     Contact c(config_->network(remote_.network_name()), true);
@@ -942,6 +941,7 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
       c.add_connect(remote_.wwivnet_node(), dt, bytes_sent_, bytes_received_);
     }
   } else {
+
     // Handle FTN inbound files.
     if (file_manager_) {
       // file_manager_ is null in some tests (BinkpTest).
@@ -951,6 +951,11 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
         System(cmdline.bindir(), StrCat("networkc .", network_number, " --v=", config_->verbose()));
       }
     }
+
+    // Log to net.log using fake outbound node (32675)
+    net_log.Log(system_clock::to_time_t(start_time), network_log_side, FTN_FAKE_OUTBOUND_NODE,
+                bytes_sent_, bytes_received_, log_seconds, remote_.network_name());
+
   }
 
   // Cleanup receive directory if it's not empty.
