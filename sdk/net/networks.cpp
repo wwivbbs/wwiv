@@ -49,6 +49,8 @@ Networks::Networks(const Config& config)
 
   if (!File::Exists(FilePath(datadir_, NETWORKS_JSON)) &&
       !File::Exists(FilePath(datadir_, NETWORKS_DAT))) {
+    // Nothing to do.
+    initialized_ = true;
     return;
   }
 
