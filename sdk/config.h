@@ -49,6 +49,10 @@ struct newuser_config_t {
   newuser_item_type_t use_email_address{newuser_item_type_t::required};
 };
 
+struct system_toggles_t {
+  
+};
+
 struct validation_config_t {
   // Friendly name of the validation type.
   std::string name;
@@ -164,6 +168,9 @@ struct config_t {
   uint16_t script_flags;
   // path for menu dir
   std::string menudir;
+
+  // System toggles (on/off)
+  system_toggles_t
 };
 
 class Config final {
