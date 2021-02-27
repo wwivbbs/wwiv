@@ -122,10 +122,10 @@ public:
   AddEmailCommand() : BaseEmailSubCommand("add", "Creates/Adds a new email.") {}
 
   bool AddSubCommands() override {
-    add_argument({"title", "email title", ""});
-    add_argument({"from", "user number this email is from", ""});
-    add_argument({"to", "user number to send the email to", ""});
-    add_argument({"date", "message sub name to post on", ""});
+    add_argument({"title", "email title to use", ""});
+    add_argument({"from", "The sender user number of this email", ""});
+    add_argument({"to", "The receiver user number for this email", ""});
+    add_argument({"date", "Date to use in 'Www Mmm dd hh:mm:ss yyyy' format (or empty for current date).", ""});
 
     return true;
   }
@@ -134,7 +134,7 @@ public:
     std::ostringstream ss;
     ss << "Usage:   add --title=\"Welcome\" --from=1 <text filename>"
        << std::endl;
-    ss << "Example: add --from=1 --to=${to_usernum} mymessage.txt" << std::endl;
+    ss << "Example: add --from=1 --to=${to_usernum} welcome_email_text.txt" << std::endl;
     return ss.str();
   }
 
