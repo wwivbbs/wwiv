@@ -550,8 +550,8 @@ static void UpdateLastOnFile() {
         } else {
           bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##" << wwiv::endl;
         }
-        char chLine = (okansi()) ? static_cast<char>('\xCD') : '=';
-        bout << "|#7" << std::string(79, chLine) << wwiv::endl;
+        const auto hz = okansi() ? '\xCD' : '=';
+        bout << "|#7" << std::string(79, hz) << wwiv::endl;
         needs_header = false;
       }
       bout << line << wwiv::endl;

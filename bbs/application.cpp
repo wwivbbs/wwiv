@@ -655,6 +655,8 @@ void Application::Cls() {
   bout.clear_lines_listed();
 }
 
+std::string Application::GetCurrentSpeed() const { return current_speed_; }
+
 std::string Application::network_name() const {
   if (nets_->empty() || network_num_ >= wwiv::stl::ssize(*nets_)) {
     return {};
@@ -834,7 +836,11 @@ int Application::Run(int argc, char* argv[]) {
       // Setting a max of 57600 for the BPS value, by default we use 38400
       // as the default value.
       bps = std::min<int>(cmdline.iarg("bps"), 57600);
-      SetCurrentSpeed(std::to_string(bps));
+      if (xarg == 'S') {
+        SetCurrentSpeed("SSH");
+      } else {
+        SetCurrentSpeed("TELNET");
+      }
       // Set it false until we call LiLo
       user_already_on_ = true;
       ooneuser = true;

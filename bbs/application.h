@@ -158,7 +158,16 @@ public:
   [[nodiscard]] uint16_t GetForcedReadSubNumber() const { return forced_read_subnum_; }
   void SetForcedReadSubNumber(int n) { forced_read_subnum_ = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] std::string GetCurrentSpeed() const { return current_speed_; }
+  /**
+   * Gets the current speed or TELNET for the current user.  This should not ever be
+   * used to compare to a number or anything other than display purposes.
+   */
+  [[nodiscard]] std::string GetCurrentSpeed() const;
+
+  /**
+   * Sets the current speed or TELNET for the current user.  This should not ever be
+   * used to compare to a number or anything other than display purposes.
+   */
   void SetCurrentSpeed(const std::string& s) { current_speed_ = s; }
 
   [[nodiscard]] std::string network_name() const;
