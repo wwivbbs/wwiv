@@ -152,12 +152,6 @@ public:
       return 1;
     }
 
-    auto area = api().OpenEmail();
-    if (!area) {
-      std::clog << "Error opening email message area." << std::endl;
-      return 1;
-    }
-
     const auto filename(remaining().front());
     auto from_usernum = iarg("from_usernum");
     if (from_usernum < 1) {
@@ -166,6 +160,10 @@ public:
     }
     auto from_name = sarg("from");
     auto title = sarg("title");
+    if (title.empty()) {
+      std::clog << "--title must be specified." << std::endl;
+      return 1;
+    }
     auto to_num = iarg("to");
     if (to_num < 1) {
       std::clog << "--to must be user number >= 1" << std::endl;
@@ -181,6 +179,12 @@ public:
         daten = DateTime::from_time_t(mktime(&dt));
         std::clog << "Error parsing date, defaulting to now: " << daten.to_string() << std::endl;
       }
+    }
+
+    auto area = api().OpenEmail();
+    if (!area) {
+      std::clog << "Error opening email message area." << std::endl;
+      return 1;
     }
 
     TextFile text_file(filename, "r");
