@@ -676,6 +676,7 @@ void networks(const wwiv::sdk::Config& config, std::set<int>& need_network3) {
 
       if (result.type == ListBoxResultType::SELECTION) {
         edit_net(config, networks, result.selected);
+        need_network3.insert(result.selected);
       } else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;
       } else if (result.type == ListBoxResultType::HOTKEY) {
