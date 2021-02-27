@@ -387,7 +387,7 @@ void readmail(int mode) {
          << std::string(a()->mail_who_field_len - 4, left[2]) << std::string(1, left[1])
          << std::string(a()->user()->GetScreenChars() - a()->mail_who_field_len - 3, left[2]);
       bout.bpla(ss.str(), &abort);
-    }
+      }
     for (i = 0; (i < mw && !abort); i++) {
       if (!read_same_email(mloc, mw, i, m, 0, 0)) {
         continue;

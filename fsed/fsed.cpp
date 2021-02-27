@@ -53,9 +53,6 @@ static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file
 }
 
 bool fsed(Context& ctx, const std::filesystem::path& path) {
-  const auto saved_mci_enabled = bout.mci_enabled();
-  ScopeExit at_exit([=] { bout.set_mci_enabled(saved_mci_enabled); });
-  bout.disable_mci();
   MessageEditorData data("<<NO USERNAME>>"); // anonymous username
   data.title = path.string();
   FsedModel ed(1000);
@@ -82,8 +79,13 @@ bool fsed(Context& ctx, const std::filesystem::path& path) {
 bool fsed(Context& ctx, std::vector<std::string>& lin, int maxli, MessageEditorData& data,
           bool file) {
   const auto saved_mci_enabled = bout.mci_enabled();
-  ScopeExit at_exit([=] { bout.set_mci_enabled(saved_mci_enabled); });
+  const auto saved_okskey = bin.okskey();
+  ScopeExit at_exit([=] {
+    bout.set_mci_enabled(saved_mci_enabled);
+    bin.okskey(saved_okskey);
+  });
   bout.disable_mci();
+  bin.okskey(false);
 
   FsedModel ed(maxli);
   for (auto l : lin) {
@@ -100,8 +102,13 @@ bool fsed(Context& ctx, std::vector<std::string>& lin, int maxli, MessageEditorD
 
 bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
   const auto saved_mci_enabled = bout.mci_enabled();
-  ScopeExit at_exit([=] { bout.set_mci_enabled(saved_mci_enabled); });
+  const auto saved_okskey = bin.okskey();
+  ScopeExit at_exit([=] {
+    bout.set_mci_enabled(saved_mci_enabled);
+    bin.okskey(saved_okskey);
+  });
   bout.disable_mci();
+  bin.okskey(false);
 
   auto view = create_frame(data, file, &ctx.u());
   ed.set_view(view);

@@ -216,6 +216,8 @@ bool FsedApplication::DoFsed() {
   if (config_->file()) {
     data.title = path.string();
   }
+  // We don't want control-A,D,F to work natively so key bindings will.
+  bin.okskey(false);
   auto save = fsed::fsed(context(), ed, data, config_->file());
   if (!save) {
     return false;
