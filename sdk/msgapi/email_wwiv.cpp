@@ -119,13 +119,14 @@ bool WWIVEmail::AddMessage(const EmailData& data) {
     m.network.network_msg.net_number = static_cast<int8_t>(data.from_network_number);
   }
 
-  auto text = data.text;
+  auto message_text = data.text;
   // WWIV 4.x requires a control-Z to terminate the message, WWIV 5.x
   // does not, and removes it on read.
-  if (text.back() != CZ) {
-    text.push_back(CZ);
+  if (message_text.back() != CZ) {
+    message_text.push_back(CZ);
   }
-  auto msg = savefile(text);
+
+  auto msg = savefile(message_text);
   if (!msg) {
     return false;
   }

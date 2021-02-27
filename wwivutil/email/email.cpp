@@ -124,6 +124,7 @@ public:
   bool AddSubCommands() override {
     add_argument({"title", "email title to use", ""});
     add_argument({"from", "The sender user number of this email", ""});
+    add_argument({"from_usernum", "The sender user name of this email", ""});
     add_argument({"to", "The receiver user number for this email", ""});
     add_argument({"date", "Date to use in 'Www Mmm dd hh:mm:ss yyyy' format (or empty for current date).", ""});
 
@@ -158,9 +159,18 @@ public:
     }
 
     const auto filename(remaining().front());
-    auto from = iarg("from");
+    auto from_usernum = iarg("from_usernum");
+    if (from_usernum < 1) {
+      std::clog << "--from_usernum must be user number >= 1" << std::endl;
+      return 1;
+    }
+    auto from_name = sarg("from");
     auto title = sarg("title");
     auto to_num = iarg("to");
+    if (to_num < 1) {
+      std::clog << "--to must be user number >= 1" << std::endl;
+      return 1;
+    }
     auto daten = DateTime::now();
     auto date_str = sarg("date");
     if (!date_str.empty()) {
@@ -169,6 +179,7 @@ public:
       ss >> std::get_time(&dt, "Www Mmm dd hh:mm:ss yyyy");
       if (!ss.fail()) {
         daten = DateTime::from_time_t(mktime(&dt));
+        std::clog << "Error parsing date, defaulting to now: " << daten.to_string() << std::endl;
       }
     }
 
@@ -178,12 +189,21 @@ public:
 
     EmailData header{};
     header.from_system = 0;
-    header.from_user = static_cast<uint16_t>(from);
+    header.from_user = static_cast<uint16_t>(from_usernum);
     header.title = title;
     header.from_network_number = 0;
     header.user_number = static_cast<uint16_t>(to_num);
     header.daten = daten.to_daten_t();
-    header.text = JoinStrings(lines, "\r\n");
+
+    std::ostringstream ss;
+    if (from_usernum >= 1 && from_name.empty()) {
+      Names names(*config()->config());
+      from_name = names.UserName(from_usernum);
+    }
+    ss << from_name << "\r\n";
+    ss << daten.to_string() << "\r\n";
+    ss << JoinStrings(lines, "\r\n");
+    header.text = ss.str();
 
     return area->AddMessage(header) ? 0 : 1;
   }
