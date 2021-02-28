@@ -49,12 +49,10 @@ bool BaseEmailSubCommand::CreateMessageApi() {
   if (api_) {
     return true;
   }
-  const auto& nets = config()->networks().networks();
-
   const MessageApiOptions options;
   auto* x = new NullLastReadImpl();
   api_ = std::make_unique<WWIVMessageApi>(options, *config()->config(),
-                                          nets, x);
+                                          config()->networks().networks(), x);
   return true;
 }
 
