@@ -25,6 +25,7 @@
 #include "localui/edit_items.h"
 #include "sdk/vardec.h"
 #include "wwivconfig/new_user.h"
+#include "wwivconfig/toggles.h"
 #include "wwivconfig/utility.h"
 #include <cstdint>
 #include <memory>
@@ -211,6 +212,10 @@ void sysinfo1(wwiv::sdk::Config& config) {
   y += 2;
   items.add(new Label("Newuser Settings:"),
             new NewUserSubDialog<wwiv::sdk::newuser_config_t>(config, config.newuser_config(), newuser_settings),
+            1, y);
+  ++y;
+  items.add(new Label("System Toggles:"),
+            new NewUserSubDialog<wwiv::sdk::system_toggles_t>(config, config.toggles(), toggles),
             1, y);
   ++y;
 

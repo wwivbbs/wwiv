@@ -19,6 +19,7 @@ set(COMMON_SOURCES
   "subsdirs.cpp"
   "system_info.cpp"
   "sysop_account.cpp"
+  "toggles.cpp"
   "user_editor.cpp"
   "utility.cpp"
   "wwivconfig.cpp"

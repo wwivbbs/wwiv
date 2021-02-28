@@ -42,7 +42,7 @@ constexpr const char* INI_STR_TERMINAL_CMD = "TERMINAL_CMD";
 
 //---SYSTEM SETTINGS--
 constexpr const char* INI_STR_FORCE_FBACK = "FORCE_FBACK";
-constexpr const char* INI_STR_FORCE_NEWUSER = "FORCE_NEWUSER";
+//constexpr const char* INI_STR_FORCE_NEWUSER = "FORCE_NEWUSER";
 constexpr const char* INI_STR_USE_FORCE_SCAN = "FORCE_SCAN";
 constexpr const char* INI_STR_FORCE_SCAN_SUBNUM = "FORCE_SCAN_SUBNUM";
 //constexpr const char* INI_STR_CHECK_DUP_PHONES = "CHECK_HANGUP";
@@ -50,7 +50,7 @@ constexpr const char* INI_STR_FORCE_SCAN_SUBNUM = "FORCE_SCAN_SUBNUM";
 constexpr const char* INI_STR_POSTTIME_COMPENS = "POSTTIME_COMPENS";
 constexpr const char* INI_STR_SHOW_HIER = "SHOW_HIER";
 constexpr const char* INI_STR_IDZ_DESC = "IDZ_DESC";
-constexpr const char* INI_STR_SETLDATE = "SETLDATE";
+//constexpr const char* INI_STR_SETLDATE = "SETLDATE";
 constexpr const char* INI_STR_READ_CD_IDZ = "READ_CD_IDZ";
 constexpr const char* INI_STR_FSED_EXT_DESC = "FSED_EXT_DESC";
 //constexpr const char* INI_STR_FAST_TAG_RELIST = "FAST_TAG_RELIST";
@@ -63,7 +63,7 @@ constexpr const char* INI_STR_LOG_DOWNLOADS = "LOG_DOWNLOADS";
 //constexpr const char* INI_STR_CLOSE_XFER = "CLOSE_XFER";
 constexpr const char* INI_STR_ALL_UL_TO_SYSOP = "ALL_UL_TO_SYSOP";
 constexpr const char* INI_STR_MSG_TAG = "MSG_TAG";
-constexpr const char* INI_STR_CHAIN_REG = "CHAIN_REG";
+//constexpr const char* INI_STR_CHAIN_REG = "CHAIN_REG";
 constexpr const char* INI_STR_CAN_SAVE_SSM = "CAN_SAVE_SSM";
 constexpr const char* INI_STR_TWO_COLOR_CHAT = "TWO_COLOR_CHAT";
 constexpr const char* INI_STR_ALLOW_ALIASES = "ALLOW_ALIASES";

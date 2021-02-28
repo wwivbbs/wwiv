@@ -865,6 +865,7 @@ static void UpdateLastAddress() {
 
 void logon() {
   if (a()->sess().user_num() < 1) {
+    LOG(ERROR) << "Tried to logon user number < 1";
     a()->Hangup();
     return;
   }
@@ -875,9 +876,13 @@ void logon() {
 
   FixUserLinesAndColors();
   UpdateUserStatsForLogin();
+
   PrintLogonFile();
   UpdateLastOnFile();
-  DisplayLastNetInfo();  // Morgul Added
+
+  if (a()->config()->toggles().lastnet_at_logon) {
+    DisplayLastNetInfo();  // Morgul Added
+  }
   PrintUserSpecificFiles();
 
   read_automessage();

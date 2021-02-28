@@ -89,10 +89,7 @@ static std::string YesNoStringList(bool b, const std::string& yes, const std::st
 }
 
 static void modify_chain_sponsors(int chain_num, chain_t& c) {
-  if (!a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    return;
-  }
-  bool done = false;
+  auto done = false;
   do {
     bout.cls();
     bout.litebar(fmt::format("Editing Chain #{}", chain_num));
@@ -175,40 +172,35 @@ static void modify_chain(ssize_t chain_num) {
     bout << "|#9H) Multi user   : |#2" << YesNoString(c.multi_user) << wwiv::endl;
     bout << "|#9I) Usage        : |#2" << c.usage << wwiv::endl;
     std::string allowed = "QABCDEFGHIKL[]";
-    if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-      const auto& r = c.regby;
-      if (!r.empty()) {
-        bout << "|#9J) Registered by: ";
-        auto need_space = false;
-        for (auto it = std::begin(r); it != std::end(r) && *it != 0; ++it) {
-          User regUser;
-          if (a()->users()->readuser(&regUser, *it)) {
-            if (!need_space) {
-              need_space = true;
-            } else {
-              bout << string(18, ' ');
-            }
-            bout << "|#2" << a()->names()->UserName(*it) << wwiv::endl;
+    const auto& r = c.regby;
+    if (!r.empty()) {
+      bout << "|#9J) Registered by: ";
+      auto need_space = false;
+      for (auto it = std::begin(r); it != std::end(r) && *it != 0; ++it) {
+        User regUser;
+        if (a()->users()->readuser(&regUser, *it)) {
+          if (!need_space) {
+            need_space = true;
+          } else {
+            bout << string(18, ' ');
           }
+          bout << "|#2" << a()->names()->UserName(*it) << wwiv::endl;
         }
-      } else {
-        bout << "|#9J) Registered by: |#2AVAILABLE" << wwiv::endl;
       }
+    } else {
+      bout << "|#9J) Registered by: |#2AVAILABLE" << wwiv::endl;
+    }
 #ifdef _WIN32
-    if (c.exec_mode == chain_exec_mode_t::netfoss || c.exec_mode == chain_exec_mode_t::fossil) {
-      bout << "|#9K) Local CP437  : |08Yes" << wwiv::endl;
-    } else {
-      bout << "|#9K) Local CP437  : |#2" << YesNoString(c.local_console_cp437) << wwiv::endl;
-    }
+  if (c.exec_mode == chain_exec_mode_t::netfoss || c.exec_mode == chain_exec_mode_t::fossil) {
+    bout << "|#9K) Local CP437  : |08Yes" << wwiv::endl;
+  } else {
+    bout << "|#9K) Local CP437  : |#2" << YesNoString(c.local_console_cp437) << wwiv::endl;
+  }
 #endif
-      bout << "|#9L) Pause after  : |#2" << YesNoString(c.pause) << wwiv::endl;
-      bout.nl();
-      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1JL|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
-      allowed.push_back('J');
-    } else {
-      bout.nl();
-      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1I|#7,|#1K-L|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
-    }
+    bout << "|#9L) Pause after  : |#2" << YesNoString(c.pause) << wwiv::endl;
+    bout.nl();
+    bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1JL|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
+    allowed.push_back('J');
     const auto ch = onek(allowed, true);
     switch (ch) {
     case 'Q': {
@@ -286,9 +278,6 @@ static void modify_chain(ssize_t chain_num) {
       c.usage = bin.input_number(c.usage);
     } break;
     case 'J':
-      if (!a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-        break;
-      }
       modify_chain_sponsors(chain_num, c);
       break;
     case 'K': {

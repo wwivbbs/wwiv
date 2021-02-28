@@ -50,7 +50,7 @@ struct newuser_config_t {
 };
 
 struct system_toggles_t {
-  
+  bool lastnet_at_logon{false};
 };
 
 struct validation_config_t {
@@ -170,7 +170,7 @@ struct config_t {
   std::string menudir;
 
   // System toggles (on/off)
-  system_toggles_t
+  system_toggles_t toggles;
 };
 
 class Config final {
@@ -317,8 +317,13 @@ public:
   void newuser_gold(float f) { config_.newusergold = f; }
   // New User password (password needed to create a new user account)
   [[nodiscard]] std::string newuser_password() const { return config_.newuserpw; }
+
   // New user configuration
   [[nodiscard]] newuser_config_t& newuser_config() { return config_.newuser_config; }
+
+  // System Toggles (mostly toggle settings moved from wwiv.ini)
+  [[nodiscard]] system_toggles_t& toggles() { return config_.toggles; }
+
   void newuser_password(const std::string&);
   // New User restrictions given by default when they sign up.
   [[nodiscard]] uint16_t newuser_restrict() const { return config_.newuser_restrict; }

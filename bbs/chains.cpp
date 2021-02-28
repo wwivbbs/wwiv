@@ -97,7 +97,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   bout.nl();
   auto abort = false;
   auto next = false;
-  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && a()->chains->HasRegisteredChains()) {
+  if (a()->chains->HasRegisteredChains()) {
     bout.bpla(fmt::sprintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
 
     if (okansi()) {

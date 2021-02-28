@@ -881,9 +881,7 @@ void ListFiles() {
 }
 
 void NewFileScan() {
-  if (a()->HasConfigFlag(OP_FLAGS_SETLDATE)) {
-    SetNewFileScanDate();
-  }
+  SetNewFileScanDate();
   bool abort = false;
   bool need_title = true;
   bout.nl();
