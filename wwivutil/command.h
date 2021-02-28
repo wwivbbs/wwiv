@@ -47,9 +47,9 @@ public:
 
   [[nodiscard]] sdk::Config* config() const { return config_.get(); }
   [[nodiscard]] bool initialized() const { return initialized_; }
-  [[nodiscard]] sdk::Networks networks() const { return networks_; }
+  [[nodiscard]] const sdk::Networks& networks() const { return networks_; }
   [[nodiscard]] const std::vector<UtilCommand*>& subcommands() const { return subcommands_; }
-  void set_subcommands(std::vector<UtilCommand*> scs) { subcommands_ = scs; }
+  void set_subcommands(std::vector<UtilCommand*>& scs) { subcommands_ = scs; }
 
 private:
   const std::string bbsdir_;

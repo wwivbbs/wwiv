@@ -24,6 +24,7 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include "sdk/msgapi/message_area_wwiv.h"
+
 #include <memory>
 #include <string>
 #include <vector>
