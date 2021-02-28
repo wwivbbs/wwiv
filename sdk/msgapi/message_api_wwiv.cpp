@@ -35,8 +35,8 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::msgapi {
 
-WWIVMessageApi::WWIVMessageApi(const wwiv::sdk::msgapi::MessageApiOptions& options,
-                               const wwiv::sdk::Config& config,
+WWIVMessageApi::WWIVMessageApi(const MessageApiOptions& options,
+                               const Config& config,
                                const std::vector<net_networks_rec>& net_networks,
                                WWIVLastReadImpl* last_read)
     : MessageApi(options, config.root_directory(), config.datadir(), config.msgsdir(),

@@ -53,16 +53,15 @@ class NullLastReadImpl final : public WWIVLastReadImpl {
 
 class WWIVMessageApi final : public MessageApi {
 public:
-  WWIVMessageApi(const wwiv::sdk::msgapi::MessageApiOptions& options,
-                 const wwiv::sdk::Config& config, const std::vector<net_networks_rec>& net_networks,
-                 WWIVLastReadImpl* last_read);
+  WWIVMessageApi(const MessageApiOptions& options, const Config& config,
+                 const std::vector<net_networks_rec>& net_networks, WWIVLastReadImpl* last_read);
 
-  [[nodiscard]] bool Exist(const wwiv::sdk::subboard_t& sub) const override;
+  [[nodiscard]] bool Exist(const subboard_t& sub) const override;
   [[nodiscard]] bool Create(const std::string& name, const std::string& sub_ext,
                       const std::string& text_ext, int subnum);
-  [[nodiscard]] bool Create(const wwiv::sdk::subboard_t& sub, int subnum) override;
+  [[nodiscard]] bool Create(const subboard_t& sub, int subnum) override;
   [[nodiscard]] bool Remove(const std::string& name) override;
-  [[nodiscard]] MessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) override;
+  [[nodiscard]] MessageArea* Open(const subboard_t& sub, int subnum) override;
   [[nodiscard]] std::unique_ptr<WWIVEmail> OpenEmail();
   [[nodiscard]] uint32_t last_read(int area) const;
   void set_last_read(int area, uint32_t last_read);

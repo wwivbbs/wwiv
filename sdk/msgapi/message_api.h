@@ -47,10 +47,10 @@ public:
   virtual ~MessageApi() = default;
   MessageApi(
     const MessageApiOptions& options,
-    const std::string& root_directory,
-    const std::string& subs_directory,
-    const std::string& messages_directory,
-    const std::vector<net_networks_rec>& net_networks);
+    std::string root_directory,
+    std::string subs_directory,
+    std::string messages_directory,
+    std::vector<net_networks_rec> net_networks);
 
   /** Checks to see if the files for a subboard exist. */
   [[nodiscard]] virtual bool Exist(const wwiv::sdk::subboard_t& sub) const = 0;

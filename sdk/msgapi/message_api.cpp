@@ -19,6 +19,7 @@
 
 #include "core/log.h"
 #include <string>
+#include <utility>
 
 namespace wwiv::sdk::msgapi {
 
@@ -35,12 +36,12 @@ int MessageArea::max_messages() const {
   return max_messages_;
 }
 
-MessageApi::MessageApi(const wwiv::sdk::msgapi::MessageApiOptions& options,
-                       const std::string& root_directory, const std::string& subs_directory,
-                       const std::string& messages_directory,
-                       const std::vector<net_networks_rec>& net_networks)
-    : options_(options), root_directory_(root_directory), subs_directory_(subs_directory),
-      messages_directory_(messages_directory), net_networks_(net_networks) {}
+MessageApi::MessageApi(const MessageApiOptions& options, std::string root_directory,
+                       std::string subs_directory, std::string messages_directory,
+                       std::vector<net_networks_rec> net_networks)
+    : options_(options), root_directory_(std::move(root_directory)),
+      subs_directory_(std::move(subs_directory)),
+      messages_directory_(std::move(messages_directory)), net_networks_(std::move(net_networks)) {}
 
 MessageArea* MessageApi::CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subnum) {
   if (!Exist(sub)) {
