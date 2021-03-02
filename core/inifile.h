@@ -22,6 +22,7 @@
 #include <filesystem>
 #include <initializer_list>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -90,7 +91,7 @@ IniFile(const IniFile& other) = delete;
 IniFile& operator=(const IniFile& other) = delete;
 
 private:
-  const char* GetValue(const std::string& key, const char* default_value = nullptr) const;
+  std::optional<std::string> GetValue(const std::string& key) const;
 
   [[nodiscard]] std::string GetStringValue(const std::string& key, const std::string& default_value) const;
   [[nodiscard]] long GetNumericValueT(const std::string& key, long default_value = 0) const;

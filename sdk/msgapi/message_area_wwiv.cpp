@@ -28,11 +28,12 @@
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/msgapi/message_api_wwiv.h"
-#include "sdk/net/packets.h"
 #include "sdk/ssm.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/packets.h"
+
 #include <memory>
 #include <string>
 #include <utility>

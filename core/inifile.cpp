@@ -40,11 +40,11 @@ namespace {
  * will be set to the string value of that value name. If *val has been set
  * to something, then this function returns 1, else it returns 0.
  */
-bool StringToBoolean(const char* p) {
-  if (!p) {
+bool StringToBoolean(const std::string& s) {
+  if (s.empty()) {
     return false;
   }
-  const auto ch = to_upper_case<char>(*p);
+  const auto ch = to_upper_case<char>(s.front());
   return ch == 'Y' || ch == 'T' || ch == '1';
 }
 
@@ -84,11 +84,10 @@ static bool ParseIniFile(const std::filesystem::path& filename, std::map<string,
         // not a line of the form full_key = value [; comment]
         continue;
       }
-      const auto key = StringTrim(line.substr(0, equals));
+      const auto partial_key = StringTrim(line.substr(0, equals));
       const auto value = StringTrim(line.substr(equals + 1));
-
-      const auto real_key = StrCat(section, ".", key);
-      data[real_key] = value;
+      const auto full_key = StrCat(section, ".", partial_key);
+      data[full_key] = value;
     }
   }
   return true;
@@ -125,31 +124,37 @@ IniFile::~IniFile() {
 void IniFile::Close() noexcept {
 }
 
-const char* IniFile::GetValue(const string& raw_key, const char* default_value) const {
+std::optional<std::string> IniFile::GetValue(const string& raw_key) const {
   for (const auto& section : sections_) {
     const auto full_key = StrCat(section, ".", raw_key);
     const auto& it = data_.find(full_key);
     if (it != data_.end()) {
-      return it->second.c_str();
+      return it->second;
     }
   }
-  return default_value;
+  return std::nullopt;
 }
 
 std::string IniFile::
 GetStringValue(const std::string& key, const std::string& default_value) const {
-  const auto* s = GetValue(key);
-  return s != nullptr ? s : default_value;
+  if (const auto s = GetValue(key)) {
+    return s.value();
+  }
+  return default_value;
 }
 
 bool IniFile::GetBooleanValue(const string& key, bool default_value) const {
-  const auto* s = GetValue(key);
-  return s != nullptr ? StringToBoolean(s) : default_value;
+  if (const auto s = GetValue(key)) {
+    return StringToBoolean(s.value());
+  }
+  return default_value;
 }
 
 long IniFile::GetNumericValueT(const string& key, long default_value) const {
-  const auto* s = GetValue(key);
-  return s != nullptr ? wwiv::strings::to_number<long>(s) : default_value;
+  if (const auto s = GetValue(key)) {
+    return wwiv::strings::to_number<long>(s.value());
+  }
+  return default_value;
 }
 
 std::string IniFile::full_pathname() const noexcept {
@@ -170,6 +175,7 @@ std::string IniFile::full_pathname() const noexcept {
   }
   auto list = SplitString(s, ",");
   std::vector<int> out;
+  out.reserve(list.size());
   for (const auto& i : list) {
     out.push_back(wwiv::strings::to_number<long>(i));
   }

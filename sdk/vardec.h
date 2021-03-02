@@ -938,7 +938,6 @@ struct languagerec {
 
 #define conf_status_ansi 0x0001    // ANSI required
 #define conf_status_wwivreg 0x0002 // WWIV regnum required
-#define conf_status_offline 0x0004 // conference is "offline"
 
 constexpr int MAX_CONFERENCES = 26;
 constexpr int WWIV_MESSAGE_TITLE_LENGTH = 72;

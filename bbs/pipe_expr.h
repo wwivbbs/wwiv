@@ -19,8 +19,6 @@
 #define INCLUDED_BBS_PIPE_EXPR_H
 
 #include "common/context.h"
-#include "common/macro_context.h"
-#include "sdk/ansi/ansi.h"
 #include <string>
 namespace wwiv::bbs {
 

@@ -19,7 +19,6 @@
 #include "bbs/menus/config_menus.h"
 
 #include "bbs/bbs.h"
-#include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
 #include "bbs/newuser.h"
 #include "bbs/sysoplog.h"
@@ -31,15 +30,11 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
-#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/menus/menu.h"
 
-#include <memory>
 #include <string>
 
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -51,7 +46,7 @@ static std::filesystem::path GetMenuDirectory() {
   return FilePath(a()->sess().dirs().language_directory(), "menus");
 }
 
-static std::filesystem::path GetMenuDirectory(const string menu_path) {
+static std::filesystem::path GetMenuDirectory(const std::string& menu_path) {
   return FilePath(GetMenuDirectory(), menu_path);
 }
 
@@ -63,7 +58,7 @@ static bool ValidateMenuSet(const std::string& menu_set) {
 static std::map<int, std::string> ListMenuDirs() {
   std::map<int, std::string> result;
   const auto menu_directory = GetMenuDirectory();
-  MenuDescriptions descriptions(menu_directory);
+  const MenuDescriptions descriptions(menu_directory);
 
   bout.nl();
   bout << "|#1Available Menus Sets" << wwiv::endl
@@ -74,7 +69,7 @@ static std::map<int, std::string> ListMenuDirs() {
 
   for (const auto& m : menus) {
     const auto& filename = m.name;
-    const string description = descriptions.description(filename);
+    const std::string description = descriptions.description(filename);
     bout.bprintf("|#2#%d |#1%-8.8s |#9%-60.60s\r\n", num, filename, description);
     result.emplace(num, filename);
     ++num;
@@ -84,8 +79,8 @@ static std::map<int, std::string> ListMenuDirs() {
   return result;
 }
 
-void MenuSysopLog(const string& msg) {
-  const string log_message = StrCat("*MENU* : ", msg);
+void MenuSysopLog(const std::string& msg) {
+  const std::string log_message = StrCat("*MENU* : ", msg);
   sysoplog() << log_message;
   bout << log_message << wwiv::endl;
 }
@@ -101,7 +96,7 @@ void ConfigUserMenuSet() {
     bout << "|#12|#9) Use hot keys :|#2 " << (a()->user()->hotkeys() ? "Yes" : "No ") << wwiv::endl;
     bout.nl();
     bout << "|#9(|#2Q|#9=|#1Quit|#9) : ";
-    char chKey = onek("Q12?");
+    const auto chKey = onek("Q12?");
 
     switch (chKey) {
     case 'Q':
@@ -161,11 +156,11 @@ void ConfigUserMenuSet() {
 MenuDescriptions::MenuDescriptions(const std::filesystem::path& menupath) : menupath_(menupath) {
   TextFile file(FilePath(menupath, DESCRIPT_ION), "rt");
   if (file.IsOpen()) {
-    string s;
+    std::string s;
     while (file.ReadLine(&s)) {
       StringTrim(&s);
-      string::size_type space = s.find(' ');
-      if (s.empty() || space == string::npos) {
+      const auto space = s.find(' ');
+      if (s.empty() || space == std::string::npos) {
         continue;
       }
       descriptions_.emplace(ToStringLowerCase(s.substr(0, space)),
