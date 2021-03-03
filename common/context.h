@@ -286,6 +286,15 @@ private:
   int system_bps_{0};
 };
 
+/**
+ * WWIV Full Context.
+ *
+ * This is a smaller context class than what the Application class contains,
+ * and should be enough to run displays and most activities outside of the BBS.
+ *
+ * This holds other subcontexts (like SessionContext), as well as the current
+ * User and Config used by the BBS.
+ */
 class Context {
 public:
   virtual ~Context() = default;

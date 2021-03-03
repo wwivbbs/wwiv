@@ -143,7 +143,7 @@ std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
   const auto& eslrec = context_.config().sl(eff_sl);
   p["user"] = std::make_unique<acs::UserValueProvider>(context_.config(), context_.u(), eff_sl, eslrec);
 
-  const auto parts = wwiv::strings::SplitString(t.lexeme, ".", true);
+  const auto parts = SplitString(t.lexeme, ".", true);
   if (const auto& iter = p.find(parts.front()); iter != std::end(p)) {
     return iter->second->value(parts.at(1))->as_string();  
   }

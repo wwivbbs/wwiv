@@ -33,12 +33,13 @@ class BbsMacroContextTest : public ::testing::Test {
 protected:
   void SetUp() override {
     helper.SetUp();
-    PipeEval pipe_eval(a()->context());
-    bc = std::make_unique<BbsMacroContext>(&a()->context(), pipe_eval);
+    pipe_eval = std::make_unique<PipeEval>(a()->context());
+    bc = std::make_unique<BbsMacroContext>(&a()->context(), *pipe_eval);
   }
 
   BbsHelper helper{};
   std::unique_ptr<BbsMacroContext> bc;
+  std::unique_ptr<PipeEval> pipe_eval;
 };
 
 TEST_F(BbsMacroContextTest, Move_Up2) {
@@ -114,7 +115,7 @@ TEST_F(BbsMacroContextTest, Expr_WithAdditional) {
 }
 
 TEST_F(BbsMacroContextTest, JustText) {
-  std::string s1 = "hello";
+  const std::string s1 = "hello";
   auto it = std::cbegin(s1);
   const auto end = std::cend(s1);
   const auto i = bc->interpret(it, end);
@@ -122,4 +123,34 @@ TEST_F(BbsMacroContextTest, JustText) {
   EXPECT_EQ(i.text, "h");
   EXPECT_EQ('e', *it);
   EXPECT_EQ(it, std::cbegin(s1) + 1);
+}
+
+TEST_F(BbsMacroContextTest, Variable) {
+  const std::string s1 = "{user.name}";
+  auto it = std::cbegin(s1);
+  helper.user()->set_name("Rushfan");
+  helper.user()->sl(200);
+  helper.sess().effective_sl(200);
+  const auto i = bc->interpret(it, std::cend(s1));
+  EXPECT_EQ(i.text, "Rushfan");
+}
+
+TEST_F(BbsMacroContextTest, If) {
+  const std::string s1 = R"({if "user.sl >= 200", "over", "under"})";
+  helper.user()->set_name("Rushfan");
+  helper.user()->real_name("RealName");
+  {
+    helper.user()->sl(200);
+    helper.sess().effective_sl(200);
+    auto it = std::cbegin(s1);
+    const auto i = bc->interpret(it, std::cend(s1));
+    EXPECT_EQ(i.text, "over");
+  }
+  {
+    helper.user()->sl(199);
+    helper.sess().effective_sl(199);
+    auto it = std::cbegin(s1);
+    const auto i = bc->interpret(it, std::cend(s1));
+    EXPECT_EQ(i.text, "under");
+  }
 }

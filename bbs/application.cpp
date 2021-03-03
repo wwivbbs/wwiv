@@ -172,9 +172,15 @@ Application::~Application() {
 SessionContext& Application::sess() { return session_context_; }
 const SessionContext& Application::sess() const { return session_context_; }
 
-Context& Application::context() { return *context_; }
+Context& Application::context() {
+  CHECK(context_);
+  return *context_;
+}
 
-const Context& Application::context() const { return *context_; }
+const Context& Application::context() const {
+  CHECK(context_);
+  return *context_;
+}
 
 LocalIO* Application::localIO() const { return local_io_.get(); }
 
@@ -203,14 +209,16 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
       LOG(ERROR) << "Key file doesn't exist. Will try to create it.";
       if (!key.Create()) {
         LOG(ERROR) << "Unable to create or open key file!.  SSH will be disabled!" << endl;
-        type = CommunicationType::TELNET;
+        comm_ = std::make_unique<RemoteSocketIO>(nHandle, true);
+        break;
       }
     }
     if (!key.Open()) {
       LOG(ERROR) << "Unable to open key file!. Did you change your sytem pw?" << endl;
       LOG(ERROR) << "If so, delete " << key_file;
       LOG(ERROR) << "SSH will be disabled!";
-      type = CommunicationType::TELNET;
+      comm_ = std::make_unique<RemoteSocketIO>(nHandle, true);
+      break;
     }
     comm_ = std::make_unique<wwiv::bbs::IOSSH>(nHandle, key);
   } break;
@@ -925,8 +933,7 @@ int Application::Run(int argc, char* argv[]) {
   }
 
   if (cmdline.barg("beginday")) {
-    const auto status = status_manager()->get_status();
-    if (date() != status->last_date()) {
+    if (const auto status = status_manager()->get_status(); date() != status->last_date()) {
       // This may be another node, but the user explicitly wanted to run the begin-day
       // event from the commandline, so we'll just check the date.
       beginday(true);
@@ -949,8 +956,7 @@ int Application::Run(int argc, char* argv[]) {
     sess().hangup(false);
   }
 
-  const auto menu_commands = cmdline.arg("menu_commands");
-  if (!menu_commands.is_default()) {
+  if (const auto menu_commands = cmdline.arg("menu_commands"); !menu_commands.is_default()) {
     wwiv::bbs::menus::PrintMenuCommands(menu_commands.as_string());
     return 0;
   }
@@ -959,8 +965,7 @@ int Application::Run(int argc, char* argv[]) {
     LOG(INFO) << "Executing Sysop Command: " << sysop_cmd;
 
     set_at_wfc(true);
-    const auto cmd = static_cast<char>(std::toupper(sysop_cmd.front()));
-    switch (cmd) {
+    switch (static_cast<char>(std::toupper(sysop_cmd.front()))) {
     case 'B':
       boardedit();
       break;
@@ -1184,47 +1189,63 @@ const files::directory_t& Application::current_dir() const {
  return dirs()[current_user_dir().subnum];
 }
 
-Subs& Application::subs() { return *subs_; }
+Subs& Application::subs() {
+  CHECK(subs_);
+  return *subs_;
+}
 
-const Subs& Application::subs() const { return *subs_; }
+const Subs& Application::subs() const {
+  CHECK(subs_);
+  return *subs_;
+}
 
 Conferences& Application::all_confs() {
+  CHECK(all_confs_);
   return *all_confs_;
 }
 
 const Conferences& Application::all_confs() const {
+  CHECK(all_confs_);
   return *all_confs_;
 }
 
 files::Dirs& Application::dirs() {
+  CHECK(dirs_);
   return *dirs_;
 }
 
 const files::Dirs& Application::dirs() const {
+  CHECK(dirs_);
   return *dirs_;
 }
 
 Networks& Application::nets() {
+  CHECK(nets_);
   return *nets_;
 }
 
 const Networks& Application::nets() const {
+  CHECK(nets_);
   return *nets_;
 }
 
 GFiles& Application::gfiles() {
+  CHECK(gfiles_);
   return *gfiles_;
 }
 
 const GFiles& Application::gfiles() const {
+  CHECK(gfiles_);
   return *gfiles_;
 }
 
-wwiv::sdk::Instances& Application::instances() {
+Instances& Application::instances() {
+  CHECK(instances_);
   return *instances_;
 }
 
-const wwiv::sdk::Instances& Application::instances() const {
+const Instances& Application::instances() const {
+  CHECK(instances_);
   return *instances_;
 }
 
@@ -1292,5 +1313,5 @@ void Application::Hangup() {
   }
   sess().hangup(true);
   VLOG(1) << "Invoked Hangup()";
-  throw wwiv::common::hangup_error(user()->name());
+  throw hangup_error(user()->name());
 }

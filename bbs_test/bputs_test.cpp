@@ -99,3 +99,33 @@ TEST_F(BPutsTest, RepeatedPipe_WithEndLine) {
   EXPECT_EQ(kAnsiHelloWorldUnix, helper.io()->rcaptured());
 #endif
 }
+
+TEST_F(BPutsTest, IfPipe_Yes) {
+  const std::string s1 = R"(|{if "user.sl >= 200", "|@N", "|@R"})";
+  helper.user()->set_name("Rushfan");
+  helper.user()->real_name("RealName");
+  helper.user()->sl(200);
+  helper.sess().effective_sl(200);
+  bout.bputs(s1);
+  EXPECT_EQ("Rushfan", helper.io()->captured());
+}
+
+TEST_F(BPutsTest, IfPipe_No) {
+  const std::string s1 = R"(|{if "user.sl >= 200", "|@N", "|@R"})";
+  helper.user()->set_name("Rushfan");
+  helper.user()->real_name("RealName");
+  helper.user()->sl(100);
+  helper.sess().effective_sl(100);
+  bout.bputs(s1);
+  EXPECT_EQ("RealName", helper.io()->captured());
+}
+
+TEST_F(BPutsTest, IfPipe_Embedded) {
+  const std::string s1 = R"(Hello |{if "user.sl >= 200", "|@N", "|@R"})";
+  helper.user()->set_name("Rushfan");
+  helper.user()->real_name("RealName");
+  helper.user()->sl(200);
+  helper.sess().effective_sl(200);
+  bout.bputs(s1);
+  EXPECT_EQ("Hello Rushfan", helper.io()->captured());
+}

@@ -1198,10 +1198,10 @@ void NewUserDataEntry(const newuser_config_t& nc) {
   auto& u = *a()->user();
 
   bout.newline = false;
-  auto saved_topdata = a()->localIO()->topdata();
+  const auto saved_topdata = a()->localIO()->topdata();
   a()->localIO()->topdata(LocalIO::topdata_t::none);
   a()->UpdateTopScreen();
-  char letter = 'A';
+  auto letter = 'A';
   std::map<char, NewUserItem> nu_items;
   std::map<char, std::function<void(User&)>> clr_items;
 
@@ -1266,13 +1266,12 @@ void NewUserDataEntry(const newuser_config_t& nc) {
   do {
     bout.cls();
     bout.litebar(StrCat(a()->config()->system_name(), " New User Registration"));
-    bool need_redraw = false;
+    auto need_redraw = false;
     for (auto& kv : nu_items) {
       const auto is_first = letters.find(kv.first) == std::end(letters);
       NewUserContext context(kv.first, u, kv.second.state, is_first);
       letters.insert(kv.first);
-      auto result = kv.second.fn(context);
-      if (result == NewUserItemResult::need_redraw) {
+      if (const auto result = kv.second.fn(context); result == NewUserItemResult::need_redraw) {
         need_redraw = true;
         break;
       }

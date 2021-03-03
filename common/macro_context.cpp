@@ -67,6 +67,8 @@ Interpreted MacroContext::interpret(std::string::const_iterator& it,
       const auto ch = *it++;
       text.push_back(ch);
       if (ch == '}') {
+        // TODO(rushfan): Maybe here is where we should handle cases where the expressions
+        // return Pipe codes (like {if "system.use_realnames", "|@N", "|@n"}
         return evaluate_expression(text);
       }
     }

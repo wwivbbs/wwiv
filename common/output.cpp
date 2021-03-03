@@ -257,7 +257,7 @@ void Output::mpl(int length) {
   }
   Color(4);
   bputs(string(length, ' '));
-  bout.Left(length);
+  Left(length);
 }
 
 int Output::PutsXY(int x, int y, const std::string& text) {
@@ -319,7 +319,9 @@ static int pipecode_int(T& it, const T end, int num_chars) {
 
 int Output::bputs(const string& text) {
   core::bus().invoke<CheckForHangupEvent>();
-  if (text.empty() || sess().hangup()) { return 0; }
+  if (text.empty() || sess().hangup()) {
+    return 0;
+  }
   auto& ctx = macro_context_provider_();
 
   auto it = std::cbegin(text);
@@ -328,12 +330,11 @@ int Output::bputs(const string& text) {
   auto num_written = 0;
   const auto cps = sess().bps() / 10;
   while (it != fin) {
-    ++num_written;
     if (cps > 0) {
       while (std::chrono::duration_cast<std::chrono::milliseconds>(
                  std::chrono::system_clock::now() - start_time)
                  .count() < (num_written * 1000 / cps)) {
-        bout.flush();
+        flush();
         os::sleep_for(std::chrono::milliseconds(10));
       }
     }
@@ -342,12 +343,11 @@ int Output::bputs(const string& text) {
     if (*it == '|') {
       ++it;
       if (it == fin) {
-        bputch('|', true);
+        num_written += bputch('|', true);
         break;
       }
       if (std::isdigit(*it)) {
-        const auto color = pipecode_int(it, fin, 2);
-        if (color < 16) {
+        if (const auto color = pipecode_int(it, fin, 2); color < 16) {
           SystemColor(color | (curatr() & 0xf0));
         } else {
           const auto bg = static_cast<uint8_t>(color << 4);
@@ -355,11 +355,14 @@ int Output::bputs(const string& text) {
           SystemColor(bg | fg);
         }
       } else if (*it == '@' || *it == '{' || *it == '[') {
-        auto r = ctx.interpret(it, fin);
-        if (r.cmd == interpreted_cmd_t::text) {
+        if (auto r = ctx.interpret(it, fin); r.cmd == interpreted_cmd_t::text) {
           // Don't use bout here since we can loop.
-          for (const auto rich : r.text) {
-            bputch(rich, true);
+          if (r.needs_reinterpreting) {
+            num_written += bputs(r.text);
+          } else {
+            for (const auto rich : r.text) {
+              num_written += bputch(rich, true);
+            }
           }
         } else if (r.cmd == interpreted_cmd_t::movement) {
           do_movement(r);
@@ -369,34 +372,42 @@ int Output::bputs(const string& text) {
         const auto color = pipecode_int(it, fin, 1);
         Color(color);
       } else {
-        bputch('|', true);
+        num_written += bputch('|', true);
       }
     }
     else if (*it == CC) {
       ++it;
-      if (it == fin) { bputch(CC, true);  break; }
-      const unsigned char c = *it++;
-      if (c >= SPACE && c <= 126) {
+      if (it == fin) {
+        num_written += bputch(CC, true);
+        break;
+      }
+      if (const unsigned char c = *it++; c >= SPACE && c <= 126) {
         Color(c-'0');
       }
     }
     else if (*it == CO) {
       ++it;
-      if (it == fin) { bputch(CO, true);  break; }
+      if (it == fin) {
+        num_written += bputch(CO, true);
+        break;
+      }
       ++it;
-      if (it == fin) { bputch(CO, true);  break; }
+      if (it == fin) {
+        num_written += bputch(CO, true);
+        break;
+      }
       auto s = ctx.interpret_macro_char(*it++);
-      bout.bputs(s);
+      num_written += bputs(s);
     } else if (it == fin) { 
       break; 
     }
     else { 
-      bputch(*it++, true);
+      num_written += bputch(*it++, true);
     }
   }
 
   flush();
-  return ssize(stripcolors(text));
+  return num_written;
 }
 
 // This one does a newline.  Since it used to be pla. Should make

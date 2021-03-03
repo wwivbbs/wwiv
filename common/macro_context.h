@@ -41,6 +41,7 @@ struct Interpreted {
   bool clreol{false};
   bool clrbol{false};
   int nl{0};
+  bool needs_reinterpreting{false};
 };
 
 /**

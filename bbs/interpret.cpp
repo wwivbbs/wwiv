@@ -164,11 +164,11 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case 'U':                               // Files uploaded
       return to_string(context_->u().uploaded());
     case 'u':  {                             // Current sub
-      const auto subnum = a()->current_user_sub().subnum;
-      if (subnum < 0 || subnum >= wwiv::stl::ssize(a()->subs())) {
-        return {};
+      if (const auto subnum = a()->current_user_sub().subnum;
+          subnum >= 0 && subnum < wwiv::stl::ssize(a()->subs())) {
+        return a()->subs().sub(subnum).name;
       }
-      return a()->subs().sub(a()->current_user_sub().subnum).name;
+      return {};
     }
     case 'W':                               // Total # of messages in sub
       return to_string(a()->GetNumMessagesInCurrentMessageArea());
@@ -257,6 +257,7 @@ wwiv::common::Interpreted BbsMacroContext::interpret_string(const std::string& s
 wwiv::common::Interpreted BbsMacroContext::evaluate_expression(const std::string& expr) const {
   wwiv::common::Interpreted r{};
   r.text = pipe_eval_.eval(expr);
+  r.needs_reinterpreting = true;
   return r;
 }
 

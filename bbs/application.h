@@ -116,9 +116,25 @@ public:
   ~Application() override;
 
   [[nodiscard]] wwiv::sdk::User* user() const { return thisuser_.get(); }
+
+  // ReSharper disable once CppMemberFunctionMayBeConst
   void set_user_for_test(wwiv::sdk::User& u) { *thisuser_ = u; }
+
+   /**
+    * Provides a mutable  context class for submodules that operate on it. The
+    * context should be enough to run displays and most activities outside of the BBS.
+    */
   [[nodiscard]] wwiv::common::Context& context();
+   /**
+    * Provides a constant context class for submodules that operate on it. The
+    * context should be enough to run displays and most activities outside of the BBS.
+    */
   [[nodiscard]] const wwiv::common::Context& context() const;
+
+   /**
+    * Provides a mutable session context class for submodules that operate on it.
+    * This can also be obtained via the Context class.
+    */
   [[nodiscard]] wwiv::common::SessionContext& sess();
   [[nodiscard]] const wwiv::common::SessionContext& sess() const;
 
