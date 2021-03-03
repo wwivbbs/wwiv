@@ -184,7 +184,7 @@ public:
 
   Config() = delete;
   explicit Config(Config&& config) = delete;
-  Config& operator=(const Config&) = delete;
+  Config& operator=(const Config&);
   Config& operator=(Config&&) = delete;
 
   // members
@@ -236,7 +236,7 @@ public:
   /**
    * Returns the scrarch directory for a given node.
    */
-  std::filesystem::path scratch_dir(int node) const;
+  [[nodiscard]] std::filesystem::path scratch_dir(int node) const;
   
   [[nodiscard]] int num_instances() const { return config_.num_instances; }
   void num_instances(int n) { config_.num_instances = n; }
@@ -263,7 +263,7 @@ public:
   [[nodiscard]] float post_to_call_ratio() const { return config_.post_call_ratio; }
   void post_to_call_ratio(float f) { config_.post_call_ratio = f; }
   // Max number of emails waiting allowed
-  [[nodiscard]] int max_waiting() const { return static_cast<int>(config_.maxwaiting); }
+  [[nodiscard]] int max_waiting() const { return config_.maxwaiting; }
   void max_waiting(int d) { config_.maxwaiting = static_cast<uint8_t>(d); }
   // Directory number where uploads go by default.
   [[nodiscard]] int new_uploads_dir() const { return config_.newuploads; }
@@ -370,7 +370,7 @@ private:
   void update_paths();
 
   bool initialized_{false};
-  const std::filesystem::path root_directory_;
+  std::filesystem::path root_directory_;
   bool versioned_config_dat_{false};
   // Is this config read only (meaning it was loaded from a dat file).
   bool readonly_{true};

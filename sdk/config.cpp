@@ -58,6 +58,14 @@ Config::Config(std::filesystem::path root_directory) : root_directory_(std::move
   }
 }
 
+Config& Config::operator=(const Config& o) {
+  initialized_ = true;
+  root_directory_ = o.root_directory_;
+  config_ = o.config_;
+  update_paths();
+  return *this;
+}
+
 bool Config::Load() {
   {
     JsonFile f(FilePath(root_directory_, "config.json"), "config", config_, 1);
@@ -155,11 +163,17 @@ void Config::set_paths_for_test(const std::string& datadir, const std::string& m
                                 const std::string& gfilesdir, const std::string& menudir,
                                 const std::string& dloadsdir, const std::string& scriptdir) {
   datadir_ = datadir;
+  config_.datadir = datadir;
   msgsdir_ = msgsdir;
+  config_.msgsdir = msgsdir;
   gfilesdir_ = gfilesdir;
+  config_.gfilesdir = gfilesdir;
   menudir_ = menudir;
+  config_.menudir = menudir;
   dloadsdir_ = dloadsdir;
+  config_.dloadsdir = dloadsdir;
   script_dir_ = scriptdir;
+  config_.scriptdir = scriptdir;
 }
 
 static void set_script_flag(uint16_t& data, uint16_t flg, bool on) {

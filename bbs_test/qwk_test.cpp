@@ -56,9 +56,9 @@ TEST_F(QwkTest, ReadQwkConfig_Read_NoBulletins) {
 
   qwk_config qc{};
   qc.packet_name = "PAKTNAME";
-  write_qwk_cfg(*helper.config_, qc);
+  write_qwk_cfg(helper.config(), qc);
 
-  auto q = read_qwk_cfg(*helper.config_);
+  auto q = read_qwk_cfg(helper.config());
   EXPECT_EQ("PAKTNAME", q.packet_name);
   EXPECT_EQ(0u, q.bulletins.size());
 }
@@ -69,10 +69,10 @@ TEST_F(QwkTest, ReadQwkConfig_Read_TwoBulletins) {
     qc.packet_name = "PAKTNAME";
     qc.bulletins.emplace_back(qwk_bulletin{"name1", "path1"});
     qc.bulletins.emplace_back(qwk_bulletin{"name2", "path2"});
-    write_qwk_cfg(*helper.config_, qc);
+    write_qwk_cfg(helper.config(), qc);
   }
 
-  auto q = read_qwk_cfg(*helper.config_);
+  auto q = read_qwk_cfg(helper.config());
   EXPECT_EQ("PAKTNAME", q.packet_name);
   EXPECT_EQ(2u, q.bulletins.size());
 
@@ -89,10 +89,10 @@ TEST_F(QwkTest, ReadQwkConfig_Write_NoBulletins) {
   c.packet_name = "TESTPAKT";
 
   ASSERT_FALSE(File::Exists(qwk_config_filename));
-  write_qwk_cfg(*helper.config_, c);
+  write_qwk_cfg(helper.config(), c);
   ASSERT_TRUE(File::Exists(qwk_config_filename));
 
-  auto q = read_qwk_cfg(*helper.config_);
+  auto q = read_qwk_cfg(helper.config());
   EXPECT_EQ("TESTPAKT", q.packet_name);
 }
 
@@ -103,10 +103,10 @@ TEST_F(QwkTest, ReadQwkConfig_Write_OneBulletins) {
   c.bulletins.emplace_back(b);
 
   ASSERT_FALSE(File::Exists(qwk_config_filename));
-  write_qwk_cfg(*helper.config_, c);
+  write_qwk_cfg(helper.config(), c);
   ASSERT_TRUE(File::Exists(qwk_config_filename));
 
-  auto q = read_qwk_cfg(*helper.config_);
+  auto q = read_qwk_cfg(helper.config());
   EXPECT_EQ(1u, q.bulletins.size());
 }
 

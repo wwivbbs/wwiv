@@ -253,7 +253,7 @@ public:
 
   /** Returns the WWIV SDK Config Object. */
   [[nodiscard]] wwiv::sdk::Config* config() const;
-  void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config);
+  void set_config_for_test(const wwiv::sdk::Config& config);
 
   /** Returns the WWIV Names.LST Config Object. */
   [[nodiscard]] wwiv::sdk::Names* names() const;

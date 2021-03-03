@@ -11,6 +11,14 @@ set(test_sources
 )
 
 set_max_warnings()
+
+set(fixture_sources
+  common_helper.cpp 
+)
+
+add_library(common_fixtures ${fixture_sources})
+target_link_libraries(common_fixtures common core)
+
 add_executable(common_tests ${test_sources})
-target_link_libraries(common_tests common gmock gtest)
+target_link_libraries(common_tests common_fixtures common gmock gtest)
 gtest_discover_tests(common_tests)

@@ -1102,8 +1102,12 @@ int Application::Run(int argc, char* argv[]) {
 
 /** Returns the WWIV SDK Config Object. */
 Config* Application::config() const { return config_.get(); }
-void Application::set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) {
-  config_ = std::move(config);
+void Application::set_config_for_test(const wwiv::sdk::Config& config) {
+  if (!config_) {
+    config_ = std::make_unique<Config>(config);
+  } else {
+    *config_ = config;
+  }
 }
 
 /** Returns the WWIV Names.LST Config Object. */

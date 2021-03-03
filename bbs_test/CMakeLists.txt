@@ -44,9 +44,9 @@ endif()
 
 add_executable(bbs_tests ${test_sources})
 if(UNIX)
-  target_link_libraries(bbs_tests core bbs_lib core_fixtures gtest_main)
+  target_link_libraries(bbs_tests core bbs_lib core_fixtures common_fixtures gtest_main)
 else()
-  target_link_libraries(bbs_tests core bbs_lib core_fixtures gtest)
+  target_link_libraries(bbs_tests core bbs_lib core_fixtures common_fixtures gtest)
 endif()
 
 gtest_discover_tests(bbs_tests)

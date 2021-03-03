@@ -40,6 +40,9 @@ Dirs::Dirs(const std::filesystem::path& bbsdir)
 SessionContext::SessionContext(LocalIO* io)
     : irt_{}, io_(io), dirs_(File::current_directory()) {}
 
+SessionContext::SessionContext(LocalIO* io, const std::filesystem::path& root_directory)
+    : irt_{}, io_(io), dirs_(root_directory) {}
+
 void SessionContext::InitalizeContext(const wwiv::sdk::Config& c) {
   const auto qscan_length = c.qscn_len() / sizeof(uint32_t);
   qscan_ = std::make_unique<uint32_t[]>(qscan_length);

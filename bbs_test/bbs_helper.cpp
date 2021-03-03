@@ -39,91 +39,29 @@ using std::replace;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 
-void BbsHelper::SetUp() {
-  const auto& temp = files_.TempDir();
-  // We want the "BBS Home" to be our temp dir.
-  CHECK(chdir(temp.string().c_str()) == 0);
-
-  ASSERT_TRUE(files_.Mkdir("data"));
-  ASSERT_TRUE(files_.Mkdir("gfiles"));
-  ASSERT_TRUE(files_.Mkdir("en"));
-  ASSERT_TRUE(files_.Mkdir("en/gfiles"));
-  // Use our own local IO class that will capture the output.
-  io_.reset(new TestIO());
+BbsHelper::BbsHelper() : CommonHelper(nullptr) {
   app_.reset(CreateSession(io_->local_io()));
-  a()->SetCommForTest(io_->remote_io());
-
-  dir_data_ = files_.DirName("data");
-  dir_gfiles_ = files_.DirName("gfiles");
-  dir_en_gfiles_ = files_.DirName("en/gfiles");
-  dir_menus_ = files_.DirName("menus");
-  dir_msgs_ = files_.DirName("msgs");
-  dir_dloads_ = files_.DirName("dloads");
-#ifdef _WIN32
-  dir_gfiles_ = File::FixPathSeparators(dir_gfiles_);
-  dir_en_gfiles_ = File::FixPathSeparators(dir_en_gfiles_);
-#endif  // _WIN32
-
-  a()->sess().dirs().language_directory(dir_en_gfiles_);
-  auto config = make_unique<Config>(temp);
-  // Grab a raw pointer before moving it to Application
-  config_ = config.get();
-  config->set_initialized_for_test(true);
-  config->set_paths_for_test(dir_data_, dir_msgs_, dir_gfiles_, dir_menus_, dir_dloads_, dir_data_);
-  a()->set_config_for_test(move(config));
-  user_ = a()->user();
-  // No pause in tests.
-  user_->ClearStatusFlag(User::pauseOnPage);
-  a()->sess().num_screen_lines(std::numeric_limits<int>::max());
-
-  // Create a reasonable default user.  Some tests (bputch/bputs tests)
-  // Require a properly constructed user.
-  User::CreateNewUserRecord(user_, 50, 20, 0, 0.1234f, 
-  { 7, 11, 14, 13, 31, 10, 12, 9, 5, 3 }, { 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 });
-  user_->SetStatusFlag(User::ansi);
-  user_->SetStatusFlag(User::status_color);
-
-  a()->instance_number_ = 42;
-
-  // Reset the color attribute to 7 between tests.
-  bout.curatr(7);
-  // We need this true so our bputch tests can capture remote.
-  a()->sess().outcom(true);
-  a()->sess().ok_modem_stuff(true);
+  app_->SetCommForTest(io_->remote_io());
+  app_->set_config_for_test(*config_);
+  app_->instance_number_ = 42;
 }
 
-TestIO::TestIO() {
-  local_io_ = new TestLocalIO(&this->captured_);
-  remote_io_ = new TestRemoteIO(&this->rcaptured_);
+void BbsHelper::SetUp() {
+  CommonHelper::SetUp();
 }
 
-std::string TestIO::captured() {
-  auto captured(captured_);
-  captured_.clear();
-  return captured;
+Config& BbsHelper::config() const {
+  return *app_->config();
 }
 
-std::string TestIO::rcaptured() {
-  auto captured(rcaptured_);
-  rcaptured_.clear();
-  return captured;
+wwiv::common::SessionContext& BbsHelper::sess() {
+  return app_->sess();
 }
 
-TestLocalIO::TestLocalIO(std::string* captured) : LocalIO(), captured_(captured) {}
-
-void TestLocalIO::Putch(unsigned char ch) {
-  captured_->push_back(ch);
+User* BbsHelper::user() {
+  return app_->user();  
 }
 
-TestRemoteIO::TestRemoteIO(std::string* captured) : RemoteIO(), captured_(captured) {}
-
-unsigned int TestRemoteIO::put(unsigned char ch) {
-  captured_->push_back(ch);
-  return 1;
+const User* BbsHelper::user() const {
+  return app_->user();  
 }
-
-unsigned int TestRemoteIO::write(const char *buffer, unsigned int count, bool) {
-  captured_->append(std::string(buffer, count));
-  return count;
-}
-

@@ -79,6 +79,7 @@ enum class chatting_t { none, one_way, two_way };
 class SessionContext final {
 public:
   explicit SessionContext(LocalIO* io);
+  SessionContext(LocalIO* io, const std::filesystem::path& root_directory);
   ~SessionContext() = default;
 
   /**

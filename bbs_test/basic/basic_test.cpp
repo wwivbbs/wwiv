@@ -45,7 +45,7 @@ class TestMacroContext final : public Context {
 public:
   explicit TestMacroContext(BbsHelper& helper)
       : helper_(helper), sess_ctx_(helper_.io()->local_io()) {}
-  [[nodiscard]] wwiv::sdk::Config& config() override { return *helper_.config_; }
+  [[nodiscard]] wwiv::sdk::Config& config() override { return helper_.config(); }
   [[nodiscard]] wwiv::sdk::User& u() override { return *helper_.user(); }
   SessionContext& session_context() override { return sess_ctx_; }
   [[nodiscard]] bool mci_enabled() const override { return true; }
@@ -60,9 +60,9 @@ protected:
   void SetUp() override {
     helper.SetUp();
     // Enable the FILE and OS package.
-    helper.config_->scripting_enabled(true);
-    helper.config_->script_package_file_enabled(true);
-    helper.config_->script_package_os_enabled(true);
+    helper.config().scripting_enabled(true);
+    helper.config().script_package_file_enabled(true);
+    helper.config().script_package_os_enabled(true);
     ctx.reset(new TestMacroContext(helper));
     basic.reset(new Basic(bin, bout, *a()->config(), ctx.get()));
   }
