@@ -16,18 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
 #include "bbs_test/bbs_helper.h"
+
 #include "bbs/application.h"
 #include "bbs/bbs.h"
-#include "core/file.h"
 #include "sdk/config.h"
 #include "sdk/user.h"
+
+#include "gtest/gtest.h"
 #include <algorithm>
 #include <memory>
 #include <string>
-#include <utility>
 
 using std::begin;
 using std::end;
@@ -39,7 +38,7 @@ using std::replace;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 
-BbsHelper::BbsHelper() : CommonHelper(nullptr) {
+BbsHelper::BbsHelper() : CommonHelper(42) {
   app_.reset(CreateSession(io_->local_io()));
   app_->SetCommForTest(io_->remote_io());
   app_->set_config_for_test(*config_);
