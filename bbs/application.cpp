@@ -26,7 +26,6 @@
 #include "bbs/confutil.h"
 #include "bbs/diredit.h"
 #include "bbs/execexternal.h"
-#include "bbs/pipe_expr.h"
 #include "bbs/instmsg.h"
 #include "bbs/interpret.h"
 #include "bbs/lilo.h"
@@ -49,6 +48,7 @@
 #include "common/input.h"
 #include "common/null_remote_io.h"
 #include "common/output.h"
+#include "common/pipe_expr.h"
 #include "common/remote_io.h"
 #include "common/workspace.h"
 #include "core/command_line.h"
@@ -67,7 +67,6 @@
 #include "bbs/chnedit.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "bbs/uedit.h"
-#include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
 #include "sdk/gfiles.h"
@@ -95,6 +94,7 @@
 #include <io.h>
 #else
 // ReSharper disable once CppUnusedIncludeDirective
+#include "local_io/null_local_io.h" // Used for Linux build.
 #include <unistd.h>
 #endif // _WIN32
 
@@ -118,6 +118,7 @@ class ApplicationContext : public Context {
 public:
   explicit ApplicationContext(Application* app) : app_(app) {}
   ~ApplicationContext() override = default;
+  [[nodiscard]] Config& config() override { return *app_->config(); }
   [[nodiscard]] User& u() override { return *app_->user(); }
   [[nodiscard]] SessionContext& session_context() override { return app_->sess(); }
   [[nodiscard]] bool mci_enabled() const override { return bout.mci_enabled(); }
@@ -130,7 +131,8 @@ private:
 Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK),
       session_context_(localIO), context_(std::make_unique<ApplicationContext>(this)),
-      bbs_macro_context_(context_.get(), wwiv::bbs::evaluate_pipe_expression) {
+      pipe_eval_(*context_.get()),
+      bbs_macro_context_(context_.get(), pipe_eval_) {
   ::bout.SetLocalIO(localIO);
   bout.set_context_provider([this]() -> Context& { return *this->context_; });
   bout.set_macro_context_provider(
@@ -210,14 +212,17 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
       LOG(ERROR) << "SSH will be disabled!";
       type = CommunicationType::TELNET;
     }
-    comm_.reset(new wwiv::bbs::IOSSH(nHandle, key));
+    comm_ = std::make_unique<wwiv::bbs::IOSSH>(nHandle, key);
   } break;
   case CommunicationType::TELNET: {
-    comm_.reset(new RemoteSocketIO(nHandle, true));
+    comm_ = std::make_unique<RemoteSocketIO>(nHandle, true);
   } break;
   case CommunicationType::NONE: {
-    comm_.reset(new NullRemoteIO());
+    comm_ = std::make_unique<NullRemoteIO>();
   } break;
+  case CommunicationType::STDIO:
+    comm_ = std::make_unique<NullRemoteIO>();
+    break;
   }
   bout.SetComm(comm_.get());
   bin.SetComm(comm_.get());
@@ -431,6 +436,7 @@ void Application::handle_sysop_key(uint8_t key) {
           toggle_chat_file();
         }
         break;
+      default: ;
       }
     }
   }

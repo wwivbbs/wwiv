@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)2020-2021, WWIV Software Services             */
+/*                            WWIV Version 5.x                            */
+/*          Copyright (C)2020-2021, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,14 +15,17 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_BBS_PIPE_EXPR_H
-#define INCLUDED_BBS_PIPE_EXPR_H
+#include "gtest/gtest.h"
+#include "gmock/gmock.h"
+#include "common/input_range.h"
 
-#include "common/context.h"
-#include <string>
-namespace wwiv::bbs {
+using namespace wwiv::common;
+using namespace testing;
 
-std::string evaluate_pipe_expression(std::string);
+TEST(PipeExprTest, Smoke) {
 
 }
-#endif
+
+TEST(PipeExprTest, Smoke2) {
+  FAIL() << "Implement me";
+}

@@ -20,14 +20,14 @@
 
 #include "common/context.h"
 #include "common/macro_context.h"
+#include "common/pipe_expr.h"
 #include "sdk/ansi/ansi.h"
 #include <string>
 
 class BbsMacroContext final : public wwiv::common::MacroContext {
 public:
-  typedef std::function<std::string(std::string)> eval_expr_fn;
-
-  explicit BbsMacroContext(wwiv::common::Context* context, eval_expr_fn f) : MacroContext(context), eval_fn_(f) {}
+  explicit BbsMacroContext(wwiv::common::Context* context, wwiv::common::PipeEval& pipe_eval)
+      : MacroContext(context), pipe_eval_(pipe_eval) {}
   ~BbsMacroContext() override = default;
 
   // Interprets only a macro code.
@@ -42,7 +42,8 @@ public:
 
 private:
   wwiv::sdk::Config* config_{nullptr};
-  eval_expr_fn eval_fn_;
+  // Not Owned
+  wwiv::common::PipeEval& pipe_eval_;
 };
 
 enum class pipe_type_t { none, pipe, macro, movement, expr };

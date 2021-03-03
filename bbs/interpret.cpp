@@ -250,13 +250,13 @@ wwiv::common::Interpreted BbsMacroContext::interpret_string(const std::string& s
       }
       return res;
     }
+    default:   return {};
   }
-  return {};
 }
 
 wwiv::common::Interpreted BbsMacroContext::evaluate_expression(const std::string& expr) const {
   wwiv::common::Interpreted r{};
-  r.text = eval_fn_(expr);
+  r.text = pipe_eval_.eval(expr);
   return r;
 }
 

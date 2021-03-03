@@ -58,7 +58,6 @@ set(COMMON_SOURCES
  netsup.cpp
  newuser.cpp
  normupld.cpp
- pipe_expr.cpp
  save_qscan.cpp
  readmail.cpp
  read_message.cpp

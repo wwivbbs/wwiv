@@ -47,14 +47,16 @@ public:
 
 class FsedContext final : public common::Context {
 public:
-  explicit FsedContext(LocalIO* local_io) : sess_(local_io) {}
+  explicit FsedContext(LocalIO* local_io) : sess_(local_io), config_("", {}) {}
   ~FsedContext() override = default;
+  [[nodiscard]] sdk::Config& config() override { return config_; }
   [[nodiscard]] sdk::User& u() override { return user_; }
   [[nodiscard]] common::SessionContext& session_context() override { return sess_; }
   [[nodiscard]] bool mci_enabled() const override { return false; };
 
   sdk::User user_;
   common::SessionContext sess_;
+  sdk::Config config_;
 };
 
 class FsedApplication final {

@@ -24,6 +24,7 @@
 #include "bbs/runnable.h"
 #include "common/context.h"
 #include "common/output.h"
+#include "common/pipe_expr.h"
 #include "sdk/vardec.h"
 #include "sdk/net/networks.h"
 #include <chrono>
@@ -115,6 +116,7 @@ public:
   ~Application() override;
 
   [[nodiscard]] wwiv::sdk::User* user() const { return thisuser_.get(); }
+  void set_user_for_test(wwiv::sdk::User& u) { *thisuser_ = u; }
   [[nodiscard]] wwiv::common::Context& context();
   [[nodiscard]] const wwiv::common::Context& context() const;
   [[nodiscard]] wwiv::common::SessionContext& sess();
@@ -470,6 +472,7 @@ private:
   int last_read_user_number_{0};
   std::chrono::duration<double> extratimecall_{};
   std::unique_ptr<wwiv::common::Context> context_;
+  wwiv::common::PipeEval pipe_eval_;
   BbsMacroContext bbs_macro_context_;
 };
 

@@ -288,6 +288,7 @@ private:
 class Context {
 public:
   virtual ~Context() = default;
+  [[nodiscard]] virtual sdk::Config& config() = 0;
   [[nodiscard]] virtual sdk::User& u() = 0;
   [[nodiscard]] virtual SessionContext& session_context() = 0;
   [[nodiscard]] virtual bool mci_enabled() const = 0;
@@ -295,4 +296,4 @@ public:
 
 } // namespace wwiv::common
 
-#endif // __INCLUDED_COMMON_CONTEXT_H__
+#endif // INCLUDED_COMMON_CONTEXT_H

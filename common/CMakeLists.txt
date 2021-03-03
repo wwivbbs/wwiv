@@ -4,26 +4,27 @@ include_directories(../deps/cereal/include)
 Include(FindWWIVCurses)
 
 set(COMMON_SOURCES 
- bgetch.cpp
- bputch.cpp
- checka.cpp
- com.cpp
- context.cpp
- datetime.cpp
- full_screen.cpp
- input.cpp
- input_range.cpp
- iobase.cpp
- macro_context.cpp
- menu_data_util.cpp
- message_editor_data.cpp
- output.cpp
- pause.cpp
- printfile.cpp
- quote.cpp
- remote_io.cpp
- remote_socket_io.cpp
- workspace.cpp
+ "bgetch.cpp"
+ "bputch.cpp"
+ "checka.cpp"
+ "com.cpp"
+ "context.cpp"
+ "datetime.cpp"
+ "full_screen.cpp"
+ "input.cpp"
+ "input_range.cpp"
+ "iobase.cpp"
+ "macro_context.cpp"
+ "menu_data_util.cpp"
+ "message_editor_data.cpp"
+ "output.cpp"
+ "pause.cpp"
+ "pipe_expr.cpp"
+ "printfile.cpp"
+ "quote.cpp"
+ "remote_io.cpp"
+ "remote_socket_io.cpp"
+ "workspace.cpp"
 )
 
 add_library(

@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/pipe_expr.h"
+#include "common/pipe_expr.h"
 
 #include "common/output.h"
 
@@ -26,7 +26,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv::bbs {
+namespace wwiv::common {
 
 enum class pipe_expr_token_type_t {
   variable,
@@ -131,7 +131,7 @@ static std::vector<pipe_expr_token_t> tokenize(std::string::const_iterator& it, 
 
 string eval_variable(const pipe_expr_token_t& t) {
   // TODO(rushfan): Implement me.
-  return t.lexeme;  // HACK
+  return StrCat("{", t.lexeme, "}"); // HACK
 }
 
 bool is_truthy(const std::string& s) {
@@ -141,14 +141,7 @@ bool is_truthy(const std::string& s) {
   return false;
 }
 
-string eval_fn(const string& fn, const std::vector<pipe_expr_token_t>& args) {
-  if (fn == "pause") {
-    bout.pausescr();
-    return {};
-  }
-  if (fn != "set") {
-    return fmt::format("ERROR: Unknown function: {}", fn);
-  }
+std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
   // Set command only
   if (args.size() != 2) {
     return "ERROR: Set expression requires two arguments.";
@@ -156,17 +149,16 @@ string eval_fn(const string& fn, const std::vector<pipe_expr_token_t>& args) {
   if (args.at(0).type != pipe_expr_token_type_t::variable) {
     return "ERROR: Set expression requires first arg to be variable";
   }
-  const auto var = args.at(0).lexeme;
-  if (var == "pause") {
+  if (const auto var = args.at(0).lexeme; var == "pause") {
+    
     const auto val = is_truthy(args.at(1).lexeme);
-    bout.user().SetStatusFlag(User::pauseOnPage, val);
-    bout.sess().disable_pause(!val);
+    context_.u().SetStatusFlag(User::pauseOnPage, val);
+    context_.session_context().disable_pause(!val);
   } else if (var == "lines") {
     if (args.at(1).type != pipe_expr_token_type_t::number_literal) {
       return "ERROR: 'set lines' requires number argument";
     }
-    const auto n = to_number<int>(args.at(1).lexeme);
-    if (n == 0) {
+    if (const auto n = to_number<int>(args.at(1).lexeme); n == 0) {
       bout.clear_lines_listed();
     } else {
       return "ERROR: 'set lines' requires number argument to be 0";
@@ -175,8 +167,41 @@ string eval_fn(const string& fn, const std::vector<pipe_expr_token_t>& args) {
   return {};
 }
 
+std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
+  // Set command only
+  if (args.size() != 2) {
+    return "ERROR: Set expression requires three arguments.";
+  }
+  for (const auto& a : args) {
+    if (a.type == pipe_expr_token_type_t::string_literal) {
+      return "ERROR: IF expression requires all args be strings";
+    }
+  }
 
-std::string eval(std::vector<pipe_expr_token_t>& tokens) {
+  const auto expr = args.at(0).lexeme;
+  const auto yes = args.at(1).lexeme;
+  const auto no = args.at(2).lexeme;
+
+  // TODO(rushfan): Use sdk:eval to evaluation the expression then return yes or no strings;
+  return {};
+}
+
+std::string PipeEval::eval_fn(const std::string& fn, const std::vector<pipe_expr_token_t>& args) {
+  if (fn == "pause") {
+    bout.pausescr();
+    return {};
+  }
+  if (fn == "set") {
+    return eval_fn_set(args);
+  }
+  if (fn == "if") {
+    return eval_fn_if(args);
+  }
+  return fmt::format("ERROR: Unknown function: {}", fn);
+}
+
+
+std::string PipeEval::eval(std::vector<pipe_expr_token_t>& tokens) {
   if (tokens.empty()) {
     return {};
   }
@@ -202,7 +227,7 @@ std::string eval(std::vector<pipe_expr_token_t>& tokens) {
 }
 
 // Evaluates a pipe expression without the {} around it.
-string evaluate_pipe_expression_string(const std::string& expr) {
+std::string PipeEval::evaluate_pipe_expression_string(const std::string& expr) {
   auto it = std::cbegin(expr);
   const auto end = std::cend(expr);
   auto tokens = tokenize(it, end);
@@ -210,7 +235,10 @@ string evaluate_pipe_expression_string(const std::string& expr) {
   return eval(tokens);
 }
 
-std::string evaluate_pipe_expression(std::string expr) {
+PipeEval::PipeEval(Context& context) : context_(context) {
+}
+
+std::string PipeEval::eval(std::string expr) {
   auto temp = std::move(expr);
   if (temp.length() <= 2) {
     // Cant' be {..} if length < 2

@@ -6,6 +6,7 @@ set(test_sources
   "input_range_test.cpp"
   "common_test_main.cpp"
   "menu_data_util_test.cpp"
+  "pipe_expr_test.cpp"
   "remote_socket_io_test.cpp"
 )
 

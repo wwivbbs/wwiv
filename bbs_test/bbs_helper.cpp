@@ -92,8 +92,6 @@ void BbsHelper::SetUp() {
   a()->sess().ok_modem_stuff(true);
 }
 
-void BbsHelper::TearDown() {}
-
 TestIO::TestIO() {
   local_io_ = new TestLocalIO(&this->captured_);
   remote_io_ = new TestRemoteIO(&this->rcaptured_);

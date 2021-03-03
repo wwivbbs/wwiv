@@ -39,7 +39,6 @@ class BbsHelper {
 public:
   virtual ~BbsHelper() = default;
   virtual void SetUp();
-  virtual void TearDown();
   [[nodiscard]] wwiv::sdk::User* user() const { return user_; }
   [[nodiscard]] TestIO* io() const { return io_.get(); }
 
@@ -57,8 +56,9 @@ public:
   std::string dir_msgs_;
   std::unique_ptr<Application> app_;
   std::unique_ptr<TestIO> io_;
-  wwiv::sdk::User* user_;
   wwiv::sdk::Config* config_;
+private:
+  wwiv::sdk::User* user_;
 };
 
 class TestIO {

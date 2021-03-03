@@ -28,14 +28,13 @@ using std::cout;
 using std::endl;
 using std::string;
 
-// test helper that just returns the expression as a string
-std::string _(std::string s) { return s; }
 
 class BbsMacroContextTest : public ::testing::Test {
 protected:
   void SetUp() override {
     helper.SetUp();
-    bc = std::make_unique<BbsMacroContext>(&a()->context(), _);
+    PipeEval pipe_eval(a()->context());
+    bc = std::make_unique<BbsMacroContext>(&a()->context(), pipe_eval);
   }
 
   BbsHelper helper{};
