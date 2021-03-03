@@ -19,6 +19,9 @@
 #include "common/pipe_expr.h"
 
 #include "common/output.h"
+#include "sdk/acs/acs.h"
+#include "sdk/acs/uservalueprovider.h"
+#include "sdk/acs/valueprovider.h"
 
 using std::string;
 using std::to_string;
@@ -40,7 +43,7 @@ struct pipe_expr_token_t {
   std::string lexeme;
 };
 
-std::optional<pipe_expr_token_t> parse_string(string::const_iterator& it, const string::const_iterator& end) {
+static std::optional<pipe_expr_token_t> parse_string(string::const_iterator& it, const string::const_iterator& end) {
   if (*it != '"') {
     LOG(ERROR) << "Parse String called without string!";
     return std::nullopt;
@@ -62,7 +65,7 @@ std::optional<pipe_expr_token_t> parse_string(string::const_iterator& it, const 
   return std::nullopt;
 }
 
-std::optional<pipe_expr_token_t> parse_number(string::const_iterator& it, const string::const_iterator& end) {  
+static std::optional<pipe_expr_token_t> parse_number(string::const_iterator& it, const string::const_iterator& end) {  
   std::string s;
   for (; it != end && isdigit(*it); ++it) {
     const auto c = *it;
@@ -77,7 +80,7 @@ std::optional<pipe_expr_token_t> parse_number(string::const_iterator& it, const 
   return std::make_optional(e);
 }
 
-std::optional<pipe_expr_token_t> parse_variable(string::const_iterator& it, const string::const_iterator& end) {  
+static std::optional<pipe_expr_token_t> parse_variable(string::const_iterator& it, const string::const_iterator& end) {  
   std::string s;
   for (; it != end && (isalpha(*it) || *it == '.'); ++it) {
     s.push_back(*it);
@@ -88,7 +91,9 @@ std::optional<pipe_expr_token_t> parse_variable(string::const_iterator& it, cons
   e.type = pipe_expr_token_type_t::variable;
   e.lexeme = s;
   if (s == "set") {
-    // Only set and pause are supported now.
+    e.type = pipe_expr_token_type_t::fn;
+  }
+  if (s == "if") {
     e.type = pipe_expr_token_type_t::fn;
   }
   if (s == "pause" && (it == end || *it != '=')) {
@@ -129,12 +134,25 @@ static std::vector<pipe_expr_token_t> tokenize(std::string::const_iterator& it, 
   return r;
 }
 
-string eval_variable(const pipe_expr_token_t& t) {
-  // TODO(rushfan): Implement me.
+std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
+  std::map<std::string, std::unique_ptr<acs::ValueProvider>> p;
+  auto eff_sl = context_.session_context().effective_sl();
+  if (eff_sl == 0) {
+    eff_sl = context_.u().sl();
+  }
+  const auto& eslrec = context_.config().sl(eff_sl);
+  p["user"] = std::make_unique<acs::UserValueProvider>(context_.config(), context_.u(), eff_sl, eslrec);
+
+  const auto parts = wwiv::strings::SplitString(t.lexeme, ".", true);
+  if (const auto& iter = p.find(parts.front()); iter != std::end(p)) {
+    return iter->second->value(parts.at(1))->as_string();  
+  }
+
+  // Passthrough unknown variables.
   return StrCat("{", t.lexeme, "}"); // HACK
 }
 
-bool is_truthy(const std::string& s) {
+static bool is_truthy(const std::string& s) {
   if (s == "yes" || s == "on" || s == "true" || s == "y") {
     return true;
   }
@@ -169,11 +187,11 @@ std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
 
 std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
   // Set command only
-  if (args.size() != 2) {
+  if (args.size() != 3) {
     return "ERROR: Set expression requires three arguments.";
   }
   for (const auto& a : args) {
-    if (a.type == pipe_expr_token_type_t::string_literal) {
+    if (a.type != pipe_expr_token_type_t::string_literal) {
       return "ERROR: IF expression requires all args be strings";
     }
   }
@@ -183,7 +201,12 @@ std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
   const auto no = args.at(2).lexeme;
 
   // TODO(rushfan): Use sdk:eval to evaluation the expression then return yes or no strings;
-  return {};
+  auto eff_sl = context_.session_context().effective_sl();
+  if (eff_sl == 0) {
+    eff_sl = context_.u().sl();
+  }
+  auto [b, _] = acs::check_acs(context_.config(), context_.u(), eff_sl, expr);
+  return b ? yes : no;
 }
 
 std::string PipeEval::eval_fn(const std::string& fn, const std::vector<pipe_expr_token_t>& args) {

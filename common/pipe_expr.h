@@ -29,6 +29,7 @@ public:
   std::string eval(std::string);
 
 private:
+  std::string eval_variable(const pipe_expr_token_t& t);
   std::string eval_fn_set(const std::vector<pipe_expr_token_t>& args);
   std::string eval_fn_if(const std::vector<pipe_expr_token_t>& args);
   std::string eval_fn(const std::string& fn, const std::vector<pipe_expr_token_t>& args);

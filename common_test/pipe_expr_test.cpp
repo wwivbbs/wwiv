@@ -17,15 +17,28 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "common/input_range.h"
+#include "common/pipe_expr.h"
+#include "common_test/common_helper.h"
 
 using namespace wwiv::common;
 using namespace testing;
 
 TEST(PipeExprTest, Smoke) {
-
+  CommonHelper helper;
+  helper.user()->set_name("Rushfan");
+  PipeEval eval(helper.context());
+  EXPECT_EQ("Rushfan", eval.eval("{user.name}"));
+  EXPECT_EQ("{unknown}", eval.eval("{unknown}"));
 }
 
-TEST(PipeExprTest, Smoke2) {
-  FAIL() << "Implement me";
+TEST(PipeExprTest, If) {
+  CommonHelper helper;
+  helper.user()->set_name("Rushfan");
+  helper.user()->sl(200);
+  helper.sess().effective_sl(200);
+  PipeEval eval(helper.context());
+  EXPECT_EQ("Senior Level", eval.eval(R"({if "user.sl >= 200", "Senior Level", "Junior Level"})"));
+  helper.user()->sl(100);
+  helper.sess().effective_sl(100);
+  EXPECT_EQ("Junior Level", eval.eval(R"({if "user.sl >= 200", "Senior Level", "Junior Level"})"));
 }

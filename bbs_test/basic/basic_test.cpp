@@ -41,20 +41,6 @@ using namespace wwiv::common;
 using namespace wwiv::bbs::basic;
 using namespace wwiv::strings;
 
-class TestMacroContext final : public Context {
-public:
-  explicit TestMacroContext(BbsHelper& helper)
-      : helper_(helper), sess_ctx_(helper_.io()->local_io()) {}
-  [[nodiscard]] wwiv::sdk::Config& config() override { return helper_.config(); }
-  [[nodiscard]] wwiv::sdk::User& u() override { return *helper_.user(); }
-  SessionContext& session_context() override { return sess_ctx_; }
-  [[nodiscard]] bool mci_enabled() const override { return true; }
-  [[nodiscard]] const wwiv::sdk::Config& config() const { return *helper_.app_->config(); }
-
-  BbsHelper& helper_;
-  SessionContext sess_ctx_;
-};
-
 class BasicTest : public ::testing::Test {
 protected:
   void SetUp() override {
@@ -63,8 +49,7 @@ protected:
     helper.config().scripting_enabled(true);
     helper.config().script_package_file_enabled(true);
     helper.config().script_package_os_enabled(true);
-    ctx.reset(new TestMacroContext(helper));
-    basic.reset(new Basic(bin, bout, *a()->config(), ctx.get()));
+    basic.reset(new Basic(bin, bout, *a()->config(), &helper.context()));
   }
 
   [[nodiscard]] bool RunScript(const std::string& text) {
@@ -73,7 +58,7 @@ protected:
 
     RegisterBasicUnitTestModule(basic->bas());
     const auto r = basic->RunScript(module, text);
-    basic.reset(new Basic(bin, bout, *a()->config(), ctx.get()));
+    basic.reset(new Basic(bin, bout, *a()->config(), &helper.context()));
     return r;
   }
 
@@ -177,7 +162,6 @@ protected:
   }
 
   BbsHelper helper{};
-  std::unique_ptr<TestMacroContext> ctx;
   std::unique_ptr<Basic> basic;
 };
 

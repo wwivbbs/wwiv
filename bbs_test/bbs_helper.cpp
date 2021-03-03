@@ -26,7 +26,6 @@
 #include "gtest/gtest.h"
 #include <algorithm>
 #include <memory>
-#include <string>
 
 using std::begin;
 using std::end;

@@ -17,7 +17,7 @@ set(fixture_sources
 )
 
 add_library(common_fixtures ${fixture_sources})
-target_link_libraries(common_fixtures common core)
+target_link_libraries(common_fixtures common core core_fixtures)
 
 add_executable(common_tests ${test_sources})
 target_link_libraries(common_tests common_fixtures common gmock gtest)

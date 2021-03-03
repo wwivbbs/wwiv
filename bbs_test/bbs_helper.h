@@ -38,7 +38,7 @@ public:
   BbsHelper();
   virtual ~BbsHelper() = default;
   void SetUp() override;
-  [[nodiscard]] wwiv::sdk::Config& config() const;
+  [[nodiscard]] wwiv::sdk::Config& config() const override;
   [[nodiscard]] wwiv::common::SessionContext& sess() override;
   [[nodiscard]] wwiv::sdk::User* user() override;
   [[nodiscard]] const wwiv::sdk::User* user() const;
