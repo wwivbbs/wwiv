@@ -25,7 +25,6 @@
 
 namespace wwiv::sdk::acs {
 
-
 /** Provides a value for an identifier of the form "object.attribute" */
 class ValueProvider {
 public:
@@ -37,6 +36,11 @@ public:
    * the 'attribute' and not the full object.attribute name. *
    */
   [[nodiscard]] virtual std::optional<Value> value(const std::string& name) = 0;
+
+  /**
+   * Returns the prefix for this value provider. i.e. "user"
+   */
+  [[nodiscard]] std::string prefix() const { return prefix_; }
 
 private:
   const std::string prefix_;

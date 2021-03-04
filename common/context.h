@@ -21,7 +21,9 @@
 #include "core/wwivport.h"
 #include "sdk/config.h"
 #include "sdk/user.h"
+#include "sdk/acs/valueprovider.h"
 #include "sdk/files/dirs.h"
+
 #include <cstdint>
 #include <filesystem>
 #include <memory>
@@ -286,13 +288,30 @@ private:
   int system_bps_{0};
 };
 
+class MapValueProvider : public sdk::acs::ValueProvider {
+public:
+  explicit MapValueProvider(std::string prefix, std::map<std::string, std::string> map)
+      : ValueProvider(std::move(prefix)), map_(std::move(map)) {}
+  virtual ~MapValueProvider() = default;
+
+  /** 
+   * Optionally gets the attribute for this object.  name should just be
+   * the 'attribute' and not the full object.attribute name. *
+   */
+  [[nodiscard]] std::optional<sdk::acs::Value> value(const std::string& name) override;
+
+private:
+  const std::map<std::string, std::string> map_;
+};
+
+
 /**
  * WWIV Full Context.
  *
  * This is a smaller context class than what the Application class contains,
  * and should be enough to run displays and most activities outside of the BBS.
  *
- * This holds other subcontexts (like SessionContext), as well as the current
+ * This holds other sub-contexts (like SessionContext), as well as the current
  * User and Config used by the BBS.
  */
 class Context {
@@ -302,6 +321,18 @@ public:
   [[nodiscard]] virtual sdk::User& u() = 0;
   [[nodiscard]] virtual SessionContext& session_context() = 0;
   [[nodiscard]] virtual bool mci_enabled() const = 0;
+
+  /**
+   * Adds a set of context variables for use in pipe expressions.  An example for the current
+   * message being read may be:
+   * add_context_variables("msg", { { "num", "100" }, { "title", "A message on nothing" } });
+   */
+  bool add_context_variables(std::string prefix, std::map<std::string, std::string> map);
+  bool clear_context_variables();
+  const std::vector<std::unique_ptr<MapValueProvider>>& value_providers() const { return value_providers_; }
+
+private:
+  std::vector<std::unique_ptr<MapValueProvider>> value_providers_;
 };
 
 } // namespace wwiv::common

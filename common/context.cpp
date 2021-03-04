@@ -98,4 +98,21 @@ int SessionContext::bps() const noexcept {
   return f > 0 ? f : system_bps();
 }
 
+std::optional<sdk::acs::Value> MapValueProvider::value(const std::string& name) {
+  if (const auto& iter = map_.find(name); iter != std::end(map_)) {
+    return sdk::acs::Value(iter->second);
+  }
+  return std::nullopt;
+}
+
+bool Context::add_context_variables(std::string prefix, std::map<std::string, std::string> map) {
+  value_providers_.emplace_back(std::make_unique<MapValueProvider>(prefix, std::move(map)));
+  return true;
+}
+
+bool Context::clear_context_variables() {
+  value_providers_.clear();
+  return true;
+}
+
 }

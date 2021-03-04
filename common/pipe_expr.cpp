@@ -144,8 +144,16 @@ std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
   p["user"] = std::make_unique<acs::UserValueProvider>(context_.config(), context_.u(), eff_sl, eslrec);
 
   const auto parts = SplitString(t.lexeme, ".", true);
-  if (const auto& iter = p.find(parts.front()); iter != std::end(p)) {
+  const auto& prefix = parts.front();
+  if (const auto& iter = p.find(prefix); iter != std::end(p)) {
     return iter->second->value(parts.at(1))->as_string();  
+  }
+
+  for (const auto& v : context_.value_providers()) {
+    // O(N) is on for small values of n
+    if (iequals(prefix, v->prefix())) {
+      return v->value(parts.at(1))->as_string();
+    }
   }
 
   // Passthrough unknown variables.

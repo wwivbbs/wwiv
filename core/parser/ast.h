@@ -39,7 +39,7 @@ enum class AstType {
   EXPR,
   FACTOR, 
   TAUTOLOGY,
-  ERROR,
+  AST_ERROR,
   ROOT
 };
 
@@ -147,7 +147,7 @@ public:
 
 class ErrorNode final : public AstNode {
 public:
-  explicit ErrorNode(const std::string& m) : AstNode(AstType::ERROR), message(m) {}
+  explicit ErrorNode(const std::string& m) : AstNode(AstType::AST_ERROR), message(m) {}
   std::string message;
 };
 

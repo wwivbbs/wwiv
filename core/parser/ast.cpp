@@ -122,7 +122,7 @@ std::string to_string(AstType t) {
     return "factor";
   case AstType::TAUTOLOGY:
     return "tautology";
-  case AstType::ERROR:
+  case AstType::AST_ERROR:
     return "error";
   case AstType::ROOT:
     return "root";
