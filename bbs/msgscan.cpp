@@ -240,18 +240,43 @@ static void HandleScanReadFind(int& msgno, MsgScanOption& scan_option) {
 }
 
 static FullScreenView CreateFullScreenListTitlesView() {
+
+  std::map<std::string, std::string> m;
+  m["subnum"] = std::to_string(a()->current_user_sub_num());
+  const auto& c = a()->current_sub();
+  m["name"] = c.name;
+  m["desc"] = c.desc;
+  m["maxmsgs"] = std::to_string(c.maxmsgs);
+  m["filename"] = c.filename;
+  m["num_msgs"] = std::to_string(a()->GetNumMessagesInCurrentMessageArea());
+  m["subnum"] = std::to_string(a()->current_user_sub_num());
+  a()->context().add_context_variables("cursub", m);
+
+  const auto saved_mci_enabled = bout.mci_enabled();
+  ScopeExit at_exit([=] {
+    a()->context().clear_context_variables();
+    bout.set_mci_enabled(saved_mci_enabled);
+  });
+  bout.set_mci_enabled(true);
+  auto num_header_lines = 2;
+  if (bout.printfile("fs_msgscan")) {
+    if (const auto iter = a()->context().return_values().find("num_header_lines");
+        iter != std::end(a()->context().return_values())) {
+      num_header_lines = to_number<int>(iter->second);
+    }
+  } else {
+    bout.format("|[2J|#4Sub #{} - {}  ({} messages.)|[K|#0\r\n", a()->current_user_sub_num(),
+                  a()->current_sub().name, a()->GetNumMessagesInCurrentMessageArea());
+    bout.format("|14      Num {:<42} From\r\n", "Title");
+  }
+
+  bout.clear_lines_listed();
   const auto screen_width = a()->user()->GetScreenChars();
   const auto screen_length = a()->user()->GetScreenLines() - 1;
-
-  const auto num_header_lines = 2;
-  bout.litebar(fmt::format("Sub #{} - {}  ({} messages.)", a()->current_user_sub_num(),
-                a()->current_sub().name, a()->GetNumMessagesInCurrentMessageArea()));
-  bout.format("|14      Num {:<42} From\r\n", "Title");
-  bout.clear_lines_listed();
   return FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
 }
 
-static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg, const int msgnum) {
+static std::string CreateLine(std::unique_ptr<Message>&& msg, const int msgnum) {
   if (!msg) {
     return "";
   }

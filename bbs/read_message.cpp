@@ -348,7 +348,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
   return data;
 }
 
-static int display_header_text(Type2MessageData& msg) {
+static int legacy_display_header_text(Type2MessageData& msg) {
   static constexpr auto COLUMN2 = 42;
   auto num_header_lines = 0;
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
@@ -507,8 +507,7 @@ static std::tuple<bool, int> display_header_file(Type2MessageData& msg) {
   n["node"] = std::to_string(net.sysnum);
 
   const auto saved_mci_enabled = bout.mci_enabled();
-  ScopeExit at_exit([=]
-  {
+  ScopeExit at_exit([=] {
     a()->context().clear_context_variables();
     bout.set_mci_enabled(saved_mci_enabled);
   });
@@ -529,7 +528,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
 
   auto [displayed, num_header_lines] = display_header_file(msg);
   if (!displayed) {
-    num_header_lines = display_header_text(msg);
+    num_header_lines = legacy_display_header_text(msg);
   }
 
   const auto screen_width = a()->user()->GetScreenChars();
