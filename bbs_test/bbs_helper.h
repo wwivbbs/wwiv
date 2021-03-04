@@ -21,10 +21,7 @@
 
 #include "bbs/bbs.h"
 #include "common_test/common_helper.h"
-#include "core_test/file_helper.h"
-#include "local_io/local_io.h"
 #include <memory>
-#include <string>
 
 /*
  * 
