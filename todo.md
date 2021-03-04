@@ -2,6 +2,9 @@
 # Copyright 2002-2021, WWIV Software Services
 ***
 
+# Expressions
+* Figure out how to stop using unique_ptr for 
+
 # Things to add to fix.
 
 * Check for no conferences

@@ -116,6 +116,7 @@ bool Context::add_context_variables(std::string prefix, std::map<std::string, st
 
 bool Context::clear_context_variables() {
   value_providers_.clear();
+  return_values_.clear();
   return true;
 }
 

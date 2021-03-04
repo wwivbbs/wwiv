@@ -545,8 +545,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
   style.ctrl_lines = control_lines_t::control_lines;
   style.add_wrapping_marker = false;
   style.line_length = user.GetScreenChars() - 1;
-
-  auto orig_lines = pmt.to_lines(style);
+  const auto orig_lines = pmt.to_lines(style);
 
   // Now handle control chars, and optional lines.
   std::vector<std::string> lines;
@@ -568,8 +567,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
       } else {
         line = line.substr(2);
       }
-      if (optional_lines != 0 && line.size() >= 2 &&
-          static_cast<int>(10 - optional_lines) < level) {
+      if (optional_lines != 0 && line.size() >= 2 && 10 - optional_lines < level) {
         // This is too high of a level, so skip it.
         continue;
       }

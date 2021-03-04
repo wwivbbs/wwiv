@@ -154,8 +154,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     bout << "|#22|#7]|#9 Forward Message\r\n";
     bout.nl();
     bout << "|#7(Q=Quit) Select [1,2] : ";
-    auto ch_reply = onek("Q12\r", true);
-    switch (ch_reply) {
+    switch (auto ch_reply = onek("Q12\r", true); ch_reply) {
     case '\r':
     case 'Q':
       scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
@@ -163,9 +162,8 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     case '1': {
       bout.nl();
       bout << "|#9Enter user name or number:\r\n:";
-      auto un_nn = fixup_user_entered_email(bin.input(75, true));
-      auto [un, sy] = parse_email_info(un_nn);
-      if (un || sy) {
+      const auto un_nn = fixup_user_entered_email(bin.input(75, true));
+      if (auto [un, sy] = parse_email_info(un_nn); un || sy) {
         email("", un, sy, false, 0);
       }
       scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
@@ -211,7 +209,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
           LoadFileIntoWorkspace(a()->context(), filename, true);
         }
         send_email();
-        auto tmpfn = FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG);
+        const auto tmpfn = FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG);
         if (File::Exists(tmpfn)) {
           File::Remove(tmpfn);
         }
@@ -249,7 +247,6 @@ static FullScreenView CreateFullScreenListTitlesView() {
   m["maxmsgs"] = std::to_string(c.maxmsgs);
   m["filename"] = c.filename;
   m["num_msgs"] = std::to_string(a()->GetNumMessagesInCurrentMessageArea());
-  m["subnum"] = std::to_string(a()->current_user_sub_num());
   a()->context().add_context_variables("cursub", m);
 
   const auto saved_mci_enabled = bout.mci_enabled();
@@ -334,9 +331,8 @@ static std::string CreateLine(std::unique_ptr<Message>&& msg, const int msgnum) 
 
 static std::vector<std::string> CreateMessageTitleVector(MessageArea* area, int start, int num) {
   vector<string> lines;
-  for (auto i = start; i < (start + num); i++) {
-    auto line = CreateLine(area->ReadMessage(i), i);
-    if (!line.empty()) {
+  for (auto i = start; i < start + num; i++) {
+    if (auto line = CreateLine(area->ReadMessage(i), i); !line.empty()) {
       lines.push_back(line);
     }
   }
@@ -346,7 +342,7 @@ static std::vector<std::string> CreateMessageTitleVector(MessageArea* area, int 
 static void display_title_new(const std::vector<std::string>& lines, const FullScreenView& fs,
                               int i, bool selected) {
   bout.GotoXY(1, i + fs.lines_start());
-  const auto l = lines.at(i);
+  const auto& l = lines.at(i);
   if (selected) {
     bout << "|17|12>";
   } else {
@@ -401,9 +397,8 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
 
   auto selected = msgnum;
   auto window_top = std::min(msgnum, last);
-  auto window_bottom = window_top + height - window_top_min + 1;
   // When starting mid-range, sometimes the selected is past the bottom.
-  if (selected > window_bottom)
+  if (auto window_bottom = window_top + height - window_top_min + 1; selected > window_bottom)
     selected = window_bottom;
 
   auto done = false;
