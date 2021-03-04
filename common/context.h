@@ -300,6 +300,8 @@ public:
    */
   [[nodiscard]] std::optional<sdk::acs::Value> value(const std::string& name) override;
 
+  [[nodiscard]] const std::map<std::string, std::string>& map() const;
+
 private:
   const std::map<std::string, std::string> map_;
 };

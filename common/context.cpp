@@ -105,6 +105,10 @@ std::optional<sdk::acs::Value> MapValueProvider::value(const std::string& name) 
   return std::nullopt;
 }
 
+const std::map<std::string, std::string>& MapValueProvider::map() const {
+  return map_;
+}
+
 bool Context::add_context_variables(std::string prefix, std::map<std::string, std::string> map) {
   value_providers_.emplace_back(std::make_unique<MapValueProvider>(prefix, std::move(map)));
   return true;

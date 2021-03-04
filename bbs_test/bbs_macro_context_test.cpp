@@ -93,8 +93,8 @@ TEST_F(BbsMacroContextTest, Move_XY) {
 
   const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
-  EXPECT_EQ(i.x, 9);
-  EXPECT_EQ(i.y, 19);
+  EXPECT_EQ(i.x, 10);
+  EXPECT_EQ(i.y, 20);
 }
 
 TEST_F(BbsMacroContextTest, Expr_Ending) {

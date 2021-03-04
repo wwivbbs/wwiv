@@ -113,6 +113,16 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   void SplitString(const std::string& original_string, const std::string& delims, bool skip_empty,
                    std::vector<std::string>* out);
 
+  /**
+   * Splits a string once on the first occurrence of any character in delims.
+   */
+  std::tuple<std::string, std::string> SplitOnce(const std::string& original_string, const std::string& delims);
+
+/**
+   * Splits a string once on the last occurrence of any character in delims.
+   */
+  std::tuple<std::string, std::string> SplitOnceLast(const std::string& original_string, const std::string& delims);
+
   [[nodiscard]] bool starts_with(const std::string& input, const std::string& match);
   [[nodiscard]] bool ends_with(const std::string& input, const std::string& match);
 

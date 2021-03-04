@@ -35,11 +35,11 @@ using namespace wwiv::strings;
 namespace wwiv::sdk::acs {
 
 static std::tuple<std::string, std::string> split_obj_name(const std::string& name) {
-  const auto last = name.rfind('.');
-  if (last == std::string::npos) {
+  if (const auto idx = name.find('.'); idx == std::string::npos) {
+    // If we only have a name with no dot, return it as the attribute and not prefix.
     return std::make_tuple("", name);
   }
-  return std::make_tuple(name.substr(0, last), name.substr(last + 1));
+  return SplitOnceLast(name, ".");
 }
 
 std::optional<Value> Eval::to_value(Factor* n) {
@@ -49,7 +49,8 @@ std::optional<Value> Eval::to_value(Factor* n) {
   case FactorType::string_val:
     return Value(n->value());
   case FactorType::variable: {
-    auto [prefix, member] = split_obj_name(n->value());
+    auto sval = n->value();
+    auto [prefix, member] = split_obj_name(sval);
     auto vpi = providers_.find(prefix);
     if (vpi != std::end(providers_)) {
       if (auto o = vpi->second->value(member)) {
@@ -119,10 +120,10 @@ void Eval::visit(Expression* n) {
 }
 
 void Eval::visit(Factor* n) { 
-  if (n->factor_type() == FactorType::variable) { 
-    auto [prefix, member] = split_obj_name(n->value());
-    auto vpi = providers_.find(prefix);
-    if (vpi != std::end(providers_)) {
+  if (n->factor_type() == FactorType::variable) {
+    const auto sval = n->value();
+    auto [prefix, member] = split_obj_name(sval);
+    if (auto vpi = providers_.find(prefix); vpi != std::end(providers_)) {
       if (auto o = vpi->second->value(member)) {
         values_.emplace(n->id(), o.value());
       }

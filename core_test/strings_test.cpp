@@ -157,6 +157,31 @@ TEST(StringsTest, SplitString_TwoDelimsBackToBack) {
   EXPECT_EQ(expected, actual);
 }
 
+
+TEST(StringsTest, SplitOnce_Smoke) {
+  auto [p, s] = SplitOnce("user.name", ".");
+  EXPECT_EQ("user", p);
+  EXPECT_EQ("name", s);
+}
+
+TEST(StringsTest, SplitOnce_Empty) {
+  auto [p, s] = SplitOnce("", ".");
+  EXPECT_EQ("", p);
+  EXPECT_EQ("", s);
+}
+
+TEST(StringsTest, SplitOnce_End) {
+  auto [p, s] = SplitOnce("user.", ".");
+  EXPECT_EQ("user", p);
+  EXPECT_EQ("", s);
+}
+
+TEST(StringsTest, SplitOnce_Start) {
+  auto [p, s] = SplitOnce(".user", ".");
+  EXPECT_EQ("", p);
+  EXPECT_EQ("user", s);
+}
+
 TEST(StringsTest, String_int16_t) {
   EXPECT_EQ(1234, to_number<int16_t>("1234"));
   EXPECT_EQ(0, to_number<int16_t>("0"));

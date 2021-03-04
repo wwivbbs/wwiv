@@ -464,9 +464,48 @@ static std::tuple<bool, int> display_header_file(Type2MessageData& msg) {
   m["title"] = msg.title;
   m["sys"] = trim_to_size(msg.from_sys_name, 35);
   m["loc"] = trim_to_size(msg.from_sys_loc, 35);
-  m["flags"] = "[TODO ADD FLAGS]";    
-
   a()->context().add_context_variables("msg", m);
+
+  std::map<std::string, std::string> flags;
+  for (const auto& f : msg.flags) {
+    switch (f) {
+    case MessageFlags::FORCED:
+      flags["forced"] = "true";
+      break;
+    case MessageFlags::NOT_NETWORK_VALIDATED:
+      flags["not_net_val"] = "true";
+      break;
+    case MessageFlags::NOT_VALIDATED:
+      flags["not_val"] = "true";
+      break;
+    case MessageFlags::PERMANENT:
+      flags["permanent"] = "true";
+      break;
+    case MessageFlags::LOCAL:
+      flags["local"] = "true";
+      break;
+    case MessageFlags::FTN:
+      flags["ftn"] = "true";
+      break;
+    case MessageFlags::PRIVATE:
+      flags["private"] = "true";
+      break;
+    case MessageFlags::WWIVNET:
+      flags["wwivnet"] = "true";
+      break;
+    }
+  }
+  a()->context().add_context_variables("msg.flags", flags);
+
+  // TODO(rushfan): Make these always be available like user?
+  const auto& net = a()->current_net();
+  std::map<std::string, std::string> n;
+  n["name"] = net.name;
+  if (net.type == network_type_t::ftn) {
+    n["node"] = net.fido.fido_address;
+  }
+  n["node"] = std::to_string(net.sysnum);
+
   const auto saved_mci_enabled = bout.mci_enabled();
   ScopeExit at_exit([=]
   {
@@ -825,7 +864,7 @@ ReadMessageResult read_post(int& msgnum, bool* next, int* val) {
   } else {
     bout.nl();
   }
-  const bool abort = false;
+  const auto abort = false;
   *next = false;
 
   auto p = *get_post(msgnum);

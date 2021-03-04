@@ -20,6 +20,7 @@
 
 #include "common/output.h"
 #include "sdk/acs/acs.h"
+#include "sdk/acs/eval.h"
 #include "sdk/acs/uservalueprovider.h"
 #include "sdk/acs/valueprovider.h"
 
@@ -143,16 +144,15 @@ std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
   const auto& eslrec = context_.config().sl(eff_sl);
   p["user"] = std::make_unique<acs::UserValueProvider>(context_.config(), context_.u(), eff_sl, eslrec);
 
-  const auto parts = SplitString(t.lexeme, ".", true);
-  const auto& prefix = parts.front();
+  const auto [prefix, suffix] = SplitOnceLast(t.lexeme, ".");
   if (const auto& iter = p.find(prefix); iter != std::end(p)) {
-    return iter->second->value(parts.at(1))->as_string();  
+    return iter->second->value(suffix)->as_string();  
   }
 
   for (const auto& v : context_.value_providers()) {
     // O(N) is on for small values of n
     if (iequals(prefix, v->prefix())) {
-      return v->value(parts.at(1))->as_string();
+      return v->value(suffix)->as_string();
     }
   }
 
@@ -190,10 +190,33 @@ std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
       return "ERROR: 'set lines' requires number argument to be 0";
     }
   } else {
+    // Handle return values from scripts back to the BBS
     context_.return_values().emplace(var, args.at(1).lexeme);
   }
   return {};
 }
+
+// TODO(rushfan): make sdk::acs::check_acs take optional vector of ValueProviders
+static bool check_acs(const Config& config, const User& user, int eff_sl,
+                      const std::string& expression,
+                      const std::vector<std::unique_ptr<MapValueProvider>>& maps) {
+  if (StringTrim(expression).empty()) {
+    // Empty expression is always allowed.
+    return true;
+  }
+
+  acs::Eval eval(expression);
+  const auto& eslrec = config.sl(eff_sl);
+  eval.add("user", std::make_unique<acs::UserValueProvider>(config, user, eff_sl, eslrec));
+
+  for (const auto& m : maps) {
+    auto mm = std::make_unique<MapValueProvider>(m->prefix(), m->map());
+    eval.add(m->prefix(), std::move(mm));
+  }
+
+  return eval.eval();
+}
+
 
 std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
   // Set command only
@@ -210,12 +233,11 @@ std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
   const auto yes = args.at(1).lexeme;
   const auto no = args.at(2).lexeme;
 
-  // TODO(rushfan): Use sdk:eval to evaluation the expression then return yes or no strings;
   auto eff_sl = context_.session_context().effective_sl();
   if (eff_sl == 0) {
     eff_sl = context_.u().sl();
   }
-  auto [b, _] = acs::check_acs(context_.config(), context_.u(), eff_sl, expr);
+  const auto b = check_acs(context_.config(), context_.u(), eff_sl, expr, context_.value_providers());
   return b ? yes : no;
 }
 

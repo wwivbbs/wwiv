@@ -138,6 +138,22 @@ void SplitString(const string& original_string, const string& delims, bool skip_
   }
 }
 
+std::tuple<std::string, std::string> SplitOnce(const std::string& original_string, const std::string& delims) {
+  if (const auto idx = original_string.find_first_of(delims); idx != std::string::npos) {
+    return std::make_tuple(original_string.substr(0, idx), original_string.substr(idx + 1));
+  }
+  return std::make_tuple(original_string, "");
+}
+
+std::tuple<std::string, std::string> SplitOnceLast(const std::string& original_string,
+    const std::string& delims) {
+  if (const auto idx = original_string.find_last_of(delims); idx != std::string::npos) {
+    return std::make_tuple(original_string.substr(0, idx), original_string.substr(idx + 1));
+  }
+  return std::make_tuple(original_string, "");
+}
+
+
 bool starts_with(const std::string& input, const std::string& match) {
   return input.size() >= match.size()
          && std::equal(std::begin(match), std::end(match), std::begin(input));
