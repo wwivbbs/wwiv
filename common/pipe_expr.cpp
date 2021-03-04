@@ -82,7 +82,7 @@ static std::optional<pipe_expr_token_t> parse_number(string::const_iterator& it,
 
 static std::optional<pipe_expr_token_t> parse_variable(string::const_iterator& it, const string::const_iterator& end) {  
   std::string s;
-  for (; it != end && (isalpha(*it) || *it == '.'); ++it) {
+  for (; it != end && (isalpha(*it) || *it == '.' || *it == '_'); ++it) {
     s.push_back(*it);
   }
   StringTrim(&s);
@@ -122,7 +122,7 @@ static std::vector<pipe_expr_token_t> tokenize(std::string::const_iterator& it, 
       if (auto o = parse_number(it, end)) {
         r.emplace_back(o.value());
       }
-    } else if (isalpha(c) || c == '.') {
+    } else if (isalpha(c) || c == '.' || c == '_') {
       if (auto o = parse_variable(it, end)) {
         r.emplace_back(o.value());
       }
@@ -189,6 +189,8 @@ std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
     } else {
       return "ERROR: 'set lines' requires number argument to be 0";
     }
+  } else {
+    context_.return_values().emplace(var, args.at(1).lexeme);
   }
   return {};
 }

@@ -42,6 +42,7 @@ public:
   [[nodiscard]] wwiv::common::SessionContext& sess() override;
   [[nodiscard]] wwiv::sdk::User* user() override;
   [[nodiscard]] const wwiv::sdk::User* user() const;
+  [[nodiscard]] wwiv::common::Context& context() override;
 /*
  [[nodiscard]] wwiv::sdk::User* user() const { return user_; }
   [[nodiscard]] TestIO* io() const { return io_.get(); }

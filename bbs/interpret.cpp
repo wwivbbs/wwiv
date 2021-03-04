@@ -218,9 +218,9 @@ wwiv::common::Interpreted BbsMacroContext::interpret_string(const std::string& s
           if (data.empty() || semi == std::string::npos) {
             return s;
           }
-          const auto x = to_number<int>(data.substr(0, semi))-1;
+          const auto x = to_number<int>(data.substr(0, semi));
           res.x = std::max<int>(0, x);
-          const auto y = to_number<int>(data.substr(semi + 1)) - 1;
+          const auto y = to_number<int>(data.substr(semi + 1));
           res.y = std::max<int>(0,y);
           return res;
         }

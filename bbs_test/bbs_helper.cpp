@@ -63,3 +63,7 @@ User* BbsHelper::user() {
 const User* BbsHelper::user() const {
   return app_->user();  
 }
+
+wwiv::common::Context& BbsHelper::context() {
+  return app_->context();
+}

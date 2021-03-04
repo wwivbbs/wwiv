@@ -129,3 +129,13 @@ TEST_F(BPutsTest, IfPipe_Embedded) {
   bout.bputs(s1);
   EXPECT_EQ("Hello Rushfan", helper.io()->captured());
 }
+
+TEST_F(BPutsTest, MapValue_Smoke) {
+  helper.user()->set_name("Rushfan");
+  helper.user()->real_name("RealName");
+  helper.user()->sl(200);
+  helper.sess().effective_sl(200);
+  helper.context().add_context_variables("m", {{"num", "1234"}});
+  bout.bputs(R"(Message # |{m.num})");
+  EXPECT_EQ("Message # 1234", helper.io()->captured());
+}

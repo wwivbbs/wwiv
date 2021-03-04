@@ -31,6 +31,7 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "core/file.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -347,21 +348,16 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
   return data;
 }
 
-static FullScreenView display_type2_message_header(Type2MessageData& msg) {
-  const auto oldcuratr = bout.curatr();
-  static constexpr const auto COLUMN2 = 42;
+static int display_header_text(Type2MessageData& msg) {
+  static constexpr auto COLUMN2 = 42;
   auto num_header_lines = 0;
-
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
-    auto msgarea = msg.message_area;
-    if (msgarea.size() > 35) {
-      msgarea = msgarea.substr(0, 35);
-    }
+    const auto message_area = trim_to_size(msg.message_area, 35);
     bout << "|#9 Sub|#7: ";
     bout.Color(a()->GetMessageColor());
-    bout << msgarea;
+    bout << message_area;
     if (a()->user()->GetScreenChars() >= 78) {
-      const auto pad = COLUMN2 - (6 + msgarea.size());
+      const auto pad = COLUMN2 - (6 + message_area.size());
       bout << string(pad, ' ');
     } else {
       bout.nl();
@@ -379,10 +375,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     num_header_lines++;
   }
 
-  auto from = msg.from_user_name;
-  if (from.size() > 35) {
-    from = from.substr(0, 35);
-  }
+  const auto from = trim_to_size(msg.from_user_name, 35);
   bout << "|#9From|#7: |#1" << from;
   if (a()->user()->GetScreenChars() >= 78) {
     const int used = ssize(from) + 6;
@@ -403,11 +396,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   bout << msg.title << wwiv::endl;
   num_header_lines++;
 
-  auto sysname = msg.from_sys_name;
-  if (!msg.from_sys_name.empty()) {
-    if (sysname.size() > 35) {
-      sysname = sysname.substr(0, 35);
-    }
+  if (const auto sysname = trim_to_size(msg.from_sys_name, 35); !sysname.empty()) {
     bout << "|#9 Sys|#7: |#1" << sysname;
     if (a()->user()->GetScreenChars() >= 78) {
       const auto used = 6 + ssize(sysname);
@@ -460,6 +449,48 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     }
     bout.nl();
     num_header_lines++;
+  }
+  return num_header_lines;
+}
+
+static std::tuple<bool, int> display_header_file(Type2MessageData& msg) {
+  std::map<std::string, std::string> m;
+  m["message_area"] = trim_to_size(msg.message_area, 35);
+  m["message_number"] = std::to_string(msg.message_number);
+  m["total_messages"] = std::to_string(msg.total_messages);
+  m["from"] =trim_to_size(msg.from_user_name, 35);
+  m["date"] = msg.date;
+  m["to"] = msg.to_user_name;
+  m["title"] = msg.title;
+  m["sys"] = trim_to_size(msg.from_sys_name, 35);
+  m["loc"] = trim_to_size(msg.from_sys_loc, 35);
+  m["flags"] = "[TODO ADD FLAGS]";    
+
+  a()->context().add_context_variables("msg", m);
+  const auto saved_mci_enabled = bout.mci_enabled();
+  ScopeExit at_exit([=]
+  {
+    a()->context().clear_context_variables();
+    bout.set_mci_enabled(saved_mci_enabled);
+  });
+  bout.set_mci_enabled(true);
+  if (bout.printfile("fs_msgread")) {
+    auto num_header_lines = 5;
+    if (const auto iter = a()->context().return_values().find("num_header_lines");
+        iter != std::end(a()->context().return_values())) {
+      num_header_lines = to_number<int>(iter->second);
+    }
+    return std::make_tuple(true, num_header_lines);
+  }
+  return std::make_tuple(false, 5);
+}
+
+static FullScreenView display_type2_message_header(Type2MessageData& msg) {
+  const auto oldcuratr = bout.curatr();
+
+  auto [displayed, num_header_lines] = display_header_file(msg);
+  if (!displayed) {
+    num_header_lines = display_header_text(msg);
   }
 
   const auto screen_width = a()->user()->GetScreenChars();
