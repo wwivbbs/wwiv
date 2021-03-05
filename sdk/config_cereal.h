@@ -82,6 +82,11 @@ template <class Archive> void serialize(Archive& ar, newuser_config_t& n) {
   SERIALIZE(n, use_email_address);
 }
 
+template <class Archive> void serialize(Archive& ar, system_toggles_t& n) {
+  SERIALIZE(n, lastnet_at_logon);
+}
+
+
 template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, header);
   SERIALIZE(n, systempw);
@@ -137,6 +142,8 @@ template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, max_dirs);
   SERIALIZE(n, max_backups);
   SERIALIZE(n, script_flags);
+
+  SERIALIZE(n, toggles);
 }
 
 
