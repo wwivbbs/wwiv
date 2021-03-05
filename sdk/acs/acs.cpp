@@ -36,15 +36,6 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::acs {
 
-static std::unique_ptr<Eval> make_eval(const Config& config, const User& user, int eff_sl,
-                                       const std::string& expression) {
-  auto eval = std::make_unique<Eval>(expression);
-
-  const auto& eslrec = config.sl(eff_sl);
-  eval->add("user", std::make_unique<UserValueProvider>(config, user, eff_sl, eslrec));
-  return eval;
-}
-
 std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const User& user, int eff_sl,
                                                      const std::string& expression,
                                                      acs_debug_t debug) {
@@ -54,21 +45,27 @@ std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const
     return std::make_tuple(true, debug_lines);
   }
 
-  auto eval = make_eval(config, user, eff_sl, expression);
-  const auto result = eval->eval();
-  return std::make_tuple(result, eval->debug_info());
+  Eval eval(expression);
+  const auto& eslrec = config.sl(eff_sl);
+  UserValueProvider u(config, user, eff_sl, eslrec);
+  eval.add(&u);
+  const auto result = eval.eval();
+  return std::make_tuple(result, eval.debug_info());
 }
 
 std::tuple<bool, std::string, std::vector<std::string>>
 validate_acs(const Config& config, const User& user, int eff_sl, const std::string& expression) {
-  auto eval = make_eval(config, user, eff_sl, expression);
+  Eval eval(expression);
+  const auto& eslrec = config.sl(eff_sl);
+  UserValueProvider u(config, user, eff_sl, eslrec);
+  eval.add(&u);
 
   try {
-    eval->eval_throws();
+    eval.eval_throws();
     std::vector<std::string> debug_lines;
     return std::make_tuple(true, "", debug_lines);
   } catch (const eval_error& e) {
-    return std::make_tuple(false, e.what(), eval->debug_info());
+    return std::make_tuple(false, e.what(), eval.debug_info());
   }
 }
 

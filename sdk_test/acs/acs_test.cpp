@@ -41,7 +41,7 @@ public:
 
   void createEval(const std::string& expr) { 
     eval = std::make_unique<Eval>(expr);
-    eval->add("user", std::make_unique<UserValueProvider>(config_, user_, user_.sl(), sl_));
+    eval->add(std::make_unique<UserValueProvider>(config_, user_, user_.sl(), sl_));
 
   }
   std::unique_ptr<Eval> eval;

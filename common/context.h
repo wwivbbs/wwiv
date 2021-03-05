@@ -331,13 +331,13 @@ public:
    */
   bool add_context_variables(std::string prefix, std::map<std::string, std::string> map);
   bool clear_context_variables();
-  const std::vector<std::unique_ptr<MapValueProvider>>& value_providers() const { return value_providers_; }
+  [[nodiscard]] const std::vector<std::unique_ptr<MapValueProvider>>& value_providers() const { return value_providers_; }
 
   /**
    * Return values to be returned from scripts to the BBS.
    * example: num_header_lines is returned from the full screen reader and editor.
    */
-  std::map<std::string, std::string>& return_values() { return return_values_; }
+  [[nodiscard]] std::map<std::string, std::string>& return_values() { return return_values_; }
 
 private:
   std::vector<std::unique_ptr<MapValueProvider>> value_providers_;

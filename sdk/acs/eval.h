@@ -31,17 +31,37 @@ namespace wwiv::sdk::acs {
 
 enum class debug_message_t { trace, parse };
 
+/** Shorthand to create an optional Value */
+template <typename T> static std::optional<Value> val(T&& v) {
+  return std::make_optional<Value>(std::forward<T>(v));
+}
+
+class DefaultValueProvider : public ValueProvider {
+public:
+  DefaultValueProvider() : ValueProvider("") {}
+  [[nodiscard]] std::optional<Value> value(const std::string& name) override {
+    if (name == "true") {
+      return val(true);
+    }
+    if (name == "false") {
+      return val(false);
+    }
+    return std::nullopt;
+  }  
+};
+
 /** 
  * Evaluation engine for evaluating expressions provides.
  */
 class Eval final : public core::parser::AstVisitor {
 public:
   explicit Eval(std::string expression);
-  virtual ~Eval() = default;
+  ~Eval() override = default;
 
   bool eval_throws();
   bool eval();
-  bool add(const std::string& prefix, std::unique_ptr<ValueProvider>&& p);
+  bool add(std::unique_ptr<ValueProvider>&& p);
+  bool add(ValueProvider* p);
   std::optional<Value> to_value(core::parser::Factor* n);
 
   /** 
@@ -66,10 +86,12 @@ public:
 
 private:
   std::string expression_;
-  std::unordered_map<std::string, std::unique_ptr<ValueProvider>> providers_;
+  std::unordered_map<std::string, ValueProvider*> providers_;
   std::unordered_map<int, Value> values_;
   std::string error_text_;
   std::vector<std::string> debug_info_;
+  std::unordered_map<std::string, std::unique_ptr<ValueProvider>> providers_storage_;
+  DefaultValueProvider default_provider_;
 };  // class
 
 } 

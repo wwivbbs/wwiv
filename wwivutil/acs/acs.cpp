@@ -66,7 +66,8 @@ int AcsCommand::Execute() {
   Eval eval(expr);
   const auto sl = user.sl();
   const auto& slr = config()->config()->sl(sl);
-  eval.add("user", std::make_unique<UserValueProvider>(*config()->config(), user, sl, slr));
+  UserValueProvider u(*config()->config(), user, sl, slr);
+  eval.add(&u);
 
   auto result = eval.eval();
   std::cout << "Evaluate: '" << expr << "' ";

@@ -207,11 +207,11 @@ static bool check_acs(const Config& config, const User& user, int eff_sl,
 
   acs::Eval eval(expression);
   const auto& eslrec = config.sl(eff_sl);
-  eval.add("user", std::make_unique<acs::UserValueProvider>(config, user, eff_sl, eslrec));
+  eval.add(std::make_unique<acs::UserValueProvider>(config, user, eff_sl, eslrec));
 
   for (const auto& m : maps) {
     auto mm = std::make_unique<MapValueProvider>(m->prefix(), m->map());
-    eval.add(m->prefix(), std::move(mm));
+    eval.add(std::move(mm));
   }
 
   return eval.eval();

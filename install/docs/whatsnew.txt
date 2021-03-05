@@ -46,6 +46,42 @@ What's New in WWIV 5.7.0 (2021)
 + When toggling expert mode, WWIV will now display the status of expert
   mode or not unless "quiet=on" is passed to the menu command as data.
 * Still allow HandleControlKey to work with bgetch_event. (#1382)
+* Added ACS user.guest, and cleaned up menu and newuser routines a bit.
+* Let KEY_SSAVE behave like control-Z (#1360)
++ Added user.validated to acs. (#1387)
++ better asv from valuser command (#1388)
+* Fix automessage menu: (A)uto reply not working in default menus (#1389)
+* Don't add RE: line to email messages.
++ Fix changing user settings for online user gets overwritten (#960)
+* Improve display of 'I' information and FTN networks (#1392)
+* Fix node instance messages should use new scratch dir not data dir (#1391)
+* Don't check for dupes on FTN emails. (#1395)
+* Full screen reader not displaying color right when previous line ends in ^A (#1399)
+* System crash when setting Transfer QSCAN (#1394)
+* Fix PAUSE prompt from loosing current attribute. (#1398)
++ Add FTN network data in net.log for FTN using Fake Network node # (#1393)
+* Fix control-a,d,f key handling in fsed.
+* Run network3 automatically after editing a network
+! --title must be specified for wwivutil email add
+* Modem speed in last callers list (#1381)
+* Having no networks to load is not an error anymore. (#1400)
++ Added new wwivconfig page (under (G)) for configuring system toggles
+    * Remove FAST_TAG_RELIST from wwiv.ini, it was not useful.
+    * Removed CLOSE_XFER from wwiv.ini, it was no longer useful
+    * Removed SETLDATE from wwiv.ini, it's always true.
+    * Removed FORCE_NEWUSER from wwiv.ini. It was never used and the variable
+      for it was removed in 5.0 build 14 (around 2001)
+    * Removed CHAIN_REG, now that all of the data is in chains.json, there's
+      no need to have this variable (which just kept chain.reg from being used)
+    * Added system toggle for showing last network connections at logon.
+    * Removed EXTENDED_USERINFO from wwiv.ini, it's always true.
+    * Removed NEWUSER_MINfrom wwiv.ini, it's not used anymore.
+    * Removed OFF_HOOK from wwiv.ini, it wasn't used anymore.
+* Don't store intermediate reference to pass to WWIVMessageApi constructor. (#1402)
++ new files fs_msgread.msg and fs_msgscan.msg control the headers for the full
+  screen message reader and title list.  Lots of new pipe expression variables
+  are available and documented under "Displaying Text" in WWIV's online 
+  documentation.
 
 What's New in WWIV 5.6.1 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

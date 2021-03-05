@@ -17,10 +17,10 @@
 /**************************************************************************/
 #include "sdk/acs/eval.h"
 
-#include "core/parser/ast.h"
-#include "core/parser/lexer.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "core/parser/ast.h"
+#include "core/parser/lexer.h"
 #include "fmt/printf.h"
 #include "sdk/acs/eval_error.h"
 #include <optional>
@@ -49,10 +49,9 @@ std::optional<Value> Eval::to_value(Factor* n) {
   case FactorType::string_val:
     return Value(n->value());
   case FactorType::variable: {
-    auto sval = n->value();
+    const auto sval = n->value();
     auto [prefix, member] = split_obj_name(sval);
-    auto vpi = providers_.find(prefix);
-    if (vpi != std::end(providers_)) {
+    if (auto vpi = providers_.find(prefix); vpi != std::end(providers_)) {
       if (auto o = vpi->second->value(member)) {
         return {o.value()};
       }
@@ -63,28 +62,9 @@ std::optional<Value> Eval::to_value(Factor* n) {
   throw eval_error(fmt::format("Error finding factor for object: '{}'.", to_string(*n)));
 }
 
-/** Shorthand to create an optional Value */
-template <typename T> static std::optional<Value> val(T&& v) {
-  return std::make_optional<Value>(std::forward<T>(v));
-}
-
-class DefaultValueProvider : public ValueProvider {
-public:
-  DefaultValueProvider() : ValueProvider("") {}
-  [[nodiscard]] std::optional<Value> value(const std::string& name) override {
-    if (name == "true") {
-      return val(true);
-    }
-    if (name == "false") {
-      return val(false);
-    }
-    return std::nullopt;
-  }
-  
-};
 
 Eval::Eval(std::string expression) : expression_(std::move(expression)) {
-  add("", std::make_unique<DefaultValueProvider>());  
+  add(&default_provider_);  
 }
 
 
@@ -183,8 +163,14 @@ bool Eval::eval() {
   return false;
 }
 
-bool Eval::add(const std::string& prefix, std::unique_ptr<ValueProvider>&& p) { 
-  providers_[prefix] = std::move(p);
+bool Eval::add(ValueProvider* p) { 
+  providers_[p->prefix()] = p;
+  return true; 
+}
+
+bool Eval::add(std::unique_ptr<ValueProvider>&& p) {
+  add(p.get());
+  providers_storage_[p->prefix()] = std::move(p);
   return true; 
 }
 
