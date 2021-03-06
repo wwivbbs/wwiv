@@ -94,11 +94,8 @@ static void wfc_update() {
   // Every time we update the WFC, reset the lines listed.
   bout.clear_lines_listed();
 
-  const auto ir = a()->instances().at(inst_num);
-  User u{};
-  a()->users()->readuser_nocache(&u, ir.user_number());
   a()->localIO()->PutsXYA(57, 18, 15, fmt::format("{:<3}", inst_num));
-  if (ir.online()) {
+  if (const auto ir = a()->instances().at(inst_num); ir.online()) {
     const auto unn = a()->names()->UserName(ir.user_number());
     a()->localIO()->PutsXYA(42, 19, 14, fmt::format("{:<25}", unn));
   } else {
@@ -147,10 +144,9 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(8, 1, 14, fulldate());
     a()->localIO()->PutsXYA(40, 1, 3, StrCat("OS: ", wwiv::os::os_version_string()));
     a()->localIO()->PutsXYA(21, 6, 14, std::to_string(status->calls_today()));
-    User sysop{};
     auto feedback_waiting = 0;
-    if (a()->users()->readuser_nocache(&sysop, sysop_usernum)) {
-      feedback_waiting = sysop.email_waiting();
+    if (const auto sysop = a()->users()->readuser_nocache(sysop_usernum)) {
+      feedback_waiting = sysop->email_waiting();
     }
     a()->localIO()->PutsXYA(21, 7, 14, std::to_string(feedback_waiting));
     if (nNumNewMessages) {
@@ -567,14 +563,12 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
     return std::make_tuple(local_logon_t::exit, -1);
   }
 
-  User tu;
-  a_->users()->readuser_nocache(&tu, unx);
-  if (tu.sl() != 255 || tu.IsUserDeleted()) {
+  if (const auto tu = a_->users()->readuser_nocache(unx); tu->sl() != 255 || tu->IsUserDeleted()) {
     return std::make_tuple(local_logon_t::exit, -1);
   }
 
   a_->sess().user_num(unx);
-  auto saved_at_wfc = a_->at_wfc();
+  const auto saved_at_wfc = a_->at_wfc();
   a_->set_at_wfc(false);
   a_->ReadCurrentUser();
   read_qscn(a_->sess().user_num(), a()->sess().qsc, false);

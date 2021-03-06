@@ -132,7 +132,7 @@ void write_automessage() {
     });
 
     TextFile file(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "wt");
-    const auto authorName = a()->names()->UserName(a()->sess().user_num());
+    const auto authorName = a()->user()->name_and_number();
     file.WriteLine(authorName);
     sysoplog() << "Changed Auto-message";
     for (const auto& line : lines) {

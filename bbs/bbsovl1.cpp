@@ -85,7 +85,7 @@ void YourInfo() {
   bout.cls();
   bout.litebar("Your User Information");
   bout.nl();
-  bout << "|#9Your name      : |#2" << a()->names()->UserName(a()->sess().user_num()) << wwiv::endl;
+  bout << "|#9Your name      : |#2" << a()->user()->name_and_number() << wwiv::endl;
   bout << "|#9Phone number   : |#2" << a()->user()->voice_phone() << wwiv::endl;
   if (a()->user()->email_waiting() > 0) {
     bout << "|#9Mail Waiting   : |#2" << a()->user()->email_waiting() << wwiv::endl;
@@ -228,14 +228,12 @@ void feedback(bool bNewUserFeedback) {
     email("Guest Account Feedback", 1, 0, true, 0, true);
     return;
   }
-  int nNumUserRecords = a()->users()->num_user_records();
+  const int num_user_records = a()->users()->num_user_records();
   int i1 = 0;
 
-  for (i = 2; i < 10 && i < nNumUserRecords; i++) {
-    User user;
-    a()->users()->readuser(&user, i);
-    if ((user.sl() == 255 || (a()->config()->sl(user.sl()).ability & ability_cosysop)) &&
-        !user.IsUserDeleted()) {
+  for (i = 2; i < 10 && i < num_user_records; i++) {
+    if (const auto user = a()->users()->readuser(i, UserManager::mask::non_deleted); 
+      user->sl() == 255 || a()->config()->sl(user->sl()).ability & ability_cosysop) {
       i1++;
     }
   }
@@ -246,7 +244,7 @@ void feedback(bool bNewUserFeedback) {
     onek_str[0] = '\0';
     i1 = 0;
     bout.nl();
-    for (i = 1; (i < 10 && i < nNumUserRecords); i++) {
+    for (i = 1; (i < 10 && i < num_user_records); i++) {
       User user;
       a()->users()->readuser(&user, i);
       if ((user.sl() == 255 || a()->config()->sl(user.sl()).ability & ability_cosysop) &&

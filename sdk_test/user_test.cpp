@@ -31,21 +31,6 @@ using std::string;
 
 using namespace wwiv::sdk;
 
-TEST(UserTest, IsStandardLayout) {
-  ASSERT_TRUE(is_standard_layout<User>::value);
-  EXPECT_EQ(sizeof(userrec), sizeof(User));
-}
-
-TEST(UserTest, CanCopyToUser) {
-  userrec u{};
-  strcpy(reinterpret_cast<char*>(u.name), "Test User");
-
-  User user{};
-  memcpy(&user, &u, sizeof(userrec));
-
-  EXPECT_STREQ(reinterpret_cast<char*>(u.name), user.GetName());
-}
-
 TEST(UserTest, Birthday) {
   User u;
   u.birthday_mdy(2, 15, 1980);

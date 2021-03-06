@@ -1415,13 +1415,13 @@ void new_mail() {
   LoadFileIntoWorkspace(a()->context(), file, true, true);
   use_workspace = true;
 
-  MessageEditorData data(a()->names()->UserName(a()->sess().user_num()));
+  MessageEditorData data(a()->user()->name_and_number());
   data.title = StrCat("Welcome to ", a()->config()->system_name(), "!");
   data.need_title = true;
   data.anonymous_flag = 0;
   data.aux = "email";
   data.fsed_flags = FsedFlags::NOFSED;
-  data.to_name = a()->names()->UserName(a()->sess().user_num());
+  data.to_name = a()->user()->name_and_number();
   data.msged_flags = MSGED_FLAG_NONE;
   data.silent_mode = true;
   messagerec msg;

@@ -17,15 +17,15 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/finduser.h"
+
 #include "bbs/application.h"
 #include "bbs/bbs.h"
-#include "common/com.h"
 #include "common/input.h"
 #include "core/strings.h"
-#include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+
 #include <string>
 
 using std::string;
@@ -80,8 +80,7 @@ int finduser1(const string& searchString) {
   if (searchString.empty()) {
     return 0;
   }
-  const auto un = finduser(searchString);
-  if (un > 0) {
+  if (const auto un = finduser(searchString); un > 0) {
     return un;
   }
 

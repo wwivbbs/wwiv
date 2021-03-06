@@ -50,7 +50,6 @@ void attach_file(int mode) {
   bool found;
   std::string full_pathname;
   std::string file_to_attach;
-  User u;
   filestatusrec fsr{};
 
   bout.nl();

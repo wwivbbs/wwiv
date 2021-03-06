@@ -148,10 +148,8 @@ bool Names::Rebuild(const UserManager& um) {
 
   names_.clear();
   for (auto i = 1; i <= num_user_records; i++) {
-    User user;
-    um.readuser(&user, i);
-    if (!user.IsUserDeleted() && !user.IsUserInactive()) {
-      AddUnsorted(user.name(), i);
+    if (const auto user = um.readuser(i, UserManager::mask::active)) {
+      AddUnsorted(user->name(), i);
     }
   }
   return true;

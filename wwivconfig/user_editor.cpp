@@ -303,7 +303,7 @@ void user_editor(const wwiv::sdk::Config& config) {
     } break;
     case 'D': {
       // Delete user.
-      wwiv::sdk::User u(user);
+      wwiv::sdk::User u(user, current_usernum);
       if (u.IsUserDeleted()) {
         break;
       }
@@ -318,14 +318,13 @@ void user_editor(const wwiv::sdk::Config& config) {
       need_names_list_rebuilt = true;
     } break;
     case 'J': {
-      auto user_number = JumpToUser(items.window(), config.datadir());
-      if (user_number >= 1) {
+      if (const auto user_number = JumpToUser(items.window(), config.datadir()); user_number >= 1) {
         current_usernum = user_number;
       }
     } break;
     case 'R': {
       // Restore Deleted User.
-      wwiv::sdk::User u(user);
+      wwiv::sdk::User u(user, current_usernum);
       if (!u.IsUserDeleted()) {
         break;
       }

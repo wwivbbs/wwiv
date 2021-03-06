@@ -63,8 +63,7 @@ void multimail(int *pnUserNumber, int numu) {
     return;
   }
   bout.nl();
-
-  MessageEditorData data(a()->names()->UserName(a()->sess().user_num()));
+  MessageEditorData data(a()->user()->name_and_number());
   data.need_title = true;
   if (a()->config()->sl(a()->sess().effective_sl()).ability & ability_email_anony) {
     data.anonymous_flag = anony_enable_anony;

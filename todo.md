@@ -2,9 +2,6 @@
 # Copyright 2002-2021, WWIV Software Services
 ***
 
-# Expressions
-* Figure out how to stop using unique_ptr for 
-
 # Things to add to fix.
 
 * Check for no conferences
@@ -23,12 +20,8 @@
 * Use BbsMacroFilter in wwivutil print.
 
 TODO Expression:
-|{user.name}
 |{uppercase user.name)}
-
-# ACS
-* See if we can pull the sl, ar, age from the expression to populate the 
-  legacy subs.
+|{user.name, <35)} (left justified, 35 spaces)
 
 # Install
 curl https://build.wwivbbs.org/jenkins/job/wwiv/lastStableBuild/label=linux-debian10/api/json
@@ -83,13 +76,15 @@ jq ".number" jenkins.json
   high ascii too, etc).
 * cleanup context class (doc comments, treat type-0 as email api
 * Move the userrec from User class to heap from stack.
-* simplify names in WUser
 * add to_number<T> override that takes a default value, and then 
   change to_number<T>
   to return an std::optional<T> as the return type.
 * Switch all BBS LocalIO subclasses to use curses KEY types not Win32 key code
   types for characters >0xff. (i.e. KEY_LEFT not LEFT)
-
+* simplify names in User
+* See if you can move user num and other transient user info into user class.
+* Finish making bbs only use UserManager that returns optional
+* Remove readuser_nocache, it's just readuser now.
 
 ## core::File Improvements
 ***

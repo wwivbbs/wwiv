@@ -129,12 +129,11 @@ bool external_text_edit(const string& edit_filename, const std::filesystem::path
   }
 
   const auto& editor = a()->editors[editor_number];
-  MessageEditorData data(a()->names()->UserName(a()->sess().user_num()));
+  MessageEditorData data(a()->user()->name_and_number());
   data.msged_flags = flags;
   auto setanon = 0;
   if (auto eme = CreateExternalMessageEditor(editor, data, numlines, &setanon,
-                                             a()->sess().dirs().temp_directory());
-      !eme->Before()) {
+                                             a()->sess().dirs().temp_directory()); !eme->Before()) {
     return false;
   }
   

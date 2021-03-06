@@ -82,8 +82,7 @@ public:
 
     if (auto o = um.readuser(user_number)) {
       auto& user = o.value();
-      const auto& v = config()->config()->auto_val(asv_num);
-      if (!user.asv(v)) {
+      if (const auto& v = config()->config()->auto_val(asv_num); !user.asv(v)) {
         std::cout << "Failed to apply ASV to user number: " << user_number;
         return 1;
       }

@@ -59,20 +59,18 @@ namespace wwiv::net::network2 {
 
 // Gets the user number or 0 if it is not found.
 static int GetUserNumber(const std::string& name, UserManager& um) {
-  auto max = um.num_user_records();
+  const auto max = um.num_user_records();
   auto realname_pos = 0;
   for (auto i = 0; i <= max; i++) {
-    User u;
-    if (!um.readuser_nocache(&u, i)) {
+    auto u = um.readuser_nocache(i);
+    if (!u) {
       continue;
     }
-    if (iequals(name, u.name())) {
+    if (iequals(name, u->name())) {
       return i;
     }
-    // Try to fix emails not matching against real names
-    // when coming from FTN systems.
-    const auto matches_realname = iequals(name, u.real_name());
-    if (matches_realname && realname_pos == 0) {
+    if (const auto matches_realname = iequals(name, u->real_name());
+        matches_realname && realname_pos == 0) {
       realname_pos = i;
     } else if (matches_realname && realname_pos != 0) {
       LOG(WARNING) << "Duplicate real names";

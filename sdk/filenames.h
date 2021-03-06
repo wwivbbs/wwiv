@@ -98,7 +98,6 @@ constexpr auto CHAINS_JSON = "chains.json";
 #define GFILES_NOEXT "gfiles"
 #define GUEST_NOEXT "guest"
 
-#define INETADDR_DAT "inetaddr.dat"
 #define INPUT_MSG "input.msg"
 #define INSTANCE_DAT "instance.dat"
 

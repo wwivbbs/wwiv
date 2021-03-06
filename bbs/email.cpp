@@ -22,16 +22,15 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "common/com.h"
 #include "bbs/connect1.h"
 #include "bbs/inetmsg.h"
 #include "bbs/inmsg.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
-#include "common/quote.h"
 #include "bbs/sysoplog.h"
+#include "common/input.h"
+#include "common/quote.h"
 #include "core/datetime.h"
 #include "core/os.h"
 #include "core/stl.h"
@@ -81,14 +80,14 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
   }
   if (userRecord.forward_systemnum() != 0) {
     if (!userRecord.IsMailForwardedToInternet()) {
-      int network_number = a()->net_num();
+      const int network_number = a()->net_num();
       set_net_num(userRecord.forward_netnum());
       if (!valid_system(userRecord.forward_systemnum())) {
         set_net_num(network_number);
         return false;
       }
       if (!userRecord.forward_usernum()) {
-        read_inet_addr(a()->net_email_name, *pUserNumber);
+        a()->net_email_name = read_inet_addr(*pUserNumber);
         if (!check_inet_addr(a()->net_email_name)) {
           return false;
         }
@@ -97,7 +96,7 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
       *pSystemNumber = userRecord.forward_systemnum();
       return true;
     }
-    read_inet_addr(a()->net_email_name, *pUserNumber);
+    a()->net_email_name = read_inet_addr(*pUserNumber);
     *pUserNumber = 0;
     *pSystemNumber = 0;
     return false;
@@ -167,9 +166,8 @@ std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
 
   auto file = std::make_unique<File>(fn);
   for (auto num = 0; num < NUM_ATTEMPTS_TO_OPEN_EMAIL; num++) {
-    const auto mode = bAllowWrite ? File::modeBinary | File::modeCreateFile | File::modeReadWrite
-                                  : File::modeBinary | File::modeReadOnly;
-    if (file->Open(mode)) {
+    if (file->Open(bAllowWrite ? File::modeBinary | File::modeCreateFile | File::modeReadWrite
+                                  : File::modeBinary | File::modeReadOnly)) {
       return file;
     }
     sleep_for(seconds(DELAY_BETWEEN_EMAIL_ATTEMPTS));
@@ -220,8 +218,7 @@ void sendout_email(EmailData& data) {
       while (i > 0 && messageRecord.tosys == 0 && messageRecord.touser == 0) {
         --i;
         file_email->Seek(i * sizeof(mailrec), File::Whence::begin);
-        auto i1 = file_email->Read(&messageRecord, sizeof(mailrec));
-        if (i1 == -1) {
+        if (auto i1 = file_email->Read(&messageRecord, sizeof(mailrec)); i1 == -1) {
           bout << "|#6DIDN'T READ WRITE!\r\n";
         }
       }
@@ -423,7 +420,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   bout.nl();
   if (ForwardMessage(&user_number, &system_number)) {
     if (system_number == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
-      read_inet_addr(destination, user_number);
+      destination = read_inet_addr(user_number);
     }
     bout << "\r\nMail Forwarded.\r\n\n";
     if (user_number == 0 && system_number == 0) {
@@ -530,7 +527,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   write_inst(INST_LOC_EMAIL, (system_number == 0) ? user_number : 0, INST_FLAGS_NONE);
 
   msg.storage_type = EMAIL_STORAGE;
-  MessageEditorData data(a()->names()->UserName(a()->sess().user_num()));
+  MessageEditorData data(a()->user()->name_and_number());
   data.title = title;
   data.need_title = true;
   data.fsed_flags = (bAllowFSED) ? FsedFlags::FSED : FsedFlags::NOFSED;
@@ -573,8 +570,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
           done = true;
           break;
         }
-        auto [tu, ts] = parse_email_info(emailAddress);
-        if (tu || ts) {
+        if (auto [tu, ts] = parse_email_info(emailAddress); tu || ts) {
           carbon_copy[nNumUsers].user_number = tu;
           carbon_copy[nNumUsers].system_number = ts;
           to_char_array(carbon_copy[nNumUsers].net_name, a()->network_name());
@@ -677,7 +673,6 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
 }
 
 void imail(const std::string& title, uint16_t user_number, uint16_t system_number) {
-  auto fwdu = user_number;
   bool fwdm = false;
 
   if (ForwardMessage(&user_number, &system_number)) {
@@ -691,20 +686,18 @@ void imail(const std::string& title, uint16_t user_number, uint16_t system_numbe
 
   string internet_email_address;
   if (fwdm) {
-    read_inet_addr(internet_email_address, fwdu);
+    internet_email_address = read_inet_addr(user_number);
   }
   
-  int i = 1;
+  bool doit = true;
   if (system_number == 0) {
-    User userRecord;
-    a()->users()->readuser(&userRecord, user_number);
-    if (!userRecord.IsUserDeleted()) {
-      bout << "|#5E-mail " << a()->names()->UserName(user_number) << "? ";
+    if (auto user = a()->users()->readuser(user_number, UserManager::mask::non_deleted)) {
+      bout << "|#5E-mail " << user->name_and_number() << "? ";
       if (!bin.yesno()) {
-        i = 0;
+        doit = false;
       }
     } else {
-      i = 0;
+      doit = false;
     }
   } else {
     if (fwdm) {
@@ -713,14 +706,15 @@ void imail(const std::string& title, uint16_t user_number, uint16_t system_numbe
       bout << "|#5E-mail User " << user_number << " @" << system_number << " ? ";
     }
     if (!bin.yesno()) {
-      i = 0;
+      doit = false;
     }
   }
   clear_quotes(a()->sess());
-  if (i) {
+  if (doit) {
     email(title, user_number, system_number, false, 0);
   }
 }
+
 void delmail(File& f, size_t loc) {
   mailrec m{};
   User user;
@@ -734,9 +728,9 @@ void delmail(File& f, size_t loc) {
 
   bool rm = true;
   if (m.status & status_multimail) {
-    auto t = f.length() / sizeof(mailrec);
+    const auto num_records = f.length() / sizeof(mailrec);
     auto otf = false;
-    for (size_t i = 0; i < t; i++) {
+    for (size_t i = 0; i < num_records; i++) {
       if (i != loc) {
         mailrec m1{};
         f.Seek(i * sizeof(mailrec), File::Whence::begin);
@@ -776,9 +770,9 @@ std::string fixup_user_entered_email(const std::string& user_input) {
   if (user_input.empty()) {
     return{};
   }
-  const auto at_pos = user_input.find('@');
-  if (at_pos != std::string::npos && at_pos < user_input.size() - 1 &&
-      isalpha(user_input.at(at_pos + 1))) {
+  if (const auto at_pos = user_input.find('@'); at_pos != std::string::npos &&
+                                                at_pos < user_input.size() - 1 &&
+                                                isalpha(user_input.at(at_pos + 1))) {
     if (!contains(user_input, INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS)) {
       return StrCat(ToStringLowerCase(user_input), " ", INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS);
     }

@@ -101,11 +101,9 @@ static string GetMailBoxStatus() {
               a()->user()->forward_usernum(),
               a()->user()->forward_systemnum(),
               a()->nets().at(a()->user()->forward_netnum()).name);
-    } else {
-      string fwd_username;
-      read_inet_addr(fwd_username, a()->sess().user_num());
-      return StrCat("Forwarded to Internet ", fwd_username);
     }
+    const auto fwd_username = read_inet_addr(a()->sess().user_num());
+    return StrCat("Forwarded to Internet ", fwd_username);
   }
 
   if (a()->user()->IsMailboxClosed()) {
@@ -658,7 +656,6 @@ static void modify_mailbox() {
       const auto entered_address = bin.input_text(a()->user()->email_address(), 75);
       if (check_inet_addr(entered_address)) {
         a()->user()->email_address(entered_address);
-        write_inet_addr(entered_address, a()->sess().user_num());
         a()->user()->forward_netnum(network_number);
         a()->user()->SetForwardToInternet();
         bout << "\r\nSaved.\r\n\n";
@@ -787,7 +784,6 @@ void defaults(bool& need_menu_reload) {
       if (!internetAddress.empty()) {
         if (check_inet_addr(internetAddress)) {
           a()->user()->email_address(internetAddress);
-          write_inet_addr(internetAddress, a()->sess().user_num());
         } else {
           bout << "\r\n|#6Invalid address format.\r\n\n";
           bout.pausescr();

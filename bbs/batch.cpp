@@ -131,11 +131,10 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
           sysoplog() << "Downloaded '" << f << "'.";
         }
         if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
-          User user;
-          a()->users()->readuser(&user, f.u().ownerusr);
-          if (!user.IsUserDeleted()) {
-            if (date_to_daten(user.firston()) < f.u().daten) {
-              const auto user_name_number = a()->names()->UserName(a()->sess().user_num());
+          if (const auto user = a()->users()->readuser(f.u().ownerusr, UserManager::mask::non_deleted);
+              user.has_value() && !user->IsUserDeleted()) {
+            if (date_to_daten(user->firston()) < f.u().daten) {
+              const auto user_name_number = a()->user()->name_and_number();
               ssm(f.u().ownerusr) << user_name_number << " downloaded|#1 \"" << f << "\" |#7on "
                                   << fulldate();
             }
@@ -608,7 +607,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
   if (!commandLine.empty()) {
     make_abs_cmd(a()->bbspath(), &commandLine);
     a()->Cls();
-    const auto user_name_number = a()->names()->UserName(a()->sess().user_num());
+    const auto user_name_number = a()->user()->name_and_number();
     const auto message = fmt::sprintf("%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
                                       user_name_number, a()->modem_speed_, dl, commandLine);
     a()->localIO()->Puts(message);

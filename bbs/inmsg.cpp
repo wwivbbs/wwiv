@@ -498,7 +498,7 @@ static void GetMessageAnonStatus(bool *real_name, uint8_t *anony, int setanon) {
     break;
   case anony_enable_dear_abby: {
     bout.nl();
-    bout << "1. " << a()->names()->UserName(a()->sess().user_num()) << wwiv::endl;
+    bout << "1. " << a()->user()->name_and_number() << wwiv::endl;
     bout << "2. Abby\r\n";
     bout << "3. Problemed Person\r\n\n";
     bout << "|#5Which? ";

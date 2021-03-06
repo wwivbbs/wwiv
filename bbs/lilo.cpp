@@ -244,7 +244,7 @@ static void DoFailedLoginAttempt() {
   bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
   const auto logline = StrCat("### ILLEGAL LOGON for ",
-                              a()->names()->UserName(a()->sess().user_num()));
+                              a()->user()->name_and_number());
   sysoplog(false) << "";
   sysoplog(false) << logline;
   sysoplog(false) << "";
@@ -500,7 +500,7 @@ static std::string CreateLastOnLogLine(const Status& status) {
   string log_line;
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
     a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
-    const string username_num = a()->names()->UserName(a()->sess().user_num());
+    const string username_num = a()->user()->name_and_number();
     const string t = times();
     const string f = fulldate();
     log_line = fmt::sprintf(
@@ -515,7 +515,7 @@ static std::string CreateLastOnLogLine(const Status& status) {
       a()->GetCurrentSpeed(),
       a()->user()->ontoday());
   } else {
-    const auto username_num = a()->names()->UserName(a()->sess().user_num());
+    const auto username_num = a()->user()->name_and_number();
     const auto t = times();
     const auto f = fulldate();
     log_line = fmt::sprintf("|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
@@ -566,7 +566,7 @@ static void UpdateLastOnFile() {
 
   auto status = a()->status_manager()->get_status();
   {
-    const auto username_num = a()->names()->UserName(a()->sess().user_num());
+    const auto username_num = a()->user()->name_and_number();
     auto t = times();
     auto f = fulldate();
     const auto sysop_log_line = fmt::sprintf("%ld: %s %s %s   %s - %d (%u)",
@@ -704,7 +704,7 @@ static void CheckAndUpdateUserInfo() {
 static void DisplayUserLoginInformation() {
   bout.nl();
 
-  const auto username_num = a()->names()->UserName(a()->sess().user_num());
+  const auto username_num = a()->user()->name_and_number();
   bout << "|#9Name/Handle|#0....... |#2" << username_num << wwiv::endl;
   bout << "|#9Internet Address|#0.. |#2";
   if (check_inet_addr(a()->user()->email_address())) {
@@ -786,8 +786,7 @@ static void DisplayUserLoginInformation() {
       }
     }
   } else if (a()->user()->forward_systemnum() != 0) {
-    string internet_addr;
-    read_inet_addr(internet_addr, a()->sess().user_num());
+    const auto internet_addr = read_inet_addr(a()->sess().user_num());
     bout << "Mail forwarded to Internet " << internet_addr << ".\r\n";
   }
   if (a()->sess().IsTimeOnlineLimited()) {

@@ -111,7 +111,7 @@ void normalupload(int dn) {
   f.u().numdloads = 0;
   f.u().unused_filetype = 0;
   f.u().mask = 0;
-  const auto unn = a()->names()->UserName(a()->sess().user_num());
+  const auto unn = a()->user()->name_and_number();
   to_char_array(f.u().upby, unn);
   to_char_array(f.u().date, date());
   bout.nl();

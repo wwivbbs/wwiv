@@ -97,7 +97,7 @@ void kill_old_email() {
 
         if (m.tosys == 0) {
           a()->users()->readuser(&user, m.touser);
-          string tempName = a()->names()->UserName(a()->sess().user_num());
+          string tempName = a()->user()->name_and_number();
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da))
               && ((a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_email_anony) == 0)) {
             tempName = ">UNKNOWN<";

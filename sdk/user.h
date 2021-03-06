@@ -59,6 +59,18 @@ struct validation_config_t;
  */
 class User final {
  public:
+  //
+  // Constructor and Destructor
+  //
+  User();
+  ~User() = default;
+
+  User(const User& w);
+  User(User&& u) noexcept;
+  User(const userrec& rhs, int user_number);
+  User& operator=(const User& rhs);
+  User& operator=(User&& rhs) noexcept;
+
   // Constants
 
   // USERREC.inact
@@ -111,16 +123,7 @@ class User final {
   // Data
   //
   struct userrec data{};
-
-  //
-  // Constructor and Destructor
-  //
-  User();
-  ~User() = default;
-
-  User(const User& w);
-  explicit User(const userrec& rhs);
-  User& operator=(const User& rhs);
+  int user_number_{-1};
 
   //
   // Member Functions
@@ -346,9 +349,13 @@ class User final {
   [[nodiscard]] const char *GetName() const {
     return reinterpret_cast<const char*>(data.name);
   }
+
   [[nodiscard]] std::string name() const {
     return std::string(reinterpret_cast<const char*>(data.name));
   }
+
+  [[nodiscard]] std::string name_and_number() const;
+
   void set_name(const std::string& s) {
     strcpy(reinterpret_cast<char*>(data.name), s.c_str());
   }
@@ -946,7 +953,7 @@ class User final {
   /**
    * Returns the upload/download ratio.
    */
-  float ratio() const;
+  [[nodiscard]] float ratio() const;
 
   ///////////////////////////////////////////////////////////////////////////
   // Static Helper Methods

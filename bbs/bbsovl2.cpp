@@ -61,7 +61,7 @@ void OnlineUserEditor() {
   }
 
   // heading
-  const auto s = StrCat("[", a()->names()->UserName(a()->sess().user_num()), "]");
+  const auto s = StrCat("[", a()->user()->name_and_number(), "]");
   a()->localIO()->PutsXYA(wx + 1, wy - 1, 31, fmt::format("{:<30}{:>37}"," WWIV User Editor", s));
 
   a()->localIO()->PutsXYA(wx + 2, wy + 1, 3, StrCat("Security Level(SL): ", u.sl()));

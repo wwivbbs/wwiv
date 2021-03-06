@@ -44,7 +44,7 @@ SSM::SSM(const wwiv::sdk::Config& config, wwiv::sdk::UserManager& user_manager)
 SSM::~SSM() {}
 
 bool SSM::send_remote(const net_networks_rec& net, uint16_t system_number, uint32_t from_user_number, uint32_t user_number, const std::string& t) {
-  net_header_rec nh;
+  net_header_rec nh{};
   nh.tosys = static_cast<uint16_t>(system_number);
   nh.touser = static_cast<uint16_t>(user_number);
   // This was user_number, but that seems really wrong.  Changing to net.sysnum.
@@ -71,18 +71,17 @@ bool SSM::send_remote(const net_networks_rec& net, uint16_t system_number, uint3
 }
 
 bool SSM::send_local(uint32_t user_number, const std::string& text) {
-  User user;
-  user_manager_.readuser(&user, user_number);
-  if (user.IsUserDeleted()) {
+
+  auto user = user_manager_.readuser(user_number, UserManager::mask::non_deleted);
+  if (!user) {
     return false;
   }
   File file(FilePath(data_directory_, SMW_DAT));
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return false;
   }
-  auto size = static_cast<int>(file.length() / sizeof(shortmsgrec));
-  auto pos = size - 1;
-  shortmsgrec sm;
+  auto pos = static_cast<int>(file.length() / sizeof(shortmsgrec)) - 1;
+  shortmsgrec sm{};
   if (pos >= 0) {
     file.Seek(pos * sizeof(shortmsgrec), File::Whence::begin);
     file.Read(&sm, sizeof(shortmsgrec));
@@ -103,8 +102,8 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
   file.Seek(pos * sizeof(shortmsgrec), File::Whence::begin);
   file.Write(&sm, sizeof(shortmsgrec));
   file.Close();
-  user.SetStatusFlag(User::SMW);
-  user_manager_.writeuser(&user, user_number);
+  user->SetStatusFlag(User::SMW);
+  user_manager_.writeuser(user.value(), user_number);
   return true;
 }
 
@@ -115,7 +114,7 @@ bool SSM::delete_local_to_user(uint32_t user_number) {
     return false;
   }
 
-  int num_recs = file.number_of_records();
+  const int num_recs = file.number_of_records();
   for (int i = 0; i < num_recs; i++) {
     shortmsgrec sm{};
     if (!file.Read(i, &sm)) {

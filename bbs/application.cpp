@@ -500,7 +500,7 @@ void Application::UpdateTopScreen() {
 #ifdef _WIN32
   if (config()->sysconfig_flags() & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
-    const auto username_num = names()->UserName(sess().user_num());
+    const auto username_num = user()->name_and_number();
     const auto title = fmt::sprintf("WWIV Node %d (User: %s)", instance_number(), username_num);
     ::SetConsoleTitle(title.c_str());
   }
@@ -556,17 +556,16 @@ void Application::UpdateTopScreen() {
             status->num_users(), status->caller_num(), status->calls_today(),
             status->localposts()));
 
-    const auto username_num = names()->UserName(sess().user_num());
+    const auto username_num = user()->name_and_number();
     localIO()->PutsXY(0, 2,
                       fmt::sprintf("%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
                                    username_num, status->active_today_minutes(),
                                    static_cast<int>(10 * status->active_today_minutes() / 144),
                                    status->email_today()));
 
-    User sysop{};
     auto feedback_waiting = 0;
-    if (users()->readuser_nocache(&sysop, 1)) {
-      feedback_waiting = sysop.email_waiting();
+    if (const auto sysop = users()->readuser_nocache(1)) {
+      feedback_waiting = sysop->email_waiting();
     }
     localIO()->PutsXY(
         0, 3,
@@ -604,7 +603,7 @@ void Application::UpdateTopScreen() {
       lo = fmt::sprintf("Today:%2d", user()->ontoday());
     }
 
-    const auto username_num = names()->UserName(sess().user_num());
+    const auto username_num = user()->name_and_number();
     auto line =
         fmt::sprintf("%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num,
                      user()->email_waiting(), user()->uploaded(), user()->uk(),
@@ -630,10 +629,9 @@ void Application::UpdateTopScreen() {
                       fmt::sprintf("ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict,
                                    user()->exempt(), lo, user()->feedback_sent()));
 
-    User sysop{};
     int feedback_waiting = 0;
-    if (users()->readuser_nocache(&sysop, 1)) {
-      feedback_waiting = sysop.email_waiting();
+    if (const auto sysop = users()->readuser_nocache(1)) {
+      feedback_waiting = sysop->email_waiting();
     }
     localIO()->PutsXY(0, 3,
                       fmt::sprintf("%-40.40s %c %2u %-16.16s           FW= %3u",

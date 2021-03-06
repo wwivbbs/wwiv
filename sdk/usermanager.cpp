@@ -70,25 +70,28 @@ int  UserManager::num_user_records() const {
   return 0;
 }
 
-bool UserManager::readuser_nocache(User *pUser, int user_number) const {
-  File userList(FilePath(data_directory_, USER_LST));
-  if (!userList.Open(File::modeReadOnly | File::modeBinary)) {
-    pUser->data.inact = inact_deleted;
-    pUser->FixUp();
+bool UserManager::readuser_nocache(User *u, int user_number) const {
+  File file(FilePath(data_directory_, USER_LST));
+  if (!file.Open(File::modeReadOnly | File::modeBinary)) {
+    u->data.inact = inact_deleted;
+    u->FixUp();
+    u->user_number_ = user_number;
     return false;
   }
-  const auto nSize = userList.length();
-  const auto num_user_records = static_cast<int>(nSize / userrec_length_) - 1;
+  const auto nSize = file.length();
+  const auto num_user_records = nSize / userrec_length_ - 1;
 
   if (user_number > num_user_records) {
-    pUser->data.inact = inact_deleted;
-    pUser->FixUp();
+    u->data.inact = inact_deleted;
+    u->FixUp();
+    u->user_number_ = user_number;
     return false;
   }
-  const auto pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
-  userList.Seek(pos, File::Whence::begin);
-  userList.Read(&pUser->data, userrec_length_);
-  pUser->FixUp();
+  const auto pos = userrec_length_ * user_number;
+  file.Seek(pos, File::Whence::begin);
+  file.Read(&u->data, userrec_length_);
+  u->FixUp();
+  u->user_number_ = user_number;
   return true;
 }
 
@@ -96,31 +99,59 @@ bool UserManager::readuser(User *pUser, int user_number) const {
   return this->readuser_nocache(pUser, user_number);
 }
 
-std::optional<User> UserManager::readuser(int user_number) const {
+std::optional<User> UserManager::readuser(int user_number, mask m) const {
   User u{};
   if (readuser(&u, user_number)) {
+    if (m == mask::active && (u.IsUserDeleted() || u.IsUserInactive())) {
+      return std::nullopt;
+    }
+    if (m == mask::non_deleted && u.IsUserDeleted()) {
+      return std::nullopt;
+    }
+    if (m == mask::non_inactive && u.IsUserInactive()) {
+      return std::nullopt;
+    }
     return {u};
   }
   return std::nullopt;
 }
 
-bool UserManager::writeuser_nocache(User *pUser, int user_number) {
-  File userList(FilePath(data_directory_, USER_LST));
-  if (userList.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
+std::optional<User> UserManager::readuser_nocache(int user_number) const {
+  User u{};
+  if (readuser_nocache(&u, user_number)) {
+    return {u};
+  }
+  return std::nullopt;
+}
+
+bool UserManager::writeuser_nocache(const User *pUser, int user_number) {
+  if (File file(FilePath(data_directory_, USER_LST));
+      file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     const auto pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
-    userList.Seek(pos, File::Whence::begin);
-    userList.Write(&pUser->data, userrec_length_);
+    file.Seek(pos, File::Whence::begin);
+    file.Write(&pUser->data, userrec_length_);
     return true;
   }
   return false;
 }
 
-bool UserManager::writeuser(User *pUser, int user_number) {
+bool UserManager::writeuser(const User *pUser, int user_number) {
   if (user_number < 1 || user_number > max_number_users_ || !user_writes_allowed()) {
     return true;
   }
 
   return this->writeuser_nocache(pUser, user_number);
+}
+
+bool UserManager::writeuser(const User& user, int user_number) {
+  return writeuser(&user, user_number);
+}
+
+bool UserManager::writeuser(const std::optional<User>& user, int user_number) {
+  if (!user) {
+    return false;
+  }
+  return writeuser(user.value(), user_number);
 }
 
 // Deletes a record from NAMES.LST (DeleteSmallRec)

@@ -189,7 +189,7 @@ void post(const PostData& post_data) {
     return;
   }
 
-  MessageEditorData data(a()->names()->UserName(a()->sess().user_num()));
+  MessageEditorData data(a()->user()->name_and_number());
   messagerec m{};
   m.storage_type = static_cast<unsigned char>(a()->current_sub().storage_type);
   data.anonymous_flag = a()->subs().sub(a()->sess().GetCurrentReadMessageArea()).anony & 0x0f;

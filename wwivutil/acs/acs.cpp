@@ -56,20 +56,20 @@ int AcsCommand::Execute() {
   const auto expr = remaining().front();
   const auto user_number = iarg("user");
 
-  UserManager userMgr(*config()->config());
-  User user{};
-  if (!userMgr.readuser_nocache(&user, user_number)) {
+  const UserManager um(*config()->config());
+  const auto user = um.readuser_nocache(user_number);
+  if (!user) {
     LOG(ERROR) << "Failed to load user number " << user_number;
     return 1;
   }
 
   Eval eval(expr);
-  const auto sl = user.sl();
+  const auto sl = user->sl();
   const auto& slr = config()->config()->sl(sl);
-  UserValueProvider u(*config()->config(), user, sl, slr);
+  UserValueProvider u(*config()->config(), user.value(), sl, slr);
   eval.add(&u);
 
-  auto result = eval.eval();
+  const auto result = eval.eval();
   std::cout << "Evaluate: '" << expr << "' ";
   if (!result) {
     std::cout << "evaluated to FALSE" << std::endl;

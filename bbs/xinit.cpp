@@ -733,11 +733,8 @@ void Application::create_phone_file() {
   }
 
   for (int16_t temp_user_number = 1; temp_user_number <= numOfRecords; temp_user_number++) {
-    if (auto o = users()->readuser(temp_user_number)) {
+    if (auto o = users()->readuser(temp_user_number, UserManager::mask::non_deleted)) {
       const auto& user = o.value();
-      if (user.IsUserDeleted()) {
-        continue;
-      }
       p.usernum = temp_user_number;
       auto voice_num = user.voice_phone();
       auto data_num = user.data_phone();

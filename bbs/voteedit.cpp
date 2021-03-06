@@ -18,16 +18,15 @@
 /**************************************************************************/
 #include "bbs/voteedit.h"
 
-#include "bbs/bbsutl.h"
-#include "common/input.h"
-#include "sdk/status.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-#include "common/com.h"
+#include "common/input.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "sdk/names.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
+#include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 
@@ -44,7 +43,7 @@ static void print_quests() {
   for (int i = 1; (i <= 20) && !abort; i++) {
     file.Seek(static_cast<long>(i - 1) * sizeof(votingrec), File::Whence::begin);
 
-    votingrec v;
+    votingrec v{};
     file.Read(&v, sizeof(votingrec));
     auto buffer = fmt::sprintf("|#2%2d|#7) |#1%s", i, v.numanswers ? v.question : ">>> NO QUESTION <<<");
     bout.bpla(buffer, &abort);
@@ -60,14 +59,14 @@ static void set_question(int ii) {
   voting_response vr{};
 
   bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
-  auto question = bin.input_text(75);
+  const auto question = bin.input_text(75);
   to_char_array(v.question, question);
   v.numanswers = 0;
   vr.numresponses = 0;
   vr.response[0] = 'X';
   vr.response[1] = 0;
-  for (int i = 0; i < 20; i++) {
-    v.responses[i] = vr;
+  for (auto& response : v.responses) {
+    response = vr;
   }
   if (question.empty()) {
     bout.nl();
@@ -93,19 +92,18 @@ static void set_question(int ii) {
     }
   }
 
-  File votingDat(FilePath(a()->config()->datadir(), VOTING_DAT));
-  votingDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-  votingDat.Seek(ii * sizeof(votingrec), File::Whence::begin);
-  votingDat.Write(&v, sizeof(votingrec));
-  votingDat.Close();
+  File file(FilePath(a()->config()->datadir(), VOTING_DAT));
+  file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+  file.Seek(ii * sizeof(votingrec), File::Whence::begin);
+  file.Write(&v, sizeof(votingrec));
+  file.Close();
 
-  User u;
-  a()->users()->readuser(&u, 1);
-  int nNumUsers = a()->users()->num_user_records();
-  for (int i1 = 1; i1 <= nNumUsers; i1++) {
-    a()->users()->readuser(&u, i1);
-    u.SetVote(nNumUsers, 0);
-    a()->users()->writeuser(&u, i1);
+  const int num_users = a()->users()->num_user_records();
+  for (int user_number = 1; user_number <= num_users; user_number++) {
+    if (auto u = a()->users()->readuser(user_number)) {
+      u->SetVote(ii, 0);
+      a()->users()->writeuser(u, user_number);
+    }
   }
 }
 
@@ -142,14 +140,12 @@ void ivotes() {
 
 
 void voteprint() {
-  votingrec v;
-
-  int nNumUserRecords = a()->users()->num_user_records();
-  char *x = static_cast<char *>(BbsAllocA(20 * (2 + nNumUserRecords)));
+  const int num_user_records = a()->users()->num_user_records();
+  auto* x = static_cast<char *>(BbsAllocA(20 * (2 + num_user_records)));
   if (x == nullptr) {
     return;
   }
-  for (int i = 0; i <= nNumUserRecords; i++) {
+  for (int i = 0; i <= num_user_records; i++) {
     User u;
     a()->users()->readuser(&u, i);
     for (int i1 = 0; i1 < 20; i1++) {
@@ -167,6 +163,7 @@ void voteprint() {
     if (!votingDat.Open(File::modeReadOnly | File::modeBinary)) {
       continue;
     }
+    votingrec v{};
     votingDat.Seek(i1 * sizeof(votingrec), File::Whence::begin);
     votingDat.Read(&v, sizeof(votingrec));
     votingDat.Close();

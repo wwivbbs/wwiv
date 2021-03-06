@@ -62,19 +62,17 @@ bool WWIVEmail::Close() {
 }
 
 static bool modify_email_waiting(const Config& config, uint16_t email_usernum, int delta) {
-  UserManager um(config);
-  User u{};
-  if (!um.readuser(&u, email_usernum)) {
-    return false;
+
+  if (UserManager um(config); auto o = um.readuser(email_usernum)) {
+    auto u = o.value();
+    const auto n = std::min(0, u.email_waiting() + delta);
+    u.email_waiting(n);
+    if (!um.writeuser(&u, email_usernum)) {
+      return false;
+    }
+    return true;
   }
-  auto newval = u.email_waiting();
-  newval += delta;
-  if (newval < 0) { newval = 0; }
-  u.email_waiting(newval);
-  if (!um.writeuser(&u, email_usernum)) {
-    return false;
-  }
-  return true;
+  return false;
 }
 
 static bool increment_email_counters(const Config& config, uint16_t email_usernum) {
@@ -141,8 +139,9 @@ static bool is_mailrec_deleted(const mailrec& h) {
 
 /** Total number of email messages in the system. */
 int WWIVEmail::number_of_messages() {
-  const auto num = mail_file_.number_of_records();
-  if (num == 0) { return 0; }
+  if (const auto num = mail_file_.number_of_records(); num == 0) {
+    return 0;
+  }
   std::vector<mailrec> headers;
   mail_file_.Seek(0);
   if (!mail_file_.ReadVector(headers)) {

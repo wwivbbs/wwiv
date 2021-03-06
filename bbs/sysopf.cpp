@@ -93,10 +93,9 @@ void prstatus() {
   bout << "|#9F Sent Today    : |#2" << status->feedback_today() << wwiv::endl;
   bout << "|#9Uploads Today   : |#2" << status->uploads_today() << wwiv::endl;
 
-  User sysop{};
   auto feedback_waiting = 0;
-  if (a()->users()->readuser_nocache(&sysop, 1)) {
-    feedback_waiting = sysop.email_waiting();
+  if (const auto sysop = a()->users()->readuser_nocache(1)) {
+    feedback_waiting = sysop->email_waiting();
   }
   bout << "|#9Feedback Waiting: |#2" << feedback_waiting << wwiv::endl;
   bout << "|#9Sysop           : |#2" << ((sysop2()) ? "Available" : "NOT Available") << wwiv::endl;
@@ -736,7 +735,7 @@ void chuser() {
   read_qscn(user_number, a()->sess().qsc, false);
   a()->sess().user_num(static_cast<uint16_t>(user_number));
   a()->sess().effective_sl(255);
-  sysoplog() << StrCat("#*#*#* Changed to ", a()->names()->UserName(a()->sess().user_num()));
+  sysoplog() << StrCat("#*#*#* Changed to ", a()->user()->name_and_number());
   changedsl();
   a()->UpdateTopScreen();
 }

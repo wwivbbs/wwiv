@@ -88,33 +88,42 @@ static std::string YesNoStringList(bool b, const std::string& yes, const std::st
   return b ? yes : no;
 }
 
+static void list_chain_sponsors(const std::set<short> sponsors, char letter) {
+  if (sponsors.empty()) {
+    if (letter) {
+      bout << "|#9" << letter << ") ";
+    }
+    bout << "Registered by: |#2AVAILABLE" << wwiv::endl;
+    return;
+  }
+
+  const std::string second(letter ? 18 : 15, ' ');
+  bool first = true;
+  for (const auto& r : sponsors) {
+    if (const auto user = a()->users()->readuser(r)) {
+      if (first) {
+        if (letter) {
+          bout << "|#9" << letter << ") ";
+        }
+        bout << "Registered by: |#2";
+      } else {
+        bout << second << "|#2";
+      }
+      first = false;
+      bout << user->name_and_number() << wwiv::endl;
+    }  
+  }
+}
+
 static void modify_chain_sponsors(int chain_num, chain_t& c) {
   auto done = false;
   do {
     bout.cls();
     bout.litebar(fmt::format("Editing Chain #{}", chain_num));
-    const auto& r = c.regby;
-    User regUser;
-    if (!r.empty()) {
-      auto it = r.begin();
-      auto first = *r.begin();
-      a()->users()->readuser(&regUser, *it++);
-      bout << "|#9L) Registered by: |#2" << a()->names()->UserName(first) << wwiv::endl;
-      for (; it != std::end(r); ++it) {
-        const auto rbc = *it;
-        if (rbc != 0) {
-          if (a()->users()->readuser(&regUser, rbc)) {
-            bout << string(18, ' ') << "|#2" << a()->names()->UserName(rbc) << wwiv::endl;
-          }
-        }
-      }
-    } else {
-      bout << "|#9L) Registered by: |#2AVAILABLE" << wwiv::endl;
-    }
+    list_chain_sponsors(c.regby, 0);
     bout.nl();
     bout << "|#9(A)dd, (R)emove, (Q)uit: Which (A,R,Q) ? ";
-    auto ch = onek("QARQ", true); 
-    switch (ch) {
+    switch (const auto ch = onek("QARQ", true); ch) {
     case 'Q':
       return;
     case 'A': {
@@ -124,15 +133,13 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
         break;
       }
       auto nn = bin.input(30, true);
-      auto user_number = finduser1(nn);
-      if (user_number > 0) {
+      if (const auto user_number = finduser1(nn); user_number > 0) {
         c.regby.insert(static_cast<int16_t>(user_number));
       }
     } break;
     case 'R': {
       auto nn = bin.input(30, true);
-      auto user_number = finduser1(nn);
-      if (user_number > 0) {
+      if (const auto user_number = finduser1(nn); user_number > 0) {
         c.regby.erase(static_cast<int16_t>(user_number));
       }
     } break;
@@ -172,24 +179,7 @@ static void modify_chain(ssize_t chain_num) {
     bout << "|#9H) Multi user   : |#2" << YesNoString(c.multi_user) << wwiv::endl;
     bout << "|#9I) Usage        : |#2" << c.usage << wwiv::endl;
     std::string allowed = "QABCDEFGHIKL[]";
-    const auto& r = c.regby;
-    if (!r.empty()) {
-      bout << "|#9J) Registered by: ";
-      auto need_space = false;
-      for (auto it = std::begin(r); it != std::end(r) && *it != 0; ++it) {
-        User regUser;
-        if (a()->users()->readuser(&regUser, *it)) {
-          if (!need_space) {
-            need_space = true;
-          } else {
-            bout << string(18, ' ');
-          }
-          bout << "|#2" << a()->names()->UserName(*it) << wwiv::endl;
-        }
-      }
-    } else {
-      bout << "|#9J) Registered by: |#2AVAILABLE" << wwiv::endl;
-    }
+    list_chain_sponsors(c.regby, 'J');
 #ifdef _WIN32
   if (c.exec_mode == chain_exec_mode_t::netfoss || c.exec_mode == chain_exec_mode_t::fossil) {
     bout << "|#9K) Local CP437  : |08Yes" << wwiv::endl;

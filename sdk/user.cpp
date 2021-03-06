@@ -38,15 +38,38 @@ namespace wwiv::sdk {
 
 User::User() { ZeroUserData(); }
 
-User::User(const User& w) { memcpy(&data, &w.data, sizeof(userrec)); }
+User::User(const User& w) {
+  memcpy(&data, &w.data, sizeof(userrec));
+  user_number_ = w.user_number_;
+}
 
-User::User(const userrec& rhs) { memcpy(&data, &rhs, sizeof(userrec)); }
+User::User(User&& u) noexcept {
+  memmove(&data, &u.data, sizeof(userrec));
+  user_number_ = u.user_number_;
+  u.user_number_ = -1;
+}
+
+User::User(const userrec& rhs, int user_number) {
+  memcpy(&data, &rhs, sizeof(userrec));
+  user_number_ = user_number;
+}
 
 User& User::operator=(const User& rhs) {
   if (this == &rhs) {
     return *this;
   }
   memcpy(&data, &rhs.data, sizeof(userrec));
+  user_number_ = rhs.user_number_;
+  return *this;
+}
+
+User& User::operator=(User&& rhs) noexcept {
+  if (this == &rhs) {
+    return *this;
+  }
+  memmove(&data, &rhs.data, sizeof(userrec));
+  user_number_ = rhs.user_number_;
+  rhs.user_number_ = -1;
   return *this;
 }
 
@@ -209,6 +232,10 @@ seconds User::timeon() const {
 seconds User::timeontoday() const {
   const auto secs_used = static_cast<int64_t>(data.timeontoday);
   return seconds(secs_used);
+}
+
+std::string User::name_and_number() const {
+  return fmt::format("{} #{}", name(), user_number_);
 }
 
 int User::age() const { 

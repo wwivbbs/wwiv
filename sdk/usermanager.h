@@ -32,20 +32,28 @@ namespace wwiv::sdk {
  * Responsible for loading and saving users.
  */
 class UserManager {
- public:
-   UserManager() = delete;
-   explicit UserManager(const wwiv::sdk::Config& config);
+public:
+  // active means non_deleted and non_inactive
+  enum class mask { any, non_deleted, non_inactive, active };
+
+  UserManager() = delete;
+   explicit UserManager(const Config& config);
    virtual ~UserManager();
    [[nodiscard]] int num_user_records() const;
-   bool readuser_nocache(User *pUser, int user_number) const;
-   bool readuser(User *pUser, int user_number) const;
+   bool readuser(User *user, int user_number) const;
 
   /**
     * Optionally returns the user specified by user_number.
     */
-   [[nodiscard]] std::optional<User> readuser(int user_number) const;
-   bool writeuser_nocache(User *pUser, int user_number);
-   bool writeuser(User *pUser, int user_number);
+   [[nodiscard]] std::optional<User> readuser(int user_number, mask m = mask::any) const;
+
+   /**
+    * Optionally returns the user specified by user_number.
+    */
+   [[nodiscard]] std::optional<User> readuser_nocache(int user_number) const;
+   bool writeuser(const User *pUser, int user_number);
+   bool writeuser(const User &user, int user_number);
+   bool writeuser(const std::optional<User>& user, int user_number);
 
    bool delete_user(int user_number);
    bool restore_user(int user_number);
@@ -63,6 +71,8 @@ class UserManager {
   }
 
 private:
+   bool writeuser_nocache(const User *pUser, int user_number);
+   bool readuser_nocache(User *u, int user_number) const;
 
   const Config config_;
   const std::string data_directory_;

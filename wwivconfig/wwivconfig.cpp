@@ -154,8 +154,6 @@ int main(int argc, char* argv[]) {
   }
 }
 
-static bool IsUserDeleted(const User& user) { return user.data.inact & inact_deleted; }
-
 static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
   Config config(bbsdir);
   if (!config.IsInitialized()) {
@@ -166,10 +164,8 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
     const UserManager usermanager(config);
     const auto num_users = usermanager.num_user_records();
     for (auto n = 1; n <= num_users; n++) {
-      if (auto u = usermanager.readuser(n)) {
-        if (!IsUserDeleted(u.value())) {
-          return true;
-        }
+      if (auto u = usermanager.readuser(n, UserManager::mask::non_deleted)) {
+        return true;
       }
     }
   }

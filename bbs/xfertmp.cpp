@@ -163,8 +163,6 @@ void move_file_t() {
 }
 
 void removefile() {
-  User uu{};
-
   dliscan();
   bout.nl();
   bout << "|#9Enter filename to remove.\r\n:";
@@ -214,6 +212,7 @@ void removefile() {
             auto del_fn = FilePath(dir.path, f);
             File::Remove(del_fn);
             if (bRemoveDlPoints && f.u().ownersys == 0) {
+              User uu{};
               a()->users()->readuser(&uu, f.u().ownerusr);
               if (!uu.IsUserDeleted()) {
                 if (date_to_daten(uu.firston()) < f.u().daten) {
