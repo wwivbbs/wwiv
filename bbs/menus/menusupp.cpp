@@ -248,7 +248,7 @@ void LastCallers() {
 }
 
 void ReadEMail() {
-  readmail(0);
+  readmail(false);
 }
 
 void NewMessageScan() {

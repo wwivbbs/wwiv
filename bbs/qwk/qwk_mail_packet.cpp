@@ -500,7 +500,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
   }
   memset(&qwk_info->qwk_rec, ' ', sizeof(qwk_info->qwk_rec));
 
-  auto m = read_type2_message(&m1->msg, static_cast<char>(m1->anony & 0x0f), true,
+  auto m = read_type2_message(&m1->msg, m1->anony & 0x0f, true,
                               fn, m1->ownersys, m1->owneruser);
 
   int cur = 0;

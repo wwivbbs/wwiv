@@ -224,7 +224,6 @@ void Application::ReadINIFile(IniFile& ini) {
   max_extend_lines = 10;
   max_chains = 50;
   max_gfilesec = 32;
-  mail_who_field_len = 35;
 
   // Found something, pull out event flags.
   for (const auto& kv : eventinfo) {
@@ -298,12 +297,6 @@ void Application::ReadINIFile(IniFile& ini) {
 
   // sysconfig flags
   config()->set_sysconfig(ini.GetFlags(sysconfig_flags, config()->sysconfig_flags()));
-
-  // misc stuff
-  auto num = ini.value<uint16_t>(INI_STR_MAIL_WHO_LEN);
-  if (num > 0) {
-    mail_who_field_len = num;
-  }
 
   // Sets up the default attach directory.
   const auto attach_dir = ini.value<string>(INI_STR_ATTACH_DIR);

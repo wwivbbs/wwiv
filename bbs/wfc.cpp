@@ -412,7 +412,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     case 'M': {
       Clear();
       a_->sess().user_num(sysop_usernum);
-      readmail(0);
+      readmail(false);
       a_->WriteCurrentUser(sysop_usernum);
       cleanup_net();
     } break;

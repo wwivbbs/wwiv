@@ -58,9 +58,8 @@ struct Type2MessageData {
   bool email{false};
 };
 
-Type2MessageData read_type2_message(
-  messagerec* msg, char an, bool readit, const char* file_name,
-  int from_sys_num, int from_user);
+Type2MessageData read_type2_message(messagerec* msg, uint8_t an, bool readit,
+                                    const std::string& file_name, int from_sys_num, int from_user);
 
 
 enum class ReadMessageOption {

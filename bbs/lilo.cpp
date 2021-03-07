@@ -803,7 +803,7 @@ static void LoginCheckForNewMail() {
            << "|#9 new message(s).\r\n\r\n"
            << "|#9Read your mail now? ";
       if (bin.noyes()) {
-        readmail(1);
+        readmail(true);
       }
     } else {
       bout << "|#9You have |#2" << a()->user()->email_waiting() 

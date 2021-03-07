@@ -277,7 +277,7 @@ static void UpdateHeaderInformation(int8_t anon_type, bool readit, const string 
   }
 }
 
-Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const char* file_name,
+Type2MessageData read_type2_message(messagerec* msg, uint8_t an, bool readit, const std::string& file_name,
                                     int from_sys_num, int from_user) {
 
   Type2MessageData data{};
@@ -523,11 +523,17 @@ static std::tuple<bool, int> display_header_file(Type2MessageData& msg) {
   return std::make_tuple(false, 5);
 }
 
-static FullScreenView display_type2_message_header(Type2MessageData& msg) {
+static FullScreenView display_type2_message_header(Type2MessageData& msg, bool allow_header_file) {
   const auto oldcuratr = bout.curatr();
 
-  auto [displayed, num_header_lines] = display_header_file(msg);
-  if (!displayed) {
+  int num_header_lines = 5;
+  if (allow_header_file) {
+    auto [displayed, nh] = display_header_file(msg);
+    if (!displayed) {
+      nh = legacy_display_header_text(msg);
+    }
+    num_header_lines = nh;
+  } else {
     num_header_lines = legacy_display_header_text(msg);
   }
 
@@ -638,7 +644,7 @@ static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData&
   bout.set_mci_enabled(an != 0);
 
   bout.cls();
-  auto fs = display_type2_message_header(msg);
+  auto fs = display_type2_message_header(msg, true);
 
   const auto controlcodes = a()->user()->HasStatusFlag(User::msg_show_controlcodes);
   const auto lines = split_wwiv_message(msg.message_text, controlcodes);
@@ -800,7 +806,7 @@ static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData&
 }
 
 void display_type2_message_old_impl(Type2MessageData& msg, bool* next) {
-  const auto info = display_type2_message_header(msg);
+  const auto info = display_type2_message_header(msg, false);
   bout.lines_listed_ = info.num_header_lines();
   bout.clear_ansi_movement_occurred();
   *next = false;
@@ -868,7 +874,7 @@ ReadMessageResult read_post(int& msgnum, bool* next, int* val) {
   const auto read_it =
       (lcs() || (a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_post_anony)) ? true : false;
   const auto& cs = a()->current_sub();
-  auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), read_it,
+  auto m = read_type2_message(&p.msg, p.anony & 0x0f, read_it,
                               cs.filename.c_str(), p.ownersys, p.owneruser);
   m.subboard_flags = cs.anony;
   if (a()->sess().forcescansub()) {

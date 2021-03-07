@@ -367,8 +367,6 @@ public:
 
   asv_rec asv{};
 
-  uint16_t mail_who_field_len{0};
-
   uint16_t max_batch{0};
   uint16_t max_extend_lines{0};
   uint16_t max_chains{0};

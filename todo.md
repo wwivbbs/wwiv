@@ -2,6 +2,9 @@
 # Copyright 2002-2021, WWIV Software Services
 ***
 
+# TODO Cleanups
+* redo readmail(...) It's a friggin mess.
+
 # Things to add to fix.
 
 * Check for no conferences
@@ -85,6 +88,7 @@ jq ".number" jenkins.json
 * See if you can move user num and other transient user info into user class.
 * Finish making bbs only use UserManager that returns optional
 * Remove readuser_nocache, it's just readuser now.
+
 
 ## core::File Improvements
 ***

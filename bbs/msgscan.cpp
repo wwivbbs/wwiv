@@ -398,8 +398,9 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
   auto selected = msgnum;
   auto window_top = std::min(msgnum, last);
   // When starting mid-range, sometimes the selected is past the bottom.
-  if (auto window_bottom = window_top + height - window_top_min + 1; selected > window_bottom)
+  if (auto window_bottom = window_top + height - window_top_min + 1; selected > window_bottom) {
     selected = window_bottom;
+  }
 
   auto done = false;
   auto need_redraw = true;
@@ -740,8 +741,8 @@ void HandleMessageReply(int& msg_num) {
     return;
   }
   const auto& cs = a()->current_sub();
-  auto m = read_type2_message(&p2.msg, static_cast<char>(p2.anony & 0x0f), true,
-                              cs.filename.c_str(), p2.ownersys, p2.owneruser);
+  auto m = read_type2_message(&p2.msg, p2.anony & 0x0f, true,
+                              cs.filename, p2.ownersys, p2.owneruser);
   m.title = p2.title;
 
   grab_quotes(m.raw_message_text, m.from_user_name, a()->context());

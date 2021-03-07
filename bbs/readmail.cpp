@@ -57,6 +57,7 @@
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
+
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -327,18 +328,64 @@ void delete_attachment(unsigned long daten, int forceit) {
   }
 }
 
-void readmail(int mode) {
-  int i, i1, i2, curmail = 0, delme;
-  uint8_t nn = 0;
-  bool done, okmail;
-  char s2[81], *ss2, mnu[81];
+static std::string from_name(const mailrec& m, const net_networks_rec& net, const slrec& sl, int nn) {
+  if (m.anony & anony_sender && (sl.ability & ability_read_email_anony) == 0) {
+    return ">UNKNOWN<";
+  }
+  auto csne = next_system(m.fromsys);
+  const string system_name = csne ? csne->name : "Unknown System";
+  if (m.fromsys == 0) {
+    if (m.fromuser == 65535) {
+      if (nn != 255) {
+        return net.name;
+      }
+    } else {
+      return a()->names()->UserName(m.fromuser);
+    }
+  } else {
+    if (nn == 255) {
+      return fmt::format("#{} @{}.", m.fromuser, m.fromsys, net.name);
+    }
+    if (auto o = readfile(&m.msg, "email")) {
+      if (const auto idx = o.value().find('\r'); idx != std::string::npos) {
+        const std::string from = o.value().substr(0, idx);
+        if (m.fromsys == INTERNET_EMAIL_FAKE_OUTBOUND_NODE || m.fromsys == FTN_FAKE_OUTBOUND_NODE) {
+          return stripcolors(from);
+        }
+        return fmt::format("{} {}@{}.{} ({})", stripcolors(wwiv::common::strip_to_node(from)),
+                           m.fromuser, m.fromsys, net.name, system_name);
+      }
+    } else {
+      if (ssize(a()->nets()) > 1) {
+        return fmt::format("#{} @{}.{} ({})", m.fromuser, m.fromsys, net.name, system_name);
+      }
+    }
+  }
+  return fmt::format("#{} @{} ({})", m.fromuser, m.fromsys, system_name);
+}
+
+static std::tuple<net_networks_rec, int> network_and_num(const mailrec& m) {
+  net_networks_rec net{};
+  auto nn = network_number_from(&m);
+  if (nn <= a()->nets().size()) {
+    net = a()->nets()[nn];
+  } else {
+    net.sysnum = static_cast<uint16_t>(-1);
+    net.type = network_type_t::wwivnet;
+    net.name = fmt::format("<deleted network #{}>", nn);
+    nn = 255;
+  }
+  return std::make_tuple(net, nn);
+}
+
+void readmail(bool newmail_only) {
+  constexpr auto mail_who_field_len = 45;
+  int i1, curmail = 0;
+  bool done;
   mailrec m{};
   mailrec m1{};
   char ch;
-  int num_mail, num_mail1;
   filestatusrec fsr{};
-  auto attach_exists = false;
-  auto found = false;
 
   a()->emchg_ = false;
 
@@ -348,15 +395,15 @@ void readmail(int mode) {
   auto sl = a()->config()->sl(a()->sess().effective_sl());
   auto mw = 0;
   {
-    auto pFileEmail(OpenEmailFile(false));
-    if (!pFileEmail->IsOpen()) {
+    auto file(OpenEmailFile(false));
+    if (!file->IsOpen()) {
       bout << "\r\n\nNo mail file exists!\r\n\n";
       return;
     }
-    auto mfl = static_cast<File::size_type>(pFileEmail->length() / sizeof(mailrec));
-    for (i = 0; i < mfl && mw < MAXMAIL; i++) {
-      pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
-      pFileEmail->Read(&m, sizeof(mailrec));
+    auto mfl = static_cast<File::size_type>(file->length() / sizeof(mailrec));
+    for (int i = 0; i < mfl && mw < MAXMAIL; i++) {
+      file->Seek(i * sizeof(mailrec), File::Whence::begin);
+      file->Read(&m, sizeof(mailrec));
       if (m.tosys == 0 && m.touser == a()->sess().user_num()) {
         tmpmailrec r = {};
         r.index = static_cast<int16_t>(i);
@@ -368,7 +415,7 @@ void readmail(int mode) {
         mw++;
       }
     }
-    pFileEmail->Close();
+    file->Close();
   }
   a()->user()->email_waiting(mw);
   if (mloc.empty()) {
@@ -378,155 +425,57 @@ void readmail(int mode) {
   if (mloc.size() == 1) {
     curmail = 0;
   } else {
-    bout << "\r\n\n|#7You have mail from:\r\n\n";
-
-    if ((a()->user()->GetScreenChars() >= 80) && a()->mail_who_field_len) {
-      std::string left = okansi() ? "\xC1\xC2\xC4" : "++-";
-      std::ostringstream ss;
-      ss << "|#7" << std::string(4, left[2]) << left[1]
-         << std::string(a()->mail_who_field_len - 4, left[2]) << std::string(1, left[1])
-         << std::string(a()->user()->GetScreenChars() - a()->mail_who_field_len - 3, left[2]);
-      bout.bpla(ss.str(), &abort);
-      }
-    for (i = 0; (i < mw && !abort); i++) {
+    bout << "\r\n\n|#2You have mail from:\r\n";
+    bout << "|#9" << std::string(a()->user()->GetScreenChars() - 1, '-') << wwiv::endl;
+    for (auto i = 0; i < mw && !abort; i++) {
       if (!read_same_email(mloc, mw, i, m, 0, 0)) {
         continue;
       }
-      if (mode == 1 && (m.status & status_seen)) {
+      if (newmail_only && (m.status & status_seen)) {
         ++curmail;
         continue;
       }
 
-      net_networks_rec net{};
-      nn = network_number_from(&m);
-      if (nn <= a()->nets().size()) {
-        net = a()->nets()[nn];
-      } else {
-        net.sysnum = static_cast<uint16_t>(-1);
-        net.type = network_type_t::wwivnet;
-        net.name = fmt::format("<deleted network #{}>", nn);
-        nn = 255;
-      }
-      std::ostringstream ss(std::ostringstream::ate);
-      ss << "|#2" << fmt::sprintf("%3d", i + 1) << (m.status & status_seen ? " " : "|#3*")
-         << (okansi() ? '\xB3' : '|') << "|#1 ";
-
-      if (m.anony & anony_sender && (sl.ability & ability_read_email_anony) == 0) {
-        ss << ">UNKNOWN<";
-      } else {
-        if (m.fromsys == 0) {
-          if (m.fromuser == 65535) {
-            if (nn != 255) {
-              ss << net.name;
-            }
-          } else {
-            ss << a()->names()->UserName(m.fromuser);
-          }
-        } else {
-          set_net_num(nn);
-          auto csne = next_system(m.fromsys);
-          string system_name;
-          if (csne) {
-            system_name = csne->name;
-          } else {
-            system_name = "Unknown System";
-          }
-          std::string s1;
-          if (nn == 255) {
-            s1 = fmt::format("#{} @{}.", m.fromuser, m.fromsys, net.name);
-          } else {
-            if (auto o = readfile(&m.msg, "email")) {
-              // we know b is much bigger than s2, so don't
-              // use to_char_array
-              strncpy(s2, o.value().c_str(), sizeof(s2) - 1);
-              ss2 = strtok(s2, "\r");
-              if (m.fromsys == INTERNET_EMAIL_FAKE_OUTBOUND_NODE ||
-                  m.fromsys == FTN_FAKE_OUTBOUND_NODE) {
-                s1 = stripcolors(ss2);
-              } else {
-                s1 = fmt::format("{} {}@{}.{} ({})", stripcolors(wwiv::common::strip_to_node(ss2)),
-                                 m.fromuser, m.fromsys, net.name, system_name);
-              }
-              if (s1.size() > a()->mail_who_field_len) {
-                s1.resize(a()->mail_who_field_len);
-              }
-            } else {
-              if (ssize(a()->nets()) > 1) {
-                s1 = fmt::format("#{} @{}.{} ({})", m.fromuser, m.fromsys,
-                                 net.name, system_name);
-              } else {
-                s1 = fmt::format("#{} @{} ({})", m.fromuser, m.fromsys, system_name);
-              }
-            }
-          }
-          ss << s1;
-        }
-      }
-
-      if (a()->user()->GetScreenChars() >= 80 && a()->mail_who_field_len) {
-        const auto current_s = ss.str();
-        if (size_without_colors(current_s) > a()->mail_who_field_len) {
-          // resize ss to trim it since it's larger than mail_who_field_len
-          ss.str(trim_to_size_ignore_colors(current_s, a()->mail_who_field_len));
-        }
-        const auto siz = a()->mail_who_field_len + 1 - size_without_colors(current_s);
-        ss << std::string(std::max(0, siz), ' ');
-        if (okansi()) {
-          ss << "|#7\xB3|#1";
-        } else {
-          ss << "|";
-        }
-        ss << " " << stripcolors(m.title);
-      }
+      auto [net, nn] = network_and_num(m);
+      set_net_num(nn);
       const auto current_line =
-          trim_to_size_ignore_colors(ss.str(), a()->user()->GetScreenChars() - 1);
+          fmt::format("|#2{:>3}{}|#1{:<45.45}|#7| |#1{:<25.25}", i + 1, (m.status & status_seen ? " " : "|#3*"),
+                      from_name(m, net, sl, nn), stripcolors(m.title));
       bout.bpla(current_line, &abort);
-
-      if (i == mw - 1 && a()->user()->GetScreenChars() >= 80 && !abort &&
-          a()->mail_who_field_len) {
-        std::string s1 = okansi() ? "\xC1\xC3\xC4" : "++-";
-        std::ostringstream ss1;
-        ss1 << "|#7" << std::string(4, s1[2]) << s1[0];
-        ss1 << std::string(a()->mail_who_field_len - 4, s1[2]);
-        ss1 << std::string(1, s1[0]);
-        ss1 << std::string(a()->user()->GetScreenChars() - a()->mail_who_field_len - 3, s1[2]);
-        bout.bpla(ss1.str(), &abort);
-      }
     }
-    bout.nl();
-    bout
-        << "|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ";
-    auto user_selection = bin.input(3, true);
-    if (contains(user_selection, 'Q')) {
+    bout << "|#9" << std::string(a()->user()->GetScreenChars() - 1, '-') << wwiv::endl;
+    bout.bputs("|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ");
+    // TODO: use input numberor hotkey for number 1-mw, or Q
+    auto res = bin.input_number_hotkey(1, {'Q'}, 1, mw);
+    if (res.key == 'Q') { 
       return;
     }
-    i = to_number<int>(user_selection);
-    if (i) {
-      if (!mode) {
-        if (i <= mw) {
-          curmail = i - 1;
-        } else {
-          curmail = 0;
-        }
+    if (res.num > 0 && !newmail_only) {
+      if (res.num <= mw) {
+        curmail = res.num - 1;
+      } else {
+        curmail = 0;
       }
     }
   }
   done = false;
 
   do {
+    bool okmail;
+    auto attach_exists = false;
+    auto found = false;
     abort = false;
     bout.nl(2);
     next = false;
-    string title = m.title;
 
-    if (!read_same_email(mloc, mw, curmail, m, 0, 0)) {
+    if (string title = m.title;!read_same_email(mloc, mw, curmail, m, 0, 0)) {
       title += ">>> MAIL DELETED <<<";
       okmail = false;
       bout.nl(3);
     } else {
       strcpy(a()->sess().irt_, m.title);
       abort = false;
-      i = ((ability_read_email_anony & sl.ability) != 0);
+      auto readit  = ((ability_read_email_anony & sl.ability) != 0);
       okmail = true;
       if (m.fromsys && !m.fromuser) {
         grab_user_name(&(m.msg), "email", network_number_from(&m));
@@ -534,8 +483,7 @@ void readmail(int mode) {
         a()->net_email_name.clear();
       }
       if (m.status & status_source_verified) {
-        int sv_type = source_verfied_type(&m);
-        if (sv_type > 0) {
+        if (int sv_type = source_verfied_type(&m); sv_type > 0) {
           title += StrCat("-=> Source Verified Type ", sv_type);
           if (sv_type == 1) {
             title += " (From NC)";
@@ -546,7 +494,7 @@ void readmail(int mode) {
           title += "-=> Source Verified (unknown type)";
         }
       }
-      nn = network_number_from(&m);
+      auto [net, nn] = network_and_num(m);
       set_net_num(nn);
       int nFromSystem = 0;
       int nFromUser = 0;
@@ -559,7 +507,7 @@ void readmail(int mode) {
         // message, including sender name (which is all we have for FTN messages).
         // We need to get the full header before that and pass it into this
         // method to display it.
-        auto msg = read_type2_message(&m.msg, m.anony & 0x0f, i ? true : false, "email",
+        auto msg = read_type2_message(&m.msg, m.anony & 0x0f, readit ? true : false, "email",
                                       nFromSystem, nFromUser);
         msg.message_area = "Personal E-Mail";
         msg.title = m.title;
@@ -613,10 +561,12 @@ void readmail(int mode) {
     }
 
     do {
+      char mnu[81];
+      int delme;
       string allowable;
       write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
+      auto [net, nn] = network_and_num(m);
       set_net_num(nn);
-      auto& net = a()->nets()[nn];
       i1 = 1;
       if (!a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
         strcpy(mnu, EMAIL_NOEXT);
@@ -664,6 +614,8 @@ void readmail(int mode) {
       }
       delme = 0;
       switch (ch) {
+        int num_mail1;
+        int num_mail;
       case 'T': {
         bout.nl();
         auto fn = FilePath(a()->GetAttachmentDirectory(), fsr.filename);
@@ -803,7 +755,7 @@ void readmail(int mode) {
               old_sublist();
             }
           } while ((!a()->sess().hangup()) && (ss1[0] == '?'));
-          i = -1;
+          auto i = -1;
           if ((ss1[0] == 0) || a()->sess().hangup()) {
             i1 = 0;
             bout.nl();
@@ -850,6 +802,7 @@ void readmail(int mode) {
               p.qscan = status.next_qscanptr();
             });
             if (a()->GetNumMessagesInCurrentMessageArea() >= a()->current_sub().maxmsgs) {
+              int i2;
               i1 = 1;
               i2 = 0;
               while (i2 == 0 && i1 <= a()->GetNumMessagesInCurrentMessageArea()) {
@@ -1011,7 +964,7 @@ void readmail(int mode) {
                 m.status |= status_seen;
                 file->Close();
 
-                i = a()->net_num();
+                auto net_num = a()->net_num();
                 const auto fwd_user_name =
                     a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
                 auto s = fmt::sprintf("\r\nForwarded to %s from %s.", fwd_email_name, fwd_user_name);
@@ -1023,7 +976,7 @@ void readmail(int mode) {
                 if (!(m.status & status_source_verified)) {
                   ssm(m.fromuser, m.fromsys, &net) << s;
                 }
-                set_net_num(i);
+                set_net_num(net_num);
                 s = StrCat("Forwarded mail to ", fwd_email_name);
                 if (delme) {
                   a()->user()->email_waiting(a()->user()->email_waiting() - 1);
@@ -1066,7 +1019,6 @@ void readmail(int mode) {
         if (!okmail) {
           break;
         }
-        string reply_to_name;
         num_mail = static_cast<long>(a()->user()->feedback_sent()) +
                    static_cast<long>(a()->user()->email_sent()) +
                    static_cast<long>(a()->user()->email_net());
@@ -1076,6 +1028,7 @@ void readmail(int mode) {
           break;
         }
         if (m.fromuser != 65535) {
+          string reply_to_name;
           // TODO: optimize this since we also call readfile in grab_user_name
           reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
           if (auto o = readfile(&(m.msg), "email")) {

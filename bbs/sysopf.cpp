@@ -663,7 +663,7 @@ void mailr() {
           }
         }
         bool next;
-        auto msg = read_type2_message(&(m.msg), (char)(m.anony & 0x0f), true, "email", m.fromsys, m.fromuser);
+        auto msg = read_type2_message(&m.msg, m.anony & 0x0f, true, "email", m.fromsys, m.fromuser);
         int fake_msgno = -1;
         display_type2_message(fake_msgno, msg, &next);
         bout << "|#2R,D,Q,<space>  : ";
