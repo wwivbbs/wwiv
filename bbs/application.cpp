@@ -635,8 +635,8 @@ void Application::UpdateTopScreen() {
     }
     localIO()->PutsXY(0, 3,
                       fmt::sprintf("%-40.40s %c %2u %-16.16s           FW= %3u",
-                                   user()->note(), user()->GetGender(), user()->age(),
-                                   ctypes(user()->GetComputerType()), feedback_waiting));
+                                   user()->note(), user()->gender(), user()->age(),
+                                   ctypes(user()->computer_type()), feedback_waiting));
 
     if (sess() .chatcall()) {
       localIO()->PutsXY(0, 4, fmt::format("{:<80}", sess().chat_reason()));
@@ -721,7 +721,7 @@ void Application::GotCaller(int ms) {
   read_qscn(1, sess().qsc, false);
   reset_effective_sl();
   sess().user_num(1);
-  if (user()->IsUserDeleted()) {
+  if (user()->deleted()) {
     user()->SetScreenChars(80);
     user()->SetScreenLines(25);
   }
@@ -1006,7 +1006,7 @@ int Application::Run(int argc, char* argv[]) {
     if (this_usernum_from_commandline) {
       sess().user_num(this_usernum_from_commandline);
       ReadCurrentUser();
-      if (!user()->IsUserDeleted()) {
+      if (!user()->deleted()) {
         GotCaller(bps);
         sess().user_num(this_usernum_from_commandline);
         ReadCurrentUser();

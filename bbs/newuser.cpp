@@ -344,17 +344,17 @@ void input_zipcode() {
 void input_sex() {
   bout.nl();
   bout << "|#2Your gender (M,F) :";
-  a()->user()->SetGender(onek("MF"));
+  a()->user()->gender(onek("MF"));
 }
 
 void input_age(User* u) {
   int y = 2000, m = 1, d = 1;
-  auto dt = DateTime::now();
+  const auto dt = DateTime::now();
 
   bout.nl();
   do {
     bout.nl();
-    y = static_cast<int>(dt.year() - 30) / 100;
+    y = (dt.year() - 30) / 100;
     bout << "|#2Year you were born: ";
     y = bin.input_number<int>(y, 1900, static_cast<int>(dt.year() - 30));
   } while (!a()->sess().hangup() && y < 1905);
@@ -404,9 +404,9 @@ void input_comptype() {
     }
   } while (!ok && !a()->sess().hangup());
 
-  a()->user()->SetComputerType(ct);
+  a()->user()->computer_type(ct);
   if (a()->sess().hangup()) {
-    a()->user()->SetComputerType(-1);
+    a()->user()->computer_type(-1);
   }
 }
 
@@ -542,7 +542,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
       User tu;
       userFile.Read(&tu.data, a()->config()->userrec_length());
 
-      if (tu.IsUserDeleted() && tu.sl() != 255) {
+      if (tu.deleted() && tu.sl() != 255) {
         userFile.Seek(static_cast<File::size_type>(user_number * a()->config()->userrec_length()),
                       File::Whence::begin);
         userFile.Write(&pUser->data, a()->config()->userrec_length());
@@ -688,10 +688,10 @@ void WriteNewUserInfoToSysopLog() {
     }
   }
   if (a()->config()->newuser_config().use_birthday != newuser_item_type_t::unused) {
-    sysoplog() << fmt::format("-> {} ({} yr old {})", u->birthday_mmddyy(), u->age(), u->GetGender());
+    sysoplog() << fmt::format("-> {} ({} yr old {})", u->birthday_mmddyy(), u->age(), u->gender());
   }
   if (a()->config()->newuser_config().use_computer_type != newuser_item_type_t::unused) {
-    sysoplog() << fmt::format("-> Using a {} Computer", ctypes(u->GetComputerType()));
+    sysoplog() << fmt::format("-> Using a {} Computer", ctypes(u->computer_type()));
   }
   if (u->wwiv_regnum()) {
     sysoplog() << fmt::sprintf("-> WWIV Registration # %ld", u->wwiv_regnum());
@@ -985,12 +985,12 @@ NewUserItemResult DoBirthDay(NewUserContext& c) {
 NewUserItemResult DoGender(NewUserContext& c) {
   bout << "|#1" << c.letter << "|#9) Sex (Gender)            : ";
   bout.SavePosition();
-  if (c.user.GetGender() != 'M' && c.user.GetGender() != 'F') {
+  if (c.user.gender() != 'M' && c.user.gender() != 'F') {
     bout.mpl(1);
-    c.user.SetGender(onek_ncr("MF"));
+    c.user.gender(onek_ncr("MF"));
   }
   cln_nu();
-  bout << "|#2" << (c.user.GetGender() == 'M' ? "Male" : "Female") << wwiv::endl;
+  bout << "|#2" << (c.user.gender() == 'M' ? "Male" : "Female") << wwiv::endl;
   return NewUserItemResult::success;
 }
 
@@ -1167,8 +1167,8 @@ NewUserItemResult DoCallsign(NewUserContext& c) {
 NewUserItemResult DoComputerType(NewUserContext& c) {
   int ct = -1;
 
-  std::string computer_type = c.user.GetComputerType() >= 0 ? ctypes(c.user.GetComputerType()) : "Unknown";
-  if (c.user.GetComputerType() >= 0 || !c.first) {
+  std::string computer_type = c.user.computer_type() >= 0 ? ctypes(c.user.computer_type()) : "Unknown";
+  if (c.user.computer_type() >= 0 || !c.first) {
     bout << "|#1" << c.letter << "|#9) Computer Type           : |#2" << computer_type << wwiv::endl;
     return NewUserItemResult::no_change;
   }
@@ -1190,7 +1190,7 @@ NewUserItemResult DoComputerType(NewUserContext& c) {
     }
   } while (!ok && !a()->sess().hangup());
 
-  c.user.SetComputerType(ct);
+  c.user.computer_type(ct);
   return NewUserItemResult::need_redraw;
 }
 
@@ -1230,7 +1230,7 @@ void NewUserDataEntry(const newuser_config_t& nc) {
   }
   if (nc.use_gender != newuser_item_type_t::unused) {
     nu_items.try_emplace(letter, DoGender, nc.use_gender);
-    clr_items.try_emplace(letter, [](User& u) { u.SetGender('N'); });
+    clr_items.try_emplace(letter, [](User& u) { u.gender('N'); });
     ++letter;
   }
   if (nc.use_address_country != newuser_item_type_t::unused) {
@@ -1257,9 +1257,9 @@ void NewUserDataEntry(const newuser_config_t& nc) {
     ++letter;
   }
   if (nc.use_computer_type != newuser_item_type_t::unused) {
-    u.SetComputerType(-1);
+    u.computer_type(-1);
     nu_items.try_emplace(letter, DoComputerType, nc.use_computer_type);
-    clr_items.try_emplace(letter, [](User& u) { u.SetComputerType(-1); });
+    clr_items.try_emplace(letter, [](User& u) { u.computer_type(-1); });
     ++letter;
   }
   std::set<char> letters;

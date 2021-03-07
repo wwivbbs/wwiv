@@ -320,7 +320,7 @@ void list_users(int mode) {
                         ? true
                         : false;
     bool ok = true;
-    if (user.IsUserDeleted()) {
+    if (user.deleted()) {
       ok = false;
     }
     if (mode == LIST_USERS_MESSAGE_AREA && !wwiv::bbs::check_acs(s.read_acs)) {

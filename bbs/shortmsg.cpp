@@ -98,7 +98,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
 static void SendLocalShortMessage(int usernum, const std::string& messageText) {
   User user;
   a()->users()->readuser(&user, usernum);
-  if (!user.IsUserDeleted()) {
+  if (!user.deleted()) {
     File file(FilePath(a()->config()->datadir(), SMW_DAT));
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;

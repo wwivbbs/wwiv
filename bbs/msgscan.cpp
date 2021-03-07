@@ -794,7 +794,7 @@ static void HandleMessageDelete(int& msg_num) {
   if (!a()->users()->readuser(&tu, p2.owneruser)) {
     return;
   }
-  if (tu.IsUserDeleted()) {
+  if (tu.deleted()) {
     return;
   }
   if (date_to_daten(tu.firston()) < p2.daten) {

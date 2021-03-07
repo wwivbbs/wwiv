@@ -58,7 +58,7 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case '%':                               // Time left today
       return to_string(static_cast<int>(nsl() / 60));
     case '#':                               // User's number
-      return to_string(a()->sess().user_num());
+      return to_string(context_->u().usernum());
     case '$':                               // File points (UNUSED)
       return "0"; //to_string(u().GetFilePoints());
     case '*':                               // User reg num
@@ -173,11 +173,11 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
     case 'W':                               // Total # of messages in sub
       return to_string(a()->GetNumMessagesInCurrentMessageArea());
     case 'X':                               // User's sex
-      return fmt::sprintf("%c", context_->u().GetGender());
+      return fmt::sprintf("%c", context_->u().gender());
     case 'Y':                               // Your BBS name
       return config_ == nullptr ? "" : config_->system_name();
     case 'y':                               // Computer type
-      return ctypes(context_->u().GetComputerType());
+      return ctypes(context_->u().computer_type());
     case 'Z':                               // User's zip code
       return context_->u().zip_code();
     case 'z':

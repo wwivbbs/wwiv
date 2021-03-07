@@ -54,7 +54,7 @@ int finduser(const string& searchString) {
   auto user_number = to_number<int>(searchString);
   if (user_number > 0) {
     a()->users()->readuser(&user, user_number);
-    if (user.IsUserDeleted()) {
+    if (user.deleted()) {
       return 0;
     }
     return user_number;
@@ -64,7 +64,7 @@ int finduser(const string& searchString) {
     return 0;
   } 
   a()->users()->readuser(&user, user_number);
-  if (user.IsUserDeleted()) {
+  if (user.deleted()) {
     return 0;
   }
   if (iequals(user.name(), "GUEST")) {

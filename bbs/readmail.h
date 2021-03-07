@@ -18,10 +18,21 @@
 #ifndef INCLUDED_BBS_READMAIL_H
 #define INCLUDED_BBS_READMAIL_H
 
+#include "sdk/vardec.h"
+
 #include <vector>
 
-struct tmpmailrec;
-struct mailrec;
+// USED IN READMAIL TO STORE EMAIL INFO
+struct tmpmailrec {
+  int16_t index; // index into email.dat
+
+  uint16_t fromsys, // originating system
+      fromuser;     // originating user
+
+  daten_t daten; // date it was sent
+
+  messagerec msg; // where to find it
+};
 
 void readmail(bool newmail_only);
 int check_new_mail(int user_number);

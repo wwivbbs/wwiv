@@ -468,7 +468,7 @@ void readmail(bool newmail_only) {
     bout.nl(2);
     next = false;
 
-    if (string title = m.title;!read_same_email(mloc, mw, curmail, m, 0, 0)) {
+    if (string title = m.title; !read_same_email(mloc, mw, curmail, m, 0, 0)) {
       title += ">>> MAIL DELETED <<<";
       okmail = false;
       bout.nl(3);
@@ -1169,20 +1169,19 @@ void readmail(bool newmail_only) {
 int check_new_mail(int user_number) {
   auto new_messages = 0; // number of new mail
 
-  auto pFileEmail(OpenEmailFile(false));
-  if (pFileEmail->Exists() && pFileEmail->IsOpen()) {
-    const auto mfLength = static_cast<int>(pFileEmail->length() / sizeof(mailrec));
+  if (auto file(OpenEmailFile(false)); file->Exists() && file->IsOpen()) {
+    const auto mfLength = static_cast<int>(file->length() / sizeof(mailrec));
     for (auto i = 0; i < mfLength; i++) {
       mailrec m{};
-      pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
-      pFileEmail->Read(&m, sizeof(mailrec));
+      file->Seek(i * sizeof(mailrec), File::Whence::begin);
+      file->Read(&m, sizeof(mailrec));
       if (m.tosys == 0 && m.touser == user_number) {
         if (!(m.status & status_seen)) {
           ++new_messages;
         }
       }
     }
-    pFileEmail->Close();
+    file->Close();
   }
   return new_messages;
 }

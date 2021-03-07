@@ -304,7 +304,7 @@ void user_editor(const wwiv::sdk::Config& config) {
     case 'D': {
       // Delete user.
       wwiv::sdk::User u(user, current_usernum);
-      if (u.IsUserDeleted()) {
+      if (u.deleted()) {
         break;
       }
       if (!dialog_yn(items.window(),
@@ -325,7 +325,7 @@ void user_editor(const wwiv::sdk::Config& config) {
     case 'R': {
       // Restore Deleted User.
       wwiv::sdk::User u(user, current_usernum);
-      if (!u.IsUserDeleted()) {
+      if (!u.deleted()) {
         break;
       }
       wwiv::sdk::UserManager um(config);

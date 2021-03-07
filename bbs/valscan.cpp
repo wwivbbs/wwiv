@@ -133,7 +133,7 @@ void valscan() {
                 if (p2.ownersys == 0) {
                   User tu;
                   a()->users()->readuser(&tu, p2.owneruser);
-                  if (!tu.IsUserDeleted()) {
+                  if (!tu.deleted()) {
                     if (date_to_daten(tu.firston()) < p2.daten) {
                       bout.nl();
                       bout << "|#2Remove how many posts credit? ";

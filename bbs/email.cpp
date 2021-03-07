@@ -71,7 +71,7 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
 
   User userRecord;
   a()->users()->readuser(&userRecord, *pUserNumber);
-  if (userRecord.IsUserDeleted()) {
+  if (userRecord.deleted()) {
     return false;
   }
   if (userRecord.forward_usernum() == 0 && userRecord.forward_systemnum() == 0 &&
@@ -153,8 +153,6 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
 std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
   const auto fn = FilePath(a()->config()->datadir(), EMAIL_DAT);
 
-  // If the file doesn't exist, just return the opaque handle now instead of flailing
-  // around trying to open it
   if (!File::Exists(fn)) {
     // If it does not exist, try to create it via the open call (sf bug 1215434)
     auto file = std::make_unique<File>(fn);
@@ -369,7 +367,7 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
         return false;
       }
     }
-    if (userRecord.IsUserDeleted()) {
+    if (userRecord.deleted()) {
       bout << "\r\nDeleted user.\r\n\n";
       return false;
     }

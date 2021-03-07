@@ -349,38 +349,26 @@ Type2MessageData read_type2_message(messagerec* msg, uint8_t an, bool readit, co
 }
 
 static int legacy_display_header_text(Type2MessageData& msg) {
-  static constexpr auto COLUMN2 = 42;
   auto num_header_lines = 0;
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
-    const auto message_area = trim_to_size(msg.message_area, 35);
-    bout << "|#9 Sub|#7: ";
-    bout.Color(a()->GetMessageColor());
-    bout << message_area;
+    bout.format("|#9 Sub|#7: |#{}{:<35.35}", a()->GetMessageColor(), msg.message_area);
     if (a()->user()->GetScreenChars() >= 78) {
-      const auto pad = COLUMN2 - (6 + message_area.size());
-      bout << string(pad, ' ');
+      bout << " ";
     } else {
       bout.nl();
       num_header_lines++;
     }
-    bout << "|#9Msg#|#7: ";
     if (msg.message_number > 0 && msg.total_messages > 0) {
-      bout << "[";
-      bout.Color(a()->GetMessageColor());
-      bout << msg.message_number << "|#7 of ";
-      bout.Color(a()->GetMessageColor());
-      bout << msg.total_messages << "|#7]";
+      bout.format("|#9Msg#|#7: [|#{}{}|#7 of |#{}{}|#7]", a()->GetMessageColor(),
+                  msg.message_number, a()->GetMessageColor(), msg.total_messages);
     }
     bout.nl();
     num_header_lines++;
   }
 
-  const auto from = trim_to_size(msg.from_user_name, 35);
-  bout << "|#9From|#7: |#1" << from;
+  bout.format("|#9From|#7: |#1{:<35.35}", msg.from_user_name);
   if (a()->user()->GetScreenChars() >= 78) {
-    const int used = ssize(from) + 6;
-    const auto pad = COLUMN2 - used;
-    bout << string(pad, ' ');
+    bout << " ";
   } else {
     bout.nl();
     num_header_lines++;
@@ -391,28 +379,19 @@ static int legacy_display_header_text(Type2MessageData& msg) {
     bout << "  |#9To|#7: |#1" << msg.to_user_name << wwiv::endl;
     num_header_lines++;
   }
-  bout << "|#9Subj|#7: ";
-  bout.Color(a()->GetMessageColor());
-  bout << msg.title << wwiv::endl;
+  bout.format("|#9Subj|#7: |#{}{}\r\n", a()->GetMessageColor(), msg.title);
   num_header_lines++;
 
-  if (const auto sysname = trim_to_size(msg.from_sys_name, 35); !sysname.empty()) {
-    bout << "|#9 Sys|#7: |#1" << sysname;
+  if (!msg.from_sys_name.empty()) {
+    bout.format("|#9 Sys|#7: |#1{:<35.35}", msg.from_sys_name);
     if (a()->user()->GetScreenChars() >= 78) {
-      const auto used = 6 + ssize(sysname);
-      const auto pad = COLUMN2 - used;
-      bout << string(pad, ' ');
+      bout << " ";
     } else {
       bout.nl();
       num_header_lines++;
     }
     if (!msg.from_sys_loc.empty()) {
-      auto loc = msg.from_sys_loc;
-      const auto maxlen = a()->user()->GetScreenChars() - 7 - COLUMN2;
-      if (ssize(loc) > maxlen) {
-        loc = loc.substr(0, maxlen);
-      }
-      bout << "|#9Loc|#7:  |#1" << loc << wwiv::endl;
+      bout.format(" |#9Loc|#7: |#1{:<30}\r\n", msg.from_sys_loc);
       num_header_lines++;
     }
   }

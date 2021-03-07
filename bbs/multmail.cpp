@@ -103,7 +103,7 @@ void multimail(int *pnUserNumber, int numu) {
       pnUserNumber[cv] = -1;
       continue;
     }
-    if (user.IsUserDeleted()) {
+    if (user.deleted()) {
       bout << "User deleted, not sent.\r\n";
       pnUserNumber[cv] = -1;
       continue;
@@ -248,7 +248,7 @@ int oneuser() {
     bout << "Mailbox full.\r\n\n";
     return 0;
   }
-  if (user.IsUserDeleted()) {
+  if (user.deleted()) {
     bout.nl();
     bout << "Deleted user.\r\n\n";
     return 0;

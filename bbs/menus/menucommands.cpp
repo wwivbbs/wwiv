@@ -197,14 +197,22 @@ Runs a WWIVbasic Script
   Sets the subboards conference to key
 )",
                                    MENU_CAT_MSGS, [](MenuContext& context) {
-                                     SetMsgConf(context.data.c_str()[0]);
+                                     if (context.data.empty()) {
+                                       LOG(ERROR) << "SetMsgConf requires a key to be specified.";
+                                       return;
+                                     }
+                                     SetMsgConf(context.data.front());
                                    }));
   m.emplace("SetDirConf", MenuItem(R"(<key>
 
   Sets the xfer section conference to key
 )",
                                    MENU_CAT_FILE, [](MenuContext& context) {
-                                     SetDirConf(context.data.c_str()[0]);
+                                     if (context.data.empty()) {
+                                       LOG(ERROR) << "SetDirConf requires a key to be specified.";
+                                       return;
+                                     }
+                                     SetDirConf(context.data.front());
                                    }));
   m.emplace("EnableConf", MenuItem(R"(
 

@@ -210,7 +210,7 @@ int FixUsersCommand::Execute() {
     userMgr.readuser(&user, i);
     user.FixUp();
     userMgr.writeuser(&user, i);
-    if (!user.IsUserDeleted() && !user.IsUserInactive()) {
+    if (!user.deleted() && !user.inactive()) {
       smalrec sr{};
       const auto name = user.name();
       strcpy(reinterpret_cast<char*>(sr.name), name.c_str());

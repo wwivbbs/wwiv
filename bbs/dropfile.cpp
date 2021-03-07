@@ -216,7 +216,7 @@ void CreatePCBoardSysDropFile() {
     } else {
       snprintf(pcb.connectbps, 5, "%-5.5d", a()->modem_speed_);
     }
-    pcb.usernum = static_cast<int16_t>(a()->sess().user_num());
+    pcb.usernum = static_cast<int16_t>(u.usernum());
     char szName[255];
     sprintf(szName, "%-25.25s", u.GetName());
     char* pszFirstName = strtok(szName, " \t");
@@ -293,7 +293,7 @@ void CreateCallInfoBbsDropFile() {
     file.WriteLine(GetMinutesRemainingForDropFile());
     file.WriteLine(u.HasAnsi() ? "COLOR" : "MONO");
     file.WriteLine("X");
-    file.WriteLine(a()->sess().user_num());
+    file.WriteLine(u.usernum());
     file.WriteLine(start_minute);
     file.WriteLine(t.substr(0, 5));
     file.WriteLine("0");
@@ -362,7 +362,7 @@ void CreateDoor32SysDropFile() {
   const auto cspeed = std::to_string(a()->modem_speed_);
   file.WriteLine(cspeed);
   file.WriteLine(StrCat("WWIV ", short_version()));
-  file.WriteLine(a()->sess().user_num());
+  file.WriteLine(u.usernum());
   file.WriteLine(u.real_name());
   file.WriteLine(u.name());
   file.WriteLine(u.sl());
@@ -385,19 +385,19 @@ void CreateDoorSysDropFile() {
     const auto cspeed = std::to_string(a()->modem_speed_);
     const auto real_name = u.real_name();
     auto line = fmt::sprintf("COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
-            (a()->sess().using_modem()) ? a()->primary_port() : 0, cspeed.c_str(), '8',
+            a()->sess().using_modem() ? a()->primary_port() : 0, cspeed, '8',
             a()->instance_number(), // node
-            (a()->sess().using_modem()) ? a()->modem_speed_ : 38400,
+            a()->sess().using_modem() ? a()->modem_speed_ : 38400,
             'Y', // screen display
             'N', // log to printer
             'N', // page bell
             'N', // caller alarm
-            real_name.c_str(), u.city(), u.state());
+            real_name, u.city(), u.state());
     file.Write(line);
-    line = fmt::sprintf("%s\n%s\n%s\n%d\n%u\n%s\n%u\n%ld\n", u.voice_phone().c_str(),
-            real_name.c_str(),
+    line = fmt::sprintf("%s\n%s\n%s\n%d\n%u\n%s\n%u\n%ld\n", u.voice_phone(),
+            real_name,
             "X", // u.password()
-            u.sl(), u.logons(), u.laston().c_str(),
+            u.sl(), u.logons(), u.laston(),
             static_cast<uint32_t>(60L * GetMinutesRemainingForDropFile()),
             GetMinutesRemainingForDropFile());
     file.Write(line);
@@ -407,7 +407,7 @@ void CreateDoorSysDropFile() {
             "1,2,3",                     // conferences
             a()->current_user_sub_num(), // current 'conference'
             "12/31/99",                  // expiration date
-            a()->sess().user_num(),
+            u.usernum(),
             'Y', // default protocol
             u.uploaded(), u.downloaded(),
             0,  // kb dl today
@@ -417,22 +417,22 @@ void CreateDoorSysDropFile() {
     const auto gfilesdir = a()->config()->gfilesdir();
     const auto t = times();
     line = fmt::sprintf("%s\n%s\n%s\n%s\n%s\n%s\n%c\n%c\n%c\n%u\n%u\n%s\n%-.5s\n%s\n", 
-            birthday_date.c_str(),
-            a()->config()->datadir().c_str(), gfilesdir.c_str(),
-            a()->config()->sysop_name().c_str(), u.GetName(),
+            birthday_date,
+            a()->config()->datadir(), gfilesdir,
+            a()->config()->sysop_name(), u.name(),
             "00:01", // event time
             'Y',
-            (okansi()) ? 'N' : 'Y', // ansi ok but graphics turned off
+            okansi() ? 'N' : 'Y', // ansi ok but graphics turned off
             'N',                    // record-locking
             u.color(0), u.banktime_minutes(),
-            u.laston().c_str(), // last n-scan date
-            t.c_str(),
+            u.laston(), // last n-scan date
+            t,
             "00:01"); // time last call
     file.Write(line);
     line = fmt::sprintf("%u\n%u\n%d\n%d\n%s\n%u\n%d\n",
             99, // max files dl/day
             0,  // files dl today so far
-            u.uk(), u.dk(), u.note().c_str(),
+            u.uk(), u.dk(), u.note(),
             u.chains_run(), u.messages_posted());
     file.Write(line);
     file.Close();
@@ -502,9 +502,9 @@ std::string create_chain_file() {
   TextFile file(fileName, "wd");
   if (file.IsOpen()) {
     file.Write(fmt::sprintf(
-        "%d\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%d\n", a()->sess().user_num(), u.name(),
+        "%d\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%d\n", u.usernum(), u.name(),
         u.real_name(), u.callsign(), u.age(),
-        u.GetGender(), u.gold(), u.laston(),
+        u.gender(), u.gold(), u.laston(),
         u.GetScreenChars(), u.GetScreenLines(), u.sl()));
     const auto temporary_log_filename = GetTemporaryInstanceLogFileName();
     const auto gfilesdir = a()->config()->gfilesdir();

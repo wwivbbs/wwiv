@@ -157,7 +157,7 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
     a()->ReadCurrentUser(current_user);
     
     if (const auto temp_user_name = ToStringUpperCase(a()->user()->real_name());
-        temp_user_name == user_name && !a()->user()->IsUserDeleted()) {
+        temp_user_name == user_name && !a()->user()->deleted()) {
       bout << "|#5Do you mean " << a()->names()->UserName(n.number) << "? ";
       if (bin.yesno()) {
         return current_user;
@@ -696,7 +696,7 @@ static void CheckAndUpdateUserInfo() {
   if (nc.use_data_phone == newuser_item_type_t::required && a()->user()->data_phone().empty()) {
     input_dataphone();
   }
-  if (nc.use_computer_type == newuser_item_type_t::required && a()->user()->GetComputerType() == -1) {
+  if (nc.use_computer_type == newuser_item_type_t::required && a()->user()->computer_type() == -1) {
     input_comptype();
   }
 }

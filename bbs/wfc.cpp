@@ -234,7 +234,7 @@ WFC::WFC(Application* a) : a_(a) {
   a_->sess().user_num(0);
 
   a_->reset_effective_sl();
-  if (a_->user()->IsUserDeleted()) {
+  if (a_->user()->deleted()) {
     a_->user()->SetScreenChars(80);
     a_->user()->SetScreenLines(25);
   }
@@ -563,7 +563,7 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
     return std::make_tuple(local_logon_t::exit, -1);
   }
 
-  if (const auto tu = a_->users()->readuser_nocache(unx); tu->sl() != 255 || tu->IsUserDeleted()) {
+  if (const auto tu = a_->users()->readuser_nocache(unx); tu->sl() != 255 || tu->deleted()) {
     return std::make_tuple(local_logon_t::exit, -1);
   }
 

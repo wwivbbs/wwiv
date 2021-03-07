@@ -119,7 +119,7 @@ bool handle_email(Context& context,
       return false;
     }
 
-    if (user.IsUserDeleted()) {
+    if (user.deleted()) {
       LOG(INFO) << "User #" << to_user << " is deleted. Discarding message.";
       return false;
     }

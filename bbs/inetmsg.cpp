@@ -51,7 +51,7 @@ std::string read_inet_addr(int user_number) {
     return {};
   }
 
-  if (user_number == a()->sess().user_num()) {
+  if (user_number == a()->user()->usernum()) {
     if (check_inet_addr(a()->user()->email_address())) {
       return  a()->user()->email_address();
     }

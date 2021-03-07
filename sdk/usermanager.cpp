@@ -102,13 +102,13 @@ bool UserManager::readuser(User *pUser, int user_number) const {
 std::optional<User> UserManager::readuser(int user_number, mask m) const {
   User u{};
   if (readuser(&u, user_number)) {
-    if (m == mask::active && (u.IsUserDeleted() || u.IsUserInactive())) {
+    if (m == mask::active && (u.deleted() || u.inactive())) {
       return std::nullopt;
     }
-    if (m == mask::non_deleted && u.IsUserDeleted()) {
+    if (m == mask::non_deleted && u.deleted()) {
       return std::nullopt;
     }
-    if (m == mask::non_inactive && u.IsUserInactive()) {
+    if (m == mask::non_inactive && u.inactive()) {
       return std::nullopt;
     }
     return {u};
@@ -208,7 +208,7 @@ static bool deluser(int user_number, const Config& config, UserManager& um,
   User user;
   um.readuser(&user, user_number);
 
-  if (user.IsUserDeleted()) {
+  if (user.deleted()) {
     return true;
   }
   SSM ssm(config, um);
@@ -250,7 +250,7 @@ bool UserManager::restore_user(int user_number) {
   User user;
   this->readuser(&user, user_number);
 
-  if (!user.IsUserDeleted()) {
+  if (!user.deleted()) {
     // Not deleted. Nothing to do.
     return true;
   }

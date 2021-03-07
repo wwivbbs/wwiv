@@ -112,7 +112,7 @@ static string GetMailBoxStatus() {
 
   User ur;
   a()->users()->readuser(&ur, a()->user()->forward_usernum());
-  if (ur.IsUserDeleted()) {
+  if (ur.deleted()) {
     a()->user()->forward_usernum(0);
     return string("Normal");
   }
@@ -860,7 +860,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
     }
     const auto s = trim_to_size_ignore_colors(name, 26);
     bout.bprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
-                 type == 0 ? 'Q' : 'N', s.c_str(), type == 0 ? "sub" : "dir");
+                 type == 0 ? 'Q' : 'N', s, type == 0 ? "sub" : "dir");
   } else {
     bout.bprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                  type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");

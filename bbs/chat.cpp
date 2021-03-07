@@ -870,7 +870,7 @@ bool check_ch(int ch) {
     return false;
   }
   char gender = channels[ch].sex;
-  if (gender != 65 && a()->user()->GetGender() != gender &&
+  if (gender != 65 && a()->user()->gender() != gender &&
       a()->user()->sl() < g_nChatOpSecLvl) {
     if (gender == 77) {
       bout << "\r\n|#9Only |#1males|#9 are allowed in this channel.\r\n";

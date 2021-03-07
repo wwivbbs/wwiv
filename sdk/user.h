@@ -48,9 +48,6 @@ static constexpr uint32_t unused_cfl_days_between_dloads = 0x00000200;
 static constexpr uint32_t cfl_description = 0x00000400;
 static constexpr uint32_t cfl_header = 0x80000000;
 
-constexpr int HOTKEYS_ON = 0;
-constexpr int HOTKEYS_OFF = 1;
-
 namespace wwiv::sdk {
 struct validation_config_t;
 
@@ -145,11 +142,12 @@ class User final {
   void ClearInactFlag(int nFlag) {
     data.inact &= ~nFlag;
   }
-  [[nodiscard]] bool IsUserDeleted() const {
-    return (data.inact & User::userDeleted) != 0;
+
+  [[nodiscard]] bool deleted() const {
+    return (data.inact & userDeleted) != 0;
   }
-  [[nodiscard]] bool IsUserInactive() const {
-    return (data.inact & User::userInactive) != 0;
+  [[nodiscard]] bool inactive() const {
+    return (data.inact & userInactive) != 0;
   }
 
   /**
@@ -174,31 +172,40 @@ class User final {
   void ClearStatusFlag(int nFlag) {
     data.sysstatus &= ~nFlag;
   }
+
   [[nodiscard]] bool HasStatusFlag(int nFlag) const {
     return (data.sysstatus & nFlag) != 0;
   }
+
   [[nodiscard]] long get_status() const {
     return static_cast<long>(data.sysstatus);
   }
+
   void SetStatus(long l) {
     data.sysstatus = static_cast<uint32_t>(l);
   }
+
   [[nodiscard]] bool HasAnsi() const {
     return HasStatusFlag(ansi);
   }
   [[nodiscard]] bool HasColor() const { return HasStatusFlag(status_color); }
+
   [[nodiscard]] bool HasMusic() const {
     return HasStatusFlag(music);
   }
+
   [[nodiscard]] bool HasPause() const {
     return HasStatusFlag(pauseOnPage);
   }
+
   [[nodiscard]] bool IsExpert() const {
     return HasStatusFlag(expert);
   }
+
   [[nodiscard]] bool HasShortMessage() const {
     return HasStatusFlag(SMW);
   }
+
   [[nodiscard]] bool IsFullScreen() const {
     return HasStatusFlag(fullScreen);
   }
@@ -268,12 +275,15 @@ class User final {
   void ClearRestrictionFlag(int nFlag) noexcept {
     data.restrict &= ~nFlag;
   }
+
   [[nodiscard]] bool HasRestrictionFlag(int nFlag) const noexcept {
     return (data.restrict & nFlag) != 0;
   }
+
   [[nodiscard]] uint16_t restriction() const {
     return data.restrict;
   }
+
   void restriction(uint16_t n) {
     data.restrict = n;
   }
@@ -315,6 +325,7 @@ class User final {
   void ToggleArFlag(int nFlag) {
     data.ar ^= nFlag;
   }
+
   [[nodiscard]] bool HasArFlag(int ar) const {
     if (ar == 0) {
       // Always have the empty ar
@@ -339,9 +350,11 @@ class User final {
     }
     return (data.dar & nFlag) != 0;
   }
+
   [[nodiscard]] int dar_int() const {
     return data.dar;
   }
+
   void dar_int(int n) {
     data.dar = static_cast<uint16_t>(n);
   }
@@ -354,7 +367,18 @@ class User final {
     return std::string(reinterpret_cast<const char*>(data.name));
   }
 
+  /**
+   * Returns the user's name and number formatted canonically like:
+   * "TRADER JACK #1"
+   */
   [[nodiscard]] std::string name_and_number() const;
+
+  /**
+   * Returns the user's number. 
+   * Note: This only works if the user record was loaded from the UserManager class,
+   * otherwise will return -1.
+   */
+  [[nodiscard]] int usernum() const noexcept;
 
   void set_name(const std::string& s) {
     strcpy(reinterpret_cast<char*>(data.name), s.c_str());
@@ -374,65 +398,71 @@ class User final {
   [[nodiscard]] std::string real_name_or_empty() const {
     return std::string(reinterpret_cast<const char*>(data.realname));
   }
+
+  /**
+   * Sets the real name for this user, use an empty string if none exists.
+   */
   void real_name(const std::string& s) {
     strcpy(reinterpret_cast<char*>(data.realname), s.c_str());
   }
+
   [[nodiscard]] std::string callsign() const {
-    return std::string(reinterpret_cast<const char*>(data.callsign));
+    return std::string(data.callsign);
   }
+
   void callsign(const std::string& s) {
-    strcpy(reinterpret_cast<char*>(data.callsign), s.c_str());
+    strcpy(data.callsign, s.c_str());
   }
 
   [[nodiscard]] std::string voice_phone() const {
     return data.phone;
   }
   void voice_phone(const std::string& s) {
-    wwiv::strings::to_char_array(data.phone, s);
+    strings::to_char_array(data.phone, s);
   }
 
   [[nodiscard]] std::string data_phone() const {
     return data.dataphone;
   }
   void data_phone(const std::string& s) {
-    wwiv::strings::to_char_array(data.dataphone, s);
+    strings::to_char_array(data.dataphone, s);
   }
 
-  [[nodiscard]] const std::string street() const {
+  [[nodiscard]] std::string street() const {
     return data.street;
   }
   void street(const std::string& s) {
-    wwiv::strings::to_char_array(data.street, s);
+    strings::to_char_array(data.street, s);
   }
   [[nodiscard]] std::string city() const {
     return data.city;
   }
   void city(const std::string& s) {
-    wwiv::strings::to_char_array(data.city, s);
+    strings::to_char_array(data.city, s);
   }
-  [[nodiscard]] const std::string state() const {
+  [[nodiscard]] std::string state() const {
     return data.state;
   }
   void state(const std::string& s) {
-    wwiv::strings::to_char_array(data.state, s);
+    strings::to_char_array(data.state, s);
   }
 
-  [[nodiscard]] const std::string country() const {
+  [[nodiscard]] std::string country() const {
     return data.country;
   }
   void country(const std::string& s) {
-    wwiv::strings::to_char_array(data.country, s);
+    strings::to_char_array(data.country, s);
   }
 
-  [[nodiscard]] const std::string zip_code() const {
+  [[nodiscard]] std::string zip_code() const {
     return data.zipcode;
   }
   void zip_code(const std::string& s) {
-    wwiv::strings::to_char_array(data.zipcode, s);
+    strings::to_char_array(data.zipcode, s);
   }
 
   [[nodiscard]] std::string password() const {
-    return std::string(reinterpret_cast<const char*>(data.pw));
+    return std::string(data.pw);
   }
   void password(const std::string& s) {
     strings::to_char_array(data.pw, s);
@@ -458,7 +488,7 @@ class User final {
     return reinterpret_cast<const char*>(data.note);
   }
   void note(const std::string& s) {
-    strcpy(reinterpret_cast<char*>(data.note), s.c_str());
+    strcpy(data.note, s.c_str());
   }
   [[nodiscard]] std::string macro(int line) const {
     return std::string(reinterpret_cast<const char*>(data.macros[line]));
@@ -467,7 +497,7 @@ class User final {
     memset(&data.macros[ nLine ][0], 0, 80);
     strcpy(reinterpret_cast<char*>(data.macros[ nLine ]), s);
   }
-  [[nodiscard]] char GetGender() const {
+  [[nodiscard]] char gender() const {
     if (data.sex == 'N') {
       // N means unknown.  NEWUSER sets it to N to prompt the
       // user again.
@@ -475,9 +505,10 @@ class User final {
     }
     return data.sex == 'F' ? 'F' : 'M';
   }
-  void SetGender(const char c) {
+  void gender(const char c) {
     data.sex = static_cast<uint8_t>(c);
   }
+
   [[nodiscard]] std::string email_address() const {
     return data.email;
   }
@@ -486,10 +517,10 @@ class User final {
   }
   [[nodiscard]] int age() const;
 
-  [[nodiscard]] int8_t GetComputerType() const {
+  [[nodiscard]] int8_t computer_type() const {
     return data.comp_type;
   }
-  void SetComputerType(int n) {
+  void computer_type(int n) {
     data.comp_type = static_cast<int8_t>(n);
   }
 

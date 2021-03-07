@@ -248,7 +248,7 @@ void feedback(bool bNewUserFeedback) {
       User user;
       a()->users()->readuser(&user, i);
       if ((user.sl() == 255 || a()->config()->sl(user.sl()).ability & ability_cosysop) &&
-          !user.IsUserDeleted()) {
+          !user.deleted()) {
         bout << "|#2" << i << "|#7)|#1 " << a()->names()->UserName(i) << wwiv::endl;
         onek_str[i1++] = static_cast<char>('0' + i);
       }

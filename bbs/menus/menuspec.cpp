@@ -156,7 +156,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
 
         if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
           a()->users()->readuser(&ur, f.u().ownerusr);
-          if (!ur.IsUserDeleted()) {
+          if (!ur.deleted()) {
             if (date_to_daten(ur.firston()) < f.u().daten) {
               const auto username_num = a()->user()->name_and_number();
               ssm(f.u().ownerusr) << username_num << " downloaded '" << f.aligned_filename() << "' on " << date();

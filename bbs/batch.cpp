@@ -132,7 +132,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
         }
         if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
           if (const auto user = a()->users()->readuser(f.u().ownerusr, UserManager::mask::non_deleted);
-              user.has_value() && !user->IsUserDeleted()) {
+              user.has_value() && !user->deleted()) {
             if (date_to_daten(user->firston()) < f.u().daten) {
               const auto user_name_number = a()->user()->name_and_number();
               ssm(f.u().ownerusr) << user_name_number << " downloaded|#1 \"" << f << "\" |#7on "

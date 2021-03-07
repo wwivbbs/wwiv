@@ -637,18 +637,6 @@ struct mailrec {
   messagerec msg; // where to find it
 };
 
-// USED IN READMAIL TO STORE EMAIL INFO
-struct tmpmailrec {
-  int16_t index; // index into email.dat
-
-  uint16_t fromsys, // originating system
-      fromuser;     // originating user
-
-  daten_t daten; // date it was sent
-
-  messagerec msg; // where to find it
-};
-
 // SHORT RESPONSE FOR USER, TELLING HIS MAIL HAS BEEN READ
 struct shortmsgrec {
   char message[81]; // short message to user
@@ -1070,7 +1058,6 @@ static_assert(sizeof(subfile_header_t) == 100, "subfile_header_t == 100");
 static_assert(offsetof(postrec, owneruser) == offsetof(subfile_header_t, active_message_count),
               "owneruser offset != active_message_count: ");
 static_assert(sizeof(mailrec) == 100, "mailrec == 100");
-static_assert(sizeof(tmpmailrec) == 15, "tmpmailrec == 15");
 static_assert(sizeof(shortmsgrec) == 85, "shortmsgrec == 85");
 static_assert(sizeof(voting_response) == 83, "voting_response == 83");
 static_assert(sizeof(uploadsrec) == 144, "uploadsrec == 144");

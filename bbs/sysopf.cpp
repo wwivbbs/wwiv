@@ -226,10 +226,10 @@ void valuser(int user_number) {
       bout << "|#9PH  : |#2" << user.voice_phone() << wwiv::endl;
     }
     if (a()->config()->newuser_config().use_birthday != newuser_item_type_t::unused) {
-      bout << "|#9Age : |#2" << user.age() << " " << user.GetGender() << wwiv::endl;
+      bout << "|#9Age : |#2" << user.age() << " " << user.gender() << wwiv::endl;
     }
     if (a()->config()->newuser_config().use_computer_type != newuser_item_type_t::unused) {
-      bout << "|#9Comp: |#2" << ctypes(user.GetComputerType()) << wwiv::endl;
+      bout << "|#9Comp: |#2" << ctypes(user.computer_type()) << wwiv::endl;
     }
     if (user.note().empty()) {
       bout << "|#9Note: |#2" << user.note() << wwiv::endl;
@@ -810,7 +810,7 @@ void auto_purge() {
       auto d = static_cast<int>((current_daten - user.last_daten()) / SECONDS_PER_DAY);
       // if user is not already deleted && SL<NO_PURGE_SL && last_logon
       // greater than AUTO_USER_PURGE days ago
-      if (!user.IsUserDeleted() && user.sl() < skipsl && d > days) {
+      if (!user.deleted() && user.sl() < skipsl && d > days) {
         sysoplog(false) << "*** AUTOPURGE: Deleted User: #" << user_number << " " << user.name();
         a()->users()->delete_user(user_number);
       }

@@ -36,6 +36,9 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk {
 
+constexpr int HOTKEYS_ON = 0;
+constexpr int HOTKEYS_OFF = 1;
+
 User::User() { ZeroUserData(); }
 
 User::User(const User& w) {
@@ -170,7 +173,7 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   u->ClearStatusFlag(User::nscanFileSystem);
   u->gold(gold);
   // Set to N so the BBS will prompt.
-  u->SetGender('N');
+  u->gender('N');
 
   for (int i = 0; i <= 9; i++) {
     u->color(i, colors[i]);
@@ -236,6 +239,10 @@ seconds User::timeontoday() const {
 
 std::string User::name_and_number() const {
   return fmt::format("{} #{}", name(), user_number_);
+}
+
+int User::usernum() const noexcept {
+  return user_number_;
 }
 
 int User::age() const { 

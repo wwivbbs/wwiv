@@ -528,7 +528,7 @@ void remove_post() {
       if (get_post(postnum)->owneruser == a()->sess().user_num() && get_post(postnum)->ownersys == 0) {
         User tu;
         a()->users()->readuser(&tu, get_post(postnum)->owneruser);
-        if (!tu.IsUserDeleted()) {
+        if (!tu.deleted()) {
           if (date_to_daten(tu.firston()) < get_post(postnum)->daten) {
             if (tu.messages_posted()) {
               tu.messages_posted(tu.messages_posted() - 1);
