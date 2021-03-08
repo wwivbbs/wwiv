@@ -20,12 +20,10 @@
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
-#include "common/com.h"
+#include "bbs/mmkey.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "bbs/mmkey.h"
-#include "bbs/utility.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
@@ -124,14 +122,13 @@ static void vote_question(int i, int ii) {
     return;
   }
 
-
-  File voteFile(FilePath(a()->config()->datadir(), VOTING_DAT));
-  if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
+  File file(FilePath(a()->config()->datadir(), VOTING_DAT));
+  if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
-  voteFile.Seek(ii * sizeof(votingrec), File::Whence::begin);
-  voteFile.Read(&v, sizeof(votingrec));
-  voteFile.Close();
+  file.Seek(ii * sizeof(votingrec), File::Whence::begin);
+  file.Read(&v, sizeof(votingrec));
+  file.Close();
 
   if (!v.numanswers) {
     return;
@@ -153,7 +150,7 @@ static void vote_question(int i, int ii) {
   bout << "|#5Which (0-" << static_cast<int>(v.numanswers) << ")? ";
   bout.mpl(2);
   auto empty_set = std::set<char>();
-  string ans = mmkey(empty_set);
+  const auto ans = mmkey(empty_set);
   int i1 = to_number<int>(ans);
   if (i1 > v.numanswers) {
     i1 = 0;
@@ -162,14 +159,14 @@ static void vote_question(int i, int ii) {
     return;
   }
 
-  if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
+  if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
-  voteFile.Seek(ii * sizeof(votingrec), File::Whence::begin);
-  voteFile.Read(&v, sizeof(votingrec));
+  file.Seek(ii * sizeof(votingrec), File::Whence::begin);
+  file.Read(&v, sizeof(votingrec));
 
   if (!v.numanswers) {
-    voteFile.Close();
+    file.Close();
     return;
   }
   if (a()->user()->GetVote(ii)) {
@@ -179,9 +176,9 @@ static void vote_question(int i, int ii) {
   if (i1) {
     v.responses[ a()->user()->GetVote(ii) - 1 ].numresponses++;
   }
-  voteFile.Seek(ii * sizeof(votingrec), File::Whence::begin);
-  voteFile.Write(&v, sizeof(votingrec));
-  voteFile.Close();
+  file.Seek(ii * sizeof(votingrec), File::Whence::begin);
+  file.Write(&v, sizeof(votingrec));
+  file.Close();
   bout.nl(2);
 }
 
@@ -193,8 +190,7 @@ void vote() {
     return;
   }
 
-  int n = static_cast<int>(voteFile.length() / sizeof(votingrec)) - 1;
-  if (n < 20) {
+  if (const auto n = static_cast<int>(voteFile.length() / sizeof(votingrec)) - 1; n < 20) {
     v.question[0] = 0;
     v.numanswers = 0;
     for (int i = n; i < 20; i++) {

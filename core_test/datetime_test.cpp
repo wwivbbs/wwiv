@@ -240,3 +240,9 @@ TEST(DateTime, ParseTimeSpan_Invalid) {
   ASSERT_FALSE(parse_time_span("-1s"));
 }
 
+TEST(DateTime, MinusOne) {
+  const auto d = DateTime::from_time_t(-1);
+  EXPECT_EQ(d.year(), 1969);
+  EXPECT_EQ(d.month(), 12);
+  EXPECT_EQ(d.day(), 31);
+}

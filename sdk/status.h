@@ -19,7 +19,6 @@
 #ifndef INCLUDED_SDK_STATUS_H
 #define INCLUDED_SDK_STATUS_H
 
-#include "core/file.h"
 #include "core/strings.h"
 #include "sdk/vardec.h"
 

@@ -969,7 +969,7 @@ class User final {
    */
   bool CreateRandomPassword();
 
-  /** Should this user use hotkeys? */
+  /** Should this user use hot keys? */
   [[nodiscard]] bool hotkeys() const;
   void set_hotkeys(bool enabled);
 

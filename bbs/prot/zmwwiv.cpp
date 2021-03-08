@@ -22,6 +22,7 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "common/remote_io.h"
+#include "core/file.h"
 #include "core/findfiles.h"
 #include "core/os.h"
 #include "core/strings.h"

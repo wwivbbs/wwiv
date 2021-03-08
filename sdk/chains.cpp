@@ -42,14 +42,14 @@ using namespace wwiv::strings;
 namespace wwiv::sdk {
 
 chain_exec_mode_t& operator++(chain_exec_mode_t& t) {
-  using T = typename std::underlying_type<chain_exec_mode_t>::type;
+  using T = std::underlying_type<chain_exec_mode_t>::type;
   t = (t == chain_exec_mode_t::netfoss ? chain_exec_mode_t::none
                                      : static_cast<chain_exec_mode_t>(static_cast<T>(t) + 1));
   return t;
 }
 
 chain_exec_mode_t operator++(chain_exec_mode_t& t, int) {
-  using T = typename std::underlying_type<chain_exec_mode_t>::type;
+  using T = std::underlying_type<chain_exec_mode_t>::type;
   const auto old = t;
   t = (t == chain_exec_mode_t::netfoss ? chain_exec_mode_t::none
                                      : static_cast<chain_exec_mode_t>(static_cast<T>(t) + 1));
@@ -107,8 +107,6 @@ bool Chains::LoadFromJSON() {
 bool Chains::LoadFromDat() {
   DataFile<chainfilerec_422> old_chains(FilePath(datadir_, CHAINS_DAT),
                                     File::modeBinary | File::modeReadOnly, File::shareDenyNone);
-  DataFile<chainregrec_422> regfile(FilePath(datadir_, CHAINS_REG),
-                                File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   if (!old_chains) {
     return false;
   }
@@ -119,6 +117,8 @@ bool Chains::LoadFromDat() {
   if (!old_chains.ReadVector(old)) {
     return false;
   }
+  DataFile<chainregrec_422> regfile(FilePath(datadir_, CHAINS_REG),
+                                File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   regfile.ReadVector(reg);
 
   for (auto i = 0; i < wwiv::stl::ssize(old); i++) {
@@ -198,7 +198,7 @@ bool Chains::SaveToDat() {
     cdisk.emplace_back(c);
     rdisk.emplace_back(r);
   }
-  auto cwritten{false};
+  bool cwritten;
   auto rwritten{false};
   {
     DataFile<chainfilerec_422> cfile(FilePath(datadir_, CHAINS_DAT),
@@ -211,11 +211,10 @@ bool Chains::SaveToDat() {
     cwritten = cfile.WriteVector(cdisk);
   }
   {
-    DataFile<chainregrec_422> rfile(FilePath(datadir_, CHAINS_REG),
-                                File::modeBinary | File::modeReadWrite | File::modeCreateFile |
-                                    File::modeTruncate,
-                                File::shareDenyReadWrite);
-    if (rfile) {
+    if (DataFile<chainregrec_422> rfile(FilePath(datadir_, CHAINS_REG),
+                                        File::modeBinary | File::modeReadWrite | File::modeCreateFile |
+                                        File::modeTruncate,
+                                        File::shareDenyReadWrite); rfile) {
       rwritten = rfile.WriteVector(rdisk);
     }
   }

@@ -23,6 +23,7 @@
 #include "bbs/multinst.h"
 #include "common/input.h"
 #include "common/pause.h"
+#include "core/file.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "fmt/printf.h"

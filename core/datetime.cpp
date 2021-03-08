@@ -18,8 +18,8 @@
 /**************************************************************************/
 #include "core/datetime.h"
 
-
 #include "core/clock.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include <chrono>
 #include <ctime>
@@ -254,6 +254,10 @@ static time_t mktime_no_dst_changes(tm* t) noexcept {
 
 DateTime::DateTime(tm* t)
   : t_(mktime_no_dst_changes(t)), tm_(*t), millis_(0) {
+  if (t_ < 0) {
+    t_ = 0;
+    update_tm();
+  }
 }
 
 DateTime::DateTime(time_t t) : t_(t), millis_(0) { update_tm(); }
@@ -308,8 +312,17 @@ struct tm DateTime::to_tm() const noexcept {
 }
 
 void DateTime::update_tm() noexcept {
-  const auto* tm = localtime(&t_);
-  tm_ = *tm;
+  if (t_ < 0) {
+    t_ = 1;
+  }
+  if (const auto * tm = localtime(&t_);tm) {
+    tm_ = *tm;
+  } else {
+    LOG(ERROR) << "Invalid Time passed to update_tm";    
+    auto tnow = time(nullptr);
+    const auto* nowtm = localtime(&tnow);
+    tm_ = *nowtm;
+  }
 }
 
 system_clock::time_point DateTime::to_system_clock() const noexcept {

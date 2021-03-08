@@ -20,6 +20,7 @@
 
 #include <memory>
 #include "bbs/bbs.h"
+#include "core/file.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 

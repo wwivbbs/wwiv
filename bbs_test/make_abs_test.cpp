@@ -19,6 +19,7 @@
 #include "gtest/gtest.h"
 #include "bbs_test/bbs_helper.h"
 #include "bbs/make_abs_cmd.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include <filesystem>
 #include <iostream>

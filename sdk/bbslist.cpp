@@ -20,12 +20,11 @@
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/graphs.h"
-#include "core/inifile.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "sdk/net/connect.h"
 #include "sdk/filenames.h"
+#include "sdk/net/connect.h"
 #include <algorithm>
 #include <cctype>
 #include <cmath>

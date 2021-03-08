@@ -238,6 +238,8 @@ int listfiles_plus(int type) {
   bout.cls();
 
   const int r = listfiles_plus_function(type);
+  // Stop trailing bits left on screen.
+  bout.cls();
   bout.Color(0);
   bout.GotoXY(1, a()->user()->GetScreenLines() - 3);
   bout.nl(3);

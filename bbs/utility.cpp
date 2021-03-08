@@ -24,6 +24,7 @@
 #include "bbs/instmsg.h"
 #include "common/input.h"
 #include "common/workspace.h"
+#include "core/file.h"
 #include "core/findfiles.h"
 #include "core/os.h"
 #include "core/stl.h"
