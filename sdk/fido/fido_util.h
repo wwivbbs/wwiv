@@ -77,6 +77,8 @@ struct wwiv_to_fido_options {
   bool wwiv_pipe_color_codes{false};
   // user colors to use.
   std::vector<int> colors{7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
+  // Allow any pipe codes, WWIV and standard.
+  bool allow_any_pipe_codes{true};
 };
 
 /**

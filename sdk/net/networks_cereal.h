@@ -156,6 +156,7 @@ void load(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, process_tic);
   SERIALIZE(n, wwiv_heart_color_codes);
   SERIALIZE(n, wwiv_pipe_color_codes);
+  SERIALIZE(n, allow_any_pipe_codes);
 }
 
 template <class Archive>
@@ -177,6 +178,7 @@ void save(Archive & ar, const fido_network_config_t& n) {
   SERIALIZE(n, process_tic);
   SERIALIZE(n, wwiv_heart_color_codes);
   SERIALIZE(n, wwiv_pipe_color_codes);
+  SERIALIZE(n, allow_any_pipe_codes);
 }
 
 // This has to be in the cereal or default to match net_networks_rec which

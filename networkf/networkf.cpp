@@ -722,6 +722,7 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
     opts.colors = colors_;
     opts.wwiv_heart_color_codes = net_.fido.wwiv_heart_color_codes;
     opts.wwiv_pipe_color_codes = net_.fido.wwiv_pipe_color_codes;
+    opts.allow_any_pipe_codes = net_.fido.allow_any_pipe_codes;
     auto bbs_text = WWIVToFidoText(string(iter, raw_text.end()), opts);
     text << bbs_text;
 

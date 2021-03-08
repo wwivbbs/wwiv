@@ -348,21 +348,37 @@ string WWIVToFidoText(const string& wt, const wwiv_to_fido_options& opts) {
     // Strip out WWIV color codes.
     const auto line_size = size_int(line);
     for (auto i = 0; i < line_size; i++) {
-      if (line[i] == 0x03) {
-        i++;
-        if (opts.wwiv_heart_color_codes) {
+      const auto c = line[i];
+      if (c == 0x03) {
+        if (++i >= line_size) {
+          // We're at the end.
+          continue;
+        }
+        if (opts.wwiv_heart_color_codes && opts.allow_any_pipe_codes) {
           const auto color = at(opts.colors,line[i] - '0');
           out << fmt::format("|{:02}", color);
         }
         continue;
       }
-      if (line[i] == '|' && opts.wwiv_pipe_color_codes && (line_size - i) > 2 && line[i+1] == '#') {
+      if (c == '|' && opts.allow_any_pipe_codes && opts.wwiv_pipe_color_codes && (line_size - i) > 2 && line[i+1] == '#') {
         const auto color = at(opts.colors, line[i + 2] - '0');
         out << fmt::format("|{:02}", color);
-        i += 2;
+        if (i < line_size) {
+          ++i;
+        }
+        if (i < line_size) {
+          ++i;
+        }
         continue;
       }
-      out << line[i];
+      if (c == '|' && !opts.allow_any_pipe_codes) {
+        ++i;
+        if (i < line_size) {
+          ++i;
+        }
+        continue;
+      }
+      out << c;
     }
     out << "\r";
   }

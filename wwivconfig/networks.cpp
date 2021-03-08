@@ -225,6 +225,11 @@ public:
     items.add(new Label("Cvt WWIV Pipe:"), new BooleanEditItem(&n->wwiv_pipe_color_codes),
               "Convert WWIV user color pipe codes into standard PIPE color codes.", 3, dy);
     ++dy;
+    items.add(new Label(""), 1, dy);
+    items.add(new Label(""), 2, dy);
+    items.add(new Label("Allow Pipe Codes:"), new BooleanEditItem(&n->allow_any_pipe_codes),
+              "Allow pipe codes, don't strip outbound PIPE codes.", 3, dy);
+    ++dy;
     window->GotoXY(x_, y_);
 
     items.add_aligned_width_column(1);

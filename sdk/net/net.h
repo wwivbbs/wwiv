@@ -450,6 +450,8 @@ struct fido_network_config_t {
   bool wwiv_pipe_color_codes{true};
   // convert wwiv user color pipe codes to standard pipe codes.
   bool wwiv_heart_color_codes{false};
+  // Allow any pipe codes, WWIV and standard.
+  bool allow_any_pipe_codes{true};
 };
 
 enum class network_type_t : uint8_t { wwivnet = 0, ftn, internet, news };

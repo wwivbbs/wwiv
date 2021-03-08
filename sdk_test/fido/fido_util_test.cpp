@@ -216,6 +216,33 @@ TEST_F(FidoUtilTest, WWIVToFido_RemovesHeart) {
   EXPECT_EQ("a\rb\r", fido);
 }
 
+TEST_F(FidoUtilTest, WWIVToFido_RemovesHeartAndPipes) {
+  const string wwiv = "a\r\n\003""1b|#1c|#0\r\n";
+  opts.wwiv_heart_color_codes = false;
+  opts.wwiv_pipe_color_codes = false;
+  opts.allow_any_pipe_codes = false;
+  const auto fido = WWIVToFidoText(wwiv, opts);
+  EXPECT_EQ("a\rbc\r", fido);
+}
+
+TEST_F(FidoUtilTest, WWIVToFido_HeartAtEnd) {
+  const string wwiv = "a\r\n\003";
+  opts.wwiv_heart_color_codes = true;
+  opts.wwiv_pipe_color_codes = true;
+  opts.allow_any_pipe_codes = true;
+  const auto fido = WWIVToFidoText(wwiv, opts);
+  EXPECT_EQ("a\r\r", fido);
+}
+
+TEST_F(FidoUtilTest, WWIVToFido_PipeAtEnd) {
+  const string wwiv = "a\r\n|";
+  opts.wwiv_heart_color_codes = true;
+  opts.wwiv_pipe_color_codes = true;
+  opts.allow_any_pipe_codes = true;
+  const auto fido = WWIVToFidoText(wwiv, opts);
+  EXPECT_EQ("a\r|\r", fido);
+}
+
 TEST_F(FidoUtilTest, WWIVToFido_ConvertsHeart) {
   const string wwiv = "a\r\n\003""1b\r\n";
   opts.wwiv_heart_color_codes = true;
