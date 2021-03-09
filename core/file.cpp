@@ -522,6 +522,11 @@ std::string File::canonical(const std::string& path) {
 long File::freespace_for_path(const std::filesystem::path& p) {
   std::error_code ec;
   const auto devi = space(p, ec);
+  if (ec.value() == EOVERFLOW) {
+    // Hack for really large partitions that seems to return EOVERFLOW on some linux.
+    // https://bugzilla.redhat.com/show_bug.cgi?id=1758001 is likely the bug.
+    return 1024 * 1024;
+  }
   if (ec.value() != 0) {
     return 0;
   }

@@ -21,12 +21,12 @@
 #include "bbs/bbs.h"
 #include "common/com.h"
 #include "common/input.h"
-#include "bbs/misccmd.h"
 #include "common/pause.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+
 #include <string>
 
 using std::string;
@@ -37,8 +37,7 @@ static std::optional<std::string> get_extract_dir() {
   bout.print_help_file(MEXTRACT_NOEXT);
   do {
     bout << "|#5(Q=Quit) Which (D,G,T) ? ";
-    const auto ch1 = onek("QGDT?");
-    switch (ch1) {
+    switch (const auto ch1 = onek("QGDT?"); ch1) {
     case 'G':
       return a()->sess().dirs().gfiles_directory();
     case 'D':
@@ -49,6 +48,7 @@ static std::optional<std::string> get_extract_dir() {
       bout.print_help_file(MEXTRACT_NOEXT);
       break;
     case 'Q':
+    default:
       return std::nullopt;
     }
   } while (!a()->sess().hangup());
@@ -77,10 +77,7 @@ void extract_out(const std::string& text, const std::string& title) {
     }
     bout << "\r\nFilename already in use.\r\n\n";
     bout << "|#0O|#1)verwrite, |#0A|#1)ppend, |#0N|#1)ew name, |#0Q|#1)uit? |#0";
-    const auto ch1 = onek("QOAN");
-    switch (ch1) {
-    case 'Q':
-      return;
+    switch (const auto ch1 = onek("QOAN"); ch1) {
     case 'N':
       continue;
     case 'A':
@@ -91,6 +88,9 @@ void extract_out(const std::string& text, const std::string& title) {
       done = true;
       File::Remove(path);
       break;
+    case 'Q':
+    default:
+      return;
     }
     bout.nl();
   } while (!a()->sess().hangup() && !done);
@@ -105,8 +105,7 @@ void extract_out(const std::string& text, const std::string& title) {
   }
   file.WriteLine(title);
   file.Write(text);
-  bout <<  "|#9Message written to|#0: |#2" << file << wwiv::endl;
-  bout.nl();
+  bout <<  "|#9Message written to: '|#2" << file << "|#9'\r\n\r\n";
   bout.pausescr();
 }
 

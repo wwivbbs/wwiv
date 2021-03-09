@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "wwivconfig/newinit.h"
 
-
 #include "subsdirs.h"
 #include "core/datafile.h"
 #include "core/datetime.h"
@@ -38,6 +37,7 @@
 #include "wwivconfig/archivers.h"
 #include "wwivconfig/utility.h"
 #include "wwivconfig/wwivd_ui.h"
+
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -100,6 +100,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   cfg.dloadsdir = "dloads";
   cfg.menudir = FilePath("gfiles", "menus").string();
   cfg.scriptdir = "scripts";
+  cfg.logdir = "logs";
 
   cfg.tempdir_format = "e/%n/temp";
   cfg.batchdir_format = "e/%n/batch";
