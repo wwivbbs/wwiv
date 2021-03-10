@@ -292,6 +292,7 @@ bool HeartAndPipeCodeFilter::write(char c) {
   case pipe_state::pipe:
     if (c == '#') {
       pipe_state_ = pipe_state::wwiv_color;
+      pipe_text_.clear();
       return true;
     } if (std::isdigit(c)) {
       pipe_text_.push_back(c);
@@ -299,6 +300,7 @@ bool HeartAndPipeCodeFilter::write(char c) {
       return true;
     }
     // Not a valid color code.
+    pipe_text_.push_back(c);
     return bad_pipe();
   case pipe_state::wwiv_color:
     // This one should be the color:

@@ -127,3 +127,13 @@ TEST_F(AnsiTest, HeartAndPipe_WWIVPipe) {
   check({"Hello"});
   EXPECT_EQ(10, b.curatr());
 }
+
+TEST_F(AnsiTest, HeartAndPipe_WWIVPipeMacro) {
+  write_hp("Hello |@N");
+  check({"Hello |@N"});
+}
+
+TEST_F(AnsiTest, HeartAndPipe_WWIVPipeExpression) {
+  write_hp("|{a.b}");
+  check({"|{a.b}"});
+}
