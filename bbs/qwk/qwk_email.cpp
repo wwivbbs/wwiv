@@ -145,7 +145,7 @@ void qwk_gather_email(qwk_state* qwk_info) {
       std::make_unique<DataFile<qwk_index>>(zero_filename, index_filemode);
 
   do {
-    read_same_email(mloc, mw, curmail, m, 0, 0);
+    read_same_email(mloc, mw, curmail, m, false, 0);
 
     strupr(m.title);
     strncpy(qwk_info->email_title, stripcolors(m.title), 25);

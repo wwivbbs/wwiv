@@ -443,7 +443,7 @@ static std::tuple<bool, int> display_header_file(Type2MessageData& msg) {
   m["title"] = msg.title;
   m["sys"] = trim_to_size(msg.from_sys_name, 35);
   m["loc"] = trim_to_size(msg.from_sys_loc, 35);
-  a()->context().add_context_variables("msg", m);
+  a()->context().add_context_variable("msg", m);
 
   std::map<std::string, std::string> flags;
   for (const auto& f : msg.flags) {
@@ -474,7 +474,7 @@ static std::tuple<bool, int> display_header_file(Type2MessageData& msg) {
       break;
     }
   }
-  a()->context().add_context_variables("msg.flags", flags);
+  a()->context().add_context_variable("msg.flags", flags);
 
   // TODO(rushfan): Make these always be available like user?
   const auto& net = a()->current_net();
@@ -484,6 +484,7 @@ static std::tuple<bool, int> display_header_file(Type2MessageData& msg) {
     n["node"] = net.fido.fido_address;
   }
   n["node"] = std::to_string(net.sysnum);
+  a()->context().add_context_variable("net", n);
 
   const auto saved_mci_enabled = bout.mci_enabled();
   ScopeExit at_exit([=] {
@@ -542,7 +543,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
     }
     const auto optional_lines = user.GetOptionalVal();
     if (line.front() == CD) {
-      const auto level = line.size() > 1 ? static_cast<int>(line.at(1) - '0') : 0;
+      const auto level = line.size() > 1 ? line.at(1) - '0' : 0;
       if (level == 0) {
         // ^D0 lines are always skipped unless explicitly requested.
         if (!controlcodes) {

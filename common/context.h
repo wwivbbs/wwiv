@@ -327,9 +327,9 @@ public:
   /**
    * Adds a set of context variables for use in pipe expressions.  An example for the current
    * message being read may be:
-   * add_context_variables("msg", { { "num", "100" }, { "title", "A message on nothing" } });
+   * add_context_variable("msg", { { "num", "100" }, { "title", "A message on nothing" } });
    */
-  bool add_context_variables(std::string prefix, std::map<std::string, std::string> map);
+  bool add_context_variable(std::string prefix, std::map<std::string, std::string> map);
   bool clear_context_variables();
   [[nodiscard]] const std::vector<std::unique_ptr<MapValueProvider>>& value_providers() const { return value_providers_; }
 

@@ -109,7 +109,7 @@ const std::map<std::string, std::string>& MapValueProvider::map() const {
   return map_;
 }
 
-bool Context::add_context_variables(std::string prefix, std::map<std::string, std::string> map) {
+bool Context::add_context_variable(std::string prefix, std::map<std::string, std::string> map) {
   value_providers_.emplace_back(std::make_unique<MapValueProvider>(prefix, std::move(map)));
   return true;
 }

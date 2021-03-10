@@ -37,7 +37,7 @@ struct tmpmailrec {
 void readmail(bool newmail_only);
 int check_new_mail(int user_number);
 // Also used in QWK code.
-bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m, int del,
-                     unsigned short stat);
+bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m, bool del,
+                     uint16_t stat);
 
 #endif

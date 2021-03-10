@@ -135,7 +135,7 @@ TEST_F(BPutsTest, MapValue_Smoke) {
   helper.user()->real_name("RealName");
   helper.user()->sl(200);
   helper.sess().effective_sl(200);
-  helper.context().add_context_variables("m", {{"num", "1234"}});
+  helper.context().add_context_variable("m", {{"num", "1234"}});
   bout.bputs(R"(Message # |{m.num})");
   EXPECT_EQ("Message # 1234", helper.io()->captured());
 }

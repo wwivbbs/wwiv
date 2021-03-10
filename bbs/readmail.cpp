@@ -129,7 +129,7 @@ static void purgemail(vector<tmpmailrec>& mloc, int mw, int* curmail, mailrec* m
   }
 }
 
-static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec* m, int del,
+static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec* m, bool del,
                           unsigned short stat) {
   int i;
   mailrec m1{};
@@ -176,17 +176,7 @@ static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec* m,
       pFileEmail->Write(m, sizeof(mailrec));
     }
     if (del && (mloc[rec].index >= 0)) {
-      if (del == 2) {
-        m->touser = 0;
-        m->tosys = 0;
-        m->daten = 0xffffffff;
-        m->msg.storage_type = 0;
-        m->msg.stored_as = 0xffffffff;
-        pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
-        pFileEmail->Write(m, sizeof(mailrec));
-      } else {
-        delmail(*pFileEmail, mloc[rec].index);
-      }
+      delmail(*pFileEmail, mloc[rec].index);
       mloc[rec].index = -1;
     }
     pFileEmail->Close();
@@ -196,8 +186,8 @@ static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec* m,
 }
 
 // used in qwk1.cpp
-bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m, int del,
-                     unsigned short stat) {
+bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m, bool del,
+                     uint16_t stat) {
   if (at(mloc, rec).index < 0) {
     return false;
   }
@@ -225,17 +215,7 @@ bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m,
       file->Write(&m, sizeof(mailrec));
     }
     if (del) {
-      if (del == 2) {
-        m.touser = 0;
-        m.tosys = 0;
-        m.daten = 0xffffffff;
-        m.msg.storage_type = 0;
-        m.msg.stored_as = 0xffffffff;
-        file->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
-        file->Write(&m, sizeof(mailrec));
-      } else {
-        delmail(*file, mloc[rec].index);
-      }
+      delmail(*file, mloc[rec].index);
       mloc[rec].index = -1;
     }
     file->Close();
@@ -428,7 +408,7 @@ void readmail(bool newmail_only) {
     bout << "\r\n\n|#2You have mail from:\r\n";
     bout << "|#9" << std::string(a()->user()->GetScreenChars() - 1, '-') << wwiv::endl;
     for (auto i = 0; i < mw && !abort; i++) {
-      if (!read_same_email(mloc, mw, i, m, 0, 0)) {
+      if (!read_same_email(mloc, mw, i, m, false, 0)) {
         continue;
       }
       if (newmail_only && (m.status & status_seen)) {
@@ -468,7 +448,7 @@ void readmail(bool newmail_only) {
     bout.nl(2);
     next = false;
 
-    if (string title = m.title; !read_same_email(mloc, mw, curmail, m, 0, 0)) {
+    if (string title = m.title; !read_same_email(mloc, mw, curmail, m, false, 0)) {
       title += ">>> MAIL DELETED <<<";
       okmail = false;
       bout.nl(3);
@@ -525,7 +505,7 @@ void readmail(bool newmail_only) {
         int fake_msgno = -1;
         display_type2_message(fake_msgno, msg, &next);
         if (!(m.status & status_seen)) {
-          read_same_email(mloc, mw, curmail, m, 0, status_seen);
+          read_same_email(mloc, mw, curmail, m, false, status_seen);
         }
       }
       found = false;
@@ -608,7 +588,7 @@ void readmail(bool newmail_only) {
         allowable += "T";
       }
       ch = onek(allowable);
-      if (okmail && !read_same_email(mloc, mw, curmail, m, 0, 0)) {
+      if (okmail && !read_same_email(mloc, mw, curmail, m, false, 0)) {
         bout << "\r\nMail got deleted.\r\n\n";
         ch = 'R';
       }
@@ -691,7 +671,7 @@ void readmail(bool newmail_only) {
               if (!(m.status & status_source_verified)) {
                 ssm(m.fromuser, m.fromsys, &net) << msg;
               }
-              read_same_email(mloc, mw, curmail, m, 1, 0);
+              read_same_email(mloc, mw, curmail, m, true, 0);
               ++curmail;
               if (curmail >= mw) {
                 done = true;
@@ -863,7 +843,7 @@ void readmail(bool newmail_only) {
         if (!okmail) {
           break;
         }
-        read_same_email(mloc, mw, curmail, m, 1, 0);
+        read_same_email(mloc, mw, curmail, m, true, 0);
         ++curmail;
         if (curmail >= mw) {
           done = true;
@@ -1075,7 +1055,7 @@ void readmail(bool newmail_only) {
             if (!(m.status & status_source_verified)) {
               ssm(m.fromuser, m.fromsys, &net) << message;
             }
-            read_same_email(mloc, mw, curmail, m, 1, 0);
+            read_same_email(mloc, mw, curmail, m, true, 0);
             ++curmail;
             if (curmail >= mw) {
               done = true;
@@ -1091,7 +1071,7 @@ void readmail(bool newmail_only) {
         } else {
           if (num_mail != num_mail1) {
             if (!(m.status & status_replied)) {
-              read_same_email(mloc, mw, curmail, m, 0, status_replied);
+              read_same_email(mloc, mw, curmail, m, false, status_replied);
             }
             ++curmail;
             if (curmail >= mw) {

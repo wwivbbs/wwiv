@@ -247,7 +247,7 @@ static FullScreenView CreateFullScreenListTitlesView() {
   m["maxmsgs"] = std::to_string(c.maxmsgs);
   m["filename"] = c.filename;
   m["num_msgs"] = std::to_string(a()->GetNumMessagesInCurrentMessageArea());
-  a()->context().add_context_variables("cursub", m);
+  a()->context().add_context_variable("cursub", m);
 
   const auto saved_mci_enabled = bout.mci_enabled();
   ScopeExit at_exit([=] {
