@@ -86,16 +86,20 @@ private:
   int saved_y_{0};
 };
 
-class HeartCodeFilter final : public AnsiFilter {
+class HeartAndPipeCodeFilter final : public AnsiFilter {
 public:
-  HeartCodeFilter(AnsiFilter* chain, std::vector<uint8_t> colors);
+  HeartAndPipeCodeFilter(AnsiFilter* chain, std::vector<uint8_t> colors);
   bool write(char c) override;
   bool attr(uint8_t a) override;
+  bool bad_pipe();
 
 private:
+  enum class pipe_state { none, pipe, wwiv_color, dos_color };
   AnsiFilter* chain_;
   bool has_heart_{false};
   const std::vector<uint8_t> colors_;
+  pipe_state pipe_state_{pipe_state::none};
+  std::string pipe_text_;
 };
 
 } // namespace

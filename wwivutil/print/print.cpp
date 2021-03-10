@@ -143,7 +143,7 @@ int PrintCommand::Execute() {
     AnsiCallbacks cb;
     cb.move_ = [](int x, int y) { VLOG(2) << "moved: x: " << x << "; y:" << y; };
     Ansi ansi(&screen, cb, 0x07);
-    HeartCodeFilter heart(&ansi, {7, 11, 14, 5, 31, 2, 12, 9, 6, 3});
+    HeartAndPipeCodeFilter heart(&ansi, {7, 11, 14, 5, 31, 2, 12, 9, 6, 3});
 
     screen.clear();
     auto count = 0;

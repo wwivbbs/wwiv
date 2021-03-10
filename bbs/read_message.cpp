@@ -566,7 +566,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
   // heart codes, ansi, etc
   FrameBuffer b{80};
   Ansi ansi(&b, {}, 0x07);
-  HeartCodeFilter heart(&ansi, user.colors());
+  HeartAndPipeCodeFilter heart(&ansi, user.colors());
   for (auto& l : lines) {
     for (const auto c  : l) {
       heart.write(c);

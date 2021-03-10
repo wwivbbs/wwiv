@@ -268,10 +268,10 @@ bool Ansi::reset() {
   return true;
 }
 
-HeartCodeFilter::HeartCodeFilter(AnsiFilter* chain, std::vector<uint8_t> colors)
+HeartAndPipeCodeFilter::HeartAndPipeCodeFilter(AnsiFilter* chain, std::vector<uint8_t> colors)
     : chain_(chain), colors_(std::move(colors)) {}
 
-bool HeartCodeFilter::write(char c) {
+bool HeartAndPipeCodeFilter::write(char c) {
 
   if (has_heart_) {
     const uint8_t color = c - '0';
@@ -282,14 +282,63 @@ bool HeartCodeFilter::write(char c) {
     has_heart_ = true;
     return true;
   }
+  switch (pipe_state_) {
+  case pipe_state::none:
+    if (c == '|') {
+      pipe_state_ = pipe_state::pipe;
+      return true;
+    }
+    return chain_->write(c);
+  case pipe_state::pipe:
+    if (c == '#') {
+      pipe_state_ = pipe_state::wwiv_color;
+      return true;
+    } if (std::isdigit(c)) {
+      pipe_text_.push_back(c);
+      pipe_state_ = pipe_state::dos_color;
+      return true;
+    }
+    // Not a valid color code.
+    return bad_pipe();
+  case pipe_state::wwiv_color:
+    // This one should be the color:
+    if (std::isdigit(c)) {
+      pipe_state_ = pipe_state::none;
+      const bool result = attr(c - '0');
+      pipe_text_.clear();
+      return result;
+    }
+    pipe_text_.push_back(c);
+    return bad_pipe();
+  case pipe_state::dos_color:
+    pipe_text_.push_back(c);
+    if (std::isdigit(c)) {
+      // Write through chain since it's ansi and not wwiv colors.
+      pipe_state_ = pipe_state::none;
+      const bool result = chain_->attr(wwiv::strings::to_number<uint8_t>(pipe_text_));
+      pipe_text_.clear();
+      return result;
+    }
+    return bad_pipe();
+  }
   return chain_->write(c);
 }
 
-bool HeartCodeFilter::attr(uint8_t a) {
+bool HeartAndPipeCodeFilter::attr(uint8_t a) {
   if (a < colors_.size()) {
     return chain_->attr(colors_.at(a));
   }
   return false;
+}
+
+bool HeartAndPipeCodeFilter::bad_pipe() {
+  chain_->write('|');
+  for (const auto& pc : pipe_text_) {
+    chain_->write(pc);
+  }
+  pipe_text_.clear();
+  pipe_state_ = pipe_state::none;
+  return true;
 }
 
 } // namespace wwiv
