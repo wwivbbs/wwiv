@@ -62,11 +62,27 @@ static bool ParseIniFile(const std::filesystem::path& filename, std::map<string,
     return false;
   }
 
+  bool in_multiline_string = false;
+  std::string full_key;
   string section;
   string line;
   while (file.ReadLine(&line)) {
     StringTrim(&line);
     if (line.empty()) {
+      continue;
+    }
+
+    if (in_multiline_string) {
+      // We use whole line here for the value.
+      if (const auto end = line.find(R"(""")"); end != std::string::npos) {
+        line = line.substr(0, end);
+        in_multiline_string = false;
+      }
+      auto& existing_value = data[full_key];
+      if (!existing_value.empty()) {
+        existing_value.append("\r\n");
+      }
+      existing_value.append(line);
       continue;
     }
     if (line.front() == '[' && line.back() == ']') {
@@ -85,8 +101,19 @@ static bool ParseIniFile(const std::filesystem::path& filename, std::map<string,
         continue;
       }
       const auto partial_key = StringTrim(line.substr(0, equals));
-      const auto value = StringTrim(line.substr(equals + 1));
-      const auto full_key = StrCat(section, ".", partial_key);
+      auto value = StringTrim(line.substr(equals + 1));
+      if (const auto mlstart = value.find(R"(""")"); mlstart != std::string::npos) {
+        // We have a multi-line string here.
+        in_multiline_string = true;
+        // Skip """
+        value = value.substr(mlstart + 3);
+      } else {
+        // Trim leading and traling single quotes.
+        if (value.size() >= 2 && value.front() == '"' && value.back() == '"') {
+          value = value.substr(1, value.size() - 2);
+        }
+      }
+      full_key = StrCat(section, ".", partial_key);
       data[full_key] = value;
     }
   }

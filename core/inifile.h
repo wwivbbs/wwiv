@@ -61,19 +61,17 @@ public:
 
 template <typename T>
   [[nodiscard]] T GetFlags(const std::vector<ini_flags_type>& flag_definitions, T flags) {
-  for (const auto& fs : flag_definitions) {
-    const auto key = fs.strnum;
+  for (const auto& [key, v] : flag_definitions) {
     if (key.empty()) {
       continue;
     }
-    const auto val = value<std::string>(key);
-    if (val.empty()) {
+    if (const auto val = value<std::string>(key); val.empty()) {
       continue;
     }
     if (value<bool>(key)) {
-      flags |= fs.value;
+      flags |= v;
     } else {
-      flags &= ~fs.value;
+      flags &= ~v;
     }
   }
   return flags;
@@ -91,7 +89,7 @@ IniFile(const IniFile& other) = delete;
 IniFile& operator=(const IniFile& other) = delete;
 
 private:
-  std::optional<std::string> GetValue(const std::string& key) const;
+  [[nodiscard]] std::optional<std::string> GetValue(const std::string& key) const;
 
   [[nodiscard]] std::string GetStringValue(const std::string& key, const std::string& default_value) const;
   [[nodiscard]] long GetNumericValueT(const std::string& key, long default_value = 0) const;

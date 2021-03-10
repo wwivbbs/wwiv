@@ -34,14 +34,14 @@ using namespace wwiv::core;
 class IniFileTest : public ::testing::Test {
 protected:
   void SetUp() override {
-    const auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+    const auto* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
     test_name_ = test_info->name();
   }
 
   [[nodiscard]] const string& test_name() const { return test_name_; }
 
   // ReSharper disable once CppMemberFunctionMayBeConst
-  std::filesystem::path CreateIniFile(const string section, const vector<string> lines) {
+  std::filesystem::path CreateIniFile(const string& section, const vector<string>& lines) {
     auto [file, path] = helper_.OpenTempFile(test_name_);
     fprintf(file, "[%s]\n", section.c_str());
     for (const auto& line : lines) {
@@ -51,19 +51,22 @@ protected:
     return path;
   }
 
+  bool WriteLineToFile(FILE* file, const std::string& line) {
+    return fprintf(file, "%s\n", line.c_str()) > 0;
+  }
+
   // ReSharper disable once CppMemberFunctionMayBeConst
-  std::filesystem::path CreateIniFile(const string section1, const vector<string> lines1,
-                                      const string section2,
-                       const vector<string> lines2) {
+  std::filesystem::path CreateIniFile(const std::string& section1, const vector<string>& lines1,
+                                      const std::string& section2, const vector<string>& lines2) {
     auto [file, path] = helper_.OpenTempFile(test_name_);
     fprintf(file, "[%s]\n", section1.c_str());
     for (const auto& line : lines1) {
-      fprintf(file, "%s\n", line.c_str());
+      WriteLineToFile(file, line);
     }
 
     fprintf(file, "[%s]\n", section2.c_str());
     for (const auto& line : lines2) {
-      fprintf(file, "%s\n", line.c_str());
+      WriteLineToFile(file, line);
     }
 
     fclose(file);
@@ -151,5 +154,32 @@ TEST_F(IniFileTest, CommentAtStart) {
   IniFile ini(FilePath(helper_.TempDir(), this->test_name()), {"TEST-1", "TEST"});
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_EQ("", ini.value<string>("FOO"));
+  ini.Close();
+}
+
+TEST_F(IniFileTest, MultiLine_Smoke) {
+  const auto path = this->CreateIniFile("TEST", {"FOO=\"\"\"\nBAR\nBAZ\n\"\"\""});
+  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), {"TEST-1", "TEST"});
+  ASSERT_TRUE(ini.IsOpen());
+  const auto actual = ini.value<string>("FOO");
+  EXPECT_EQ("BAR\r\nBAZ\r\n", actual) << "A:" << actual;
+  ini.Close();
+}
+
+TEST_F(IniFileTest, MultiLine_OnFirstLine) {
+  const auto path = this->CreateIniFile("TEST", {"FOO=\"\"\"BAR\nBAZ\n\"\"\""});
+  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), {"TEST-1", "TEST"});
+  ASSERT_TRUE(ini.IsOpen());
+  const auto actual = ini.value<string>("FOO");
+  EXPECT_EQ("BAR\r\nBAZ\r\n", actual) << "A:" << actual;
+  ini.Close();
+}
+
+TEST_F(IniFileTest, MultiLine_OnLastLine) {
+  const auto path = this->CreateIniFile("TEST", {"FOO=\"\"\"\nBAR\nBAZ\"\"\""});
+  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), {"TEST-1", "TEST"});
+  ASSERT_TRUE(ini.IsOpen());
+  const auto actual = ini.value<string>("FOO");
+  EXPECT_EQ("BAR\r\nBAZ", actual) << "A:" << actual;
   ini.Close();
 }
