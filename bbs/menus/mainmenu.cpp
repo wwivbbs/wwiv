@@ -163,7 +163,7 @@ void Menu::DisplayMenu() {
     bout.cls();
   }
   const auto path =
-      common::CreateFullPathToPrint({menu_set_path_.string()}, *a()->user(), menu_name_);
+      common::CreateFullPathToPrint({menu_set_path_}, *a()->user(), menu_name_);
   if (!bout.printfile_path(path, true, false)) {
     GenerateMenu(menu_type_t::short_menu);
   }

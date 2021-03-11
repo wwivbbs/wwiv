@@ -15,14 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_NEWUSER_H__
-#define __INCLUDED_BBS_NEWUSER_H__
+#ifndef INCLUDED_BBS_NEWUSER_H
+#define INCLUDED_BBS_NEWUSER_H
 
 #include <string>
 #include "sdk/user.h"
 
 void input_dataphone();
-void input_language();
 void input_name();
 void input_realname();
 bool valid_phone(const std::string& phoneNumber);
@@ -42,4 +41,4 @@ void newuser();
 
 
 
-#endif  // __INCLUDED_BBS_NEWUSER_H__
+#endif

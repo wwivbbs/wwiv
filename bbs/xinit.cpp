@@ -70,6 +70,9 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
+extern char str_pause[];
+extern char str_quit[];
+
 void StatusManagerCallback(int i) {
   switch (i) {
   case Status::file_change_names: {
@@ -506,33 +509,10 @@ void Application::read_chains() {
   }
 }
 
-bool Application::read_language() {
-  if (auto file = DataFile<languagerec>(FilePath(config()->datadir(), LANGUAGE_DAT))) {
-    file.ReadVector(languages);
-  }
-  if (languages.empty()) {
-    // Add a default language to the list.
-    languagerec lang{};
-    to_char_array(lang.name, "English");
-    to_char_array(lang.dir, config()->gfilesdir());
-    to_char_array(lang.mdir, config()->menudir());
-
-    languages.emplace_back(lang);
-  }
-
-  set_language_number(-1);
-  if (!set_language(0)) {
-    LOG(ERROR) << "You need the default language installed to run the BBS.";
-    return false;
-  }
-  return true;
-}
-
 void Application::read_gfile() {
   gfiles_ = std::make_unique<GFiles>(config()->datadir(), config()->max_backups());
   gfiles_->Load();
 }
-
 
 bool Application::InitializeBBS(bool cleanup_network) {
   Cls();
@@ -581,10 +561,6 @@ bool Application::InitializeBBS(bool cleanup_network) {
   if (!File::Exists(qs_fn)) {
     LOG(ERROR) << "Could not open file '" << qs_fn << "'";
     LOG(ERROR) << "You must go into WWIVconfig and convert your userlist before running the BBS.";
-    return false;
-  }
-
-  if (!read_language()) {
     return false;
   }
 
@@ -641,6 +617,12 @@ bool Application::InitializeBBS(bool cleanup_network) {
 
   VLOG(1) << "Reading User Information.";
   ReadCurrentUser(1);
+
+  // to_char_array doesn't work since these were declared outside of this file.
+  // Set defaults to be overridden later
+  strcpy(str_quit, "Quit");
+  strcpy(str_pause, "More? [Y/n/c]");
+
   statusMgr->reload_status();
   localIO()->topdata(LocalIO::topdata_t::user);
 

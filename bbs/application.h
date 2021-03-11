@@ -194,10 +194,6 @@ public:
   [[nodiscard]] bool IsCarbonCopyEnabled() const { return allow_cc_; }
   void SetCarbonCopyEnabled(bool b) { allow_cc_ = b; }
 
-  [[nodiscard]] int language_number() const;
-
-  void set_language_number(int n);
-  
   [[nodiscard]] int GetNumMessagesReadThisLogon() const { return m_nNumMessagesReadThisLogon; }
   void SetNumMessagesReadThisLogon(int n) { m_nNumMessagesReadThisLogon = n; }
 
@@ -344,7 +340,6 @@ public:
   bool internal_fsed_{true};
   bool exec_log_syncfoss_{true};
   int m_nNumMessagesReadThisLogon{0};
-  int m_nCurrentLanguageNumber{0};
   uint16_t user_dir_num_{0};
   uint16_t user_sub_num_{0};
   // This one should stay in int since -1 is an allowed value.
@@ -379,7 +374,6 @@ public:
 
   std::vector<newexternalrec> externs;
   std::vector<newexternalrec> over_intern;
-  std::vector<languagerec> languages;
   std::vector<arcrec> arcs;
   // The current set of subs visible to the user in the current conference.
   // TODO(rusfan): Move into conf

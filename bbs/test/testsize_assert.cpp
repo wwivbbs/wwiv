@@ -64,7 +64,6 @@ int main(int argc, char * argv[]) {
   WRITE_SIZE(ext_desc_type);
   WRITE_SIZE(gfiledirrec);
   WRITE_SIZE(gfilerec);
-  WRITE_SIZE(languagerec);
   WRITE_SIZE(result_info);
   WRITE_SIZE(modem_info);
   WRITE_SIZE(filestatusrec);

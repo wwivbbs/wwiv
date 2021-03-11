@@ -577,11 +577,6 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
   a_->localIO()->Puts("\r\n\r\n\r\n\r\n\r\n\r\n");
   a_->reset_effective_sl();
   changedsl();
-
-  if (!set_language(a_->user()->GetLanguage())) {
-    a_->user()->SetLanguage(0);
-    set_language(0);
-  }
   return std::make_tuple(local_logon_t::fast, unx);
 }
 

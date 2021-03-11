@@ -26,8 +26,8 @@
 
 namespace wwiv::common {
 
-std::filesystem::path CreateFullPathToPrint(const std::vector<std::string>& dirs,
-                                            const wwiv::sdk::User& user,
+std::filesystem::path CreateFullPathToPrint(const std::vector<std::filesystem::path>& dirs,
+                                            const sdk::User& user,
                                             const std::string& basename);
 
 } // namespace wwiv::common

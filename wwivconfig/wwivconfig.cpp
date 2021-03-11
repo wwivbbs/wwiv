@@ -42,7 +42,6 @@
 #include "wwivconfig/autoval.h"
 #include "wwivconfig/convert.h"
 #include "wwivconfig/editors.h"
-#include "wwivconfig/languages.h"
 #include "wwivconfig/levels.h"
 #include "wwivconfig/menus.h"
 #include "wwivconfig/networks.h"
@@ -421,7 +420,6 @@ int WWIVConfigApplication::Main(int argc, char** argv) const {
                                        {"S. Security Level Configuration", 'S'},
                                        {"V. Auto-Validation Level Configuration", 'V'},
                                        {"A. Archiver Configuration", 'A'},
-                                       {"L. Language Configuration", 'L'},
                                        {"M. Menu Editor", 'M'},
                                        {"N. Network Configuration", 'N'},
                                        {"U. User Editor", 'U'},
@@ -472,9 +470,6 @@ int WWIVConfigApplication::Main(int argc, char** argv) const {
       break;
     case 'A':
       edit_archivers(config);
-      break;
-    case 'L':
-      edit_languages(config);
       break;
     case 'N':
       networks(config, need_network3);

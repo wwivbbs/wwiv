@@ -162,9 +162,6 @@ static void print_cur_stat() {
   }
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
   bout << "|#1K|#9) Configure Menus" << wwiv::endl;
-  if (a()->languages.size() > 1) {
-    bout<< fmt::format("|#1L|#9) Language          : |#2{:<16} ",a()->sess().current_language());
-  }
   if (num_instances() > 1) {
     bout.format("|#1M|#9) Allow user msgs   : |#2{:<16} |#1N|#9) Configure QWK", YesNoString(!a()->user()->IsIgnoreNodeMessages()));
   }
@@ -720,7 +717,7 @@ void defaults(bool& need_menu_reload) {
     }
     bout.nl();
     bout << "|#9Defaults: ";
-    string allowable = "Q?1234567BCDIKLMNTUW";
+    string allowable = "Q?1234567BCDIKMNTUW";
     if (okansi()) {
       allowable.append("89AS");
       if (a()->fullscreen_read_prompt()) {
@@ -799,11 +796,6 @@ void defaults(bool& need_menu_reload) {
     case 'K':
       wwiv::bbs::menus::ConfigUserMenuSet();
       need_menu_reload = true;
-      break;
-    case 'L':
-      if (a()->languages.size() > 1) {
-        input_language();
-      }
       break;
     case 'M':
       if (num_instances() > 1) {

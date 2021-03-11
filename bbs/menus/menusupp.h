@@ -60,7 +60,6 @@ void LoadTextFile();
 void EditText();
 void EditBulletins();
 void ReadAllMail();
-void ReloadMenus();
 void ResetQscan();
 void MemoryStatus();
 void InitVotes();

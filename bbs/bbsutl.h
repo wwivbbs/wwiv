@@ -30,8 +30,6 @@ bool cs();
 bool lcs();
 bool sysop2();
 int  check_ansi();
-bool set_language_1(int n);
-bool set_language(int n);
 std::string YesNoString(bool bYesNo);
 void* BbsAllocA(size_t num_bytes);
 

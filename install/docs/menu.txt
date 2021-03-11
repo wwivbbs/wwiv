@@ -327,10 +327,6 @@ ReadIDZ
     Sysop command to read the file_id.diz and add it to the extended description
 
 
-ReloadMenus
-    This is probably obsolete.
-
-
 RemoveFiles
     Remove a file you uploaded
 

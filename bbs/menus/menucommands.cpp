@@ -521,10 +521,6 @@ This command does not attempt to display a .msg/.ans file.
   Sysop command to read all mail
 )",
                                     MENU_CAT_EMAIL, [](MenuContext&) { ReadAllMail(); }));
-  m.emplace("ReloadMenus", MenuItem(R"(
-  This is probably obsolete.
-)",
-                                    MENU_CAT_SYSOP, [](MenuContext&) { ReloadMenus(); }));
   m.emplace("ResetQscan", MenuItem(R"(
   Set all messages to read (I think)
 )",

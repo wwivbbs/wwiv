@@ -40,8 +40,8 @@ protected:
     helper.SetUp(); 
     const auto lang = FilePath(helper.files().TempDir(), "en/gfiles");
     const auto gfiles = FilePath(helper.files().TempDir(), "gfiles");
-    dirs.push_back(lang.string());
-    dirs.push_back(gfiles.string());
+    dirs.push_back(lang);
+    dirs.push_back(gfiles);
   }
 
   std::filesystem::path CreateTempFile(const std::string& name) {
@@ -53,7 +53,7 @@ protected:
   }
 
   BbsHelper helper{};
-  std::vector<string> dirs;
+  std::vector<std::filesystem::path> dirs;
   };
 
 TEST_F(PrintFileTest, LanguageDir) {

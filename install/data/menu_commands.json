@@ -568,11 +568,6 @@
         },
         {
             "cat": "SYSOP",
-            "cmd": "ReloadMenus",
-            "help": "This is probably obsolete."
-        },
-        {
-            "cat": "SYSOP",
             "cmd": "Status",
             "help": ""
         },

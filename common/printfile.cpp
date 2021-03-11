@@ -50,8 +50,8 @@ using namespace wwiv::strings;
 /**
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
-std::filesystem::path CreateFullPathToPrint(const std::vector<string>& dirs, const User& user,
-                                            const string& basename) {
+std::filesystem::path CreateFullPathToPrint(const std::vector<std::filesystem::path>& dirs,
+                                            const User& user, const string& basename) {
   for (const auto& base : dirs) {
     auto file{FilePath(base, basename)};
     if (basename.find('.') != string::npos) {
@@ -165,6 +165,9 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
     return false;
   }
 
+  const auto save_mci = bout.mci_enabled();
+  ScopeExit at_exit_mci([=]() { bout.set_mci_enabled(save_mci); });
+  bout.enable_mci();
   TextFile tf(file_path, "rb");
   const auto v = tf.ReadFileIntoVector();
 
@@ -204,7 +207,7 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
 bool Output::printfile(const std::string& data, bool abortable, bool force_pause) {
   const printfile_opts opts(sess(), *this, data, abortable, force_pause);
 
-  const std::vector<string> dirs{sess().dirs().language_directory(), 
+  const std::vector<std::filesystem::path> dirs{sess().dirs().current_menu_directory(), 
     sess().dirs().gfiles_directory()};
 
   const auto full_path_name = CreateFullPathToPrint(dirs, context().u(), opts.data());
@@ -235,7 +238,7 @@ void Output::print_local_file(const string& filename) {
 
 bool Output::printfile_random(const std::string& raw_base_fn) {
   const printfile_opts opts(sess(), *this, raw_base_fn, true, true);
-  const auto& dir = sess().dirs().language_directory();
+  const auto& dir = sess().dirs().current_menu_directory();
   const auto base_fn = opts.data();
   const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0"));
   if (!File::Exists(dot_zero)) {

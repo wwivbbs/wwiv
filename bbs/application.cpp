@@ -255,6 +255,7 @@ bool Application::ReadCurrentUser(int user_number) {
   // Update all other session variables that are dependent.
   sess().num_screen_lines(sess().using_modem() ? user()->GetScreenLines()
                                           : localIO()->GetDefaultScreenBottom() + 1);
+  sess().dirs().current_menu_directory(FilePath(config_->menudir(), user()->menu_set()));
   return true;
 }
 
@@ -274,6 +275,8 @@ bool Application::WriteCurrentUser(int user_number) {
     LOG(ERROR) << "Trying to call WriteCurrentUser with user_number: " << user_number
                << "; last_read_user_number_: " << last_read_user_number_;
   }
+  // Update any possibly changed session variables.
+  sess().dirs().current_menu_directory(FilePath(config_->menudir(), user()->menu_set()));
   return users()->writeuser(user(), user_number);
 }
 
@@ -681,16 +684,6 @@ std::string Application::network_directory() const {
     return {};
   }
   return nets_->at(network_num_).dir.string();
-}
-
-int Application::language_number() const { return m_nCurrentLanguageNumber; }
-
-void Application::set_language_number(int n) {
-  m_nCurrentLanguageNumber = n;
-  if (n >= 0 && n <= static_cast<int>(languages.size())) {
-    sess().current_language(languages[n].name);
-    sess().dirs().language_directory(languages[n].dir);
-  }
 }
 
 get_caller_t Application::GetCaller() {
@@ -1275,7 +1268,6 @@ void Application::frequent_init() {
 
   set_net_num(0);
   read_qscn(1, sess().qsc, false);
-  set_language(user()->GetLanguage());
   reset_disable_conf();
 
   // Output context

@@ -609,11 +609,6 @@ void print_net_listing(bool bForcePause) {
   }
 }
 
-void read_new_stuff() {
-  set_language_1(a()->language_number());
-}
-
-
 void mailr() {
   mailrec m, m1;
   filestatusrec fsr;

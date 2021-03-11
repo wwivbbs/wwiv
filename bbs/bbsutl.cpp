@@ -39,11 +39,6 @@ using namespace wwiv::common;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-static char str_yes[81],
-            str_no[81];
-extern char str_pause[];
-extern char str_quit[];
-
 
 bool inli(string* outBuffer, string* rollover, string::size_type maxlen, bool add_crlf,
           bool allow_previous, bool two_color, bool clear_previous_line) {
@@ -361,61 +356,8 @@ int check_ansi() {
   return 0;
 }
 
-
-// Sets current language to language index n, reads in menus and help files,
-// and initializes stringfiles for that language. Returns false if problem,
-// else returns true.
-bool set_language_1(int n) {
-  size_t idx = 0;
-  for (idx = 0; idx < a()->languages.size(); idx++) {
-    if (a()->languages[idx].num == n) {
-      break;
-    }
-  }
-
-  if (idx >= a()->languages.size() && n == 0) {
-    idx = 0;
-  }
-
-  if (idx >= a()->languages.size()) {
-    return false;
-  }
-
-  a()->set_language_number(n);
-
-  to_char_array(str_yes, "Yes");
-  to_char_array(str_no, "No");
-  // to_char_array doesn't work since these were declared outside of this file.
-  strcpy(str_quit, "Quit");
-  strcpy(str_pause, "More? [Y/n/c]");
-  str_yes[0] = upcase(str_yes[0]);
-  str_no[0] = upcase(str_no[0]);
-  str_quit[0] = upcase(str_quit[0]);
-
-  return true;
-}
-
-// Sets language to language #n, returns false if a problem, else returns true.
-bool set_language(int n) {
-  if (a()->language_number() == n) {
-    return true;
-  }
-
-  const auto old_curlang = a()->language_number();
-
-  if (!set_language_1(n)) {
-    if (old_curlang >= 0) {
-      if (!set_language_1(old_curlang)) {
-        set_language_1(0);
-      }
-    }
-    return false;
-  }
-  return true;
-}
-
 std::string YesNoString(bool bYesNo) {
-  return bYesNo ? str_yes : str_no;
+  return bYesNo ? "Yes" : "No";
 }
 
 void *BbsAllocA(size_t size) {

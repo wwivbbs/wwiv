@@ -28,7 +28,6 @@
 #include <algorithm>
 #include <memory>
 #include <string>
-#include <utility>
 
 using std::begin;
 using std::end;
@@ -46,20 +45,20 @@ CommonHelper::CommonHelper(int) {
   // We want the "BBS Home" to be our temp dir.
   CHECK(chdir(temp.string().c_str()) == 0);
 
-  files_.Mkdir("data");
-  files_.Mkdir("gfiles");
-  files_.Mkdir("en");
-  files_.Mkdir("en/gfiles");
+  CHECK(files_.Mkdir("data"));
+  CHECK(files_.Mkdir("gfiles"));
+  CHECK(files_.Mkdir("en"));
+  CHECK(files_.Mkdir("en/gfiles"));
 
   dir_data_ = files_.DirName("data");
   dir_gfiles_ = files_.DirName("gfiles");
-  dir_en_gfiles_ = files_.DirName("en/gfiles");
   dir_menus_ = files_.DirName("menus");
+  current_menu_dir_ = files_.DirName("menus/wwiv");
   dir_msgs_ = files_.DirName("msgs");
   dir_dloads_ = files_.DirName("dloads");
 #ifdef _WIN32
   dir_gfiles_ = File::FixPathSeparators(dir_gfiles_);
-  dir_en_gfiles_ = File::FixPathSeparators(dir_en_gfiles_);
+  current_menu_dir_ = File::FixPathSeparators(current_menu_dir_);
 #endif  // _WIN32
 
   config_ = std::make_unique<Config>(temp);
@@ -78,7 +77,7 @@ CommonHelper::CommonHelper() : CommonHelper(42) {
 
 void CommonHelper::SetUp() {
 
-  sess().dirs().language_directory(dir_en_gfiles_);
+  sess().dirs().current_menu_directory(current_menu_dir_);
   user()->ClearStatusFlag(User::pauseOnPage);
   sess().num_screen_lines(std::numeric_limits<int>::max());
 

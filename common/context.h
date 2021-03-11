@@ -38,9 +38,9 @@ class Dirs {
 public:
   explicit Dirs(const std::filesystem::path& bbsdir);
   Dirs(const std::string& temp, const std::string& batch, const std::string& qwk,
-       std::string gfiles, std::string scratch)
+       std::string gfiles, const std::string& scratch)
       : temp_directory_(temp), batch_directory_(batch), qwk_directory_(qwk),
-        gfiles_directory_(std::move(gfiles)), scratch_directory_(std::move(scratch)) {}
+        gfiles_directory_(std::move(gfiles)), scratch_directory_(scratch) {}
 
   [[nodiscard]] const std::filesystem::path& temp_directory() const noexcept { return temp_directory_; }
   void temp_directory(const std::string& d) { temp_directory_ = d; }
@@ -60,18 +60,18 @@ public:
   [[nodiscard]] const std::string& gfiles_directory() const noexcept { return gfiles_directory_; }
   void gfiles_directory(const std::string& d) { gfiles_directory_ = d; }
 
-  [[nodiscard]] const std::string& language_directory() const noexcept {
-    return language_directory_;
+  [[nodiscard]] std::filesystem::path current_menu_directory() const noexcept {
+    return current_menu_directory_;
   }
-  void language_directory(const std::string& l) {
-    language_directory_ = l;
+  void current_menu_directory(const std::filesystem::path& l) {
+    current_menu_directory_ = l;
   }
 
 private:
   std::filesystem::path temp_directory_;
   std::filesystem::path batch_directory_;
   std::filesystem::path qwk_directory_;
-  std::string language_directory_;
+  std::filesystem::path current_menu_directory_;
   std::string gfiles_directory_;
   std::filesystem::path scratch_directory_;
 };

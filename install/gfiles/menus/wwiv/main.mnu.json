@@ -225,23 +225,6 @@
                 ]
             },
             {
-                "item_key": "RELOAD",
-                "item_text": "ReloadMenus",
-                "visible": false,
-                "help_text": "Reload Current Menu Set",
-                "log_text": "RELOAD",
-                "instance_message": "",
-                "acs": "user.sysop == true",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "reloadmenus",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
                 "item_key": "RESETQSCAN",
                 "item_text": "",
                 "visible": false,

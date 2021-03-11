@@ -275,7 +275,7 @@ void GoodBye() {
       batchdl(1);
     }
   }
-  auto filename = FilePath(a()->sess().dirs().language_directory(), LOGOFF_MAT);
+  auto filename = FilePath(a()->sess().dirs().current_menu_directory(), LOGOFF_MAT);
   if (!File::Exists(filename)) {
     filename = FilePath(a()->config()->gfilesdir(), LOGOFF_MAT);
   }
@@ -511,11 +511,6 @@ void ReadAllMail() {
   write_inst(INST_LOC_MAILR, 0, INST_FLAGS_NONE);
   sysoplog() << "@ Read mail";
   mailr();
-}
-
-void ReloadMenus() {
-  write_inst(INST_LOC_RELOAD, 0, INST_FLAGS_NONE);
-  read_new_stuff();
 }
 
 void ResetQscan() {

@@ -55,12 +55,13 @@ public:
   FileHelper& files() { return files_; }
   [[nodiscard]] const std::string& data() const { return dir_data_; }
   [[nodiscard]] const std::string& gfiles() const { return dir_gfiles_; }
+  [[nodiscard]] const std::string& menus() const { return dir_menus_; }
 
   FileHelper files_;
   std::string dir_data_;
   std::string dir_gfiles_;
-  std::string dir_en_gfiles_;
   std::string dir_menus_;
+  std::string current_menu_dir_;
   std::string dir_dloads_;
   std::string dir_msgs_;
   std::unique_ptr<TestIO> io_;

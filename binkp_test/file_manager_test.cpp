@@ -53,7 +53,6 @@ public:
 
     const auto dir_data_ = file_helper_.DirName("data");
     const auto dir_gfiles_ = file_helper_.DirName("gfiles");
-    const auto dir_en_gfiles_ = file_helper_.DirName("en/gfiles");
     const auto dir_menus_ = file_helper_.DirName("menus");
     const auto dir_msgs_ = file_helper_.DirName("msgs");
     const auto dir_dloads_ = file_helper_.DirName("dloads");

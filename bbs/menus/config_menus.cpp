@@ -20,7 +20,6 @@
 
 #include "bbs/bbs.h"
 #include "bbs/mmkey.h"
-#include "bbs/newuser.h"
 #include "bbs/sysoplog.h"
 #include "common/com.h"
 #include "common/input.h"
@@ -42,22 +41,14 @@ using namespace wwiv::stl;
 
 namespace wwiv::bbs::menus {
 
-static std::filesystem::path GetMenuDirectory() {
-  return FilePath(a()->sess().dirs().language_directory(), "menus");
-}
-
-static std::filesystem::path GetMenuDirectory(const std::string& menu_path) {
-  return FilePath(GetMenuDirectory(), menu_path);
-}
-
 static bool ValidateMenuSet(const std::string& menu_set) {
   // ensure the entry point exists
-  return File::Exists(FilePath(GetMenuDirectory(menu_set), "main.mnu.json"));
+  return File::Exists(FilePath(FilePath(a()->config()->menudir(), menu_set), "main.mnu.json"));
 }
 
 static std::map<int, std::string> ListMenuDirs() {
   std::map<int, std::string> result;
-  const auto menu_directory = GetMenuDirectory();
+  const auto menu_directory = a()->config()->menudir();
   const MenuDescriptions descriptions(menu_directory);
 
   bout.nl();
@@ -107,9 +98,8 @@ void ConfigUserMenuSet() {
       bout.nl(2);
       bout << "|#9Enter the menu set to use : ";
       auto sel = bin.input_number<int>(1, 1, r.size(), false);
-      const auto menuSetName = r.at(sel);
-      if (ValidateMenuSet(menuSetName)) {
-        MenuDescriptions descriptions(GetMenuDirectory());
+      if (const auto menuSetName = r.at(sel); ValidateMenuSet(menuSetName)) {
+        MenuDescriptions descriptions(a()->config()->menudir());
         bout.nl();
         bout << "|#9Menu Set : |#2" << menuSetName << " :  |#1"
              << descriptions.description(menuSetName) << wwiv::endl;
@@ -134,14 +124,6 @@ void ConfigUserMenuSet() {
       continue; // bypass the below cls()
     }
     bout.cls();
-  }
-
-  // If menu is invalid, it picks the first one it finds
-  if (!ValidateMenuSet(a()->user()->menu_set())) {
-    if (a()->languages.size() > 1 && a()->user()->GetLanguage() != 0) {
-      bout << "|#6No menus for " << a()->languages[a()->user()->GetLanguage()].name << " language.";
-      input_language();
-    }
   }
 
   // Save current menu setup.

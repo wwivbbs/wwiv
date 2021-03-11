@@ -377,10 +377,6 @@ void getuser() {
       a()->sess().user_num(static_cast<uint16_t>(usernum));
       a()->ReadCurrentUser();
       read_qscn(a()->sess().user_num(), a()->sess().qsc, false);
-      if (!set_language(a()->user()->GetLanguage())) {
-        a()->user()->SetLanguage(0);
-        set_language(0);
-      }
       if (const auto instance_number = user_online(a()->sess().user_num());
           instance_number && a()->user()->sl() < 255) {
         bout << "\r\n|#6You are already online on instance " << instance_number.value()

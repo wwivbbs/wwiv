@@ -126,41 +126,6 @@ void input_dataphone() {
   } while (!ok && !a()->sess().hangup());
 }
 
-void input_language() {
-  if (a()->languages.size() > 1) {
-    a()->user()->SetLanguage(255);
-    do {
-      char ch = 0, onx[20];
-      bout.nl(2);
-      for (size_t i = 0; i < a()->languages.size(); i++) {
-        bout << (i + 1) << ". " << a()->languages[i].name << wwiv::endl;
-        if (i < 9) {
-          onx[i] = static_cast<char>('1' + i);
-        }
-      }
-      bout.nl();
-      bout << "|#2Which language? ";
-      if (a()->languages.size() < 10) {
-        onx[a()->languages.size()] = 0;
-        ch = onek(onx);
-        ch -= '1';
-      } else {
-        std::set<char> odc;
-        for (size_t i = 1; i <= a()->languages.size() / 10; i++) {
-          odc.insert(static_cast<char>('0' + i));
-        }
-        string ss = mmkey(odc);
-        ch = ss.front() - 1;
-      }
-      if (ch >= 0 && ch < ssize(a()->languages)) {
-        a()->user()->SetLanguage(a()->languages[ch].num);
-      }
-    } while ((a()->user()->GetLanguage() == 255) && (!a()->sess().hangup()));
-
-    set_language(a()->user()->GetLanguage());
-  }
-}
-
 static bool check_name(const string& user_name) {
   if (user_name.length() == 0 || user_name[user_name.length() - 1] == 32 || user_name[0] < 65 ||
       finduser(user_name) != 0 || user_name.find("@") != string::npos ||
@@ -1316,8 +1281,6 @@ void newuser() {
   if (!CreateNewUserRecord()) {
     return;
   }
-
-  input_language();
 
   if (!CanCreateNewUserAccountHere() || a()->sess().hangup()) {
     a()->Hangup();

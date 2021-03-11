@@ -21,7 +21,6 @@
 void prstatus();
 void valuser(int user_number);
 void print_net_listing(bool bForcePause);
-void read_new_stuff();
 void mailr();
 void chuser();
 void zlog();
