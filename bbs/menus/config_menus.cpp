@@ -160,19 +160,4 @@ std::string MenuDescriptions::description(const std::string& name) const {
   return "";
 }
 
-bool MenuDescriptions::set_description(const std::string& name, const std::string& description) {
-  descriptions_[name] = description;
-
-  TextFile file(FilePath(menupath_, DESCRIPT_ION), "wt");
-  if (!file.IsOpen()) {
-    return false;
-  }
-
-  for (const auto& iter : descriptions_) {
-    file.Write(fmt::format("{} {}", iter.first, iter.second));
-  }
-  return true;
-}
-
-
 } // namespace wwiv

@@ -32,7 +32,6 @@ public:
   explicit MenuDescriptions(const std::filesystem::path& menupath);
   ~MenuDescriptions();
   [[nodiscard]] std::string description(const std::string& name) const;
-  bool set_description(const std::string& name, const std::string& description);
 
 private:
   const std::filesystem::path menupath_;
