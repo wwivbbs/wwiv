@@ -815,12 +815,12 @@ static void LoginCheckForNewMail() {
 }
 
 static vector<bool> read_voting() {
-  vector<votingrec> votes;
   DataFile<votingrec> file(FilePath(a()->config()->datadir(), VOTING_DAT));
   vector<bool> questused(20);
   if (!file) {
     return questused;
   }
+  vector<votingrec> votes;
   file.ReadVector(votes);
   int cur = 0;
   for (const auto& v : votes) {
@@ -855,11 +855,9 @@ static void UpdateLastAddress() {
   if (remote_address.empty()) {
     return;
   }
-  auto ipaddr = ip_address::from_string(remote_address);
-  if (!ipaddr) {
-    return;
+  if (auto ipaddr = ip_address::from_string(remote_address)) {
+    a()->user()->last_address(ipaddr.value());
   }
-  a()->user()->last_address(ipaddr.value());
 }
 
 void logon() {

@@ -98,7 +98,7 @@ int SessionContext::bps() const noexcept {
   return f > 0 ? f : system_bps();
 }
 
-std::optional<sdk::acs::Value> MapValueProvider::value(const std::string& name) {
+std::optional<sdk::acs::Value> MapValueProvider::value(const std::string& name) const {
   if (const auto& iter = map_.find(name); iter != std::end(map_)) {
     return sdk::acs::Value(iter->second);
   }

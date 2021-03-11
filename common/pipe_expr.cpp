@@ -136,19 +136,17 @@ static std::vector<pipe_expr_token_t> tokenize(std::string::const_iterator& it, 
 }
 
 std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
-  std::map<std::string, std::unique_ptr<acs::ValueProvider>> p;
-  auto eff_sl = context_.session_context().effective_sl();
-  if (eff_sl == 0) {
-    eff_sl = context_.u().sl();
-  }
-  const auto& eslrec = context_.config().sl(eff_sl);
-  p["user"] = std::make_unique<acs::UserValueProvider>(context_.config(), context_.u(), eff_sl, eslrec);
-
   const auto [prefix, suffix] = SplitOnceLast(t.lexeme, ".");
-  if (const auto& iter = p.find(prefix); iter != std::end(p)) {
-    return iter->second->value(suffix)->as_string();  
+  if (prefix == "user") {
+    // Only create user if we need it, also don't cache it since eff_sl can change
+    auto eff_sl = context_.session_context().effective_sl();
+    if (eff_sl == 0) {
+      eff_sl = context_.u().sl();
+    }
+    const auto& eslrec = context_.config().sl(eff_sl);
+    const acs::UserValueProvider user(context_.config(), context_.u(), eff_sl, eslrec);
+    return user.value(suffix)->as_string();
   }
-
   for (const auto& v : context_.value_providers()) {
     // O(N) is on for small values of n
     if (iequals(prefix, v->prefix())) {
@@ -197,26 +195,22 @@ std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
 }
 
 // TODO(rushfan): make sdk::acs::check_acs take optional vector of ValueProviders
-static bool check_acs(const Config& config, const User& user, int eff_sl,
-                      const std::string& expression,
-                      const std::vector<std::unique_ptr<MapValueProvider>>& maps) {
+static bool check_acs_pipe(const acs::ValueProvider& user, const std::string& expression,
+                           const std::vector<std::unique_ptr<MapValueProvider>>& maps) {
   if (StringTrim(expression).empty()) {
     // Empty expression is always allowed.
     return true;
   }
 
   acs::Eval eval(expression);
-  const auto& eslrec = config.sl(eff_sl);
-  eval.add(std::make_unique<acs::UserValueProvider>(config, user, eff_sl, eslrec));
+  eval.add(&user);
 
   for (const auto& m : maps) {
-    auto mm = std::make_unique<MapValueProvider>(m->prefix(), m->map());
-    eval.add(std::move(mm));
+    eval.add(m.get());
   }
 
   return eval.eval();
 }
-
 
 std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
   // Set command only
@@ -237,7 +231,9 @@ std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
   if (eff_sl == 0) {
     eff_sl = context_.u().sl();
   }
-  const auto b = check_acs(context_.config(), context_.u(), eff_sl, expr, context_.value_providers());
+  const auto& eslrec = context_.config().sl(eff_sl);
+  const acs::UserValueProvider user_provider(context_.config(), context_.u(), eff_sl, eslrec);
+  const auto b = check_acs_pipe(user_provider, expr, context_.value_providers());
   return b ? yes : no;
 }
 

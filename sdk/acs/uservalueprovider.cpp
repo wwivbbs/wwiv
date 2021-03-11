@@ -37,7 +37,7 @@ template <typename T> static std::optional<Value> val(T&& v) {
   return std::make_optional<Value>(std::forward<T>(v));
 }
 
-std::optional<Value> UserValueProvider::value(const std::string& name) {
+std::optional<Value> UserValueProvider::value(const std::string& name) const {
   if (iequals(name, "sl")) {
     return val(user_.sl());
   }

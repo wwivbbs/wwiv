@@ -292,13 +292,14 @@ class MapValueProvider : public sdk::acs::ValueProvider {
 public:
   explicit MapValueProvider(std::string prefix, std::map<std::string, std::string> map)
       : ValueProvider(std::move(prefix)), map_(std::move(map)) {}
-  virtual ~MapValueProvider() = default;
+
+  ~MapValueProvider() override = default;
 
   /** 
    * Optionally gets the attribute for this object.  name should just be
    * the 'attribute' and not the full object.attribute name. *
    */
-  [[nodiscard]] std::optional<sdk::acs::Value> value(const std::string& name) override;
+  [[nodiscard]] std::optional<sdk::acs::Value> value(const std::string& name) const override;
 
   [[nodiscard]] const std::map<std::string, std::string>& map() const;
 

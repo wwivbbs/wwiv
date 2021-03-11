@@ -39,7 +39,7 @@ template <typename T> static std::optional<Value> val(T&& v) {
 class DefaultValueProvider : public ValueProvider {
 public:
   DefaultValueProvider() : ValueProvider("") {}
-  [[nodiscard]] std::optional<Value> value(const std::string& name) override {
+  [[nodiscard]] std::optional<Value> value(const std::string& name) const override {
     if (name == "true") {
       return val(true);
     }
@@ -61,7 +61,7 @@ public:
   bool eval_throws();
   bool eval();
   bool add(std::unique_ptr<ValueProvider>&& p);
-  bool add(ValueProvider* p);
+  bool add(const ValueProvider* p);
   std::optional<Value> to_value(core::parser::Factor* n);
 
   /** 
@@ -86,7 +86,7 @@ public:
 
 private:
   std::string expression_;
-  std::unordered_map<std::string, ValueProvider*> providers_;
+  std::unordered_map<std::string, const ValueProvider*> providers_;
   std::unordered_map<int, Value> values_;
   std::string error_text_;
   std::vector<std::string> debug_info_;

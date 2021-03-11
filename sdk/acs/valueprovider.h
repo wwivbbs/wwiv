@@ -35,7 +35,7 @@ public:
    * Optionally gets the attribute for this object.  name should just be
    * the 'attribute' and not the full object.attribute name. *
    */
-  [[nodiscard]] virtual std::optional<Value> value(const std::string& name) = 0;
+  [[nodiscard]] virtual std::optional<Value> value(const std::string& name) const = 0;
 
   /**
    * Returns the prefix for this value provider. i.e. "user"

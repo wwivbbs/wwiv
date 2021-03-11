@@ -38,7 +38,7 @@ public:
    */
   UserValueProvider(const Config& config, const User& user, int effective_sl, slrec sl)
   : ValueProvider("user"), config_(config), user_(user), effective_sl_(effective_sl), sl_(sl) {}
-  [[nodiscard]] std::optional<Value> value(const std::string& name) override;
+  [[nodiscard]] std::optional<Value> value(const std::string& name) const override;
 
 private:
   const Config& config_;

@@ -20,6 +20,7 @@
 
 #include "sdk/config.h"
 #include "sdk/user.h"
+#include "sdk/acs/uservalueprovider.h"
 
 #include <string>
 #include <tuple>
@@ -30,13 +31,18 @@ namespace wwiv::sdk::acs {
 enum class acs_debug_t { local, remote, none };
 
 // Result: (true|false), debug lines
-std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const User& user, int eff_sl,
-                                                     const std::string& expression,
-                                                     acs_debug_t debug = acs_debug_t::none);
+std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const ValueProvider& user,
+                                                     const std::string& expression);
+std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const std::vector<const ValueProvider*>& providers,
+                                                     const std::string& expression);
+
 
 // Result: (true|false), exception message (if any), debug lines
-std::tuple<bool, std::string, std::vector<std::string>> validate_acs(const Config& config, const User& user, int eff_sl,
-                                                        const std::string& expression);
+std::tuple<bool, std::string, std::vector<std::string>> validate_acs(const ValueProvider& user,
+                                                                     const std::string& expression);
+
+std::tuple<bool, std::string, std::vector<std::string>> validate_acs(const std::vector<const ValueProvider*>& providers,
+                                                                     const std::string& expression);
 
 } // namespace wwiv::sdk::acs
 

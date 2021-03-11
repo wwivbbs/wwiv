@@ -163,7 +163,7 @@ bool Eval::eval() {
   return false;
 }
 
-bool Eval::add(ValueProvider* p) { 
+bool Eval::add(const ValueProvider* p) { 
   providers_[p->prefix()] = p;
   return true; 
 }

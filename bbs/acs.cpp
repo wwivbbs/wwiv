@@ -40,8 +40,12 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
     // Empty expression is always allowed.
     return true;
   }
-  auto [result, debug_info] = sdk::acs::check_acs(*a()->config(), *a()->user(),
-                                                  a()->sess().effective_sl(), expression, debug);
+
+  const auto eff_sl = a()->sess().effective_sl();
+  const auto& eslrec = a()->config()->sl(eff_sl);
+  const UserValueProvider user_provider(*a()->config(), *a()->user(), eff_sl, eslrec);
+
+  auto [result, debug_info] = sdk::acs::check_acs(*a()->config(), user_provider, expression);
   for (const auto& l : debug_info) {
     if (debug == acs_debug_t::local) {
       LOG(INFO) << l;
@@ -54,8 +58,9 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
 }
 
 bool validate_acs(const std::string& expression, acs_debug_t debug) {
-  auto [result, ex_what, debug_info] =
-      sdk::acs::validate_acs(*a()->config(), *a()->user(), a()->sess().effective_sl(), expression);
+  const auto eff_sl = a()->sess().effective_sl();
+  const UserValueProvider up(*a()->config(), *a()->user(), eff_sl, a()->config()->sl(eff_sl));
+  auto [result, ex_what, debug_info] = sdk::acs::validate_acs(up, expression);
   if (result) {
     return true;
   }

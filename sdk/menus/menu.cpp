@@ -21,6 +21,8 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/archives/json.hpp>
 #include <cereal/types/memory.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/menus/menus_cereal.h"
 
 #include "core/datafile.h"
 #include "core/file.h"
@@ -29,10 +31,8 @@
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/user.h"
-#include "sdk/acs/expr.h"
-// ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/acs/acs.h"
-#include "sdk/menus/menus_cereal.h"
+#include "sdk/acs/expr.h"
 #include <string>
 #include <utility>
 #include <vector>
@@ -300,8 +300,7 @@ std::vector<std::string> GenerateMenuLines(const Config& config, int eff_sl, con
     out.emplace_back(fmt::format("{}{}{}|#0", std::string(pad_len, ' '), g.color_title, title));
   }
   std::ostringstream ss;
-  const auto nums = menu.num_action;
-  if (nums != menu_numflag_t::none) {
+  if (menu.num_action != menu_numflag_t::none) {
     ss << generate_menu_item_line(g, "#", "Change Sub/Dir #", col_width);
     ++lines_displayed;
   }
@@ -310,7 +309,8 @@ std::vector<std::string> GenerateMenuLines(const Config& config, int eff_sl, con
     if (mi.item_key.empty()) {
       continue;
     }
-    if (auto [result, debug_lines] = acs::check_acs(config, user, eff_sl, mi.acs); !result) {
+    acs::UserValueProvider up(config, user, eff_sl, config.sl(eff_sl));
+    if (auto [result, debug_lines] = check_acs(config, up, mi.acs); !result) {
       continue;
     }
     if (!g.show_empty_text && StringTrim(mi.item_text).empty()) {
@@ -323,8 +323,7 @@ std::vector<std::string> GenerateMenuLines(const Config& config, int eff_sl, con
     const auto key = display_key(mi.item_key);
     const auto& text = typ == menu_type_t::short_menu ? mi.item_text : mi.help_text;
     ss << generate_menu_item_line(g, key, text, col_width);
-    const auto mod = ++lines_displayed % num_cols;
-    if (mod == 0) {
+    if (++lines_displayed % num_cols == 0) {
       out.emplace_back(ss.str());
       ss.str("");
       ss.clear();

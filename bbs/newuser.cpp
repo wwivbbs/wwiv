@@ -665,7 +665,7 @@ static void add_phone_number(int usernum, const std::string& phone) {
 }
 
 void WriteNewUserInfoToSysopLog() {
-  const auto u = a()->user();
+  const auto* u = a()->user();
   sysoplog() << "** New User Information **";
   sysoplog() << fmt::sprintf("-> %s #%ld (%s)", u->name(), a()->sess().user_num(), u->real_name_or_empty());
   if (a()->config()->newuser_config().use_address_street != newuser_item_type_t::unused) {
@@ -709,7 +709,7 @@ void VerifyNewUserPassword() {
     bout.nl(1);
     bout << "|#9Please write down this information, and enter your password for verification.\r\n";
     bout << "|#9You will need to know this password in order to change it to something else.\r\n\n";
-    string password = bin.input_password("|#9PW: ", 8);
+    const auto password = bin.input_password("|#9PW: ", 8);
     if (password == a()->user()->password()) {
       ok = true;
     }
@@ -726,18 +726,13 @@ void SendNewUserFeedbackIfRequired() {
     return;
   }
 
-  if (a()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
-    noabort(FEEDBACK_NOEXT);
-  } else if (bout.printfile(FEEDBACK_NOEXT)) {
-    sysoplog(false) << "";
-  }
+  bout.printfile(FEEDBACK_NOEXT);
   feedback(true);
   if (a()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     if (!a()->user()->email_sent() && !a()->user()->feedback_sent()) {
       bout.printfile(NOFBACK_NOEXT);
       a()->users()->delete_user(a()->sess().user_num());
       a()->Hangup();
-      return;
     }
   }
 }

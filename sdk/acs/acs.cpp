@@ -36,9 +36,9 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::acs {
 
-std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const User& user, int eff_sl,
-                                                     const std::string& expression,
-                                                     acs_debug_t debug) {
+std::tuple<bool, std::vector<std::string>>
+check_acs(const Config&, const std::vector<const ValueProvider*>& providers,
+          const std::string& expression) {
   if (StringTrim(expression).empty()) {
     // Empty expression is always allowed.
     std::vector<std::string> debug_lines;
@@ -46,19 +46,29 @@ std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const
   }
 
   Eval eval(expression);
-  const auto& eslrec = config.sl(eff_sl);
-  UserValueProvider u(config, user, eff_sl, eslrec);
-  eval.add(&u);
+  for (const auto* p : providers) {
+    eval.add(p);
+  }
   const auto result = eval.eval();
-  return std::make_tuple(result, eval.debug_info());
+  return std::make_tuple(result, eval.debug_info());  
+}
+
+std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const ValueProvider& user,
+                                                     const std::string& expression) {
+  return check_acs(config, {&user}, expression);
 }
 
 std::tuple<bool, std::string, std::vector<std::string>>
-validate_acs(const Config& config, const User& user, int eff_sl, const std::string& expression) {
+validate_acs(const ValueProvider& user, const std::string& expression) {
+  return validate_acs({&user}, expression);
+}
+
+std::tuple<bool, std::string, std::vector<std::string>>
+validate_acs(const std::vector<const ValueProvider*>& providers, const std::string& expression) {
   Eval eval(expression);
-  const auto& eslrec = config.sl(eff_sl);
-  UserValueProvider u(config, user, eff_sl, eslrec);
-  eval.add(&u);
+  for (const auto* p : providers) {
+    eval.add(p);
+  }
 
   try {
     eval.eval_throws();
