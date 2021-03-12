@@ -67,6 +67,18 @@ public:
     current_menu_directory_ = l;
   }
 
+  /**
+   * Current directory for this menus set's gfiles dir. i.e. where menus specific
+   * display files reside.
+   */
+  [[nodiscard]] std::filesystem::path current_menu_gfiles_directory() const noexcept;
+
+  /**
+   * Current directory for this menus set's script dir. i.e. where menus specific
+   * script files reside.
+   */
+  [[nodiscard]] std::filesystem::path current_menu_script_directory() const noexcept;
+
 private:
   std::filesystem::path temp_directory_;
   std::filesystem::path batch_directory_;

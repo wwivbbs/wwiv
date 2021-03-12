@@ -207,7 +207,7 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
 bool Output::printfile(const std::string& data, bool abortable, bool force_pause) {
   const printfile_opts opts(sess(), *this, data, abortable, force_pause);
 
-  const std::vector<std::filesystem::path> dirs{sess().dirs().current_menu_directory(), 
+  const std::vector<std::filesystem::path> dirs{sess().dirs().current_menu_gfiles_directory(), 
     sess().dirs().gfiles_directory()};
 
   const auto full_path_name = CreateFullPathToPrint(dirs, context().u(), opts.data());
@@ -238,22 +238,20 @@ void Output::print_local_file(const string& filename) {
 
 bool Output::printfile_random(const std::string& raw_base_fn) {
   const printfile_opts opts(sess(), *this, raw_base_fn, true, true);
-  const auto& dir = sess().dirs().current_menu_directory();
+  const auto& dir = sess().dirs().current_menu_gfiles_directory();
   const auto base_fn = opts.data();
-  const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0"));
-  if (!File::Exists(dot_zero)) {
+  if (const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0")); !File::Exists(dot_zero)) {
     return false;
   }
   auto screens = 0;
   for (auto i = 0; i < 1000; i++) {
-    const auto dot_n = FilePath(dir, StrCat(base_fn, ".", i));
-    if (File::Exists(dot_n)) {
+    if (const auto dot_n = FilePath(dir, StrCat(base_fn, ".", i)); File::Exists(dot_n)) {
       ++screens;
     } else {
       break;
     }
   }
-  return printfile_path(FilePath(dir, StrCat(base_fn, ".", wwiv::os::random_number(screens))),
+  return printfile_path(FilePath(dir, StrCat(base_fn, ".", os::random_number(screens))),
                         opts.abortable, opts.force_pause);
 }
 

@@ -672,13 +672,6 @@ class User final {
   /** Gets the current user's birthday as a string in format "mm/dd/yy" */
   [[nodiscard]] std::string birthday_mmddyy() const;
 
-  [[nodiscard]] int GetLanguage() const {
-    return data.language;
-  }
-  void SetLanguage(int n) {
-    data.language = static_cast<uint8_t>(n);
-  }
-
   [[nodiscard]] int home_usernum() const {
     return data.homeuser;
   }

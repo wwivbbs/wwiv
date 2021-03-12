@@ -52,6 +52,8 @@ inline bool operator!=(const ip_address& lhs, const ip_address& rhs) {
   return memcmp(lhs.data_, rhs.data_, sizeof(lhs.data_)) != 0;
 }
 
+static_assert(sizeof(wwiv::core::ip_address) == 16, "wwiv::core::ip_address == 16");
+
 }
 
 #endif

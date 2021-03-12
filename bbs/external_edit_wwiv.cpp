@@ -90,7 +90,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& sub_n
     f.WriteLine(a()->user()->sl());
     f.WriteLine(flags);
     f.WriteLine(a()->localIO()->GetTopLine());
-    f.WriteLine(a()->user()->GetLanguage());
+    f.WriteLine("0"); // Was user.language
   }
   if (flags & MSGED_FLAG_NO_TAGLINE) {
     // disable tag lines by creating a DISABLE.TAG file

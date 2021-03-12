@@ -275,7 +275,7 @@ void GoodBye() {
       batchdl(1);
     }
   }
-  auto filename = FilePath(a()->sess().dirs().current_menu_directory(), LOGOFF_MAT);
+  auto filename = FilePath(a()->sess().dirs().current_menu_gfiles_directory(), LOGOFF_MAT);
   if (!File::Exists(filename)) {
     filename = FilePath(a()->config()->gfilesdir(), LOGOFF_MAT);
   }

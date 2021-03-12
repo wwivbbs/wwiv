@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_VARDEC_H__
-#define __INCLUDED_VARDEC_H__
+#ifndef INCLUDED_SDK_VARDEC_H
+#define INCLUDED_SDK_VARDEC_H
 
 #include "core/ip_address.h"
 
@@ -82,7 +82,7 @@ struct userrec {
   // user's age.  No longer used, instead use User::age()
   // to get it calculated on demand.
   uint8_t unused_age;
-  // if deleted or inactive
+  // Flags that specifify if deleted or inactive
   uint8_t inact;
 
   // computer type
@@ -106,9 +106,15 @@ struct userrec {
       month,        // birth month
       day,          // birth day
       year,         // birth year
-      language,     // language to use
-      unused_cbv;   // called back
+      // language to use. This has been replaced by using the language
+      // associated with the menuset.
+      unused_language,
+      // Previously use to indicate that this user has been called back
+      // and validated.
+      unused_cbv;   
 
+  // In 4.3 these were part of the separate user config file
+  // and moved into userrec in 5.x.
   uint32_t lp_options;
   uint8_t lp_colors[32];
   // Selected AMENU set to use
@@ -1042,6 +1048,7 @@ struct instancerec {
 
 #ifndef __MSDOS__
 
+static_assert(sizeof(wwiv::core::ip_address) == 16, "wwiv::core::ip_address == 16");
 static_assert(sizeof(userrec) == 1024, "userrec == 1024");
 static_assert(sizeof(slrec) == 14, "slrec == 14");
 static_assert(sizeof(valrec) == 8, "valrec == 8");

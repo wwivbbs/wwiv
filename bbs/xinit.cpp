@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/bbs_event_handlers.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
@@ -514,6 +513,17 @@ void Application::read_gfile() {
   gfiles_->Load();
 }
 
+static bool mkdir_or_warn(const std::filesystem::path& dir, const std::string& name) {
+  if (!File::Exists(dir)) {
+    if (!File::mkdirs(dir)) {
+      LOG(ERROR) << "Your " << name << " dir isn't valid.";
+      LOG(ERROR) << "It is now set to: '" << dir.string() << "'";
+      return false;
+    }
+  }
+  return true;
+}
+
 bool Application::InitializeBBS(bool cleanup_network) {
   Cls();
   std::clog << std::endl
@@ -528,37 +538,17 @@ bool Application::InitializeBBS(bool cleanup_network) {
   bin.clearnsp();
 
   // Set dirs in the session context first.
-
-  if (!File::Exists(sess().dirs().temp_directory())) {
-    if (!File::mkdirs(sess().dirs().temp_directory())) {
-      LOG(ERROR) << "Your temp dir isn't valid.";
-      LOG(ERROR) << "It is now set to: '" << sess().dirs().temp_directory() << "'";
-      return false;
-    }
-  }
-
-  if (!File::Exists(sess().dirs().batch_directory())) {
-    if (!File::mkdirs(sess().dirs().batch_directory())) {
-      LOG(ERROR) << "Your batch dir isn't valid.";
-      LOG(ERROR) << "It is now set to: '" << sess().dirs().batch_directory() << "'";
-      return false;
-    }
-  }
-
-  if (!File::Exists(sess().dirs().scratch_directory())) {
-    if (!File::mkdirs(sess().dirs().scratch_directory())) {
-      LOG(ERROR) << "Your scratch dir isn't valid.";
-      LOG(ERROR) << "It is now set to: '" << sess().dirs().scratch_directory() << "'";
-      return false;
-    }
-  }
-
+  mkdir_or_warn(sess().dirs().temp_directory(), "temp");
+  mkdir_or_warn(sess().dirs().batch_directory(), "batch");
+  mkdir_or_warn(sess().dirs().scratch_directory(), "scratch");
+  mkdir_or_warn(sess().dirs().current_menu_directory(), "menus");
+  mkdir_or_warn(sess().dirs().current_menu_gfiles_directory(), "menus/gfiles");
+  mkdir_or_warn(sess().dirs().current_menu_script_directory(), "menus/scripts");
   write_inst(INST_LOC_INIT, 0, INST_FLAGS_NONE);
 
   // make sure it is the new USERREC structure
   VLOG(1) << "Reading user scan pointers.";
-  const auto qs_fn = FilePath(config()->datadir(), USER_QSC);
-  if (!File::Exists(qs_fn)) {
+  if (const auto qs_fn = FilePath(config()->datadir(), USER_QSC); !File::Exists(qs_fn)) {
     LOG(ERROR) << "Could not open file '" << qs_fn << "'";
     LOG(ERROR) << "You must go into WWIVconfig and convert your userlist before running the BBS.";
     return false;

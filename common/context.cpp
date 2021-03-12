@@ -37,6 +37,14 @@ Dirs::Dirs(const std::filesystem::path& bbsdir)
            FilePath(bbsdir, "batch").string(), FilePath(bbsdir, "gfiles").string(),
            FilePath(bbsdir, "scratch").string()) {}
 
+std::filesystem::path Dirs::current_menu_gfiles_directory() const noexcept {
+  return FilePath(current_menu_directory_, "gfiles");
+}
+
+std::filesystem::path Dirs::current_menu_script_directory() const noexcept {
+  return FilePath(current_menu_directory_, "scripts");
+}
+
 SessionContext::SessionContext(LocalIO* io)
     : irt_{}, io_(io), dirs_(File::current_directory()) {}
 

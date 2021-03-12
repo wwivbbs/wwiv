@@ -31,7 +31,7 @@ using std::unique_ptr;
 using std::string;
 using namespace wwiv::strings;
 
-void toggles(wwiv::sdk::Config& config, wwiv::sdk::system_toggles_t& t, CursesWindow* window) {
+void toggles(wwiv::sdk::Config&, wwiv::sdk::system_toggles_t& t, CursesWindow*) {
 
   auto y = 1;
   EditItems items{};

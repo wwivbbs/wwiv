@@ -98,7 +98,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   cfg.msgsdir = "msgs";
   cfg.gfilesdir = "gfiles";
   cfg.dloadsdir = "dloads";
-  cfg.menudir = FilePath("gfiles", "menus").string();
+  cfg.menudir = "menus";
   cfg.scriptdir = "scripts";
   cfg.logdir = "logs";
 
@@ -334,7 +334,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
 bool new_init(UIWindow* window, const string& bbsdir, bool unzip_files) {
   const std::vector<std::string> dirnames = {
-      "attach", "data",        "data/regions", "data/zip-city", "gfiles",  "gfiles/menus", "msgs",
+      "attach", "data",        "data/regions", "data/zip-city", "gfiles",  "menus", "msgs",
       "dloads", "dloads/misc", "dloads/sysop", "temp",          "temp/1",  "temp/2",       "temp/3",
       "temp/4", "batch",       "batch/1",      "batch/2",       "batch/3", "batch/4"};
   window->SetColor(SchemeId::PROMPT);
