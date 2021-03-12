@@ -259,6 +259,14 @@ public:
    */
   [[nodiscard]] int bps() const noexcept;
 
+  /**
+   * The current user's menus set
+   */
+  [[nodiscard]] std::string current_menu_set() const noexcept;
+
+  void current_menu_set(const std::string& menuset);
+
+
   // TODO(rushfan): Move this to private later
   char irt_[81];
 
@@ -298,6 +306,7 @@ private:
 
   int file_bps_{0};
   int system_bps_{0};
+  std::string current_menu_set_;
 };
 
 class MapValueProvider : public sdk::acs::ValueProvider {
@@ -342,7 +351,8 @@ public:
    * message being read may be:
    * add_context_variable("msg", { { "num", "100" }, { "title", "A message on nothing" } });
    */
-  bool add_context_variable(std::string prefix, std::map<std::string, std::string> map);
+  bool add_context_variable(const std::string& prefix, std::map<std::string, std::string> map);
+  bool remove_context_variable(const std::string& prefix);
   bool clear_context_variables();
   [[nodiscard]] const std::vector<std::unique_ptr<MapValueProvider>>& value_providers() const { return value_providers_; }
 

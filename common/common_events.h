@@ -19,6 +19,7 @@
 #define INCLUDED_COMMON_EVENTS_H
 
 #include <cstdint>
+#include <string>
 
 namespace wwiv::common {
 
@@ -67,6 +68,11 @@ struct ToggleInvisble {};
 
 // Display the available status for multi-node chat
 struct ToggleAvailable {};
+
+// Needs to update the current menu set.
+struct UpdateMenuSet {
+  std::string name;
+};
 
 } // namespace wwiv::common
 

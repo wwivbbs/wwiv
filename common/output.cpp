@@ -22,6 +22,7 @@
 #include "common/input.h"
 #include "common/macro_context.h"
 #include "core/eventbus.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
@@ -41,7 +42,21 @@ using namespace wwiv::sdk::ansi;
 // static global bout.
 Output bout;
 
-Output::Output() = default;
+Output::Output() {
+}
+
+Language& Output::lang() {
+  if (!lang_) {
+    auto mi = wwiv::core::FilePath(context().session_context().dirs().current_menu_directory(),
+                                   "bbs.str.ini");
+    auto gi =
+        wwiv::core::FilePath(context().session_context().dirs().gfiles_directory(), "bbs.str.ini");
+    lang_ = std::make_unique<Language>(mi, gi);
+  }
+  DCHECK(lang_);
+  return *lang_;
+}
+
 Output::~Output() = default;
 
 static bool okansi(const wwiv::sdk::User& user) {
@@ -59,6 +74,23 @@ void Output::SetLocalIO(LocalIO* local_io) {
   IOBase::SetLocalIO(local_io);
   // Reset the curatr_provider on local_io since screen resets it.
   localIO()->set_curatr_provider(this);
+
+  // This is kinda a hack to do it here, but the constructor is too early.  By
+  // this point the system is started up, bout created, and also all other global
+  // static objects have been constructed.
+  // If this is a problem, we can make a new method to do this and have the bbs,
+  // fsed, etc all call it after setting the LocalIO.
+  core::bus().add_handler<UpdateMenuSet>([this](const UpdateMenuSet& u) {
+    if (current_menu_set_ != u.name) {
+      current_menu_set_ = u.name;
+      // Reload language support.
+      auto mi = core::FilePath(context().session_context().dirs().current_menu_directory(),
+                               "bbs.str.ini");
+      auto gi = core::FilePath(context().session_context().dirs().gfiles_directory(),
+                               "bbs.str.ini");
+      lang_ = std::make_unique<Language>(mi, gi);
+    }
+  });
 }
 
 void Output::Color(int wwiv_color) {

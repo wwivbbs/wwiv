@@ -14,6 +14,7 @@ set(COMMON_SOURCES
  "input.cpp"
  "input_range.cpp"
  "iobase.cpp"
+ "language.cpp"
  "macro_context.cpp"
  "menu_data_util.cpp"
  "message_editor_data.cpp"

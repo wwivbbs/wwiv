@@ -21,6 +21,7 @@
 
 #include "common/context.h"
 #include "common/iobase.h"
+#include "common/language.h"
 #include "common/macro_context.h"
 #include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
@@ -194,6 +195,15 @@ public:
     // Process arguments
     return bputs(fmt::format(format_str, args...));
   }
+  template <typename... Args> int format_str(const std::string& key, Args&&... args) {
+    // Process arguments
+    auto format_str = lang().value(key);
+    try {
+      return bputs(fmt::format(format_str, args...));
+    } catch (const fmt::format_error& e) {
+      return bputs(format_str);
+    }
+  }
 
   int bputch(char c, bool use_buffer = false);
   void flush();
@@ -242,6 +252,8 @@ public:
   bool newline{true};
 
 private:
+  // Gets the current language instance.
+  [[nodiscard]] Language& lang();
   char GetKeyForPause();
 
   // This will pause output without ANSI, displaying the [PAUSE] message, and wait a key to be hit.
@@ -261,6 +273,8 @@ private:
   std::unique_ptr<sdk::ansi::LocalIOScreen> screen_;
   std::unique_ptr<sdk::ansi::Ansi> ansi_;
   mutable macro_context_provider_t macro_context_provider_;
+  std::string current_menu_set_;
+  std::unique_ptr<Language> lang_;
 };
 
 } // namespace wwiv::common 

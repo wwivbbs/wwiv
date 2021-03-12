@@ -17,6 +17,8 @@
 /**************************************************************************/
 #include "common/context.h"
 
+#include "common/common_events.h"
+#include "core/eventbus.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
@@ -46,10 +48,12 @@ std::filesystem::path Dirs::current_menu_script_directory() const noexcept {
 }
 
 SessionContext::SessionContext(LocalIO* io)
-    : irt_{}, io_(io), dirs_(File::current_directory()) {}
+    : irt_{}, io_(io), dirs_(File::current_directory()) {
+}
 
 SessionContext::SessionContext(LocalIO* io, const std::filesystem::path& root_directory)
-    : irt_{}, io_(io), dirs_(root_directory) {}
+    : irt_{}, io_(io), dirs_(root_directory) {
+}
 
 void SessionContext::InitalizeContext(const wwiv::sdk::Config& c) {
   const auto qscan_length = c.qscn_len() / sizeof(uint32_t);
@@ -106,6 +110,23 @@ int SessionContext::bps() const noexcept {
   return f > 0 ? f : system_bps();
 }
 
+std::string SessionContext::current_menu_set() const noexcept {
+  /* To listen to this use code like
+  bus().add_handler<UpdateMenuSet>(
+      [this](const UpdateMenuSet& u) {
+        current_menu_set(u.name);
+      });
+   */
+  return current_menu_set_;
+}
+
+void SessionContext::current_menu_set(const std::string& menuset) {
+  if (current_menu_set_ != menuset) {
+    current_menu_set_ = menuset;
+    bus().invoke<UpdateMenuSet>(UpdateMenuSet{current_menu_set_});
+  }
+}
+
 std::optional<sdk::acs::Value> MapValueProvider::value(const std::string& name) const {
   if (const auto& iter = map_.find(name); iter != std::end(map_)) {
     return sdk::acs::Value(iter->second);
@@ -117,9 +138,19 @@ const std::map<std::string, std::string>& MapValueProvider::map() const {
   return map_;
 }
 
-bool Context::add_context_variable(std::string prefix, std::map<std::string, std::string> map) {
+bool Context::add_context_variable(const std::string& prefix, std::map<std::string, std::string> map) {
   value_providers_.emplace_back(std::make_unique<MapValueProvider>(prefix, std::move(map)));
   return true;
+}
+
+bool Context::remove_context_variable(const std::string& prefix) {
+  for (auto it = std::begin(value_providers_); it != std::end(value_providers_); ++it) {
+    if (prefix == it->get()->prefix()) {
+      value_providers_.erase(it);
+      return true;
+    }
+  }
+  return false;
 }
 
 bool Context::clear_context_variables() {

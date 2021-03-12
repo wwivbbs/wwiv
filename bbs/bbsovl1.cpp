@@ -30,7 +30,6 @@
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "common/com.h"
-#include "common/datetime.h"
 #include "common/input.h"
 #include "common/message_editor_data.h"
 #include "common/pause.h"
@@ -38,13 +37,13 @@
 #include "common/workspace.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+
 #include <string>
 
 using std::string;
@@ -215,8 +214,8 @@ void feedback(bool bNewUserFeedback) {
   clear_quotes(a()->sess());
 
   if (bNewUserFeedback) {
-    auto title =
-        fmt::sprintf("|#1Validation Feedback (|#6%d|#2 slots left|#1)",
+    const auto title =
+        fmt::format("|#1Validation Feedback (|#6{}|#2 slots left|#1)",
                      a()->config()->max_users() - a()->status_manager()->user_count());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04
@@ -269,7 +268,7 @@ void feedback(bool bNewUserFeedback) {
 }
 
 /**
- * Allows editing of ASCII textfiles. Must have an external editor defined,
+ * Allows editing of ASCII text files. Must have an external editor defined,
  * and toggled for use in defaults.
  */
 void text_edit() {

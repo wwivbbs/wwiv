@@ -170,8 +170,8 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
 
 static int ShowLoginAndGetUserNumber(const std::string& remote_username) {
   bout.nl();
-  bout << "Enter number or name or 'NEW'\r\n";
-  bout << "NN: ";
+  // bout << "Enter number or name or 'NEW'\r\nNN: ";
+  bout.format_str("NN_PROMPT");
 
   string user_name;
   if (remote_username.empty()) {

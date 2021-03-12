@@ -626,10 +626,8 @@ bool Application::InitializeBBS(bool cleanup_network) {
   sess().InitalizeContext(*config());
 
   network_extension_ = ".net";
-  const auto wwiv_instance = environment_variable("WWIV_INSTANCE");
-  if (!wwiv_instance.empty()) {
-    const auto inst_num = to_number<int>(wwiv_instance);
-    if (inst_num > 0) {
+  if (const auto wwiv_instance = environment_variable("WWIV_INSTANCE"); !wwiv_instance.empty()) {
+    if (const auto inst_num = to_number<int>(wwiv_instance); inst_num > 0) {
       network_extension_ = fmt::sprintf(".%3.3d", inst_num);
       // Fix... Set the global instance variable to match this.  When you run WWIV with the
       // -n<instance> parameter it sets the WWIV_INSTANCE environment variable, however it wasn't
@@ -661,7 +659,6 @@ bool Application::InitializeBBS(bool cleanup_network) {
   }
 
   catsl();
-
   VLOG(1) << "Saving Instance information.";
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
 

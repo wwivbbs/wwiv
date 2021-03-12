@@ -97,6 +97,9 @@ static std::optional<pipe_expr_token_t> parse_variable(string::const_iterator& i
   if (s == "if") {
     e.type = pipe_expr_token_type_t::fn;
   }
+  if (s == "mpl") {
+    e.type = pipe_expr_token_type_t::fn;
+  }
   if (s == "pause" && (it == end || *it != '=')) {
     // pause can be both a variable
     e.type = pipe_expr_token_type_t::fn;
@@ -163,6 +166,20 @@ static bool is_truthy(const std::string& s) {
     return true;
   }
   return false;
+}
+
+std::string PipeEval::eval_fn_mpl(const std::vector<pipe_expr_token_t>& args) {
+  if (args.size() != 1) {
+    return "ERROR: MPL expression requires 1 argument.";
+  }
+  const auto var = args.at(0).lexeme;
+  if (var.empty()) {
+    return {};
+  }
+  if (const auto num = to_number<int>(var); num > 0) {
+    bout.mpl(num);
+  }
+  return {};
 }
 
 std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
@@ -247,6 +264,9 @@ std::string PipeEval::eval_fn(const std::string& fn, const std::vector<pipe_expr
   }
   if (fn == "if") {
     return eval_fn_if(args);
+  }
+  if (fn == "mpl") {
+    return eval_fn_mpl(args);
   }
   return fmt::format("ERROR: Unknown function: {}", fn);
 }

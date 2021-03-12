@@ -138,6 +138,7 @@ void Output::reset() {
   clear_lines_listed();
 }
 
+
 namespace wwiv::common {
 
 

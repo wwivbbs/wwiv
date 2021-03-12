@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)2020-2021, WWIV Software Services             */
+/*                  Copyright (C)2021, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,31 +15,29 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_COMMON_PIPE_EXPR_H
-#define INCLUDED_COMMON_PIPE_EXPR_H
+#ifndef INCLUDED_COMMON_LANGUAGE_H
+#define INCLUDED_COMMON_LANGUAGE_H
 
-#include "common/context.h"
+#include "core/inifile.h"
+
+#include <filesystem>
 #include <string>
-namespace wwiv::common {
-struct pipe_expr_token_t;
+#include <string_view>
 
-class PipeEval {
+namespace  wwiv::common {
+
+class Language {
 public:
-  explicit PipeEval(Context& context);
-  std::string eval(std::string);
+  Language(const std::filesystem::path& menu_path, const std::filesystem::path& gfiles);
+  [[nodiscard]] std::string value(const std::string& key) const;
 
 private:
-  std::string eval_variable(const pipe_expr_token_t& t);
-  std::string eval_fn_mpl(const std::vector<pipe_expr_token_t>& args);
-  std::string eval_fn_set(const std::vector<pipe_expr_token_t>& args);
-  std::string eval_fn_if(const std::vector<pipe_expr_token_t>& args);
-  std::string eval_fn(const std::string& fn, const std::vector<pipe_expr_token_t>& args);
-  std::string eval(std::vector<pipe_expr_token_t>& tokens);
-  std::string evaluate_pipe_expression_string(const std::string& expr);
-  // Not owned
-  Context& context_;
+  const std::filesystem::path menu_path_;
+  const std::filesystem::path& gfiles_;
+  core::IniFile mi;
+  core::IniFile gi;
 };
 
-
 }
+
 #endif
