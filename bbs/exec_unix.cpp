@@ -38,10 +38,11 @@
 #endif
 
 #include "bbs/bbs.h"
+#include "common/context.h"
 #include "common/remote_io.h"
-
 #include "core/log.h"
 #include "core/os.h"
+#include "sdk/vardec.h"
 
 static const char SHELL[] = "/bin/bash";
 
