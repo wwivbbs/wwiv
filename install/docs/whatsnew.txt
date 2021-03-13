@@ -82,6 +82,34 @@ What's New in WWIV 5.7.0 (2021)
   screen message reader and title list.  Lots of new pipe expression variables
   are available and documented under "Displaying Text" in WWIV's online 
   documentation.
+*  Last nework connections no longer displaying (#1403)
+! Removed inetaddr.dat.  The data is already in user.lst
+* Fix readmail when you have a message header template
+* Removed MAIL_WHO_LEN from wwiv.ini, it didn't work well.
+* Fixed qscan display error on expert mode (#1405)
+* Fixed issue where setting a date < 1970 can crash the bbs
+* Add new setting to allow outbound pipe codes for ftn messages. (#1407)
+* Work around large filesystems failing the File::freespace_for_path call (#1408)
+* HeartCodeFilter needs to handle pipe codes too (#1410)
++ Let ini files support multi-line strings like TOML does (#1411)
+    * Add support for a multi-line ini value. Example
+    FOO="""This
+    is a multline
+    value
+    """
+    * If value is quoted using ", then strip the surrounding quote characters.
+* Progress on merge language + menusets together #1414.  Languages and menus are
+  now 1-1 vs. 1 language to N menus.  This simplifies many things in the BBS and 
+  better matches how folks expect to change these together.
+! move menus to top level - Menus are now peers to gfiles/ in the bbs directory
+  layout.  Please consider moving yours (mv gfiles/menus menus) and then updating
+  the path using wwivconfig.
++ Added strings for yes, no, quit, NN: and PW:
++ Support system location and name display for FTN networks too when the
+  nodelist is available and the nodelist base set for the network in wwivconfig.
+
+
+  
 
 What's New in WWIV 5.6.1 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
