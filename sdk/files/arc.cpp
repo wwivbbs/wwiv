@@ -22,6 +22,8 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
+#include "sdk/vardec.h"
+
 #include <string>
 #include <vector>
 

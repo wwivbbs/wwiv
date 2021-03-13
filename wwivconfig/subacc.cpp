@@ -22,6 +22,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+#include "sdk/config.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include <memory>

@@ -15,16 +15,16 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_PHONE_NUMBERS_H__
-#define __INCLUDED_SDK_PHONE_NUMBERS_H__
+#ifndef INCLUDED_SDK_PHONE_NUMBERS_H
+#define INCLUDED_SDK_PHONE_NUMBERS_H
 
 #include <string>
 #include <vector>
-#include "sdk/config.h"
-#include "sdk/vardec.h"
 
-namespace wwiv {
-namespace sdk {
+struct phonerec;
+
+namespace wwiv::sdk {
+class Config;
 
 class PhoneNumbers {
 public:
@@ -45,8 +45,6 @@ private:
   std::vector<phonerec> phones_;
 };
 
-
-}
 }
 
 

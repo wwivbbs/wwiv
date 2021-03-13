@@ -23,6 +23,9 @@
 #include "fmt/format.h"
 #include "sdk/config.h"
 #include "sdk/files/arc.h"
+
+#include "sdk/vardec.h"
+
 #include <iostream>
 #include <map>
 #include <string>

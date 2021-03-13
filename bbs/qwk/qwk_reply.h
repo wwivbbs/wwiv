@@ -21,8 +21,9 @@
 
 #include "bbs/qwk/qwk_struct.h"
 #include "core/datetime.h"
-#include "sdk/vardec.h"
 #include <string>
+
+struct messagerec;
 
 namespace wwiv::bbs::qwk {
 

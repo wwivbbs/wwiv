@@ -33,7 +33,7 @@ public:
 
   // Should only be used when reading a message from a type-2 message file.
   // Needs to be public so make_unique will work on it.
-  WWIVMessageHeader(postrec header, std::string from, std::string to,
+  WWIVMessageHeader(const postrec& header, std::string from, std::string to,
                     std::string in_reply_to, const MessageApi* api);
 
   [[nodiscard]] std::string title() const override { return header_.title;  }
@@ -63,24 +63,24 @@ public:
   [[nodiscard]] bool private_msg() const override { return false;  } // we don't support private subs
   void set_private_msg(bool b) override { private_ = b; }
 
-  [[nodiscard]] bool unvalidated() const override { return (header_.status & status_unvalidated) != 0; }
+  [[nodiscard]] bool unvalidated() const override;
   void set_unvalidated(bool b) override;
-  [[nodiscard]] bool locked() const override { return (header_.status & status_no_delete) != 0; } // 
+  [[nodiscard]] bool locked() const override; // 
   void set_locked(bool b) override;
-  [[nodiscard]] bool deleted() const override { return (header_.status & status_delete) != 0; }
+  [[nodiscard]] bool deleted() const override;
   void set_deleted(bool b) override;
 
-  [[nodiscard]] bool pending_network() const override { return (header_.status & status_pending_net) != 0; }
+  [[nodiscard]] bool pending_network() const override;
   void set_pending_network(bool b) override;
-  [[nodiscard]] bool source_verified() const override { return (header_.status & status_post_source_verified) != 0; }
-  [[nodiscard]] bool net_network_post() const override { return (header_.status & status_post_new_net) != 0; }
+  [[nodiscard]] bool source_verified() const override;
+  [[nodiscard]] bool net_network_post() const override;
 
   [[nodiscard]] const postrec& data() const { return header_;  }
 
   // Read only methods
   // In WWIV last_read == highest_read.
-  [[nodiscard]] uint32_t last_read() const override { return header_.qscan; }
-  [[nodiscard]] uint8_t storage_type() const override { return header_.msg.storage_type; }
+  [[nodiscard]] uint32_t last_read() const override;
+  [[nodiscard]] uint8_t storage_type() const override;
 
   friend class WWIVMessageArea;
 

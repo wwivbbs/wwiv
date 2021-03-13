@@ -33,7 +33,7 @@ namespace wwiv::sdk::msgapi {
 WWIVMessageHeader::WWIVMessageHeader(const MessageApi* api)
   : header_(postrec{}), api_(api) {}
 
-WWIVMessageHeader::WWIVMessageHeader(postrec header, std::string from, std::string to,
+WWIVMessageHeader::WWIVMessageHeader(const postrec& header, std::string from, std::string to,
                                      std::string in_reply_to, const MessageApi* api)
     : header_(header), from_(std::move(from)), to_(std::move(to)),
       in_reply_to_(std::move(in_reply_to)), api_(api) {}
@@ -65,17 +65,39 @@ void WWIVMessageHeader::set_locked(bool b) {
   ToggleBit(header_.status, status_no_delete, b);
 }
 
+bool WWIVMessageHeader::deleted() const { return (header_.status & status_delete) != 0; }
+
+bool WWIVMessageHeader::unvalidated() const { return (header_.status & status_unvalidated) != 0; }
+
 void WWIVMessageHeader::set_unvalidated(bool b) {
   ToggleBit(header_.status, status_unvalidated, b);
 }
+
+bool WWIVMessageHeader::locked() const { return (header_.status & status_no_delete) != 0; }
 
 void WWIVMessageHeader::set_deleted(bool b) {
   ToggleBit(header_.status, status_delete, b);
 }
 
+bool WWIVMessageHeader::pending_network() const {
+  return (header_.status & status_pending_net) != 0;
+}
+
 void WWIVMessageHeader::set_pending_network(bool b) {
   ToggleBit(header_.status, status_pending_net, b);
 }
+
+bool WWIVMessageHeader::source_verified() const {
+  return (header_.status & status_post_source_verified) != 0;
+}
+
+bool WWIVMessageHeader::net_network_post() const {
+  return (header_.status & status_post_new_net) != 0;
+}
+
+uint32_t WWIVMessageHeader::last_read() const { return header_.qscan; }
+
+uint8_t WWIVMessageHeader::storage_type() const { return header_.msg.storage_type; }
 
 void WWIVMessageHeader::set_title(const std::string& t) {
   auto title = t;

@@ -18,16 +18,17 @@
 #ifndef INCLUDED_BBS_MESSAGE_FILE_H
 #define INCLUDED_BBS_MESSAGE_FILE_H
 
-#include "sdk/vardec.h"
 #include <cstdint>
 #include <optional>
 #include <string>
 
 constexpr uint8_t EMAIL_STORAGE = 2;
 
+struct messagerec;
+
 void remove_link(const messagerec* msg, const std::string& fileName);
 void savefile(const std::string& text, messagerec* msg, const std::string& fileName);
 std::optional<std::string> readfile(const messagerec* msg, const std::string& fileName);
 void lineadd(const messagerec* msg, const std::string& sx, const std::string fileName);
 
-#endif  // __INCLUDED_BBS_MESSAGE_FILE_H__
+#endif

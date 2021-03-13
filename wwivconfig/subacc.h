@@ -19,11 +19,14 @@
 #ifndef INCLUDED_WWIVCONFIG_SUBACC_H
 #define INCLUDED_WWIVCONFIG_SUBACC_H
 
-#include "sdk/config.h"
 #include "sdk/subxtr.h"
-#include "sdk/vardec.h"
 #include <optional>
 
+namespace wwiv::sdk {
+class Config;
+}
+
+struct postrec;
 void close_sub();
 bool open_sub(bool wr);
 bool iscan1(int si, const wwiv::sdk::Subs&, const wwiv::sdk::Config&);

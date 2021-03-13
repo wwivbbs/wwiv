@@ -15,19 +15,16 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_XFER_H__
-#define __INCLUDED_BBS_XFER_H__
+#ifndef INCLUDED_BBS_XFER_H
+#define INCLUDED_BBS_XFER_H
 
 #include "core/file.h"
-#include "sdk/vardec.h"
 #include <string>
 
-namespace wwiv {
-namespace sdk {
-namespace files {
+struct uploadsrec;
+
+namespace wwiv::sdk::files {
 struct directory_t;
-}
-}
 }
 
 /** return true if file_name is in the queue */
@@ -54,4 +51,4 @@ int nrecno(const std::string& file_mask, int start_recno);
 int printfileinfo(const uploadsrec* u, const wwiv::sdk::files::directory_t& dir);
 void remlist(const std::string& file_name);
 
-#endif  // __INCLUDED_BBS_XFER_H__
+#endif 

@@ -19,11 +19,18 @@
 #define INCLUDED_BBS_MSGBASE1_H
 
 #include "common/message_editor_data.h"
-#include "sdk/config.h"
 #include "sdk/subxtr.h"
-#include "sdk/vardec.h"
 #include <string>
 #include <utility>
+
+namespace wwiv {
+namespace sdk {
+class Config;
+}
+}
+
+struct messagerec;
+struct postrec;
 
 namespace wwiv::sdk::fido {
   class FidoAddress;

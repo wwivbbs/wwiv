@@ -18,20 +18,16 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <cstdint>
-#include <cstring>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "core/file.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/phone_numbers.h"
+#include "sdk/vardec.h"
 #include "sdk_test/sdk_helper.h"
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -64,13 +60,12 @@ public:
 };
 
 TEST_F(PhoneNumbersTest, Find) {
-  Config config(helper.root());
+  const Config config(helper.root());
   ASSERT_TRUE(config.IsInitialized());
   ASSERT_TRUE(CreatePhoneNumDat(config));
 
-  PhoneNumbers phone_numbers(config);
+  const PhoneNumbers phone_numbers(config);
   ASSERT_TRUE(phone_numbers.IsInitialized());
-
   EXPECT_EQ(0, phone_numbers.find("455-555-1234"));
   EXPECT_EQ(1, phone_numbers.find("111-111-1111"));
   EXPECT_EQ(2, phone_numbers.find("222-222-2222"));
@@ -78,7 +73,7 @@ TEST_F(PhoneNumbersTest, Find) {
 }
 
 TEST_F(PhoneNumbersTest, Insert) {
-  Config config(helper.root());
+  const Config config(helper.root());
   ASSERT_TRUE(config.IsInitialized());
   ASSERT_TRUE(CreatePhoneNumDat(config));
 
@@ -88,13 +83,13 @@ TEST_F(PhoneNumbersTest, Insert) {
     EXPECT_EQ(2, phone_numbers.find("222-222-2222"));
     EXPECT_TRUE(phone_numbers.insert(3, "333-333-3333"));
   }
-  PhoneNumbers phone_numbers(config);
+  const PhoneNumbers phone_numbers(config);
   EXPECT_EQ(2, phone_numbers.find("222-222-2222")); // still found.
   EXPECT_EQ(3, phone_numbers.find("333-333-3333")); // still found.
 }
 
 TEST_F(PhoneNumbersTest, Erase) {
-  Config config(helper.root());
+  const Config config(helper.root());
   ASSERT_TRUE(config.IsInitialized());
   ASSERT_TRUE(CreatePhoneNumDat(config));
 
@@ -104,7 +99,7 @@ TEST_F(PhoneNumbersTest, Erase) {
     EXPECT_EQ(2, phone_numbers.find("222-222-2222"));
     EXPECT_TRUE(phone_numbers.erase(2, "222-222-2222"));
   }
-  PhoneNumbers phone_numbers(config);
+  const PhoneNumbers phone_numbers(config);
   EXPECT_EQ(0, phone_numbers.find("222-222-2222"));  // not found anymore.
   EXPECT_EQ(1, phone_numbers.find("111-111-1111"));  // still found.
 }

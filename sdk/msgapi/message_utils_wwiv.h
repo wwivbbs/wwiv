@@ -15,15 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_MESSAGE_UTILS_WWIV_H__
-#define __INCLUDED_SDK_MESSAGE_UTILS_WWIV_H__
+#ifndef INCLUDED_SDK_MESSAGE_UTILS_WWIV_H
+#define INCLUDED_SDK_MESSAGE_UTILS_WWIV_H
 
 #include <cstdint>
-#include "sdk/vardec.h"
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 template<typename M>
 uint8_t network_number_from(const M* m) {
@@ -42,16 +39,13 @@ uint8_t network_number_from(const M* m) {
 
 template<typename M>
 uint16_t source_verfied_type(const M* m) {
-  if ((m->status & status_new_net) && (m->status & status_source_verified)) {
+  if (m->status & status_new_net && m->status & status_source_verified) {
     return m->network.src_verified_msg.source_verified_type;
   }
   return 0;
 }
 
 
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
+}
 
-
-#endif  // __INCLUDED_SDK_MESSAGE_UTILS_WWIV_H__
+#endif

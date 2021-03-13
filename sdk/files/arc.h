@@ -18,11 +18,12 @@
 #ifndef INCLUDED_SDK_FILES_ARC_H
 #define INCLUDED_SDK_FILES_ARC_H
 
-#include "sdk/vardec.h"
 #include <filesystem>
 #include <optional>
 #include <string>
 #include <vector>
+
+struct arcrec;
 
 namespace wwiv::sdk::files {
 

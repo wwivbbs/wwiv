@@ -19,7 +19,6 @@
 #include "common/message_editor_data.h"
 
 #include "core/strings.h"
-#include "sdk/names.h"
 #include <string>
 
 using std::string;

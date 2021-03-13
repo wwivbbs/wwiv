@@ -19,9 +19,10 @@
 #define INCLUDED_SDK_NAMES_H
 
 #include "sdk/config.h"
-#include "sdk/vardec.h"
 #include <string>
 #include <vector>
+
+struct smalrec;
 
 namespace wwiv::sdk {
 class UserManager;

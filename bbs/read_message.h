@@ -18,9 +18,10 @@
 #ifndef INCLUDED_BBS_READ_MESSAGE_H
 #define INCLUDED_BBS_READ_MESSAGE_H
 
-#include "sdk/vardec.h"
 #include <set>
 #include <string>
+
+struct messagerec;
 
 enum class MessageFlags {
   NOT_VALIDATED,
