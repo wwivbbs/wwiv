@@ -222,6 +222,7 @@ public:
   [[nodiscard]] const wwiv::sdk::files::directory_t& current_dir() const;
 
   [[nodiscard]] const net_networks_rec& current_net() const;
+  [[nodiscard]] net_networks_rec& mutable_current_net();
 
   [[nodiscard]] bool IsUseInternalZmodem() const { return internal_zmodem_; }
   [[nodiscard]] bool IsUseInternalFsed() const; 
@@ -450,14 +451,11 @@ private:
   std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> msgapis_;
   std::unique_ptr<wwiv::sdk::files::FileApi> fileapi_;
   std::unique_ptr<wwiv::sdk::files::FileArea> file_area_;
-
-  std::unique_ptr<Batch> batch_;
   std::unique_ptr<wwiv::sdk::Subs> subs_;
   std::unique_ptr<wwiv::sdk::files::Dirs> dirs_;
   std::unique_ptr<wwiv::sdk::Networks> nets_;
   std::unique_ptr<wwiv::sdk::GFiles> gfiles_;
   std::unique_ptr<wwiv::sdk::Instances> instances_;
-
 
   // Former global variables and system_operation_rec members to be moved
   uint32_t flags_{0};
@@ -468,6 +466,7 @@ private:
   std::unique_ptr<wwiv::common::Context> context_;
   std::unique_ptr<wwiv::common::PipeEval> pipe_eval_;
   std::unique_ptr<BbsMacroContext> bbs_macro_context_;
+  std::unique_ptr<Batch> batch_;
 };
 
 #endif

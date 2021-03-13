@@ -87,12 +87,10 @@ int main(int argc, char * argv[])
         WRITE_SIZE(ext_desc_type);
         WRITE_SIZE(gfiledirrec);
         WRITE_SIZE(gfilerec);
-        WRITE_SIZE(languagerec);
         WRITE_SIZE(filestatusrec);
         WRITE_SIZE(phonerec);
         WRITE_SIZE(ext_desc_rec);
         WRITE_SIZE(instancerec);
-        WRITE_SIZE(net_networks_rec);
         WRITE_SIZE(net_networks_rec_disk);
         fclose(hOut);
         return EXIT_NORMAL;

@@ -77,6 +77,7 @@ private:
 };
 
 std::string to_string(const net_networks_rec& n);
+bool try_load_nodelist(net_networks_rec& net);
 
 }
 

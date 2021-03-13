@@ -80,8 +80,7 @@ char gettimeout(long ds, bool *abort) {
   const auto d1 = steady_clock::now();
   while (steady_clock::now() - d1 < d && !bin.bkbhitraw() && !a()->sess().hangup() && !*abort) {
     if (a()->localIO()->KeyPressed()) {
-      const char ch = a()->localIO()->GetChar();
-      if (ch == 0) {
+      if (const auto ch = a()->localIO()->GetChar(); ch == 0) {
         a()->localIO()->GetChar();
       } else if (ch == ESC) {
         *abort = true;
@@ -94,7 +93,7 @@ char gettimeout(long ds, bool *abort) {
 
 
 int extern_prot(int num, const std::filesystem::path& path, bool bSending) {
-  char s1[81], s2[81], sx1[21], sx2[21], sx3[21];
+  char s1[81];
 
   if (bSending) {
     bout.nl();
@@ -110,23 +109,18 @@ int extern_prot(int num, const std::filesystem::path& path, bool bSending) {
     if (num < 0) {
       strcpy(s1, a()->over_intern[(-num) - 1].receivefn);
     } else {
-      strcpy(s1, (a()->externs[num].receivefn));
+      strcpy(s1, a()->externs[num].receivefn);
     }
   }
   // Use this since fdsz doesn't like 115200
-  const auto xfer_speed = std::min<int>(a()->modem_speed_, 57600);
-  sprintf(sx1, "%d", xfer_speed);
-  sprintf(sx3, "%d", xfer_speed);
-  sx2[0] = '0' + a()->primary_port();
-  sx2[1] = '\0';
-  const auto command = stuff_in(s1, sx1, sx2, path.string(), sx3, "");
-  if (!command.empty()) {
+  const auto xfer_speed = std::to_string(std::min<int>(a()->modem_speed_, 57600));
+  const auto primary_port= fmt::format("{:d}", a()->primary_port());
+  if (const auto command = stuff_in(s1, xfer_speed, primary_port, path.string(), xfer_speed, "");
+      !command.empty()) {
     a()->ClearTopScreenProtection();
     ScopeExit at_exit([]{ a()->UpdateTopScreen(); });
-    const string unn = a()->user()->name_and_number();
-    sprintf(s2, "%s is currently online at %u bps", unn.c_str(), a()->modem_speed_);
-    a()->localIO()->Puts(s2);
-    a()->localIO()->Puts("\r\n\r\n");
+    a()->localIO()->Puts(fmt::format("{} is currently online at {} bps\r\n\r\n",
+                                     a()->user()->name_and_number(), a()->modem_speed_));
     a()->localIO()->Puts(command);
     a()->localIO()->Puts("\r\n");
     if (a()->sess().incom()) {
@@ -225,7 +219,7 @@ bool ok_prot(int num, xfertype xt) {
 
 static char prot_key(int num) {
   const auto s = prot_name(num);
-  return upcase(s[0]);
+  return to_upper_case_char(s.front());
 }
 
 std::string prot_name(int num) {
@@ -282,8 +276,7 @@ public:
         continue;
       }
       auto key = prot_key(i);
-      auto [_, inserted] = override_keys.insert(key);
-      if (!inserted) {
+      if (auto [_, inserted] = override_keys.insert(key); !inserted) {
         key = create_default_key(i);
       }
       allowed_keys.push_back(key);
@@ -360,8 +353,7 @@ int get_protocol(xfertype xt) {
     }
 
     bout << "|#7" << prompt;
-    const auto ch = onek(avail.allowed_keys);
-    if (ch != '?') {
+    if (const auto ch = onek(avail.allowed_keys); ch != '?') {
       return avail.protocol_for_key(ch).value_or(-1);
     }
     show_protocols(avail.prots);
@@ -369,23 +361,22 @@ int get_protocol(xfertype xt) {
 }
 
 void ascii_send(const std::filesystem::path& path, bool* sent, double* percent) {
-  char b[2048];
 
-  File file(path);
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
+  if (File file(path); file.Open(File::modeBinary | File::modeReadOnly)) {
     auto file_size = file.length();
     file_size = std::max<File::size_type>(file_size, 1);
+    char b[2048];
     auto num_read = file.Read(b, 1024);
-    auto lTotalBytes = 0L;
+    auto total_bytes = 0L;
     auto abort = false;
     while (num_read && !a()->sess().hangup() && !abort) {
-      auto nBufferPos = 0;
-      while (!a()->sess().hangup() && !abort && nBufferPos < num_read) {
+      auto buffer_pos = 0;
+      while (!a()->sess().hangup() && !abort && buffer_pos < num_read) {
         a()->CheckForHangup();
-        bout.bputch(b[nBufferPos++]);
+        bout.bputch(b[buffer_pos++]);
         bin.checka(&abort);
       }
-      lTotalBytes += nBufferPos;
+      total_bytes += buffer_pos;
       bin.checka(&abort);
       num_read = file.Read(b, 1024);
     }
@@ -394,9 +385,9 @@ void ascii_send(const std::filesystem::path& path, bool* sent, double* percent) 
       *sent = true;
     } else {
       *sent = false;
-      a()->user()->set_dk(a()->user()->dk() + bytes_to_k(lTotalBytes));
+      a()->user()->set_dk(a()->user()->dk() + bytes_to_k(total_bytes));
     }
-    *percent = static_cast<double>(lTotalBytes) / static_cast<double>(file_size);
+    *percent = static_cast<double>(total_bytes) / static_cast<double>(file_size);
   } else {
     bout.nl();
     bout << "File not found.\r\n\n";
@@ -450,7 +441,8 @@ void maybe_internal(const std::filesystem::path& path, bool* xferred, double* pe
     case WWIV_INTERNAL_PROT_ZMODEM:
       *xferred = zmodem_receive(path);
       break;
-    default: break;
+    default:
+      break;
     }
   }
 }
@@ -523,7 +515,7 @@ void send_file(const std::filesystem::path& path, bool* sent, bool* abort, const
             *abort = false;
           } else {
             const BatchEntry b(sfn, dn, fs, true);
-            a()->batch().AddBatch(std::move(b));
+            a()->batch().AddBatch(b);
             bout.nl(2);
             bout << "File added to batch queue.\r\n";
             bout << "Batch: Files - " << a()->batch().size()
@@ -554,22 +546,18 @@ void send_file(const std::filesystem::path& path, bool* sent, bool* abort, const
 }
 
 void receive_file(const std::filesystem::path& path, int* received, const std::string& sfn, int dn) {
-  bool bReceived;
-  const auto nProtocol = get_protocol(dn == -1 ? xfertype::xf_up_temp : xfertype::xf_up);
-
-  switch (nProtocol) {
-  case -1:
-    *received = 0;
-    break;
+  switch (const auto prot = get_protocol(dn == -1 ? xfertype::xf_up_temp : xfertype::xf_up); prot) {
   case 0:
+  case -1:
     *received = 0;
     break;
   case WWIV_INTERNAL_PROT_XMODEM:
   case WWIV_INTERNAL_PROT_XMODEMCRC:
   case WWIV_INTERNAL_PROT_YMODEM:
   case WWIV_INTERNAL_PROT_ZMODEM: {
-    maybe_internal(path, &bReceived, nullptr, false, nProtocol);
-    *received = bReceived ? 1 : 0;
+    bool xferred;
+    maybe_internal(path, &xferred, nullptr, false, prot);
+    *received = xferred ? 1 : 0;
   }
   break;
   case WWIV_INTERNAL_PROT_BATCH:
@@ -592,8 +580,8 @@ void receive_file(const std::filesystem::path& path, int* received, const std::s
     }
     break;
   default:
-    if (nProtocol > (WWIV_NUM_INTERNAL_PROTOCOLS - 1) && a()->sess().incom()) {
-      extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, path, false);
+    if (prot > WWIV_NUM_INTERNAL_PROTOCOLS - 1 && a()->sess().incom()) {
+      extern_prot(prot - WWIV_NUM_INTERNAL_PROTOCOLS, path, false);
       *received = File::Exists(path);
     }
     break;

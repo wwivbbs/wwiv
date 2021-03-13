@@ -21,20 +21,20 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/instmsg.h"
+#include "bbs/sr.h"
+#include "bbs/sysoplog.h"
 #include "bbs/qwk/qwk_mail_packet.h"
 #include "bbs/qwk/qwk_reply.h"
 #include "bbs/qwk/qwk_ui.h"
-#include "bbs/sr.h"
-#include "bbs/sysoplog.h"
 #include "common/com.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "common/pause.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/qwk_config.h"
 #include "sdk/vardec.h"
+
 #include <memory>
 #include <string>
 
@@ -75,9 +75,8 @@ void qwk_menu() {
     } else {
       bout.bputs("|#7(|#1Q|#7=|#2Quit|#7) |#1C|#7, |#1D|#7, |#1U|#7: ");
     }
-    const auto key = onek(allowed, true);
 
-    switch (key) {
+    switch (const auto key = onek(allowed, true); key) {
     case 'C':
       qwk_config_user();
       break;
@@ -93,6 +92,7 @@ void qwk_menu() {
       qwk_config_sysop();
       break;
     case '?':
+    default:
       break;
     }
   }
@@ -318,7 +318,6 @@ void qwk_config_user() {
     }
     case 9: {
       qwk_state qj{};
-      memset(&qj, 0, sizeof(qwk_state));
       bout.cls();
 
       const auto arcno = select_qwk_protocol(&qj);

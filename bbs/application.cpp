@@ -73,6 +73,7 @@
 #include "sdk/gfiles.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "bbs/batch.h"
+// ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
@@ -121,6 +122,11 @@ using namespace wwiv::strings;
 class ApplicationContext : public Context {
 public:
   explicit ApplicationContext(Application* app) : app_(app) {}
+  ApplicationContext() = delete;
+  ApplicationContext(const ApplicationContext&) = delete;
+  ApplicationContext(ApplicationContext&&) = delete;
+  ApplicationContext& operator=(const ApplicationContext&) = delete;
+  ApplicationContext& operator = (ApplicationContext &&) = delete;
   ~ApplicationContext() override = default;
   [[nodiscard]] Config& config() override { return *app_->config(); }
   [[nodiscard]] User& u() override { return *app_->user(); }
@@ -838,8 +844,7 @@ int Application::Run(int argc, char* argv[]) {
   instance_number_ = cmdline.iarg("instance");
 
   auto this_usernum_from_commandline = static_cast<uint16_t>(cmdline.iarg("user_num"));
-  const auto x = cmdline.sarg("x");
-  if (!x.empty()) {
+  if (const auto x = cmdline.sarg("x"); !x.empty()) {
     const auto xarg = to_upper_case_char(x.at(0));
     if (cmdline.arg("handle").is_default()) {
       clog << "-h must be specified when using '"
@@ -1251,6 +1256,14 @@ const Instances& Application::instances() const {
 
 const net_networks_rec& Application::current_net() const {
   const static net_networks_rec empty_rec{};
+  if (nets_->empty()) {
+    return empty_rec;
+  }
+  return nets_->at(net_num());
+}
+
+net_networks_rec& Application::mutable_current_net() {
+  static net_networks_rec empty_rec{};
   if (nets_->empty()) {
     return empty_rec;
   }

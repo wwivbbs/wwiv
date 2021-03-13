@@ -24,10 +24,12 @@
 #else
 #include <cstdint>
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <vector>
 #endif // __MSDOS__
 #include "core/uuid.h"
+#include "sdk/fido/nodelist.h"
 
 #ifndef DATEN_T_DEFINED
 typedef uint32_t daten_t;
@@ -474,6 +476,8 @@ struct net_networks_rec {
   fido_network_config_t fido;
   // uuid_t to identify the network locally.
   wwiv::core::uuid_t uuid;
+  // A parsed nodelist if available.
+  std::shared_ptr<wwiv::sdk::fido::Nodelist> nodelist;
 };
 
 #endif // __MSDOS__

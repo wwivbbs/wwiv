@@ -53,20 +53,20 @@ struct qwk_index {
 };
 
 struct qwk_state {
-  uint16_t qwk_rec_num;
-  uint16_t qwk_rec_pos;
+  uint16_t qwk_rec_num{0};
+  uint16_t qwk_rec_pos{0};
+  int cursub{0};
 
   // File number for the MESSAGES.DAT file
-  std::unique_ptr<wwiv::core::DataFile<qwk_record>>  file;
+  std::unique_ptr<wwiv::core::DataFile<qwk_record>> file;
 
   // File number for the *.NDX files
   std::unique_ptr<wwiv::core::DataFile<qwk_index>> index;
-  int cursub;
   std::unique_ptr<wwiv::core::DataFile<qwk_index>> personal;  // personal.ndx
   std::unique_ptr<wwiv::core::DataFile<qwk_index>> zero;      // 000.ndx for email
 
-  qwk_record qwk_rec;
-  qwk_index qwk_ndx;
+  qwk_record qwk_rec{};
+  qwk_index qwk_ndx{};
 
   bool abort{false};
   bool in_email{false};

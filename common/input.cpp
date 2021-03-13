@@ -122,12 +122,15 @@ bool Input::yesno() {
          ch != YesNoKey(false) && ch != RETURN)
     ;
 
+  const bool mci_enabled = bout.mci_enabled();
+  bout.enable_mci();
   if (ch == YesNoKey(true)) {
     print_yn(true);
   } else {
     print_yn(false);
   }
-  return (ch == YesNoKey(true)) ? true : false;
+  bout.set_mci_enabled(mci_enabled);
+  return ch == YesNoKey(true);
 }
 
 /**
@@ -141,11 +144,14 @@ bool Input::noyes() {
          ch != YesNoKey(false) && ch != RETURN)
     ;
 
+  const bool mci_enabled = bout.mci_enabled();
+  bout.enable_mci();
   if (ch == YesNoKey(false)) {
     print_yn(false);
   } else {
     print_yn(true);
   }
+  bout.set_mci_enabled(mci_enabled);
   return ch == YesNoKey(true) || ch == RETURN;
 }
 
@@ -153,23 +159,25 @@ char Input::ynq() {
   char ch = 0;
 
   bout.Color(1);
-  const auto str_quit = bout.lang().value("STR_QUIT", "Quit");
   const auto key_quit = bout.lang().value("KEY_QUIT", "Q").front();
   while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoKey(true) &&
          ch != YesNoKey(false) && ch != key_quit && ch != RETURN) {
     // NOP
   }
+  const bool mci_enabled = bout.mci_enabled();
+  bout.enable_mci();
   if (ch == YesNoKey(true)) {
     ch = 'Y';
     print_yn(true);
   } else if (ch == key_quit) {
     ch = 'Q';
-    bout << str_quit;
+    bout.str("QUIT");
     bout.nl();
   } else {
     ch = 'N';
     print_yn(false);
   }
+  bout.set_mci_enabled(mci_enabled);
   return ch;
 }
 

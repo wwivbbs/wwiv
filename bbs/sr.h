@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_SR_H__
-#define __INCLUDED_BBS_SR_H__
+#ifndef INCLUDED_BBS_SR_H
+#define INCLUDED_BBS_SR_H
 
 #include <filesystem>
 #include <string>
@@ -32,7 +32,7 @@ enum class xfertype {
 };
 
 void calc_CRC(unsigned char b);
-char gettimeout(long d, bool *abort);
+char gettimeout(long ds, bool *abort);
 int extern_prot(int nProtocolNum, const std::filesystem::path& path, bool bSending);
 bool ok_prot(int nProtocolNum, xfertype xt);
 std::string prot_name(int num);
@@ -45,4 +45,4 @@ void send_file(const std::filesystem::path& path, bool* sent, bool* abort,
 void receive_file(const std::filesystem::path& path, int* received, const std::string& sfn, int dn);
 
 
-#endif  // __INCLUDED_BBS_SR_H__
+#endif

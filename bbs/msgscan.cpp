@@ -18,8 +18,6 @@
 /**************************************************************************/
 #include "bbs/msgscan.h"
 
-
-#include "message_find.h"
 #include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
@@ -31,6 +29,7 @@
 #include "bbs/extract.h"
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
+#include "bbs/message_find.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
 #include "bbs/read_message.h"
@@ -62,6 +61,7 @@
 #include "sdk/usermanager.h"
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -1061,8 +1061,7 @@ static void network_validate() {
     {
       wwiv::bbs::OpenSub opened_sub(true);
       for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea(); i++) {
-        postrec* p4 = get_post(i);
-        if (p4->status & status_pending_net) {
+        if (auto * p4 = get_post(i); p4->status & status_pending_net) {
           to_validate.push_back(*p4);
           p4->status &= ~status_pending_net;
           write_post(i, p4);
@@ -1236,7 +1235,7 @@ void scan(int msg_num, MsgScanOption scan_option, bool& nextsub, bool title_scan
   const auto& cs = a()->current_sub();
   const auto fsreader_enabled =
       a()->fullscreen_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader);
-  const bool skip_fs_reader_per_sub = (cs.anony & anony_no_fullscreen) != 0;
+  const auto skip_fs_reader_per_sub = (cs.anony & anony_no_fullscreen) != 0;
   if (fsreader_enabled && !skip_fs_reader_per_sub) {
     scan_new(msg_num, scan_option, nextsub, title_scan);
     return;

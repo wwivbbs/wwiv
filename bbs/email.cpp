@@ -103,8 +103,8 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
     *pSystemNumber = 0;
     return false;
   }
-  auto nCurrentUser = userRecord.forward_usernum();
-  if (nCurrentUser == -1 || nCurrentUser == std::numeric_limits<decltype(nCurrentUser)>::max()) {
+  auto current_user = userRecord.forward_usernum();
+  if (current_user == -1 || current_user == std::numeric_limits<decltype(current_user)>::max()) {
     bout << "Mailbox Closed.\r\n";
     if (so()) {
       bout << "(Forcing)\r\n";
@@ -117,7 +117,7 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
   std::unique_ptr<bool[]> ss(new bool[a()->config()->max_users() + 300]);
 
   ss[*pUserNumber] = true;
-  a()->users()->readuser(&userRecord, nCurrentUser);
+  a()->users()->readuser(&userRecord, current_user);
   while (userRecord.forward_usernum() || userRecord.forward_systemnum()) {
     if (userRecord.forward_systemnum()) {
       if (!valid_system(userRecord.forward_systemnum())) {
@@ -128,15 +128,15 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
       set_net_num(userRecord.forward_netnum());
       return true;
     }
-    if (ss[nCurrentUser]) {
+    if (ss[current_user]) {
       return false;
     }
-    ss[nCurrentUser] = true;
+    ss[current_user] = true;
     if (userRecord.IsMailboxClosed()) {
       bout << "Mailbox Closed.\r\n";
       if (so()) {
         bout << "(Forcing)\r\n";
-        *pUserNumber = nCurrentUser;
+        *pUserNumber = current_user;
         *pSystemNumber = 0;
       } else {
         *pUserNumber = 0;
@@ -144,11 +144,11 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
       }
       return false;
     }
-    nCurrentUser = userRecord.forward_usernum() ;
-    a()->users()->readuser(&userRecord, nCurrentUser);
+    current_user = userRecord.forward_usernum() ;
+    a()->users()->readuser(&userRecord, current_user);
   }
   *pSystemNumber = 0;
-  *pUserNumber = nCurrentUser;
+  *pUserNumber = current_user;
   return true;
 }
 
@@ -466,11 +466,8 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
           bout << "Bad FTN Address: " << destination;
           return;
         }
-        const auto& net = a()->current_net();
-        auto nl_path = fido::Nodelist::FindLatestNodelist(net.dir, net.fido.nodelist_base);
-        fido::Nodelist nl(FilePath(net.dir, nl_path));
-        if (nl.initialized()) {
-          if (nl.contains(addr)) {
+        if (auto & net = a()->mutable_current_net(); try_load_nodelist(net)) {
+          if (auto & nl = *net.nodelist; nl.contains(addr)) {
             const auto& e = nl.entry(addr);
             destination_bbs_name = e.name_;
           } else {

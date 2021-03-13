@@ -487,12 +487,9 @@ void ScanMessageTitles() {
        << "|#9): ";
   const auto r =
       bin.input_number_hotkey(1, {'Q', 'S'}, 1, a()->GetNumMessagesInCurrentMessageArea(), false);
-  auto nextsub = false;
-  if (r.key == 'S') {
+  if (auto nextsub = false; r.key == 'S') {
     scan(0, MsgScanOption::SCAN_OPTION_READ_PROMPT, nextsub, true);
-  } else if (r.key == 'Q') {
-    return;
-  } else {
+  } else if (r.key != 'Q') {
     scan(r.num - 1, MsgScanOption::SCAN_OPTION_LIST_TITLES, nextsub, true);
   }
 }
@@ -521,8 +518,8 @@ void remove_post() {
     }
   }
   bout << "\r\n|#2Remove which? ";
-  auto postnum = bin.input_number(0, 0, a()->GetNumMessagesInCurrentMessageArea(), false);
-  wwiv::bbs::OpenSub opened_sub(true);
+  const auto postnum = bin.input_number(0, 0, a()->GetNumMessagesInCurrentMessageArea(), false);
+  OpenSub opened_sub(true);
   if (postnum > 0 && postnum <= a()->GetNumMessagesInCurrentMessageArea()) {
     if (get_post(postnum)->ownersys == 0 && get_post(postnum)->owneruser == a()->sess().user_num() ||
         lcs()) {

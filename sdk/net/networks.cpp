@@ -39,7 +39,7 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk {
 
-const int Networks::npos;  // reserve space.
+const int Networks::npos; // reserve space.
 
 Networks::Networks(const Config& config)
     : root_directory_(config.root_directory()), datadir_(config.datadir()) {
@@ -83,7 +83,7 @@ static std::unique_ptr<net_networks_rec> create_255_network() {
 
 static auto network_255 = create_255_network();
 
-const net_networks_rec& Networks::at(size_type num) const { 
+const net_networks_rec& Networks::at(size_type num) const {
   if (networks_.empty()) {
     return *network_255;
   }
@@ -102,8 +102,7 @@ const net_networks_rec& Networks::at(size_type num) const {
   return stl::at(networks_, num);
 }
 
-
-net_networks_rec& Networks::at(size_type num) { 
+net_networks_rec& Networks::at(size_type num) {
   if (networks_.empty()) {
     return *network_255;
   }
@@ -119,7 +118,7 @@ net_networks_rec& Networks::at(size_type num) {
     // invalid network in WWIV.
     return *network_255;
   }
-  return stl::at(networks_, num); 
+  return stl::at(networks_, num);
 }
 
 net_networks_rec& Networks::at(const std::string& name) {
@@ -156,8 +155,8 @@ std::optional<const net_networks_rec> Networks::by_uuid(const std::string& uuid_
 
 Networks::~Networks() = default;
 
- auto Networks::network_number(const std::string& network_name) const -> size_type {
-   auto i = 0;
+auto Networks::network_number(const std::string& network_name) const -> size_type {
+  auto i = 0;
   for (const auto& n : networks_) {
     if (iequals(network_name, n.name)) {
       return i;
@@ -176,21 +175,13 @@ bool Networks::contains(const std::string& network_name) const {
   return false;
 }
 
-std::size_t Networks::size() const noexcept {
-   return networks_.size();
-}
+std::size_t Networks::size() const noexcept { return networks_.size(); }
 
-bool Networks::empty() const noexcept {
-   return networks_.empty();
-}
+bool Networks::empty() const noexcept { return networks_.empty(); }
 
-bool Networks::insert(int n, net_networks_rec r) {
-  return insert_at(networks_, n, r);
-}
+bool Networks::insert(int n, net_networks_rec r) { return insert_at(networks_, n, r); }
 
-bool Networks::erase(int n) {
-  return erase_at(networks_, n);
-}
+bool Networks::erase(int n) { return erase_at(networks_, n); }
 
 bool Networks::Load() {
   if (LoadFromJSON()) {
@@ -260,16 +251,16 @@ void Networks::EnsureNetworksHaveUUID() {
 }
 
 void Networks::EnsureNetDirAbsolute() {
-   if (root_directory_.empty()) {
-     // Nothing to do if we don't know the root
-     return;
-   }
+  if (root_directory_.empty()) {
+    // Nothing to do if we don't know the root
+    return;
+  }
   for (auto& n : networks_) {
     if (n.dir.is_relative()) {
       // make absolute
       n.dir = FilePath(root_directory_, n.dir);
     }
-  }   
+  }
 }
 
 bool Networks::SaveToJSON() {
@@ -291,7 +282,7 @@ bool Networks::SaveToDat() {
 
   DataFile<net_networks_rec_disk> file(FilePath(datadir_, NETWORKS_DAT),
                                        File::modeBinary | File::modeReadWrite |
-                                       File::modeCreateFile | File::modeTruncate,
+                                           File::modeCreateFile | File::modeTruncate,
                                        File::shareDenyReadWrite);
   if (!file) {
     return false;
@@ -300,7 +291,8 @@ bool Networks::SaveToDat() {
 }
 
 std::string to_string(const net_networks_rec& n) {
-  switch (n.type) { case network_type_t::ftn:
+  switch (n.type) {
+  case network_type_t::ftn:
     return fmt::format("|#9(|#2{}|#9@|#1{}|#9) ", n.fido.fido_address, n.name);
   case network_type_t::internet:
     return fmt::format("|#9(|#2{}|#9@|#1Internet|#9) ", n.name);
@@ -312,4 +304,14 @@ std::string to_string(const net_networks_rec& n) {
   return fmt::format("|#9(|#2@{}|#9.|#1{}|#9) ", n.sysnum, n.name);
 }
 
+bool try_load_nodelist(net_networks_rec& net) {
+  if (net.nodelist && net.nodelist->initialized()) {
+    return true;
+  }
+
+  const auto nl_path = fido::Nodelist::FindLatestNodelist(net.dir, net.fido.nodelist_base);
+  net.nodelist = std::make_shared<fido::Nodelist>(FilePath(net.dir, nl_path));
+  return net.nodelist->initialized();
 }
+
+} // namespace wwiv::sdk

@@ -40,6 +40,7 @@
 #include "sdk/subxtr.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/framebuffer.h"
+#include "sdk/fido/fido_util.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/msgapi/parsed_message.h"
 #include "sdk/net/net.h"
@@ -68,27 +69,42 @@ using namespace wwiv::strings;
 // #define UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
 
 /**
- * Sets the outNetworkName and outLocation.
- * Note: This is a private function
+ * Returns (network name, network location) the outNetworkName and outLocation.
  */
-static void SetMessageOriginInfo(int system_number, int user_number, string* outNetworkName,
-                                 string* outLocation) {
-  string netName;
+static void UpdateMessageOriginInfo(int system_number, int user_number, Type2MessageData& data) {
+  data.from_sys_loc.clear();
+  data.from_sys_name.clear();
 
-  if (wwiv::stl::ssize(a()->nets()) > 1) {
-    netName = StrCat(a()->current_net().name, "- ");
+  auto& net = a()->mutable_current_net();
+  if (net.type == network_type_t::internet ||
+      net.type == network_type_t::news) {
+    data.from_sys_name = "Internet Mail and Newsgroups";
   }
 
-  outNetworkName->clear();
-  outLocation->clear();
-
-  if (a()->current_net().type == network_type_t::internet ||
-      a()->current_net().type == network_type_t::news) {
-    outNetworkName->assign("Internet Mail and Newsgroups");
+  if (net.type == network_type_t::ftn) {
+    // TODO(rushfan): here's where we should try to get it from the bbslist.
+    if (try_load_nodelist(net)) {
+      auto& nl = *net.nodelist;
+      auto addr = fido::get_address_from_origin(data.message_text);
+      if (addr.zone() == -1) {
+        addr = fido::get_address_from_single_line(data.from_user_name);
+        if (addr.zone() == -1) {
+          addr = fido::get_address_from_single_line(data.from_user_name);
+        }
+      }
+      if (nl.contains(addr)) {
+        const auto& e = nl.entry(addr);
+        data.from_sys_name = e.name_;
+        data.from_sys_loc = e.location_;
+        return;
+      }
+    }
+    data.from_sys_name = net.name;
+    data.from_sys_loc = "Unknown FTN Location";
     return;
   }
 
-  if (system_number && a()->current_net().type == network_type_t::wwivnet) {
+  if (system_number && net.type == network_type_t::wwivnet) {
     if (auto csne = next_system(system_number)) {
       string netstatus;
       if (user_number == 1) {
@@ -117,14 +133,13 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
         // Try area code if we still don't have a description.
         description = describe_area_code(to_number<int>(csne->phone));
       }
-
-      *outNetworkName = StrCat(netName, csne->name, " [", csne->phone, "] ", netstatus);
-      *outLocation = (!description.empty()) ? description : "Unknown Area";
-    } else {
-      *outNetworkName = StrCat(netName, "Unknown System");
-      *outLocation = "Unknown Area";
+      data.from_sys_name = fmt::format("{} {}", csne->name, netstatus);
+      data.from_sys_loc = description;
+      return;
     }
   }
+  data.from_sys_name = "Unknown System";
+  data.from_sys_loc = "Unknown Area";
 }
 
 void display_message_text(const std::string& text, bool* next) {
@@ -327,8 +342,7 @@ Type2MessageData read_type2_message(messagerec* msg, uint8_t an, bool readit, co
       continue;
     }
     if (starts_with(line, "\004" "0FidoAddr: ") && line.size() > 12) {
-      auto cl = line.substr(12);
-      if (!cl.empty()) {
+      if (auto cl = line.substr(12); !cl.empty()) {
         data.to_user_name = cl;
         break;
       }
@@ -342,7 +356,7 @@ Type2MessageData read_type2_message(messagerec* msg, uint8_t an, bool readit, co
   UpdateHeaderInformation(an, readit, data.from_user_name, &data.from_user_name, &data.date);
   if (an == 0) {
     bout.disable_mci();
-    SetMessageOriginInfo(from_sys_num, from_user, &data.from_sys_name, &data.from_sys_loc);
+    UpdateMessageOriginInfo(from_sys_num, from_user, data);
   }
 
   data.message_anony = an;
