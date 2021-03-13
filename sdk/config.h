@@ -18,11 +18,10 @@
 #ifndef INCLUDED_SDK_CONFIG_H
 #define INCLUDED_SDK_CONFIG_H
 
+#include "sdk/vardec.h"
 #include <filesystem>
 #include <map>
 #include <string>
-
-struct slrec;
 
 namespace wwiv::sdk {
 
