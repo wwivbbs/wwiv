@@ -40,6 +40,7 @@
 #include "core/strings.h"
 #include "core/version.h"
 #include "fmt/printf.h"
+#include "local_io/local_io.h"
 #include "local_io/wconstants.h"
 #include "sdk/arword.h"
 #include "sdk/chains.h"

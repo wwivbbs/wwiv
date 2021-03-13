@@ -40,7 +40,7 @@
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
-#include "common/pause.h"
+#include "common/output.h"
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/stl.h"

@@ -22,6 +22,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/multinst.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "common/pause.h"
 #include "core/file.h"
 #include "core/inifile.h"
@@ -95,16 +96,15 @@ static int grabname(const std::string& orig, int channel) {
     return 0;
   }
 
-  auto space = orig.find(' ', 1);
-  auto message = orig.substr(0, space);
+  const auto space = orig.find(' ', 1);
+  const auto message = orig.substr(0, space);
 
   if (auto n = to_number<int>(message)) {
     if (n < 1 || n > num_instances()) {
       bout.bprintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
       return 0;
     }
-    auto ir = a()->instances().at(n);
-    if (ir.online() && (!ir.invisible() || so())) {
+    if (const auto ir = a()->instances().at(n); ir.online() && (!ir.invisible() || so())) {
       if (channel && ir.loc_code() != channel) {
         bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
         return 0;
@@ -116,10 +116,9 @@ static int grabname(const std::string& orig, int channel) {
   }
   {
     node = 0;
-    auto name = ToStringUpperCase(message);
+    const auto name = ToStringUpperCase(message);
     for (auto i = 1; i <= num_instances(); i++) {
-      auto ir = a()->instances().at(i);
-      if (ir.online() && (!ir.invisible() || so())) {
+      if (auto ir = a()->instances().at(i); ir.online() && (!ir.invisible() || so())) {
         if (channel && (ir.loc_code() != channel)) {
           continue;
         }

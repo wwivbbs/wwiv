@@ -25,6 +25,7 @@
 #include "bbs/wqscn.h"
 #include "bbs/basic/basic.h"
 #include "core/log.h"
+#include "local_io/local_io.h"
 
 using namespace wwiv::core;
 

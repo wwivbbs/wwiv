@@ -30,6 +30,7 @@
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
+#include "common/output.h"
 #include "core/file.h"
 #include "core/numbers.h"
 #include "core/os.h"

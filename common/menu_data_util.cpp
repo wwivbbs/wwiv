@@ -33,8 +33,7 @@ menu_data_and_options_t::menu_data_and_options_t(const std::string& raw) {
   const auto o = raw.substr(idx + 1);
   const auto v = strings::SplitString(o, " ");
   for (const auto& f : v) {
-    const auto fidx = f.find('=');
-    if (fidx != std::string::npos) {
+    if (const auto fidx = f.find('='); fidx != std::string::npos) {
       auto key = strings::ToStringLowerCase(strings::StringTrim(f.substr(0, fidx))); 
       auto val = strings::ToStringLowerCase(strings::StringTrim(f.substr(fidx + 1))); 
       opts_.emplace(key, val);

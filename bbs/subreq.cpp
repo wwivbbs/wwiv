@@ -25,7 +25,7 @@
 #include "bbs/utility.h"
 #include "common/com.h"
 #include "common/input.h"
-#include "common/pause.h"
+#include "common/output.h"
 #include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -34,6 +34,7 @@
 #include "sdk/subxtr.h"
 #include "sdk/net/networks.h"
 #include "sdk/net/subscribers.h"
+
 #include <string>
 
 using std::string;

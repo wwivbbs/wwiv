@@ -53,6 +53,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
+#include "local_io/local_io.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"

@@ -41,6 +41,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
+#include "local_io/local_io.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"

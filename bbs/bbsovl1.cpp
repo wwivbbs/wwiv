@@ -32,6 +32,7 @@
 #include "common/com.h"
 #include "common/input.h"
 #include "common/message_editor_data.h"
+#include "common/output.h"
 #include "common/pause.h"
 #include "common/quote.h"
 #include "common/workspace.h"

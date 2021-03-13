@@ -20,11 +20,12 @@
 #define INCLUDED_COMMON_PAUSE_H
 
 #include "core/transaction.h"
-#include "common/output.h"
 
 namespace wwiv::common {
 
-class TempDisablePause : public wwiv::core::Transaction {
+class Output;
+
+class TempDisablePause : public core::Transaction {
 public:
   explicit TempDisablePause(Output& out);
 };

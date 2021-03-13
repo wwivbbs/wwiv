@@ -43,6 +43,8 @@
 // for the template variable.
 #undef CT
 
+#include "common/output.h"
+
 #include <cereal/archives/json.hpp>
 #include <cereal/types/memory.hpp>
 // ReSharper disable once CppUnusedIncludeDirective

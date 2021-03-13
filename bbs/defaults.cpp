@@ -37,10 +37,11 @@
 #include "bbs/qwk/qwk.h"
 #include "common/com.h"
 #include "common/input.h"
-#include "common/pause.h"
+#include "common/output.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
+#include "local_io/local_io.h"
 #include "local_io/wconstants.h"
 #include "menus/config_menus.h"
 #include "sdk/filenames.h"
@@ -48,6 +49,7 @@
 #include "sdk/usermanager.h"
 #include "sdk/files/dirs.h"
 #include "sdk/net/networks.h"
+
 #include <sstream>
 #include <string>
 #include <vector>

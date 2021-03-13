@@ -21,6 +21,7 @@
 #include "common/common_events.h"
 #include "common/context.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "core/datetime.h"
 #include "core/eventbus.h"
 #include "core/os.h"

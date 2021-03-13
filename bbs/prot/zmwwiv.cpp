@@ -27,6 +27,7 @@
 #include "core/os.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+#include "local_io/local_io.h"
 #include "sdk/files/file_record.h"
 
 #include <chrono>

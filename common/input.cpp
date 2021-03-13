@@ -24,6 +24,8 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"
+#include "local_io/local_io.h"
+
 #include <algorithm>
 #include <cctype>
 #include <cmath>

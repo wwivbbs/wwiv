@@ -24,6 +24,9 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"
+#include "local_io/local_io.h"
+#include "sdk/ansi/ansi.h"
+
 #include <chrono>
 
 using std::chrono::minutes;

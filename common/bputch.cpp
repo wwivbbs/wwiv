@@ -17,11 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 #include "common/output.h"
-
-#include "common/pause.h"
 #include "common/remote_io.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"
+#include "sdk/ansi/ansi.h"
+
 #include <string>
 
 using namespace wwiv::common;

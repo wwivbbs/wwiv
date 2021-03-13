@@ -66,6 +66,7 @@
 #include "common/datetime.h"
 #include "common/input.h"
 #include "common/menu_data_util.h"
+#include "common/output.h"
 #include "common/pause.h"
 #include "common/quote.h"
 #include "common/workspace.h"

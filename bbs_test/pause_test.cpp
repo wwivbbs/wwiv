@@ -20,6 +20,7 @@
 
 #include "bbs/bbs.h"
 #include "bbs_test/bbs_helper.h"
+#include "common/output.h"
 #include "common/pause.h"
 #include <iostream>
 #include <string>

@@ -23,6 +23,7 @@
 #include "bbs/utility.h"
 #include "common/datetime.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "common/pause.h"
 #include "core/stl.h"
 #include "core/strings.h"

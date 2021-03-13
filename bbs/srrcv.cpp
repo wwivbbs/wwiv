@@ -31,6 +31,7 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
+#include "local_io/local_io.h"
 #include "sdk/files/file_record.h"
 #include <chrono>
 #include <string>

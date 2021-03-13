@@ -36,7 +36,7 @@
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
-#include "common/pause.h"
+#include "common/output.h"
 #include "common/remote_io.h"
 #include "core/numbers.h"
 #include "core/stl.h"
@@ -44,6 +44,7 @@
 #include "core/textfile.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
+#include "local_io/local_io.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
@@ -482,14 +483,14 @@ void ymbatchdl(bool bHangupAfterDl) {
     if (nsl() >= a()->batch().entry[cur].time(a()->modem_speed_) && !bRatioBad) {
       const auto dir_num = a()->batch().entry[cur].dir();
       dliscan1(dir_num);
-      const auto nRecordNumber = recno(a()->batch().entry[cur].aligned_filename());
-      if (nRecordNumber <= 0) {
+      if (const auto record_number = recno(a()->batch().entry[cur].aligned_filename());
+          record_number <= 0) {
         a()->batch().delbatch(cur);
       } else {
         a()->localIO()->Puts(StrCat("Files left - ", a()->batch().size(), ", Time left - ",
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
-        auto f = area->ReadFile(nRecordNumber);
+        auto f = area->ReadFile(record_number);
         auto send_filename = FilePath(a()->dirs()[dir_num].path, f);
         if (a()->dirs()[dir_num].mask & mask_cdrom) {
           auto orig_filename = FilePath(a()->dirs()[dir_num].path, f);

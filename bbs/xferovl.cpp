@@ -43,6 +43,7 @@
 #include "core/textfile.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
+#include "local_io/local_io.h"
 #include "local_io/wconstants.h"
 #include "sdk/status.h"
 #include "sdk/files/allow.h"

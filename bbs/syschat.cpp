@@ -32,6 +32,7 @@
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "local_io/keycodes.h"
+#include "local_io/local_io.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/filenames.h"

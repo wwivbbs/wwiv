@@ -27,6 +27,7 @@
 #include "common/pause.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "common/output.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"

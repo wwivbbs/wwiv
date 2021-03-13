@@ -24,7 +24,7 @@
 #include "bbs/utility.h"
 #include "common/datetime.h"
 #include "common/macro_context.h"
-#include "common/pause.h"
+#include "common/output.h"
 #include "common/pipe_expr.h"
 #include "core/datetime.h"
 #include "core/strings.h"

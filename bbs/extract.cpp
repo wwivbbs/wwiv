@@ -21,6 +21,7 @@
 #include "bbs/bbs.h"
 #include "common/com.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "common/pause.h"
 #include "core/strings.h"
 #include "core/textfile.h"

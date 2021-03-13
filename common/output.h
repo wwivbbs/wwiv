@@ -19,22 +19,33 @@
 #ifndef INCLUDED_COMMON_OUTPUT_H
 #define INCLUDED_COMMON_OUTPUT_H
 
-#include "common/context.h"
 #include "common/iobase.h"
 #include "common/language.h"
-#include "common/macro_context.h"
 #include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
 #include "sdk/wwivcolors.h"
-#include "sdk/ansi/ansi.h"
-#include "sdk/ansi/localio_screen.h"
+//#include "sdk/ansi/ansi.h"
+//#include "sdk/ansi/localio_screen.h"
 #include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
+namespace wwiv {
+namespace sdk {
+namespace ansi {
+class Ansi;
+class LocalIOScreen;
+}
+}
+}
+
 namespace wwiv::common {
+struct Interpreted;
+
+class MacroContext;
+
 
 typedef std::basic_ostream<char>&(ENDL_TYPE_O)(std::basic_ostream<char>&);
 
@@ -191,6 +202,7 @@ public:
     // Process arguments
     return bputs(fmt::sprintf(format_str, std::forward<Args>(args)...));
   }
+
   template <typename... Args> int format(const char* format_str, Args&&... args) {
     // Process arguments
     return bputs(fmt::format(format_str, args...));

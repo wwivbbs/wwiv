@@ -27,6 +27,7 @@
 #include "common/pause.h"
 #include "bbs/stuffin.h"
 #include "bbs/utility.h"
+#include "common/output.h"
 #include "fsed/fsed.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
