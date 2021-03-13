@@ -27,6 +27,7 @@
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "core/findfiles.h"
 #include "core/numbers.h"
 #include "core/strings.h"

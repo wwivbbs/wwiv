@@ -20,12 +20,12 @@
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
+#include "common/context.h"
 #include "sdk/config.h"
 #include <cstdint>
 #include <memory>
 
-namespace wwiv {
-namespace bbs {
+namespace wwiv::bbs {
 
 SaveQScanPointers::SaveQScanPointers() : restore_(false) {
   save_qsc_p_.reset(new uint32_t[a()->config()->max_subs()]);
@@ -42,6 +42,5 @@ SaveQScanPointers::~SaveQScanPointers() {
   }
 }
   
-}  // namespace bbs
-}  // namespace wwiv
+}  // namespace
 

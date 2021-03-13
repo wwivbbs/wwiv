@@ -22,7 +22,6 @@
 
 #include <filesystem>
 #include <string>
-#include <string_view>
 
 namespace  wwiv::common {
 
@@ -30,10 +29,9 @@ class Language {
 public:
   Language(const std::filesystem::path& menu_path, const std::filesystem::path& gfiles);
   [[nodiscard]] std::string value(const std::string& key) const;
+  [[nodiscard]] std::string value(const std::string& key, const std::string& default_value) const;
 
 private:
-  const std::filesystem::path menu_path_;
-  const std::filesystem::path& gfiles_;
   core::IniFile mi;
   core::IniFile gi;
 };

@@ -23,7 +23,10 @@
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "local_io/local_io.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+
 #include <string>
 
 using std::string;

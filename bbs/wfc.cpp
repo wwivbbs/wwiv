@@ -59,6 +59,8 @@
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/net/networks.h"
+
 #include <chrono>
 #include <memory>
 #include <string>

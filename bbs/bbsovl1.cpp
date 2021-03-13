@@ -57,8 +57,6 @@ using namespace wwiv::strings;
 //////////////////////////////////////////////////////////////////////////////
 // Implementation
 
-extern char str_quit[];
-
 /**
  * Displays a horizontal bar of nSize characters in nColor
  * @param width Length of the horizontal bar to display
@@ -202,7 +200,7 @@ void edit_confs() {
 
 /**
  * Sends Feedback to the SysOp.  If  bNewUserFeedback is true then this is
- * newuser feedback, otherwise it is "normal" feedback.
+ * new user feedback, otherwise it is "normal" feedback.
  * The user can choose to email anyone listed.
  * Users with a()->sess().user_num() < 10 who have sysop privs will be listed, so
  * this user can select which sysop to leave feedback to.
@@ -252,12 +250,13 @@ void feedback(bool bNewUserFeedback) {
         onek_str[i1++] = static_cast<char>('0' + i);
       }
     }
-    onek_str[i1++] = *str_quit;
+    const auto key_quit = bout.lang().value("KEY_QUIT", "Q").front();
+    onek_str[i1++] = key_quit;
     onek_str[i1] = '\0';
     bout.nl();
     bout << "|#1Feedback to (" << onek_str << "): ";
     ch = onek(onek_str, true);
-    if (ch == *str_quit) {
+    if (ch == key_quit) {
       return;
     }
     bout.nl();

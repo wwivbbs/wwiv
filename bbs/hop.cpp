@@ -22,6 +22,7 @@
 #include "bbs/utility.h"
 #include "common/com.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "core/strings.h"
 #include "sdk/subxtr.h"
 #include "sdk/files/dirs.h"

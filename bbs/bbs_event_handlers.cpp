@@ -28,6 +28,7 @@
 #include "multinst.h"
 #include "utility.h"
 #include "common/datetime.h"
+#include "common/output.h"
 
 namespace wwiv::bbs {
 

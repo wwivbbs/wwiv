@@ -21,16 +21,17 @@
 #include "bbs/bbs.h"
 #include "bbs/common.h"
 #include "bbs/connect1.h"
-#include "bbs/instmsg.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "common/workspace.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "fmt/printf.h"
 #include "local_io/keycodes.h"
+#include "sdk/files/files_ext.h"
+
 #include <algorithm>
 #include <chrono>
 #include <string>

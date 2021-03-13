@@ -219,8 +219,8 @@ void CreatePCBoardSysDropFile() {
     pcb.usernum = static_cast<int16_t>(u.usernum());
     char szName[255];
     sprintf(szName, "%-25.25s", u.GetName());
-    char* pszFirstName = strtok(szName, " \t");
-    sprintf(pcb.firstname, "%-15.15s", pszFirstName);
+    char* firstname = strtok(szName, " \t");
+    sprintf(pcb.firstname, "%-15.15s", firstname);
     // Don't write password  security
     strcpy(pcb.password, "XXX");
     const auto timeon_sec = duration_cast<seconds>(u.timeon()).count();

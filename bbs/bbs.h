@@ -16,26 +16,20 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_H__
-#define __INCLUDED_BBS_H__
+#ifndef INCLUDED_BBS_BBS_H
+#define INCLUDED_BBS_BBS_H
 
 /*
  * @header WWIV 5 Main Application
  * Main Starting point of the WWIV 5 System.
  */
 
-#include <memory>
-#include <string>
-
-#include "common/remote_io.h"
 #include "bbs/application.h"
-#include "sdk/status.h"
-#include "sdk/user.h"
 
 // Function Prototypes
 Application* CreateSession(LocalIO* localIO);
 Application* a();
 
-#endif // __INCLUDED_BBS_H__
+#endif
 
 

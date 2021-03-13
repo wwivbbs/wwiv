@@ -41,6 +41,8 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/files/dirs.h"
+#include "sdk/net/networks.h"
+
 #include <memory>
 #include <string>
 

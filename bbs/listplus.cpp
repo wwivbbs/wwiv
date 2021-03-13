@@ -46,7 +46,6 @@
 #include "sdk/filenames.h"
 #include "sdk/files/dirs.h"
 #include "sdk/files/files.h"
-#include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/wwivcolors.h"
@@ -90,21 +89,21 @@ static void colorize_foundtext(char* text, search_record* search_rec, int color)
     char* tok = strtok(find, "&|!()");
 
     while (tok) {
-      char* pszTempBuffer = text;
+      char* temp_buffer = text;
       strcpy(word, tok);
       StringTrim(word);
 
-      while (pszTempBuffer && word[0]) {
-        if ((pszTempBuffer = strcasestr(pszTempBuffer, word)) != nullptr) {
-          int size = ssize(pszTempBuffer) + 1;
-          memmove(&pszTempBuffer[6], &pszTempBuffer[0], size);
-          strncpy(pszTempBuffer, found_color, 6);
-          pszTempBuffer += strlen(word) + 6;
-          size = ssize(pszTempBuffer) + 1;
-          memmove(&pszTempBuffer[6], &pszTempBuffer[0], size);
-          strncpy(pszTempBuffer, normal_color, 6);
-          pszTempBuffer += 6;
-          ++pszTempBuffer;
+      while (temp_buffer && word[0]) {
+        if ((temp_buffer = strcasestr(temp_buffer, word)) != nullptr) {
+          int size = ssize(temp_buffer) + 1;
+          memmove(&temp_buffer[6], &temp_buffer[0], size);
+          strncpy(temp_buffer, found_color, 6);
+          temp_buffer += strlen(word) + 6;
+          size = ssize(temp_buffer) + 1;
+          memmove(&temp_buffer[6], &temp_buffer[0], size);
+          strncpy(temp_buffer, normal_color, 6);
+          temp_buffer += 6;
+          ++temp_buffer;
         }
       }
       tok = strtok(nullptr, "&|!()");

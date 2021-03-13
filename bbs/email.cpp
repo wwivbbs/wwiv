@@ -30,6 +30,7 @@
 #include "bbs/netsup.h"
 #include "bbs/sysoplog.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "common/quote.h"
 #include "core/datetime.h"
 #include "core/os.h"
@@ -44,6 +45,7 @@
 #include "sdk/usermanager.h"
 #include "sdk/fido/fido_util.h"
 #include "sdk/fido/nodelist.h"
+#include "sdk/net/networks.h"
 
 
 #include <chrono>

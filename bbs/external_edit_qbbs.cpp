@@ -19,14 +19,16 @@
 #include "bbs/external_edit_qbbs.h"
 
 #include "bbs/bbs.h"
-#include "common/message_editor_data.h"
 #include "bbs/utility.h"
+#include "common/message_editor_data.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
 #include "sdk/fido/fido_util.h"
+
 #include <filesystem>
 #include <string>
 

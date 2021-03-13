@@ -29,6 +29,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
+#include "bbs/tag.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"

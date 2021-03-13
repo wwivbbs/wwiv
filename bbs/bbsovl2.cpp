@@ -21,6 +21,7 @@
 #include "bbs/bbs.h"
 #include "bbs/confutil.h"
 #include "bbs/utility.h"
+#include "common/output.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "fmt/printf.h"

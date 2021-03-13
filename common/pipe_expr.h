@@ -21,7 +21,7 @@
 #include "common/context.h"
 #include <string>
 namespace wwiv::common {
-struct pipe_expr_token_t;
+class pipe_expr_token_t;
 
 class PipeEval {
 public:
@@ -33,6 +33,7 @@ private:
   std::string eval_fn_mpl(const std::vector<pipe_expr_token_t>& args);
   std::string eval_fn_set(const std::vector<pipe_expr_token_t>& args);
   std::string eval_fn_if(const std::vector<pipe_expr_token_t>& args);
+  std::string eval_fn_random(const std::vector<pipe_expr_token_t>& args);
   std::string eval_fn(const std::string& fn, const std::vector<pipe_expr_token_t>& args);
   std::string eval(std::vector<pipe_expr_token_t>& tokens);
   std::string evaluate_pipe_expression_string(const std::string& expr);

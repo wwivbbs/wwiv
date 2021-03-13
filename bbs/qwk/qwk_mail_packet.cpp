@@ -49,6 +49,7 @@
 #include "sdk/filenames.h"
 #include "sdk/qscan.h"
 #include "sdk/qwk_config.h"
+#include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "sdk/ansi/makeansi.h"

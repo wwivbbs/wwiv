@@ -19,7 +19,11 @@
 #include "gtest/gtest.h"
 
 #include "bbs/bbs.h"
+#include "bbs/interpret.h"
 #include "bbs_test/bbs_helper.h"
+#include "common/context.h"
+#include "common/macro_context.h"
+#include "common/pipe_expr.h"
 #include <iostream>
 #include <string>
 

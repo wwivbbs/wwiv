@@ -32,6 +32,7 @@
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 #include "sdk/subxtr.h"
+#include "sdk/net/networks.h"
 #include "sdk/net/subscribers.h"
 #include <string>
 

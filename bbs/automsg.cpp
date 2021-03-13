@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "bbs/automsg.h"
 
-
 #include "instmsg.h"
 #include "bbs/application.h"
 #include "bbs/bbs.h"
@@ -33,8 +32,8 @@
 #include "core/textfile.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/names.h"
 #include "sdk/status.h"
+
 #include <memory>
 #include <string>
 #include <vector>

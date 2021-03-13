@@ -21,6 +21,7 @@
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "core/strings.h"
 #include "sdk/names.h"
 #include "sdk/user.h"

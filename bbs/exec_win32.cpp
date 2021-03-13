@@ -26,6 +26,7 @@
 #include "bbs/bbs.h"
 #include "bbs/dropfile.h"
 #include "bbs/sysoplog.h"
+#include "common/output.h"
 #include "common/remote_io.h"
 #include "core/file.h"
 #include "core/log.h"

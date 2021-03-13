@@ -34,8 +34,6 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-extern char bbsdir[];
-
 static void fix_user_rec(userrec* u) {
   u->name[sizeof(u->name) - 1] = 0;
   u->realname[sizeof(u->realname) - 1] = 0;

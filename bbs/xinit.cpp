@@ -22,6 +22,7 @@
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
 #include "bbs/instmsg.h"
+#include "bbs/interpret.h"
 #include "bbs/netsup.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
@@ -68,9 +69,6 @@ using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
-
-extern char str_pause[];
-extern char str_quit[];
 
 void StatusManagerCallback(int i) {
   switch (i) {
@@ -359,7 +357,7 @@ bool Application::ReadInstanceSettings(int instance_number) {
   sess().dirs(d);
 
   // Set config for macro processing.
-  bbs_macro_context_.set_config(config());
+  bbs_macro_context_->set_config(config());
 
   if (instance_number > config_->num_instances()) {
     LOG(ERROR) << "Not enough instances configured in wwivconfig. Currently: " << config_->num_instances();
@@ -608,11 +606,6 @@ bool Application::InitializeBBS(bool cleanup_network) {
   VLOG(1) << "Reading User Information.";
   ReadCurrentUser(1);
 
-  // to_char_array doesn't work since these were declared outside of this file.
-  // Set defaults to be overridden later
-  strcpy(str_quit, "Quit");
-  strcpy(str_pause, "More? [Y/n/c]");
-
   statusMgr->reload_status();
   localIO()->topdata(LocalIO::topdata_t::user);
 
@@ -645,7 +638,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
   }
 
   TempDisablePause disable_pause(bout);
-  const auto t = session_context_.dirs().temp_directory();
+  const auto t = sess().dirs().temp_directory();
   remove_from_temp("*.*", sess().dirs().temp_directory(), false);
   remove_from_temp("*.*", sess().dirs().batch_directory(), false);
   remove_from_temp("*.*", sess().dirs().qwk_directory(), false);

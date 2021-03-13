@@ -18,11 +18,12 @@
 /**************************************************************************/
 #include "bbs/wqscn.h"
 
-#include <memory>
 #include "bbs/bbs.h"
+#include "common/context.h"
 #include "core/file.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include <memory>
 
 using namespace wwiv::core;
 

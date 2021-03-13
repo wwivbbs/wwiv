@@ -18,17 +18,17 @@
 /**************************************************************************/
 
 #include "bbs/bbs.h"
-#include "bbs/utility.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/bbslist.h"
+#include "sdk/net/networks.h"
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 std::optional<net_system_list_rec> next_system(int ts) {
-  auto b = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
+  const auto b = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
   return b.node_config_for(ts);
 }
 
@@ -43,9 +43,8 @@ void set_net_num(int network_number) {
 }
 
 int32_t next_system_reg(int16_t ts) {
-  auto b = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
-  const auto& r = b.reg_number();
-  if (r.find(ts) != r.end()) {
+  const auto b = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
+  if (const auto & r = b.reg_number(); r.find(ts) != r.end()) {
     return r.at(ts);
   }
   return 0;

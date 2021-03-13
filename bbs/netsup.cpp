@@ -299,9 +299,9 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
     return;
   }
 
-  auto* pszOriginalText = messageText;
-  messageText += strlen(pszOriginalText) + 1;
-  auto ntl = static_cast<uint16_t>(nh->length - strlen(pszOriginalText) - 1);
+  auto* original_text = messageText;
+  messageText += strlen(original_text) + 1;
+  auto ntl = static_cast<uint16_t>(nh->length - strlen(original_text) - 1);
   auto* ss = strchr(messageText, '\r');
   if (ss && (ss - messageText < 200) && (ss - messageText < ntl)) {
     strncpy(nm, messageText, ss - messageText);
@@ -413,7 +413,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
       if (nh->main_type == main_type_email_name || nh->main_type == main_type_new_post) {
         file.Write(subtype_or_author.c_str(), subtype_or_author.size() + 1);
       }
-      file.Write(pszOriginalText, strlen(pszOriginalText) + 1);
+      file.Write(original_text, strlen(original_text) + 1);
       file.Write(newname, strlen(newname));
       file.Write(messageText, ntl);
       file.Close();

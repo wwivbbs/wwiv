@@ -195,14 +195,22 @@ public:
     // Process arguments
     return bputs(fmt::format(format_str, args...));
   }
-  template <typename... Args> int format_str(const std::string& key, Args&&... args) {
+
+  int format_str(const std::string& key) {
     // Process arguments
-    auto format_str = lang().value(key);
-    try {
-      return bputs(fmt::format(format_str, args...));
-    } catch (const fmt::format_error& e) {
-      return bputs(format_str);
+    const auto format_str = lang().value(key);
+    return bputs(format_str);
+  }
+
+  int format_str(const std::string& key, const std::map<std::string, std::string>& map) {
+    // Process arguments
+    const auto format_str = lang().value(key);
+    if (!map.empty()) {
+      context().add_context_variable("", map);
     }
+    int r = bputs(format_str);
+    context().remove_context_variable("");
+    return r;
   }
 
   int bputch(char c, bool use_buffer = false);
@@ -251,9 +259,10 @@ public:
   int lines_listed_{0};
   bool newline{true};
 
-private:
   // Gets the current language instance.
   [[nodiscard]] Language& lang();
+
+private:
   char GetKeyForPause();
 
   // This will pause output without ANSI, displaying the [PAUSE] message, and wait a key to be hit.

@@ -24,6 +24,7 @@
 #include "common/com.h"
 #include "common/full_screen.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "core/strings.h"
 #include "sdk/subxtr.h"
 

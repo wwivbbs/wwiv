@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/lpfunc.h"
 
+#include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"

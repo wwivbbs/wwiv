@@ -25,6 +25,7 @@
 #include "common/datetime.h"
 #include "common/macro_context.h"
 #include "common/pause.h"
+#include "common/pipe_expr.h"
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -38,6 +39,10 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
+
+BbsMacroContext::BbsMacroContext(wwiv::common::Context* context,
+                                 wwiv::common::PipeEval& pipe_eval)
+  : MacroContext(context), pipe_eval_(pipe_eval) {}
 
 std::string BbsMacroContext::interpret_macro_char(char ch) const {
   if (!context_) {

@@ -72,7 +72,7 @@ string Input::input(int max_length, bool auto_mpl) {
 
 
 static int max_length_for_number(int64_t n) {
-  return (n == 0) ? 1 : static_cast<int>(std::floor(std::log10(std::abs(n)))) + 1;
+  return n == 0 ? 1 : static_cast<int>(std::floor(std::log10(std::abs(n)))) + 1;
 }
 
 static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
@@ -88,10 +88,23 @@ static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
 }
 
 // TODO(rushfan): HACK - Fix this and put back language support
-static std::string YesNoString(bool bYesNo) { return bYesNo ? "Yes" : "No"; }
+static std::string YesNoString(bool b) {
+  if (b) {
+   return bout.lang().value("KEY_YES", "Yes"); 
+  }
+  return bout.lang().value("KEY_NO", "No"); 
+}
+
+static char YesNoKey(bool b) {
+  return YesNoString(b).front();
+}
 
 static void print_yn(bool yes) {
-  bout << YesNoString(yes);
+  if (yes) {
+    bout.format_str("YES");
+  } else {
+    bout.format_str("NO");
+  }
   bout.nl();
 }
 
@@ -103,16 +116,16 @@ bool Input::yesno() {
   char ch = 0;
 
   bout.Color(1);
-  while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
-         ch != YesNoString(false)[0] && ch != RETURN)
+  while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoKey(true) &&
+         ch != YesNoKey(false) && ch != RETURN)
     ;
 
-  if (ch == YesNoString(true)[0]) {
+  if (ch == YesNoKey(true)) {
     print_yn(true);
   } else {
     print_yn(false);
   }
-  return (ch == YesNoString(true)[0]) ? true : false;
+  return (ch == YesNoKey(true)) ? true : false;
 }
 
 /**
@@ -122,31 +135,32 @@ bool Input::noyes() {
   char ch = 0;
 
   bout.Color(1);
-  while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
-         ch != YesNoString(false)[0] && ch != RETURN)
+  while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoKey(true) &&
+         ch != YesNoKey(false) && ch != RETURN)
     ;
 
-  if (ch == YesNoString(false)[0]) {
+  if (ch == YesNoKey(false)) {
     print_yn(false);
   } else {
     print_yn(true);
   }
-  return ch == YesNoString(true)[0] || ch == RETURN;
+  return ch == YesNoKey(true) || ch == RETURN;
 }
 
 char Input::ynq() {
   char ch = 0;
 
   bout.Color(1);
-  const char str_quit[] = "Quit";
-  while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
-         ch != YesNoString(false)[0] && ch != *str_quit && ch != RETURN) {
+  const auto str_quit = bout.lang().value("STR_QUIT", "Quit");
+  const auto key_quit = bout.lang().value("KEY_QUIT", "Q").front();
+  while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoKey(true) &&
+         ch != YesNoKey(false) && ch != key_quit && ch != RETURN) {
     // NOP
   }
-  if (ch == YesNoString(true)[0]) {
+  if (ch == YesNoKey(true)) {
     ch = 'Y';
     print_yn(true);
-  } else if (ch == *str_quit) {
+  } else if (ch == key_quit) {
     ch = 'Q';
     bout << str_quit;
     bout.nl();

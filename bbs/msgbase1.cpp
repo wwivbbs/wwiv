@@ -47,6 +47,7 @@
 #include "sdk/fido/fido_address.h"
 #include "sdk/msgapi/parsed_message.h"
 #include "sdk/net/ftn_msgdupe.h"
+#include "sdk/net/networks.h"
 #include "sdk/net/subscribers.h"
 #include <memory>
 #include <string>

@@ -18,16 +18,22 @@
 #ifndef INCLUDED_BBS_INTERPRET_H
 #define INCLUDED_BBS_INTERPRET_H
 
-#include "common/context.h"
 #include "common/macro_context.h"
-#include "common/pipe_expr.h"
 #include "sdk/ansi/ansi.h"
 #include <string>
 
+namespace wwiv::common {
+class Context;
+class PipeEval;
+}
+
+namespace wwiv::sdk {
+class Config;
+}
+
 class BbsMacroContext final : public wwiv::common::MacroContext {
 public:
-  explicit BbsMacroContext(wwiv::common::Context* context, wwiv::common::PipeEval& pipe_eval)
-      : MacroContext(context), pipe_eval_(pipe_eval) {}
+  BbsMacroContext(wwiv::common::Context* context, wwiv::common::PipeEval& pipe_eval);
   ~BbsMacroContext() override = default;
 
   // Interprets only a macro code.

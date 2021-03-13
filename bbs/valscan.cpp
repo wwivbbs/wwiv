@@ -30,6 +30,7 @@
 #include "common/input.h"
 #include "bbs/msgbase1.h"
 #include "bbs/read_message.h"
+#include "common/output.h"
 #include "core/strings.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"

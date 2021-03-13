@@ -38,6 +38,7 @@
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
+#include "bbs/tag.h"
 #include "bbs/wfc.h"
 #include "bbs/wqscn.h"
 #include "bbs/basic/basic.h"
@@ -70,6 +71,8 @@
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
 #include "sdk/gfiles.h"
+// ReSharper disable once CppUnusedIncludeDirective
+#include "bbs/batch.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
@@ -77,6 +80,7 @@
 #include "sdk/usermanager.h"
 #include "sdk/files/files.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/networks.h"
 #include <algorithm>
 #include <chrono>
 #include <iostream>
@@ -130,18 +134,20 @@ private:
 
 Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK),
-      session_context_(localIO), context_(std::make_unique<ApplicationContext>(this)),
-      pipe_eval_(*context_.get()),
-      bbs_macro_context_(context_.get(), pipe_eval_) {
+      session_context_(std::make_unique<SessionContext>(localIO)),
+      context_(std::make_unique<ApplicationContext>(this)),
+      pipe_eval_(std::make_unique<PipeEval>(*context_)),
+      bbs_macro_context_(std::make_unique<BbsMacroContext>(context_.get(), *pipe_eval_)),
+      batch_(std::make_unique<Batch>()) {
   ::bout.SetLocalIO(localIO);
   bout.set_context_provider([this]() -> Context& { return *this->context_; });
   bout.set_macro_context_provider(
-      [this]() -> MacroContext& { return bbs_macro_context_; });
+      [this]() -> MacroContext& { return *bbs_macro_context_; });
 
   ::bin.SetLocalIO(localIO);
   bin.set_context_provider([this]() -> Context& { return *this->context_; });
 
-  session_context_.SetCurrentReadMessageArea(-1);
+  sess().SetCurrentReadMessageArea(-1);
   thisuser_ = std::make_unique<User>();
 
   tzset();
@@ -169,8 +175,10 @@ Application::~Application() {
   curses_out = nullptr;
 }
 
-SessionContext& Application::sess() { return session_context_; }
-const SessionContext& Application::sess() const { return session_context_; }
+SessionContext& Application::sess() { return *session_context_; }
+const SessionContext& Application::sess() const { return *session_context_; }
+
+void Application::set_user_for_test(User& u) { *thisuser_ = u; }
 
 Context& Application::context() {
   CHECK(context_);
@@ -1140,7 +1148,7 @@ void Application::set_current_file_area(std::unique_ptr<wwiv::sdk::files::FileAr
   file_area_ = std::move(a);
 }
 
-Batch& Application::batch() { return batch_; }
+Batch& Application::batch() { return *batch_; }
 
 static usersubrec empty_user_sub{"", -1};
 
@@ -1161,7 +1169,7 @@ const usersubrec& Application::current_user_dir() const {
 }
 
 const subboard_t& Application::current_sub() const {
-  return subs().sub(session_context_.GetCurrentReadMessageArea());
+  return subs().sub(sess().GetCurrentReadMessageArea());
 }
 
 void Application::set_current_user_dir_num(int n) { 

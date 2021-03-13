@@ -85,10 +85,10 @@ static int FindDN(const std::string& dl_fn) {
  *
  *  dir_fn:  fname of your directory record
  *  dl_fn:   Filename to download
- *  bFreeDL: true if this is a free download
- *  bTitle:  true if title is to be shown with file info
+ *  free_dl: true if this is a free download
+ *  show_title:  true if title is to be shown with file info
  */
-int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFreeDL, bool bTitle) {
+int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_dl, bool show_title) {
   int bOkToDL;
   User ur;
   bool abort = false;
@@ -117,7 +117,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     auto f = a()->current_file_area()->ReadFile(nRecordNumber);
     bout.nl();
 
-    if (bTitle) {
+    if (show_title) {
       bout << "Directory  : " << dir.name << wwiv::endl;
     }
     bOkToDL = printfileinfo(&f.u(), dir);
@@ -125,7 +125,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     if (!ratio_ok()) {
       return -1;
     }
-    if (bOkToDL || bFreeDL) {
+    if (bOkToDL || free_dl) {
       write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
       auto s1 = FilePath(dir.path, f);
       if (dir.mask & mask_cdrom) {
@@ -142,7 +142,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
       }
 
       if (sent) {
-        if (!bFreeDL) {
+        if (!free_dl) {
           a()->user()->increment_downloaded();
           a()->user()->set_dk(a()->user()->dk() +
                                     static_cast<int>(bytes_to_k(f.numbytes())));

@@ -19,14 +19,7 @@
 #ifndef INCLUDED_BBS_APPLICATION_H
 #define INCLUDED_BBS_APPLICATION_H
 
-#include "bbs/batch.h"
-#include "bbs/interpret.h"
 #include "bbs/runnable.h"
-#include "common/context.h"
-#include "common/output.h"
-#include "common/pipe_expr.h"
-#include "sdk/vardec.h"
-#include "sdk/net/networks.h"
 #include <chrono>
 #include <filesystem>
 #include <map>
@@ -43,23 +36,22 @@ struct asv_rec {
   uint16_t ar, dar, restrict;
 };
 
-// Holds information about tagged files.
-struct tagrec_t {
-  // file information
-  uploadsrec u;
-  // directory number
-  int16_t directory;
-  // directory mask
-  uint16_t dir_mask;
-};
-
+class Batch;
+class BbsMacroContext;
 class LocalIO;
-
+struct arcrec;
+struct editorrec;
 struct net_networks_rec;
+struct newexternalrec;
+struct tagrec_t;
+struct usersubrec;
 
 namespace wwiv {
-  namespace common {
+namespace common {
+class SessionContext;
 enum class CommunicationType;
+class Context;
+class PipeEval;
 class RemoteIO;
 
 }
@@ -74,6 +66,7 @@ class Chains;
 class GFiles;
 class Instances;
 class Names;
+class Networks;
 class StatusMgr;
 class Subs;
 struct subboard_t;
@@ -113,12 +106,17 @@ public:
   static constexpr int exitLevelQuit = 2;
 
   explicit Application(LocalIO* localIO);
+  Application() = delete;
+  Application(Application&&) = delete;
+  Application(const Application&) = delete;
+  Application& operator=(const Application&) = delete;
+  Application& operator=(Application&&) = delete;
   ~Application() override;
 
   [[nodiscard]] wwiv::sdk::User* user() const { return thisuser_.get(); }
 
   // ReSharper disable once CppMemberFunctionMayBeConst
-  void set_user_for_test(wwiv::sdk::User& u) { *thisuser_ = u; }
+  void set_user_for_test(wwiv::sdk::User& u);
 
    /**
     * Provides a mutable  context class for submodules that operate on it. The
@@ -194,8 +192,8 @@ public:
   [[nodiscard]] bool IsCarbonCopyEnabled() const { return allow_cc_; }
   void SetCarbonCopyEnabled(bool b) { allow_cc_ = b; }
 
-  [[nodiscard]] int GetNumMessagesReadThisLogon() const { return m_nNumMessagesReadThisLogon; }
-  void SetNumMessagesReadThisLogon(int n) { m_nNumMessagesReadThisLogon = n; }
+  [[nodiscard]] int GetNumMessagesReadThisLogon() const { return num_msgs_read_cur_logon_; }
+  void SetNumMessagesReadThisLogon(int n) { num_msgs_read_cur_logon_ = n; }
 
   [[nodiscard]] bool IsNewScanAtLogin() const { return newscan_at_login_; }
   void SetNewScanAtLogin(bool b) { newscan_at_login_ = b; }
@@ -228,8 +226,8 @@ public:
   [[nodiscard]] bool IsUseInternalZmodem() const { return internal_zmodem_; }
   [[nodiscard]] bool IsUseInternalFsed() const; 
 
-  [[nodiscard]] int GetNumMessagesInCurrentMessageArea() const { return m_nNumMsgsInCurrentSub; }
-  void SetNumMessagesInCurrentMessageArea(int n) { m_nNumMsgsInCurrentSub = n; }
+  [[nodiscard]] int GetNumMessagesInCurrentMessageArea() const { return num_msgs_current_sub_; }
+  void SetNumMessagesInCurrentMessageArea(int n) { num_msgs_current_sub_ = n; }
 
   [[nodiscard]] int GetBeginDayNodeNumber() const { return beginday_node_number_; }
   void SetBeginDayNodeNumber(int n) { beginday_node_number_ = n; }
@@ -262,7 +260,6 @@ public:
 
   [[nodiscard]] bool fullscreen_read_prompt() const { return full_screen_read_prompt_; }
 
-
   /** Returns the WWIV SDK Config Object. */
   [[nodiscard]] wwiv::sdk::Config* config() const;
   void set_config_for_test(const wwiv::sdk::Config& config);
@@ -284,7 +281,6 @@ public:
   [[nodiscard]] const wwiv::sdk::Subs& subs() const;
   [[nodiscard]] wwiv::sdk::Conferences& all_confs();
   [[nodiscard]] const wwiv::sdk::Conferences& all_confs() const;
-
 
   [[nodiscard]] wwiv::sdk::files::Dirs& dirs();
   [[nodiscard]] const wwiv::sdk::files::Dirs& dirs() const;
@@ -325,7 +321,6 @@ public:
   bool ReadInstanceSettings(int instance_number);
   bool ReadConfig();
 
-public:
   // Data from system_operation_rec, make it public for now, and add
   // accessors later on.
   int chatname_color_{0};
@@ -339,18 +334,15 @@ public:
   bool internal_zmodem_{true};
   bool internal_fsed_{true};
   bool exec_log_syncfoss_{true};
-  int m_nNumMessagesReadThisLogon{0};
+  int num_msgs_read_cur_logon_{0};
   uint16_t user_dir_num_{0};
   uint16_t user_sub_num_{0};
   // This one should stay in int since -1 is an allowed value.
-  int m_nNumMsgsInCurrentSub{0};
+  int num_msgs_current_sub_{0};
 
   int beginday_node_number_{1};
   int exec_child_process_wait_time_{500};
-  int m_nMaxNumberMessageAreas{0};
-  int m_nMaxNumberFileAreas{0};
   int network_num_{0};
-  int m_nMaxNetworkNumber{0};
   int subchg{0};
 
   std::string net_email_name;
@@ -400,7 +392,7 @@ public:
   bool no_hangup_{false};
   int modem_speed_{38400};
 
-protected:
+private:
   /*!
    * @function GetCaller WFC Screen loop
    */
@@ -411,8 +403,6 @@ protected:
    * @param ms Modem Speed (may be a locked speed)
    */
   void GotCaller(int ms);
-
-private:
   void read_nextern();
   void read_arcs();
   void read_editors();
@@ -421,7 +411,6 @@ private:
   bool read_names();
   bool read_dirs();
   void read_chains();
-  bool read_language();
   void read_gfile();
   void check_phonenum();
   void create_phone_file();
@@ -433,7 +422,7 @@ private:
   std::unique_ptr<LocalIO> local_io_;
   int oklevel_;
   int errorlevel_;
-  wwiv::common::SessionContext session_context_;
+  std::unique_ptr<wwiv::common::SessionContext> session_context_;
 
   /*!
    * The current working directory.
@@ -462,7 +451,7 @@ private:
   std::unique_ptr<wwiv::sdk::files::FileApi> fileapi_;
   std::unique_ptr<wwiv::sdk::files::FileArea> file_area_;
 
-  Batch batch_;
+  std::unique_ptr<Batch> batch_;
   std::unique_ptr<wwiv::sdk::Subs> subs_;
   std::unique_ptr<wwiv::sdk::files::Dirs> dirs_;
   std::unique_ptr<wwiv::sdk::Networks> nets_;
@@ -477,8 +466,8 @@ private:
   int last_read_user_number_{0};
   std::chrono::duration<double> extratimecall_{};
   std::unique_ptr<wwiv::common::Context> context_;
-  wwiv::common::PipeEval pipe_eval_;
-  BbsMacroContext bbs_macro_context_;
+  std::unique_ptr<wwiv::common::PipeEval> pipe_eval_;
+  std::unique_ptr<BbsMacroContext> bbs_macro_context_;
 };
 
 #endif

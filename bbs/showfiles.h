@@ -18,6 +18,6 @@
 #ifndef __INCLUDED_BBS_SHOWFILES_H__
 #define __INCLUDED_BBS_SHOWFILES_H__
 
-void show_files(const char *file_name, const char *pszDirectoryName);
+void show_files(const char *file_name, const char *directory_name);
 
 #endif  // __INCLUDED_BBS_SHOWFILES_H__

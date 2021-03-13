@@ -20,6 +20,7 @@
 #include "bbs/bbsovl3.h"
 
 #include "bbs/bbs.h"
+#include "common/output.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 

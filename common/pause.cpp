@@ -29,8 +29,6 @@
 #include "local_io/keycodes.h"
 #include <chrono>
 
-char str_pause[81], str_quit[81];
-
 using std::chrono::milliseconds;
 using namespace wwiv::common;
 using namespace wwiv::core;
@@ -85,6 +83,7 @@ char Output::GetKeyForPause() {
 static bool okansi(const User& user) { return user.HasAnsi(); }
 
 void Output::pausescr_noansi() {
+  const auto str_pause = bout.lang().value("PAUSE", "|#3More? [Y/n/c]"); 
   const auto stripped_size = ssize(stripcolors(str_pause));
   bputs(str_pause);
   GetKeyForPause();
@@ -108,14 +107,12 @@ void Output::pausescr() {
     sess().incom(true);
   }
 
-  auto* const ss = str_pause;
-
+  const auto str_pause = bout.lang().value("PAUSE", "|#3More? [Y/n/c]"); 
   ResetColors();
 
-  const auto stripped_size = ssize(stripcolors(ss));
+  const auto stripped_size = ssize(stripcolors(str_pause));
   const auto com_freeze = sess().incom();
-  SystemColor(user().color(3));
-  bputs(ss);
+  bputs(str_pause);
   Left(stripped_size);
   SystemColor(saved_curatr);
 
@@ -131,9 +128,10 @@ void Output::pausescr() {
       if (ttotal == 120) {
         if (!warned) {
           warned = true;
+          // Strip the colors and display the pause prompt all red here.
           bputch(CG);
           SystemColor(user().color(6));
-          bputs(ss);
+          bputs(stripcolors(str_pause));
           Left(stripped_size);
           SystemColor(saved_curatr);
         }

@@ -57,6 +57,7 @@
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
+#include "sdk/net/networks.h"
 
 #include <cstdint>
 #include <memory>

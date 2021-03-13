@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/crc.h"
 #include "bbs/sr.h"
@@ -23,6 +24,7 @@
 #include "bbs/xfer.h"
 #include "common/datetime.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "common/remote_io.h"
 #include "core/numbers.h"
 #include "core/scope_exit.h"

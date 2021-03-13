@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "bbs/read_message.h"
 
-
 #include "message_find.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -44,6 +43,8 @@
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/msgapi/parsed_message.h"
 #include "sdk/net/net.h"
+#include "sdk/net/networks.h"
+
 #include <cctype>
 #include <memory>
 #include <stdexcept>
@@ -67,7 +68,7 @@ using namespace wwiv::strings;
 // #define UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
 
 /**
- * Sets the global variables pszOutOriginStr and pszOutOriginStr2.
+ * Sets the outNetworkName and outLocation.
  * Note: This is a private function
  */
 static void SetMessageOriginInfo(int system_number, int user_number, string* outNetworkName,

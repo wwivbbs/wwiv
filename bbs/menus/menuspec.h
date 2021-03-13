@@ -22,8 +22,8 @@
 
 namespace wwiv::bbs::menus {
 
-int MenuDownload(const std::string& pszDirFName, const std::string& pszFName, bool bFreeDL,
-                 bool bTitle);
+int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_dl,
+                 bool show_title);
 int MenuDownload(const std::string& dir_and_fname, bool bFreeDL, bool bTitle);
 bool MenuRunDoorName(const std::string& name, bool bFree);
 bool MenuRunDoorNumber(int nDoorNumber, bool bFree);

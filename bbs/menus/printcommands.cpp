@@ -20,6 +20,7 @@
 
 #include "bbs/menus/menucommands.h"
 #include "bbs/bbs.h"
+#include "sdk/config.h"
 #include "sdk/menus/menu.h"
 #include "sdk/menus/menus_cereal.h"
 

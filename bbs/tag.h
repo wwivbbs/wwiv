@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*                  Copyright (C)2021, WWIV Software Services             */
+/*             Copyright (C)1998-2021, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,28 +15,21 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "common/language.h"
+#ifndef INCLUDED_BBS_TAG_H
+#define INCLUDED_BBS_TAG_H
 
-#include "core/inifile.h"
+#include "sdk/vardec.h"
+#include <cstdint>
 
-wwiv::common::Language::Language(const std::filesystem::path& menu_path,
-                                 const std::filesystem::path& gfiles)
-    : mi(menu_path, {"lang"}), gi(gfiles, {"lang"}) {
-}
+// Holds information about tagged files.
+struct tagrec_t {
+  // file information
+  uploadsrec u;
+  // directory number
+  int16_t directory;
+  // directory mask
+  uint16_t dir_mask;
+};
 
-std::string wwiv::common::Language::value(const std::string& key) const {
-  if (auto v = mi.value<std::string>(key); !v.empty()) {
-    return v;
-  }
-  return gi.value<std::string>(key);
-}
 
-std::string wwiv::common::Language::value(const std::string& key, const std::string& default_value) const {
-  if (auto v = mi.value<std::string>(key); !v.empty()) {
-    return v;
-  }
-  if (auto v = gi.value<std::string>(key); !v.empty()) {
-    return v;
-  }
-  return default_value;
-}
+#endif

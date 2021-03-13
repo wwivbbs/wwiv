@@ -61,6 +61,7 @@
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
+#include "sdk/net/networks.h"
 
 #include <chrono>
 #include <limits>
@@ -191,8 +192,7 @@ static int ShowLoginAndGetUserNumber(const std::string& remote_username) {
     return 0;
   }
 
-  const auto user_number = finduser(user_name);
-  if (user_number != 0) {
+  if (const auto user_number = finduser(user_name); user_number != 0) {
     return user_number;
   }
   return FindUserByRealName(user_name);
@@ -243,10 +243,8 @@ static void DoFailedLoginAttempt() {
   a()->WriteCurrentUser();
   bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
-  const auto logline = StrCat("### ILLEGAL LOGON for ",
-                              a()->user()->name_and_number());
   sysoplog(false) << "";
-  sysoplog(false) << logline;
+  sysoplog(false) << StrCat("### ILLEGAL LOGON for ", a()->user()->name_and_number());
   sysoplog(false) << "";
   a()->sess().user_num(0);
 }

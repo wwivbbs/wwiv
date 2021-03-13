@@ -21,6 +21,7 @@
 #include "bbs/bbs.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "common/output.h"
 #include "core/findfiles.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
@@ -30,16 +31,16 @@
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-// Displays list of files matching file spec file_name in directory pszDirectoryName.
-void show_files(const char *file_name, const char *pszDirectoryName) {
+// Displays list of files matching file spec file_name in directory directory_name.
+void show_files(const char *file_name, const char *directory_name) {
   char drive[MAX_PATH], direc[MAX_PATH], file[MAX_PATH], ext[MAX_PATH];
 
   const auto c = okansi() ? '\xCD' : '=';
   bout.nl();
 #if defined (_WIN32)
-  _splitpath(pszDirectoryName, drive, direc, file, ext);
+  _splitpath(directory_name, drive, direc, file, ext);
 #else
-  strcpy(direc, pszDirectoryName);
+  strcpy(direc, directory_name);
   strcpy(drive, "");
   strcpy(file, file_name);
   strcpy(ext, "");
@@ -51,7 +52,7 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
   i = a()->user()->GetScreenChars() - 1 - i - size_without_colors(s);
   bout << "|#7" << std::string(i, c);
 
-  auto full_pathname = FilePath(pszDirectoryName, ToStringLowerCase(stripfn(file_name)));
+  auto full_pathname = FilePath(directory_name, ToStringLowerCase(stripfn(file_name)));
   FindFiles ff(full_pathname, FindFiles::FindFilesType::files);
   for (const auto& f : ff) {
     full_pathname = StrCat("|#7[|#2", aligns(f.name), "|#7]|#1 ");

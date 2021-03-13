@@ -30,11 +30,13 @@
 #include "bbs/mmkey.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
+#include "bbs/tag.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl1.h"
 #include "common/com.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "core/findfiles.h"
 #include "core/numbers.h"
 #include "core/strings.h"
@@ -42,7 +44,6 @@
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
-#include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/files/allow.h"
 #include "sdk/files/files.h"
@@ -53,8 +54,6 @@ using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
-
-extern char str_quit[];
 
 void move_file() {
   int d1 = 0;
@@ -370,7 +369,8 @@ bool maybe_upload(const std::string& file_name, int directory_num, const std::st
     if (!is_uploadable(file_name) && dcs()) {
       bout.format("{:<12}: |#5In filename database - add anyway? ", file_name);
       const auto ch = bin.ynq();
-      if (ch == *str_quit) {
+      const auto key_quit = bout.lang().value("KEY_QUIT", "Q").front();
+      if (ch == key_quit) {
         return false;
       }
       if (ch == YesNoString(false)[0]) {

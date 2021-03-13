@@ -19,6 +19,7 @@
 #include "bbs/xfer.h"
 
 #include "bbs/archivers.h"
+#include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/conf.h"
@@ -28,19 +29,21 @@
 #include "bbs/listplus.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
+#include "bbs/tag.h"
 #include "bbs/utility.h"
 #include "bbs/xferovl1.h"
 #include "common/datetime.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/files/arc.h"
 #include "sdk/files/files.h"
+
 #include <string>
 #include <vector>
 

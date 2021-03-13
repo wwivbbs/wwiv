@@ -26,6 +26,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
+#include "common/output.h"
 #include "core/datetime.h"
 #include "core/os.h"
 #include "core/strings.h"

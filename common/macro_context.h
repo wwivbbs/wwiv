@@ -18,10 +18,12 @@
 #ifndef INCLUDED_COMMON_MACRO_CONTEXT_H
 #define INCLUDED_COMMON_MACRO_CONTEXT_H
 
-#include "common/context.h"
+//#include "common/context.h"
 #include <string>
 
 namespace wwiv::common {
+
+class Context;
 
 enum class interpreted_cmd_t { text, movement, expression };
 struct Interpreted {
@@ -49,7 +51,7 @@ struct Interpreted {
  */
 class MacroContext {
 public:
-  explicit MacroContext(Context* context) : context_(context) {}
+  explicit MacroContext(Context* context);
   virtual ~MacroContext() = default;
 
   // Interprets only a macro code.

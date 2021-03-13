@@ -25,6 +25,7 @@
 #include "common/remote_io.h"
 #include "core/file.h"
 #include "core/strings.h"
+#include "common/context.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"

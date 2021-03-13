@@ -56,6 +56,7 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
+#include "sdk/net/networks.h"
 
 #include <memory>
 #include <string>

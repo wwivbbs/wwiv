@@ -23,11 +23,13 @@
 #include "common/remote_io.h"
 #include "bbs/sr.h"
 #include "bbs/xfer.h"
+#include "common/output.h"
 #include "core/numbers.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
+#include "local_io/local_io.h"
 #include "sdk/files/file_record.h"
 #include <chrono>
 #include <cmath>

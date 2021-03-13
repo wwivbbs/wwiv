@@ -26,12 +26,15 @@
 #include "bbs/subacc.h"
 #include "bbs/utility.h"
 #include "common/com.h"
+#include "common/output.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/subxtr.h"
+#include "sdk/net/networks.h"
+
 #include <algorithm>
 #include <string>
 

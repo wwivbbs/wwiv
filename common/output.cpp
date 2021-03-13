@@ -42,8 +42,7 @@ using namespace wwiv::sdk::ansi;
 // static global bout.
 Output bout;
 
-Output::Output() {
-}
+Output::Output() = default;
 
 Language& Output::lang() {
   if (!lang_) {

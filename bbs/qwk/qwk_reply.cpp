@@ -56,6 +56,8 @@
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
+#include "sdk/net/networks.h"
+
 #include <chrono>
 #include <memory>
 #include <optional>

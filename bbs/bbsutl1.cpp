@@ -25,6 +25,7 @@
 #include "bbs/mmkey.h"
 #include "common/com.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "common/remote_io.h"
 #include "core/os.h"
 #include "core/stl.h"
@@ -33,6 +34,7 @@
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/net/networks.h"
 #include <chrono>
 #include <filesystem>
 #include <memory>

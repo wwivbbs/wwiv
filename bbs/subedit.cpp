@@ -37,6 +37,7 @@
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/usermanager.h"
+#include "sdk/net/networks.h"
 #include "sdk/net/subscribers.h"
 #include <string>
 #include <vector>

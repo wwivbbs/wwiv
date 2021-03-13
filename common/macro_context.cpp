@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "common/macro_context.h"
 
+#include "common/context.h"
 #include "core/stl.h"
 #include "core/strings.h"
 
@@ -36,8 +37,10 @@ static bool in(K const& k, std::initializer_list<K> list) {
   return false;
 }
 
+MacroContext::MacroContext(Context* context) : context_(context) {}
+
 Interpreted MacroContext::interpret(std::string::const_iterator& it,
-    std::string::const_iterator end) const {  // NOLINT(performance-unnecessary-value-param)
+                                    std::string::const_iterator end) const {  // NOLINT(performance-unnecessary-value-param)
   Interpreted res{};
   const auto code = *it++;
   std::string text;

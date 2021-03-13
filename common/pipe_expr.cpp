@@ -39,7 +39,8 @@ enum class pipe_expr_token_type_t {
   fn
 };
 
-struct pipe_expr_token_t {
+class pipe_expr_token_t {
+public:
   pipe_expr_token_type_t type;
   std::string lexeme;
 };
@@ -50,8 +51,7 @@ static std::optional<pipe_expr_token_t> parse_string(string::const_iterator& it,
     return std::nullopt;
   }
   ++it;
-  std::string s;
-  for (; it != end; ++it) {
+  for (std::string s; it != end; ++it) {
     const auto c = *it;
     if (c == '"') {
       // end if string. advance one more.
@@ -98,6 +98,9 @@ static std::optional<pipe_expr_token_t> parse_variable(string::const_iterator& i
     e.type = pipe_expr_token_type_t::fn;
   }
   if (s == "mpl") {
+    e.type = pipe_expr_token_type_t::fn;
+  }
+  if (s == "random") {
     e.type = pipe_expr_token_type_t::fn;
   }
   if (s == "pause" && (it == end || *it != '=')) {
@@ -254,6 +257,12 @@ std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
   return b ? yes : no;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeStatic
+std::string PipeEval::eval_fn_random(const std::vector<pipe_expr_token_t>& args) {
+  const auto num = os::random_number(args.size() - 1);
+  return args.at(num).lexeme;
+}
+
 std::string PipeEval::eval_fn(const std::string& fn, const std::vector<pipe_expr_token_t>& args) {
   if (fn == "pause") {
     bout.pausescr();
@@ -267,6 +276,9 @@ std::string PipeEval::eval_fn(const std::string& fn, const std::vector<pipe_expr
   }
   if (fn == "mpl") {
     return eval_fn_mpl(args);
+  }
+  if (fn == "random") {
+    return eval_fn_random(args);
   }
   return fmt::format("ERROR: Unknown function: {}", fn);
 }

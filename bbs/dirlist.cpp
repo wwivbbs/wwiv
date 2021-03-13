@@ -24,6 +24,7 @@
 #include "bbs/mmkey.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "common/output.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"

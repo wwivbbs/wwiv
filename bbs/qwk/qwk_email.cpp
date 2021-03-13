@@ -27,13 +27,14 @@
 #include "bbs/qwk/qwk_reply.h"
 #include "bbs/qwk/qwk_struct.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "common/quote.h"
 #include "core/file.h"
 #include "local_io/wconstants.h"
 #include "sdk/names.h"
 #include "sdk/vardec.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
-
+#include "sdk/net/networks.h"
 
 namespace wwiv::bbs::qwk {
 

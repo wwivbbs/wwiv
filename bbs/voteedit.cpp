@@ -22,6 +22,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "fmt/printf.h"

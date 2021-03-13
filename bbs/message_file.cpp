@@ -19,6 +19,7 @@
 #include "bbs/message_file.h"
 
 #include "bbs/bbs.h"
+#include "common/output.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "fmt/printf.h"

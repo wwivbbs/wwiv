@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/sr.h"
 
+#include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/crc.h"
 #include "bbs/execexternal.h"
@@ -30,14 +31,16 @@
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "core/numbers.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
+#include "local_io/local_io.h"
 #include "local_io/wconstants.h"
-#include "sdk/names.h"
+
 #include <algorithm>
 #include <chrono>
 #include <optional>
