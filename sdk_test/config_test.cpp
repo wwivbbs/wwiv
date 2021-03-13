@@ -26,6 +26,9 @@
 #include "gtest/gtest.h"
 #include <string>
 
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/vardec.h"
+
 using namespace std;
 using namespace wwiv::core;
 using namespace wwiv::sdk;

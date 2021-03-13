@@ -23,6 +23,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
+#include "sdk/vardec.h"
 #include "sdk/net/callout.h"
 
 #include "gtest/gtest.h"

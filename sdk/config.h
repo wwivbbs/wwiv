@@ -18,10 +18,11 @@
 #ifndef INCLUDED_SDK_CONFIG_H
 #define INCLUDED_SDK_CONFIG_H
 
-#include "sdk/vardec.h" // slrec
 #include <filesystem>
 #include <map>
 #include <string>
+
+struct slrec;
 
 namespace wwiv::sdk {
 
@@ -336,7 +337,7 @@ public:
   void auto_val(int n, const validation_config_t& v) { config_.autoval[n] = v; }
   // Security Level information
   [[nodiscard]] const slrec& sl(int n) const;
-  void sl(int n, slrec& s) { config_.sl[n] = s; }
+  void sl(int n, slrec& s);
   // Registration Number
   [[nodiscard]] uint32_t wwiv_reg_number() const { return config_.wwiv_reg_number; }
   void wwiv_reg_number(int d) { config_.wwiv_reg_number = d; }

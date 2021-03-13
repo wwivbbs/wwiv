@@ -17,7 +17,6 @@
 /**************************************************************************/
 #include "sdk/files/file_record.h"
 
-
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"

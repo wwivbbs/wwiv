@@ -19,6 +19,7 @@
 #define INCLUDED_SDK_FILES_FILE_RECORD_H
 
 #include "sdk/config.h"
+#include "sdk/vardec.h"
 
 #include <optional>
 #include <string>

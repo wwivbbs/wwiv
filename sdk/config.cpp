@@ -204,6 +204,8 @@ const slrec& Config::sl(int n) const {
   return stl::at(config_.sl, n);
 }
 
+void Config::sl(int n, slrec& s) { config_.sl[n] = s; }
+
 bool Config::scripting_enabled() const noexcept {
   return !(config_.script_flags & script_flag_disable_script);
 }

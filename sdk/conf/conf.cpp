@@ -31,6 +31,8 @@
 #include "sdk/files/dirs.h"
 #include "sdk/conf/conf_cereal.h"
 #include "sdk/subxtr.h"
+#include "sdk/vardec.h"
+
 #include <filesystem>
 #include <string>
 #include <vector>

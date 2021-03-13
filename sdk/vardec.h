@@ -918,16 +918,6 @@ struct ext_desc_type {
   int16_t len;
 };
 
-struct languagerec {
-  char name[20]; // language name
-
-  uint8_t num; // language number
-
-  char dir[79], // language directory
-      mdir[79], // menu directory
-      adir[79]; // ansi directory
-};
-
 // conferencing stuff
 
 #define conf_status_ansi 0x0001    // ANSI required
@@ -1074,7 +1064,6 @@ static_assert(sizeof(chainregrec_422) == 64, "chainregrec_422 == 64");
 static_assert(sizeof(newexternalrec) == 512, "newexternalrec == 512");
 static_assert(sizeof(editorrec) == 366, "editorrec == 366");
 static_assert(sizeof(ext_desc_type) == 15, "ext_desc_type == 15");
-static_assert(sizeof(languagerec) == 258, "languagerec == 258");
 static_assert(sizeof(filestatusrec) == 23, "filestatusrec == 23");
 static_assert(sizeof(phonerec) == 15, "phonerec == 15");
 static_assert(sizeof(ext_desc_rec) == 17, "ext_desc_rec == 17");

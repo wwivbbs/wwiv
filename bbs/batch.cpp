@@ -50,6 +50,7 @@
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/vardec.h"
 #include "sdk/files/files.h"
 #include <algorithm>
 #include <chrono>
