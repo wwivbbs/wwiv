@@ -455,17 +455,14 @@ int Output::bpla(const std::string& text, bool *abort) {
 // This one doesn't do a newline. (used to be osan)
 int Output::bputs(const std::string& text, bool *abort, bool *next) {
   core::bus().invoke<CheckForHangupEvent>();
-  bin.checka(abort, next);
-  auto ret = 0;
-  if (!bin.checka(abort, next)) {
-    ret = bputs(text);
+  if (bin.checka(abort, next)) {
+    return 0;
   }
-  return ret;
+  return bputs(text);
 }
 
 void Output::move_up_if_newline(int num_lines) {
   if (okansi(user()) && !newline) {
-    const auto s = fmt::format("\r\x1b[{}A", num_lines);
-    bputs(s);
+    Up(num_lines);
   }
 }

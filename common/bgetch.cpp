@@ -40,10 +40,10 @@ using namespace wwiv::strings;
 static steady_clock::time_point time_lastchar_pressed;
 static void lastchar_pressed() { time_lastchar_pressed = steady_clock::now(); }
 
-static bool so(const wwiv::common::SessionContext& sess) { return (sess.effective_sl() == 255); }
+static bool so(const SessionContext& sess) { return (sess.effective_sl() == 255); }
 
 void Output::RedrawCurrentLine() {
-  const auto line = bout.SaveCurrentLine();
+  const auto line = SaveCurrentLine();
   nl();
   RestoreCurrentLine(line);
 }
@@ -360,8 +360,7 @@ int Input::bgetch_handle_key_translation(int key, numlock_status_t numlock_mode)
     return localIO()->GetChar() + 256;
   }
   if (numlock_mode == numlock_status_t::NOTNUMBERS) {
-    const auto ret = get_numpad_command(key);
-    if (ret)
+    if (const auto ret = get_numpad_command(key); ret)
       return ret;
   }
   if (key < 127) {

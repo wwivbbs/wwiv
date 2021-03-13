@@ -664,7 +664,7 @@ void Application::UpdateTopScreen() {
   bout.curatr(cc);
   tleft(false);
 
-  bout.lines_listed_ = lll;
+  bout.lines_listed(lll);
 }
 
 void Application::ClearTopScreenProtection() {
@@ -814,8 +814,7 @@ int Application::Run(int argc, char* argv[]) {
     return 0;
   }
 
-  const auto bbs_env = environment_variable("BBS");
-  if (!bbs_env.empty()) {
+  if (const auto bbs_env = environment_variable("BBS"); !bbs_env.empty()) {
     if (bbs_env.find("WWIV") != string::npos) {
       LOG(ERROR) << "You are already in the BBS, type 'EXIT' instead.\n\n";
       return 255;

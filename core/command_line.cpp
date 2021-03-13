@@ -221,6 +221,9 @@ int CommandLineCommand::Parse(int start_pos) {
       }
       HandleCommandLineArgument(key, value);
     } else if (is_shortarg_start(s.front())) {
+      if (s.size() < 2) {
+        throw unknown_argument_error("Missing argument letter, args must be -X or --XXXX");
+      }
       const auto letter = static_cast<char>(std::toupper(s[1]));
       const auto key = ArgNameForKey(letter);
       if (key.empty()) {

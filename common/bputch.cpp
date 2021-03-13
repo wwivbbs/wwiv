@@ -90,7 +90,7 @@ int Output::bputch(char c, bool use_buffer) {
     if (c == SOFTRETURN) {
       current_line_.clear();
       x_ = 0;
-      bout.lines_listed_++;
+      lines_listed_++;
       // change Build3 + 5.0 to fix message read.
       const auto ll = lines_listed();
       if (const auto num_sclines = sess().num_screen_lines() - 1; ll >= num_sclines) {

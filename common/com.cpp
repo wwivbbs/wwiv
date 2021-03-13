@@ -44,8 +44,7 @@ char onek(const std::string& allowable, bool auto_mpl) {
 char onek_ncr(const std::string& allowable) {
   while (true) {
     wwiv::core::bus().invoke<CheckForHangupEvent>();
-    auto ch = to_upper_case(bin.getkey());
-    if (contains(allowable, ch)) {
+    if (const auto ch = to_upper_case(bin.getkey()); contains(allowable, ch)) {
       return ch;
     }
   }

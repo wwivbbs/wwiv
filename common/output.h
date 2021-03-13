@@ -24,21 +24,15 @@
 #include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
 #include "sdk/wwivcolors.h"
-//#include "sdk/ansi/ansi.h"
-//#include "sdk/ansi/localio_screen.h"
 #include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace ansi {
+namespace wwiv::sdk::ansi {
 class Ansi;
 class LocalIOScreen;
-}
-}
 }
 
 namespace wwiv::common {
@@ -73,15 +67,29 @@ class Output final : public local_io::curatr_provider, public IOBase {
 public:
   typedef std::function<MacroContext&()> macro_context_provider_t;
   Output();
+  Output(const Output&) = delete;
+  Output(Output&&) = delete;
+  Output& operator=(const Output&) = delete;
+  Output& operator=(Output&&) = delete;
   ~Output() override;
 
+  /** Sets the LocalIO instance to use locally for output */
   void SetLocalIO(LocalIO* local_io) override;
+
   /** Sets the provider for the session context */
   // ReSharper disable once CppMemberFunctionMayBeConst
   void set_macro_context_provider(macro_context_provider_t c) { macro_context_provider_ = std::move(c); }
 
+  /**
+   * This sets the current color (both locally and remotely) to that
+   * specified (in WWIV format).
+   */
   void Color(int wwiv_color);
+
+  /** Resets all ANSI color attributes back to the default gray on black. */
   void ResetColors();
+
+  /** Moves the cursor position to x, y.  Note this is 1 based, not 0. */
   void GotoXY(int x, int y);
   void Up(int num);
   void Down(int num);
@@ -91,14 +99,20 @@ public:
   void RestorePosition();
   void nl(int num_lines = 1);
   void bs();
-  /* This sets the current color (both locally and remotely) to that
+
+  /**
+   * This sets the current color (both locally and remotely) to that
    * specified (in IBM format).
    */
   void SystemColor(int c);
+  /**
+   * This sets the current color (both locally and remotely) to that
+   * specified (in IBM format).
+   */
   void SystemColor(wwiv::sdk::Color color);
   [[nodiscard]] std::string MakeColor(int wwiv_color);
   [[nodiscard]] std::string MakeSystemColor(int c) const;
-  [[nodiscard]] std::string MakeSystemColor(wwiv::sdk::Color color) const;
+  [[nodiscard]] std::string MakeSystemColor(sdk::Color color) const;
 
   /** Displays msg in a lightbar header. */
   void litebar(const std::string& msg);
@@ -160,7 +174,7 @@ public:
   /**
    *
    */
-  void do_movement(const Interpreted& interpreted);
+  void do_movement(const Interpreted& r);
 
   /**
    * This function outputs a string of characters to the screen (and remotely
@@ -208,19 +222,26 @@ public:
     return bputs(fmt::format(format_str, args...));
   }
 
-  int format_str(const std::string& key) {
+  /**
+   * Displays the text in the strings file referred to by key.
+   */
+  int str(const std::string& key) {
     // Process arguments
     const auto format_str = lang().value(key);
     return bputs(format_str);
   }
 
-  int format_str(const std::string& key, const std::map<std::string, std::string>& map) {
+  /**
+   * Displays the text in the strings file referred to by key adding all
+   * key/value pairs from map into the unnamed context.
+   */
+  int str(const std::string& key, const std::map<std::string, std::string>& map) {
     // Process arguments
     const auto format_str = lang().value(key);
     if (!map.empty()) {
       context().add_context_variable("", map);
     }
-    int r = bputs(format_str);
+    const int r = bputs(format_str);
     context().remove_context_variable("");
     return r;
   }
@@ -232,8 +253,16 @@ public:
   bool RestoreCurrentLine(const SavedLine& line);
   SavedLine SaveCurrentLine() const;
   void dump();
+
+  /** Clears the number of lines displayed since last pause */
   void clear_lines_listed() { lines_listed_ = 0; }
+
+  /** Gets the number of lines displayed since last pause */
   [[nodiscard]] int lines_listed() const noexcept { return lines_listed_; }
+
+  /** Sets the number of lines displayed since last pause */
+  void lines_listed(int l) { lines_listed_ = l; }
+
   int wherex() const;
   void RedrawCurrentLine();
 
@@ -268,13 +297,13 @@ public:
   bool print_help_file(const std::string& filename);
   bool printfile_random(const std::string& base_fn);
 
-  int lines_listed_{0};
   bool newline{true};
 
   // Gets the current language instance.
   [[nodiscard]] Language& lang();
 
 private:
+  int lines_listed_{0};
   char GetKeyForPause();
 
   // This will pause output without ANSI, displaying the [PAUSE] message, and wait a key to be hit.

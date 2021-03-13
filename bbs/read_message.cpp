@@ -788,7 +788,7 @@ static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData&
 
 void display_type2_message_old_impl(Type2MessageData& msg, bool* next) {
   const auto info = display_type2_message_header(msg, false);
-  bout.lines_listed_ = info.num_header_lines();
+  bout.lines_listed(info.num_header_lines());
   bout.clear_ansi_movement_occurred();
   *next = false;
   bout.enable_mci();

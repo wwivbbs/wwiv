@@ -103,9 +103,9 @@ static char YesNoKey(bool b) {
 
 static void print_yn(bool yes) {
   if (yes) {
-    bout.format_str("YES");
+    bout.str("YES");
   } else {
-    bout.format_str("NO");
+    bout.str("NO");
   }
   bout.nl();
 }
