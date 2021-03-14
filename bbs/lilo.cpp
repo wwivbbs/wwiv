@@ -672,6 +672,12 @@ static void CheckAndUpdateUserInfo() {
   if (nc.use_real_name == newuser_item_type_t::required && a()->user()->real_name().empty()) {
     input_realname();
   }
+  if (nc.use_address_country == newuser_item_type_t::required && a()->user()->country().empty()) {
+    input_country();
+  }
+  if (nc.use_address_zipcode == newuser_item_type_t::required && a()->user()->zip_code().empty()) {
+    input_zipcode();
+  }
   if (nc.use_address_street == newuser_item_type_t::required && a()->user()->street().empty()) {
     input_street();
   }
@@ -680,12 +686,6 @@ static void CheckAndUpdateUserInfo() {
   }
   if (nc.use_address_city_state == newuser_item_type_t::required && a()->user()->state().empty()) {
     input_state();
-  }
-  if (nc.use_address_country == newuser_item_type_t::required && a()->user()->country().empty()) {
-    input_country();
-  }
-  if (nc.use_address_zipcode == newuser_item_type_t::required && a()->user()->zip_code().empty()) {
-    input_zipcode();
   }
   if (nc.use_data_phone == newuser_item_type_t::required && a()->user()->data_phone().empty()) {
     input_dataphone();
