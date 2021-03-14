@@ -313,6 +313,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     unzip_file(window, "gfiles.zip", "gfiles");
     unzip_file(window, "scripts.zip", "scripts");
     unzip_file(window, "data.zip", "data");
+    unzip_file(window, "menus.zip", "menus");
 
 #ifdef WIN32
     // Unzip netfoss to "${WWIV_DIR}/netfoss"
@@ -327,6 +328,8 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     unzip_file(window, "zip-city.zip", "zip-city");
 
     File::set_current_directory(cwd);
+    // There's nothing to unzip to logs, so let's just create it.
+    File::mkdirs(FilePath(cwd, "logs"));
   }
 
   window->SetColor(SchemeId::NORMAL);
