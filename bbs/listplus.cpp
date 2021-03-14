@@ -777,7 +777,7 @@ short SelectColor(int which) {
 
   bout.nl();
 
-  if (a()->user()->HasColor()) {
+  if (a()->user()->color()) {
     color_list();
     bout.Color(0);
     bout.nl();

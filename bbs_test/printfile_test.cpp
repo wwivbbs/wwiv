@@ -68,11 +68,11 @@ TEST_F(PrintFileTest, LanguageDir) {
   const auto actual_msg = CreateFullPathToPrint("one");
   EXPECT_EQ(expected_msg, actual_msg);
 
-  helper.user()->SetStatusFlag(User::ansi);
+  helper.user()->set_flag(User::flag_ansi);
   const auto actual_bw = CreateFullPathToPrint("one");
   EXPECT_EQ(expected_bw, actual_bw);
 
-  helper.user()->SetStatusFlag(User::status_color);
+  helper.user()->set_flag(User::status_color);
   const auto actual_ans = CreateFullPathToPrint("one");
   EXPECT_EQ(expected_ans, actual_ans);
 }
@@ -86,11 +86,11 @@ TEST_F(PrintFileTest, GFilesOnly_NoExt) {
   const auto actual_msg = CreateFullPathToPrint("one");
   EXPECT_EQ(expected_msg, actual_msg);
 
-  helper.user()->SetStatusFlag(User::ansi);
+  helper.user()->set_flag(User::flag_ansi);
   const auto actual_bw = CreateFullPathToPrint("one");
   EXPECT_EQ(expected_bw, actual_bw);
 
-  helper.user()->SetStatusFlag(User::status_color);
+  helper.user()->set_flag(User::status_color);
   const auto actual_ans = CreateFullPathToPrint("one");
   EXPECT_EQ(expected_ans, actual_ans);
 }

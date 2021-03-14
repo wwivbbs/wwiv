@@ -116,7 +116,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     auto b = o.value();
     grab_quotes(b, reply_to_name, a()->context());
 
-    if (okfsed() && a()->user()->IsUseAutoQuote() && msgnum > 0 &&
+    if (okfsed() && a()->user()->auto_quote() && msgnum > 0 &&
         msgnum <= a()->GetNumMessagesInCurrentMessageArea() && user_input[0] != 'O') {
       const auto type =
           user_input[0] == '@' ? quote_date_format_t::generic : quote_date_format_t::post;
@@ -747,7 +747,7 @@ void HandleMessageReply(int& msg_num) {
 
   grab_quotes(m.raw_message_text, m.from_user_name, a()->context());
 
-  if (okfsed() && a()->user()->IsUseAutoQuote() && msg_num > 0 &&
+  if (okfsed() && a()->user()->auto_quote() && msg_num > 0 &&
       msg_num <= a()->GetNumMessagesInCurrentMessageArea()) {
     // auto_quote needs the raw message text like from readfile(), so that
     // the top two lines are header information.
@@ -1081,7 +1081,7 @@ static void network_validate() {
 
 // Asks if user wants to post, returns true if done, meaning user says Yes (and posts) or No.
 static bool query_post() {
-  if (!a()->user()->IsRestrictionPost() &&
+  if (!a()->user()->restrict_post() &&
       a()->user()->posts_today() < a()->config()->sl(a()->sess().effective_sl()).posts &&
       wwiv::bbs::check_acs(a()->current_sub().post_acs)) {
     bout << "|#5Post on " << a()->current_sub().name << " (|#2Y/N/Q|#5) ? ";
@@ -1234,7 +1234,7 @@ void scan(int msg_num, MsgScanOption scan_option, bool& nextsub, bool title_scan
 
   const auto& cs = a()->current_sub();
   const auto fsreader_enabled =
-      a()->fullscreen_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader);
+      a()->fullscreen_read_prompt() && a()->user()->has_flag(User::fullScreenReader);
   const auto skip_fs_reader_per_sub = (cs.anony & anony_no_fullscreen) != 0;
   if (fsreader_enabled && !skip_fs_reader_per_sub) {
     scan_new(msg_num, scan_option, nextsub, title_scan);

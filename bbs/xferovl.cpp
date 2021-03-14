@@ -735,7 +735,7 @@ void xfer_defaults() {
     bout << "|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n";
     bout << "|#7[|#22|#7]|#1 Set Default Protocol.\r\n";
     bout << "|#7[|#23|#7]|#1 New-Scan Transfer after Message Base ("
-        << YesNoString(a()->user()->IsNewScanFiles()) << ").\r\n";
+        << YesNoString(a()->user()->newscan_files()) << ").\r\n";
     bout << "|#7[|#24|#7]|#1 Number of lines of extended description to print ["
         << a()->user()->GetNumExtended() << " line(s)].\r\n";
     const std::string onek_options = "Q12345";
@@ -758,7 +758,7 @@ void xfer_defaults() {
       }
       break;
     case '3':
-      a()->user()->ToggleStatusFlag(User::nscanFileSystem);
+      a()->user()->toggle_flag(User::nscanFileSystem);
       break;
     case '4':
       bout.nl(2);

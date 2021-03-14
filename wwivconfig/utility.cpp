@@ -19,7 +19,6 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
-#include "core/wwivport.h"
 #include "localui/input.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
@@ -28,7 +27,7 @@
 #include <string>
 
 // Make sure it's after windows.h
-#include "localui/wwiv_curses.h"
+#include "sdk/user.h"
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -63,7 +62,7 @@ void read_user(const Config& config, int un, userrec* u) {
                                     File::shareDenyReadWrite)) {
     const auto nu = static_cast<int>(file.number_of_records()) - 1;
     if (un > nu) {
-      u->inact = inact_deleted;
+      u->inact = User::userDeleted;
       fix_user_rec(u);
       return;
     }
@@ -71,7 +70,7 @@ void read_user(const Config& config, int un, userrec* u) {
     file.Read(u);
     fix_user_rec(u);
   } else {
-    u->inact = inact_deleted;
+    u->inact = User::userDeleted;
     fix_user_rec(u);
   }
 }

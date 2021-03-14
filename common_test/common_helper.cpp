@@ -78,15 +78,15 @@ CommonHelper::CommonHelper() : CommonHelper(42) {
 void CommonHelper::SetUp() {
 
   sess().dirs().current_menu_directory(current_menu_dir_);
-  user()->ClearStatusFlag(User::pauseOnPage);
+  user()->clear_flag(User::pauseOnPage);
   sess().num_screen_lines(std::numeric_limits<int>::max());
 
   // Create a reasonable default user.  Some tests (bputch/bputs tests)
   // Require a properly constructed user.
   User::CreateNewUserRecord(user(), 50, 20, 0, 0.1234f, 
   { 7, 11, 14, 13, 31, 10, 12, 9, 5, 3 }, { 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 });
-  user()->SetStatusFlag(User::ansi);
-  user()->SetStatusFlag(User::status_color);
+  user()->set_flag(User::flag_ansi);
+  user()->set_flag(User::status_color);
 
   // Reset the color attribute to 7 between tests.
   bout.curatr(7);

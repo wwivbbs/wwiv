@@ -81,7 +81,7 @@ void remove_from_temp(const std::string& file_name, const std::filesystem::path&
  *
  * @return true if the user wants ANSI, false otherwise.
  */
-bool okansi() { return a()->user()->HasAnsi(); }
+bool okansi() { return a()->user()->ansi(); }
 
 /**
  * Gets the current users post/call ratio.

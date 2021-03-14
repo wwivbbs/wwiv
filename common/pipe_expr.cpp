@@ -196,7 +196,7 @@ std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
   if (const auto var = args.at(0).lexeme; var == "pause") {
     
     const auto val = is_truthy(args.at(1).lexeme);
-    context_.u().SetStatusFlag(User::pauseOnPage, val);
+    context_.u().set_flag(User::pauseOnPage, val);
     context_.session_context().disable_pause(!val);
   } else if (var == "lines") {
     if (args.at(1).type != pipe_expr_token_type_t::number_literal) {

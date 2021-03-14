@@ -34,7 +34,7 @@ static bool access_sub(User& u, const subboard_t& s) {
     return false;
   }
 
-  if ((s.anony & anony_ansi_only) && !u.HasAnsi()) {
+  if ((s.anony & anony_ansi_only) && !u.ansi()) {
     return false;
   }
 
@@ -274,7 +274,7 @@ bool okconf(User* user) {
   if (a()->sess().disable_conf()) {
     return false;
   }
-  return user->HasStatusFlag(User::conference);
+  return user->has_flag(User::conference);
 }
 
 bool ok_multiple_conf(User* user, const std::vector<wwiv::sdk::conference_t>& uc) {

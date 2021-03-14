@@ -96,12 +96,12 @@ void create_sysop_account(Config& config) {
   u.data.sl = 255;
   u.data.dsl = 255;
   u.data.restrict = 0;
-  u.SetStatusFlag(User::ansi);
-  u.SetStatusFlag(User::status_color);
-  u.SetStatusFlag(User::extraColor);
+  u.set_flag(User::flag_ansi);
+  u.set_flag(User::status_color);
+  u.set_flag(User::extraColor);
   // Enable the internal FSED and full screen reader for the sysop.
   u.SetDefaultEditor(0xff);
-  u.SetStatusFlag(User::fullScreenReader);
+  u.set_flag(User::fullScreenReader);
   usermanager.writeuser(&u, 1);
 
   {

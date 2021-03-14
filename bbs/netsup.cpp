@@ -235,7 +235,7 @@ void print_pending_list() {
           "|#7\xB3|#2{:>5} |#7\xB3|#2{:>4} |#7\xB3|#2{:>10} |#7\xB3|#7\r\n",
           atc, net.name, r->systemnumber(), bsent, brec, bwait, r->numfails(),
           last_contact_sent);
-      if (!a()->user()->HasPause() && lines++ == 20) {
+      if (!a()->user()->pause() && lines++ == 20) {
         bout.pausescr();
         lines = 0;
       }

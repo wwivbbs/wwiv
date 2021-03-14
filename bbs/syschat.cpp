@@ -105,7 +105,7 @@ void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp) {
 
 void RequestChat() {
   bout.nl(2);
-  if (sysop2() && !a()->user()->IsRestrictionChat()) {
+  if (sysop2() && !a()->user()->restrict_chat()) {
     if (a()->sess().chatcall()) {
       a()->sess().clear_chatcall();
       bout << "Chat call turned off.\r\n";

@@ -95,11 +95,11 @@ class User final {
   static constexpr int restrictUpload             = 0x0400;
 
   // USERREC.sysstatus
-  static constexpr int ansi                       = 0x00000001;
+  static constexpr int flag_ansi                  = 0x00000001;
   static constexpr int status_color               = 0x00000002;
-  static constexpr int music                      = 0x00000004;
+  static constexpr int flag_music                 = 0x00000004;
   static constexpr int pauseOnPage                = 0x00000008;
-  static constexpr int expert                     = 0x00000010;
+  static constexpr int flag_expert                = 0x00000010;
   static constexpr int SMW                        = 0x00000020;
   static constexpr int fullScreen                 = 0x00000040;
   static constexpr int nscanFileSystem            = 0x00000080;
@@ -133,13 +133,10 @@ class User final {
   //
 
   // USERREC.inact
-  void SetInactFlag(int nFlag) {
+  void set_inact(int nFlag) {
     data.inact |= nFlag;
   }
-  void ToggleInactFlag(int nFlag) {
-    data.inact ^= nFlag;
-  }
-  void ClearInactFlag(int nFlag) {
+  void clear_inact(int nFlag) {
     data.inact &= ~nFlag;
   }
 
@@ -156,24 +153,24 @@ class User final {
   [[nodiscard]] bool guest_user() const;
 
   // USERREC.sysstatus
-  void SetStatusFlag(int nFlag, bool on) {
+  void set_flag(int nFlag, bool on) {
     if (on) {
       data.sysstatus |= nFlag;
     } else {
       data.sysstatus &= ~nFlag;
     }
   }
-  void SetStatusFlag(int nFlag) {
+  void set_flag(int nFlag) {
     data.sysstatus |= nFlag;
   }
-  void ToggleStatusFlag(int nFlag) {
+  void toggle_flag(int nFlag) {
     data.sysstatus ^= nFlag;
   }
-  void ClearStatusFlag(int nFlag) {
+  void clear_flag(int nFlag) {
     data.sysstatus &= ~nFlag;
   }
 
-  [[nodiscard]] bool HasStatusFlag(int nFlag) const {
+  [[nodiscard]] bool has_flag(int nFlag) const {
     return (data.sysstatus & nFlag) != 0;
   }
 
@@ -185,98 +182,90 @@ class User final {
     data.sysstatus = static_cast<uint32_t>(l);
   }
 
-  [[nodiscard]] bool HasAnsi() const {
-    return HasStatusFlag(ansi);
+  [[nodiscard]] bool ansi() const {
+    return has_flag(flag_ansi);
   }
-  [[nodiscard]] bool HasColor() const { return HasStatusFlag(status_color); }
+  [[nodiscard]] bool color() const { return has_flag(status_color); }
 
-  [[nodiscard]] bool HasMusic() const {
-    return HasStatusFlag(music);
+  [[nodiscard]] bool music() const {
+    return has_flag(flag_music);
   }
 
-  [[nodiscard]] bool HasPause() const {
-    return HasStatusFlag(pauseOnPage);
+  [[nodiscard]] bool pause() const {
+    return has_flag(pauseOnPage);
   }
 
   [[nodiscard]] bool IsExpert() const {
-    return HasStatusFlag(expert);
+    return has_flag(flag_expert);
   }
 
-  [[nodiscard]] bool HasShortMessage() const {
-    return HasStatusFlag(SMW);
+  [[nodiscard]] bool ssm() const {
+    return has_flag(SMW);
   }
 
-  [[nodiscard]] bool IsFullScreen() const {
-    return HasStatusFlag(fullScreen);
+  [[nodiscard]] bool fullscreen() const {
+    return has_flag(fullScreen);
   }
-  [[nodiscard]] bool IsNewScanFiles() const {
-    return HasStatusFlag(nscanFileSystem);
+  [[nodiscard]] bool newscan_files() const {
+    return has_flag(nscanFileSystem);
   }
-  [[nodiscard]] bool IsUseExtraColor() const {
-    return HasStatusFlag(extraColor);
+  [[nodiscard]] bool extra_color() const {
+    return has_flag(extraColor);
   }
-  [[nodiscard]] bool IsUseClearScreen() const {
-    return HasStatusFlag(clearScreen);
+  [[nodiscard]] bool clear_screen() const {
+    return has_flag(clearScreen);
   }
-  [[nodiscard]] bool IsUseConference() const {
-    return HasStatusFlag(conference);
+  [[nodiscard]] bool use_conference() const {
+    return has_flag(conference);
   }
-  [[nodiscard]] bool IsIgnoreChatRequests() const {
-    return HasStatusFlag(noChat);
+  [[nodiscard]] bool nochat() const {
+    return has_flag(noChat);
   }
-  [[nodiscard]] bool IsIgnoreNodeMessages() const {
-    return HasStatusFlag(noMsgs);
-  }
-
-  [[nodiscard]] bool IsUseAutoQuote() const {
-    return HasStatusFlag(autoQuote);
-  }
-  [[nodiscard]] bool IsUse24HourClock() const {
-    return HasStatusFlag(twentyFourHourClock);
+  [[nodiscard]] bool ignore_msgs() const {
+    return has_flag(noMsgs);
   }
 
-  // USERREC.exempt
-  void SetExemptFlag(int nFlag) {
-    data.exempt |= nFlag;
+  [[nodiscard]] bool auto_quote() const {
+    return has_flag(autoQuote);
   }
-  void ToggleExemptFlag(int nFlag) {
-    data.exempt ^= nFlag;
-  }
-  void ClearExemptFlag(int nFlag) {
-    data.exempt &= ~nFlag;
-  }
-  [[nodiscard]] bool HasExemptFlag(int nFlag) const {
-    return (data.exempt & nFlag) != 0;
+  [[nodiscard]] bool twentyfour_clock() const {
+    return has_flag(twentyFourHourClock);
   }
 
-  [[nodiscard]] bool IsExemptRatio() const {
+  [[nodiscard]] bool exempt_ratio() const {
     return HasExemptFlag(exemptRatio);
   }
-  [[nodiscard]] bool IsExemptTime() const {
+
+  [[nodiscard]] bool exempt_time() const {
     return HasExemptFlag(exemptTime);
   }
-  [[nodiscard]] bool IsExemptPost() const {
+
+  [[nodiscard]] bool exempt_post() const {
     return HasExemptFlag(exemptPost);
   }
-  [[nodiscard]] bool IsExemptAll() const {
+
+  [[nodiscard]] bool exempt_all() const {
     return HasExemptFlag(exemptAll);
   }
-  [[nodiscard]] bool IsExemptAutoDelete() const {
+
+  [[nodiscard]] bool exempt_auto_delete() const {
     return HasExemptFlag(exemptAutoDelete);
   }
 
   // USERREC.restrict
-  void SetRestrictionFlag(int nFlag) noexcept {
+  void set_restrict(int nFlag) noexcept {
     data.restrict |= nFlag;
   }
-  void ToggleRestrictionFlag(int nFlag) noexcept {
+
+  void toggle_restrict(int nFlag) noexcept {
     data.restrict ^= nFlag;
   }
-  void ClearRestrictionFlag(int nFlag) noexcept {
+
+  void clear_restrict(int nFlag) noexcept {
     data.restrict &= ~nFlag;
   }
 
-  [[nodiscard]] bool HasRestrictionFlag(int nFlag) const noexcept {
+  [[nodiscard]] bool has_restrict(int nFlag) const noexcept {
     return (data.restrict & nFlag) != 0;
   }
 
@@ -288,62 +277,74 @@ class User final {
     data.restrict = n;
   }
 
-  [[nodiscard]] bool IsRestrictionLogon() const {
-    return HasRestrictionFlag(restrictLogon);
-  }
-  [[nodiscard]] bool IsRestrictionChat() const {
-    return HasRestrictionFlag(restrictChat);
-  }
-  [[nodiscard]] bool IsRestrictionValidate() const {
-    return HasRestrictionFlag(restrictValidate);
-  }
-  [[nodiscard]] bool IsRestrictionAutomessage() const {
-    return HasRestrictionFlag(restrictAutomessage);
-  }
-  [[nodiscard]] bool IsRestrictionAnonymous() const {
-    return HasRestrictionFlag(restrictAnony);
-  }
-  [[nodiscard]] bool IsRestrictionPost() const {
-    return HasRestrictionFlag(restrictPost);
-  }
-  [[nodiscard]] bool IsRestrictionEmail() const {
-    return HasRestrictionFlag(restrictEmail);
-  }
-  [[nodiscard]] bool IsRestrictionVote() const {
-    return HasRestrictionFlag(restrictVote);
-  }
-  [[nodiscard]] bool IsRestrictionMultiNodeChat() const {
-    return HasRestrictionFlag(restrictMultiNodeChat);
-  }
-  [[nodiscard]] bool IsRestrictionNet() const {
-    return HasRestrictionFlag(restrictNet);
-  }
-  [[nodiscard]] bool IsRestrictionUpload() const {
-    return HasRestrictionFlag(restrictUpload);
+  [[nodiscard]] bool restrict_logon() const {
+    return has_restrict(restrictLogon);
   }
 
-  void ToggleArFlag(int nFlag) {
+  [[nodiscard]] bool restrict_chat() const {
+    return has_restrict(restrictChat);
+  }
+
+  [[nodiscard]] bool restrict_validate() const {
+    return has_restrict(restrictValidate);
+  }
+
+  [[nodiscard]] bool restrict_automessage() const {
+    return has_restrict(restrictAutomessage);
+  }
+
+  [[nodiscard]] bool restrict_anony() const {
+    return has_restrict(restrictAnony);
+  }
+  [[nodiscard]] bool restrict_post() const {
+    return has_restrict(restrictPost);
+  }
+
+  [[nodiscard]] bool restrict_email() const {
+    return has_restrict(restrictEmail);
+  }
+
+  [[nodiscard]] bool restrict_vote() const {
+    return has_restrict(restrictVote);
+  }
+
+  [[nodiscard]] bool restrict_iichat() const {
+    return has_restrict(restrictMultiNodeChat);
+  }
+
+  [[nodiscard]] bool restrict_net() const {
+    return has_restrict(restrictNet);
+  }
+
+  [[nodiscard]] bool restrict_upload() const {
+    return has_restrict(restrictUpload);
+  }
+
+  void toggle_ar(int nFlag) {
     data.ar ^= nFlag;
   }
 
-  [[nodiscard]] bool HasArFlag(int ar) const {
+  [[nodiscard]] bool has_ar(int ar) const {
     if (ar == 0) {
       // Always have the empty ar
       return true;
     }
     return (data.ar & ar) != 0;
   }
+
   [[nodiscard]] int ar_int() const {
     return data.ar;
   }
+
   void ar_int(int n) {
     data.ar = static_cast<uint16_t>(n);
   }
 
-  void ToggleDarFlag(int nFlag) {
+  void toggle_dar(int nFlag) {
     data.dar ^= nFlag;
   }
-  [[nodiscard]] bool HasDarFlag(int nFlag) const {
+
+  [[nodiscard]] bool has_dar(int nFlag) const {
     if (nFlag == 0) {
       // Always have the empty dar
       return true;
@@ -593,13 +594,13 @@ class User final {
     if (n < 0 || n > 9) {
       return 7; // default color
     }
-    return static_cast<uint8_t>(HasAnsi() ? raw_color(n) : bwcolor(n));
+    return static_cast<uint8_t>(ansi() ? raw_color(n) : bwcolor(n));
   }
 
   [[nodiscard]] std::vector<uint8_t> colors() const { 
     std::vector<uint8_t> c;
     for (auto i = 0; i < 10; i++) {
-      if (HasColor()) {
+      if (color()) {
         c.push_back(data.colors[i]);
       } else {
         c.push_back(data.bwcolors[i]);
@@ -987,6 +988,12 @@ class User final {
     uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
     const std::vector<uint8_t>& newuser_colors,
     const std::vector<uint8_t>& newuser_bwcolors);
+
+private:
+  // USERREC.exempt
+  [[nodiscard]] bool HasExemptFlag(int flag) const {
+    return (data.exempt & flag) != 0;
+  }
 
 };
 

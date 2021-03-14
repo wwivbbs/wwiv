@@ -596,17 +596,17 @@ void Application::UpdateTopScreen() {
   case LocalIO::topdata_t::user: {
     to_char_array(rst, restrict_string);
     for (i = 0; i <= 15; i++) {
-      if (user()->HasArFlag(1 << i)) {
+      if (user()->has_ar(1 << i)) {
         ar[i] = static_cast<char>('A' + i);
       } else {
         ar[i] = SPACE;
       }
-      if (user()->HasDarFlag(1 << i)) {
+      if (user()->has_dar(1 << i)) {
         dar[i] = static_cast<char>('A' + i);
       } else {
         dar[i] = SPACE;
       }
-      if (user()->HasRestrictionFlag(1 << i)) {
+      if (user()->has_restrict(1 << i)) {
         restrict[i] = rst[i];
       } else {
         restrict[i] = SPACE;

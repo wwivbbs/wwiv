@@ -55,7 +55,7 @@ static unsigned char last_input_char;
 // TODO(rushfan): Make this a WWIV ini setting.
 static const uint8_t input_background_char = 32; // Was '\xB1';
 
-static bool okansi(const wwiv::sdk::User& user) { return user.HasAnsi(); }
+static bool okansi(const wwiv::sdk::User& user) { return user.ansi(); }
 
 Input::Input() { memset(charbuffer, 0, sizeof(charbuffer)); }
 Input::~Input() = default;
@@ -799,8 +799,8 @@ std::string Input::input_date_mmddyyyy(const std::string& orig_text) {
 }
 
 void Input::resetnsp() {
-  if (nsp() == 1 && !user().HasPause()) {
-    user().ToggleStatusFlag(wwiv::sdk::User::pauseOnPage);
+  if (nsp() == 1 && !user().pause()) {
+    user().toggle_flag(wwiv::sdk::User::pauseOnPage);
   }
   clearnsp();
 }

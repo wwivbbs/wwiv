@@ -127,8 +127,8 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
 
   const auto ans = check_ansi();
   if (ans > 0) {
-    a()->user()->SetStatusFlag(User::ansi);
-    a()->user()->SetStatusFlag(User::status_color);
+    a()->user()->set_flag(User::flag_ansi);
+    a()->user()->set_flag(User::status_color);
   }
   bout.nl();
   if (!bout.printfile_random(WELCOME_NOEXT)) {
@@ -255,9 +255,9 @@ static void LeaveBadPasswordFeedback(int ans) {
   });
   
   if (ans > 0) {
-    a()->user()->SetStatusFlag(User::ansi);
+    a()->user()->set_flag(User::flag_ansi);
   } else {
-    a()->user()->ClearStatusFlag(User::ansi);
+    a()->user()->clear_flag(User::flag_ansi);
   }
   bout << "|#6Too many logon attempts!!\r\n\n";
   bout << "|#9Would you like to leave Feedback to " << a()->config()->sysop_name() << "? ";
@@ -295,7 +295,7 @@ static void LeaveBadPasswordFeedback(int ans) {
 }
 
 static void CheckCallRestrictions() {
-  if (a()->sess().user_num() > 0 && a()->user()->IsRestrictionLogon() &&
+  if (a()->sess().user_num() > 0 && a()->user()->restrict_logon() &&
       date() == a()->user()->laston() &&
       a()->user()->ontoday() > 0) {
     bout.nl();
@@ -478,13 +478,13 @@ static void PrintUserSpecificFiles() {
 
   const auto short_size = std::numeric_limits<uint16_t>::digits - 1;
   for (auto i=0; i < short_size; i++) {
-    if (user->HasArFlag(1 << i)) {
+    if (user->has_ar(1 << i)) {
       bout.printfile(fmt::format("ar{}", static_cast<char>('A' + i)));
     }
   }
 
   for (auto i=0; i < short_size; i++) {
-    if (user->HasDarFlag(1 << i)) {
+    if (user->has_dar(1 << i)) {
       bout.printfile(fmt::format("dar{}", static_cast<char>('A' + i)));
     }
   }
@@ -828,7 +828,7 @@ static vector<bool> read_voting() {
 
 static void CheckUserForVotingBooth() {
   auto questused = read_voting();
-  if (!a()->user()->IsRestrictionVote() && a()->sess().effective_sl() >= a()->config()->validated_sl()) {
+  if (!a()->user()->restrict_vote() && a()->sess().effective_sl() >= a()->config()->validated_sl()) {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && a()->user()->GetVote(i) == 0) {
         bout.nl();
@@ -1047,7 +1047,7 @@ void logoff() {
         smwFile.Read(&sm, sizeof(shortmsgrec));
         if (sm.tosys != 0 || sm.touser != 0) {
           if (sm.tosys == 0 && sm.touser == a()->sess().user_num()) {
-            a()->user()->SetStatusFlag(User::SMW);
+            a()->user()->set_flag(User::SMW);
           }
           if (r != w) {
             smwFile.Seek(w * sizeof(shortmsgrec), File::Whence::begin);

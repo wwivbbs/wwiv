@@ -168,9 +168,9 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   u->data.daten = 0;
   u->restriction(restr);
 
-  u->SetStatusFlag(User::pauseOnPage);
-  u->ClearStatusFlag(User::conference);
-  u->ClearStatusFlag(User::nscanFileSystem);
+  u->set_flag(User::pauseOnPage);
+  u->clear_flag(User::conference);
+  u->clear_flag(User::nscanFileSystem);
   u->gold(gold);
   // Set to N so the BBS will prompt.
   u->gender('N');

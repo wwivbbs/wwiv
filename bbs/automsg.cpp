@@ -100,7 +100,7 @@ void write_automessage() {
     bout.pausescr();
     return;
   }
-  if (a()->user()->IsRestrictionAutomessage()) {
+  if (a()->user()->restrict_automessage()) {
     bout << "\r\n|#6Not allowed to write to automessage (RESTRICT).\r\n\n";
     bout.pausescr();
     return;
@@ -145,7 +145,7 @@ void write_automessage() {
 
 static char ShowAMsgMenuAndGetInput() {
   auto bCanWrite = false;
-  if (!a()->user()->IsRestrictionAutomessage()) {
+  if (!a()->user()->restrict_automessage()) {
     bCanWrite = a()->user()->sl() > 20;
   }
 

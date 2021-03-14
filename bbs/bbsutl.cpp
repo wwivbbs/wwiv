@@ -302,7 +302,7 @@ bool sysop2() {
   if (!sysop1()) {
     return false;
   }
-  if (a()->user()->IsRestrictionChat()) {
+  if (a()->user()->restrict_chat()) {
     return false;
   }
   if (a()->config()->sysop_low_time() != a()->config()->sysop_high_time()) {

@@ -80,7 +80,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   bout.nl(3);
 
   bool done = false;
-  if (a()->user()->IsRestrictionValidate() || a()->user()->IsRestrictionUpload() ||
+  if (a()->user()->restrict_validate() || a()->user()->restrict_upload() ||
       (a()->config()->sysconfig_flags() & sysconfig_all_sysop)) {
     dn = (a()->config()->new_uploads_dir() < a()->dirs().size()) 
       ? a()->config()->new_uploads_dir() : 0;

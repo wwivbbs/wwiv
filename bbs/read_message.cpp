@@ -650,7 +650,7 @@ static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData&
   bout.cls();
   auto fs = display_type2_message_header(msg, true);
 
-  const auto controlcodes = a()->user()->HasStatusFlag(User::msg_show_controlcodes);
+  const auto controlcodes = a()->user()->has_flag(User::msg_show_controlcodes);
   const auto lines = split_wwiv_message(msg.message_text, controlcodes);
 
   fs.DrawTopBar();
@@ -776,7 +776,7 @@ static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData&
           result.option = ReadMessageOption::LIST_TITLES;
         } else if (key == 'K') {
           result.option = ReadMessageOption::NONE;
-          a()->user()->ToggleStatusFlag(User::msg_show_controlcodes);
+          a()->user()->toggle_flag(User::msg_show_controlcodes);
         } else if (key == '?') {
           result.option = ReadMessageOption::NONE;
           fs.ClearMessageArea();
@@ -824,7 +824,7 @@ void display_type2_message_old_impl(Type2MessageData& msg, bool* next) {
 
 ReadMessageResult display_type2_message(int& msgno, Type2MessageData& msg, bool* next) {
   const auto fsreader_enabled =
-      a()->fullscreen_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader);
+      a()->fullscreen_read_prompt() && a()->user()->has_flag(User::fullScreenReader);
   const auto skip_fs_reader_per_sub = (msg.subboard_flags & anony_no_fullscreen) != 0;
   if (fsreader_enabled && !skip_fs_reader_per_sub && !msg.email) {
     // N.B.: We don't use the full screen reader for email yet since
@@ -866,7 +866,7 @@ static void update_qscan(uint32_t qscan) {
 }
 
 ReadMessageResult read_post(int& msgnum, bool* next, int* val) {
-  if (a()->user()->IsUseClearScreen()) {
+  if (a()->user()->clear_screen()) {
     bout.cls();
   } else {
     bout.nl();

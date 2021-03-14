@@ -58,7 +58,7 @@ void OnlineUserEditor() {
   }
   std::string restrict;
   for (int i = 0; i <= 15; i++) {
-    restrict.push_back(u.HasRestrictionFlag(1 << i) ? restrict_string[i] : ' ');
+    restrict.push_back(u.has_restrict(1 << i) ? restrict_string[i] : ' ');
   }
 
   // heading
@@ -130,7 +130,7 @@ void OnlineUserEditor() {
       u.restriction(0);
       for (int i = 0; i <= 15; i++) {
         if (restrict[i] != SPACE) {
-          u.SetRestrictionFlag(1 << i);
+          u.set_restrict(1 << i);
         }
       }
     } break;

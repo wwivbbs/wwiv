@@ -759,30 +759,6 @@ struct usersubrec {
   int16_t subnum;
 };
 
-// USERREC.inact
-#define inact_deleted 0x01
-#define inact_inactive 0x02
-
-// USERREC.exempt
-#define exempt_ratio 0x01
-#define exempt_time 0x02
-#define exempt_post 0x04
-#define exempt_all 0x08
-#define exempt_adel 0x10
-
-// USERREC.restrict
-#define restrict_logon 0x0001
-#define restrict_chat 0x0002
-#define restrict_validate 0x0004
-#define restrict_automessage 0x0008
-#define restrict_anony 0x0010
-#define restrict_post 0x0020
-#define restrict_email 0x0040
-#define restrict_vote 0x0080
-#define restrict_iichat 0x0100
-#define restrict_net 0x0200
-#define restrict_upload 0x0400
-
 #define restrict_string "LCMA*PEVKNU     "
 
 // USERREC.sysstatus

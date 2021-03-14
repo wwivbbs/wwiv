@@ -419,8 +419,8 @@ void input_pw(User* pUser) {
 }
 
 void input_ansistat() {
-  a()->user()->ClearStatusFlag(User::ansi);
-  a()->user()->ClearStatusFlag(User::status_color);
+  a()->user()->clear_flag(User::flag_ansi);
+  a()->user()->clear_flag(User::status_color);
   bout.nl();
   if (check_ansi() == 1) {
     bout << "ANSI graphics support detected.  Use it? ";
@@ -434,12 +434,12 @@ void input_ansistat() {
     bout << "Is the above line colored, italicized, bold, inversed, or blinking? ";
   }
   if (bin.noyes()) {
-    a()->user()->SetStatusFlag(User::ansi);
+    a()->user()->set_flag(User::flag_ansi);
     bout.nl();
     bout << "|#5Do you want color? ";
     if (bin.noyes()) {
-      a()->user()->SetStatusFlag(User::status_color);
-      a()->user()->SetStatusFlag(User::extraColor);
+      a()->user()->set_flag(User::status_color);
+      a()->user()->set_flag(User::extraColor);
     } else {
       color_list();
       bout.nl();
@@ -1257,12 +1257,12 @@ void NewUserDataEntry(const newuser_config_t& nc) {
     letters.erase(ch);
   } while (!a()->sess().hangup());
 
-  if (u.HasAnsi()) {
-    u.SetStatusFlag(User::status_color);
-    u.SetStatusFlag(User::extraColor);
+  if (u.ansi()) {
+    u.set_flag(User::status_color);
+    u.set_flag(User::extraColor);
     // Enable the internal FSED and full screen reader for the sysop.
     u.SetDefaultEditor(0xff);
-    u.SetStatusFlag(User::fullScreenReader);
+    u.set_flag(User::fullScreenReader);
   }
   a()->localIO()->topdata(saved_topdata);
   a()->UpdateTopScreen();
@@ -1289,10 +1289,10 @@ void newuser() {
   }
 
   if (check_ansi() == 1) {
-    a()->user()->SetStatusFlag(User::ansi);
-    a()->user()->SetStatusFlag(User::status_color);
-    a()->user()->SetStatusFlag(User::extraColor);
-    a()->user()->SetStatusFlag(User::fullScreenReader);
+    a()->user()->set_flag(User::flag_ansi);
+    a()->user()->set_flag(User::status_color);
+    a()->user()->set_flag(User::extraColor);
+    a()->user()->set_flag(User::fullScreenReader);
     // 0xff is the internal FSED.
     a()->user()->SetDefaultEditor(0xff);
   }

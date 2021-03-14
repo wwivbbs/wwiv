@@ -450,7 +450,7 @@ bool WWIVMessageArea::AddMessage(const Message& message, const MessageAreaOption
     message.text().set_text(ss.str());
   }
 
-  // if (a()->user()->IsRestrictionValidate()) {
+  // if (a()->user()->restrict_validate()) {
   //  p.status |= status_unvalidated;
   //}
   // If we need network validation, then mark it as such.

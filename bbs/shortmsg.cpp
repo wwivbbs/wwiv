@@ -44,7 +44,7 @@ using namespace wwiv::strings;
  * plug in, if such are used.
  */
 void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
-  if (!pUser->HasShortMessage()) {
+  if (!pUser->ssm()) {
     return;
   }
   DataFile<shortmsgrec> file(FilePath(a()->config()->datadir(), SMW_DAT),
@@ -91,7 +91,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
     bout.nl();
   }
   if (bShownAllMessages) {
-    pUser->ClearStatusFlag(User::SMW);
+    pUser->clear_flag(User::SMW);
   }
 }
 
@@ -127,7 +127,7 @@ static void SendLocalShortMessage(int usernum, const std::string& messageText) {
     file.Seek(new_msg_pos * sizeof(shortmsgrec), File::Whence::begin);
     file.Write(&sm, sizeof(shortmsgrec));
     file.Close();
-    user.SetStatusFlag(User::SMW);
+    user.set_flag(User::SMW);
     a()->users()->writeuser(&user, usernum);
   }
 }

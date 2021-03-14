@@ -87,10 +87,10 @@ FsedApplication::FsedApplication(std::unique_ptr<FsedConfig> config)
   auto& u = context().u();
   u.SetScreenChars(80);
   u.SetScreenLines(25);
-  u.SetStatusFlag(User::ansi);
-  u.SetStatusFlag(User::status_color);
-  u.SetStatusFlag(User::extraColor);
-  u.SetStatusFlag(User::fullScreenReader);
+  u.set_flag(User::flag_ansi);
+  u.set_flag(User::status_color);
+  u.set_flag(User::extraColor);
+  u.set_flag(User::fullScreenReader);
 
   const auto colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
   auto i = 0;

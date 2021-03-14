@@ -188,7 +188,7 @@ void chat_room() {
       loc = change_channels(-1);
     }
   } else {
-    if (a()->user()->IsRestrictionMultiNodeChat() || !check_ch(1)) {
+    if (a()->user()->restrict_iichat() || !check_ch(1)) {
       bout << "\r\n|#6You may not access inter-instance chat facilities.\r\n";
       bout.pausescr();
       return;
@@ -863,7 +863,7 @@ bool check_ch(int ch) {
   } else {
     c_ar = 0;
   }
-  if (c_ar && !a()->user()->HasArFlag(c_ar)) {
+  if (c_ar && !a()->user()->has_ar(c_ar)) {
     sprintf(szMessage, "\r\n|#9The \"|#1%c|#9\" AR is required to access this chat channel.\r\n",
             channels[ch].ar);
     bout << szMessage;

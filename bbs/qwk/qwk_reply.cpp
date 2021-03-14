@@ -189,7 +189,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 
     int xa = 0;
     // User is restricted from posting
-    if ((restrict_post & a()->user()->data.restrict) || (a()->user()->data.posttoday >= ss.posts)) {
+    if (a()->user()->restrict_post() || a()->user()->data.posttoday >= ss.posts) {
       bout.nl();
       bout.bputs("Too many messages posted today.");
       bout.nl();
@@ -212,7 +212,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     if (!a()->current_sub().nets.empty()) {
       xa &= (anony_real_name);
 
-      if (a()->user()->data.restrict & restrict_net) {
+      if (a()->user()->restrict_net()) {
         bout.nl();
         bout.bputs("You can't post on networked sub-boards.");
         bout.nl();
@@ -289,7 +289,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
       a()->status_manager()->Run([&](Status& s) { p.qscan = s.next_qscanptr(); });
     }
     p.daten = daten_t_now();
-    if (a()->user()->data.restrict & restrict_validate) {
+    if (a()->user()->restrict_validate()) {
       p.status = status_unvalidated;
     } else {
       p.status = 0;

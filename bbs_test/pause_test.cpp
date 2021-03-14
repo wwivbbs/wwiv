@@ -40,10 +40,10 @@ protected:
 };
 
 TEST_F(PauseTest, Smoke) {
-  helper.user()->SetStatusFlag(User::pauseOnPage);
+  helper.user()->set_flag(User::pauseOnPage);
   {
     TempDisablePause disable_pause(bout);
-    EXPECT_FALSE(helper.user()->HasPause());
+    EXPECT_FALSE(helper.user()->pause());
   }
-  EXPECT_TRUE(helper.user()->HasPause());
+  EXPECT_TRUE(helper.user()->pause());
 }

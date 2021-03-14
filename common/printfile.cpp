@@ -63,8 +63,8 @@ std::filesystem::path CreateFullPathToPrint(const std::vector<std::filesystem::p
       continue;
     }
     auto candidate{file};
-    if (user.HasAnsi()) {
-      if (user.HasColor()) {
+    if (user.ansi()) {
+      if (user.color()) {
         // ANSI and color
         candidate.replace_extension(".ans");
         if (File::Exists(candidate)) {
@@ -94,16 +94,16 @@ public:
     menu_data_and_options_t t(raw);
     data_ = t.data();
     saved_disable_pause = sess.disable_pause();
-    saved_user_has_pause = out.user().HasPause();
+    saved_user_has_pause = out.user().pause();
     if (!t.opts_empty()) {
       for (const auto& [key, value] : t.opts()) {
         if (key == "pause") {
           if (value == "on") {
             sess.disable_pause(false);
-            out.user().SetStatusFlag(User::pauseOnPage, true);
+            out.user().set_flag(User::pauseOnPage, true);
           } else if (value == "off") {
             sess.disable_pause(true);
-            out.user().SetStatusFlag(User::pauseOnPage, false);
+            out.user().set_flag(User::pauseOnPage, false);
           } else if (value == "start") {
             bout.pausescr();
           } else if (value == "end") {
@@ -118,7 +118,7 @@ public:
   }
   ~printfile_opts() {
     sess.disable_pause(saved_disable_pause);
-    out_.user().SetStatusFlag(User::pauseOnPage, saved_user_has_pause);
+    out_.user().set_flag(User::pauseOnPage, saved_user_has_pause);
     if (pause_at_end) {
       bout.pausescr();
     }

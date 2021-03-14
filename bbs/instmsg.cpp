@@ -171,7 +171,7 @@ void write_inst(int loc, int subloc, int flags) {
     if (chat_invis) {
       cf |= INST_FLAGS_INVIS;
     }
-    if (!a()->user()->IsIgnoreNodeMessages()) {
+    if (!a()->user()->ignore_msgs()) {
       switch (loc) {
       case INST_LOC_MAIN:
       case INST_LOC_XFER:

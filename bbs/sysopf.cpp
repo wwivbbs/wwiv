@@ -145,7 +145,7 @@ static void valuser_manual(User& user) {
         break;
       }
       const auto ar = ch_ar - 'A';
-      user.ToggleArFlag(1 << ar);
+      user.toggle_ar(1 << ar);
     } while (!a()->sess().hangup());
   }
   bout.nl();
@@ -159,7 +159,7 @@ static void valuser_manual(User& user) {
         break;
       }
       const auto dar = ch_dar - 'A';
-      user.ToggleDarFlag(1 << dar);
+      user.toggle_dar(1 << dar);
     } while (!a()->sess().hangup());
   }
   bout.nl();
@@ -171,7 +171,7 @@ static void valuser_manual(User& user) {
   do {
     std::string user_rs;
     for (auto i = 0; i <= 15; i++) {
-      user_rs.push_back(user.HasRestrictionFlag(1 << i) ? restrict_string[i] : ' ');
+      user_rs.push_back(user.has_restrict(1 << i) ? restrict_string[i] : ' ');
     }
     bout << "      |#2" << restrict_string << wwiv::endl;
     bout << "|#9Rstr: |#2" << user_rs << wwiv::endl;
@@ -179,7 +179,7 @@ static void valuser_manual(User& user) {
     const auto ch = onek(allowed);
     if (ch != RETURN && ch != SPACE && ch != '?') {
       if (const auto pos = r.find(ch); pos != std::string::npos) {
-        user.ToggleRestrictionFlag(1 << pos);
+        user.toggle_restrict(1 << pos);
       }
     }
     if (ch == RETURN) {
@@ -293,9 +293,9 @@ void print_net_listing(bool bForcePause) {
   write_inst(INST_LOC_NETLIST, 0, INST_FLAGS_NONE);
 
   if (bForcePause) {
-    bHadPause  = a()->user()->HasPause();
+    bHadPause  = a()->user()->pause();
     if (bHadPause) {
-      a()->user()->ToggleStatusFlag(User::pauseOnPage);
+      a()->user()->toggle_flag(User::pauseOnPage);
     }
   }
   auto done = false;
@@ -606,7 +606,7 @@ void print_net_listing(bool bForcePause) {
     }
   }
   if (bForcePause && bHadPause) {
-    a()->user()->ToggleStatusFlag(User::pauseOnPage);
+    a()->user()->toggle_flag(User::pauseOnPage);
   }
 }
 
@@ -802,7 +802,7 @@ void auto_purge() {
   do {
     User user;
     a()->users()->readuser(&user, user_number);
-    if (!user.IsExemptAutoDelete()) {
+    if (!user.exempt_auto_delete()) {
       auto d = static_cast<int>((current_daten - user.last_daten()) / SECONDS_PER_DAY);
       // if user is not already deleted && SL<NO_PURGE_SL && last_logon
       // greater than AUTO_USER_PURGE days ago

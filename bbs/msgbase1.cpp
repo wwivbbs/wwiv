@@ -180,7 +180,7 @@ void post(const PostData& post_data) {
     bout << "\r\nSorry, not enough disk space left.\r\n\n";
     return;
   }
-  if (a()->user()->IsRestrictionPost() ||
+  if (a()->user()->restrict_post() ||
       a()->user()->posts_today() >= a()->config()->sl(a()->sess().effective_sl()).posts) {
     bout << "\r\nToo many messages posted today.\r\n\n";
     return;
@@ -197,12 +197,12 @@ void post(const PostData& post_data) {
   if (data.anonymous_flag == 0 && a()->config()->sl(a()->sess().effective_sl()).ability & ability_post_anony) {
     data.anonymous_flag = anony_enable_anony;
   }
-  if (data.anonymous_flag == anony_enable_anony && a()->user()->IsRestrictionAnonymous()) {
+  if (data.anonymous_flag == anony_enable_anony && a()->user()->restrict_anony()) {
     data.anonymous_flag = 0;
   }
   if (!a()->current_sub().nets.empty()) {
     data.anonymous_flag &= anony_real_name;
-    if (a()->user()->IsRestrictionNet()) {
+    if (a()->user()->restrict_net()) {
       bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
       return;
     }
@@ -261,7 +261,7 @@ void post(const PostData& post_data) {
   a()->status_manager()->Run([&](Status& s) { p.qscan = s.next_qscanptr(); });
   p.daten = daten_t_now();
   p.status = 0;
-  if (a()->user()->IsRestrictionValidate()) {
+  if (a()->user()->restrict_validate()) {
     p.status |= status_unvalidated;
   }
 
@@ -460,7 +460,7 @@ void nscan(uint16_t start_subnum) {
   bout.nl();
   bout.clreol();
   bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
-  if (nextsub && a()->user()->IsNewScanFiles() && !a()->sess().scanned_files()) {
+  if (nextsub && a()->user()->newscan_files() && !a()->sess().scanned_files()) {
     bout.clear_lines_listed();
     tmp_disable_conf(true);
     nscanall();

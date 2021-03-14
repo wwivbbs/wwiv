@@ -73,7 +73,7 @@ int  UserManager::num_user_records() const {
 bool UserManager::readuser_nocache(User *u, int user_number) const {
   File file(FilePath(data_directory_, USER_LST));
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
-    u->data.inact = inact_deleted;
+    u->data.inact = User::userDeleted; 
     u->FixUp();
     u->user_number_ = user_number;
     return false;
@@ -82,7 +82,7 @@ bool UserManager::readuser_nocache(User *u, int user_number) const {
   const auto num_user_records = nSize / userrec_length_ - 1;
 
   if (user_number > num_user_records) {
-    u->data.inact = inact_deleted;
+    u->data.inact = User::userDeleted;
     u->FixUp();
     u->user_number_ = user_number;
     return false;
@@ -214,7 +214,7 @@ static bool deluser(int user_number, const Config& config, UserManager& um,
   SSM ssm(config, um);
   ssm.delete_local_to_user(user_number);
   DeleteSmallRecord(sm, names, user.GetName());
-  user.SetInactFlag(User::userDeleted);
+  user.set_inact(User::userDeleted);
   user.email_waiting(0);
   {
     auto email = api.OpenEmail();
@@ -258,7 +258,7 @@ bool UserManager::restore_user(int user_number) {
   StatusMgr sm(config_.datadir(), [](int) {});
   Names names(config_);
   InsertSmallRecord(sm, names, user_number, user.GetName());
-  user.ClearInactFlag(User::userDeleted);
+  user.clear_inact(User::userDeleted);
   this->writeuser(&user, user_number);
 
   PhoneNumbers pn(config_);

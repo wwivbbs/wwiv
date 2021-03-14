@@ -50,7 +50,7 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-static bool IsUserDeleted(userrec* user) { return user->inact & inact_deleted; }
+static bool IsUserDeleted(userrec* user) { return user->inact & wwiv::sdk::User::userDeleted; }
 
 static void show_user(EditItems* items, userrec* user) {
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
@@ -61,10 +61,10 @@ static void show_user(EditItems* items, userrec* user) {
   for (int i = 1; i < height; i++) {
     items->window()->PutsXY(NONEDITABLE_DATA_POS, i, blank);
   }
-  if (user->inact & inact_deleted) {
+  if (IsUserDeleted(user)) {
     items->window()->SetColor(SchemeId::ERROR_TEXT);
     items->window()->PutsXY(NONEDITABLE_DATA_POS, 1, "[[ DELETED USER ]] ");
-  } else if (user->inact & inact_inactive) {
+  } else if (user->inact & wwiv::sdk::User::userInactive) {
     items->window()->SetColor(SchemeId::ERROR_TEXT);
     items->window()->PutsXY(NONEDITABLE_DATA_POS, 1, "[[ INACTIVE USER ]]");
   }

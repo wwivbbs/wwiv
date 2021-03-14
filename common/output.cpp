@@ -59,7 +59,7 @@ Language& Output::lang() {
 Output::~Output() = default;
 
 static bool okansi(const wwiv::sdk::User& user) {
-  return user.HasAnsi();
+  return user.ansi();
 }
 
 void Output::SetLocalIO(LocalIO* local_io) {

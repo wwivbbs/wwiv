@@ -43,12 +43,12 @@ TempDisablePause::TempDisablePause(Output& out)
     : Transaction([&out] {
     if (out.sess().disable_pause()) {
       out.sess().disable_pause(false);
-      out.user().SetStatusFlag(User::pauseOnPage);
+      out.user().set_flag(User::pauseOnPage);
     }
   }, nullptr) {
-  if (out.user().HasPause()) {
+  if (out.user().pause()) {
     out.sess().disable_pause(true);
-    out.user().ClearStatusFlag(User::pauseOnPage);
+    out.user().clear_flag(User::pauseOnPage);
   }
 }
 
@@ -70,9 +70,9 @@ char Output::GetKeyForPause() {
     break;
   case 'C':
   case '=':
-    if (user().HasPause()) {
+    if (user().pause()) {
       bin.nsp(1);
-      user().ToggleStatusFlag(User::pauseOnPage);
+      user().toggle_flag(User::pauseOnPage);
     }
     break;
   default:
@@ -81,7 +81,7 @@ char Output::GetKeyForPause() {
   return ch;
 }
 
-static bool okansi(const User& user) { return user.HasAnsi(); }
+static bool okansi(const User& user) { return user.ansi(); }
 
 void Output::pausescr_noansi() {
   const auto str_pause = bout.lang().value("PAUSE", "|#3More? [Y/n/c]"); 

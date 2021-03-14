@@ -78,7 +78,7 @@ std::string BbsMacroContext::interpret_macro_char(char ch) const {
       bout.pausescr();
       return "";
     case '&':
-      return context_->u().HasAnsi() ? "ANSI" : "ASCII";
+      return context_->u().ansi() ? "ANSI" : "ASCII";
     case 'A':                               // User's age
       return to_string(context_->u().age());
     case 'a':                               // User's language

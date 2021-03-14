@@ -114,7 +114,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
   cfg.newuploads = 0;
   cfg.maxusers = 500;
-  cfg.newuser_restrict = restrict_validate;
+  cfg.newuser_restrict = User::restrictValidate;
   cfg.req_ratio = 0.0;
   cfg.newusergold = 100.0;
 
@@ -226,7 +226,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
   // Note: this is where wwivconfig makes a user record #1 that is deleted for new installs.
   // TODO(rushfan): We should use User::CreateNewUserRecord here.
-  u.inact = inact_deleted;
+  u.inact = User::userDeleted;
   memset(u.lp_colors, static_cast<uint8_t>(Color::CYAN), sizeof(u.lp_colors));
   u.lp_colors[0] = static_cast<uint8_t>(Color::LIGHTGREEN);
   u.lp_colors[1] = static_cast<uint8_t>(Color::LIGHTGREEN);

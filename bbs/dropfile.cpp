@@ -180,7 +180,7 @@ void CreateDoorInfoDropFile() {
     } else {
       f.WriteLine();
     }
-    f.WriteLine(u.HasAnsi() ? "1" : "0");
+    f.WriteLine(u.ansi() ? "1" : "0");
     f.WriteLine(std::to_string(u.sl()));
     f.WriteLine(std::to_string(GetMinutesRemainingForDropFile()));
     f.Close();
@@ -291,7 +291,7 @@ void CreateCallInfoBbsDropFile() {
     file.WriteLine(" ");
     file.WriteLine(u.sl());
     file.WriteLine(GetMinutesRemainingForDropFile());
-    file.WriteLine(u.HasAnsi() ? "COLOR" : "MONO");
+    file.WriteLine(u.ansi() ? "COLOR" : "MONO");
     file.WriteLine("X");
     file.WriteLine(u.usernum());
     file.WriteLine(start_minute);

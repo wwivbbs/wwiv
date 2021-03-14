@@ -128,11 +128,11 @@ static void print_cur_stat() {
   const auto screen_size =
       fmt::format("{} X {}", a()->user()->GetScreenChars(), a()->user()->GetScreenLines());
   const string ansi_setting =
-      a()->user()->HasAnsi() ? (a()->user()->HasColor() ? "Color" : "Monochrome") : "No ANSI";
+      a()->user()->ansi() ? (a()->user()->color() ? "Color" : "Monochrome") : "No ANSI";
   bout.format("|#11|#9) Screen size       : |#2{:<16} ", screen_size);
   bout.format("|#12|#9) ANSI              : |#2{}", ansi_setting);
   bout.nl();
-  bout.format("|#13|#9) Pause on screen   : |#2{:<16} ", a()->user()->HasPause() ? "On " : "Off");
+  bout.format("|#13|#9) Pause on screen   : |#2{:<16} ", a()->user()->pause() ? "On " : "Off");
   bout.nl();
   bout.format("|#14|#9) Mailbox           : |#2{}", GetMailBoxStatus());
   bout.nl();
@@ -150,7 +150,7 @@ static void print_cur_stat() {
       editor_name = a()->editors[editor_num - 1].description;
     }
     bout.format("|#19|#9) Message editor    : |#2{:<16} ", editor_name); 
-    bout << "|#1A|#9) Extended colors   : |#2" << YesNoString(a()->user()->IsUseExtraColor()) << wwiv::endl;
+    bout << "|#1A|#9) Extended colors   : |#2" << YesNoString(a()->user()->extra_color()) << wwiv::endl;
   } else {
     bout << "|#17|#9) Update macros" << wwiv::endl;
   }
@@ -158,20 +158,20 @@ static void print_cur_stat() {
   const auto internet_email_address = 
       ((a()->user()->email_address().empty()) ? "None." : a()->user()->email_address());
   bout.format("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->GetOptionalVal());
-  bout << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->IsUseConference()) << wwiv::endl;
-  bout.format("|#1D|#9) Show Hidden Lines : |#2{:<16} ", YesNoString(a()->user()->HasStatusFlag(User::msg_show_controlcodes)));
+  bout << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->use_conference()) << wwiv::endl;
+  bout.format("|#1D|#9) Show Hidden Lines : |#2{:<16} ", YesNoString(a()->user()->has_flag(User::msg_show_controlcodes)));
   if (a()->fullscreen_read_prompt()) {
-    bout << "|#1G|#9) Message Reader    : |#2" << (a()->user()->HasStatusFlag(User::fullScreenReader) ? "Full-Screen" : "Traditional") << wwiv::endl;;
+    bout << "|#1G|#9) Message Reader    : |#2" << (a()->user()->has_flag(User::fullScreenReader) ? "Full-Screen" : "Traditional") << wwiv::endl;;
   }
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
   bout << "|#1K|#9) Configure Menus" << wwiv::endl;
   if (num_instances() > 1) {
-    bout.format("|#1M|#9) Allow user msgs   : |#2{:<16} |#1N|#9) Configure QWK", YesNoString(!a()->user()->IsIgnoreNodeMessages()));
+    bout.format("|#1M|#9) Allow user msgs   : |#2{:<16} |#1N|#9) Configure QWK", YesNoString(!a()->user()->ignore_msgs()));
   }
   bout.nl();
   bout.format("|#1S|#9) Cls Between Msgs? : |#2{:<16} ",
-                      YesNoString(a()->user()->IsUseClearScreen()));
-  bout << "|#1T|#9) 12hr or 24hr clock: |#2" << (a()->user()->IsUse24HourClock() ? "24hr" : "12hr")
+                      YesNoString(a()->user()->clear_screen()));
+  bout << "|#1T|#9) 12hr or 24hr clock: |#2" << (a()->user()->twentyfour_clock() ? "24hr" : "12hr")
        << wwiv::endl;
 
   string wwiv_regnum = "(None)";
@@ -179,7 +179,7 @@ static void print_cur_stat() {
     wwiv_regnum = std::to_string(a()->user()->wwiv_regnum());
   }
   bout.format("|#1U|#9) Use Msg AutoQuote : |#2{:<16} ",
-                      YesNoString(a()->user()->IsUseAutoQuote()));
+                      YesNoString(a()->user()->auto_quote()));
   bout << "|#1W|#9) WWIV reg num      : |#2" << wwiv_regnum << wwiv::endl;
 
   bout << "|#1Q|#9) Quit to main menu\r\n";
@@ -211,7 +211,7 @@ static string DisplayColorName(int c) {
 string DescribeColorCode(int nColorCode) {
   std::ostringstream os;
 
-  if (a()->user()->HasColor()) {
+  if (a()->user()->color()) {
     os << DisplayColorName(nColorCode & 0x07) << " on " << DisplayColorName((nColorCode >> 4) & 0x07);
   } else {
     os << ((nColorCode & 0x07) ? "Normal" : "Inversed");
@@ -248,7 +248,7 @@ static void change_colors() {
     bout.cls();
     bout << "|#5Customize Colors:";
     bout.nl(2);
-    if (!a()->user()->HasColor()) {
+    if (!a()->user()->color()) {
       std::ostringstream os;
       os << "Monochrome base color : ";
       if ((a()->user()->bwcolor(1) & 0x70) == 0) {
@@ -309,7 +309,7 @@ static void change_colors() {
     } else {
       uint8_t nc;
       const int color_num = ch - '0';
-      if (a()->user()->HasColor()) {
+      if (a()->user()->color()) {
         color_list();
         bout.Color(0);
         bout.nl();
@@ -360,7 +360,7 @@ static void change_colors() {
       bout << "|#8Is this OK? ";
       if (bin.yesno()) {
         bout << "\r\nColor saved.\r\n\n";
-        if (a()->user()->HasColor()) {
+        if (a()->user()->color()) {
           a()->user()->color(color_num, nc);
         } else {
           a()->user()->bwcolor(color_num, nc);
@@ -740,7 +740,7 @@ void defaults(bool& need_menu_reload) {
       input_ansistat();
       break;
     case '3':
-      a()->user()->ToggleStatusFlag(User::pauseOnPage);
+      a()->user()->toggle_flag(User::pauseOnPage);
       break;
     case '4':
       modify_mailbox();
@@ -761,20 +761,20 @@ void defaults(bool& need_menu_reload) {
       select_editor();
       break;
     case 'A':
-      a()->user()->ToggleStatusFlag(User::extraColor);
+      a()->user()->toggle_flag(User::extraColor);
       break;
     case 'B':
       optional_lines();
       break;
     case 'C':
-      a()->user()->ToggleStatusFlag(User::conference);
+      a()->user()->toggle_flag(User::conference);
       changedsl();
       break;
     case 'D':
-      a()->user()->ToggleStatusFlag(User::msg_show_controlcodes);
+      a()->user()->toggle_flag(User::msg_show_controlcodes);
       break;
     case 'G':
-      a()->user()->ToggleStatusFlag(User::fullScreenReader);
+      a()->user()->toggle_flag(User::fullScreenReader);
       break;
     case 'I': {
       bout.nl();
@@ -801,11 +801,11 @@ void defaults(bool& need_menu_reload) {
       break;
     case 'M':
       if (num_instances() > 1) {
-        a()->user()->ClearStatusFlag(User::noMsgs);
+        a()->user()->clear_flag(User::noMsgs);
         bout.nl();
         bout << "|#5Allow messages sent between instances? ";
         if (!bin.yesno()) {
-          a()->user()->SetStatusFlag(User::noMsgs);
+          a()->user()->set_flag(User::noMsgs);
         }
       }
       break;
@@ -813,13 +813,13 @@ void defaults(bool& need_menu_reload) {
       wwiv::bbs::qwk::qwk_config_user();
       break;
     case 'S':
-      a()->user()->ToggleStatusFlag(User::clearScreen);
+      a()->user()->toggle_flag(User::clearScreen);
       break;
     case 'T':
-      a()->user()->ToggleStatusFlag(User::twentyFourHourClock);
+      a()->user()->toggle_flag(User::twentyFourHourClock);
       break;
     case 'U':
-      a()->user()->ToggleStatusFlag(User::autoQuote);
+      a()->user()->toggle_flag(User::autoQuote);
       break;
     case 'W':
       enter_regnum();

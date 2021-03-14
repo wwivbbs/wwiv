@@ -19,7 +19,6 @@
 #include "bbs/menus/menusupp.h"
 
 #include "bbs/attach.h"
-#include "bbs/automsg.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
@@ -52,6 +51,7 @@
 #include "bbs/subedit.h"
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
+// ReSharper disable once CppUnusedIncludeDirective
 #include "bbs/tag.h"
 #include "bbs/utility.h"
 #include "bbs/valscan.h"
@@ -393,11 +393,10 @@ void Vote() {
 }
 
 void ToggleExpert(const std::string& data) {
-  menu_data_and_options_t opts(data);
-  a()->user()->ToggleStatusFlag(User::expert);
+  const menu_data_and_options_t opts(data);
+  a()->user()->toggle_flag(User::flag_expert);
   auto o = opts.opts("quiet");
-  const auto quiet = !o.empty() && *std::begin(o) == "off";
-  if (!quiet) {
+  if (const auto quiet = !o.empty() && *std::begin(o) == "off"; !quiet) {
     bout << "|#3Expert mode is: " << (a()->user()->IsExpert() ? "On" : "Off") << wwiv::endl;
   }
 }
@@ -918,7 +917,7 @@ void XferDefaults() {
 void Upload() {
   play_sdf(UPLOAD_NOEXT, false);
   bout.printfile(UPLOAD_NOEXT);
-  if (a()->user()->IsRestrictionValidate() || a()->user()->IsRestrictionUpload() ||
+  if (a()->user()->restrict_validate() || a()->user()->restrict_upload() ||
       (a()->config()->sysconfig_flags() & sysconfig_all_sysop)) {
     if (a()->config()->new_uploads_dir() < a()->dirs().size()) {
       upload(static_cast<int>(a()->config()->new_uploads_dir()));

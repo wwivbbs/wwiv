@@ -190,7 +190,7 @@ static char HandleControlKey(const char c, const SessionContext& context, wwiv::
     bus().invoke<ToggleAvailable>();
     break;
   case CY:
-    user.ToggleStatusFlag(User::pauseOnPage);
+    user.toggle_flag(User::pauseOnPage);
     break;
   default:
     return c;

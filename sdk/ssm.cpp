@@ -102,7 +102,7 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
   file.Seek(pos * sizeof(shortmsgrec), File::Whence::begin);
   file.Write(&sm, sizeof(shortmsgrec));
   file.Close();
-  user->SetStatusFlag(User::SMW);
+  user->set_flag(User::SMW);
   user_manager_.writeuser(user.value(), user_number);
   return true;
 }

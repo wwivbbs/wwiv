@@ -176,7 +176,7 @@ void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_fo
   if (!f) {
     return;
   }
-  const auto use_24h_format = ctx.u().IsUse24HourClock();
+  const auto use_24h_format = ctx.u().twentyfour_clock();
   auto lines = create_quoted_text_from_message(raw_text, to_name, type, use_24h_format, tt);
   for (const auto& l : lines) {
     f.WriteLine(l);
@@ -199,7 +199,7 @@ void grab_quotes(std::string& raw_text, const std::string& to_name, wwiv::common
     f.Write(raw_text);
   }
 
-  const auto use_24h_format = ctx.u().IsUse24HourClock();
+  const auto use_24h_format = ctx.u().twentyfour_clock();
   quotes_ind = std::make_unique<std::vector<std::string>>(create_quoted_text_from_message(
       raw_text, to_name, quote_date_format_t::no_quote, use_24h_format, 0));
 }

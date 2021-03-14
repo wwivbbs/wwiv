@@ -183,7 +183,7 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
 }
 
 bool ratio_ok() {
-  if (!a()->user()->IsExemptRatio()) {
+  if (!a()->user()->exempt_ratio()) {
     if (a()->config()->req_ratio() > 0.0001f && a()->user()->ratio() < a()->config()->req_ratio()) {
       bout.cls();
       bout.nl();
@@ -193,7 +193,7 @@ bool ratio_ok() {
       return false;
     }
   }
-  if (!a()->user()->IsExemptPost()) {
+  if (!a()->user()->exempt_post()) {
     if (a()->config()->post_to_call_ratio() > 0.0001f &&
         post_ratio() < a()->config()->post_to_call_ratio()) {
       bout.nl();

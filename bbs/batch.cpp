@@ -342,7 +342,7 @@ void zmbatchdl(bool bHangupAfterDl) {
     if (a()->config()->req_ratio() > 0.0001 && a()->user()->ratio() < a()->config()->req_ratio()) {
       bRatioBad = true;
     }
-    if (a()->user()->IsExemptRatio()) {
+    if (a()->user()->exempt_ratio()) {
       bRatioBad = false;
     }
     if (!a()->batch().entry[cur].sending()) {
@@ -473,7 +473,7 @@ void ymbatchdl(bool bHangupAfterDl) {
     if ((a()->config()->req_ratio() > 0.0001) && (a()->user()->ratio() < a()->config()->req_ratio())) {
       bRatioBad = true;
     }
-    if (a()->user()->IsExemptRatio()) {
+    if (a()->user()->exempt_ratio()) {
       bRatioBad = false;
     }
     if (!a()->batch().entry[cur].sending()) {
@@ -584,7 +584,7 @@ static std::filesystem::path make_dl_batch_list() {
     const auto thisk = bytes_to_k(b.len());
     if (a()->config()->req_ratio() > 0.0001f &&
         ratio1(addk + thisk) < a()->config()->req_ratio() &&
-        !a()->user()->IsExemptRatio()) {
+        !a()->user()->exempt_ratio()) {
       ok = false;
       bout << "Cannot download " << b.aligned_filename() << ": Ratio too low" << wwiv::endl;
     }

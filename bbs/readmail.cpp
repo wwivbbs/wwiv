@@ -872,7 +872,7 @@ void readmail(bool newmail_only) {
           break;
         }
         bout.nl(2);
-        if (okfsed() && a()->user()->IsUseAutoQuote()) {
+        if (okfsed() && a()->user()->auto_quote()) {
           // TODO: optimize this since we also call readfile in grab_user_name
           auto reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
           if (auto o = readfile(&(m.msg), "email")) {
@@ -1013,7 +1013,7 @@ void readmail(bool newmail_only) {
           // TODO: optimize this since we also call readfile in grab_user_name
           reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
           if (auto o = readfile(&(m.msg), "email")) {
-            if (okfsed() && a()->user()->IsUseAutoQuote()) {
+            if (okfsed() && a()->user()->auto_quote()) {
               // used to be 1 or 2 depending on s[0] == '@', but
               // that's allowable now and @ was never in the beginning.
               auto_quote(o.value(), reply_to_name, quote_date_format_t::email, m.daten,

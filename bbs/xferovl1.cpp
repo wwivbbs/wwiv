@@ -379,7 +379,7 @@ void tag_it() {
         bad = true;
       }
       if (a()->config()->req_ratio() > 0.0001f &&
-          a()->user()->ratio() < a()->config()->req_ratio() && !a()->user()->IsExemptRatio() &&
+          a()->user()->ratio() < a()->config()->req_ratio() && !a()->user()->exempt_ratio() &&
           !bad) {
         bout.bprintf(
             "|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",

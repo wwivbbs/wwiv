@@ -378,7 +378,7 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
       bout << "\r\nUnknown system number.\r\n\n";
       return false;
     }
-    if (a()->user()->IsRestrictionNet()) {
+    if (a()->user()->restrict_net()) {
       bout << "\r\nYou can't send mail off the system.\r\n";
       return false;
     }
@@ -392,7 +392,7 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
       bout << "\r\nToo much mail sent today.\r\n\n";
       return false;
     }
-    if (a()->user()->IsRestrictionEmail() && user_number != 1) {
+    if (a()->user()->restrict_email() && user_number != 1) {
       bout << "\r\nYou can't send mail.\r\n\n";
       return false;
     }
@@ -507,7 +507,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   if (anony & anony_receiver) {
     i = anony_enable_anony;
   }
-  if (i == anony_enable_anony && a()->user()->IsRestrictionAnonymous()) {
+  if (i == anony_enable_anony && a()->user()->restrict_anony()) {
     i = 0;
   }
   if (system_number != 0) {

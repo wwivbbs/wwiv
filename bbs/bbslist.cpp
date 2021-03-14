@@ -329,7 +329,7 @@ void add_bbslist() {
     bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
     return;
   }
-  if (a()->user()->IsRestrictionAutomessage()) {
+  if (a()->user()->restrict_automessage()) {
     bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
     return;
   }

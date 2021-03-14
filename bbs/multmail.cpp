@@ -309,7 +309,7 @@ void slash_e() {
     bout << "Too much mail sent today.\r\n\n";
     return;
   }
-  if (a()->user()->IsRestrictionEmail()) {
+  if (a()->user()->restrict_email()) {
     bout << "You can't send mail.\r\n";
     return;
   }
