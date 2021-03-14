@@ -675,7 +675,7 @@ void VerifyNewUserPassword() {
     bout.nl(1);
     bout << "|#9Please write down this information, and enter your password for verification.\r\n";
     bout << "|#9You will need to know this password in order to change it to something else.\r\n\n";
-    const auto password = bin.input_password("|#9PW: ", 8);
+    const auto password = bin.input_password(bout.lang().value("PW_PROMPT"), 8);
     if (password == a()->user()->password()) {
       ok = true;
     }

@@ -648,7 +648,9 @@ std::string Input::input_password_minimal(int max_length) {
 }
 
 std::string Input::input_password(const string& prompt_text, int max_length) {
-  bout << prompt_text;
+  if (!prompt_text.empty()) {
+    bout << prompt_text;
+  }
   return input_password_minimal(max_length);
 }
 

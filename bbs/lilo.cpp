@@ -229,7 +229,7 @@ static bool VerifyPassword(const std::string& remote_password) {
     return true;
   }
 
-  const auto password = bin.input_password("PW: ", 8);
+  const auto password = bin.input_password(bout.lang().value("PW_PROMPT"), 8);
   return password == a()->user()->password();
 }
 
