@@ -113,7 +113,10 @@ static void UpdateMessageOriginInfo(int system_number, int user_number, Type2Mes
     return;
   }
 
-  if (system_number && net.type == network_type_t::wwivnet) {
+  if (net.type == network_type_t::wwivnet) {
+    if (system_number == 0) {
+      system_number = net.sysnum;
+    }
     if (auto csne = next_system(system_number)) {
       string netstatus;
       if (user_number == 1) {
@@ -146,9 +149,9 @@ static void UpdateMessageOriginInfo(int system_number, int user_number, Type2Mes
       data.from_sys_loc = description;
       return;
     }
+    data.from_sys_name = "Unknown System";
+    data.from_sys_loc = "";
   }
-  data.from_sys_name = "Unknown System";
-  data.from_sys_loc = "Unknown Area";
 }
 
 void display_message_text(const std::string& text, bool* next) {
