@@ -85,11 +85,20 @@ static void UpdateMessageOriginInfo(int system_number, int user_number, Type2Mes
     // TODO(rushfan): here's where we should try to get it from the bbslist.
     if (try_load_nodelist(net)) {
       auto& nl = *net.nodelist;
-      auto addr = fido::get_address_from_origin(data.message_text);
+      auto addr =
+          system_number == 0
+              ? fido::try_parse_fidoaddr(net.fido.fido_address).value_or(fido::FidoAddress())
+              : fido::get_address_from_origin(data.message_text);
       if (addr.zone() == -1) {
         addr = fido::get_address_from_single_line(data.from_user_name);
         if (addr.zone() == -1) {
           addr = fido::get_address_from_single_line(data.from_user_name);
+        }
+      }
+      if (addr.point() != 0) {
+        // Hack to drop points and report parent.
+        if (auto o = fido::try_parse_fidoaddr(to_zone_net_node(addr))) {
+          addr = o.value();
         }
       }
       if (nl.contains(addr)) {

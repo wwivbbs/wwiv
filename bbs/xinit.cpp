@@ -540,9 +540,11 @@ bool Application::InitializeBBS(bool cleanup_network) {
   mkdir_or_warn(sess().dirs().temp_directory(), "temp");
   mkdir_or_warn(sess().dirs().batch_directory(), "batch");
   mkdir_or_warn(sess().dirs().scratch_directory(), "scratch");
-  mkdir_or_warn(sess().dirs().current_menu_directory(), "menus");
   mkdir_or_warn(sess().dirs().current_menu_gfiles_directory(), "menus/gfiles");
   mkdir_or_warn(sess().dirs().current_menu_script_directory(), "menus/scripts");
+  // Note that the sess().dirs().current_menu_directory() won't be set till the user
+  // picks a menuset.
+  mkdir_or_warn(config_->menudir(), "menus");
   write_inst(INST_LOC_INIT, 0, INST_FLAGS_NONE);
 
   // make sure it is the new USERREC structure
