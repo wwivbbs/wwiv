@@ -466,7 +466,7 @@ static std::tuple<bool, int> display_header_file(Type2MessageData& msg) {
   m["total_messages"] = std::to_string(msg.total_messages);
   m["from"] =trim_to_size(msg.from_user_name, 35);
   m["date"] = msg.date;
-  m["to"] = msg.to_user_name;
+  m["to"] = (!msg.to_user_name.empty()) ? msg.to_user_name : "All";
   m["title"] = msg.title;
   m["sys"] = trim_to_size(msg.from_sys_name, 35);
   m["loc"] = trim_to_size(msg.from_sys_loc, 35);
