@@ -409,7 +409,7 @@ BinkState BinkP::WaitConn() {
         }
         try {
           FidoAddress address(net.fido.fido_address);
-          network_addresses += address.as_string();
+          network_addresses += address.as_string(true);
         } catch (const bad_fidonet_address&) {
           LOG(WARNING) << "Bad FTN Address: '" << net.fido.fido_address << "' for network: '"
                        << net.name << "'.";
@@ -431,7 +431,7 @@ BinkState BinkP::WaitConn() {
       try {
         // Present single FTN address.
         const FidoAddress address(net.fido.fido_address);
-        network_addresses = address.as_string();
+        network_addresses = address.as_string(true);
       } catch (const bad_fidonet_address& e) {
         LOG(WARNING) << "Bad FTN Address: '" << net.fido.fido_address << "' for network: '"
                      << net.name << "'." << "; exception: " << e.what();

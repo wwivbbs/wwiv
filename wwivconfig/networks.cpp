@@ -162,7 +162,7 @@ public:
 
     items.add(new Label("FTN Address:"),
               new StringEditItem<std::string&>(MAX_STRING_LEN, n->fido_address, EditLineMode::ALL),
-              "This system's FTN address for use on the network.", 1, y);
+              "The FTN address for this system (example 21:9/123@fsxnet).", 1, y);
     ++y;
     items.add(new Label("Nodelist Base:"),
               new StringEditItem<std::string&>(MAX_STRING_LEN, n->nodelist_base, EditLineMode::ALL),
