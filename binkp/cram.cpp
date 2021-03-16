@@ -44,7 +44,8 @@ bool Cram::ValidatePassword(const std::string& challenge,
                             const std::string& secret, 
                             const std::string& given_hashed_secret) {
   const auto expected = CreateHashedSecret(challenge, secret);
-  VLOG(2) << "expected pw: " << expected << "; given: " << given_hashed_secret;
+  VLOG(1) << "CRAM Challenge: " << challenge;
+  VLOG(1) << "expected pw: " << expected << "; given: " << given_hashed_secret;
   return expected == given_hashed_secret;
 }
  

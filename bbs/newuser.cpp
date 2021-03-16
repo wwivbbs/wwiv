@@ -1009,7 +1009,7 @@ NewUserItemResult DoStreet(NewUserContext& c) {
     cln_nu();
     BackPrint("I'm sorry, you must enter your street address.", 6, 20, 1000);
   }
-    cln_nu();
+  cln_nu();
   bout << "|#2" << c.user.street();
   bout.nl();
   return NewUserItemResult::success;
@@ -1027,7 +1027,11 @@ NewUserItemResult DoCityState(NewUserContext& c) {
         ok = true;
       }
     } while (!ok && !a()->sess().hangup());
-    bout << ", ";
+    c.user.city(properize(c.user.city()));
+    bout.RestorePosition();
+    bout.SavePosition();
+    bout << "|#2" << c.user.city() << ", ";
+    bout.clreol();
     if (c.user.state().empty()) {
       do {
         ok = false;
@@ -1035,12 +1039,12 @@ NewUserItemResult DoCityState(NewUserContext& c) {
           c.user.state(state);
           ok = true;
         }
+        bout.RestorePosition();
       } while (!ok && !a()->sess().hangup());
     }
   }
   cln_nu();
-  c.user.city(properize(c.user.city()));
-  bout << "|#2" << c.user.city() << ", " << c.user.state() << wwiv::endl;
+  bout << "|#2" << c.user.state() << wwiv::endl;
   return NewUserItemResult::success;
 }
 
