@@ -1016,7 +1016,7 @@ NewUserItemResult DoStreet(NewUserContext& c) {
 }
 
 NewUserItemResult DoCityState(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) City/State/Province     : ";
+  bout << "|#1" << c.letter << "|#9) City                    : ";
   bout.SavePosition();
   if (c.user.city().empty() && c.first) {
     bool ok = false;
@@ -1028,21 +1028,29 @@ NewUserItemResult DoCityState(NewUserContext& c) {
       }
     } while (!ok && !a()->sess().hangup());
     c.user.city(properize(c.user.city()));
-    bout.RestorePosition();
-    bout.SavePosition();
-    bout << "|#2" << c.user.city() << ", ";
-    bout.clreol();
-    if (c.user.state().empty()) {
-      do {
-        ok = false;
-        if (auto state = bin.input_upper(c.user.state(), 2); !state.empty() || c.item_type != newuser_item_type_t::required) {
-          c.user.state(state);
-          ok = true;
+  }
+  cln_nu();
+  bout << "|#2" << c.user.city() << wwiv::endl;
+  return NewUserItemResult::success;
+}
+
+NewUserItemResult DoState(NewUserContext& c) {
+
+  bout << "|#1" << c.letter << "|#9) State                   : ";
+  bout.SavePosition();
+  if (c.user.state().empty() && c.first) {
+    bool ok = false;
+    do {
+      ok = false;
+      if (auto state = bin.input_upper(c.user.state(), 2); !state.empty() || c.item_type != newuser_item_type_t::required) {
+         c.user.state(state);
+         ok = true;
         }
         bout.RestorePosition();
       } while (!ok && !a()->sess().hangup());
     }
-  }
+
+  
   cln_nu();
   bout << "|#2" << c.user.state() << wwiv::endl;
   return NewUserItemResult::success;
@@ -1214,7 +1222,12 @@ void NewUserDataEntry(const newuser_config_t& nc) {
   }
   if (nc.use_address_city_state != newuser_item_type_t::unused) {
     nu_items.try_emplace(letter, DoCityState, nc.use_address_city_state);
-    clr_items.try_emplace(letter, [](User& u) { u.city(""); u.state(""); });
+    clr_items.try_emplace(letter, [](User& u) { u.city(""); });
+    ++letter;
+  }
+  if (nc.use_address_city_state != newuser_item_type_t::unused) {
+    nu_items.try_emplace(letter, DoState, nc.use_address_city_state);
+    clr_items.try_emplace(letter, [](User& u) { u.state(""); });
     ++letter;
   }
   if (nc.use_email_address != newuser_item_type_t::unused) {
