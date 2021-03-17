@@ -23,10 +23,9 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
-#include "sdk/vardec.h"
 #include "sdk/net/callout.h"
-
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 #include <string>
 #include <thread>
 
@@ -38,9 +37,10 @@ using std::unique_ptr;
 using wwiv::sdk::Callout;
 using namespace wwiv::core;
 using namespace wwiv::net;
+using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
-static const string ANSWERING_ADDRESS = "20000/20000:1";
+static const std::string ANSWERING_ADDRESS = "20000/20000:1";
 static const int ORIGINATING_ADDRESS = 2;
 
 class BinkTest : public testing::Test {
@@ -64,7 +64,7 @@ protected:
     net.sysnum = 0;
     binkp_config_ = std::make_unique<BinkConfig>(ORIGINATING_ADDRESS, config, network_dir);
     auto dummy_callout = std::make_unique<Callout>(net, 0);
-    BinkP::received_transfer_file_factory_t null_factory = [](const string&, const string& filename) { 
+    BinkP::received_transfer_file_factory_t null_factory = [](const std::string&, const std::string& filename) { 
       return new InMemoryTransferFile(filename, "");
     };
     binkp_config_->callouts()["wwivnet"] = std::move(dummy_callout);
@@ -94,19 +94,20 @@ TEST_F(BinkTest, ErrorAbortsSession) {
   }
 }
 
-static int node_number_from_address_list(const std::string& addresses, const string& network_name) {
+static int node_number_from_address_list(const std::string& addresses,
+                                         const std::string& network_name) {
   const auto a = ftn_address_from_address_list(addresses, network_name);
   return wwivnet_node_number_from_ftn_address(a);
 }
 
 TEST(NodeFromAddressTest, SingleAddress) {
-  const string address = "20000:20000/1234@foonet";
+  const std::string address = "20000:20000/1234@foonet";
   EXPECT_EQ(1234, node_number_from_address_list(address, "foonet"));
   EXPECT_EQ(WWIVNET_NO_NODE, node_number_from_address_list(address, "wwivnet"));
 }
 
 TEST(NodeFromAddressTest, MultipleAddresses) {
-  const string address = "1:369/23@fidonet 20000:20000/1234@foonet 20000:369/24@dorknet";
+  const std::string address = "1:369/23@fidonet 20000:20000/1234@foonet 20000:369/24@dorknet";
   EXPECT_EQ("20000:20000/1234@foonet", ftn_address_from_address_list(address, "foonet"));
   EXPECT_EQ(1234, node_number_from_address_list(address, "foonet"));
   EXPECT_EQ(WWIVNET_NO_NODE, node_number_from_address_list(address, "wwivnet"));
@@ -115,13 +116,13 @@ TEST(NodeFromAddressTest, MultipleAddresses) {
 }
 
 TEST(NodeFromAddressTest, MultipleAddresses_SameNetwork) {
-  const string address = "1:369/-1@coolnet 1:369/23@coolnet";
+  const std::string address = "1:369/-1@coolnet 1:369/23@coolnet";
   EXPECT_EQ("1:369/23@coolnet", ftn_address_from_address_list(address, "coolnet"));
 }
 
-TEST(NetworkNameFromAddressTest, SingleAddress) {
+TEST(DomainFromAddressTest, SingleAddress) {
   const string address = "1:369/23@fidonet";
-  EXPECT_EQ("fidonet", network_name_from_single_address(address));
+  EXPECT_EQ("fidonet", domain_from_single_address(address));
 }
 
 // string expected_password_for(Callout* callout, int node)
@@ -137,4 +138,67 @@ TEST(ExpectedPasswordTest, WrongNode) {
   Callout callout({ n });
   const string actual = expected_password_for(&callout, 12345);
   EXPECT_EQ("-", actual);
+}
+
+
+TEST(FtnFromAddressListSet, Smoke) {
+  const std::string address = "3:57/0@fidonet 3:770/1@fidonet 3:770/0@fidonet 3:772/1@fidonet "
+                              "3:772/0@fidonet 21:1/100@fsxnet 21:1/3@fsxnet 21:1/2@fsxnet "
+                              "21:1/1@fsxnet 21:1/0@fsxnet 39:970/0@amiganet 46:3/103@agoranet";
+  FidoAddress a("21:1/0@fsxnet");
+  std::set addresses{FidoAddress("21:1/0@fsxnet")};
+  const auto known = ftn_addresses_from_address_list(address, addresses);
+  EXPECT_THAT(known, testing::ElementsAre(a));
+}
+
+
+TEST(FtnFromAddressListSet, Smoke_Same) {
+  const std::string address = "3:57/0@fidonet 3:770/1@fidonet 3:770/0@fidonet 3:772/1@fidonet "
+                              "3:772/0@fidonet 21:1/100@fsxnet 21:1/3@fsxnet 21:1/2@fsxnet "
+                              "21:1/1@fsxnet 21:1/0@fsxnet 39:970/0@amiganet 46:3/103@agoranet";
+  const FidoAddress a("21:1/0@fsxnet");
+  const std::set addresses{FidoAddress(a)};
+  const auto known = ftn_addresses_from_address_list(address, addresses);
+  EXPECT_THAT(known, testing::ElementsAre(a));
+}
+
+TEST(FtnFromAddressListSet, WithoutDomainInKnown) {
+  const std::string address = "3:57/0@fidonet 3:770/1@fidonet 3:770/0@fidonet 3:772/1@fidonet "
+                              "3:772/0@fidonet 21:1/100@fsxnet 21:1/3@fsxnet 21:1/2@fsxnet "
+                              "21:1/1@fsxnet 21:1/0@fsxnet 39:970/0@amiganet 46:3/103@agoranet";
+  const FidoAddress a("21:1/2");
+  const std::set addresses{FidoAddress(a)};
+  const auto known = ftn_addresses_from_address_list(address, addresses);
+  const FidoAddress expected("21:1/2@fsxnet");
+  EXPECT_THAT(known, testing::ElementsAre(expected));
+}
+
+TEST(FtnFromAddressListSet, WithoutDomainInADR) {
+  const std::string address = "3:57/0 3:770/1 3:770/0 3:772/1 "
+                              "3:772/0 21:1/100 21:1/3 21:1/2 "
+                              "21:1/1 21:1/0 39:970/0 46:3/103";
+  const FidoAddress a("21:1/2@fsxnet");
+  const std::set addresses{FidoAddress(a)};
+  const auto known = ftn_addresses_from_address_list(address, addresses);
+  EXPECT_THAT(known, testing::ElementsAre(a));
+}
+
+TEST(FtnFromAddressListSet, WithoutDomain_NotFound) {
+  const std::string address = "3:57/0@fidonet 3:770/1@fidonet 3:770/0@fidonet 3:772/1@fidonet "
+                              "3:772/0@fidonet 21:1/100@fsxnet 21:1/3@fsxnet 21:1/2@fsxnet "
+                              "21:1/1@fsxnet 21:1/0@fsxnet 39:970/0@amiganet 46:3/103@agoranet";
+  const FidoAddress a("21:1/2112");
+  const std::set addresses{FidoAddress(a)};
+  const auto known = ftn_addresses_from_address_list(address, addresses);
+  EXPECT_THAT(known, testing::IsEmpty());
+}
+
+TEST(FtnFromAddressListSet, WithoutDomainInADR_NotFound) {
+  const std::string address = "3:57/0 3:770/1 3:770/0 3:772/1 "
+                              "3:772/0 21:1/100 21:1/3 21:1/2 "
+                              "21:1/1 21:1/0 39:970/0 46:3/103";
+  const FidoAddress a("21:1/2001@fsxnet");
+  const std::set addresses{FidoAddress(a)};
+  const auto known = ftn_addresses_from_address_list(address, addresses);
+  EXPECT_THAT(known, testing::IsEmpty());
 }

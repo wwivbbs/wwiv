@@ -71,7 +71,7 @@ FidoCallout::FidoCallout(const Config& config, const net_networks_rec& net)
 FidoCallout::~FidoCallout() = default;
 
 const net_call_out_rec* FidoCallout::net_call_out_for(int node) const {
-  VLOG(2) << "FidoCallout::net_call_out_for(" << node << ")";
+  VLOG(2) << "       FidoCallout::net_call_out_for(" << node << ")";
   return net_call_out_for(fmt::format("20000:20000/{}@{}", node, net_.name));
 }
 
@@ -81,7 +81,7 @@ const net_call_out_rec* FidoCallout::net_call_out_for(const FidoAddress& node) c
 
 const net_call_out_rec* FidoCallout::net_call_out_for(const std::string& node) const {
   static net_call_out_rec nc{};
-  VLOG(2) << "FidoCallout::net_call_out_for(" << node << ")";
+  VLOG(2) << "       FidoCallout::net_call_out_for(" << node << ")";
 
   try {
     const auto node_config = fido_node_config_for(FidoAddress(node));
@@ -96,7 +96,7 @@ fido_node_config_t FidoCallout::fido_node_config_for(const FidoAddress& address)
   FidoAddress a = address;
   if (!contains(node_configs_, a)) {
     // Try 4D addressing if we don't have 5D.
-    VLOG(2) << "FidoCallout::fido_node_config_for: Trying address without zone";
+    VLOG(2) << "FidoCallout::fido_node_config_for: Trying address without domain: " << address;
     a = FidoAddress(address.zone(), address.net(), address.node(), address.point(), "");
   }
 
@@ -128,7 +128,7 @@ FidoCallout::packet_config_for(const FidoAddress& address,
                                const fido_packet_config_t& default_config) const {
   if (!contains(node_configs_, address)) {
     // Try 4D addressing if we don't have 5D.
-    VLOG(2) << "FidoCallout::packet_config_for: Trying address without zone";
+    VLOG(2) << "FidoCallout::packet_config_for: Trying address without domain: " << address;
     const auto a = FidoAddress(address.zone(), address.net(), address.node(), address.point(), "");
     if (contains(node_configs_, a)) {
       return at(node_configs_, a).packet_config;
@@ -144,7 +144,7 @@ fido_packet_config_t FidoCallout::merged_packet_config_for(const FidoAddress& ad
   auto a = address;
   if (!contains(node_configs_, a)) {
     // Try 4D addressing if we don't have 5D.
-    VLOG(2) << "FidoCallout::packet_config_for: Trying address without zone";
+    VLOG(2) << "FidoCallout::packet_config_for: Trying address without domain: " << address;
     a = FidoAddress(address.zone(), address.net(), address.node(), address.point(), "");
   }
 

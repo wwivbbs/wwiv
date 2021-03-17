@@ -2,6 +2,7 @@ include(GoogleTest)
 enable_testing()
 
 include_directories(${GTEST_INCLUDE_DIRS})
+include_directories(${GMOCK_INCLUDE_DIR})
 
 set(test_sources
   binkp_test.cpp
@@ -18,7 +19,7 @@ set(test_sources
 set_max_warnings()
 
 add_executable(binkp_tests ${test_sources})
-target_link_libraries(binkp_tests binkp_lib core core_fixtures gtest sdk)
+target_link_libraries(binkp_tests binkp_lib core core_fixtures gmock gtest sdk)
  
 gtest_discover_tests(binkp_tests)
 

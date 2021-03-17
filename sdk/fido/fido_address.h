@@ -106,7 +106,7 @@ public:
    * N.B. calls as_string() under the covers/
    */
   friend std::ostream& operator<< (std::ostream &os, const FidoAddress &f) {
-    os << f.as_string(false, true);
+    os << f.as_string(true, true);
     return os; 
   }
   [[nodiscard]] int16_t zone() const { return zone_; }
@@ -118,7 +118,8 @@ public:
   // Needed to put FidoAddress into a set.
   bool operator< (const FidoAddress& r) const;
   bool operator== (const FidoAddress& o) const;
-
+  /** Approximately equals, equals ignoring domain */
+  [[nodiscard]] bool approx_equals(const FidoAddress& o) const;
 private:
   int16_t zone_ = 0;
   int16_t net_ = 0;

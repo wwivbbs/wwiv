@@ -173,11 +173,6 @@ bool BinkP::process_command(int16_t length, duration<double> d) {
   } break;
   case BinkpCommands::M_ADR: {
     remote_.set_address_list(s);
-    const auto rdir = config_->receive_dir(remote_.network().name);
-    VLOG(1) << "Creating file manager for network: " << remote_.network().name << "; dir: " << rdir;
-    file_manager_ =
-        std::make_unique<FileManager>(config_->config(), remote_.network(),
-                                      rdir);
   } break;
   case BinkpCommands::M_OK: {
     ok_received_ = true;
@@ -418,7 +413,7 @@ BinkState BinkP::WaitConn() {
     }
   } else {
     // Sending side:
-    const auto net = config_->networks()[config_->callout_network_name()];
+    const auto& net = config_->networks()[config_->callout_network_name()];
     if (net.type == network_type_t::wwivnet) {
       // Present single primary WWIVnet address.
       send_command_packet(BinkpCommands::M_NUL,
@@ -450,12 +445,11 @@ BinkState BinkP::WaitConn() {
 
 BinkState BinkP::SendPasswd() {
   // This is on the sending side.
-  const auto network_name(remote_.network_name());
-  VLOG(1) << "STATE: SendPasswd for network '" << network_name
+  VLOG(1) << "STATE: SendPasswd for network '" << remote_.network_name()
           << "' for node: " << expected_remote_node_;
-  const auto* callout = config_->callouts().at(network_name).get();
+  const auto* callout = at(config_->callouts(), remote_.domain()).get();
   const auto password = expected_password_for(callout, expected_remote_node_);
-  VLOG(1) << "       sending password packet";
+  VLOG(1) << "       sending password packet for node: " << expected_remote_node_;
   switch (auth_type_) {
   case AuthType::CRAM_MD5: {
     const auto hashed_password = cram_.CreateHashedSecret(cram_.challenge_data(), password);
@@ -481,57 +475,62 @@ BinkState BinkP::WaitAddr() {
   return side_ == BinkSide::ORIGINATING ? BinkState::SEND_PASSWORD : BinkState::AUTH_REMOTE;
 }
 
+bool BinkP::CheckPassword(const FidoAddress& address) {
+  VLOG(1) << "       CheckPassword: " << address;
+  const auto* callout = at(config_->callouts(), address.domain()).get();
+  const auto* ncn = callout->net_call_out_for(address.as_string(true));
+  const auto expected_password = expected_password_for(ncn);
+  if (auth_type_ == AuthType::PLAIN_TEXT) {
+    VLOG(2) << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
+    if (remote_password_ == expected_password) {
+      return true;
+    }
+  } else if (auth_type_ == AuthType::CRAM_MD5) {
+    VLOG(1) << "       CRAM_MD5 expected_password = '" << expected_password << "'";
+    VLOG(1) << "       received password: " << remote_password_;
+    if (cram_.ValidatePassword(cram_.challenge_data(), expected_password, remote_password_)) {
+      return true;
+    }
+  }
+  VLOG(1) << "Password doesn't match.  Received '" << remote_password_ << "' expected '"
+          << expected_password << "'.";
+  return false;
+}
+
 BinkState BinkP::PasswordAck() {
+  VLOG(1) << "STATE: PasswordAck";
   // This is only on the answering side.
   // This should only happen in the originating side.
   if (side_ != BinkSide::ANSWERING) {
     LOG(ERROR) << "**** ERROR: WaitPwd Called on ORIGINATING side";
   }
 
-  string expected_password;
-
-  const auto network_name = remote_.network_name();
-  const auto callout = config_->callouts().at(network_name).get();
-  if (remote_.network().type == network_type_t::wwivnet) {
-    // TODO(rushfan): we need to use the network name we matched not the one that config thinks.
-    const auto remote_node = remote_.wwivnet_node();
-    LOG(INFO) << "       remote node: " << remote_node;
-
-    expected_password = expected_password_for(callout, remote_node);
-  } else if (remote_.network().type == network_type_t::ftn) {
-    const auto remote_node = remote_.ftn_address();
-    expected_password = expected_password_for(callout, remote_node);
+  if (remote_.ftn_addresses().empty()) {
+    LOG(ERROR) << "Unable to parse addresses.";
+    send_command_packet(BinkpCommands::M_ERR, "Unable to find common address to validate password.");
+    return BinkState::DONE;
   }
 
-  VLOG(1) << "STATE: PasswordAck";
-  if (auth_type_ == AuthType::PLAIN_TEXT) {
-    // VLOG(3) << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
-    if (remote_password_ == expected_password) {
-      // Passwords match, send OK.
-      send_command_packet(BinkpCommands::M_OK, "Passwords match; insecure session");
-      // No need to wait for OK since we are the answering side, just move straight to
-      // transfer files.
-      return BinkState::TRANSFER_FILES;
-    }
-  } else if (auth_type_ == AuthType::CRAM_MD5) {
-    VLOG(1) << "       CRAM_MD5 expected_password = '" << expected_password << "'";
-    VLOG(1) << "       received password: " << remote_password_;
-    if (cram_.ValidatePassword(cram_.challenge_data(), expected_password, remote_password_)) {
-      // Passwords match, send OK.
-      send_command_packet(BinkpCommands::M_OK, "Passwords match; secure session.");
-      // No need to wait for OK since we are the answering side, just move straight to
-      // transfer files.
-      return BinkState::TRANSFER_FILES;
+  for (const auto& a : remote_.ftn_addresses()) {
+    VLOG(1) << "       Checking password for address: " << a;
+    if (!CheckPassword(a)) {
+      // Passwords do not match, send error.
+      send_command_packet(BinkpCommands::M_ERR,
+                          "Incorrect password received.  Please check your configuration.");
+      return BinkState::DONE;
     }
   }
 
-  // Passwords do not match, send error.
-  send_command_packet(BinkpCommands::M_ERR,
-                      "Incorrect password received.  Please check your configuration.");
-  // Log it if we're in debug logging mode.
-  VLOG(1) << "Password doesn't match.  Received '" << remote_password_ << "' expected '"
-          << expected_password << "'.";
-  return BinkState::DONE;
+  if (auth_type_ == AuthType::CRAM_MD5) {
+    send_command_packet(BinkpCommands::M_OK, "Passwords match; secure session.");
+    // No need to wait for OK since we are the answering side.
+    return BinkState::TRANSFER_FILES;
+  }
+  // auth_type_ == AuthType::PLAIN_TEXT
+  // VLOG(3) << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
+  // No need to wait for OK since we are the answering side.
+  send_command_packet(BinkpCommands::M_OK, "Passwords match; insecure session");
+  return BinkState::TRANSFER_FILES;
 }
 
 BinkState BinkP::WaitPwd() {
@@ -573,52 +572,42 @@ BinkState BinkP::IfSecure() {
   return BinkState::WAIT_OK;
 }
 
-BinkState BinkP::AuthRemote() {
-  VLOG(1) << "STATE: AuthRemote";
-  // Check that the address matches who we thought we called.
-  VLOG(1) << "       remote address_list: " << remote_.address_list();
-  const auto network_name(remote_.network_name());
-  if (side_ == BinkSide::ANSWERING) {
-    if (!contains(config_->callouts(), network_name)) {
-      // We don't have a callout.net entry for this caller. Fail the connection
-      send_command_packet(
-          BinkpCommands::M_ERR,
-          StrCat("Error (NETWORKB-0003): Unable to find callout.net for: ", network_name));
-      return BinkState::FATAL_ERROR;
-    }
+BinkState BinkP::AuthRemoteAnswering() {
+  VLOG(1) << "       AuthRemoteAnswering";
 
-    const net_call_out_rec* callout_record;
-    if (remote_.network().type == network_type_t::wwivnet) {
-      const auto caller = remote_.wwivnet_node();
-      LOG(INFO) << "       remote_network_name: " << network_name << "; caller_node: " << caller;
-      callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
-      if (callout_record == nullptr) {
-        // We don't have a callout.net entry for this caller. Fail the connection
-        send_command_packet(
-            BinkpCommands::M_ERR,
-            StrCat("Error (NETWORKB-0002): Unable to find caller in WWIVnet callout.net. caller: ",
-                   caller));
-        return BinkState::FATAL_ERROR;
-      }
-    } else {
-      const auto caller = remote_.ftn_address();
-      LOG(INFO) << "       remote_network_name: " << network_name << "; caller_address: " << caller;
-      callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
-      if (callout_record == nullptr) {
-        // We don't have a callout.net entry for this caller. Fail the connection
-        send_command_packet(
-            BinkpCommands::M_ERR,
-            StrCat("Error (NETWORKB-0002): Unable to find FTN address in remote list. caller: ",
-                   caller));
-        return BinkState::FATAL_ERROR;
-      }
-    }
-    return BinkState::WAIT_PWD;
+  std::set<FidoAddress> known_addresses;
+  for (const auto& kv : config_->address_pw_map) {
+    known_addresses.insert(kv.first);
   }
 
+  const auto addrs = ftn_addresses_from_address_list(remote_.address_list(), known_addresses);
+  VLOG(1) << "       addrs.size: " << addrs.size();
+  if (addrs.empty()) {
+    send_command_packet(
+        BinkpCommands::M_ERR,
+        StrCat("Error (NETWORKB-0004): Unable to find common nodes in: ", remote_.address_list()));
+    return BinkState::FATAL_ERROR;
+  }
+  if (addrs.size() == 1) {
+    const auto a = *addrs.begin();
+    // We only have one address, so set the domain or wwivnet node depending on
+    // the type of network.
+    if (a.zone() == 20000) {
+      remote_.set_wwivnet_node(a.node(), a.domain());
+    } else {
+      remote_.set_domain(a.domain());
+    }
+  }
+
+  remote_.set_ftn_addresses(addrs);
+  return BinkState::WAIT_PWD;
+}
+
+BinkState BinkP::AuthRemoteCalling() {
+  VLOG(1) << "       AuthRemoteCalling";
   VLOG(1) << "       expected_ftn: '" << expected_remote_node_ << "'";
   if (remote_.address_list().find(expected_remote_node_) != string::npos) {
-    return (side_ == BinkSide::ORIGINATING) ? BinkState::IF_SECURE : BinkState::WAIT_PWD;
+    return side_ == BinkSide::ORIGINATING ? BinkState::IF_SECURE : BinkState::WAIT_PWD;
   }
   send_command_packet(
       BinkpCommands::M_ERR,
@@ -627,13 +616,27 @@ BinkState BinkP::AuthRemote() {
   return BinkState::FATAL_ERROR;
 }
 
+
+// Check that the address matches who we thought we called.
+BinkState BinkP::AuthRemote() {
+  VLOG(1) << "STATE: AuthRemote";
+  VLOG(1) << "       remote address_list: " << remote_.address_list();
+  const auto result = side_ == BinkSide::ANSWERING ?  AuthRemoteAnswering() : AuthRemoteCalling();
+  if (result != BinkState::FATAL_ERROR) {
+    const auto rdir = config_->receive_dir(remote_.network().name);
+    VLOG(1) << "       Creating file manager for network: " << remote_.network().name << "; dir: " << rdir;
+    file_manager_ = std::make_unique<FileManager>(config_->config(), remote_.network(), rdir);
+  }
+  return result;
+}
+
 BinkState BinkP::TransferFiles() {
   if (remote_.network().type == network_type_t::wwivnet) {
     VLOG(1) << "STATE: TransferFiles to node: " << remote_.wwivnet_node() << " :" << remote_.network_name();
   } else {
     VLOG(1) << "STATE: TransferFiles to node: " << remote_.ftn_address() << " :" << remote_.network_name();
   }
-  VLOG(1) << "receive dir: " << config_->receive_dir(remote_.network_name());
+  VLOG(1) << "       receive dir: " << config_->receive_dir(remote_.network_name());
 
   // Quickly let the inbound event loop percolate.
   process_frames(milliseconds(500));
