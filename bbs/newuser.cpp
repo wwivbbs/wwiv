@@ -1344,15 +1344,14 @@ void newuser() {
   }
   bout.nl();
   bout << "Please wait...\r\n\n";
-  auto usernum = find_new_usernum(a()->user(), a()->sess().qsc);
+  const auto usernum = find_new_usernum(a()->user(), a()->sess().qsc);
   if (usernum <= 0) {
     bout.nl();
     bout << "|#6Error creating user account.\r\n\n";
     a()->Hangup();
     return;
-  } else if (usernum == 1) {
-    a()->sess().user_num(static_cast<uint16_t>(usernum));
-
+  }
+  if (usernum == 1) {
     // This is the #1 sysop record. Tell the sysop thank you and
     // update his user record with: s255/d255/r0
     ssm(1) << "Thank you for installing WWIV! - The WWIV Development Team.";
@@ -1361,7 +1360,10 @@ void newuser() {
     user->dsl(255);
     user->restriction(0);
   }
-  a()->sess().user_num(static_cast<uint16_t>(usernum));
+  // Set the user number on the session and also on this User instance
+  // since it hasn't been loaded nor saved from the UserManager yet.
+  a()->sess().user_num(usernum);
+  a()->user()->user_number_ = usernum;
 
   WriteNewUserInfoToSysopLog();
   ssm(1) << "You have a new user: " << a()->user()->name() << " #" << a()->sess().user_num();
