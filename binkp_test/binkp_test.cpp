@@ -120,11 +120,6 @@ TEST(NodeFromAddressTest, MultipleAddresses_SameNetwork) {
   EXPECT_EQ("1:369/23@coolnet", ftn_address_from_address_list(address, "coolnet"));
 }
 
-TEST(DomainFromAddressTest, SingleAddress) {
-  const string address = "1:369/23@fidonet";
-  EXPECT_EQ("fidonet", domain_from_single_address(address));
-}
-
 // string expected_password_for(Callout* callout, int node)
 TEST(ExpectedPasswordTest, Basic) {
   const net_call_out_rec n{ "20000:20000/1234", 1234, 1, unused_options_sendback, 2, 3, 4, "pass", 5, 6 };

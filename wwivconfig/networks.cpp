@@ -161,7 +161,7 @@ public:
     auto y = 1;
 
     items.add(new Label("FTN Address:"),
-              new StringEditItem<std::string&>(MAX_STRING_LEN, n->fido_address, EditLineMode::ALL),
+              new FidoAddressStringEditItem(MAX_STRING_LEN, n->fido_address),
               "The FTN address for this system (example 21:9/123@fsxnet).", 1, y);
     ++y;
     items.add(new Label("Nodelist Base:"),
@@ -316,7 +316,7 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
 
   items.add_aligned_width_column(1);
   items.relayout_items_and_labels();
-  items.Run(StrCat("Address: ", a.as_string()));
+  items.Run(StrCat("Address: ", a.as_string(true, true)));
 }
 
 // Base item of an editable value, this class does not use templates.
@@ -354,8 +354,9 @@ public:
           if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
             break;
           }
-          FidoAddress a(items[result.selected].text());
-          callout.erase(a);
+          if (const auto o = try_parse_fidoaddr(items[result.selected].text())) {
+            callout.erase(o.value());
+          }
         } break;
         case 'I': {
           const string prompt = "Enter Address (Z:N/O) : ";

@@ -70,10 +70,6 @@ uint16_t wwivnet_node_number_from_ftn_address(const std::string& address);
 std::string ftn_address_from_address_list(const std::string& address_list, const std::string& domain);
 std::set<sdk::fido::FidoAddress> ftn_addresses_from_address_list(const std::string& address_list, const std::set<sdk::fido::FidoAddress>& known_addresses);
 
-// Returns just the network name (such as "wwivnet") from a FTN address like
-// (such as "20000:20000/1@wwivnet")
-std::string domain_from_single_address(const std::string& address_list);
-
 }  // namespace wwiv::net
 
 #endif

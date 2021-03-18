@@ -88,19 +88,6 @@ ftn_addresses_from_address_list(const std::string& address_list,
   return valid_addresses;
 }
 
-// Returns the single network name from the address list (only used when we
-// are in answering mode, where a single address is presented) or the empty
-// string if no address is present.
-std::string domain_from_single_address(const std::string& address_list) {
-  if (const auto v = SplitString(address_list, " "); !v.empty()) {
-    const auto& s = v.front();
-    if (const auto index = s.find_last_of('@'); index != std::string::npos) {
-      return s.substr(index + 1);
-    }
-  }
-  return {};
-}
-
 uint16_t wwivnet_node_number_from_ftn_address(const std::string& address) {
   std::string s = address;
   LOG(INFO) << "wwivnet_node_number_from_ftn_address: '" << s << "'";
@@ -161,24 +148,6 @@ Remote::Remote(BinkConfig* config, bool remote_is_caller, const std::string& exp
 
 void Remote::set_address_list(const std::string& a) {
   address_list_ = ToStringLowerCase(a);
-
-  if (remote_is_caller_) {
-    //if (const auto name = domain_from_single_address(address_list_); !name.empty()) {
-    //  domain_ = name;
-    //}
-
-    //// This is a pure FTN address or a stub wwivnet ftn address.
-    //const auto addr = ftn_address_from_address_list(address_list_, domain_);
-    //if (network().type == network_type_t::wwivnet) {
-    //  // only valid for WWIVnet BinkP connections
-    //  if (domain_.empty()) {
-    //    domain_ = "wwivnet";
-    //  }
-    //  wwivnet_node_ = wwivnet_node_number_from_ftn_address(addr);
-    //  ftn_address_ = fmt::format("20000:20000/{}@{}", wwivnet_node_, domain_);
-    //  ftn_addresses_.emplace(ftn_address_);
-    //}
-  }
 }
 
 std::string Remote::network_name() const {
