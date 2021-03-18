@@ -107,7 +107,15 @@ What's New in WWIV 5.7.0 (2021)
 + Added strings for yes, no, quit, NN: and PW:
 + Support system location and name display for FTN networks too when the
   nodelist is available and the nodelist base set for the network in wwivconfig.
-
+* System name and location not showing up for your own system (#1419)
+* logs dir isn't created automatically on new install (#1417)
+* menus.zip is not unzipped during new install (#1416)
+* provide a location/sysname on local posts to wwivnet subs
+* use 5d address when presenting M_ADR in binkp
++ Broke out State entry from city state to make it clearer and easier. (#1430)
+* Use unique cram challenge (#1429)
+* Add validation text for FTN address
++ binkp can't answer with mutliple AKAs presented (#1426)
 
   
 
