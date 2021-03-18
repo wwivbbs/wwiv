@@ -370,7 +370,7 @@ class User final {
 
   /**
    * Returns the user's name and number formatted canonically like:
-   * "TRADER JACK #1"
+   * "Trader Jack #1"
    */
   [[nodiscard]] std::string name_and_number() const;
 
