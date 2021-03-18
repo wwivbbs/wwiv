@@ -18,12 +18,14 @@
 /**************************************************************************/
 #include "binkp/cram.h"
 
+#include "core/datetime.h"
 #include "core/log.h"
 #include "core/md5.h"
 #include "core/strings.h"
+#include "core/version.h"
+#include "fmt/format.h"
 #include <cstring>
 #include <iomanip>
-#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -34,7 +36,10 @@ namespace wwiv::net {
 
 bool Cram::GenerateChallengeData() {
   if (challenge_data_.empty()) {
-    challenge_data_ = "cafebabecafebabecafebabecafebabe";
+    const auto raw = fmt::format("WWIV {} {} {}", core::full_version(),
+                                 os::random_number(std::numeric_limits<int>::max()),
+                                 core::DateTime::now().to_string()); 
+    challenge_data_ = md5(raw);
   }
   initialized_ = true;
   return true;
