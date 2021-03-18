@@ -113,6 +113,42 @@ void ACSEditItem::DefaultDisplay(CursesWindow* window) const {
   this->DefaultDisplayString(window, data_);
 }
 
+EditlineResult FidoAddressStringEditItem::Run(CursesWindow* window) {
+  window->GotoXY(this->x_, this->y_);
+  DefaultDisplay(window);
+  window->GotoXY(this->x_, this->y_);
+  std::string last_addr;
+  const edline_validation_fn fn = [&](const std::string& raw) -> void {
+    const auto addr = StringTrim(raw);
+    if (addr == last_addr) {
+      // Don't keep re-evaluating the same thing.
+      return;
+    }
+    last_addr = addr;
+
+    if (const auto o = wwiv::sdk::fido::try_parse_fidoaddr(last_addr)) {
+      if (!o->domain().empty()) {
+        curses_out->footer()->ShowContextHelp(this->help_text());
+      } else {
+        curses_out->footer()->ShowContextHelp("Domain is missing. Address should be of the form:'Z:N/O@D'");
+      }
+      return;
+    }
+    curses_out->footer()->ShowContextHelp("Address is NOT valid. Address should be of the form:'Z:N/O@D'");
+  };
+  // Run the validation once on entry
+  if (!this->data_.empty()) {
+    fn(this->data_);
+  }
+  return editline(window, &this->data_, this->width_, edit_line_mode_, "", fn);
+}
+
+void FidoAddressStringEditItem::DefaultDisplay(CursesWindow* window) const {
+  window->GotoXY(this->x_, this->y_);
+  this->DefaultDisplayString(window, data_);
+}
+
+
 EditlineResult CustomEditItem::Run(CursesWindow* window) {
   window->GotoXY(x_, y_);
   auto s = to_field_();

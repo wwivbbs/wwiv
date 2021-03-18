@@ -55,7 +55,12 @@ public:
   [[nodiscard]] const net_networks_rec& network(const std::string& network_name) const;
   [[nodiscard]] const net_networks_rec& callout_network() const;
   [[nodiscard]] const wwiv::sdk::Networks& networks() { return networks_; }
-  std::map<const std::string, std::unique_ptr<wwiv::sdk::Callout>>& callouts() { return callouts_; }
+  /*
+   * Key/Value mapping of domain to callout class.
+   * The domain and network name *should* match, but not always, so prefer domain
+   * if you have both.
+   */
+  std::map<const std::string, std::unique_ptr<sdk::Callout>>& callouts() { return callouts_; }
 
   void set_skip_net(bool skip_net) { skip_net_ = skip_net; }
   [[nodiscard]] bool skip_net() const { return skip_net_; }
@@ -70,8 +75,10 @@ public:
   [[nodiscard]] std::string session_identifier() const { return session_identifier_; }
   void session_identifier(std::string id);
 
+  std::map<sdk::fido::FidoAddress, std::string> address_pw_map;
+
 private:
-  const sdk::Config& config_;
+           const sdk::Config& config_;
   std::string home_dir_;
 
   int callout_wwivnet_node_{0};

@@ -299,12 +299,12 @@ std::string md5(const std::string& text) {
   MD5_Init(&ctx);
 
   unsigned char hash[16];
-  MD5_Update(&ctx, (void*)text.c_str(), text.size());
+  MD5_Update(&ctx, text.data(), text.size());
   MD5_Final(hash, &ctx);
 
   std::ostringstream ss;
-  for (int i = 0; i < 16; i++) {
-    ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(hash[i]);
+  for (unsigned char c : hash) {
+    ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(c);
   }
   return ss.str();
 }

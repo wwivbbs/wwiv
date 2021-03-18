@@ -362,6 +362,28 @@ private:
   EditLineMode edit_line_mode_;
 };
 
+
+class FidoAddressStringEditItem : public EditItem<std::string&> {
+public:
+  FidoAddressStringEditItem(int maxsize, std::string& data)
+      : EditItem<std::string&>(maxsize, data), edit_line_mode_(EditLineMode::LOWER) {}
+  ~FidoAddressStringEditItem() override = default;
+  FidoAddressStringEditItem() = delete;
+  FidoAddressStringEditItem(FidoAddressStringEditItem const&) = delete;
+  FidoAddressStringEditItem(FidoAddressStringEditItem&&) = delete;
+  FidoAddressStringEditItem& operator=(FidoAddressStringEditItem const&) = delete;
+  FidoAddressStringEditItem& operator=(FidoAddressStringEditItem&&) = delete;
+
+  EditlineResult Run(CursesWindow* window) override;
+
+protected:
+  void DefaultDisplay(CursesWindow* window) const override;
+
+private:
+  EditLineMode edit_line_mode_;
+};
+
+
 template <typename T, int MAXLEN = std::numeric_limits<T>::digits10>
 class NumberEditItem final : public EditItem<T*> {
 public:

@@ -238,7 +238,7 @@ seconds User::timeontoday() const {
 }
 
 std::string User::name_and_number() const {
-  return fmt::format("{} #{}", name(), user_number_);
+  return fmt::format("{} #{}", properize(name()), user_number_);
 }
 
 int User::usernum() const noexcept {

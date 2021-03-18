@@ -102,6 +102,8 @@ private:
   BinkState PasswordAck();
   BinkState IfSecure();
   BinkState AuthRemote();
+  BinkState AuthRemoteAnswering();
+  BinkState AuthRemoteCalling();
   BinkState TransferFiles();
   BinkState WaitEob();
   BinkState Unknown();
@@ -112,6 +114,8 @@ private:
   bool HandleFileGotRequest(const std::string& request_line);
   bool HandlePassword(const std::string& password_line);
   bool HandleFileRequest(const std::string& request_line);
+
+  bool CheckPassword(const sdk::fido::FidoAddress& address);
 
   BinkConfig* config_ = nullptr;
   wwiv::core::Connection* conn_ = nullptr;

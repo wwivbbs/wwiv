@@ -137,6 +137,20 @@ bool FidoAddress::operator==(const FidoAddress& o) const {
   return true;
 }
 
+bool FidoAddress::approx_equals(const FidoAddress& o) const {
+  if (zone_ != o.zone_)
+    return false;
+  if (net_ != o.net_)
+    return false;
+  if (node_ != o.node_)
+    return false;
+  if (point_ != o.point_)
+    return false;
+  if (!domain_.empty() && !o.domain_.empty() && domain_ != o.domain_)
+    return false;
+  return true;
+}
+
 std::optional<FidoAddress> try_parse_fidoaddr(const std::string& addr) {
   if (addr.empty()) {
     return std::nullopt;

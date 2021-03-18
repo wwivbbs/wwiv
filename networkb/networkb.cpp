@@ -30,6 +30,7 @@
 #include "core/socket_exceptions.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "net_core/net_cmdline.h"
 #include "sdk/config.h"
 #include "sdk/fido/fido_callout.h"
@@ -193,14 +194,33 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     bink_config.set_network_version(status->status_net_version());
 
     for (const auto& n : bink_config.networks().networks()) {
-      const auto lower_case_network_name = ToStringLowerCase(n.name);
+      auto domain = ToStringLowerCase(n.name);
       if (n.type == network_type_t::wwivnet) {
-        bink_config.callouts()[lower_case_network_name] =
-            std::make_unique<Callout>(n, bink_config.config().max_backups());
+        auto c = std::make_unique<Callout>(n, bink_config.config().max_backups());
+        for (const auto& kv : c->callout_config()) {
+          if (const auto o = try_parse_fidoaddr(fmt::format("20000:20000/{}@{}", kv.first, domain))) {
+            bink_config.address_pw_map.try_emplace(o.value(), kv.second.session_password);
+          }
+        }
+        bink_config.callouts()[domain] = std::move(c);
       } else if (n.type == network_type_t::ftn) {
-        VLOG(2) << "Adding FidoCallout for " << n.name;
-        bink_config.callouts()[lower_case_network_name] =
-            std::make_unique<FidoCallout>(net_cmdline.config(), n);
+        if (auto o = try_parse_fidoaddr(n.fido.fido_address)) {
+          if (!o->domain().empty()) {
+            domain = o->domain();
+          } else {
+            LOG(ERROR) << "Domain is empty for FTN address. Please set it for: "
+                       << n.fido.fido_address;
+          }
+          auto c = std::make_unique<FidoCallout>(net_cmdline.config(), n);
+          for (const auto& kv : c->node_configs_map()) {
+            bink_config.address_pw_map.try_emplace(kv.first, kv.second.binkp_config.password);
+          }
+          VLOG(1) << "Adding FidoCallout for network domain: " << domain;
+          bink_config.callouts()[domain] = std::move(c);
+        } else {
+          LOG(WARNING) << "Unable to parse FTN Address for network: " << n.name;
+          LOG(WARNING) << "Address: " << n.fido.fido_address;
+        }
       }
     }
 
