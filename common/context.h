@@ -21,7 +21,7 @@
 #include "core/wwivport.h"
 #include "sdk/config.h"
 #include "sdk/user.h"
-#include "sdk/acs/valueprovider.h"
+#include "sdk/value/valueprovider.h"
 #include "sdk/files/dirs.h"
 
 #include <cstdint>
@@ -309,7 +309,7 @@ private:
   std::string current_menu_set_;
 };
 
-class MapValueProvider : public sdk::acs::ValueProvider {
+class MapValueProvider : public sdk::value::ValueProvider {
 public:
   explicit MapValueProvider(std::string prefix, std::map<std::string, std::string> map)
       : ValueProvider(std::move(prefix)), map_(std::move(map)) {}
@@ -320,7 +320,7 @@ public:
    * Optionally gets the attribute for this object.  name should just be
    * the 'attribute' and not the full object.attribute name. *
    */
-  [[nodiscard]] std::optional<sdk::acs::Value> value(const std::string& name) const override;
+  [[nodiscard]] std::optional<sdk::value::Value> value(const std::string& name) const override;
 
   [[nodiscard]] const std::map<std::string, std::string>& map() const;
 

@@ -127,9 +127,9 @@ void SessionContext::current_menu_set(const std::string& menuset) {
   }
 }
 
-std::optional<sdk::acs::Value> MapValueProvider::value(const std::string& name) const {
+std::optional<sdk::value::Value> MapValueProvider::value(const std::string& name) const {
   if (const auto& iter = map_.find(name); iter != std::end(map_)) {
-    return sdk::acs::Value(iter->second);
+    return sdk::value::Value(iter->second);
   }
   return std::nullopt;
 }

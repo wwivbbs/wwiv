@@ -19,17 +19,16 @@
 #include "gtest/gtest.h"
 
 #include "core/parser/ast.h"
-#include "core/parser/lexer.h"
 #include "sdk/user.h"
 #include "sdk/acs/eval.h"
-#include "sdk/acs/uservalueprovider.h"
+#include "sdk/value/uservalueprovider.h"
 #include <string>
-#include <iostream>
 
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::core::parser;
 using namespace wwiv::sdk::acs;
+using namespace wwiv::sdk::value;
 
 class ValueTest : public ::testing::Test {
 public:

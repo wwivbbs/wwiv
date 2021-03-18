@@ -21,13 +21,14 @@
 #include "common/output.h"
 #include "sdk/acs/acs.h"
 #include "sdk/acs/eval.h"
-#include "sdk/acs/uservalueprovider.h"
-#include "sdk/acs/valueprovider.h"
+#include "sdk/value/uservalueprovider.h"
+#include "sdk/value/valueprovider.h"
 
 using std::string;
 using std::to_string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::value;
 using namespace wwiv::strings;
 
 namespace wwiv::common {
@@ -150,7 +151,7 @@ std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
       eff_sl = context_.u().sl();
     }
     const auto& eslrec = context_.config().sl(eff_sl);
-    const acs::UserValueProvider user(context_.config(), context_.u(), eff_sl, eslrec);
+    const UserValueProvider user(context_.config(), context_.u(), eff_sl, eslrec);
     return user.value(suffix)->as_string();
   }
   for (const auto& v : context_.value_providers()) {
@@ -215,7 +216,7 @@ std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
 }
 
 // TODO(rushfan): make sdk::acs::check_acs take optional vector of ValueProviders
-static bool check_acs_pipe(const acs::ValueProvider& user, const std::string& expression,
+static bool check_acs_pipe(const ValueProvider& user, const std::string& expression,
                            const std::vector<std::unique_ptr<MapValueProvider>>& maps) {
   if (StringTrim(expression).empty()) {
     // Empty expression is always allowed.
@@ -252,7 +253,7 @@ std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
     eff_sl = context_.u().sl();
   }
   const auto& eslrec = context_.config().sl(eff_sl);
-  const acs::UserValueProvider user_provider(context_.config(), context_.u(), eff_sl, eslrec);
+  const value::UserValueProvider user_provider(context_.config(), context_.u(), eff_sl, eslrec);
   const auto b = check_acs_pipe(user_provider, expr, context_.value_providers());
   return b ? yes : no;
 }

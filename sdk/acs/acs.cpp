@@ -21,7 +21,7 @@
 #include "core/stl.h"
 #include "sdk/acs/eval.h"
 #include "sdk/acs/eval_error.h"
-#include "sdk/acs/uservalueprovider.h"
+#include "sdk/value/uservalueprovider.h"
 
 #include <memory>
 #include <string>
@@ -32,6 +32,7 @@ using std::string;
 using std::unique_ptr;
 using namespace wwiv::stl;
 using namespace wwiv::sdk::acs;
+using namespace wwiv::sdk::value;
 using namespace wwiv::strings;
 
 namespace wwiv::sdk::acs {

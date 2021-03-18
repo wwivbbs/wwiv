@@ -15,15 +15,37 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/acs/value.h"
+#ifndef INCLUDED_SDK_VALUEPROVIDER_VALUEPROIVDER_H
+#define INCLUDED_SDK_VALUEPROVIDER_VALUEPROIVDER_H
 
-#include "core/strings.h"
+#include "sdk/value/value.h"
+#include <optional>
+#include <string>
+#include <utility>
 
-using namespace wwiv::core;
-using namespace wwiv::core::parser;
-using namespace wwiv::strings;
+namespace wwiv::sdk::value {
 
-namespace wwiv::sdk::acs {
+/** Provides a value for an identifier of the form "object.attribute" */
+class ValueProvider {
+public:
+  explicit ValueProvider(std::string prefix) : prefix_(std::move(prefix)) {}
+  virtual ~ValueProvider() = default;
 
+  /** 
+   * Optionally gets the attribute for this object.  name should just be
+   * the 'attribute' and not the full object.attribute name. *
+   */
+  [[nodiscard]] virtual std::optional<Value> value(const std::string& name) const = 0;
+
+  /**
+   * Returns the prefix for this value provider. i.e. "user"
+   */
+  [[nodiscard]] std::string prefix() const { return prefix_; }
+
+private:
+  const std::string prefix_;
+};
 
 }
+
+#endif

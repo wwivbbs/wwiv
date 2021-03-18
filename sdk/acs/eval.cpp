@@ -31,6 +31,7 @@
 using namespace wwiv::core;
 using namespace wwiv::core::parser;
 using namespace wwiv::strings;
+using namespace wwiv::sdk::value;
 
 namespace wwiv::sdk::acs {
 
@@ -163,12 +164,12 @@ bool Eval::eval() {
   return false;
 }
 
-bool Eval::add(const ValueProvider* p) { 
+bool Eval::add(const value::ValueProvider* p) { 
   providers_[p->prefix()] = p;
   return true; 
 }
 
-bool Eval::add(std::unique_ptr<ValueProvider>&& p) {
+bool Eval::add(std::unique_ptr<value::ValueProvider>&& p) {
   add(p.get());
   providers_storage_[p->prefix()] = std::move(p);
   return true; 
