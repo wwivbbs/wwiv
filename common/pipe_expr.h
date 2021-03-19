@@ -30,15 +30,23 @@ public:
 
 private:
   std::string eval_variable(const pipe_expr_token_t& t);
-  std::string eval_fn_mpl(const std::vector<pipe_expr_token_t>& args);
-  std::string eval_fn_set(const std::vector<pipe_expr_token_t>& args);
-  std::string eval_fn_if(const std::vector<pipe_expr_token_t>& args);
-  std::string eval_fn_random(const std::vector<pipe_expr_token_t>& args);
+  //std::string eval_fn_mpl(const std::vector<pipe_expr_token_t>& args);
+  //std::string eval_fn_set(const std::vector<pipe_expr_token_t>& args);
+  //std::string eval_fn_if(const std::vector<pipe_expr_token_t>& args);
+  //std::string eval_fn_random(const std::vector<pipe_expr_token_t>& args);
+
+  std::optional<pipe_expr_token_t> parse_variable(std::string::const_iterator& it,
+                                                  const std::string::const_iterator& end);
+  std::vector<pipe_expr_token_t> tokenize(std::string::const_iterator& it,
+                                          const std::string::const_iterator& end);
+
   std::string eval_fn(const std::string& fn, const std::vector<pipe_expr_token_t>& args);
   std::string eval(std::vector<pipe_expr_token_t>& tokens);
   std::string evaluate_pipe_expression_string(const std::string& expr);
   // Not owned
   Context& context_;
+  typedef std::function<std::string(Context&, const std::vector<pipe_expr_token_t>&)> fn_fn;
+  std::map<std::string, fn_fn> fn_map_;
 };
 
 

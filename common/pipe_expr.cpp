@@ -83,7 +83,8 @@ static std::optional<pipe_expr_token_t> parse_number(string::const_iterator& it,
   return std::make_optional(e);
 }
 
-static std::optional<pipe_expr_token_t> parse_variable(string::const_iterator& it, const string::const_iterator& end) {  
+std::optional<pipe_expr_token_t> PipeEval::parse_variable(string::const_iterator& it,
+                                                          const string::const_iterator& end) {  
   std::string s;
   for (; it != end && (isalpha(*it) || *it == '.' || *it == '_'); ++it) {
     s.push_back(*it);
@@ -91,29 +92,17 @@ static std::optional<pipe_expr_token_t> parse_variable(string::const_iterator& i
   StringTrim(&s);
   StringLowerCase(&s);
   pipe_expr_token_t e{};
-  e.type = pipe_expr_token_type_t::variable;
+  if (stl::contains(fn_map_, s)) {
+    e.type = pipe_expr_token_type_t::fn;
+  } else {
+    e.type = pipe_expr_token_type_t::variable;
+  }
   e.lexeme = s;
-  if (s == "set") {
-    e.type = pipe_expr_token_type_t::fn;
-  }
-  if (s == "if") {
-    e.type = pipe_expr_token_type_t::fn;
-  }
-  if (s == "mpl") {
-    e.type = pipe_expr_token_type_t::fn;
-  }
-  if (s == "random") {
-    e.type = pipe_expr_token_type_t::fn;
-  }
-  if (s == "pause" && (it == end || *it != '=')) {
-    // pause can be both a variable
-    e.type = pipe_expr_token_type_t::fn;
-  }
-
   return std::make_optional(e);
 }
 
-static std::vector<pipe_expr_token_t> tokenize(std::string::const_iterator& it, const std::string::const_iterator& end) {
+std::vector<pipe_expr_token_t> PipeEval::tokenize(std::string::const_iterator& it,
+                                                  const std::string::const_iterator& end) {
   std::vector<pipe_expr_token_t> r;
 
   std::string l;
@@ -178,7 +167,7 @@ static bool is_truthy(const std::string& s) {
   return false;
 }
 
-std::string PipeEval::eval_fn_mpl(const std::vector<pipe_expr_token_t>& args) {
+std::string eval_fn_mpl(Context&, const std::vector<pipe_expr_token_t>& args) {
   if (args.size() != 1) {
     return "ERROR: MPL expression requires 1 argument.";
   }
@@ -192,7 +181,7 @@ std::string PipeEval::eval_fn_mpl(const std::vector<pipe_expr_token_t>& args) {
   return {};
 }
 
-std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
+std::string eval_fn_set(Context& context_, const std::vector<pipe_expr_token_t>& args) {
   // Set command only
   if (args.size() != 2) {
     return "ERROR: Set expression requires two arguments.";
@@ -247,7 +236,7 @@ static bool check_acs_pipe(const std::string& expression, const std::vector<std:
   return eval.eval();
 }
 
-std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
+std::string eval_fn_if(Context& context_, const std::vector<pipe_expr_token_t>& args) {
   // Set command only
   if (args.size() != 3) {
     return "ERROR: Set expression requires three arguments.";
@@ -274,28 +263,18 @@ std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
 }
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
-std::string PipeEval::eval_fn_random(const std::vector<pipe_expr_token_t>& args) {
-  const auto num = os::random_number(args.size() - 1);
+std::string eval_fn_random(Context&, const std::vector<pipe_expr_token_t>& args) {
+  const auto num = os::random_number(stl::size_int(args) - 1);
   return args.at(num).lexeme;
 }
 
 std::string PipeEval::eval_fn(const std::string& fn, const std::vector<pipe_expr_token_t>& args) {
-  if (fn == "pause") {
-    bout.pausescr();
-    return {};
+  if (const auto it = fn_map_.find(fn); it != std::end(fn_map_)) {
+    if (it->second) {
+      return it->second(context_, args);
+    }
   }
-  if (fn == "set") {
-    return eval_fn_set(args);
-  }
-  if (fn == "if") {
-    return eval_fn_if(args);
-  }
-  if (fn == "mpl") {
-    return eval_fn_mpl(args);
-  }
-  if (fn == "random") {
-    return eval_fn_random(args);
-  }
+
   return fmt::format("ERROR: Unknown function: {}", fn);
 }
 
@@ -335,6 +314,14 @@ std::string PipeEval::evaluate_pipe_expression_string(const std::string& expr) {
 }
 
 PipeEval::PipeEval(Context& context) : context_(context) {
+  fn_map_.try_emplace("pausescr", [](Context&, const std::vector<pipe_expr_token_t>&) -> std::string {
+    bout.pausescr();
+    return {};
+  });
+  fn_map_.try_emplace("random", eval_fn_random);
+  fn_map_.try_emplace("if", eval_fn_if);
+  fn_map_.try_emplace("mpl", eval_fn_mpl);
+  fn_map_.try_emplace("set", eval_fn_set);
 }
 
 std::string PipeEval::eval(std::string expr) {
