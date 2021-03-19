@@ -139,3 +139,19 @@ TEST_F(BPutsTest, MapValue_Smoke) {
   bout.bputs(R"(Message # |{m.num})");
   EXPECT_EQ("Message # 1234", helper.io()->captured());
 }
+
+TEST_F(BPutsTest, Pipe_User) {
+  helper.user()->set_name("Rushfan");
+  helper.user()->real_name("RealName");
+  bout.bputs(R"(Hello |{user.name})");
+  EXPECT_EQ("Hello Rushfan", helper.io()->captured());
+}
+
+TEST_F(BPutsTest, Pipe_BBS) {
+  helper.user()->set_name("Rushfan");
+  auto cfg = helper.config().to_config_t();
+  cfg.systemname = "TestBBS";
+  helper.config().set_config(cfg, false);
+  bout.bputs(R"(BBS Name: |{bbs.name})");
+  EXPECT_EQ("BBS Name: TestBBS", helper.io()->captured());
+}

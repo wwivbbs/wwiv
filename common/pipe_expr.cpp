@@ -21,6 +21,7 @@
 #include "common/output.h"
 #include "sdk/acs/acs.h"
 #include "sdk/acs/eval.h"
+#include "sdk/value/bbsvalueprovider.h"
 #include "sdk/value/uservalueprovider.h"
 #include "sdk/value/valueprovider.h"
 
@@ -154,6 +155,11 @@ std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
     const UserValueProvider user(context_.config(), context_.u(), eff_sl, eslrec);
     return user.value(suffix)->as_string();
   }
+  if (prefix == "bbs") {
+    const BbsValueProvider bbs_provider(context_.config(), context_.session_context());
+    return bbs_provider.value(suffix)->as_string();
+  }
+
   for (const auto& v : context_.value_providers()) {
     // O(N) is on for small values of n
     if (iequals(prefix, v->prefix())) {
@@ -215,16 +221,24 @@ std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
   return {};
 }
 
-// TODO(rushfan): make sdk::acs::check_acs take optional vector of ValueProviders
-static bool check_acs_pipe(const ValueProvider& user, const std::string& expression,
-                           const std::vector<std::unique_ptr<MapValueProvider>>& maps) {
+template <typename... Args>
+std::vector<const ValueProvider*> make_vector(Args&&... args) {
+    return {std::forward<Args>(args)...};
+}
+
+template <typename... Args>
+static bool check_acs_pipe(const std::string& expression, const std::vector<std::unique_ptr<MapValueProvider>>& maps,
+  Args... args) {
   if (StringTrim(expression).empty()) {
     // Empty expression is always allowed.
     return true;
   }
 
   acs::Eval eval(expression);
-  eval.add(&user);
+  auto v = make_vector(args...);
+  for (const auto& vp : v) {
+    eval.add(vp);
+  }
 
   for (const auto& m : maps) {
     eval.add(m.get());
@@ -253,8 +267,9 @@ std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
     eff_sl = context_.u().sl();
   }
   const auto& eslrec = context_.config().sl(eff_sl);
-  const value::UserValueProvider user_provider(context_.config(), context_.u(), eff_sl, eslrec);
-  const auto b = check_acs_pipe(user_provider, expr, context_.value_providers());
+  const BbsValueProvider bbs_provider(context_.config(), context_.session_context());
+  const UserValueProvider user_provider(context_.config(), context_.u(), eff_sl, eslrec);
+  const auto b = check_acs_pipe(expr, context_.value_providers(), &user_provider, &bbs_provider);
   return b ? yes : no;
 }
 

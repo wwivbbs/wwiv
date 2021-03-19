@@ -387,13 +387,13 @@ bool Application::ReadConfig() {
   user_manager_ = std::make_unique<UserManager>(*config_);
   statusMgr = std::make_unique<StatusMgr>(config_->datadir(), StatusManagerCallback);
 
-  IniFile ini(FilePath(bbspath(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
+  IniFile ini(FilePath(bbspath(), WWIV_INI), {StrCat("WWIV-", sess().instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     LOG(ERROR) << "Unable to read WWIV.INI.";
     return false;
   }
   ReadINIFile(ini);
-  if (!ReadInstanceSettings(instance_number())) {
+  if (!ReadInstanceSettings(sess().instance_number())) {
     return false;
   }
 
@@ -628,7 +628,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
       // Fix... Set the global instance variable to match this.  When you run WWIV with the
       // -n<instance> parameter it sets the WWIV_INSTANCE environment variable, however it wasn't
       // doing the reverse.
-      instance_number_ = inst_num;
+      sess().instance_number(inst_num);
     }
   }
 
@@ -650,7 +650,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
   if (cleanup_network) {
     cleanup_net();
     sysoplog(false) << "";
-    sysoplog(false) << "WWIV " << full_version() << ", inst " << instance_number()
+    sysoplog(false) << "WWIV " << full_version() << ", inst " << sess().instance_number()
                     << ", brought up at " << times() << " on " << fulldate() << ".";
   }
 

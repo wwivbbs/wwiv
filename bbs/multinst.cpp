@@ -228,7 +228,7 @@ int find_instance_by_loc(int loc, int subloc) {
   }
   for (const auto& in : instances) {
     if (in.loc_code() == loc && in.subloc_code() == subloc && in.node_number() > 0 &&
-        in.node_number() != a()->instance_number()) {
+        in.node_number() != a()->sess().instance_number()) {
       return in.node_number();
     }
   }

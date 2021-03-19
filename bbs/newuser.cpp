@@ -589,7 +589,7 @@ bool CanCreateNewUserAccountHere() {
 
 void DoNewUserASV() {
   IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
-              {StrCat("WWIV-", a()->instance_number()), INI_TAG});
+              {StrCat("WWIV-", a()->sess().instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     return;
   }
@@ -1291,7 +1291,7 @@ void newuser() {
   const auto t = times();
   const auto f = fulldate();
   sysoplog(false) << fmt::sprintf("*** NEW USER %s   %s    %s (%ld)", f, t, a()->GetCurrentSpeed(),
-                                  a()->instance_number());
+                                  a()->sess().instance_number());
 
   LOG(INFO) << "New User Attempt from IP Address: " << a()->remoteIO()->remote_info().address;
   a()->sess().num_screen_lines(25);

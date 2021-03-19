@@ -144,7 +144,6 @@ public:
   bool reset_local_io(LocalIO* wlocal_io);
   [[nodiscard]] const std::string& GetAttachmentDirectory() const { return attach_dir_; }
   [[nodiscard]] const std::filesystem::path& netfoss_dir() const { return netfoss_dir_; }
-  [[nodiscard]] int instance_number() const { return instance_number_; }
   [[nodiscard]] const std::string& network_extension() const { return network_extension_; }
 
   void UpdateTopScreen();
@@ -434,7 +433,6 @@ private:
   std::string logdir_;
   int verbose_{0};
 
-  int instance_number_{-1};
   std::string network_extension_;
   bool user_already_on_{false};
   bool at_wfc_{false};

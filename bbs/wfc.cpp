@@ -112,7 +112,7 @@ static void wfc_update() {
       if (inst_num > num_instances()) {
         inst_num = 1;
       }
-    } while (inst_num == a()->instance_number());
+    } while (inst_num == a()->sess().instance_number());
   }
 }
 
@@ -141,7 +141,7 @@ void WFC::DrawScreen() {
     }
     a()->localIO()->WriteScreenBuffer(screen_buffer.get());
     const auto title = fmt::format("Activity and Statistics of {} Node {}",
-                                   a()->config()->system_name(), a()->instance_number());
+                                   a()->config()->system_name(), a()->sess().instance_number());
     a()->localIO()->PutsXYA(1 + (76 - wwiv::strings::ssize(title)) / 2, 4, 15, title);
     a()->localIO()->PutsXYA(8, 1, 14, fulldate());
     a()->localIO()->PutsXYA(40, 1, 3, StrCat("OS: ", wwiv::os::os_version_string()));
@@ -177,7 +177,7 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(58, 10, 14, percent_active);
     a()->localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
 
-    auto ir = a()->instances().at(a()->instance_number());
+    auto ir = a()->instances().at(a()->sess().instance_number());
     if (ir.user_number() < a()->config()->max_users() && ir.user_number() > 0) {
       const auto unn = a()->names()->UserName(ir.user_number());
       a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", unn));
@@ -263,7 +263,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     // If the date has changed since we last checked, then then run the beginday event.
     if (date() != last_date_status->last_date()) {
       if (a_->GetBeginDayNodeNumber() == 0 ||
-          a_->instance_number() == a_->GetBeginDayNodeNumber()) {
+          a_->sess().instance_number() == a_->GetBeginDayNodeNumber()) {
         beginday(true);
         Clear();
         // Update the status for the last date now that beginday has run.

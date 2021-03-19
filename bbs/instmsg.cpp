@@ -57,12 +57,12 @@ bool is_chat_invis() {
 
 void send_inst_str(int whichinst, const std::string& s) {
   send_instance_string(*a()->config(), instance_message_type_t::user, whichinst,
-                       a()->sess().user_num(), a()->instance_number(), s);
+                       a()->sess().user_num(), a()->sess().instance_number(), s);
 }
 
 void send_inst_sysstr(int whichinst, const std::string& s) {
   send_instance_string(*a()->config(), instance_message_type_t::system, whichinst,
-                       a()->sess().user_num(), a()->instance_number(), s);
+                       a()->sess().user_num(), a()->sess().instance_number(), s);
 }
 
 /*
@@ -70,7 +70,7 @@ void send_inst_sysstr(int whichinst, const std::string& s) {
  */
 void broadcast(const std::string& message) {
   for (auto i = 1; i <= num_instances(); i++) {
-    if (i != a()->instance_number() && a()->instances().at(i).available()) {
+    if (i != a()->sess().instance_number() && a()->instances().at(i).available()) {
       send_inst_str(i, message);
     }
   }
@@ -119,7 +119,7 @@ void process_inst_msgs() {
    }
   }
 
-  auto messages = read_all_instance_messages(*a()->config(), a()->instance_number(), 1000);
+  auto messages = read_all_instance_messages(*a()->config(), a()->sess().instance_number(), 1000);
   for (const auto& m : messages) {
     handle_inst_msg(m);
   }
@@ -140,7 +140,7 @@ int num_instances() {
  */
 std::optional<int> user_online(int user_number) {
   for (auto i = 1; i <= wwiv::stl::size_int(a()->instances()); i++) {
-    if (i == a()->instance_number()) {
+    if (i == a()->sess().instance_number()) {
       continue;
     }
     if (const auto ir = a()->instances().at(i); ir.user_number() == user_number && ir.online()) {
@@ -159,7 +159,7 @@ void write_inst(int loc, int subloc, int flags) {
 
   auto re_write = false;
   if (ti.user_number() == 0) {
-    const auto ir = a()->instances().at(a()->instance_number());
+    const auto ir = a()->instances().at(a()->sess().instance_number());
     ti.ir().user = static_cast<int16_t>(ir.user_number());
     ti.ir().inst_started = daten_t_now();
     re_write = true;
@@ -214,9 +214,9 @@ void write_inst(int loc, int subloc, int flags) {
     re_write = true;
     ti.ir().flags = cf;
   }
-  if (ti.ir().number != a()->instance_number()) {
+  if (ti.ir().number != a()->sess().instance_number()) {
     re_write = true;
-    ti.ir().number = static_cast<int16_t>(a()->instance_number());
+    ti.ir().number = static_cast<int16_t>(a()->sess().instance_number());
   }
   if (loc == INST_LOC_DOWN) {
     re_write = true;
@@ -249,7 +249,7 @@ void write_inst(int loc, int subloc, int flags) {
   }
 
   ti.ir().last_update = daten_t_now();
-  a()->instances().upsert(a()->instance_number(), ti);
+  a()->instances().upsert(a()->sess().instance_number(), ti);
 }
 
 /*
@@ -291,7 +291,7 @@ void toggle_avail() {
   chat_avail = !chat_avail;
 
   bout.format("\r\nYou are now {}\r\n\r\n", chat_avail ? "available for chat." : "not available for chat.");
-  const auto loc = a()->instances().at(a()->instance_number()).loc_code();
+  const auto loc = a()->instances().at(a()->sess().instance_number()).loc_code();
   write_inst(loc, a()->current_user_sub().subnum, INST_FLAGS_NONE);
   bout.RestoreCurrentLine(line);
 }
@@ -303,7 +303,7 @@ void toggle_invis() {
   chat_invis = !chat_invis;
 
   bout.format("\r\nYou are now {}\r\n\r\n", chat_invis ? "invisible." : "visible.");
-  const auto loc = a()->instances().at(a()->instance_number()).loc_code();
+  const auto loc = a()->instances().at(a()->sess().instance_number()).loc_code();
   write_inst(loc, a()->current_user_sub().subnum, INST_FLAGS_NONE);
   bout.RestoreCurrentLine(line);
 }

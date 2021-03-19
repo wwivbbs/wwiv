@@ -119,7 +119,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Implementation of Context for the Application
-class ApplicationContext : public Context {
+class ApplicationContext final : public Context {
 public:
   explicit ApplicationContext(Application* app) : app_(app) {}
   ApplicationContext() = delete;
@@ -520,7 +520,7 @@ void Application::UpdateTopScreen() {
   if (config()->sysconfig_flags() & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
     const auto username_num = user()->name_and_number();
-    const auto title = fmt::sprintf("WWIV Node %d (User: %s)", instance_number(), username_num);
+    const auto title = fmt::sprintf("WWIV Node %d (User: %s)", sess().instance_number(), username_num);
     ::SetConsoleTitle(title.c_str());
   }
 #endif // _WIN32
@@ -756,7 +756,7 @@ int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
       // Only log the exiting at abnormal error levels, since we see lots of exiting statements
       // in the logs that don't correspond to sessions every being created (network probes, etc).
       sysoplog(false) << "";
-      sysoplog(false) << "WWIV " << short_version() << ", inst " << instance_number()
+      sysoplog(false) << "WWIV " << short_version() << ", inst " << sess().instance_number()
                       << ", taken down at " << times() << " on " << fulldate() << " with exit code "
                       << exit_level << ".";
       sysoplog(false) << "";
@@ -841,7 +841,7 @@ int Application::Run(int argc, char* argv[]) {
   const unsigned int hSockOrComm = cmdline.iarg("handle");
   no_hangup_ = cmdline.barg("no_hangup");
   sess().ok_modem_stuff(!cmdline.barg("no_modem"));
-  instance_number_ = cmdline.iarg("instance");
+  sess().instance_number(cmdline.iarg("instance"));
 
   auto this_usernum_from_commandline = static_cast<uint16_t>(cmdline.iarg("user_num"));
   if (const auto x = cmdline.sarg("x"); !x.empty()) {
@@ -902,7 +902,7 @@ int Application::Run(int argc, char* argv[]) {
   }
 
   // Add the environment variable or overwrite the existing one
-  const auto env_str = std::to_string(instance_number());
+  const auto env_str = std::to_string(sess().instance_number());
   set_environment_variable("WWIV_INSTANCE", env_str);
   if (!ReadConfig()) {
     // Gotta read the config before we can create the socket handles.
@@ -922,7 +922,7 @@ int Application::Run(int argc, char* argv[]) {
   if (!InitializeBBS(!user_already_on_ && sysop_cmd.empty() && fsed.empty() && run_basic.empty())) {
     return exitLevelNotOK;
   }
-  localIO()->UpdateNativeTitleBar(config()->system_name(), instance_number());
+  localIO()->UpdateNativeTitleBar(config()->system_name(), sess().instance_number());
 
   auto remote_opened = true;
   // If we are telnet...

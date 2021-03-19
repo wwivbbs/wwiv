@@ -23,6 +23,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "common/context.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include <string>
@@ -48,7 +49,7 @@ string sysoplog_filename(const string& d) {
 * Returns instance (temporary) sysop log filename in s.
 */
 std::string GetTemporaryInstanceLogFileName() {
-  return fmt::sprintf("inst-%3.3u.log", a()->instance_number());
+  return fmt::sprintf("inst-%3.3u.log", a()->sess().instance_number());
 }
 
 /*
