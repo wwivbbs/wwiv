@@ -126,7 +126,7 @@ static int JumpToUser(CursesWindow* window, const std::string& datadir) {
   return -1;
 }
 
-void write_semaphore_if_user_online(const wwiv::sdk::Config& config, int current_usernum) {
+static void write_semaphore_if_user_online(const wwiv::sdk::Config& config, int current_usernum) {
   wwiv::sdk::Instances instances(config);
   if (!instances) {
     std::cout << "Unable to read Instance information.";
@@ -143,8 +143,7 @@ void write_semaphore_if_user_online(const wwiv::sdk::Config& config, int current
     // we have user.
     const auto path = config.scratch_dir(inst.node_number());
     const auto fn = FilePath(path, "readuser.wwiv");
-    TextFile tf(fn, "wt");
-    if (tf) {
+    if (TextFile tf(fn, "wt"); tf) {
       tf.Write("User edited in wwivconfig usereditor");
     }
     return;

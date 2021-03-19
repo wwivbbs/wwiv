@@ -32,16 +32,16 @@ using namespace wwiv::sdk::value;
 
 class ValueTest : public ::testing::Test {
 public:
-  ValueTest() {}
+  ValueTest() = default;
 };
 
 #define EXPECT_VALUE_TRUE(l, op, r) EXPECT_TRUE(Value::eval(l, op, r).as_boolean())
 #define EXPECT_VALUE_FALSE(l, op, r) EXPECT_FALSE(Value::eval(l, op, r).as_boolean())
 
 TEST_F(ValueTest, Smoke) {
-  Value l("hello");
-  Value r("hello");
-  Value r2("foo");
+  const Value l("hello");
+  const Value r("hello");
+  const Value r2("foo");
   EXPECT_VALUE_TRUE(l, Operator::eq, r);
   EXPECT_VALUE_FALSE(l, Operator::eq, r2);
 }

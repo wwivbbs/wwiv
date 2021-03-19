@@ -17,9 +17,9 @@
 /**************************************************************************/
 #include "core/socket_connection.h"
 
+#include <cerrno>
 #include <chrono>
 #include <cstring>
-#include <iostream>
 #include <thread>
 #ifdef _WIN32
 #include <WS2tcpip.h>
@@ -231,12 +231,16 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bo
     }
     const auto result = recv(sock, p, remaining, 0);
     if (result == SOCKET_ERROR) {
-      const auto saved_errno = GetLastErrorText();
+      const auto saved_errno = errno;
+      const auto saved_errno_text = GetLastErrorText();
       if (WouldSocketBlock()) {
         sleep_for(SLEEP_MS);
         continue;
       }
-      LOG(ERROR) << "Got Socket Error on recv: " << saved_errno;
+      if (saved_errno != ECONNRESET) {
+        // This happens normally as the other side disconnects.
+        LOG(ERROR) << "Got Socket Error on recv: " << saved_errno_text;
+      }
       return total_read;
     }
     if (result <= 0) {
