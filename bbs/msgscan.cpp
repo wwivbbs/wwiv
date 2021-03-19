@@ -1087,18 +1087,15 @@ static bool query_post() {
     bout << "|#5Post on " << a()->current_sub().name << " (|#2Y/N/Q|#5) ? ";
     a()->sess().clear_irt();
     clear_quotes(a()->sess());
-    auto q = bin.ynq();
+    const auto q = bin.ynq();
     if (q == 'Y') {
       post(PostData());
       return true;
     }
-    if (q == 'N') {
-      return true;
-    }
-    return false;
+    return q == 'N';
   }
   bout << "|#5Move to the next sub?";
-  return bin.yesno();
+  return bin.noyes();
 }
 
 static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool title_scan) {

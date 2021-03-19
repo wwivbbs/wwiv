@@ -33,6 +33,8 @@
 #include "sdk/user.h"
 #include "sdk/acs/acs.h"
 #include "sdk/acs/expr.h"
+#include "sdk/value/uservalueprovider.h"
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -309,8 +311,8 @@ std::vector<std::string> GenerateMenuLines(const Config& config, int eff_sl, con
     if (mi.item_key.empty()) {
       continue;
     }
-    acs::UserValueProvider up(config, user, eff_sl, config.sl(eff_sl));
-    if (auto [result, debug_lines] = check_acs(config, up, mi.acs); !result) {
+    value::UserValueProvider up(config, user, eff_sl, config.sl(eff_sl));
+    if (auto [result, debug_lines] = acs::check_acs(config, up, mi.acs); !result) {
       continue;
     }
     if (!g.show_empty_text && StringTrim(mi.item_text).empty()) {

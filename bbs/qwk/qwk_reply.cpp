@@ -199,7 +199,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     }
 
     // User doesn't have enough sl to post on sub
-    if (!wwiv::bbs::check_acs(a()->current_sub().post_acs)) {
+    if (!check_acs(a()->current_sub().post_acs)) {
       bout.nl();
       bout.bputs("You can't post here.");
       bout.nl();

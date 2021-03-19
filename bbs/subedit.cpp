@@ -463,7 +463,7 @@ static void insert_sub(int n) {
   r.read_acs = "user.sl >= 10";
   r.post_acs = "user.sl >= 20";
   r.anony = 0;
-  r.maxmsgs = 50;
+  r.maxmsgs = 5000;
   r.storage_type = 2;
 
   // Insert new item.

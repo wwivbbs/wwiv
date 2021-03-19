@@ -19,30 +19,29 @@
 #include "gtest/gtest.h"
 
 #include "core/parser/ast.h"
-#include "core/parser/lexer.h"
 #include "sdk/user.h"
 #include "sdk/acs/eval.h"
-#include "sdk/acs/uservalueprovider.h"
+#include "sdk/value/uservalueprovider.h"
 #include <string>
-#include <iostream>
 
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::core::parser;
 using namespace wwiv::sdk::acs;
+using namespace wwiv::sdk::value;
 
 class ValueTest : public ::testing::Test {
 public:
-  ValueTest() {}
+  ValueTest() = default;
 };
 
 #define EXPECT_VALUE_TRUE(l, op, r) EXPECT_TRUE(Value::eval(l, op, r).as_boolean())
 #define EXPECT_VALUE_FALSE(l, op, r) EXPECT_FALSE(Value::eval(l, op, r).as_boolean())
 
 TEST_F(ValueTest, Smoke) {
-  Value l("hello");
-  Value r("hello");
-  Value r2("foo");
+  const Value l("hello");
+  const Value r("hello");
+  const Value r2("foo");
   EXPECT_VALUE_TRUE(l, Operator::eq, r);
   EXPECT_VALUE_FALSE(l, Operator::eq, r2);
 }

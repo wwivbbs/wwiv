@@ -15,35 +15,36 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_SDK_ACS_VALUEPROIVDER_H
-#define INCLUDED_SDK_ACS_VALUEPROIVDER_H
+#ifndef INCLUDED_SDK_VALUEPROVIDER_USERVALUEPROVIDER_H
+#define INCLUDED_SDK_VALUEPROVIDER_USERVALUEPROVIDER_H
 
-#include "sdk/acs/value.h"
+#include "sdk/config.h"
+#include "sdk/user.h"
+#include "sdk/value/value.h"
+#include "sdk/value/valueprovider.h"
 #include <optional>
 #include <string>
-#include <utility>
 
-namespace wwiv::sdk::acs {
+namespace wwiv::sdk::value {
 
-/** Provides a value for an identifier of the form "object.attribute" */
-class ValueProvider {
+/**
+ * ValueProvider for "user" record attributes.
+ */
+class UserValueProvider final : public ValueProvider {
 public:
-  explicit ValueProvider(std::string prefix) : prefix_(std::move(prefix)) {}
-  virtual ~ValueProvider() = default;
-
   /** 
-   * Optionally gets the attribute for this object.  name should just be
-   * the 'attribute' and not the full object.attribute name. *
+   * Constructs a new ValueProvider.  'user' must remain valid for 
+   * the duration of this instance lifetime.
    */
-  [[nodiscard]] virtual std::optional<Value> value(const std::string& name) const = 0;
-
-  /**
-   * Returns the prefix for this value provider. i.e. "user"
-   */
-  [[nodiscard]] std::string prefix() const { return prefix_; }
+  UserValueProvider(const Config& config, const User& user, int effective_sl, slrec sl)
+  : ValueProvider("user"), config_(config), user_(user), effective_sl_(effective_sl), sl_(sl) {}
+  [[nodiscard]] std::optional<Value> value(const std::string& name) const override;
 
 private:
-  const std::string prefix_;
+  const Config& config_;
+  const User& user_;
+  int effective_sl_;
+  slrec sl_;
 };
 
 }

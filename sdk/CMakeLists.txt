@@ -22,9 +22,6 @@ set(COMMON_SOURCES
   "acs/acs.cpp"
   "acs/eval.cpp"
   "acs/expr.cpp"
-  "acs/value.cpp"
-  "acs/valueprovider.cpp"
-  "acs/uservalueprovider.cpp"
   "ansi/ansi.cpp"
   "ansi/framebuffer.cpp"
   "ansi/makeansi.cpp"
@@ -63,6 +60,9 @@ set(COMMON_SOURCES
   "net/packets.cpp"
   "net/networks.cpp"
   "net/subscribers.cpp"
+  "value/value.cpp"
+  "value/valueprovider.cpp"
+  "value/uservalueprovider.cpp"
    )
 
 set_max_warnings()

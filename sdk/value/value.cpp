@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/acs/value.h"
+#include "sdk/value/value.h"
 
 #include "core/log.h"
 #include "core/strings.h"
@@ -29,7 +29,7 @@ using namespace wwiv::core;
 using namespace parser;
 using namespace wwiv::strings;
 
-namespace wwiv::sdk::acs {
+namespace wwiv::sdk::value {
 
 Ar::Ar(int ar, bool user_side) : ar_(static_cast<uint16_t>(ar)), user_side_(user_side) {}
 
@@ -246,7 +246,7 @@ Ar Value::as_ar() {
     DLOG(FATAL) << "ValueType::unknown";
     break;
   }
-  throw eval_error(fmt::format("Unable to coerce valuetype: {} to Ar", static_cast<int>(value_type)));
+  throw acs::eval_error(fmt::format("Unable to coerce valuetype: {} to Ar", static_cast<int>(value_type)));
 }
 
 

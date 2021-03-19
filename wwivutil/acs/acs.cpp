@@ -24,7 +24,7 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/acs/eval.h"
-#include "sdk/acs/uservalueprovider.h"
+#include "sdk/value/uservalueprovider.h"
 
 #include <iostream>
 #include <string>
@@ -66,7 +66,7 @@ int AcsCommand::Execute() {
   Eval eval(expr);
   const auto sl = user->sl();
   const auto& slr = config()->config()->sl(sl);
-  UserValueProvider u(*config()->config(), user.value(), sl, slr);
+  value::UserValueProvider u(*config()->config(), user.value(), sl, slr);
   eval.add(&u);
 
   const auto result = eval.eval();

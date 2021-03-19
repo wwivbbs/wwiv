@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/acs/uservalueprovider.h"
+#include "sdk/value/uservalueprovider.h"
 
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -26,10 +26,11 @@
 #include <string>
 
 using namespace wwiv::core;
+using namespace wwiv::sdk::acs;
 using namespace parser;
 using namespace wwiv::strings;
 
-namespace wwiv::sdk::acs {
+namespace wwiv::sdk::value {
 
 
 /** Shorthand to create an optional Value */

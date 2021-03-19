@@ -20,13 +20,13 @@
 
 #include "core/parser/ast.h"
 #include "sdk/user.h"
-#include "sdk/acs/uservalueprovider.h"
+#include "sdk/value/uservalueprovider.h"
 #include <string>
 
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::core::parser;
-using namespace wwiv::sdk::acs;
+using namespace wwiv::sdk::value;
 
 class ArTest : public ::testing::Test {
 public:

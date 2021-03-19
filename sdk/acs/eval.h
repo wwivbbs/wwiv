@@ -19,8 +19,8 @@
 #define INCLUDED_SDK_ACS_EVAL_H
 
 #include "core/parser/ast.h"
-#include "sdk/acs/value.h"
-#include "sdk/acs/valueprovider.h"
+#include "sdk/value/value.h"
+#include "sdk/value/valueprovider.h"
 #include <memory>
 #include <optional>
 #include <string>
@@ -32,14 +32,14 @@ namespace wwiv::sdk::acs {
 enum class debug_message_t { trace, parse };
 
 /** Shorthand to create an optional Value */
-template <typename T> static std::optional<Value> val(T&& v) {
-  return std::make_optional<Value>(std::forward<T>(v));
+template <typename T> static std::optional<value::Value> val(T&& v) {
+  return std::make_optional<value::Value>(std::forward<T>(v));
 }
 
-class DefaultValueProvider : public ValueProvider {
+class DefaultValueProvider : public value::ValueProvider {
 public:
   DefaultValueProvider() : ValueProvider("") {}
-  [[nodiscard]] std::optional<Value> value(const std::string& name) const override {
+  [[nodiscard]] std::optional<value::Value> value(const std::string& name) const override {
     if (name == "true") {
       return val(true);
     }
@@ -60,9 +60,9 @@ public:
 
   bool eval_throws();
   bool eval();
-  bool add(std::unique_ptr<ValueProvider>&& p);
-  bool add(const ValueProvider* p);
-  std::optional<Value> to_value(core::parser::Factor* n);
+  bool add(std::unique_ptr<value::ValueProvider>&& p);
+  bool add(const value::ValueProvider* p);
+  std::optional<value::Value> to_value(core::parser::Factor* n);
 
   /** 
    * Gets the error text that occurred when failing to evaluate the expression, 
@@ -86,11 +86,11 @@ public:
 
 private:
   std::string expression_;
-  std::unordered_map<std::string, const ValueProvider*> providers_;
-  std::unordered_map<int, Value> values_;
+  std::unordered_map<std::string, const value::ValueProvider*> providers_;
+  std::unordered_map<int, value::Value> values_;
   std::string error_text_;
   std::vector<std::string> debug_info_;
-  std::unordered_map<std::string, std::unique_ptr<ValueProvider>> providers_storage_;
+  std::unordered_map<std::string, std::unique_ptr<value::ValueProvider>> providers_storage_;
   DefaultValueProvider default_provider_;
 };  // class
 

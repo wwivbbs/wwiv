@@ -45,6 +45,7 @@
 #include "core/inifile.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
@@ -205,6 +206,32 @@ static void valuser_auto(User& user) {
   auto_val(num, &user);
 }
 
+// TODO(rushfan): This is copied from wwivconfig, hard to share there but
+// If we need this somewhere else, should move to SDK class.
+static void write_semaphore_if_user_online(const Config& config, int current_usernum) {
+  Instances instances(config);
+  if (!instances) {
+    std::cout << "Unable to read Instance information.";
+    return;
+  }
+
+  for (const auto& inst : instances) {
+    if (!inst.online()) {
+      continue;
+    }
+    if (inst.user_number() != current_usernum) {
+      continue;
+    }
+    // we have user.
+    const auto path = config.scratch_dir(inst.node_number());
+    const auto fn = FilePath(path, "readuser.wwiv");
+    if (TextFile tf(fn, "wt"); tf) {
+      tf.Write("User edited in wwivconfig usereditor");
+    }
+    return;
+  }
+}
+
 void valuser(int user_number) {
 
   bout.nl();
@@ -242,6 +269,7 @@ void valuser(int user_number) {
     switch (onek("ADMQ", true)) { 
     case 'A':
       valuser_auto(user);
+      write_semaphore_if_user_online(*a()->config(), user.usernum());
       break;
     case 'D':
       if (valuser_delete(user_number)) {
@@ -250,6 +278,7 @@ void valuser(int user_number) {
       break;
     case 'M':
       valuser_manual(user);
+      write_semaphore_if_user_online(*a()->config(), user.usernum());
       break;
     case 'Q':
       bout.nl(2);

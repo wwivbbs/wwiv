@@ -25,7 +25,7 @@
 #include <memory>
 #include <string>
 
-namespace wwiv::sdk::acs {
+namespace wwiv::sdk::value {
 
 class Ar {
 public:
