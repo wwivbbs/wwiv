@@ -392,7 +392,7 @@ void insert_dir(int n) {
   r.filename = "noname";
   r.path = a()->config()->dloadsdir();
   r.acs = "user.sl >= 10";
-  r.maxfiles = 50;
+  r.maxfiles = 500;
   r.mask = 0;
 
   a()->dirs().insert(n, r);
