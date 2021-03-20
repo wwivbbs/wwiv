@@ -35,10 +35,8 @@
 #include "sdk/subxtr.h"
 #include "sdk/net/networks.h"
 
-#include <algorithm>
 #include <string>
 
-using std::max;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

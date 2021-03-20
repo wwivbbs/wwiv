@@ -50,7 +50,6 @@ using namespace wwiv::strings;
 static std::unique_ptr<File> fileSub; // File object for '.sub' file
 static char subdat_fn[MAX_PATH];      // filename of .sub file
 
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

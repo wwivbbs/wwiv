@@ -32,7 +32,6 @@
 
 #pragma comment (lib, "DbgHelp.lib")
 
-using std::stringstream;
 using namespace std::chrono;
 using namespace wwiv::strings;
 
@@ -87,7 +86,7 @@ std::string stacktrace() {
   symbol->MaxNameLen = 255;
   symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
 
-  stringstream out;
+  std::stringstream out;
   // start at one to skip this current frame.
   for (auto i = 1; i < frames; i++) {
     if (SymFromAddr(process, reinterpret_cast<DWORD64>(stack[i]), nullptr, symbol)) {

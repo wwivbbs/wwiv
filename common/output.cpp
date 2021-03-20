@@ -33,7 +33,6 @@
 #include <cctype>
 #include <string>
 
-using std::ostream;
 using namespace std::chrono;
 using namespace wwiv::common;
 using namespace wwiv::os;

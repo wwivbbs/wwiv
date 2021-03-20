@@ -20,9 +20,6 @@
 #include "sdk/fido/fido_address.h"
 
 #include "gtest/gtest.h"
-#include <type_traits>
-
-using std::is_standard_layout;
 
 using namespace wwiv::sdk;
 using namespace wwiv::stl;

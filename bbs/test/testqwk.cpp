@@ -1,12 +1,9 @@
-#include <cstdio>
-#include <iostream>
-#include "../qwk.h"
+#include "bbs/qwk/qwk_struct.h"
 
-using std::cout;
-using std::endl;
+#include <iostream>
 
 int main(char** argv) {
-  cout << "qwk_record=" << sizeof(qwk_record) << endl;
-  cout << "qwk_index=" << sizeof(qwk_index) << endl;
+  std::cout << "qwk_record=" << sizeof(wwiv::bbs::qwk::qwk_record) << std::endl;
+  std::cout << "qwk_index=" << sizeof(wwiv::bbs::qwk::qwk_index) << std::endl;
 }
 

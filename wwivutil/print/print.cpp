@@ -34,8 +34,6 @@
 #include <iostream>
 #include <string>
 
-using std::cout;
-using std::endl;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace std::chrono_literals;
 using namespace wwiv::localui;
@@ -110,7 +108,7 @@ std::string PrintCommand::GetUsage() const {
 
 int PrintCommand::Execute() {
   if (remaining().empty()) {
-    std::cout << GetUsage() << GetHelp() << endl;
+    std::cout << GetUsage() << GetHelp() << std::endl;
     return 2;
   }
   TextFile tf(remaining().front(), "rt");

@@ -35,7 +35,6 @@
 #include <string>
 #include <vector>
 
-using std::setw;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
@@ -168,8 +167,7 @@ public:
       return 1;
     }
     auto daten = DateTime::now();
-    auto date_str = sarg("date");
-    if (!date_str.empty()) {
+    if (auto date_str = sarg("date"); !date_str.empty()) {
       std::istringstream ss(date_str);
       std::tm dt = {};
       ss >> std::get_time(&dt, "Www Mmm dd hh:mm:ss yyyy");

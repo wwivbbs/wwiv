@@ -20,19 +20,8 @@
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
-#include "sdk/config.h"
-#include "sdk/user.h"
 
-#include "gtest/gtest.h"
-#include <algorithm>
 #include <memory>
-
-using std::begin;
-using std::end;
-using std::move;
-using std::make_unique;
-using std::unique_ptr;
-using std::replace;
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
