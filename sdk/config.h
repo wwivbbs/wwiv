@@ -273,10 +273,10 @@ public:
   void set_sysconfig(uint16_t sysconfig) { config_.sysconfig = sysconfig; }
   [[nodiscard]] uint16_t sysconfig_flags() const { return config_.sysconfig; }
   // QScan record length.
-  [[nodiscard]] uint16_t qscn_len() const { return config_.qscn_len; }
+  [[nodiscard]] int qscn_len() const { return config_.qscn_len; }
   void qscn_len(uint16_t n) { config_.qscn_len = n; }
   // Size in bytes of the userrec structure.
-  [[nodiscard]] uint16_t userrec_length() const { return config_.userreclen; }
+  [[nodiscard]] int userrec_length() const { return config_.userreclen; }
 
   [[nodiscard]] uint16_t waitingoffset() const { return config_.waitingoffset; }
   [[nodiscard]] uint16_t inactoffset() const { return config_.inactoffset; }

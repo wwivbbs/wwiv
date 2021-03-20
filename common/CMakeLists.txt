@@ -5,7 +5,6 @@ Include(FindWWIVCurses)
 
 set(COMMON_SOURCES 
  "bgetch.cpp"
- "bputch.cpp"
  "checka.cpp"
  "com.cpp"
  "context.cpp"

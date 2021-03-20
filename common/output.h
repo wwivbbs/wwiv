@@ -114,7 +114,7 @@ public:
   [[nodiscard]] std::string MakeSystemColor(int c) const;
   [[nodiscard]] std::string MakeSystemColor(sdk::Color color) const;
 
-  /** Displays msg in a lightbar header. */
+  /** Displays msg in a light bar header. */
   void litebar(const std::string& msg);
 
   /** Backspaces from the current cursor position to the beginning of a line */
@@ -172,7 +172,7 @@ public:
   int PutsXYA(int x, int y, int color, const std::string& text);
 
   /**
-   *
+   * Executes the movement commands (up, down, left, right) specified by r.
    */
   void do_movement(const Interpreted& r);
 
@@ -190,7 +190,7 @@ public:
   /**
    * Displays s which checking for abort and next
    * @see checka
-   * <em>Note: bout.bputs means Output String And Next</em>
+   * Note: bout.bputs means "Output String And Next".
    *
    * @param text The text to display
    * @param abort The abort flag (Output Parameter)
@@ -225,11 +225,35 @@ public:
   /**
    * Displays the text in the strings file referred to by key.
    */
-  int str(const std::string& key) {
-    // Process arguments
-    const auto format_str = lang().value(key);
-    return bputs(format_str);
-  }
+  int str(const std::string& key);
+
+  /**
+   * Displays text slowly coming out of a spinning wheel using
+   * {@code}
+   * | / - \ | - \ - /
+   * {@endcode}
+   */
+  void spin_puts(const std::string& text, int color);
+
+/**
+ * This function prints out a string, with a user-specifiable delay between
+ * each character, and a user-definable pause after the entire string has
+ * been printed, then it backspaces the string. The color is also definable.
+ * The parameters are as follows:
+ * <p>
+ * <em>Note: ANSI is not required.</em>
+ * <p>
+ * Example:
+ * <p>
+ * back_puts("This is an example.", 3, 20ms, 500ms);
+ *
+ * @param text  The string to print
+ * @param color The color of the string
+ * @param char_dly Delay between each character, in milliseconds
+ * @param string_dly Delay between completion of string and backspacing
+ */
+  void back_puts(const std::string& text, int color, std::chrono::duration<double> char_dly, std::chrono::duration<double> string_dly);
+
 
   /**
    * Displays the text in the strings file referred to by key adding all
@@ -247,11 +271,35 @@ public:
   }
 
   int bputch(char c, bool use_buffer = false);
+
+  /**
+   * Writes any remaining buffered text remotely.
+   */
   void flush();
+
+  /**
+   * writes a character remotely only, optionally buffering it possible.
+   */
   void rputch(char ch, bool use_buffer = false);
+
+  /**
+   * Writes a string remotely only.
+   */
   void rputs(const std::string& text);
+
+  /**
+   * Redraws the line to the screen.
+   */
   bool RestoreCurrentLine(const SavedLine& line);
+
+  /**
+   * Saves the current line and returns it.
+   */
   SavedLine SaveCurrentLine() const;
+
+  /**
+   * Purges the inbound buffer of any unprocessed characters.
+   */
   void dump();
 
   /** Clears the number of lines displayed since last pause */
@@ -263,7 +311,10 @@ public:
   /** Sets the number of lines displayed since last pause */
   void lines_listed(int l) { lines_listed_ = l; }
 
+  /** Returns the current x position according to a best guess */
   int wherex() const;
+
+  /** Redraws the current line */
   void RedrawCurrentLine();
 
   // ANSI helpers.
@@ -280,16 +331,21 @@ public:
   // reset the state of Output
   void reset();
 
+  //
+  // Handles enabling, disabling, and status of MCI/pipe expressions.
+  //
   [[nodiscard]] bool mci_enabled() const noexcept { return mci_enabled_; }
   void enable_mci() { mci_enabled_ = true; }
   void disable_mci() { mci_enabled_ = false; }
   void set_mci_enabled(bool e) { mci_enabled_ = e; }
 
-  // This will pause output, displaying the [PAUSE] message, and wait a key to be hit.
-  // in pause.cpp
+  /** Pause output, displaying the [PAUSE] message, and wait a key to be hit. */
   void pausescr();
 
-  // PrintFile and friends
+  //
+  // PrintFile and friends.  Used to display a file (msg/ans/b&w/etc).
+  //
+
   void print_local_file(const std::string& filename);
   bool printfile(const std::string& data, bool abortable = true, bool force_pause = true);
   bool printfile_path(const std::filesystem::path& file_path, bool abortable = true,
@@ -297,10 +353,10 @@ public:
   bool print_help_file(const std::string& filename);
   bool printfile_random(const std::string& base_fn);
 
-  bool newline{true};
-
-  // Gets the current language instance.
+  /** Gets the current language instance. */
   [[nodiscard]] Language& lang();
+
+  bool newline{true};
 
 private:
   int lines_listed_{0};

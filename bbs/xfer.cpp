@@ -70,12 +70,11 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   const auto comport = std::to_string(a()->sess().incom() ? a()->primary_port() : 0);
   const auto& d = a()->dirs()[directory_num];
   const auto dir_path = File::absolute(a()->bbspath(), d.path);
-  const auto cmdLine = stuff_in(a()->upload_cmd, create_chain_file(), dir_path.string(),
+  const auto cmd_line = stuff_in(a()->upload_cmd, create_chain_file(), dir_path.string(),
                                 FileName(u->filename).unaligned_filename(), comport, "");
-  ExecuteExternalProgram(cmdLine, a()->spawn_option(SPAWNOPT_ULCHK));
+  ExecuteExternalProgram(cmd_line, a()->spawn_option(SPAWNOPT_ULCHK));
 
-  const auto file = FilePath(dir_path, FileName(u->filename));
-  if (!File::Exists(file)) {
+  if (const auto file = FilePath(dir_path, FileName(u->filename)); !File::Exists(file)) {
     sysoplog() << "File \"" << u->filename << "\" to " << a()->dirs()[directory_num].name << " deleted by UL event.";
     bout << u->filename << " was deleted by the upload event.\r\n";
     return false;
@@ -93,8 +92,7 @@ bool okfn(const string& filename) {
     return false;
   }
 
-  const auto len = filename.length();
-  if (len == 0) {
+  if (const auto len = filename.length(); len == 0) {
     return false;
   }
   if (filename[0] == '-' || filename[0] == ' ' || filename[0] == '.' || filename[0] == '@') {
@@ -112,8 +110,8 @@ bool okfn(const string& filename) {
 
 
   for (const auto& device : device_names) {
-    const auto deviceLen = device.length();
-    if (filename.length() >= deviceLen && filename.substr(0, deviceLen) == device) {
+    if (const auto deviceLen = device.length();
+        filename.length() >= deviceLen && filename.substr(0, deviceLen) == device) {
       if (filename[deviceLen] == '\0' || filename[deviceLen] == '.' || deviceLen == 8) {
         return false;
       }
@@ -133,8 +131,7 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
   string name_to_delete;
 
   if (a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) {
-    const auto full_pathname = FilePath(a()->sess().dirs().temp_directory(), file_name);
-    if (!File::Exists(full_pathname)) {
+    if (const auto full_pathname = FilePath(a()->sess().dirs().temp_directory(), file_name); !File::Exists(full_pathname)) {
       const auto name_in_dir = FilePath(dir, file_name);
       File::Copy(name_in_dir, full_pathname);
       name_to_delete = full_pathname.string();
@@ -149,8 +146,7 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
   auto return_code = 0;
   if (File::Exists(full_pathname) && opt_cmd.has_value()) {
     bout << "\r\n\nArchive listing for " << file_name << "\r\n\n";
-    const auto cmd = opt_cmd.value();
-    if (cmd.internal) {
+    if (const auto cmd = opt_cmd.value(); cmd.internal) {
       auto o = wwiv::sdk::files::list_archive(full_pathname);
       if (!o) {
         bout << "Unable to view archive: '" << full_pathname << "'.";
@@ -233,7 +229,7 @@ std::string aligns(const std::string& file_name) {
   return wwiv::sdk::files::align(file_name);
 }
 
-void printinfo(uploadsrec * u, bool *abort) {
+void printinfo(uploadsrec* u, bool *abort) {
   bool next;
 
   {
@@ -251,10 +247,10 @@ void printinfo(uploadsrec * u, bool *abort) {
 
   auto size = humanize(u->numbytes);
 
-  const auto& dir = a()->dirs()[a()->udir[a()->current_user_dir_num()].subnum];
-  if (!(dir.mask & mask_cdrom)) {
-    const auto dir_path = File::absolute(a()->bbspath(), dir.path);
-    if (!File::Exists(FilePath(dir_path, FileName(u->filename)))) {
+  if (const auto& dir = a()->dirs()[a()->udir[a()->current_user_dir_num()].subnum];
+      !(dir.mask & mask_cdrom)) {
+    if (const auto dir_path = File::absolute(a()->bbspath(), dir.path);
+        !File::Exists(FilePath(dir_path, FileName(u->filename)))) {
       size = "N/A";
     }
   }
@@ -316,8 +312,8 @@ void listfiles() {
   auto* area = a()->current_file_area();
   auto abort = false;
   for (auto i = 1; i <= area->number_of_files() && !abort && !a()->sess().hangup(); i++) {
-    auto f = area->ReadFile(i);
-    if (wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {
+    if (auto f = area->ReadFile(i);
+        wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {
       if (need_title) {
         printtitle(&abort);
         need_title = false;
@@ -353,8 +349,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
     for (auto i = 1; i <= a()->current_file_area()->number_of_files() && !*abort && !a()->sess().hangup();
          i++) {
       a()->CheckForHangup();
-      auto f = area->ReadFile(i);
-      if (f.u().daten >= a()->sess().nscandate()) {
+      if (auto f = area->ReadFile(i); f.u().daten >= a()->sess().nscandate()) {
         if (need_title) {
           if (bout.lines_listed() >= a()->sess().num_screen_lines() - 7 && !a()->filelist.empty()) {
             tag_files(need_title);
@@ -480,8 +475,8 @@ void searchall() {
       auto* area = a()->current_file_area();
       for (int i1 = 1; i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->sess().hangup();
            i1++) {
-        auto f = area->ReadFile(i1);
-        if (wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {
+        if (auto f = area->ReadFile(i1);
+            wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {
           if (need_title) {
             if (bout.lines_listed() >= a()->sess().num_screen_lines() - 7 && !a()->filelist.empty()) {
               tag_files(need_title);
@@ -544,8 +539,8 @@ int printfileinfo(const uploadsrec* u, const wwiv::sdk::files::directory_t& dir)
     bout.nl();
     bout << "|#3CD ROM DRIVE\r\n";
   } else {
-    const auto dir_path = File::absolute(a()->bbspath(), dir.path);
-    if (!File::Exists(FilePath(dir_path, FileName(u->filename)))) {
+    if (const auto dir_path = File::absolute(a()->bbspath(), dir.path);
+        !File::Exists(FilePath(dir_path, FileName(u->filename)))) {
       bout << "\r\n-=>FILE NOT THERE<=-\r\n\n";
       return -1;
     }
@@ -560,9 +555,8 @@ void remlist(const std::string& file_name) {
   if (a()->filelist.empty()) {
     return;
   }
-  for (auto b = a()->filelist.begin(); b != a()->filelist.end(); b++) {
-    const auto list_fn = aligns(b->u.filename);
-    if (fn == list_fn) {
+  for (auto b = a()->filelist.begin(); b != a()->filelist.end(); ++b) {
+    if (const auto list_fn = aligns(b->u.filename); fn == list_fn) {
       a()->filelist.erase(b);
       return;
     }

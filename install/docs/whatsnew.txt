@@ -116,7 +116,7 @@ What's New in WWIV 5.7.0 (2021)
 * Use unique cram challenge (#1429)
 * Add validation text for FTN address
 + binkp can't answer with mutliple AKAs presented (#1426)
-
+! |{pause} is now |{pausescr}
   
 
 What's New in WWIV 5.6.1 (2021)

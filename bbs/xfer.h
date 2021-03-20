@@ -29,7 +29,7 @@ struct directory_t;
 
 /** return true if file_name is in the queue */
 bool check_ul_event(int directory_num, uploadsrec* upload_record);
-bool okfn(const std::string& fileName);
+bool okfn(const std::string& filename);
 void print_devices();
 int list_arc_out(const std::string& file_name, const std::string& dir);
 bool ratio_ok();
@@ -38,7 +38,7 @@ void dliscan1(int directory_num);
 void dliscan1(const wwiv::sdk::files::directory_t& dir);
 void dliscan();
 std::string aligns(const std::string& file_name);
-void printinfo(uploadsrec* upload_record, bool* abort);
+void printinfo(uploadsrec* u, bool* abort);
 void printtitle(bool* abort);
 std::string file_mask(const std::string& prompt);
 std::string file_mask();

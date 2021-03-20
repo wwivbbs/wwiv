@@ -15,17 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_XFEROVL_H__
-#define __INCLUDED_BBS_XFEROVL_H__
+#ifndef INCLUDED_BBS_XFEROVL_H
+#define INCLUDED_BBS_XFEROVL_H
 
 #include <string>
 
-namespace wwiv {
-namespace sdk {
-namespace files {
+namespace wwiv::sdk::files {
 class FileRecord;
-}
-}
 }
 
 void move_file();
@@ -45,4 +41,4 @@ void xfer_defaults();
 void finddescription();
 void arc_l();
 
-#endif // __INCLUDED_BBS_XFEROVL_H__
+#endif
