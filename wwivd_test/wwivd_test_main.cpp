@@ -17,15 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
-#include "core/os.h"
 #include "core_test/file_helper.h"
-#include "gtest/gtest.h"
-#include <string>
 
-using std::string;
+#include "gtest/gtest.h"
+
 using namespace wwiv::core;
 
 int main(int argc, char* argv[]) {

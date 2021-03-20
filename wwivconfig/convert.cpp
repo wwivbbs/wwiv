@@ -56,8 +56,6 @@ using namespace wwiv::sdk::files;
 using namespace wwiv::sdk::menus;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
-using std::string;
-using std::vector;
 
 namespace wwiv::wwivconfig::convert {
 
@@ -151,7 +149,7 @@ config_upgrade_state_t convert_config_to_52(UIWindow* window, const std::filesys
   to_char_array(h.signature, "WWIV");
 
   // Save old new  user password.
-  string newuserpw = syscfg53.header.newuserpw;
+  std::string newuserpw = syscfg53.header.newuserpw;
   // Update new user password to new location.
   to_char_array(syscfg53.newuserpw, newuserpw);
   // Set new header on config.dat.
@@ -186,7 +184,7 @@ static bool convert_to_v1(UIWindow* window, Config& config) {
     return false;
   }
 
-  vector<userrec> users;
+  std::vector<userrec> users;
   if (!usersFile.ReadVector(users)) {
     LOG(ERROR) << "Unable to read user.lst.";
     messagebox(window, "Unable to read user.lst.");
@@ -237,7 +235,7 @@ static bool convert_to_v1(UIWindow* window, Config& config) {
     return false;
   }
 
-  vector<user_config> second_config;
+  std::vector<user_config> second_config;
   if (!configUsrFile.ReadVector(second_config)) {
     LOG(ERROR) << "Unable to read config.usr file to upgrade.";
     return false;
@@ -501,8 +499,8 @@ bool convert_to_v6(UIWindow* window, Config& config) {
   std::string scratch_directory = "e/%n/scratch";
   if (ini.IsOpen()) {
     minimal = UseMinimalNewUserInfo(ini);
-    temp_directory = ini.value<string>("TEMP_DIRECTORY", "e/%n/temp");
-    batch_directory = ini.value<string>("BATCH_DIRECTORY", "e/%n/temp");
+    temp_directory = ini.value<std::string>("TEMP_DIRECTORY", "e/%n/temp");
+    batch_directory = ini.value<std::string>("BATCH_DIRECTORY", "e/%n/temp");
     num_instances = ini.value<int>("NUM_INSTANCES", 8);
   }
   auto& nc = config.newuser_config();
@@ -625,8 +623,8 @@ ShouldContinue do_wwiv_ugprades(UIWindow* window, const std::string& bbsdir) {
       messagebox(window, "Unable to load config.json");
       return ShouldContinue::EXIT;
     }
-    auto state = ensure_latest_5x_config(window, config56);
-    if (state == config_upgrade_state_t::upgraded) {
+    if (auto state = ensure_latest_5x_config(window, config56);
+        state == config_upgrade_state_t::upgraded) {
       if (!config56.Save()) {
         messagebox(window, "Unable to save upgrades config.json");
         return ShouldContinue::EXIT;
@@ -686,9 +684,8 @@ ShouldContinue do_wwiv_ugprades(UIWindow* window, const std::string& bbsdir) {
     return ShouldContinue::EXIT;
   }
 
-  // Make sure we're at the latest 5.x config version.
-  auto state = ensure_latest_5x_config(window, config56);
-  if (state == config_upgrade_state_t::upgraded) {
+  if (auto state = ensure_latest_5x_config(window, config56);
+      state == config_upgrade_state_t::upgraded) {
     if (!config56.Save()) {
       messagebox(window, "Unable to save upgrades config.json");
       return ShouldContinue::EXIT;

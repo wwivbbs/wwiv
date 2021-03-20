@@ -16,18 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
-#include <iostream>
-#include <memory>
-#include <string>
-
 #include "core/strings.h"
 #include "sdk/ansi/makeansi.h"
 
-using std::cout;
-using std::endl;
-using std::string;
+#include "gtest/gtest.h"
+
 using namespace wwiv::sdk::ansi;
 
 class MakeAnsiTest : public ::testing::Test {};

@@ -51,7 +51,6 @@
 
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -85,7 +84,7 @@ void move_file() {
       done = true;
     } else if (ch == 'Y') {
       src_fn = FilePath(dir.path, f);
-      string ss;
+      std::string ss;
       do {
         bout.nl(2);
         bout << "|#2To which directory? ";
@@ -134,7 +133,7 @@ void move_file() {
         f.set_date(DateTime::now());
       }
       --nCurrentPos;
-      string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(f).value_or("");
+      std::string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(f).value_or("");
       if (a()->current_file_area()->DeleteFile(nCurRecNum)) {
         a()->current_file_area()->Save();
       }
@@ -547,7 +546,7 @@ void relist() {
 
   bout.cls();
   bout.clear_lines_listed();
-  bout << string(78, '-') << wwiv::endl;
+  bout << std::string(78, '-') << wwiv::endl;
   for (size_t i = 0; i < a()->filelist.size() && !abort; i++) {
     const auto& f = a()->filelist[i];
     files::FileName fn(f.u.filename);
@@ -562,7 +561,7 @@ void relist() {
     bout.bpla(bd, &abort);
   }
   bout.Color(FRAME_COLOR);
-  bout << "\r" << string(78, '-') << wwiv::endl;
+  bout << "\r" << std::string(78, '-') << wwiv::endl;
   bout.clear_lines_listed();
 }
 

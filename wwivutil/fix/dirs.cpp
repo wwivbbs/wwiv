@@ -32,11 +32,6 @@
 #include <unordered_set>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::string;
-using std::vector;
-
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
@@ -139,8 +134,7 @@ RewriteExtendedDescriptions(const wwiv::sdk::Config& config, const sdk::files::d
   for (long file_pos = 0; file_pos < file_size; ) {
     in.Seek(file_pos, File::Whence::begin);
     ext_desc_type ed{};
-    const auto num_read = in.Read(&ed, sizeof(ext_desc_type));
-    if (num_read != sizeof(ext_desc_type)) {
+    if (const auto num_read = in.Read(&ed, sizeof(ext_desc_type)); num_read != sizeof(ext_desc_type)) {
       // LOG ERROR? Return false here?
       break;
     }
@@ -153,7 +147,7 @@ RewriteExtendedDescriptions(const wwiv::sdk::Config& config, const sdk::files::d
         out.Write(&ed, sizeof(ext_desc_type));
       }
 
-      string ss;
+      std::string ss;
       ss.resize(ed.len);
       in.Read(&ss[0], ed.len);
       if (!dry_run) {
@@ -179,8 +173,7 @@ static bool CheckAttributes(const wwiv::sdk::files::directory_t& dir, sdk::files
   for (auto i = 1; i < nf; i++) {
     auto dirty{false};
     auto f = area.ReadFile(i);
-    const auto actual_extended = contains(files_with_ext_desc, f.aligned_filename());
-    if (actual_extended != f.has_extended_description()) {
+    if (const auto actual_extended = contains(files_with_ext_desc, f.aligned_filename()); actual_extended != f.has_extended_description()) {
       dirty = true;
       LOG(INFO) << "Fixing ext desc mask on: " << f.filename();
       f.set_extended_description(actual_extended);
@@ -267,8 +260,8 @@ static void checkFileAreas(const wwiv::sdk::Config& config, bool /* verbose */, 
 
 std::string FixDirectoriesCommand::GetUsage() const {
   std::ostringstream ss;
-  ss<< "Usage:   fix dirs" << endl;
-  ss << "Example: WWIVUTIL fix dirs" << endl;
+  ss<< "Usage:   fix dirs" << std::endl;
+  ss << "Example: WWIVUTIL fix dirs" << std::endl;
   return ss.str();
 }
 
@@ -280,7 +273,7 @@ bool FixDirectoriesCommand::AddSubCommands() {
 }
 
 int FixDirectoriesCommand::Execute() {
-  cout << "Runnning FixDirectoriesCommand::Execute" << endl;
+  std::cout << "Runnning FixDirectoriesCommand::Execute" << std::endl;
 
   CHECK(config()->config());
   checkFileAreas(*config()->config(), verbose(), dry_run());

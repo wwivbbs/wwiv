@@ -23,18 +23,15 @@
 #include "gtest/gtest.h"
 #include <string>
 
-using std::endl;
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
-static string CreateFakePacketText(const string& subtype, const string& title, const string& sender,
-                                   const string& date, const string& text) {
+static std::string CreateFakePacketText(const std::string& subtype, const std::string& title, const std::string& sender,
+                                   const std::string& date, const std::string& text) {
 
-  string result;
+  std::string result;
   result.append(subtype);
   result.push_back(0);
   result.append(title);
@@ -56,7 +53,7 @@ protected:
 };
 
 TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
-  string text;
+  std::string text;
   text.push_back(1);
   text.push_back(0);
   text += "BINKP";
@@ -79,7 +76,7 @@ TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
 }
 
 TEST_F(PacketsTest, UpdateRouting_Smoke) {
-  const string body = "Hello World";
+  const std::string body = "Hello World";
   const auto now = daten_t_now();
   const auto date = daten_to_wwivnet_time(now);
 
@@ -117,18 +114,18 @@ TEST_F(PacketsTest, UpdateRouting_Smoke) {
 
 TEST_F(PacketsTest, GetMessageField) {
   char raw[] = {'a', '\0', 'b', 'c', '\r', '\n', 'd'};
-  string text(raw, 7);
+  std::string text(raw, 7);
   auto iter = text.begin();
   const auto a = get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
   EXPECT_STREQ("a", a.c_str());
   const auto bc = get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
   EXPECT_STREQ("bc", bc.c_str());
-  const auto remaining = string(iter, text.end());
+  const auto remaining = std::string(iter, text.end());
   EXPECT_STREQ("d", remaining.c_str());
 }
 
 TEST_F(PacketsTest, FromPacketText_FromPacketText_NewPost) {
-  const string s("a\000b\000c\r\nd\r\ne", 11);
+  const std::string s("a\000b\000c\r\nd\r\ne", 11);
   const auto pp = ParsedPacketText::FromPacketText(main_type_new_post, s);
   EXPECT_EQ(pp.subtype(), "a");
   EXPECT_EQ(pp.title(), "b");
@@ -139,7 +136,7 @@ TEST_F(PacketsTest, FromPacketText_FromPacketText_NewPost) {
 
 
 TEST_F(PacketsTest, FromPacketText_ToPacketText_Email_NotName) {
-  const string expected("b\000c\r\nd\r\ne", 9);
+  const std::string expected("b\000c\r\nd\r\ne", 9);
   ParsedPacketText ppt{main_type_email};
   ppt.set_to("a");
   ppt.set_title("b");
@@ -152,7 +149,7 @@ TEST_F(PacketsTest, FromPacketText_ToPacketText_Email_NotName) {
 }
 
 TEST_F(PacketsTest, FromPacketText_ToPacketText_EmailName) {
-  const string expected("a\000b\000c\r\nd\r\ne", 11);
+  const std::string expected("a\000b\000c\r\nd\r\ne", 11);
   ParsedPacketText ppt{main_type_email_name};
   ppt.set_to("a");
   ppt.set_title("b");
@@ -165,7 +162,7 @@ TEST_F(PacketsTest, FromPacketText_ToPacketText_EmailName) {
 }
 
 TEST_F(PacketsTest, FromPacketText_Malformed) {
-  const string s("a", 1);
+  const std::string s("a", 1);
   const auto pp = ParsedPacketText::FromPacketText(main_type_new_post, s);
   EXPECT_EQ(pp.subtype(), "a");
   EXPECT_EQ(pp.title(), "");

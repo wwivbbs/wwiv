@@ -32,7 +32,6 @@
 #include <filesystem>
 #include <string>
 
-using std::string;
 using wwiv::core::ScopeExit;
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -60,8 +59,8 @@ void ExternalQBBSMessageEditor::CleanupControlFiles() {
  * line 5: Message area   }   posted. (not used in editor)
  * line 6: Private flag ("YES" or "NO")
  */
-static bool WriteMsgInf(const string& title, const string& sub_name, bool is_email,
-                        const string& to_name, bool real_name, const std::filesystem::path& temp_directory,
+static bool WriteMsgInf(const std::string& title, const std::string& sub_name, bool is_email,
+                        const std::string& to_name, bool real_name, const std::filesystem::path& temp_directory,
                         const wwiv::sdk::User& user) {
   TextFile file(FilePath(temp_directory, MSGINF), "wd");
   if (!file.IsOpen()) {

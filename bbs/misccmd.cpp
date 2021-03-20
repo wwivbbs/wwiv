@@ -30,7 +30,6 @@
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
-#include "common/pause.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
@@ -46,8 +45,6 @@
 #include <memory>
 #include <string>
 
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -99,7 +96,7 @@ void kill_old_email() {
 
         if (m.tosys == 0) {
           a()->users()->readuser(&user, m.touser);
-          string tempName = a()->user()->name_and_number();
+          std::string tempName = a()->user()->name_and_number();
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da))
               && ((a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_email_anony) == 0)) {
             tempName = ">UNKNOWN<";
@@ -139,8 +136,7 @@ void kill_old_email() {
         }
         bout.nl();
         bout << "|#9(R)ead, (D)elete, (N)ext, (Q)uit : ";
-        char ch = onek("QRDN");
-        switch (ch) {
+        switch (char ch = onek("QRDN"); ch) {
         case 'Q':
           done1   = true;
           done    = true;
@@ -188,7 +184,7 @@ void kill_old_email() {
               sysoplog() << "Deleted mail and attached file: " << fsr.filename;
             } else {
               bout << "Mail deleted.\r\n\n";
-              const string username_num = a()->names()->UserName(m1.touser);
+              const std::string username_num = a()->names()->UserName(m1.touser);
               sysoplog() << "Deleted mail sent to " << username_num;
             }
           } else {
@@ -369,8 +365,7 @@ void list_users(int mode) {
         bout.bpla("\xD4\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBE",
             &abort);
         bout << "|#1[Enter] to continue or Q=Quit : ";
-        auto ch = onek("Q\r ");
-        switch (ch) {
+        switch (auto ch = onek("Q\r "); ch) {
         case 'Q':
           abort = true;
           i = a()->status_manager()->user_count();
@@ -437,8 +432,7 @@ void time_bank() {
     bout.nl();
     bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2Time Bank|#9] Enter Command: |#2";
     bout.mpl(1);
-    char c = onek("QDW");
-    switch (c) {
+    switch (char c = onek("QDW"); c) {
     case 'D':
       bout.nl();
       bout << "|#1Deposit how many minutes: ";

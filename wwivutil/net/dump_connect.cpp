@@ -27,10 +27,6 @@
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -38,8 +34,8 @@ namespace wwiv::wwivutil {
 
 std::string DumpConnectCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   connect" << endl;
-  ss << "Example: connect" << endl;
+  ss << "Usage:   connect" << std::endl;
+  ss << "Example: connect" << std::endl;
   return ss.str();
 }
 
@@ -50,17 +46,17 @@ int DumpConnectCommand::Execute() {
     return 1;
   }
 
-  map<const string, Connect> connects;
+  std::map<const std::string, Connect> connects;
   for (const auto& net : networks.networks()) {
-    string lower_case_network_name(net.name);
+    std::string lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
     connects.emplace(lower_case_network_name, Connect(net.dir));
   }
 
   for (const auto& c : connects) {
-    cout << "connect.net information: : " << c.first << endl;
-    cout << "===========================================================" << endl;
-    cout << c.second.ToString() << endl;
+    std::cout << "connect.net information: : " << c.first << std::endl;
+    std::cout << "===========================================================" << std::endl;
+    std::cout << c.second.ToString() << std::endl;
   }
 
   return 0;

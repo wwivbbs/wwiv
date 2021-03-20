@@ -29,9 +29,6 @@
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::string;
 using wwiv::core::CommandLineCommand;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -55,27 +52,27 @@ static int dump_file(const std::filesystem::path& filename) {
   }
 
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  cout << "Read " << subscribers.size() << " in " << elapsed.count() << " milliseconds. "
+  std::cout << "Read " << subscribers.size() << " in " << elapsed.count() << " milliseconds. "
        << std::endl;
-  cout << "Read " << subscribers.size() << " in " << elapsed.count() / 1000 << " seconds. "
+  std::cout << "Read " << subscribers.size() << " in " << elapsed.count() / 1000 << " seconds. "
        << std::endl;
 
   for (const auto& e : subscribers) {
-    cout << e.as_string() << std::endl;
+    std::cout << e.as_string() << std::endl;
   }
   return 0;
 }
 
 std::string DumpFidoSubscribersCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   subscribers <subscriber filename>" << endl;
-  ss << "Example: subscribers net/ftn/nGENCHAT.net" << endl;
+  ss << "Usage:   subscribers <subscriber filename>" << std::endl;
+  ss << "Example: subscribers net/ftn/nGENCHAT.net" << std::endl;
   return ss.str();
 }
 
 int DumpFidoSubscribersCommand::Execute() {
   if (remaining().empty()) {
-    cout << GetUsage() << GetHelp() << endl;
+    std::cout << GetUsage() << GetHelp() << std::endl;
     return 2;
   }
   const std::filesystem::path p{remaining().front()};

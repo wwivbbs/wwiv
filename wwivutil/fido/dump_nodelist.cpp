@@ -29,9 +29,6 @@
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::string;
 using wwiv::core::CommandLineCommand;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
@@ -51,25 +48,25 @@ static int dump_file(const std::string& filename) {
   const auto& entries = n.entries();
 
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  cout << "Parsed " << entries.size() << " in " << elapsed.count() << " milliseconds. " << std::endl;
-  cout << "Parsed " << entries.size() << " in " << elapsed.count()/1000 << " seconds. " << std::endl;
+  std::cout << "Parsed " << entries.size() << " in " << elapsed.count() << " milliseconds. " << std::endl;
+  std::cout << "Parsed " << entries.size() << " in " << elapsed.count()/1000 << " seconds. " << std::endl;
 
   for (const auto& e : entries) {
-    cout << e.first << ":" << e.second.name_ << std::endl;
+    std::cout << e.first << ":" << e.second.name_ << std::endl;
   }
   return 0;
 }
 
 std::string DumpNodelistCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   nodelist <nodelistfilename>" << endl;
-  ss << "Example: nodelist nodelist.123" << endl;
+  ss << "Usage:   nodelist <nodelistfilename>" << std::endl;
+  ss << "Example: nodelist nodelist.123" << std::endl;
   return ss.str();
 }
 
 int DumpNodelistCommand::Execute() {
   if (remaining().empty()) {
-    cout << GetUsage() << GetHelp() << endl;
+    std::cout << GetUsage() << GetHelp() << std::endl;
     return 2;
   }
   const auto filename(remaining().front());

@@ -47,7 +47,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
 using wwiv::sdk::files::FileName;
 using namespace wwiv::common;
 using namespace wwiv::core;
@@ -56,9 +55,6 @@ using namespace wwiv::strings;
 
 int foundany;
 daten_t this_date;
-
-using std::string;
-using std::vector;
 
 /**
  * returns true if everything is ok, false if the file
@@ -87,7 +83,7 @@ static const std::vector<std::string> device_names = {
   "COM8", "LPT1", "LPT2", "LPT3", "CLOCK$", "SCREEN$", "POINTER$", "MOUSE$"
 };
 
-bool okfn(const string& filename) {
+bool okfn(const std::string& filename) {
   if (filename.empty()) {
     return false;
   }
@@ -128,7 +124,7 @@ void print_devices() {
 
 
 int list_arc_out(const std::string& file_name, const std::string& dir) {
-  string name_to_delete;
+  std::string name_to_delete;
 
   if (a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) {
     if (const auto full_pathname = FilePath(a()->sess().dirs().temp_directory(), file_name); !File::Exists(full_pathname)) {
@@ -265,7 +261,7 @@ void printinfo(uploadsrec* u, bool *abort) {
 
 void printtitle(bool *abort) {
   bout.Color(FRAME_COLOR);
-  bout << "\r" << string(78, '-') << wwiv::endl;
+  bout << "\r" << std::string(78, '-') << wwiv::endl;
 
   bin.checka(abort);
   bout.Color(2);
@@ -276,7 +272,7 @@ void printtitle(bool *abort) {
     << wwiv::endl;
 
   bout.Color(FRAME_COLOR);
-  bout << "\r" << string(78, '-') << wwiv::endl;
+  bout << "\r" << std::string(78, '-') << wwiv::endl;
 }
 std::string file_mask() {
   return file_mask("|#2File mask: ");

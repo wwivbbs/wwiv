@@ -36,7 +36,6 @@
 #include <chrono>
 #include <string>
 
-using std::string;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace std::chrono;

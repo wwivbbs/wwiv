@@ -32,7 +32,6 @@
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
-#include "core/semaphore_file.h"
 #include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -40,10 +39,10 @@
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
 
-namespace wwiv {
-namespace wwivd {
+#include <string>
 
-using std::string;
+namespace wwiv::wwivd {
+
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -53,7 +52,7 @@ using namespace wwiv::os;
 struct status_reponse_t {
   int num_instances;
   int used_instances;
-  std::vector<string> lines;
+  std::vector<std::string> lines;
 
   template <class Archive> void serialize(Archive& ar) {
     ar(cereal::make_nvp("num_instances", num_instances),
@@ -61,7 +60,7 @@ struct status_reponse_t {
   }
 };
 
-string ToJson(status_reponse_t r) {
+std::string ToJson(status_reponse_t r) {
   std::ostringstream ss;
   try {
     cereal::JSONOutputArchive save(ss);
@@ -96,7 +95,7 @@ public:
   }
 
 private:
-  std::map<const string, std::shared_ptr<NodeManager>>* nodes_;
+  std::map<const std::string, std::shared_ptr<NodeManager>>* nodes_;
 };
 
 void HandleHttpConnection(ConnectionData data, accepted_socket_t r) {
@@ -104,7 +103,7 @@ void HandleHttpConnection(ConnectionData data, accepted_socket_t r) {
   const auto& b = data.c->blocking;
 
   try {
-    string remote_peer;
+    std::string remote_peer;
     if (GetRemotePeerAddress(sock, remote_peer)) {
       const auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
       LOG(INFO) << "Accepted HTTP connection on port: " << r.port << "; from: " << remote_peer
@@ -125,5 +124,4 @@ void HandleHttpConnection(ConnectionData data, accepted_socket_t r) {
 }
 
 
-}  // namespace wwivd
-}  // namespace wwiv
+}

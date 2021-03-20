@@ -24,14 +24,10 @@
 #include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "localui/curses_io.h"
-#include "local_io/null_local_io.h"
 #include "local_io/stdio_local_io.h"
 #include "sdk/config.h"
-#include <clocale>
 #include <exception>
 #include <iostream>
-#include <string>
 
 #if !defined( _WIN32 )
 #include <unistd.h>
@@ -42,10 +38,6 @@
 
 static Application* app_;
 
-using std::cout;
-using std::endl;
-using std::exception;
-using std::string;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 

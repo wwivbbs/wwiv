@@ -20,10 +20,6 @@
 
 #include "sdk/chains.h"
 
-using std::cout;
-using std::endl;
-using std::string;
-
 using namespace wwiv::sdk;
 
 TEST(ChainsTest, ExecMode_Operator) {

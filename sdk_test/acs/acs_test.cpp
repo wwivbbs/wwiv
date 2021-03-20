@@ -26,7 +26,6 @@
 #include "gtest/gtest.h"
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::core::parser;
 using namespace wwiv::sdk::acs;

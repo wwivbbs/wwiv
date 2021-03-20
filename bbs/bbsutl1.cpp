@@ -34,14 +34,13 @@
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/net/networks.h"
 #include <chrono>
 #include <filesystem>
-#include <memory>
 #include <string>
 
-using std::string;
-using std::unique_ptr;
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/net/networks.h"
+
 using std::chrono::milliseconds;
 using namespace wwiv::core;
 using namespace wwiv::os;
@@ -54,7 +53,7 @@ static const size_t MAX_CONF_LINE = 4096;
  * Returns number of "words" in a specified string, using a specified set
  * of characters as delimiters.
  */
-static int wordcount(const string& instr, const char* delimstr) {
+static int wordcount(const std::string& instr, const char* delimstr) {
   char szTempBuffer[MAX_CONF_LINE];
   auto i = 0;
 
@@ -69,7 +68,7 @@ static int wordcount(const string& instr, const char* delimstr) {
  * Returns pointer to string representing the nth "word" of a string, using
  * a specified set of characters as delimiters.
  */
-static std::string extractword(int ww, const string& instr, const char* delimstr) {
+static std::string extractword(int ww, const std::string& instr, const char* delimstr) {
   char szTempBuffer[MAX_CONF_LINE];
   auto i = 0;
 
@@ -80,7 +79,7 @@ static std::string extractword(int ww, const string& instr, const char* delimstr
   to_char_array(szTempBuffer, instr);
   for (auto* s = strtok(szTempBuffer, delimstr); s && i++ < ww; s = strtok(nullptr, delimstr)) {
     if (i == ww) {
-      return string(s);
+      return std::string(s);
     }
   }
   return {};
@@ -345,14 +344,14 @@ void hang_it_up() {
  * Returns true if successful, else returns false. The pause_delay is optional and
  * is used to insert silences between tones.
  */
-bool play_sdf(const string& sound_filename, bool abortable) {
+bool play_sdf(const std::string& sound_filename, bool abortable) {
   if (sound_filename.empty()) {
     return false;
   }
 
   std::filesystem::path full_pathname;
   // append gfiles directory if no path specified
-  if (sound_filename.find(File::pathSeparatorChar) == string::npos) {
+  if (sound_filename.find(File::pathSeparatorChar) == std::string::npos) {
     full_pathname = FilePath(a()->config()->gfilesdir(), sound_filename);
   } else {
     full_pathname = sound_filename;
@@ -375,7 +374,7 @@ bool play_sdf(const string& sound_filename, bool abortable) {
   }
 
   // scan each line, ignore lines with words<2
-  string soundLine;
+  std::string soundLine;
   while (soundFile.ReadLine(&soundLine)) {
     if (abortable && bin.bkbhit()) {
       break;
@@ -406,15 +405,15 @@ bool play_sdf(const string& sound_filename, bool abortable) {
  * Describes the area code as listed in regions.dat
  * @param nAreaCode The area code to describe
  */
-string describe_area_code(int nAreaCode) {
+std::string describe_area_code(int nAreaCode) {
   TextFile file(FilePath(a()->config()->datadir(), REGIONS_DAT), "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";
   }
 
-  string previous;
-  string current;
+  std::string previous;
+  std::string current;
   while (file.ReadLine(&current)) {
     const auto current_town = to_number<int>(current);
     if (current_town == nAreaCode) {
@@ -434,7 +433,7 @@ string describe_area_code(int nAreaCode) {
  * @param nTargetTown The phone number prefix to describe
  * @return the description for the specified area code.
  */
-string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
+std::string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
   const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
   const auto filename = fmt::sprintf("%s.%-3d", REGIONS_DIR, nAreaCode);
   TextFile file(FilePath(regions_dir, filename), "rt");
@@ -443,8 +442,8 @@ string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
     return "";
   }
 
-  string previous;
-  string current;
+  std::string previous;
+  std::string current;
   while (file.ReadLine(&current)) {
     const auto current_town = to_number<int>(current);
     if (current_town == nTargetTown) {

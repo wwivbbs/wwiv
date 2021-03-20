@@ -32,7 +32,6 @@
 #include <utility>
 #include <vector>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::sdk::fido;
@@ -93,7 +92,7 @@ bool FtnMessageDupe::Save() {
 
 std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAddress& a) {
   if (!initialized_) {
-    string address_string;
+    std::string address_string;
     if (a.point() != 0) {
       address_string = to_zone_net_node_point(a);
     } else {
@@ -121,7 +120,7 @@ std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAddress& 
   file.file().Seek(0, File::Whence::begin);
   file.Write(0, &msg_num);
 
-  string address_string;
+  std::string address_string;
 
   if (a.point() != 0) {
     address_string = to_zone_net_node_point(a);
@@ -133,7 +132,7 @@ std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAddress& 
 
 // static
 std::string FtnMessageDupe::GetMessageIDFromText(const std::string& text) {
-  static const string kMSGID = "MSGID: ";
+  static const std::string kMSGID = "MSGID: ";
   auto lines = wwiv::sdk::fido::split_message(text);
   for (const auto& line : lines) {
     if (line.empty() || line.front() != '\001' || line.size() < 2) {
@@ -150,7 +149,7 @@ std::string FtnMessageDupe::GetMessageIDFromText(const std::string& text) {
 
 // static
 std::string FtnMessageDupe::GetMessageIDFromWWIVText(const std::string& text) {
-  static const string kMSGID = "0MSGID: ";
+  static const std::string kMSGID = "0MSGID: ";
   auto lines = wwiv::sdk::fido::split_message(text);
   for (const auto& line : lines) {
     if (line.empty() || line.front() != '\004' || line.size() < 2) {

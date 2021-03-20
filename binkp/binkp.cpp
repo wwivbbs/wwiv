@@ -46,17 +46,6 @@
 #include <string>
 #include <vector>
 
-using std::boolalpha;
-using std::end;
-using std::endl;
-using std::function;
-using std::map;
-using std::max;
-using std::min;
-using std::string;
-using std::unique_ptr;
-using std::vector;
-
 using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::net;
@@ -68,7 +57,7 @@ using namespace wwiv::os;
 
 namespace wwiv::net {
 
-static int System(const string& bbsdir, const string& cmd) {
+static int System(const std::string& bbsdir, const std::string& cmd) {
   const auto path = FilePath(bbsdir, cmd).string();
 
   const auto err = system(path.c_str());
@@ -76,7 +65,7 @@ static int System(const string& bbsdir, const string& cmd) {
   return err;
 }
 
-string expected_password_for(const net_call_out_rec* con) {
+std::string expected_password_for(const net_call_out_rec* con) {
   if (con != nullptr && !con->session_password.empty()) {
     // If the password is not empty string.
     return con->session_password;
@@ -105,9 +94,7 @@ bool BinkP::process_opt(const std::string& opt) {
   for (const auto& s : opts) {
     if (starts_with(s, "CRAM")) {
       LOG(INFO) << "       CRAM Requested by Remote Side.";
-      // CRAM Support http://ftsc.org/docs/fts-1027.001
-      const auto last_dash = s.find_last_of('-');
-      if (last_dash != string::npos) {
+      if (const auto last_dash = s.find_last_of('-'); last_dash != std::string::npos) {
         // we really have CRAM-MD5
         auto challenge = s.substr(last_dash + 1);
         VLOG(1) << "        challenge: '" << challenge << "'";
@@ -147,14 +134,14 @@ bool BinkP::process_command(int16_t length, duration<double> d) {
   // included the command number.  If the length is 1, we shouldn't read 0
   // and just let the log_line and command data be the empty string.  Argus likes
   // to not put data after M_EOB and M_OK commands.
-  string s;
+  std::string s;
   if (length > 1) {
     s = conn_->receive(length - 1, d);
   }
 
-  string log_line = s;
+  std::string log_line = s;
   if (command_id == BinkpCommands::M_PWD) {
-    log_line = string(12, '*');
+    log_line = std::string(12, '*');
   }
   LOG(INFO) << "RECV:  " << BinkpCommands::command_id_to_name(command_id) << ": " << log_line;
   switch (command_id) {
@@ -243,8 +230,7 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
       const auto rdir = config_->receive_dir(remote_.network_name());
       const auto dir = File::absolute(config_->config().root_directory(), rdir);
       const File received_file(FilePath(dir, current_receive_file_->filename()));
-      const auto file_crc = crc32file(received_file.path());
-      if (file_crc == 0) {
+      if (const auto file_crc = crc32file(received_file.path()); file_crc == 0) {
         LOG(ERROR) << "Error calculating CRC32 of: " << current_receive_file_->filename();
       } else {
         if (file_crc != current_receive_file_->crc()) {
@@ -275,15 +261,14 @@ bool BinkP::process_frames(duration<double> d) {
   return process_frames([&]() -> bool { return false; }, d);
 }
 
-bool BinkP::process_frames(const function<bool()>& predicate, duration<double> d) {
+bool BinkP::process_frames(const std::function<bool()>& predicate, duration<double> d) {
   if (!conn_->is_open()) {
     return false;
   }
   try {
     while (!predicate()) {
       VLOG(3) << "       process_frames(pred)";
-      const auto header = conn_->read_uint16(d);
-      if (header & 0x8000) {
+      if (const auto header = conn_->read_uint16(d); header & 0x8000) {
         if (!process_command(header & 0x7fff, d)) {
           // false return value means an error occurred.
           return false;
@@ -304,7 +289,7 @@ bool BinkP::process_frames(const function<bool()>& predicate, duration<double> d
   return true;
 }
 
-bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
+bool BinkP::send_command_packet(uint8_t command_id, const std::string& data) {
   if (!conn_->is_open()) {
     return false;
   }
@@ -328,7 +313,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   } else {
     // Mask the password.
     LOG(INFO) << "SEND:  " << BinkpCommands::command_id_to_name(command_id) << ": "
-              << string(8, '*');
+              << std::string(8, '*');
   }
   return true;
 }
@@ -338,7 +323,7 @@ bool BinkP::send_data_packet(const char* data, int packet_length) {
     return false;
   }
   // for now assume everything fits within a single frame.
-  const unique_ptr<char[]> packet(new char[packet_length + 2]);
+  const std::unique_ptr<char[]> packet(new char[packet_length + 2]);
   packet_length &= 0x7fff;
   uint8_t b0 = ((packet_length & 0xff00) >> 8);
   uint8_t b1 = packet_length & 0x00ff;
@@ -358,9 +343,9 @@ BinkState BinkP::ConnInit() {
   return BinkState::WAIT_CONN;
 }
 
-static string wwiv_version_string() { return full_version(); }
+static std::string wwiv_version_string() { return full_version(); }
 
-static string wwiv_version_string_with_date() {
+static std::string wwiv_version_string_with_date() {
   return fmt::format("{} ({})", full_version(), wwiv_compile_datetime());
 }
 
@@ -385,12 +370,12 @@ BinkState BinkP::WaitConn() {
     send_command_packet(BinkpCommands::M_NUL, "OPT CRC");
   }
 
-  string network_addresses;
+  std::string network_addresses;
   if (side_ == BinkSide::ANSWERING) {
     // Present all addresses on answering side.
     for (const auto& net : config_->networks().networks()) {
       if (net.type == network_type_t::wwivnet) {
-        string lower_case_network_name = net.name;
+        std::string lower_case_network_name = net.name;
         StringLowerCase(&lower_case_network_name);
         send_command_packet(BinkpCommands::M_NUL, fmt::format("WWIV @{}.{}", net.sysnum,
                                                                lower_case_network_name));
@@ -606,7 +591,7 @@ BinkState BinkP::AuthRemoteAnswering() {
 BinkState BinkP::AuthRemoteCalling() {
   VLOG(1) << "       AuthRemoteCalling";
   VLOG(1) << "       expected_ftn: '" << expected_remote_node_ << "'";
-  if (remote_.address_list().find(expected_remote_node_) != string::npos) {
+  if (remote_.address_list().find(expected_remote_node_) != std::string::npos) {
     return side_ == BinkSide::ORIGINATING ? BinkState::IF_SECURE : BinkState::WAIT_PWD;
   }
   send_command_packet(
@@ -687,7 +672,7 @@ BinkState BinkP::FatalError() {
 }
 
 BinkState BinkP::WaitEob() {
-  VLOG(1) << "STATE: WaitEob: ENTERING eob_received: " << boolalpha << eob_received_;
+  VLOG(1) << "STATE: WaitEob: ENTERING eob_received: " << std::boolalpha << eob_received_;
   if (eob_received_) {
     // If we've already received an EOB, don't process_frames or do anything else.
     // We're done.
@@ -715,7 +700,7 @@ BinkState BinkP::WaitEob() {
 bool BinkP::SendFilePacket(TransferFile* file) {
   const auto filename(file->filename());
   VLOG(1) << "       SendFilePacket: " << filename;
-  files_to_send_[filename] = unique_ptr<TransferFile>(file);
+  files_to_send_[filename] = std::unique_ptr<TransferFile>(file);
   send_command_packet(BinkpCommands::M_FILE, file->as_packet_data(0));
   process_frames(seconds(2));
 
@@ -733,7 +718,7 @@ bool BinkP::SendFileData(TransferFile* file) {
   const auto chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
   const auto chunk = std::make_unique<char[]>(chunk_size);
   for (long start = 0; start < file_length; start += chunk_size) {
-    const auto size = min<int>(chunk_size, file_length - start);
+    const auto size = std::min<int>(chunk_size, file_length - start);
     if (!file->GetChunk(chunk.get(), start, size)) {
       // Bad chunk. Abort
     }
@@ -745,7 +730,7 @@ bool BinkP::SendFileData(TransferFile* file) {
   return true;
 }
 
-bool BinkP::HandlePassword(const string& password_line) {
+bool BinkP::HandlePassword(const std::string& password_line) {
   VLOG(1) << "        HandlePassword: ";
   VLOG(2) << "        password_line: " << password_line;
   if (!starts_with(password_line, "CRAM")) {
@@ -755,7 +740,7 @@ bool BinkP::HandlePassword(const string& password_line) {
     return true;
   }
 
-  static const string CRAM_MD5_PREFIX = "CRAM-MD5-";
+  static const std::string CRAM_MD5_PREFIX = "CRAM-MD5-";
   if (!starts_with(password_line, CRAM_MD5_PREFIX)) {
     send_command_packet(BinkpCommands::M_ERR,
                         "CRAM authentication required, no common hash function");
@@ -769,13 +754,13 @@ bool BinkP::HandlePassword(const string& password_line) {
 }
 
 // M_FILE received.
-bool BinkP::HandleFileRequest(const string& request_line) {
+bool BinkP::HandleFileRequest(const std::string& request_line) {
   VLOG(1) << "       HandleFileRequest; request_line: " << request_line;
   auto* old_file = current_receive_file_.release();
   if (old_file != nullptr) {
     LOG(ERROR) << "** ERROR: Got HandleFileRequest while still having an open receive file!";
   }
-  string filename;
+  std::string filename;
   long expected_length;
   time_t timestamp;
   long starting_offset = 0;
@@ -791,7 +776,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   return true;
 }
 
-bool BinkP::HandleFileGetRequest(const string& request_line) {
+bool BinkP::HandleFileGetRequest(const std::string& request_line) {
   LOG(INFO) << "       HandleFileGetRequest: request_line: [" << request_line << "]";
   const auto s = SplitString(request_line, " ");
   const auto& filename = s.at(0);
@@ -814,7 +799,7 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
   // File was sent but wait until we receive M_GOT before we remove it from the list.
 }
 
-bool BinkP::HandleFileGotRequest(const string& request_line) {
+bool BinkP::HandleFileGotRequest(const std::string& request_line) {
   LOG(INFO) << "       HandleFileGotRequest: request_line: [" << request_line << "]";
   const auto s = SplitString(request_line, " ");
   const auto& filename = s.at(0);
@@ -829,7 +814,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   auto* file = iter->second.get();
   // Increment the number of bytes sent.
   // Also don't increment with -1 if there's an error with the file.
-  bytes_sent_ += max(0, file->file_size());
+  bytes_sent_ += std::max(0, file->file_size());
 
   if (length != file->file_size()) {
     LOG(ERROR) << "NON-FATAL ERROR: Size didn't match M_GOT. Please log a bug. M_GOT: " << length
@@ -981,7 +966,7 @@ void BinkP::process_network_files(const wwiv::core::CommandLine& cmdline) const 
   System(cmdline.bindir(), StrCat("networkc .", network_number, " --v=", config_->verbose()));
 }
 
-bool ParseFileRequestLine(const string& request_line, string* filename, long* length,
+bool ParseFileRequestLine(const std::string& request_line, std::string* filename, long* length,
                           time_t* timestamp, long* offset, uint32_t* crc) {
   auto s = SplitString(request_line, " ");
   if (s.size() < 3) {

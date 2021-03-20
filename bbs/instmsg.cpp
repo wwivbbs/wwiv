@@ -36,7 +36,6 @@
 #include <chrono>
 #include <string>
 
-using std::string;
 using std::chrono::seconds;
 using std::chrono::steady_clock;
 using namespace wwiv::common;
@@ -190,8 +189,7 @@ void write_inst(int loc, int subloc, int flags) {
         break;
       }
     }
-    const auto ms = static_cast<uint16_t>(a()->sess().using_modem() ? a()->modem_speed_ : 0);
-    if (ti.modem_speed() != ms) {
+    if (const auto ms = static_cast<uint16_t>(a()->sess().using_modem() ? a()->modem_speed_ : 0); ti.modem_speed() != ms) {
       ti.ir().modem_speed = ms;
       re_write = true;
     }

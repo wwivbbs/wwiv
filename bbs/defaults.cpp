@@ -54,8 +54,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
 using wwiv::common::InputMode;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -93,10 +91,10 @@ void select_editor() {
   }
 }
 
-static string GetMailBoxStatus() {
+static std::string GetMailBoxStatus() {
   if (a()->user()->forward_systemnum() == 0 &&
       a()->user()->forward_usernum() == 0) {
-    return string("Normal");
+    return std::string("Normal");
   }
   if (a()->user()->forward_systemnum() != 0) {
     if (a()->user()->IsMailboxForwarded()) {
@@ -110,14 +108,14 @@ static string GetMailBoxStatus() {
   }
 
   if (a()->user()->IsMailboxClosed()) {
-    return string("Closed");
+    return "Closed";
   }
 
   User ur;
   a()->users()->readuser(&ur, a()->user()->forward_usernum());
   if (ur.deleted()) {
     a()->user()->forward_usernum(0);
-    return string("Normal");
+    return "Normal";
   }
   return StrCat("Forward to ", a()->names()->UserName(a()->user()->forward_usernum()));
 }
@@ -127,7 +125,7 @@ static void print_cur_stat() {
   bout.litebar("Your Preferences");
   const auto screen_size =
       fmt::format("{} X {}", a()->user()->GetScreenChars(), a()->user()->GetScreenLines());
-  const string ansi_setting =
+  const std::string ansi_setting =
       a()->user()->ansi() ? (a()->user()->color() ? "Color" : "Monochrome") : "No ANSI";
   bout.format("|#11|#9) Screen size       : |#2{:<16} ", screen_size);
   bout.format("|#12|#9) ANSI              : |#2{}", ansi_setting);
@@ -142,7 +140,7 @@ static void print_cur_stat() {
     bout.format("{:<45} {}\r\n", "|#17|#9) Update macros", "|#18|#9) Change colors");
 
     const auto editor_num = a()->user()->GetDefaultEditor();
-    string editor_name = "Line";
+    std::string editor_name = "Line";
     if (a()->IsUseInternalFsed() && editor_num == 0xff) {
       editor_name = "Full Screen";
     }
@@ -174,7 +172,7 @@ static void print_cur_stat() {
   bout << "|#1T|#9) 12hr or 24hr clock: |#2" << (a()->user()->twentyfour_clock() ? "24hr" : "12hr")
        << wwiv::endl;
 
-  string wwiv_regnum = "(None)";
+  std::string wwiv_regnum = "(None)";
   if (a()->user()->wwiv_regnum()) {
     wwiv_regnum = std::to_string(a()->user()->wwiv_regnum());
   }
@@ -185,7 +183,7 @@ static void print_cur_stat() {
   bout << "|#1Q|#9) Quit to main menu\r\n";
 }
 
-static string DisplayColorName(int c) {
+static std::string DisplayColorName(int c) {
   switch (c) {
   case 0:
     return "Black";
@@ -208,7 +206,7 @@ static string DisplayColorName(int c) {
   }
 }
 
-string DescribeColorCode(int nColorCode) {
+std::string DescribeColorCode(int nColorCode) {
   std::ostringstream os;
 
   if (a()->user()->color()) {
@@ -431,7 +429,7 @@ void config_qscan() {
       do {
         bout.nl();
         bout << "|#2Enter message base number (|#1C=Clr All, Q=Quit, S=Set All|#2): ";
-        string s = mmkey(MMKeyAreaType::subs);
+        std::string s = mmkey(MMKeyAreaType::subs);
         if (!s.empty()) {
           for (size_t i = 0; i < a()->usub.size(); i++) {
             if (s == a()->usub[i].keys) {
@@ -608,7 +606,7 @@ static void change_password() {
   }
 
   bout.nl();
-  string password = bin.input_password("|#9You must now enter your current password.\r\n|#7: ", 8);
+  std::string password = bin.input_password("|#9You must now enter your current password.\r\n|#7: ", 8);
   if (password != a()->user()->password()) {
     bout << "\r\nIncorrect.\r\n\n";
     return;
@@ -616,7 +614,7 @@ static void change_password() {
   bout.nl(2);
   password = bin.input_password("|#9Enter your new password, 3 to 8 characters long.\r\n|#7: ", 8);
   bout.nl(2);
-  string password2 = bin.input_password("|#9Repeat password for verification.\r\n|#7: ", 8);
+  std::string password2 = bin.input_password("|#9Repeat password for verification.\r\n|#7: ", 8);
   if (password == password2) {
     if (password2.length() < 3) {
       bout.nl();
@@ -719,7 +717,7 @@ void defaults(bool& need_menu_reload) {
     }
     bout.nl();
     bout << "|#9Defaults: ";
-    string allowable = "Q?1234567BCDIKMNTUW";
+    std::string allowable = "Q?1234567BCDIKMNTUW";
     if (okansi()) {
       allowable.append("89AS");
       if (a()->fullscreen_read_prompt()) {
@@ -845,7 +843,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
   bout.clear_lines_listed();
 
   if (bUseConf) {
-    string name;
+    std::string name;
     if (type == QSCAN) {
       name = a()->uconfsub[a()->sess().current_user_sub_conf_num()].conf_name;
     }
@@ -860,7 +858,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
                  type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
   bout.Color(7);
-  bout << string(79, '\xC4');
+  bout << std::string(79, '\xC4');
   bout.nl();
 
   const auto max_lines = GetMaxLinesToShowForScanPlus();
@@ -967,7 +965,7 @@ void config_scan_plus(int type) {
   a()->localIO()->topdata(LocalIO::topdata_t::none);
   a()->UpdateTopScreen();
 
-  vector<string> menu_items = { "Next",  "Previous", "Toggle", "Clear All", "Set All" };
+  std::vector<std::string> menu_items = { "Next",  "Previous", "Toggle", "Clear All", "Set All" };
 
   if (type == 0) {
     menu_items.emplace_back("Read New");

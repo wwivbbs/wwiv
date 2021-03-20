@@ -31,8 +31,6 @@
 #include <memory>
 #include <string>
 
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
@@ -48,7 +46,7 @@ static gati_t *gat = new gati_t[2048]();
 * Opens the message area file {messageAreaFileName} and returns the file handle.
 * Note: This is a Private method to this module.
 */
-static std::unique_ptr<File> OpenMessageFile(const string messageAreaFileName) {
+static std::unique_ptr<File> OpenMessageFile(const std::string messageAreaFileName) {
   a()->status_manager()->reload_status();
 
   const auto filename =
@@ -106,7 +104,7 @@ static void save_gat(File& file) {
 * Deletes a message
 * This is a public function.
 */
-void remove_link(const messagerec* msg, const string& fileName) {
+void remove_link(const messagerec* msg, const std::string& fileName) {
   switch (msg->storage_type) {
   case 0:
   case 1:
@@ -134,7 +132,7 @@ void remove_link(const messagerec* msg, const string& fileName) {
   }
 }
 
-void savefile(const std::string& text, messagerec* msg, const string& fileName) {
+void savefile(const std::string& text, messagerec* msg, const std::string& fileName) {
   switch (msg->storage_type) {
   case 0:
   case 1:
@@ -185,7 +183,7 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
   }
 }
 
-std::optional<std::string> readfile(const messagerec* msg, const string& fileName) {
+std::optional<std::string> readfile(const messagerec* msg, const std::string& fileName) {
   if (msg->storage_type != 2) {
     return std::nullopt;
   }
@@ -216,14 +214,14 @@ std::optional<std::string> readfile(const messagerec* msg, const string& fileNam
   file->Close();
   const auto last_cz = out.find_last_of(CZ);
   const auto last_block_start = out.size() - MSG_BLOCK_SIZE;
-  if (last_cz != string::npos && last_block_start >= 0 && last_cz > last_block_start) {
+  if (last_cz != std::string::npos && last_block_start >= 0 && last_cz > last_block_start) {
     // last block has a Control-Z in it.  Make sure we add a 0 after it.
     out.resize(last_cz);
   }
   return {out};
 }
 
-void lineadd(const messagerec* msg, const string& sx, string fileName) {
+void lineadd(const messagerec* msg, const std::string& sx, std::string fileName) {
   const auto line = fmt::sprintf("%s\r\n\x1a", sx);
 
   switch (msg->storage_type) {

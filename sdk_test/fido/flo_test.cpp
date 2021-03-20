@@ -23,13 +23,8 @@
 #include "core_test/file_helper.h"
 #include "sdk/fido/flo_file.h"
 #include "gtest/gtest.h"
-#include <ctime>
-#include <memory>
 #include <string>
 
-using std::endl;
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido;

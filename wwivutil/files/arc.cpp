@@ -23,17 +23,11 @@
 #include "fmt/format.h"
 #include "sdk/config.h"
 #include "sdk/files/arc.h"
-
 #include "sdk/vardec.h"
 
 #include <iostream>
-#include <map>
 #include <string>
 
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -47,11 +41,11 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   view [filename]" << endl;
+    ss << "Usage:   view [filename]" << std::endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     if (remaining().empty()) {
       std::cerr << "missing filename";
       return 2;
@@ -79,20 +73,20 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final { return true; }
+  bool AddSubCommands() override { return true; }
 };
 
 class ArcCmdCommand final : public UtilCommand {
 public:
   ArcCmdCommand() : UtilCommand("cmd", "Gets the commands to use for an archive.") {}
 
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   cmd [filename]" << endl;
+    ss << "Usage:   cmd [filename]" << std::endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     if (remaining().empty()) {
       std::cerr << "missing filename";
       return 2;
@@ -115,12 +109,12 @@ public:
     return 1;
   }
 
-  bool AddSubCommands() override final { return true; }
+  bool AddSubCommands() override { return true; }
   };
 
   [[nodiscard]] std::string ArcCommand::GetUsage() const {
     std::ostringstream ss;
-    ss << "Usage:   arc " << endl;
+    ss << "Usage:   arc " << std::endl;
     return ss.str();
   }
 

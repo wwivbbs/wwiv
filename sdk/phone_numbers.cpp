@@ -28,7 +28,6 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -44,7 +43,7 @@ PhoneNumbers::PhoneNumbers(const Config& config)
 PhoneNumbers::~PhoneNumbers() = default;
 
 bool PhoneNumbers::insert(int user_number, const std::string& phone_number) {
-  if (phone_number.find("000-") != string::npos) {
+  if (phone_number.find("000-") != std::string::npos) {
     return false;
   }
   phonerec p{};

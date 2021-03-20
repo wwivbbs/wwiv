@@ -22,14 +22,10 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
-#include "fmt/printf.h"
 #include "sdk/filenames.h"
-#include <sstream>
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -60,7 +56,7 @@ std::string ctypes(int num) {
 
   const IniFile iniFile(FilePath(a()->bbspath(), WWIV_INI), {"CTYPES"});
   if (iniFile.IsOpen()) {
-    return iniFile.value<string>(fmt::format("COMP_TYPE[{}]", num + 1));
+    return iniFile.value<std::string>(fmt::format("COMP_TYPE[{}]", num + 1));
   }
   if (num < 0 || num > ssize(default_ctypes)) {
     return "";

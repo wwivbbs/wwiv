@@ -19,15 +19,8 @@
 
 #include "bbs/utility.h"
 #include "bbs_test/bbs_helper.h"
+
 #include "gtest/gtest.h"
-#include <ctime>
-#include <string>
-
-static const time_t MAY_18_2014 = 1400461200;
-
-using std::cout;
-using std::endl;
-using std::string;
 
 TEST(UtilityTest, StripFnSmoke) {
   EXPECT_EQ("", stripfn(""));

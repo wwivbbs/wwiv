@@ -28,10 +28,6 @@
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -40,8 +36,8 @@ namespace wwiv::wwivutil {
 
 std::string DumpBbsDataCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   dump_bbsdata" << endl;
-  ss << "Example: dump_bbsdata" << endl;
+  ss << "Usage:   dump_bbsdata" << std::endl;
+  ss << "Example: dump_bbsdata" << std::endl;
   return ss.str();
 }
 
@@ -58,7 +54,7 @@ int DumpBbsDataCommand::Execute() {
     return 1;
   }
 
-  map<const string, BbsListNet> bbslists;
+  std::map<const std::string, BbsListNet> bbslists;
   for (const auto& net : networks.networks()) {
     auto lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
@@ -72,9 +68,9 @@ int DumpBbsDataCommand::Execute() {
   }
 
   for (const auto& [net_name, b] : bbslists) {
-    cout << "bbsdata.net information: : " << net_name << endl;
-    cout << "===========================================================" << endl;
-    cout << b.ToString() << endl;
+    std::cout << "bbsdata.net information: : " << net_name << std::endl;
+    std::cout << "===========================================================" << std::endl;
+    std::cout << b.ToString() << std::endl;
   }
 
   return 0;

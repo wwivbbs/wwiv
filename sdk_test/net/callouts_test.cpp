@@ -25,9 +25,6 @@
 #include <ctime>
 #include <string>
 
-using std::endl;
-using std::string;
-using std::unique_ptr;
 using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -90,7 +87,6 @@ TEST_F(CalloutsTest, ByTime) {
   c_.max_hr = 24;
   ASSERT_TRUE(allowed_to_call(c_, dt_));
 
-  auto late = DateTime::from_time_t(to_time_t(dt_.month(), dt_.day(), 23, 2));
   c_.min_hr = 20;
   c_.max_hr = 2;
   ASSERT_TRUE(allowed_to_call(c_, dt_));
@@ -101,7 +97,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_TimeToCall) {
 
   // Call every 239 minutes
   c_.call_every_x_minutes = 239;
-  auto last_connect = dt_ - minutes(240);
+  const auto last_connect = dt_ - minutes(240);
   ncn_.AddConnect(last_connect, 100, 0);
 
   EXPECT_TRUE(should_call(ncn_, c_, dt_));
@@ -112,7 +108,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_NotTimeYet) {
 
   // Call every 239 minutes
   c_.call_every_x_minutes = 239;
-  auto last_connect = dt_ - minutes(238);
+  const auto last_connect = dt_ - minutes(238);
   ncn_.AddConnect(last_connect, 100, 0);
 
   EXPECT_FALSE(should_call(ncn_, c_, dt_));
@@ -124,7 +120,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_MinK) {
   // Call every 239 minutes
   c_.call_every_x_minutes = 239;
   c_.min_k = 10;
-  auto last_connect = dt_ - minutes(238);
+  const auto last_connect = dt_ - minutes(238);
   ncn_.AddConnect(last_connect, 100, 0);
   ncn_.set_bytes_waiting((10 * 1024) + 1);
 
@@ -137,7 +133,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_MinKNotMet) {
   // Call every 239 minutes
   c_.call_every_x_minutes = 239;
   c_.min_k = 10;
-  auto last_connect = dt_ - minutes(238);
+  const auto last_connect = dt_ - minutes(238);
   ncn_.AddConnect(last_connect, 100, 0);
   ncn_.set_bytes_waiting(8 * 1024);
 

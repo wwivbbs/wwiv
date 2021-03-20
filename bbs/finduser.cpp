@@ -29,7 +29,6 @@
 
 #include <string>
 
-using std::string;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -45,7 +44,7 @@ using namespace wwiv::strings;
 //
 //  -1      = NEW USER
 //
-int finduser(const string& searchString) {
+int finduser(const std::string& searchString) {
   User user;
 
   a()->users()->set_user_writes_allowed(true);
@@ -77,7 +76,7 @@ int finduser(const string& searchString) {
 
 // Takes user name/handle as parameter, and returns user number, if found,
 // else returns 0.
-int finduser1(const string& searchString) {
+int finduser1(const std::string& searchString) {
   if (searchString.empty()) {
     return 0;
   }

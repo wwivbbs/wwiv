@@ -28,14 +28,6 @@
 #include <string>
 #include <vector>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -67,7 +59,7 @@ std::string HelpCommand::LongHelpForArg(const core::CommandLineArgument& c, int 
   }
   ss << "--";
   if (!md) {
-    ss << std::left << setw(max_len);
+    ss << std::left << std::setw(max_len);
   }
   ss << c.name_ << "  ";
   if (md) {
@@ -76,7 +68,7 @@ std::string HelpCommand::LongHelpForArg(const core::CommandLineArgument& c, int 
   if (c.is_boolean) {
     ss << "[boolean] ";
   }
-  ss << c.help_text() << endl;
+  ss << c.help_text() << std::endl;
   return ss.str();
 }
 

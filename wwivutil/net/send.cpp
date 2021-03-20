@@ -22,18 +22,14 @@
 #include "core/strings.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"
-#include "sdk/net/networks.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/networks.h"
 #include "sdk/net/packets.h"
+
 #include <iostream>
-#include <map>
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
@@ -43,7 +39,7 @@ using namespace wwiv::strings;
 namespace wwiv::wwivutil::net {
 
 // Based off one from post.cpp
-static std::optional<subboard_t> find_sub(const Subs& subs, int network_number, const string& netname) {
+static std::optional<subboard_t> find_sub(const Subs& subs, int network_number, const std::string& netname) {
   auto current = 0;
   VLOG(3) << "find_sub: subs.subs().size(): " << subs.subs().size()
           << "; net_num: " << network_number;
@@ -70,8 +66,8 @@ static std::optional<subboard_t> find_sub(const Subs& subs, int network_number, 
 
 std::string SubSendCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   send --net=N <sub type> <node> [num msgs]" << endl;
-  ss << "Example: send --net=1 GENCHAT 1 25" << endl;
+  ss << "Usage:   send --net=N <sub type> <node> [num msgs]" << std::endl;
+  ss << "Example: send --net=1 GENCHAT 1 25" << std::endl;
   return ss.str();
 }
 
@@ -90,7 +86,7 @@ int SubSendCommand::Execute() {
 
   const auto r = this->remaining();
   if (r.size() < 2) {
-    cout << GetUsage() << GetHelp();
+    std::cout << GetUsage() << GetHelp();
     return 2;
   }
 

@@ -22,7 +22,6 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/names.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/net/networks.h"
 #include "wwivutil/util.h"
@@ -34,14 +33,6 @@
 #include <string>
 #include <vector>
 
-using std::clog;
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
@@ -87,7 +78,7 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   areas" << endl;
+    ss << "Usage:   areas" << std::endl;
     return ss.str();
   }
 
@@ -99,12 +90,12 @@ public:
     }
 
     int num = 0;
-    cout << "#Num FileName LastRead   " << std::setw(30) << std::left << "Name"
+    std::cout << "#Num FileName LastRead   " << std::setw(30) << std::left << "Name"
          << " " << std::endl;
-    cout << string(78, '=') << endl;
+    std::cout << std::string(78, '=') << std::endl;
     for (const auto& d : subs.subs()) {
       const auto lastread = WWIVReadLastRead(config()->config()->datadir(), d.filename);
-      cout << "#" << std::setw(3) << std::left << num++ << " " 
+      std::cout << "#" << std::setw(3) << std::left << num++ << " " 
            << std::setw(8) << d.filename << " "
            << std::setw(std::numeric_limits<uint32_t>::digits10 + 1) << lastread << " "
            << std::setw(30) << d.name << std::endl;
@@ -119,10 +110,10 @@ public:
 };
 
 bool SubsCommand::AddSubCommands() {
-  if (!add(make_unique<SubsImportCommand>())) {
+  if (!add(std::make_unique<SubsImportCommand>())) {
     return false;
   }
-  if (!add(make_unique<SubsListCommand>())) {
+  if (!add(std::make_unique<SubsListCommand>())) {
     return false;
   }
   

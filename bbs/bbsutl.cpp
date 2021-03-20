@@ -24,7 +24,6 @@
 #include "common/datetime.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "common/pause.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"
@@ -33,7 +32,6 @@
 #include <chrono>
 #include <string>
 
-using std::string;
 using std::chrono::seconds;
 using std::chrono::steady_clock;
 using namespace wwiv::common;
@@ -41,7 +39,7 @@ using namespace wwiv::strings;
 using namespace wwiv::stl;
 
 
-bool inli(string* outBuffer, string* rollover, string::size_type maxlen, bool add_crlf,
+bool inli(std::string* outBuffer, std::string* rollover, std::string::size_type maxlen, bool add_crlf,
           bool allow_previous, bool two_color, bool clear_previous_line) {
   char buffer[4096] = {0}, rollover_buffer[4096] = {0};
   to_char_array(buffer, *outBuffer);
@@ -59,7 +57,7 @@ bool inli(string* outBuffer, string* rollover, string::size_type maxlen, bool ad
 }
 
 // returns true if needs to keep inputting this line
-bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf, bool allow_previous,
+bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add_crlf, bool allow_previous,
           bool two_color, bool clear_previous_line) {
   char rollover_buffer[255];
 
@@ -100,7 +98,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
     }
     rollover[0] = '\0';
   }
-  string::size_type cp = 0;
+  std::string::size_type cp = 0;
   auto done = false;
   unsigned char ch;
   do {
@@ -230,16 +228,16 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
     while (lastwordstart > 0 && buffer[lastwordstart] != SPACE && buffer[lastwordstart] != BACKSPACE) {
       lastwordstart--;
     }
-    if (lastwordstart > static_cast<string::size_type>(bout.wherex() / 2)
+    if (lastwordstart > static_cast<std::string::size_type>(bout.wherex() / 2)
         && lastwordstart != (cp - 1)) {
       const auto lastwordlen = cp - lastwordstart - 1;
-      for (string::size_type j = 0; j < lastwordlen; j++) {
+      for (std::string::size_type j = 0; j < lastwordlen; j++) {
         bout.bputch(BACKSPACE);
       }
-      for (string::size_type j = 0; j < lastwordlen; j++) {
+      for (std::string::size_type j = 0; j < lastwordlen; j++) {
         bout.bputch(SPACE);
       }
-      for (string::size_type j = 0; j < lastwordlen; j++) {
+      for (std::string::size_type j = 0; j < lastwordlen; j++) {
         rollover[j] = buffer[cp - lastwordlen + j];
       }
       rollover[lastwordlen] = '\0';

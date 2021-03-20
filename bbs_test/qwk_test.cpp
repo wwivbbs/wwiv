@@ -19,20 +19,13 @@
 #include "gtest/gtest.h"
 
 #include "bbs/bbs.h"
-#include "bbs/qwk/qwk.h"
-#include "bbs/qwk/qwk_struct.h"
 #include "bbs/qwk/qwk_text.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/datafile.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 #include "sdk/qwk_config.h"
-#include <iostream>
 #include <string>
-
-using std::cout;
-using std::endl;
-using std::string;
 
 using wwiv::sdk::User;
 using namespace wwiv::common;

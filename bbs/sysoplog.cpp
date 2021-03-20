@@ -28,20 +28,19 @@
 #include "sdk/config.h"
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Local function prototypes
 enum class log_cmd_t{ log_string, log_char };
-void AddLineToSysopLogImpl(log_cmd_t cmd, const string& text);
+void AddLineToSysopLogImpl(log_cmd_t cmd, const std::string& text);
 
 
 /*
 * Creates sysop log filename in s, from date string.
 */
-string sysoplog_filename(const string& d) {
+std::string sysoplog_filename(const std::string& d) {
   return fmt::sprintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
 }
 
@@ -81,8 +80,8 @@ void catsl() {
 /*
 * Writes a line to the sysop log.
 */
-void AddLineToSysopLogImpl(log_cmd_t cmd, const string& text) {
-  static string::size_type midline = 0;
+void AddLineToSysopLogImpl(log_cmd_t cmd, const std::string& text) {
+  static std::string::size_type midline = 0;
   
   if (a()->config()->gfilesdir().empty()) {
     LOG(ERROR) << "gfilesdir empty, can't write to sysop log: " << text;
@@ -100,7 +99,7 @@ void AddLineToSysopLogImpl(log_cmd_t cmd, const string& text) {
     if (logFile.length()) {
       logFile.Seek(0L, File::Whence::end);
     }
-    string logLine;
+    std::string logLine;
     if (midline > 0) {
       logLine = StrCat("\r\n", text);
       midline = 0;
@@ -121,7 +120,7 @@ void AddLineToSysopLogImpl(log_cmd_t cmd, const string& text) {
     if (logFile.length()) {
       logFile.Seek(0L, File::Whence::end);
     }
-    string logLine;
+    std::string logLine;
     if (midline == 0 || (midline + 2 + text.length()) > 78) {
       logLine = (midline) ? "\r\n   " : "  ";
       midline = 3 + text.length();
@@ -140,7 +139,7 @@ void AddLineToSysopLogImpl(log_cmd_t cmd, const string& text) {
 /*
 * Writes a string to the sysop log.
 */
-void sysopchar(const string& text) {
+void sysopchar(const std::string& text) {
   if (!text.empty()) {
     AddLineToSysopLogImpl(log_cmd_t::log_char, text);
   }

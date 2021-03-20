@@ -39,7 +39,6 @@
 #include "sdk/config.h"
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -49,7 +48,7 @@ void gfiles2();
 void gfiles3(int n);
 
 static void gfl_hdr(int which) {
-  string s, s1, s2, s3;
+  std::string s, s1, s2, s3;
   if (okansi()) {
     s2 = std::string(29, '\xC4');
   } else {
@@ -114,7 +113,7 @@ static void gfl_hdr(int which) {
 static void list_sec(std::vector<int> map) {
   auto i2 = 0;
   auto abort = false;
-  string s, s2, s3, s4, s5, s6, s7;
+  std::string s, s2, s3, s4, s5, s6, s7;
   if (okansi()) {
     s2 = std::string(29, '\xC4');
     s3 = std::string(12, '\xC4');
@@ -128,7 +127,7 @@ static void list_sec(std::vector<int> map) {
   bout.cls();
   bout.litebar(StrCat(a()->config()->system_name(), " G-Files Section"));
   gfl_hdr(0);
-  string t = times();
+  std::string t = times();
   for (int i = 0; i < size_int(map) && !abort && !a()->sess().hangup(); i++) {
     std::string lnum = std::to_string(i+1);
     std::string rnum;
@@ -156,7 +155,7 @@ static void list_sec(std::vector<int> map) {
     i++;
     if (i2 > 10) {
       i2 = 0;
-      string s1;
+      std::string s1;
       if (okansi()) {
         s1 = fmt::sprintf(
             "|#7\xC3\xC4\xC4\xC4X%s\xC4\xC4\xC4\xC4\xC4X\xC4\xC4\xC4X\xC4\xC4\xC4\xC4\xC4\xC4%s|#"
@@ -174,7 +173,7 @@ static void list_sec(std::vector<int> map) {
   }
   if (!abort) {
     if (so()) {
-      string s1;
+      std::string s1;
       if (okansi()) {
         s1 = fmt::sprintf("|#7\xC3\xC4\xC4\xC4\xC1%s\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC1%"
                           "s\xC4\xC4\xC4\xC4\xB4",
@@ -185,7 +184,7 @@ static void list_sec(std::vector<int> map) {
       bout.bpla(s1, &abort);
       bout.Color(0);
 
-      string padding61 = std::string(61, ' ');
+      std::string padding61(61, ' ');
       if (okansi()) {
         s1 = fmt::sprintf("|#7\xB3  |#2G|#7)|#1G-File Edit%s|#7\xB3", padding61);
       } else {
@@ -204,7 +203,7 @@ static void list_sec(std::vector<int> map) {
       bout.bpla(s1, &abort);
       bout.Color(0);
     } else {
-      string s1;
+      std::string s1;
       if (okansi()) {
         s1 = fmt::sprintf(
             "|#7\xC0\xC4\xC4\xC4\xC1%"
@@ -224,8 +223,8 @@ static void list_sec(std::vector<int> map) {
 
 static void list_gfiles(const gfile_dir_t& g) {
   int i;
-  string s, s2, s3, s4, s5;
-  string lnum, rnum, lsize, rsize;
+  std::string s, s2, s3, s4, s5;
+  std::string lnum, rnum, lsize, rsize;
   const auto t = times();
 
   auto abort = false;
@@ -245,9 +244,8 @@ static void list_gfiles(const gfile_dir_t& g) {
     i2++;
     lnum = std::to_string(i + 1);
     s4 = trim_to_size_ignore_colors(g.files[i].description, 29);
-    const auto path_name =
-        FilePath(gfilesdir, FilePath(g.filename, g.files[i].filename));
-    if (File::Exists(path_name)) {
+    if (const auto path_name = FilePath(gfilesdir, FilePath(g.filename, g.files[i].filename));
+        File::Exists(path_name)) {
       File handle(path_name);
       lsize = humanize(handle.length());
     } else {
@@ -287,7 +285,7 @@ static void list_gfiles(const gfile_dir_t& g) {
     i++;
     if (i2 > 10) {
       i2 = 0;
-      string s1;
+      std::string s1;
       if (okansi()) {
         s1 = fmt::sprintf("|#7\xC3\xC4\xC4\xC4X%sX\xC4\xC4\xC4\xC4X\xC4\xC4\xC4X\xC4%s|#1\xFE|#"
                           "7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xFE\xC4\xC4\xC4\xC4\xD9",
@@ -313,13 +311,13 @@ static void list_gfiles(const gfile_dir_t& g) {
     bout.bpla(s, &abort);
     bout.Color(0);
     if (so()) {
-      string s1 = okansi()
+      std::string s1 = okansi()
         ? "|#7\xB3 |#1A|#7)|#2Add a G-File  |#1D|#7)|#2Download a G-file  |#1E|#7)|#2Edit this section  |#1R|#7)|#2Remove a G-File |#7\xB3"
         : "| A)Add a G-File  D)Download a G-file  E)Edit this section  R)Remove a G-File |";
       bout.bpla(s1, &abort);
       bout.Color(0);
     } else {
-      string s1;
+      std::string s1;
       if (okansi()) {
         s1 = StrCat("|#7\xB3  |#2D  |#1Download a G-file", std::string(55, ' '), "|#7\xB3");
       } else {
@@ -329,7 +327,7 @@ static void list_gfiles(const gfile_dir_t& g) {
       bout.Color(0);
     }
   }
-  string s1;
+  std::string s1;
   if (okansi()) {
     s1 = fmt::sprintf(
         "|#7\xC0\xC4\xC4\xC4\xC4%s\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%"
@@ -362,7 +360,7 @@ static void gfile_sec(int sn) {
     bout << "|#9Current G|#1-|#9File Section |#1: |#5" << section.name << "|#0\r\n";
     bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << size_int(g) <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
-    string ss = mmkey(odc);
+    std::string ss = mmkey(odc);
     i = to_number<int>(ss);
     if (ss == "Q") {
       done = true;
@@ -380,7 +378,7 @@ static void gfile_sec(int sn) {
     } else if (ss == "R" && so()) {
       bout.nl();
       bout << "|#2G-file number to delete? ";
-      string ss1 = mmkey(odc);
+      std::string ss1 = mmkey(odc);
       i = to_number<int>(ss1);
       if (i > 0 && i <= nf) {
         bout << "|#9Remove " << g[i - 1].description << "|#1? |#5";
@@ -495,7 +493,7 @@ void gfiles() {
     bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
     bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
-    string ss = mmkey(odc);
+    std::string ss = mmkey(odc);
     if (ss == "Q") {
       done = true;
     } else if (ss == "G" && so()) {
@@ -509,8 +507,7 @@ void gfiles() {
         bIsSectionFull = fill_sec(map[i]);
       }
     } else {
-      int i = to_number<int>(ss);
-      if (i > 0 && i <= nmap) {
+      if (int i = to_number<int>(ss); i > 0 && i <= nmap) {
         gfile_sec(map[i-1]);
       }
     }

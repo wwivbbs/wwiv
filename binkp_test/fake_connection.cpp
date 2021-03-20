@@ -29,8 +29,6 @@
 #include <sstream>
 #include <stdexcept>
 
-using std::string;
-using std::unique_ptr;
 using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::os;
@@ -39,7 +37,7 @@ using namespace wwiv::net;
 
 FakeBinkpPacket::FakeBinkpPacket(const void* data, int size) {
   auto p = static_cast<const char*>(data);
-  header_ = (*p++) << 8;
+  header_ = *p++ << 8;
   header_ = header_ | *p++;
   is_command_ = (header_ | 0x8000) != 0;
   header_ &= 0x7fff;
@@ -48,7 +46,7 @@ FakeBinkpPacket::FakeBinkpPacket(const void* data, int size) {
     command_ = *p;
   }
   // size doesn't include the uint16_t header.
-  data_ = string(p, size - 2);  
+  data_ = std::string(p, size - 2);  
 }
 
 FakeBinkpPacket::~FakeBinkpPacket() = default;
@@ -107,12 +105,12 @@ uint8_t FakeConnection::read_uint8(std::chrono::duration<double> d) {
 }
 
 int FakeConnection::receive(void* data, int size, duration<double> d) {
-  string s = receive(size, d);
+  std::string s = receive(size, d);
   memcpy(data, s.data(), size);
   return size;
 }
 
-string FakeConnection::receive(int, duration<double> d) {
+std::string FakeConnection::receive(int, duration<double> d) {
   auto predicate = [&]() {
     std::lock_guard<std::mutex> lock(mu_);
     return !receive_queue_.empty();
@@ -154,9 +152,9 @@ FakeBinkpPacket FakeConnection::GetNextPacket() {
 }
 
 // Reply to the BinkP with a command.
-void FakeConnection::ReplyCommand(int8_t command_id, const string& data) {
+void FakeConnection::ReplyCommand(int8_t command_id, const std::string& data) {
   const int size = 3u + data.size(); /* header + command + data + null*/
-  unique_ptr<char[]> packet(new char[size]);
+  std::unique_ptr<char[]> packet(new char[size]);
   // Actual packet size parameter does not include the size parameter itself.
   // And for sending a command this will be 2 less than our actual packet size.
   const uint16_t packet_length = static_cast<uint16_t>(data.size() + sizeof(uint8_t)) | 0x8000;

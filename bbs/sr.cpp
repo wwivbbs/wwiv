@@ -47,7 +47,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
 using namespace std::chrono;
 using namespace wwiv::common;
 using namespace wwiv::core;

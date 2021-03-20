@@ -22,9 +22,7 @@
 
 #include <algorithm>
 #include <chrono>
-#include <string>
 
-using std::string;
 using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::sdk;

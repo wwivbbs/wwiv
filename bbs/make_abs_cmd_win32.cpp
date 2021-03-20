@@ -26,9 +26,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
-
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -62,16 +59,14 @@ void make_abs_cmd(const std::filesystem::path& root, std::string* out) {
     s1 = fmt::format("{}:{}", drive, s1);
   } else {
     s2 = s1;
-    const auto wsidx = s2.find_first_of(" \t");
-    if (wsidx != std::string::npos) {
+    if (const auto wsidx = s2.find_first_of(" \t"); wsidx != std::string::npos) {
       if (s2.find(File::pathSeparatorChar) != std::string::npos) {
         s1 = FilePath(root, s1).string();
       }
     }
   }
 
-  const auto idx = s1.find(' ');
-  if (idx != std::string::npos) {
+  if (const auto idx = s1.find(' '); idx != std::string::npos) {
     s2 = fmt::format(" {}", s1.substr(idx + 1));
     s1 = s1.substr(0, idx);
   } else {
@@ -97,8 +92,7 @@ void make_abs_cmd(const std::filesystem::path& root, std::string* out) {
       }
     } else {
       if (File::Exists(s)) {
-        std::error_code ec;
-        if (is_directory(root, ec) && !is_directory(FilePath(root, s), ec)) {
+        if (std::error_code ec; is_directory(root, ec) && !is_directory(FilePath(root, s), ec)) {
           *out = StrCat(FilePath(root, s).string(), s2);
         } else {
           *out = FilePath(root, StrCat(s, s2)).string();
@@ -106,8 +100,7 @@ void make_abs_cmd(const std::filesystem::path& root, std::string* out) {
         return;
       }
       char szFoundPath[4096];
-      const auto err = _searchenv_s(s.c_str(), "PATH", szFoundPath);
-      if (err == 0 && strlen(szFoundPath) > 0) {
+      if (const auto err = _searchenv_s(s.c_str(), "PATH", szFoundPath); err == 0 && strlen(szFoundPath) > 0) {
         *out = StrCat(szFoundPath, s2);
         return;
       }
@@ -115,8 +108,7 @@ void make_abs_cmd(const std::filesystem::path& root, std::string* out) {
   }
 
   const auto maybe_dir = FilePath(root, s1);
-  std::error_code ec;
-  if (File::Exists(maybe_dir) && is_directory(maybe_dir, ec)) {
+  if (std::error_code ec; File::Exists(maybe_dir) && is_directory(maybe_dir, ec)) {
     *out = StrCat(maybe_dir.string(), s2);
   } else {
     *out = FilePath(root, StrCat(s1, s2)).string();

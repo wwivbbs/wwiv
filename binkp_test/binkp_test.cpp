@@ -29,11 +29,6 @@
 #include <string>
 #include <thread>
 
-using std::clog;
-using std::endl;
-using std::string;
-using std::thread;
-using std::unique_ptr;
 using wwiv::sdk::Callout;
 using namespace wwiv::core;
 using namespace wwiv::net;
@@ -48,7 +43,7 @@ protected:
   void StartBinkpReceiver() {
     CHECK(files_.Mkdir("network"));
     CHECK(files_.Mkdir("gfiles"));
-    const string line("@1 example.com");
+    const std::string line("@1 example.com");
     files_.CreateTempFile("binkp.net", line);
     const auto network_dir = files_.DirName("network");
     const auto gfiles_dir = files_.DirName("gfiles");
@@ -70,14 +65,14 @@ protected:
     binkp_config_->callouts()["wwivnet"] = std::move(dummy_callout);
     binkp_.reset(new BinkP(&conn_, binkp_config_.get(), BinkSide::ANSWERING, ANSWERING_ADDRESS, null_factory));
     CommandLine cmdline({ "networkb_tests.exe" }, "");
-    thread_ = thread([&]() { binkp_->Run(cmdline); });
+    thread_ = std::thread([&]() { binkp_->Run(cmdline); });
   } 
 
   void Stop() {
     thread_.join();
   }
 
-  unique_ptr<BinkP> binkp_;
+  std::unique_ptr<BinkP> binkp_;
   std::unique_ptr<BinkConfig> binkp_config_;
   FakeConnection conn_;
   std::thread thread_;
@@ -90,7 +85,7 @@ TEST_F(BinkTest, ErrorAbortsSession) {
   Stop();
   
   while (conn_.has_sent_packets()) {
-    clog << conn_.GetNextPacket().debug_string() << endl;
+    std::clog << conn_.GetNextPacket().debug_string() << std::endl;
   }
 }
 
@@ -124,14 +119,14 @@ TEST(NodeFromAddressTest, MultipleAddresses_SameNetwork) {
 TEST(ExpectedPasswordTest, Basic) {
   const net_call_out_rec n{ "20000:20000/1234", 1234, 1, unused_options_sendback, 2, 3, 4, "pass", 5, 6 };
   Callout callout({ n });
-  const string actual = expected_password_for(&callout, 1234);
+  const std::string actual = expected_password_for(&callout, 1234);
   EXPECT_EQ("pass", actual);
 }
 
 TEST(ExpectedPasswordTest, WrongNode) {
   const net_call_out_rec n{"20000:20000/1234", 1234, 1, unused_options_sendback, 2, 3, 4, "pass", 5, 6 };
   Callout callout({ n });
-  const string actual = expected_password_for(&callout, 12345);
+  const std::string actual = expected_password_for(&callout, 12345);
   EXPECT_EQ("-", actual);
 }
 
@@ -140,8 +135,8 @@ TEST(FtnFromAddressListSet, Smoke) {
   const std::string address = "3:57/0@fidonet 3:770/1@fidonet 3:770/0@fidonet 3:772/1@fidonet "
                               "3:772/0@fidonet 21:1/100@fsxnet 21:1/3@fsxnet 21:1/2@fsxnet "
                               "21:1/1@fsxnet 21:1/0@fsxnet 39:970/0@amiganet 46:3/103@agoranet";
-  FidoAddress a("21:1/0@fsxnet");
-  std::set addresses{FidoAddress("21:1/0@fsxnet")};
+  const FidoAddress a("21:1/0@fsxnet");
+  const std::set addresses{FidoAddress("21:1/0@fsxnet")};
   const auto known = ftn_addresses_from_address_list(address, addresses);
   EXPECT_THAT(known, testing::ElementsAre(a));
 }

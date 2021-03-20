@@ -42,8 +42,6 @@
 
 namespace wwiv::wwivd {
 
-using std::map;
-using std::string;
 using namespace std::chrono_literals;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -99,7 +97,7 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
     current_last_contact[address] = DateTime::now().to_time_t();
     // 2: Call it.
     LOG(INFO) << "ftn: should call out to: " << address.as_string() << "." << net.name;
-    const std::map<char, string> params = {{'N', address.as_string()},
+    const std::map<char, std::string> params = {{'N', address.as_string()},
                                            {'T', std::to_string(network_number)}};
     const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
     if (!ExecCommandAndWait(c, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
@@ -130,7 +128,7 @@ static void one_net_wwivnet_callout(const net_networks_rec& net, const wwivd_con
     }
     // Call it.
     LOG(INFO) << "should call out to: " << kv.first << "." << net.name;
-    const std::map<char, string> params = {{'N', std::to_string(kv.first)},
+    const std::map<char, std::string> params = {{'N', std::to_string(kv.first)},
                                            {'T', std::to_string(network_number)}};
     const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
     if (!ExecCommandAndWait(c, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
@@ -168,8 +166,7 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
       c.Load(config);
     }
     if (c.do_network_callouts) {
-      auto now = DateTime::now().to_system_clock();
-      if (now - last_callout > 60s) {
+      if (auto now = DateTime::now().to_system_clock(); now - last_callout > 60s) {
         last_callout = DateTime::now().to_system_clock();
         one_callout_loop(config, c);
       }
@@ -187,7 +184,7 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
       VLOG(4) << "Doing beginday check";
       if (d != ld) {
         LOG(INFO) << "Executing beginday event. (" << d << " != " << ld << ")";
-        const std::map<char, string> params{};
+        const std::map<char, std::string> params{};
         const auto cmd = CreateCommandLine(c.beginday_cmd, params);
         if (!ExecCommandAndWait(c, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
           LOG(ERROR) << "Error executing [BeginDay Event]: '" << cmd << "'";

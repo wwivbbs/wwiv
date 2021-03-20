@@ -59,12 +59,9 @@
 #include "sdk/net/networks.h"
 
 #include <chrono>
-#include <memory>
 #include <optional>
 #include <sstream>
 
-using std::string;
-using std::unique_ptr;
 using std::chrono::milliseconds;
 
 using namespace wwiv::core;

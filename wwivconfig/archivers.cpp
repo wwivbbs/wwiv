@@ -29,13 +29,8 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include <filesystem>
-#include <memory>
-#include <string>
 #include <vector>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::localui;
 using namespace wwiv::strings;
@@ -80,7 +75,7 @@ c:\bin\arcs\zip.exe -a %1 %2)"""" ), 1, y);
 }
 
 bool create_arcs(UIWindow* window, const std::filesystem::path& datadir) {
-  vector<arcrec> arc;
+  std::vector<arcrec> arc;
   arc.emplace_back(arcrec{"Zip", "ZIP", "zip -j %1 %2", "unzip -o -j -C %1 %2", "@internal",
                           "zip -d %1 -@ < BBSADS.TXT", "zip -z %1 < COMMENT.TXT", "unzip -t %1"});
   arc.emplace_back(arcrec{"Arj", "ARJ", "arj.exe a %1 %2", "arj.exe e %1 %2", "@internal",
@@ -130,7 +125,7 @@ bool edit_archivers(wwiv::sdk::Config& config) {
   auto done = false;
   do {
     curses_out->Cls(ACS_CKBOARD);
-    vector<ListBoxItem> items;
+    std::vector<ListBoxItem> items;
     for (auto& i : arc) {
       items.emplace_back(fmt::format("[{}] {}", i.extension, i.name));
     }
@@ -138,8 +133,7 @@ bool edit_archivers(wwiv::sdk::Config& config) {
 
     list.selection_returns_hotkey(true);
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}});
-    const auto result = list.Run();
-    if (result.type == ListBoxResultType::HOTKEY) {
+    if (const auto result = list.Run(); result.type == ListBoxResultType::HOTKEY) {
     } else if (result.type == ListBoxResultType::SELECTION) {
       edit_arc(result.selected + 1, &arc[result.selected]);
     } else if (result.type == ListBoxResultType::NO_SELECTION) {

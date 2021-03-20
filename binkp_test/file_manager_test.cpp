@@ -24,9 +24,6 @@
 #include "core/textfile.h"
 #include <string>
 
-using std::endl;
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::strings;
@@ -151,7 +148,7 @@ TEST_F(FileManagerTest, WithPassword) {
   fm->ReceiveFile("foo.zip");
   fm->ReceiveFile("foo.tic");
   wwiv::sdk::fido::FidoCallout callout(*config_, net);
-  wwiv::sdk::fido::FidoAddress remote_addr("1:1/1");
+  const wwiv::sdk::fido::FidoAddress remote_addr("1:1/1");
   fido_node_config_t node_config{};
   node_config.packet_config.tic_password = "rush";
   callout.insert(remote_addr, node_config);
@@ -168,7 +165,7 @@ TEST_F(FileManagerTest, WithPassword_WrongPassword) {
   fm->ReceiveFile("foo.zip");
   fm->ReceiveFile("foo.tic");
   wwiv::sdk::fido::FidoCallout callout(*config_, net);
-  wwiv::sdk::fido::FidoAddress remote_addr("1:1/1");
+  const wwiv::sdk::fido::FidoAddress remote_addr("1:1/1");
   fido_node_config_t node_config{};
   node_config.packet_config.tic_password = "rush";
   node_config.binkp_config.host = "mystic.wwivbbs.org";

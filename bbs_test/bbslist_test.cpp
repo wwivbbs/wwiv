@@ -22,19 +22,12 @@
 
 #include "gtest/gtest.h"
 #include <filesystem>
-#include <memory>
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::string;
-using std::unique_ptr;
-using std::vector;
-
 using namespace wwiv::bbslist;
 
-static string FindAddressByType(const BbsListEntry& entry, const std::string& type) {
+static std::string FindAddressByType(const BbsListEntry& entry, const std::string& type) {
   for (const auto& a : entry.addresses) {
     if (type == a.type) {
       return a.address;
@@ -46,23 +39,23 @@ static string FindAddressByType(const BbsListEntry& entry, const std::string& ty
 class NewBbsListTest : public testing::Test {
 protected:
   void SetUp() override { helper.SetUp(); }
-  string dir() { return helper.files().TempDir().string(); }
-  std::filesystem::path CreateTempFile(const string& name, const string& contents) {
+  std::string dir() { return helper.files().TempDir().string(); }
+  std::filesystem::path CreateTempFile(const std::string& name, const std::string& contents) {
     return helper.files().CreateTempFile(name, contents);
   }
   BbsHelper helper{};
 };
 
 TEST_F(NewBbsListTest, NoFile) {
-  vector<BbsListEntry> entries;
+  std::vector<BbsListEntry> entries;
   ASSERT_FALSE(LoadFromJSON(dir(), "bbslist.json", entries));
 }
 
 TEST_F(NewBbsListTest, SingleItem_NoAddress) {
-  const string json = R"({ "bbslist": [ { "name": "n1", "software": "s1" } ] })";
+  const std::string json = R"({ "bbslist": [ { "name": "n1", "software": "s1" } ] })";
   this->CreateTempFile("bbslist.json", json);
    
-  vector<BbsListEntry> entries;
+  std::vector<BbsListEntry> entries;
   ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", entries));
 
   ASSERT_EQ(1u, entries.size());
@@ -71,7 +64,7 @@ TEST_F(NewBbsListTest, SingleItem_NoAddress) {
 }
 
 TEST_F(NewBbsListTest, SingleItem_Address) {
-  const string json = R"(
+  const std::string json = R"(
     { "bbslist":
       [ { "name": "n1", "software": "s1", 
       "addresses": [ 
@@ -81,7 +74,7 @@ TEST_F(NewBbsListTest, SingleItem_Address) {
     } )";
   this->CreateTempFile("bbslist.json", json);
 
-  vector<BbsListEntry> entries;
+  std::vector<BbsListEntry> entries;
   EXPECT_TRUE(LoadFromJSON(dir(), "bbslist.json", entries));
 
   EXPECT_EQ(1u, entries.size());
@@ -93,7 +86,7 @@ TEST_F(NewBbsListTest, SingleItem_Address) {
 }
 
 TEST_F(NewBbsListTest, MultipleEntries) {
-  const string json =
+  const std::string json =
       R"({ "bbslist": [
       { "name": "n1", "software": "s", "addresses": [ { "type":"telnet", "address":"example.com" } ] }, 
       { "name": "n2", "software": "s", "addresses": [ { "type":"ssh", "address":"foobar.com" } ] }, 
@@ -102,7 +95,7 @@ TEST_F(NewBbsListTest, MultipleEntries) {
     })";
   this->CreateTempFile("bbslist.json", json);
 
-  vector<BbsListEntry> entries;
+  std::vector<BbsListEntry> entries;
   ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", entries));
   
   EXPECT_EQ(3u, entries.size());
@@ -119,7 +112,7 @@ TEST_F(NewBbsListTest, MultipleEntries) {
 }
 
 TEST_F(NewBbsListTest, WriteSingleEntry) {
-  vector<BbsListEntry> entries;
+  std::vector<BbsListEntry> entries;
   {
     BbsListEntry e{};
     e.name = "n1";
@@ -129,7 +122,7 @@ TEST_F(NewBbsListTest, WriteSingleEntry) {
   }
 
   ASSERT_TRUE(SaveToJSON(dir(), "bbslist.json", entries));
-  vector<BbsListEntry> new_entries;
+  std::vector<BbsListEntry> new_entries;
   ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", new_entries));
   EXPECT_EQ(1u, new_entries.size());
   const auto& e = new_entries.at(0);

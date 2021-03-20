@@ -51,8 +51,6 @@
 #include <stdexcept>
 #include <string>
 
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -118,7 +116,7 @@ static void UpdateMessageOriginInfo(int system_number, int user_number, Type2Mes
       system_number = net.sysnum;
     }
     if (auto csne = next_system(system_number)) {
-      string netstatus;
+      std::string netstatus;
       if (user_number == 1) {
         if (csne->other & other_net_coord) {
           netstatus = "{NC}";
@@ -133,7 +131,7 @@ static void UpdateMessageOriginInfo(int system_number, int user_number, Type2Mes
       const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
       const auto filename = FilePath(regions_dir, phone_fn);
 
-      string description;
+      std::string description;
       if (File::Exists(filename)) {
         // Try to use the town first.
         const auto phone_prefix =
@@ -277,8 +275,8 @@ void display_message_text(const std::string& text, bool* next) {
   bout.disable_mci();
 }
 
-static void UpdateHeaderInformation(int8_t anon_type, bool readit, const string default_name,
-                                    string* name, string* date) {
+static void UpdateHeaderInformation(int8_t anon_type, bool readit, const std::string default_name,
+                                    std::string* name, std::string* date) {
   switch (anon_type) {
   case anony_sender:
     if (readit) {
@@ -616,7 +614,7 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
     }
     bout.GotoXY(1, i - start + lines_start);
     auto l = lines.at(i);
-    if (l.find("\x1b[") != string::npos) {
+    if (l.find("\x1b[") != std::string::npos) {
       had_ansi = true;
     }
     if (!l.empty() && l.back() == CA) {

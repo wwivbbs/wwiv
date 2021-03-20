@@ -40,7 +40,6 @@
 #include <chrono>
 #include <string>
 
-using std::string;
 using std::chrono::duration_cast;
 using namespace std::chrono;
 using namespace wwiv::common;

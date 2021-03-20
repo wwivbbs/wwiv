@@ -16,8 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
 #include "bbs/msgbase1.h"
 #include "bbs_test/bbs_helper.h"
 #include "common/message_editor_data.h"
@@ -25,7 +23,8 @@
 #include "core/strings.h"
 #include "sdk/fido/fido_address.h"
 
-using std::string;
+#include "gtest/gtest.h"
+
 using namespace wwiv::common;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;

@@ -31,15 +31,13 @@
 #include <string>
 #include <utility>
 
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 namespace wwiv::sdk {
 
-static string sysoplog_filename(const string& d) {
+static std::string sysoplog_filename(const std::string& d) {
   return fmt::sprintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
 }
 

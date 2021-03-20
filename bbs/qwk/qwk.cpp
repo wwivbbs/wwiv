@@ -35,11 +35,8 @@
 #include "sdk/qwk_config.h"
 #include "sdk/vardec.h"
 
-#include <memory>
 #include <string>
 
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::core;
@@ -208,7 +205,7 @@ void qwk_nscan() {
 #endif // NEVER
 }
 
-static string qwk_current_text(int pos) {
+static std::string qwk_current_text(int pos) {
   static const char* yesorno[] = {"Yes", "No"};
 
   switch (pos) {

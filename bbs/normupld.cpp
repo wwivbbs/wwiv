@@ -22,23 +22,20 @@
 #include "bbs/instmsg.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
-#include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "core/findfiles.h"
 #include "core/numbers.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"
-#include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/files/files.h"
+
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -87,7 +84,7 @@ void normalupload(int dn) {
   }
   if (d.mask & mask_archive) {
     ok = 0;
-    string supportedExtensions;
+    std::string supportedExtensions;
     for (int k = 0; k < MAX_ARCS; k++) {
       if (a()->arcs[k].extension[0] && a()->arcs[k].extension[0] != ' ') {
         if (!supportedExtensions.empty()) {
@@ -173,7 +170,7 @@ void normalupload(int dn) {
       auto desc = bin.input_text(58);
       f.set_description(desc);
       bout.nl();
-      string ext_desc;
+      std::string ext_desc;
       modify_extended_description(&ext_desc, a()->dirs()[dn].name);
       if (!ext_desc.empty()) {
         a()->current_file_area()->AddExtendedDescription(f, ext_desc);
@@ -225,8 +222,7 @@ void normalupload(int dn) {
             f.set_numbytes(0);
           }
           f.set_date(DateTime::now());
-          auto* area = a()->current_file_area();
-          if (area->AddFile(f)) {
+          if (auto * area = a()->current_file_area(); area->AddFile(f)) {
             area->Save();
           }
           if (ok == 1) {

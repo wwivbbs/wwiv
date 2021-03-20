@@ -31,7 +31,6 @@
 #include <string>
 #include "core/log.h"
 
-using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
 using namespace wwiv::strings;
@@ -241,10 +240,10 @@ void OnlineUserEditor() {
   a()->DisplaySysopWorkingIndicator(false);
 }
 
-void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStringDelay) {
+void BackPrint(const std::string& strText, int nColorCode, int nCharDelay, int nStringDelay) {
   bout.back_puts(strText, nColorCode, milliseconds(nCharDelay), milliseconds(nStringDelay));
 }
 
-void SpinPuts(const string& strText, int color) {
+void SpinPuts(const std::string& strText, int color) {
   bout.spin_puts(strText, color);
 }

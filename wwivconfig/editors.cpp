@@ -29,14 +29,10 @@
 #include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+
 #include <cstdint>
-#include <memory>
-#include <string>
 #include <vector>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::localui;
 using namespace wwiv::stl;
@@ -50,9 +46,9 @@ static void edit_editor(editorrec& e) {
   constexpr int fossil_type_netfoss = 1;
   constexpr int fossil_type_syncfoss = 2;
 
-  const std::vector<std::pair<uint8_t, string>> bbs_types = {{bbs_type_wwiv, "WWIV"},
+  const std::vector<std::pair<uint8_t, std::string>> bbs_types = {{bbs_type_wwiv, "WWIV"},
                                                              {bbs_type_quickbbs, "QuickBBS"}};
-  const std::vector<std::pair<int, string>> fossil_types = {
+  const std::vector<std::pair<int, std::string>> fossil_types = {
       {fossil_type_none, "No"},
       {fossil_type_syncfoss, "SyncFoss"},
       {fossil_type_netfoss, "NetFoss"},
@@ -142,7 +138,7 @@ http://docs.wwivbbs.org/en/latest/chains/parameters for the full list.
 }
 
 void extrn_editors(const wwiv::sdk::Config& config) {
-  vector<editorrec> editors;
+  std::vector<editorrec> editors;
   if (auto file = DataFile<editorrec>(FilePath(config.datadir(), EDITORS_DAT))) {
     file.ReadVector(editors, 10);
     file.Close();
@@ -151,7 +147,7 @@ void extrn_editors(const wwiv::sdk::Config& config) {
   auto done = false;
   do {
     curses_out->Cls(ACS_CKBOARD);
-    vector<ListBoxItem> items;
+    std::vector<ListBoxItem> items;
     for (size_t i = 0; i < editors.size(); i++) {
       items.emplace_back(fmt::format("{}. {}", i + 1, editors[i].description));
     }
@@ -161,8 +157,7 @@ void extrn_editors(const wwiv::sdk::Config& config) {
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-    auto result = list.Run();
-    if (result.type == ListBoxResultType::HOTKEY) {
+    if (auto result = list.Run(); result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D': {
         if (!editors.empty()) {

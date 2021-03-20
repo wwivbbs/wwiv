@@ -37,7 +37,6 @@
 
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -69,7 +68,7 @@ static bool display_sub_categories(const net_networks_rec& net) {
   bout.nl();
   bout << "Available sub categories are:\r\n";
   auto abort = false;
-  string s;
+  std::string s;
   while (!abort && ff.ReadLine(&s)) {
     StringTrim(&s);
     bout.bpla(s, &abort);
@@ -78,7 +77,7 @@ static bool display_sub_categories(const net_networks_rec& net) {
   return true;
 }
 
-static void sub_req(uint16_t main_type, int tosys, const string& stype,
+static void sub_req(uint16_t main_type, int tosys, const std::string& stype,
                     const net_networks_rec& net) {
   net_header_rec nh{};
 

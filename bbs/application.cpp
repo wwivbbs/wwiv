@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/application.h"
 
+#include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl2.h"
 #include "bbs/bbsutl.h"
@@ -63,7 +64,6 @@
 #include "local_io/keycodes.h"
 #include "local_io/local_io.h"
 // ReSharper disable once CppUnusedIncludeDirective
-#include "local_io/local_io_curses.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "bbs/chnedit.h"
 // ReSharper disable once CppUnusedIncludeDirective
@@ -72,10 +72,9 @@
 #include "sdk/chains.h"
 #include "sdk/gfiles.h"
 // ReSharper disable once CppUnusedIncludeDirective
-#include "bbs/batch.h"
+#include "sdk/names.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "localui/curses_io.h"
-#include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
@@ -104,13 +103,6 @@
 #include <unistd.h>
 #endif // _WIN32
 
-using std::clog;
-using std::cout;
-using std::endl;
-using std::max;
-using std::min;
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace std::chrono;
@@ -223,13 +215,13 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
     if (!File::Exists(key_fn)) {
       LOG(ERROR) << "Key file doesn't exist. Will try to create it.";
       if (!key.Create()) {
-        LOG(ERROR) << "Unable to create or open key file!.  SSH will be disabled!" << endl;
+        LOG(ERROR) << "Unable to create or open key file!.  SSH will be disabled!" << std::endl;
         comm_ = std::make_unique<RemoteSocketIO>(nHandle, true);
         break;
       }
     }
     if (!key.Open()) {
-      LOG(ERROR) << "Unable to open key file!. Did you change your sytem pw?" << endl;
+      LOG(ERROR) << "Unable to open key file!. Did you change your sytem pw?";
       LOG(ERROR) << "If so, delete " << key_file;
       LOG(ERROR) << "SSH will be disabled!";
       comm_ = std::make_unique<RemoteSocketIO>(nHandle, true);
@@ -471,7 +463,7 @@ void Application::handle_sysop_key(uint8_t key) {
 }
 
 void Application::DisplaySysopWorkingIndicator(bool displayWait) {
-  const string waitString = "-=[WAIT]=-";
+  const std::string waitString = "-=[WAIT]=-";
   auto nNumPrintableChars = waitString.length();
   for (auto iter = waitString.begin(); iter != waitString.end(); ++iter) {
     if (*iter == 3 && nNumPrintableChars > 1) {
@@ -616,7 +608,7 @@ void Application::UpdateTopScreen() {
     dar[16] = '\0';
     ar[16] = '\0';
     restrict[16] = '\0';
-    string lo;
+    std::string lo;
     if (date() != user()->laston()) {
       lo = user()->laston();
     } else {
@@ -630,7 +622,7 @@ void Application::UpdateTopScreen() {
                      user()->sl(), user()->logons(), user()->messages_posted());
     localIO()->PutsXYA(0, 0, bout.curatr(), line);
 
-    string callsign_or_regnum = user()->callsign();
+    std::string callsign_or_regnum = user()->callsign();
     if (user()->wwiv_regnum()) {
       callsign_or_regnum = std::to_string(user()->wwiv_regnum());
     }
@@ -763,11 +755,11 @@ int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
       sysoplog(false) << "";
     }
     catsl();
-    clog << "\r\n";
-    clog << "WWIV Bulletin Board System " << full_version()
-         << " exiting at error level " << exit_level << endl
-         << endl;
-    clog.flush();
+    std::clog << "\r\n";
+    std::clog << "WWIV Bulletin Board System " << full_version()
+         << " exiting at error level " << exit_level << std::endl
+         << std::endl;
+    std::clog.flush();
   }
 
   return exit_level;
@@ -807,22 +799,22 @@ int Application::Run(int argc, char* argv[]) {
                                                   "Do not hang up on user when at log off", false});
 
   if (!cmdline.Parse()) {
-    cout << "WWIV Bulletin Board System [" << full_version() << "]\r\n\n";
-    cout << cmdline.GetHelp() << endl;
+    std::cout << "WWIV Bulletin Board System [" << full_version() << "]\r\n\n";
+    std::cout << cmdline.GetHelp() << std::endl;
     return EXIT_FAILURE;
   }
   if (cmdline.help_requested()) {
-    cout << "WWIV Bulletin Board System [" << full_version() << "]\r\n\n";
-    cout << cmdline.GetHelp() << endl;
+    std::cout << "WWIV Bulletin Board System [" << full_version() << "]\r\n\n";
+    std::cout << cmdline.GetHelp() << std::endl;
     return 0;
   }
   if (cmdline.barg("version")) {
-    cout << "WWIV Bulletin Board System [" << full_version() << "]\r\n\n";
+    std::cout << "WWIV Bulletin Board System [" << full_version() << "]\r\n\n";
     return 0;
   }
 
   if (const auto bbs_env = environment_variable("BBS"); !bbs_env.empty()) {
-    if (bbs_env.find("WWIV") != string::npos) {
+    if (bbs_env.find("WWIV") != std::string::npos) {
       LOG(ERROR) << "You are already in the BBS, type 'EXIT' instead.\n\n";
       return 255;
     }
@@ -848,7 +840,7 @@ int Application::Run(int argc, char* argv[]) {
   if (const auto x = cmdline.sarg("x"); !x.empty()) {
     const auto xarg = to_upper_case_char(x.at(0));
     if (cmdline.arg("handle").is_default()) {
-      clog << "-h must be specified when using '"
+      std::clog << "-h must be specified when using '"
            << "-x" << x << "'" << std::endl;
       return errorlevel_;
     }
@@ -869,7 +861,7 @@ int Application::Run(int argc, char* argv[]) {
       sess().outcom(false);
       type = (xarg == 'S') ? CommunicationType::SSH : CommunicationType::TELNET;
     } else {
-      clog << "Invalid Command line argument given '" << "-x" << x << "'" << std::endl;
+      std::clog << "Invalid Command line argument given '" << "-x" << x << "'" << std::endl;
       return errorlevel_;
     }
   }
@@ -934,7 +926,7 @@ int Application::Run(int argc, char* argv[]) {
 
   if (!remote_opened) {
     // Remote side disconnected.
-    clog << "Remote side disconnected." << std::endl;
+    std::clog << "Remote side disconnected." << std::endl;
     return oklevel_;
   }
 
@@ -945,7 +937,7 @@ int Application::Run(int argc, char* argv[]) {
       beginday(true);
     } else {
       sysoplog(false) << "!!! Wanted to run the beginday event when it's not required!!!";
-      clog << "! WARNING: Tried to run beginday event again\r\n\n";
+      std::clog << "! WARNING: Tried to run beginday event again\r\n\n";
       sleep_for(seconds(2));
     }
     return oklevel_;

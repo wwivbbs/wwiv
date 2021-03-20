@@ -48,9 +48,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using wwiv::common::InputMode;
 using namespace wwiv::common;
 using namespace wwiv::core;
@@ -106,7 +103,7 @@ static void GetMessageTitle(MessageEditorData& data) {
     }
     auto irt = a()->sess().irt();
     if (!irt.empty()) {
-      string s1;
+      std::string s1;
       auto ch = '\0';
       irt = stripcolors(StringTrim(a()->sess().irt()));
       if (strncasecmp(irt.c_str(), "re:", 3) != 0) {
@@ -161,7 +158,7 @@ static void GetMessageTitle(MessageEditorData& data) {
   }
 }
 
-static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, MessageEditorData& data) {
+static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int* setanon, MessageEditorData& data) {
   auto abort = false, next = false;
   auto curli = 0;
 
@@ -172,18 +169,18 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
   bout << "|#9Enter |#2/Q|#9 to quote previous message, |#2/HELP|#9 for other editor commands.\r\n";
 
   bout.Color(7);
-  string header = "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]";
+  std::string header = "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]";
   if (a()->user()->GetScreenChars() < 80) {
     header.resize(a()->user()->GetScreenChars());
   }
   bout << header;
   bout.nl();
 
-  string current_line;
+  std::string current_line;
   auto check_message_size = true;
   auto save_message = false;
   auto done = false;
-  string rollover_line;
+  std::string rollover_line;
   std::vector<std::string> quoted_lines;
   while (!done && !a()->sess().hangup()) {
     while (inli(&current_line, &rollover_line, 160, true, (curli > 0))) {
@@ -308,7 +305,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
       } else if (cmd == "/SU" && current_line[3] == '/' && curli > 0) {
         auto old_string = current_line.substr(4);
         auto slash = old_string.find('/');
-        if (slash != string::npos) {
+        if (slash != std::string::npos) {
           auto new_string = old_string.substr(slash + 1);
           old_string.resize(slash);
           // We've already advanced curli to point to the new row, so we need
@@ -351,7 +348,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
 }
 
 
-static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_email, const string& to_name, const string& title) {
+static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_email, const std::string& to_name, const std::string& title) {
   auto fido_addr_added{false};
   if (!to_name.empty() && !is_email && !a()->current_sub().nets.empty()) {
     for (const auto& xnp : a()->current_sub().nets) {
@@ -401,7 +398,7 @@ static std::filesystem::path FindTagFileName() {
   return {};
 }
 
-static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const string& to_name) {
+static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const std::string& to_name) {
   if (a()->subs().subs().empty() && a()->sess().GetCurrentReadMessageArea() <= 0) {
     return;
   }
@@ -427,7 +424,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
   TextFile file(filename, "rb");
   if (file.IsOpen()) {
     int j = 0;
-    string s;
+    std::string s;
     do {
       s.clear();
       const auto line_read = file.ReadLine(&s);
@@ -456,10 +453,10 @@ static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
   const auto quotes_filename = FilePath(a()->sess().dirs().temp_directory(), QUOTES_TXT);
   TextFile file(quotes_filename, "rt");
   if (file.IsOpen()) {
-    string quote_text;
+    std::string quote_text;
     while (file.ReadLine(&quote_text)) {
       const auto slash_n = quote_text.find('\n');
-      if (slash_n != string::npos) {
+      if (slash_n != std::string::npos) {
         quote_text.resize(slash_n);
       }
       if (starts_with(quote_text, "\004""0U")) {
@@ -582,7 +579,7 @@ bool inmsg(MessageEditorData& data) {
     return false;
   }
 
-  vector<string> lin;
+  std::vector<std::string> lin;
   int setanon = 0;
   auto save_message = false;
   auto maxli = GetMaxMessageLinesAllowed();

@@ -19,25 +19,17 @@
 
 #include "core/datetime.h"
 #include "core/file.h"
-#include "core/inifile.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
 #include "sdk/filenames.h"
 #include "sdk/net/networks.h"
+
 #include <chrono>
-#include <map>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
 
-using std::endl;
-using std::map;
-using std::string;
-using std::stringstream;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;

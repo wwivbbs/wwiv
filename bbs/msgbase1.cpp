@@ -52,8 +52,6 @@
 #include <memory>
 #include <string>
 
-using std::string;
-using std::unique_ptr;
 using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::minutes;
@@ -107,7 +105,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     nhorig.length = 32755;
     message_length = nhorig.length - strlen(pPostRecord->title) - 1;
   }
-  unique_ptr<char[]> b1(new char[nhorig.length + 100]);
+  std::unique_ptr<char[]> b1(new char[nhorig.length + 100]);
   strcpy(b1.get(), pPostRecord->title);
   memmove(&(b1[strlen(pPostRecord->title) + 1]), text.c_str(), message_length);
 
@@ -142,7 +140,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
       }
     }
     if (nn1 == a()->net_num()) {
-      const string body(b1.get(), nh.length);
+      const std::string body(b1.get(), nh.length);
       send_net(&nh, list, body, xnp.stype);
     } else {
       gate_msg(&nh, b1.get(), xnp.net_num, xnp.stype, list, netnum);
@@ -360,7 +358,7 @@ std::string grab_user_name(messagerec* msg, const std::string& file_name, int ne
   }
   auto text = o.value();
   const auto cr = text.find_first_of('\r');
-  if (cr == string::npos) {
+  if (cr == std::string::npos) {
     return {};
   }
   text.resize(cr);
@@ -398,8 +396,7 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
 
   iscan1(sub_number);
   auto num_lines = 3;
-  const auto on_disk_last_post = WWIVReadLastRead(sub_number);
-  if (!on_disk_last_post || on_disk_last_post > memory_last_read) {
+  if (const auto on_disk_last_post = WWIVReadLastRead(sub_number); !on_disk_last_post || on_disk_last_post > memory_last_read) {
     const auto old_subnum = a()->current_user_sub_num();
     a()->set_current_user_sub_num(start_subnum);
 

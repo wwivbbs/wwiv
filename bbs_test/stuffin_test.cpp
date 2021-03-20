@@ -24,10 +24,7 @@
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
-using std::cout;
-using std::endl;
-using std::ostringstream;
-using std::string;
+#include <string>
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -51,7 +48,7 @@ public:
 TEST_F(StuffInTest, SimpleCase) {
   const auto actual = stuff_in("foo %1 %c %2 %k", "one", "two", "", "", "");
 
-  ostringstream os;
+  std::ostringstream os;
   os << "foo one " << t(DROPFILE_CHAIN_TXT) << " two " << helper.gfiles() << COMMENT_TXT;
   const auto expected = os.str();
 
@@ -69,7 +66,7 @@ TEST_F(StuffInTest, Empty) {
 //  %1-%5    Specified passed-in parameter
 TEST_F(StuffInTest, AllNumbers) {
   const auto actual = stuff_in("%0%1%2%3%4%5%6%%", "1", "2", "3", "4", "5");
-  const string expected = "12345%";
+  const std::string expected = "12345%";
 
   EXPECT_EQ(expected, actual);
 }
@@ -86,7 +83,7 @@ TEST_F(StuffInTest, AllDropFiles) {
   const auto actual_lower = stuff_in("%a %c %d %e %o %r ", "", "", "", "", "");
   const auto actual_upper = stuff_in("%A %C %D %E %O %R ", "", "", "", "", "");
 
-  ostringstream expected;
+  std::ostringstream expected;
   expected << t("callinfo.bbs") << " " << t(DROPFILE_CHAIN_TXT) << " " << t("dorinfo1.def") << " "
            << t("door32.sys") << " " << t("pcboard.sys") << " " << t("door.sys") << " ";
 
@@ -100,12 +97,12 @@ TEST_F(StuffInTest, AllDropFiles) {
 //  %P       Com port number                   "1"
 TEST_F(StuffInTest, PortAndNode) {
   a()->sess().incom(false);
-  EXPECT_EQ(string("0"), stuff_in("%P", "", "", "", "", ""));
+  EXPECT_EQ(std::string("0"), stuff_in("%P", "", "", "", "", ""));
 
   a()->sess().incom(true);
-  EXPECT_EQ(string("1"), stuff_in("%P", "", "", "", "", ""));
+  EXPECT_EQ(std::string("1"), stuff_in("%P", "", "", "", "", ""));
 
-  EXPECT_EQ(string("42"), stuff_in("%N", "", "", "", "", ""));
+  EXPECT_EQ(std::string("42"), stuff_in("%N", "", "", "", "", ""));
 }
 
 // Param     Description                       Example
@@ -113,10 +110,10 @@ TEST_F(StuffInTest, PortAndNode) {
 //  %M       Modem baud rate                   "14400"
 //  %S       Com port baud rate                "38400"
 TEST_F(StuffInTest, Speeds) {
-  EXPECT_EQ(string("0"), stuff_in("%M", "", "", "", "", ""));
-  EXPECT_EQ(string("0"), stuff_in("%S", "", "", "", "", ""));
+  EXPECT_EQ(std::string("0"), stuff_in("%M", "", "", "", "", ""));
+  EXPECT_EQ(std::string("0"), stuff_in("%S", "", "", "", "", ""));
 
   a()->modem_speed_ = 38400;
-  EXPECT_EQ(string("38400"), stuff_in("%M", "", "", "", "", ""));
-  EXPECT_EQ(string("38400"), stuff_in("%S", "", "", "", "", ""));
+  EXPECT_EQ(std::string("38400"), stuff_in("%M", "", "", "", "", ""));
+  EXPECT_EQ(std::string("38400"), stuff_in("%S", "", "", "", "", ""));
 }

@@ -26,7 +26,6 @@
 #include "bbs/wqscn.h"
 #include "common/com.h"
 #include "common/input.h"
-#include "common/pause.h"
 #include "core/datafile.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -36,7 +35,6 @@
 #include "sdk/net/networks.h"
 #include <string>
 
-using std::string;
 using wwiv::common::InputMode;
 using wwiv::core::DataFile;
 using namespace wwiv::core;
@@ -274,9 +272,8 @@ void modify_dir(int n) {
            << "|#1" << r.path << wwiv::endl
            << wwiv::endl;
       bout << " \b";
-      auto s = bin.input_path(r.path, 79);
-      if (!s.empty()) {
-        const string dir{s};
+      if (auto s = bin.input_path(r.path, 79); !s.empty()) {
+        const std::string dir{s};
         if (!File::Exists(dir)) {
           File::set_current_directory(a()->bbspath());
           if (!File::mkdirs(dir)) {
@@ -353,8 +350,7 @@ void swap_dirs(int dir1, int dir2) {
   }
   const int num_user_records = a()->users()->num_user_records();
 
-  auto* pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
-  if (pTempQScan) {
+  if (auto * pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len())); pTempQScan) {
     for (auto i = 1; i <= num_user_records; i++) {
       read_qscn(i, pTempQScan, true);
       auto* pTempQScan_n = pTempQScan + 1;
@@ -398,8 +394,7 @@ void insert_dir(int n) {
   a()->dirs().insert(n, r);
   const auto num_user_records = a()->users()->num_user_records();
 
-  auto* pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
-  if (pTempQScan) {
+  if (auto * pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len())); pTempQScan) {
     auto* pTempQScan_n = pTempQScan + 1;
 
     const uint32_t m1 = 1L << (n % 32);
@@ -454,7 +449,6 @@ void delete_dir(int n) {
 }
 
 void dlboardedit() {
-  char s[81];
 
   if (!ValidateSysopPassword()) {
     return;
@@ -464,8 +458,8 @@ void dlboardedit() {
   do {
     bout.nl();
     bout << "|#9(|#2Q|#9)uit (|#2D|#9)elete, (|#2I|#9)nsert, (|#2M|#9)odify, (|#2S|#9)wapDirs, (|#2C|#9)onference : ";
-    const auto ch = onek("QSDIMC?");
-    switch (ch) {
+    char s[81];
+    switch (const auto ch = onek("QSDIMC?"); ch) {
     case '?':
       showdirs();
       break;

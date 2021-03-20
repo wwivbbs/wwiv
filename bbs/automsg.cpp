@@ -36,12 +36,7 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
-using std::string;
-using std::stringstream;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -61,7 +56,7 @@ void read_automessage() {
   const auto anonymous = current_status->automessage_anon();
 
   TextFile autoMessageFile(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "rt");
-  string line;
+  std::string line;
   if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine(&line)) {
     bout << "|#3No auto-message.\r\n";
     bout.nl();
@@ -72,7 +67,7 @@ void read_automessage() {
   auto authorName = line;
   if (anonymous) {
     if (a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_post_anony) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "<<< " << line << " >>>";
       authorName = ss.str();
     } else {
@@ -105,13 +100,13 @@ void write_automessage() {
     bout.pausescr();
     return;
   }
-  vector<string> lines;
-  string rollOver;
+  std::vector<std::string> lines;
+  std::string rollOver;
 
   bout << "\r\n|#9Enter auto-message. Max 5 lines. Colors allowed:|#0\r\n\n";
   for (int i = 0; i < 5; i++) {
     bout << "|#7" << i + 1 << ":|#0";
-    string line;
+    std::string line;
     inli(&line, &rollOver, 70);
     StringTrimEnd(&line);
     lines.push_back(line);

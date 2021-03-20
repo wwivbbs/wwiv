@@ -31,9 +31,6 @@
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::string;
 using wwiv::core::CommandLineCommand;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -59,65 +56,65 @@ int dump_file(const std::string& filename) {
       return 1;
     }
 
-    cout << "Header for Packet Index Number: #" << std::setw(5) << std::left << current++ << endl;
-    cout << "=============================================================================="
+    std::cout << "Header for Packet Index Number: #" << std::setw(5) << std::left << current++ << std::endl;
+    std::cout << "=============================================================================="
          << std::endl;
 
-    cout << " destination: " << packet.nh.touser << "@" << packet.nh.tosys << std::endl;
-    cout << "        from: " << packet.nh.fromuser << "@" << packet.nh.fromsys << std::endl;
-    cout << "        type: (" << main_type_name(packet.nh.main_type);
+    std::cout << " destination: " << packet.nh.touser << "@" << packet.nh.tosys << std::endl;
+    std::cout << "        from: " << packet.nh.fromuser << "@" << packet.nh.fromsys << std::endl;
+    std::cout << "        type: (" << main_type_name(packet.nh.main_type);
     if (packet.nh.main_type == main_type_net_info) {
-      cout << "/" << net_info_minor_type_name(packet.nh.minor_type);
+      std::cout << "/" << net_info_minor_type_name(packet.nh.minor_type);
     } else if (packet.nh.main_type > 0) {
-      cout << "/" << packet.nh.minor_type;
+      std::cout << "/" << packet.nh.minor_type;
     }
-    cout << ")" << std::endl;
+    std::cout << ")" << std::endl;
     if (packet.nh.list_len > 0) {
-      cout << "    list_len: " << packet.nh.list_len << std::endl;
+      std::cout << "    list_len: " << packet.nh.list_len << std::endl;
     }
-    cout << "       daten: " << daten_to_wwivnet_time(packet.nh.daten) << std::endl;
-    cout << "      length: " << packet.nh.length << std::endl;
+    std::cout << "       daten: " << daten_to_wwivnet_time(packet.nh.daten) << std::endl;
+    std::cout << "      length: " << packet.nh.length << std::endl;
     if (packet.nh.method > 0) {
-      cout << "compression: de" << packet.nh.method << std::endl;
+      std::cout << "compression: de" << packet.nh.method << std::endl;
     }
 
     if (packet.nh.list_len > 0) {
       // read list of addresses.
-      cout << "System List: ";
+      std::cout << "System List: ";
       for (const auto item : packet.list) {
-        cout << item << " ";
+        std::cout << item << " ";
       }
-      cout << std::endl;
+      std::cout << std::endl;
     }
     if (packet.nh.length) {
-      cout << "=============================================================================="
+      std::cout << "=============================================================================="
            << std::endl;
-      cout << "Raw Packet Text:" << std::endl;
-      cout << "=============================================================================="
+      std::cout << "Raw Packet Text:" << std::endl;
+      std::cout << "=============================================================================="
            << std::endl;
       for (const auto ch : packet.text()) {
-        dump_char(cout, ch);
+        dump_char(std::cout, ch);
       }
-      cout << std::endl << std::endl;
+      std::cout << std::endl << std::endl;
     }
-    cout << "=============================================================================="
+    std::cout << "=============================================================================="
          << std::endl;
   }
 }
 
 std::string DumpPacketCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   dump <filename>" << endl;
-  ss << "Example: dump s1.net" << endl;
+  ss << "Usage:   dump <filename>" << std::endl;
+  ss << "Example: dump s1.net" << std::endl;
   return ss.str();
 }
 
 int DumpPacketCommand::Execute() {
   if (remaining().empty()) {
-    cout << GetUsage() << GetHelp() << endl;
+    std::cout << GetUsage() << GetHelp() << std::endl;
     return 2;
   }
-  const string filename(remaining().front());
+  const std::string filename(remaining().front());
   return dump_file(filename);
 }
 

@@ -16,19 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <string>
 #include "bbs/bbsovl3.h"
 
 #include "bbs/bbs.h"
 #include "common/output.h"
-#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 
-using std::string;
 using namespace wwiv::core;
 
 bool do_sysop_command(int nCommandID) {
-  unsigned int nKeyStroke = 0;
+  unsigned int nKeyStroke;
   bool bNeedToRedraw = false;
 
   switch (nCommandID) {

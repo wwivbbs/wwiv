@@ -19,12 +19,6 @@
 #include "sdk/subxtr.h"
 
 #include "acs/expr.h"
-
-
-#include <cereal/types/vector.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/archives/json.hpp>
-
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/jsonfile.h"
@@ -37,16 +31,11 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/subs_cereal.h"
 #include "sdk/vardec.h"
-#include "sdk/conf/conf_set.h"
-#include "sdk/conf/conf_set_cereal.h"
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
-using cereal::make_nvp;
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -91,7 +80,7 @@ static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, 
 
 bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std::string& line, xtrasubsrec& xsub) {
   std::stringstream stream(line);
-  string net_name;
+  std::string net_name;
   stream >> net_name;
   StringTrim(&net_name);
   const auto net_num = FindNetworkByName(net_networks, net_name);
@@ -101,7 +90,7 @@ bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std
 
   xtrasubsnetrec x;
 
-  string stype;
+  std::string stype;
   stream >> stype;
   StringTrim(&stype);
   x.stype_str = stype;
@@ -137,7 +126,7 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
   xsubs.resize(subs.size());
 
   // Only load the configuration file if it exists.
-  string line;
+  std::string line;
   auto curn = -1;
   while (subs_xtr.ReadLine(&line)) {
     StringTrim(&line);
@@ -172,7 +161,7 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
 }
 
 bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks,
-                    const vector<xtrasubsrec>& xsubs, int max_backups) {
+                    const std::vector<xtrasubsrec>& xsubs, int max_backups) {
   // Backup subs.xtr
   const auto sx = FilePath(datadir, SUBS_XTR);
   backup_file(sx, max_backups);
@@ -202,7 +191,7 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
   return true;
 }
 
-vector<subboardrec_422_t> read_subs(const string &datadir) {
+std::vector<subboardrec_422_t> read_subs(const std::string &datadir) {
   DataFile<subboardrec_422_t> file(FilePath(datadir, SUBS_DAT));
   if (!file) {
     // TODO(rushfan): Figure out why this caused link errors. What's missing?
@@ -216,7 +205,7 @@ vector<subboardrec_422_t> read_subs(const string &datadir) {
   return subboards;
 }
 
-bool write_subs(const string &datadir, const vector<subboardrec_422_t>& subboards) {
+bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards) {
   DataFile<subboardrec_422_t> subsfile(FilePath(datadir, SUBS_DAT),
                                        File::modeBinary | File::modeReadWrite |
                                            File::modeCreateFile | File::modeTruncate,

@@ -47,15 +47,10 @@
 
 #include <chrono>
 #include <cstdint>
-#include <memory>
 #include <string>
 #include <vector>
 
 using namespace std::chrono;
-using std::string;
-using std::to_string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;
@@ -67,7 +62,7 @@ using namespace wwiv::strings;
 constexpr int MAX_CONNECTS = 1000;
 
 /** Returns a full path to exe under the WWIV_DIR */
-static string CreateNetworkBinary(const std::string& exe) {
+static std::string CreateNetworkBinary(const std::string& exe) {
   std::ostringstream ss;
   ss << FilePath(a()->bindir(), exe).string();
 #ifdef _WIN32
@@ -289,7 +284,7 @@ void print_pending_list() {
 }
 
 void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
-              const std::string& subtype_or_author, vector<uint16_t> list, int nFromNetworkNumber) {
+              const std::string& subtype_or_author, std::vector<uint16_t> list, int nFromNetworkNumber) {
   char newname[256], qn[200], on[200];
   char nm[205];
   int i;
@@ -479,8 +474,8 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   a()->localIO()->PutsXYA(23, 15, color,  ncns);
   a()->localIO()->PutsXYA(41, 3, color, fmt::format("{:<30}", csne->name, 30));
   auto* binkp_node = binkp.binkp_session_config_for(csne->sysnum);
-  string hostname = csne->phone;
-  auto speed = StrCat(to_string(csne->speed), " BPS");
+  std::string hostname = csne->phone;
+  auto speed = StrCat(std::to_string(csne->speed), " BPS");
   if (binkp_node != nullptr) {
     // Use host:port is we have it.
     hostname = StrCat(binkp_node->host, ":", binkp_node->port);

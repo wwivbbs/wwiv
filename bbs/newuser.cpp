@@ -64,7 +64,6 @@
 #include <chrono>
 #include <string>
 
-using std::string;
 using std::chrono::milliseconds;
 using wwiv::common::InputMode;
 using namespace wwiv::common;
@@ -85,11 +84,11 @@ void VerifyNewUserPassword();
 void SendNewUserFeedbackIfRequired();
 void ExecNewUserCommand();
 void new_mail();
-bool CheckPasswordComplexity(User* pUser, string& password);
+bool CheckPasswordComplexity(User* pUser, std::string& password);
 
 static void input_phone() {
   bool ok = true;
-  string phoneNumber;
+  std::string phoneNumber;
   do {
     bout.nl();
     bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
@@ -112,7 +111,7 @@ void input_dataphone() {
     bout.nl();
     bout << "|#9Enter your DATA phone no. in the form. \r\n";
     bout << "|#9 ###-###-#### - Press Enter to use [" << a()->user()->voice_phone() << "].\r\n";
-    string data_phone_number = bin.input_phonenumber(a()->user()->data_phone(), 12);
+    std::string data_phone_number = bin.input_phonenumber(a()->user()->data_phone(), 12);
     if (data_phone_number[0] == '\0') {
       data_phone_number = a()->user()->voice_phone();
     }
@@ -127,10 +126,10 @@ void input_dataphone() {
   } while (!ok && !a()->sess().hangup());
 }
 
-static bool check_name(const string& user_name) {
+static bool check_name(const std::string& user_name) {
   if (user_name.length() == 0 || user_name[user_name.length() - 1] == 32 || user_name[0] < 65 ||
-      finduser(user_name) != 0 || user_name.find("@") != string::npos ||
-      user_name.find("#") != string::npos) {
+      finduser(user_name) != 0 || user_name.find("@") != std::string::npos ||
+      user_name.find("#") != std::string::npos) {
     return false;
   }
 
@@ -155,7 +154,7 @@ void input_name() {
     } else {
       bout << "|#3Enter your full name, or your alias.\r\n";
     }
-    string temp_local_name = bin.input_upper(a()->user()->name(), 30);
+    std::string temp_local_name = bin.input_upper(a()->user()->name(), 30);
     ok = check_name(temp_local_name);
     if (ok) {
       a()->user()->set_name(temp_local_name);
@@ -176,7 +175,7 @@ void input_realname() {
     do {
       bout.nl();
       bout << "|#3Enter your FULL real name.\r\n";
-      string temp_local_name = bin.input_proper(a()->user()->real_name(), 30);
+      std::string temp_local_name = bin.input_proper(a()->user()->real_name(), 30);
       if (temp_local_name.empty()) {
         bout.nl();
         bout << "|#6Sorry, you must enter your FULL real name.\r\n";
@@ -194,7 +193,7 @@ static void input_callsign() {
   a()->user()->callsign(s);
 }
 
-bool valid_phone(const string& phoneNumber) {
+bool valid_phone(const std::string& phoneNumber) {
   if (a()->config()->sysconfig_flags() & sysconfig_free_phone) {
     return true;
   }
@@ -219,7 +218,7 @@ bool valid_phone(const string& phoneNumber) {
 }
 
 void input_street() {
-  string street;
+  std::string street;
   do {
     bout.nl();
     bout << "|#3Enter your street address.\r\n";
@@ -236,7 +235,7 @@ void input_street() {
 }
 
 void input_city() {
-  string city;
+  std::string city;
   do {
     bout.nl();
     bout << "|#3Enter your city (i.e San Francisco). \r\n";
@@ -251,7 +250,7 @@ void input_city() {
 }
 
 void input_state() {
-  string state;
+  std::string state;
   do {
     bout.nl();
     if (iequals(a()->user()->country(), "CAN")) {
@@ -271,7 +270,7 @@ void input_state() {
 }
 
 void input_country() {
-  string country;
+  std::string country;
   do {
     bout.nl();
     bout << "|#9Enter your country.  Hit Enter for \"|#1USA|#9\"\r\n";
@@ -285,7 +284,7 @@ void input_country() {
 }
 
 void input_zipcode() {
-  string zipcode;
+  std::string zipcode;
   do {
     int len = 7;
     bout.nl();
@@ -387,7 +386,7 @@ void input_screensize() {
   a()->sess().num_screen_lines(y);
 }
 
-bool CheckPasswordComplexity(User*, string& password) {
+bool CheckPasswordComplexity(User*, std::string& password) {
   if (password.length() < 3) {
     // TODO - the min length should be in wwiv.ini
     return false;
@@ -396,7 +395,7 @@ bool CheckPasswordComplexity(User*, string& password) {
 }
 
 void input_pw(User* pUser) {
-  string password;
+  std::string password;
   bool ok = true;
   do {
     ok = true;

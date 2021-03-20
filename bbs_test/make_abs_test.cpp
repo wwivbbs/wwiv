@@ -16,21 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-#include "bbs_test/bbs_helper.h"
 #include "bbs/make_abs_cmd.h"
+#include "bbs_test/bbs_helper.h"
 #include "core/file.h"
 #include "core/strings.h"
+
+#include "gtest/gtest.h"
 #include <filesystem>
-#include <iostream>
 #include <string>
 
-using std::cout;
-using std::endl;
-using std::string;
-
 using wwiv::strings::StrCat;
-
 using namespace wwiv::core;
 
 class MakeAbsTest : public ::testing::Test {
@@ -46,8 +41,8 @@ protected:
 #ifdef _WIN32
 
 TEST_F(MakeAbsTest, NotUnderRoot) {
-  const string expected = "c:\\windows\\system32\\cmd.exe foo";
-  string cmdline = "cmd foo";
+  const std::string expected = "c:\\windows\\system32\\cmd.exe foo";
+  std::string cmdline = "cmd foo";
   make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
@@ -55,7 +50,7 @@ TEST_F(MakeAbsTest, NotUnderRoot) {
 TEST_F(MakeAbsTest, UnderRoot) {
   const auto foo = helper.files().CreateTempFile("foo.exe", "");
   const auto expected = StrCat(foo.string(), " bar");
-  string cmdline = "foo bar";
+  std::string cmdline = "foo bar";
   make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
@@ -63,7 +58,7 @@ TEST_F(MakeAbsTest, UnderRoot) {
 TEST_F(MakeAbsTest, UnderRoot_WithExt) {
   const auto foo = helper.files().CreateTempFile("foo.exe", "");
   const auto expected = StrCat(foo.string(), " bar");
-  string cmdline = "foo.exe bar";
+  std::string cmdline = "foo.exe bar";
   make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
@@ -89,7 +84,7 @@ TEST_F(MakeAbsTest, UnderRoot_SlashInParam_DoesNotExist) {
 TEST_F(MakeAbsTest, DoesNotExist) {
   const auto foo = helper.files().CreateTempFilePath("foo");
   const auto expected = StrCat(foo.string(), " bar");
-  string cmdline = "foo bar";
+  std::string cmdline = "foo bar";
   make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }

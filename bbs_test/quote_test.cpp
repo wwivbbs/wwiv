@@ -21,12 +21,7 @@
 #include "bbs/bbs.h"
 #include "bbs_test/bbs_helper.h"
 #include "common/quote.h"
-#include <iostream>
-#include <string>
 
-using std::cout;
-using std::endl;
-using std::string;
 using namespace wwiv::common;
 using namespace wwiv::sdk;
 

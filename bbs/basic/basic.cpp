@@ -38,10 +38,7 @@
 #include <mutex>
 #include <optional>
 #include <string>
-#include <vector>
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -144,7 +141,7 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e e, const char* m, c
 }
 
 static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int p, unsigned short row, unsigned short col) {
-  const string file = (f) ? f : "(null)";
+  const std::string file = (f) ? f : "(null)";
   VLOG(2) << "p: " << p << "; f: " << file << "; row: " << row << "; col: " << col;
 
   mb_unrefvar(s);

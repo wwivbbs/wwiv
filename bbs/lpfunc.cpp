@@ -37,8 +37,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -65,7 +63,7 @@ static void undrawfile(int filepos, int filenum) {
   bout.PutsXYSC(4, filepos + first_file_pos(), lp_config.file_num_color, fmt::format("{:>3}|#0", filenum));
 }
 
-static void prep_menu_items(vector<string>* menu_items) {
+static void prep_menu_items(std::vector<std::string>* menu_items) {
   menu_items->push_back("Next");
   menu_items->push_back("Prev");
   menu_items->push_back("Tag");
@@ -117,7 +115,7 @@ int listfiles_plus_function(int type) {
 
   load_listing();
 
-  vector<string> menu_items;
+  std::vector<std::string> menu_items;
   prep_menu_items(&menu_items);
 
   std::vector<uploadsrec> file_recs(a()->user()->GetScreenLines() + 20);
@@ -588,7 +586,7 @@ int compare_criteria(search_record * sr, uploadsrec * ur) {
   // as one unit, that way, if you specify something like 'one & two
   // and one is located in the description and two is in the
   // extended description, then it will properly find the search
-  string buff;
+  std::string buff;
   if (sr->search_extended && ur->mask & mask_extended) {
     buff = a()->current_file_area()->ReadExtendedDescriptionAsString(ur->filename).value_or("");
   }

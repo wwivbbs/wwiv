@@ -55,12 +55,6 @@
 #include <unistd.h>
 #endif // __linux__
 
-using std::cerr;
-using std::clog;
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -79,15 +73,12 @@ extern std::atomic<bool> need_to_reload_config;
 static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
   // Delete telnet/SSH node semaphore files.
   for (auto i = start_node; i <= end_node; i++) {
-    const auto fn = node_file(config, ConnectionType::TELNET, i);
-    if (File::Exists(fn)) {
+    if (const auto fn = node_file(config, ConnectionType::TELNET, i); File::Exists(fn)) {
       File::Remove(fn);
     }
   }
 
-  // Delete any BINKP semaphores.
-  const auto binkp_file = node_file(config, ConnectionType::BINKP, 0);
-  if (File::Exists(binkp_file)) {
+  if (const auto binkp_file = node_file(config, ConnectionType::BINKP, 0); File::Exists(binkp_file)) {
     File::Remove(binkp_file);
   }
 
@@ -207,15 +198,15 @@ int main(int argc, char* argv[]) {
   cmdline.set_no_args_allowed(true);
 
   if (!cmdline.Parse()) {
-    cout << cmdline.GetHelp() << endl;
+    std::cout << cmdline.GetHelp() << std::endl;
     return EXIT_FAILURE;
   }
   if (cmdline.help_requested()) {
-    cout << cmdline.GetHelp() << endl;
+    std::cout << cmdline.GetHelp() << std::endl;
     return EXIT_SUCCESS;
   }
   if (cmdline.barg("version")) {
-    cout << full_version() << std::endl;
+    std::cout << full_version() << std::endl;
     return 0;
   }
 

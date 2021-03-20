@@ -23,11 +23,6 @@
 #include "sdk/fido/nodelist.h"
 #include <type_traits>
 
-using std::cout;
-using std::endl;
-using std::is_standard_layout;
-using std::string;
-
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

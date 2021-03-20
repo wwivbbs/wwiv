@@ -64,7 +64,6 @@ static const int INDENTION = 24;
 
 extern int foundany;
 
-using std::string;
 using wwiv::sdk::files::FileName;
 using namespace wwiv::bbs;
 using namespace wwiv::common;

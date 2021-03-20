@@ -34,7 +34,6 @@
 #include "sdk/usermanager.h"
 #include <string>
 
-using std::string;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -70,7 +69,7 @@ int main_loop(const char* message, char* from_message, char* color_string, char*
               bool& bActionMode, int loc, int num_actions);
 std::vector<int> who_online(int loc);
 void intro(int loc);
-void ch_direct(const string& message, int loc, char* color_string, int node);
+void ch_direct(const std::string& message, int loc, char* color_string, int node);
 void ch_whisper(const std::string&, char* color_string, int node);
 int wusrinst(char* n);
 void secure_ch(int ch);
@@ -140,7 +139,7 @@ static int grabname(const std::string& orig, int channel) {
   return node;
 }
 
-static string StripName(const std::string& in) {
+static std::string StripName(const std::string& in) {
   if (in.empty() || in.front() == ' ') {
     return in;
   }
@@ -151,7 +150,7 @@ static string StripName(const std::string& in) {
 
 // Sets color_string string for current node
 static void get_colors(char* color_string, const IniFile* pIniFile) {
-  const auto s = pIniFile->value<string>(StrCat("C", a()->sess().instance_number()));
+  const auto s = pIniFile->value<std::string>(StrCat("C", a()->sess().instance_number()));
   strcpy(color_string, s.c_str());
 }
 
@@ -450,7 +449,7 @@ void intro(int loc) {
 // This function is called when a > sign is encountered at the beginning of
 //   a line, it's used for directing messages
 
-void ch_direct(const string& message, int loc, char* color_string, int node) {
+void ch_direct(const std::string& message, int loc, char* color_string, int node) {
   if (message.empty()) {
     bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
     return;
@@ -612,7 +611,7 @@ void load_actions(IniFile* pIniFile) {
     for (int ca = 0; ca <= 5; ca++) {
       char rstr[10];
       sprintf(rstr, "%d%c", cn, 65 + ca);
-      string s = pIniFile->value<string>(rstr);
+      std::string s = pIniFile->value<std::string>(rstr);
       const char* ini_value = s.c_str();
       switch (ca) {
       case 0:
@@ -903,13 +902,13 @@ void load_channels(IniFile& ini) {
       sprintf(buffer, "CH%d%c", cn, 65 + ca);
       switch (ca) {
       case 0:
-        to_char_array(channels[cn].name, ini.value<string>(buffer));
+        to_char_array(channels[cn].name, ini.value<std::string>(buffer));
         break;
       case 1:
         channels[cn].sl = ini.value<int>(buffer);
         break;
       case 2: {
-        string temp = ini.value<string>(buffer);
+        std::string temp = ini.value<std::string>(buffer);
         if (temp.empty() || temp.front() == '0') {
           channels[cn].ar = 0;
         } else {
@@ -917,7 +916,7 @@ void load_channels(IniFile& ini) {
         }
       } break;
       case 3: {
-        string temp = ini.value<string>(buffer);
+        std::string temp = ini.value<std::string>(buffer);
         if (!temp.empty()) {
           channels[cn].sex = temp.front();
         }

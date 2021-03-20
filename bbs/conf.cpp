@@ -40,7 +40,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::sdk;
@@ -133,7 +132,7 @@ conf_info_t get_conf_info(ConferenceType conftype) {
 void jump_conf(ConferenceType conftype) {
   bout.litebar(StrCat(a()->config()->system_name(), " Conference Selection"));
   auto info = get_conf_info(conftype);
-  string allowable = " ";
+  std::string allowable = " ";
   bout.nl();
   for (const auto& uc : info.uc) {
     if (bin.checka())

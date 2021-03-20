@@ -23,20 +23,10 @@
 #include "sdk/instance.h"
 #include "sdk/usermanager.h"
 
-#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <vector>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -107,7 +97,7 @@ public:
 };
 
 bool UsersCommand::AddSubCommands() {
-  add(make_unique<UsersAsvCommand>());
+  add(std::make_unique<UsersAsvCommand>());
   return true;
 }
 

@@ -23,20 +23,17 @@
 #include "bbs/external_edit_qbbs.h"
 #include "bbs/external_edit_wwiv.h"
 #include "bbs/make_abs_cmd.h"
-#include "common/message_editor_data.h"
-#include "common/pause.h"
 #include "bbs/stuffin.h"
 #include "bbs/utility.h"
+#include "common/message_editor_data.h"
 #include "common/output.h"
-#include "fsed/fsed.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "sdk/names.h"
+#include "fsed/fsed.h"
 #include <string>
 
-using std::string;
 using wwiv::core::ScopeExit;
 using namespace wwiv::common;
 using namespace wwiv::core;
@@ -44,10 +41,10 @@ using namespace wwiv::strings;
 
 /////////////////////////////////////////////////////////////////////////////
 // Actually launch the editor. This won't create any control files, etc.
-static bool external_edit_internal(const string& edit_filename, const std::filesystem::path& working_directory,
+static bool external_edit_internal(const std::string& edit_filename, const std::filesystem::path& working_directory,
                                    const editorrec& editor, int numlines) {
 
-  string editorCommand = a()->sess().incom() ? editor.filename : editor.filenamecon;
+  std::string editorCommand = a()->sess().incom() ? editor.filename : editor.filenamecon;
   if (editorCommand.empty()) {
     bout << "You can't use that full screen editor. (eti)" << wwiv::endl << wwiv::endl;
     bout.pausescr();
@@ -119,7 +116,7 @@ bool DoExternalMessageEditor(MessageEditorData& data, int maxli, int* setanon) {
   return eme->Run();
 }
 
-bool external_text_edit(const string& edit_filename, const std::filesystem::path& working_directory,
+bool external_text_edit(const std::string& edit_filename, const std::filesystem::path& working_directory,
                         int numlines, int flags) {
   bout.nl();
   const auto editor_number = a()->user()->GetDefaultEditor() - 1;

@@ -18,7 +18,6 @@
 #include "sdk/net/callout.h"
 
 #include "core/file.h"
-#include "core/inifile.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -28,16 +27,9 @@
 #include <iomanip>
 #include <filesystem>
 #include <map>
-#include <memory>
 #include <sstream>
 #include <string>
 
-using std::endl;
-using std::map;
-using std::string;
-using std::stringstream;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
@@ -45,7 +37,7 @@ using namespace wwiv::sdk;
 namespace wwiv::sdk {
 
 // [[ VisibleForTesting ]]
-bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
+bool ParseCalloutNetLine(const std::string& ss, net_call_out_rec* con) {
   if (ss.empty() || ss[0] != '@') {
     // skip empty lines and those not starting with @.
     return false;
@@ -56,7 +48,7 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
   for (auto iter = ss.cbegin(); iter != ss.cend(); ++iter) {
     switch (*iter) {
     case '@': {
-      con->sysnum = to_number<decltype(con->sysnum)>(string(++iter, ss.end()));
+      con->sysnum = to_number<decltype(con->sysnum)>(std::string(++iter, ss.end()));
     } break;
     case '&':
       con->options |= unused_options_sendback;
@@ -79,10 +71,10 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
       //auto unused_times_per_day = to_number<int>(string(++iter, ss.end()));
     } break;
     case '%': {
-      con->macnum = to_number<decltype(con->macnum)>(string(++iter, ss.end()));
+      con->macnum = to_number<decltype(con->macnum)>(std::string(++iter, ss.end()));
     } break;
     case '/': {
-      con->call_every_x_minutes = to_number<decltype(con->call_every_x_minutes)>(string(++iter, ss.end()));
+      con->call_every_x_minutes = to_number<decltype(con->call_every_x_minutes)>(std::string(++iter, ss.end()));
       if (con->call_every_x_minutes > 0) {
         // Let's set a minimum of 10 minutes in between calls.
         con->call_every_x_minutes =
@@ -90,13 +82,13 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
       }
     } break;
     case '(': {
-      con->min_hr = to_number<decltype(con->min_hr)>(string(++iter, ss.end()));
+      con->min_hr = to_number<decltype(con->min_hr)>(std::string(++iter, ss.end()));
     } break;
     case ')': {
-      con->max_hr = to_number<decltype(con->max_hr)>(string(++iter, ss.end()));
+      con->max_hr = to_number<decltype(con->max_hr)>(std::string(++iter, ss.end()));
     } break;
     case '|': {
-      con->min_k = std::max<uint16_t>(1, to_number<uint16_t>(string(++iter, ss.end())));
+      con->min_k = std::max<uint16_t>(1, to_number<uint16_t>(std::string(++iter, ss.end())));
     } break;
     case ';':
       con->options |= unused_options_compress;
@@ -115,7 +107,7 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
       break;
     case '\"': {
       ++iter; // skip past first "
-      string password;
+      std::string password;
       while (iter != ss.end() && *iter != '\"') {
         password.push_back(*iter++);
       }
@@ -200,7 +192,7 @@ static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_m
     return false;
   }
   // A line will be of the format @node host:port [password].
-  string line;
+  std::string line;
   while (node_config_file.ReadLine(&line)) {
     StringTrim(&line);
     net_call_out_rec node_config{};

@@ -23,20 +23,10 @@
 #include "core/stl.h"
 #include "core/strings.h"
 
-#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <vector>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -50,11 +40,11 @@ constexpr int INST_FLAGS_MSG_AVAIL = 0x0002;  // Available for inst messages
 constexpr int INST_FLAGS_INVIS = 0x0004;  // For invisibility
 
 
-class InstanceDumpCommand : public UtilCommand {
+class InstanceDumpCommand final : public UtilCommand {
 public:
   InstanceDumpCommand(): UtilCommand("dump", "Displays WWIV instance information.") {}
 
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage: " << std::endl << std::endl;
     ss << "  dump : Displays instance information." << std::endl << std::endl;
@@ -75,7 +65,7 @@ public:
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     Instances instances(*config()->config());
     if (!instances) {
       std::cout << "Unable to read Instance information.";
@@ -98,14 +88,14 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     return true;
   }
 
 };
 
 bool InstanceCommand::AddSubCommands() {
-  add(make_unique<InstanceDumpCommand>());
+  add(std::make_unique<InstanceDumpCommand>());
   return true;
 }
 

@@ -19,16 +19,12 @@
 
 #include "core/file.h"
 #include "core/log.h"
-#include "core/os.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/fido/fido_address.h"
 #include <map>
 #include <set>
 #include <string>
-
-using std::set;
-using std::string;
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -45,7 +41,7 @@ std::set<FidoAddress> ReadFidoSubcriberFile(const std::filesystem::path& filenam
   }
 
   std::set<FidoAddress> subscribers;
-  string line;
+  std::string line;
   while (file.ReadLine(&line)) {
     StringTrim(&line);
     if (line.empty()) {
@@ -69,11 +65,10 @@ bool ReadSubcriberFile(const std::filesystem::path& filename, std::set<uint16_t>
     return false;
   }
 
-  string line;
+  std::string line;
   while (file.ReadLine(&line)) {
     StringTrim(&line);
-    auto s = to_number<uint16_t>(line);
-    if (s > 0) {
+    if (auto s = to_number<uint16_t>(line); s > 0) {
       subscribers.insert(s);
     }
   }

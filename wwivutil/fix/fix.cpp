@@ -18,31 +18,20 @@
 #include "wwivutil/fix/fix.h"
 
 #include "core/command_line.h"
-#include "core/file.h"
 #include "sdk/config.h"
 #include "wwivutil/fix/dirs.h"
 #include "wwivutil/fix/users.h"
 
-#include <iomanip>
-#include <iostream>
 #include <memory>
-#include <string>
-#include <vector>
 
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 
 namespace wwiv::wwivutil {
 
 bool FixCommand::AddSubCommands() {
-  add(make_unique<FixUsersCommand>());
-  add(make_unique<FixDirectoriesCommand>());
+  add(std::make_unique<FixUsersCommand>());
+  add(std::make_unique<FixDirectoriesCommand>());
 
   return true;
 }

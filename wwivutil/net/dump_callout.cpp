@@ -28,10 +28,6 @@
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -39,8 +35,8 @@ namespace wwiv::wwivutil {
 
 std::string DumpCalloutCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   callout" << endl;
-  ss << "Example: callout" << endl;
+  ss << "Usage:   callout" << std::endl;
+  ss << "Example: callout" << std::endl;
   return ss.str();
 }
 
@@ -51,7 +47,7 @@ int DumpCalloutCommand::Execute() {
     return 1;
   }
 
-  map<const string, Callout> callouts;
+  std::map<const std::string, Callout> callouts;
   for (const auto& net : networks.networks()) {
     auto lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
@@ -59,9 +55,9 @@ int DumpCalloutCommand::Execute() {
   }
 
   for (const auto& c : callouts) {
-    cout << "callout.net information: : " << c.first << endl;
-    cout << "===========================================================" << endl;
-    cout << c.second.ToString() << endl;
+    std::cout << "callout.net information: : " << c.first << std::endl;
+    std::cout << "===========================================================" << std::endl;
+    std::cout << c.second.ToString() << std::endl;
   }
 
   return 0;

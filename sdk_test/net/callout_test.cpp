@@ -22,7 +22,6 @@
 #include "sdk/net/callout.h"
 #include <string>
 
-using std::string;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -30,14 +29,14 @@ class CalloutTest : public testing::Test {};
 
 TEST_F(CalloutTest, SimpleLine) {
   net_call_out_rec con;
-  const string line = "@1234 &";
+  const std::string line = "@1234 &";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
 }
 
 TEST_F(CalloutTest, WithPassword) {
   net_call_out_rec con;
-  const string line = "@1234 &* \"pass\"";
+  const std::string line = "@1234 &* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
@@ -47,7 +46,7 @@ TEST_F(CalloutTest, WithPassword) {
 
 TEST_F(CalloutTest, WithPassword_Bang) {
   net_call_out_rec con;
-  const string line = "@1 & \"pass!\"";
+  const std::string line = "@1 & \"pass!\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_sendback);
@@ -56,7 +55,7 @@ TEST_F(CalloutTest, WithPassword_Bang) {
 
 TEST_F(CalloutTest, OncePerDay) {
   net_call_out_rec con;
-  const string line = "@1234 &!24* \"pass\"";
+  const std::string line = "@1234 &!24* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
@@ -66,7 +65,7 @@ TEST_F(CalloutTest, OncePerDay) {
 
 TEST_F(CalloutTest, LotsOfOptions) {
   net_call_out_rec con;
-  const string line = "@1234 &!24%21/60* \"pass\"";
+  const std::string line = "@1234 &!24%21/60* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
@@ -78,7 +77,7 @@ TEST_F(CalloutTest, LotsOfOptions) {
 
 TEST_F(CalloutTest, MinMax) {
   net_call_out_rec con;
-  const string line = "@1234 &(8)12* \"pass\"";
+  const std::string line = "@1234 &(8)12* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
@@ -90,7 +89,7 @@ TEST_F(CalloutTest, MinMax) {
 
 TEST_F(CalloutTest, EveryWeekWith10k) {
   net_call_out_rec con;
-  const string line = "@1234 &*|10 \"pass\"";
+  const std::string line = "@1234 &*|10 \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
@@ -102,14 +101,14 @@ TEST_F(CalloutTest, EveryWeekWith10k) {
 TEST_F(CalloutTest, InvalidLine) {
   net_call_out_rec con;
 
-  const string line = "*@1234 &&";
+  const std::string line = "*@1234 &&";
   ASSERT_FALSE(ParseCalloutNetLine(line, &con));
 }
 
 TEST_F(CalloutTest, NodeConfig) {
   FileHelper files;
   EXPECT_TRUE(files.Mkdir("network"));
-  const string line("@1 \"foo\"");
+  const std::string line("@1 \"foo\"");
   files.CreateTempFile("network/callout.net", line);
   net_networks_rec net{};
   net.name = "Dummy Network";

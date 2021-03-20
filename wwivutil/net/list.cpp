@@ -23,14 +23,9 @@
 #include "sdk/net/packets.h"
 #include "sdk/net/networks.h"
 #include <iostream>
-#include <map>
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
@@ -40,7 +35,7 @@ namespace wwiv::wwivutil {
 
 std::string NetListCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   list " << endl;
+  ss << "Usage:   list " << std::endl;
   return ss.str();
 }
 
@@ -58,7 +53,7 @@ int NetListCommand::Execute() {
   auto nn = 0;
   for (const auto& net : networks.networks()) {
     const auto s = fmt::format(".{:<2} {:<17}({})", nn++, net.name, net.dir.string());
-    cout << s << std::endl;
+    std::cout << s << std::endl;
   }
   return 0;
 }

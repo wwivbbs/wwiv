@@ -22,18 +22,16 @@
 #include "bbs/bbs.h"
 #include "bbs/dropfile.h"
 #include "bbs/utility.h"
+#include "common/context.h"
 #include "common/remote_io.h"
 #include "core/file.h"
 #include "core/strings.h"
-#include "common/context.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -81,8 +79,8 @@ static unsigned int GetTimeLeft() {
  *
  * \endverbatim 
 */
-std::string stuff_in(const string& commandline, const string& arg1, const string& arg2,
-                     const string& arg3, const string& arg4, const string& arg5) {
+std::string stuff_in(const std::string& commandline, const std::string& arg1, const std::string& arg2,
+                     const std::string& arg3, const std::string& arg4, const std::string& arg5) {
   std::vector<std::string> flags = {arg1, arg2, arg3, arg4, arg5};
 
   auto iter = begin(commandline);
