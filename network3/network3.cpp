@@ -52,17 +52,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <map>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
-
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
@@ -74,7 +66,7 @@ using namespace wwiv::stl;
 using namespace wwiv::os;
 
 static void ShowHelp(const NetworkCommandLine& cmdline) {
-  cout << cmdline.GetHelp() << endl;
+  std::cout << cmdline.GetHelp() << std::endl;
   exit(1);
 }
 
@@ -229,14 +221,14 @@ static uint16_t get_network_cordinator(const BbsListNet& b) {
 static bool add_feedback_general_info(
     const Callout& callout, 
     const net_networks_rec& net,
-    const vector<net_system_list_rec>& bbsdata_data,
+    const std::vector<net_system_list_rec>& bbsdata_data,
     std::ostringstream& text) {
 
   uint16_t nc = 0;
   uint16_t gc = 0;
   uint16_t ac = 0;
-  map<int, int> hops_to_count;
-  map<int, int> system_to_route_count;
+  std::map<int, int> hops_to_count;
+  std::map<int, int> system_to_route_count;
   int total_hops = 0;
   for (const auto& d : bbsdata_data) {
     if (d.other & other_net_coord) {
@@ -305,7 +297,7 @@ void update_timestamps(const std::filesystem::path& dir) {
 
 static void write_bbsdata_reg_file(const BbsListNet& b, const std::filesystem::path& dir) {
   LOG(INFO) << "Writing BBSDATA.REG...";
-  vector<int32_t> bbsdata_reg_data;
+  std::vector<int32_t> bbsdata_reg_data;
   const auto& reg = b.reg_number();
   for (const auto& [node, _] : b.node_config()) {
     bbsdata_reg_data.push_back(at(reg, node));
@@ -315,7 +307,7 @@ static void write_bbsdata_reg_file(const BbsListNet& b, const std::filesystem::p
   bbsdata_reg_file.WriteVector(bbsdata_reg_data);
 }
 
-static int write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data, 
+static int write_bbsdata_files(const std::vector<net_system_list_rec>& bbsdata_data, 
   const std::filesystem::path& dir) {
   {
     LOG(INFO) << "Writing bbsdata.net...";
@@ -328,7 +320,7 @@ static int write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data,
   auto num_reachable = 0;
   {
     LOG(INFO) << "Writing bbsdata.ind...";
-    vector<uint16_t> bbsdata_ind_data;
+    std::vector<uint16_t> bbsdata_ind_data;
     for (const auto& n : bbsdata_data) {
       const auto is_reachable = n.forsys != WWIVNET_NO_NODE;
       if (is_reachable) {
@@ -342,7 +334,7 @@ static int write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data,
   }
   {
     LOG(INFO) << "Writing bbsdata.rou...";
-    vector<uint16_t> bbsdata_rou_data;
+    std::vector<uint16_t> bbsdata_rou_data;
     for (const auto& n : bbsdata_data) {
       bbsdata_rou_data.push_back(n.forsys);
     }
@@ -354,7 +346,7 @@ static int write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data,
   return num_reachable;
 }
 
-static void update_net_ver_status_dat(const string& datadir) {
+static void update_net_ver_status_dat(const std::string& datadir) {
   statusrec_t statusrec{};
   DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT),
                              File::modeBinary | File::modeReadWrite);
@@ -373,7 +365,7 @@ static void update_net_ver_status_dat(const string& datadir) {
   file.Write(0, &statusrec);
 }
 
-static void update_filechange_status_dat(const string& datadir) {
+static void update_filechange_status_dat(const std::string& datadir) {
   StatusMgr sm(datadir);
   sm.Run([=](Status& s)
   {
@@ -429,7 +421,7 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
   add_feedback_header(net.dir, text);
   LOG(INFO) << "Sending Feedback.";
 
-  vector<net_system_list_rec> bbsdata_data;
+  std::vector<net_system_list_rec> bbsdata_data;
   auto phone = net_cmdline.config().system_phone();
   {
     net_system_list_rec n1{};
@@ -467,7 +459,7 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
 
   // create bbsdata.reg
   {
-    vector<int32_t> bbsdata_reg_data;
+    std::vector<int32_t> bbsdata_reg_data;
     bbsdata_reg_data.push_back(net_cmdline.config().wwiv_reg_number());
     bbsdata_reg_data.push_back(0);
     DataFile<int32_t> bbsdata_reg_file(FilePath(net.dir, BBSDATA_REG),
@@ -561,7 +553,7 @@ static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
   const auto is_nc = (net.sysnum == nc);
   LOG(INFO) << "I am the nc, my node # is @" << net.sysnum;
 
-  vector<net_system_list_rec> bbsdata_data;
+  std::vector<net_system_list_rec> bbsdata_data;
   for (const auto& [_, n] : b.node_config()) {
     bbsdata_data.push_back(n);
   }

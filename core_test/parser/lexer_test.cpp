@@ -20,9 +20,7 @@
 
 #include "core/parser/lexer.h"
 #include <string>
-#include <iostream>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::core::parser;
 

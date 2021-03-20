@@ -18,24 +18,17 @@
 /**************************************************************************/
 #include "core/strings.h"
 
-
 #include "stl.h"
 #include "core/log.h"
 #include "fmt/format.h"
+
 #include <algorithm>
 #include <cctype>
 #include <cstring>
 #include <iostream>
-#include <limits>
-#include <sstream>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
-using std::numeric_limits;
-using std::stoi;
-using std::string;
-using std::out_of_range;
 
 const unsigned char* translate_letters[] = {
     reinterpret_cast<const unsigned char *>("abcdefghijklmnopqrstuvwxyz�������"),
@@ -44,11 +37,6 @@ const unsigned char* translate_letters[] = {
 };
 const char* DELIMS_WHITE = " \t\r\n";
 const char* DELIMS_CRLF = "\r\n";
-
-using std::ostringstream;
-using std::string;
-using std::stringstream;
-using std::vector;
 
 namespace wwiv::strings {
 
@@ -98,33 +86,34 @@ int StringCompare(const char* str1, const char* str2) {
   return strcmp(str1, str2);
 }
 
-const string& StringReplace(string* orig, const string& old_string, const string& new_string) {
+const std::string& StringReplace(std::string* orig, const std::string& old_string,
+                                 const std::string& new_string) {
   auto pos = orig->find(old_string, 0);
-  while (pos != string::npos) {
+  while (pos != std::string::npos) {
     orig->replace(pos, old_string.length(), new_string);
     pos = orig->find(old_string, pos + new_string.length());
   }
   return *orig;
 }
 
-vector<string> SplitString(const string& original_string, const string& delims) {
+std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims) {
   return SplitString(original_string, delims, true);
 }
 
-vector<string> SplitString(const string& original_string, const string& delims, bool skip_empty) {
-  vector<string> v;
+std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims, bool skip_empty) {
+  std::vector<std::string> v;
   SplitString(original_string, delims, skip_empty, &v);
   return v;
 }
 
-void SplitString(const string& original_string, const string& delims, vector<string>* out) {
+void SplitString(const std::string& original_string, const std::string& delims, std::vector<std::string>* out) {
   SplitString(original_string, delims, true, out);
 }
 
-void SplitString(const string& original_string, const string& delims, bool skip_empty,
-                 vector<string>* out) {
+void SplitString(const std::string& original_string, const std::string& delims, bool skip_empty,
+                 std::vector<std::string>* out) {
   auto s(original_string);
-  for (auto found = s.find_first_of(delims); found != string::npos;
+  for (auto found = s.find_first_of(delims); found != std::string::npos;
        s = s.substr(found + 1), found = s.find_first_of(delims)) {
     if (found > 0) {
       out->push_back(s.substr(0, found));
@@ -172,7 +161,7 @@ bool ends_with(const std::string& input, const std::string& match) {
  * @param bg the character to use as the background
  * @param just_type one of the following: LEFT, RIGHT
  */
-void StringJustify(string* s, int length, char bg, JustificationType just_type) {
+void StringJustify(std::string* s, int length, char bg, JustificationType just_type) {
   if (ssize(*s) > length) {
     *s = s->substr(0, length);
     return;
@@ -189,7 +178,7 @@ void StringJustify(string* s, int length, char bg, JustificationType just_type) 
   break;
   case JustificationType::RIGHT: {
     const auto tmp(*s);
-    *s = StrCat(string(delta, bg), tmp);
+    *s = StrCat(std::string(delta, bg), tmp);
   }
   break;
   }
@@ -202,7 +191,7 @@ void StringJustify(string* s, int length, char bg, JustificationType just_type) 
  * @param str the string from which to remove spaces
  */
 void StringTrim(char* str) {
-  string s(str);
+  std::string s(str);
   StringTrim(&s);
   strcpy(str, s.c_str());
 }
@@ -212,7 +201,7 @@ void StringTrim(char* str) {
 *
 * @param s the string from which to remove spaces
 */
-void StringTrim(string* s) {
+void StringTrim(std::string* s) {
   auto pos = s->find_first_not_of(DELIMS_WHITE);
   s->erase(0, pos);
 
@@ -225,7 +214,7 @@ void StringTrim(string* s) {
 *
 * @param s the string from which to remove spaces
 */
-void StringTrimCRLF(string* s) {
+void StringTrimCRLF(std::string* s) {
   auto pos = s->find_first_not_of(DELIMS_CRLF);
   s->erase(0, pos);
 
@@ -240,7 +229,7 @@ void StringTrimCRLF(string* s) {
 * @param orig the string from which to remove spaces
 * @return orig with spaces removed.
 */
-string StringTrim(const string& orig) {
+std::string StringTrim(const std::string& orig) {
   if (orig.empty()) {
     return {};
   }
@@ -253,12 +242,12 @@ string StringTrim(const string& orig) {
   return s;
 }
 
-void StringTrimBegin(string* s) {
+void StringTrimBegin(std::string* s) {
   const auto pos = s->find_first_not_of(DELIMS_WHITE);
   s->erase(0, pos);
 }
 
-void StringTrimEnd(string* s) {
+void StringTrimEnd(std::string* s) {
   const auto pos = s->find_last_not_of(DELIMS_WHITE);
   s->erase(pos + 1);
 }
@@ -268,16 +257,16 @@ void StringTrimEnd(string* s) {
  * @param str The string from which to remove the trailing whitespace
  */
 void StringTrimEnd(char* str) {
-  string s(str);
+  std::string s(str);
   StringTrimEnd(&s);
   strcpy(str, s.c_str());
 }
 
-void StringUpperCase(string* s) {
+void StringUpperCase(std::string* s) {
   std::transform(std::begin(*s), std::end(*s), std::begin(*s), to_upper_case<char>);
 }
 
-string ToStringUpperCase(const string& orig) {
+std::string ToStringUpperCase(const std::string& orig) {
   auto s(orig);
   StringUpperCase(&s);
   return s;
@@ -287,12 +276,12 @@ static char tolower_char(int c) {
   return static_cast<char>(tolower(c));
 }
 
-void StringLowerCase(string* s) {
+void StringLowerCase(std::string* s) {
   std::transform(std::begin(*s), std::end(*s), std::begin(*s), tolower_char);
 }
 
-string ToStringLowerCase(const string& orig) {
-  string s(orig);
+std::string ToStringLowerCase(const std::string& orig) {
+  std::string s(orig);
   StringLowerCase(&s);
   return s;
 }
@@ -323,7 +312,7 @@ char* StringRemoveChar(const char* str, char ch) {
 }
 
 std::string JoinStrings(const std::vector<std::string>& lines, const std::string& end_of_line) {
-  string out;
+  std::string out;
   for (const auto& line : lines) {
     out += line;
     out += end_of_line;
@@ -411,14 +400,14 @@ bool wwiv::strings::contains(const std::string& haystack, const std::string_view
 char* stripcolors(const char* str) {
   CHECK(str);
   static char s[255];
-  const auto result = stripcolors(string(str));
+  const auto result = stripcolors(std::string(str));
   strcpy(s, result.c_str());
   return s;
 }
 
 template <typename I>
 static bool is_ansi_seq_start(I& i, const std::string& orig) {
-  auto left = string(i, end(orig));
+  auto left = std::string(i, end(orig));
   if (left.size() < 3) {
     return false;
   }
@@ -434,11 +423,11 @@ static bool is_ansi_seq_start(I& i, const std::string& orig) {
  * @param orig The text from which to remove the color codes.
  * @return A new string without the color codes
  */
-string stripcolors(const string& orig) {
-  string out;
+std::string stripcolors(const std::string& orig) {
+  std::string out;
   for (auto i = begin(orig); i != end(orig); ++i) {
     if (*i == 27 && (i + 1) != end(orig)) {
-      auto left = string(i, end(orig));
+      auto left = std::string(i, end(orig));
       if (!is_ansi_seq_start(i, orig)) {
         out.push_back(*i);
         continue;
@@ -478,8 +467,7 @@ string stripcolors(const string& orig) {
  * @return The uppercase version of the character
  */
 unsigned char upcase(unsigned char ch) {
-  const auto* ss = reinterpret_cast<const unsigned char*>(strchr(reinterpret_cast<const char*>(translate_letters[0]), ch));
-  if (ss) {
+  if (const auto * ss = reinterpret_cast<const unsigned char*>(strchr(reinterpret_cast<const char*>(translate_letters[0]), ch)); ss) {
     ch = translate_letters[1][ss - translate_letters[0]];
   }
   return ch;
@@ -491,9 +479,7 @@ unsigned char upcase(unsigned char ch) {
  * @return The lowercase version of the character
  */
 unsigned char locase(unsigned char ch) {
-  // ReSharper disable once CppCStyleCast
-  auto* ss = (unsigned char*)strchr((const char*)translate_letters[1], ch);
-  if (ss) {
+  if (auto * ss = (unsigned char*)strchr((const char*)translate_letters[1], ch); ss) {
     ch = translate_letters[0][ss - translate_letters[1]];
   }
   return ch;
@@ -514,13 +500,13 @@ void properize(char* text) {
   }
 }
 
-string properize(const string& text) {
+std::string properize(const std::string& text) {
   if (text.empty()) {
-    return string("");
+    return std::string("");
   }
 
   char last = ' ';
-  ostringstream os;
+  std::ostringstream os;
   for (auto ch : text) {
     if (last == ' ' || last == '-' || last == '.') {
       os << wwiv::strings::to_upper_case<char>(ch);

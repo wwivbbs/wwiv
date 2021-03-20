@@ -34,8 +34,6 @@
 #include <unordered_map>
 #include <utility>
 
-using std::ofstream;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -154,7 +152,7 @@ void Logger::StartupLog(int argc, char* argv[]) {
                << wwiv_compile_datetime() << ")";
   LOG(STARTUP) << config_.exit_filename << " starting at " << dt.to_string();
   if (argc > 1) {
-    string cmdline;
+    std::string cmdline;
     for (auto i = 1; i < argc; i++) {
       cmdline += argv[i];
       cmdline += " ";
@@ -182,8 +180,7 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
   const auto l = cmdline.arg("logdir");
   auto logdir = cmdline.logdir();
   if (l.is_default() && c.logdir_fn_) {
-    const auto logdir_from_fn = c.logdir_fn_(cmdline.bbsdir());
-    if (!logdir_from_fn.empty()) {
+    if (const auto logdir_from_fn = c.logdir_fn_(cmdline.bbsdir()); !logdir_from_fn.empty()) {
       logdir = logdir_from_fn;
     }
   }
@@ -191,12 +188,11 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
   // Set --v from commandline
   config_.cmdline_verbosity = cmdline.iarg("v");
 
-  string filename(argv[0]);
+  std::string filename(argv[0]);
   if (ends_with(filename, ".exe") || ends_with(filename, ".EXE")) {
     filename = filename.substr(0, filename.size() - 4);
   }
-  const auto last_slash = filename.rfind(File::pathSeparatorChar);
-  if (last_slash != string::npos) {
+  if (const auto last_slash = filename.rfind(File::pathSeparatorChar); last_slash != std::string::npos) {
     filename = filename.substr(last_slash + 1);
   }
   config_.log_filename = FilePath(logdir, StrCat(filename, ".log")).string();

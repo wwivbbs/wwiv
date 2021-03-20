@@ -18,15 +18,9 @@
 /**************************************************************************/
 #include "core/clock.h"
 
-#include <chrono>
-#include <string>
-
 #include "core/datetime.h"
 #include "core/strings.h"
 
-using std::string;
-
-using namespace std::chrono;
 using namespace wwiv::strings;
 
 namespace wwiv::core {

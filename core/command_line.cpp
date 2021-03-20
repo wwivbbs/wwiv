@@ -33,14 +33,6 @@
 #include <utility>
 #include <vector>
 
-using std::clog;
-using std::cout;
-using std::endl;
-using std::left;
-using std::map;
-using std::setw;
-using std::string;
-using std::vector;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 using namespace wwiv::os;
@@ -95,19 +87,19 @@ CommandLine::CommandLine(int argc, char** argv, const std::string& dot_argument)
 bool CommandLine::Parse() {
   try {
     if (!ParseImpl()) {
-      clog << "Unable to parse command line." << endl;
+      std::clog << "Unable to parse command line." << std::endl;
       return false;
     }
   } catch (const unknown_argument_error& e) {
-    clog << "Unable to parse command line." << endl;
-    clog << e.what() << endl;
+    std::clog << "Unable to parse command line." << std::endl;
+    std::clog << e.what() << std::endl;
     return false;
   }
 
   if (raw_args_.size() <= 1 && !no_args_allowed()) {
-    clog << "No command line arguments specified." << endl;
-    cout << GetUsage();
-    cout << GetHelp();
+    std::clog << "No command line arguments specified." << std::endl;
+    std::cout << GetUsage();
+    std::cout << GetHelp();
     return false;
   }
 
@@ -168,7 +160,7 @@ bool CommandLineCommand::contains_arg(const std::string& name) const noexcept {
 
 CommandLineValue CommandLineCommand::arg(const std::string& name) const {
   if (!contains(args_, name)) {
-    VLOG(1) << "Unknown argument name: " << name << endl;
+    VLOG(1) << "Unknown argument name: " << name << std::endl;
     return CommandLineValue("", true);
   }
   return at(args_, name);
@@ -198,7 +190,7 @@ static bool is_shortarg_start(char c) {
 
 int CommandLineCommand::Parse(int start_pos) {
   for (auto i = start_pos; i < wwiv::stl::ssize(raw_args_); i++) {
-    const string& s{raw_args_[i]};
+    const std::string& s{raw_args_[i]};
     if (s.empty()) {
       continue;
     }
@@ -277,16 +269,16 @@ std::string CommandLineCommand::ToString() const {
 int CommandLineCommand::Execute() {
   if (help_requested()) {
     // Help was selected.
-    cout << GetUsage();
-    cout << GetHelp();
+    std::cout << GetUsage();
+    std::cout << GetHelp();
     return 0;
   }
 
   if (command_ != nullptr) {
     // We have sub command, so execute that.
     if (command_->help_requested()) {
-      clog << command_->GetUsage();
-      clog << command_->GetHelp();
+      std::clog << command_->GetUsage();
+      std::clog << command_->GetHelp();
       return 0;
     }
     return command_->Execute();
@@ -295,17 +287,17 @@ int CommandLineCommand::Execute() {
   if (name_.empty() || !remaining_.empty()) {
     // If name is empty, we're at the root command and
     // no valid command was specified.
-    clog << "Invalid command specified: ";
+    std::clog << "Invalid command specified: ";
     for (const auto& a : remaining_) {
-      clog << a << " ";
+      std::clog << a << " ";
     }
-    clog << endl;
-    cout << GetUsage() << GetHelp();
+    std::clog << std::endl;
+    std::cout << GetUsage() << GetHelp();
     return 0;
   }
 
   // Nothing was able to be executed.
-  clog << "Nothing to do for command: " << name_ << std::endl;
+  std::clog << "Nothing to do for command: " << name_ << std::endl;
   std::cout << std::endl;
   std::cout << GetUsage() << GetHelp();
   return 1;
@@ -318,17 +310,17 @@ std::string CommandLineCommand::GetHelpForArg(const CommandLineArgument& c, int 
   } else {
     ss << "   ";
   }
-  ss << "--" << left << setw(max_len) << c.name_ << "  ";
+  ss << "--" << std::left << std::setw(max_len) << c.name_ << "  ";
   if (c.is_boolean) {
     ss << "[boolean] ";
   }
-  ss << c.help_text() << endl;
+  ss << c.help_text() << std::endl;
   return ss.str();
 }
 
 std::string CommandLineCommand::GetHelpForCommand(const CommandLineCommand& c, int max_len) const {
   std::ostringstream ss;
-  ss << "     " << setw(max_len) << left << c.name() << "  " << c.help_text() << endl;
+  ss << "     " << std::setw(max_len) << std::left << c.name() << "  " << c.help_text() << std::endl;
   return ss.str();
 }
 
@@ -348,7 +340,7 @@ std::string CommandLineCommand::GetHelp() const {
     ss << GetHelpForArg(c, max_len);
   }
   if (!commands_allowed_.empty()) {
-    ss << endl;
+    ss << std::endl;
     ss << "commands:" << std::endl;
     for (const auto& a : commands_allowed_) {
       ss << GetHelpForCommand(*a.second, max_len);
@@ -381,13 +373,13 @@ bool CommandLine::AddStandardArgs() {
 
 std::string CommandLine::GetHelp() const {
   std::ostringstream ss;
-  ss << program_name_ << " [" << full_version() << "]" << endl << endl;
-  ss << "Usage:" << endl;
+  ss << program_name_ << " [" << full_version() << "]" << std::endl << std::endl;
+  ss << "Usage:" << std::endl;
   ss << program_name_ << " [args]";
   if (!commands_allowed_.empty()) {
     ss << " <command> [command args]";
   }
-  ss << endl << endl;
+  ss << std::endl << std::endl;
   ss << CommandLineCommand::GetHelp();
   return ss.str();
 }

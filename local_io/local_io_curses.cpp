@@ -37,7 +37,6 @@
 #include <unistd.h>
 #endif
 
-using std::string;
 using namespace wwiv::strings;
 
 static const int default_screen_bottom = 20;
@@ -137,18 +136,18 @@ void CursesLocalIO::Putch(unsigned char ch) {
   }
 }
 
-void CursesLocalIO::Puts(const string& s) {
+void CursesLocalIO::Puts(const std::string& s) {
   for (auto ch : s) {
     Putch(ch);
   }
 }
 
-void CursesLocalIO::PutsXY(int x, int y, const string& text) {
+void CursesLocalIO::PutsXY(int x, int y, const std::string& text) {
   GotoXY(x, y);
   FastPuts(text);
 }
 
-void CursesLocalIO::PutsXYA(int x, int y, int a, const string& text) {
+void CursesLocalIO::PutsXYA(int x, int y, int a, const std::string& text) {
   const auto old_color = curatr();
   curatr(a);
 
@@ -158,7 +157,7 @@ void CursesLocalIO::PutsXYA(int x, int y, int a, const string& text) {
   curatr(old_color);
 }
 
-void CursesLocalIO::FastPuts(const string& text) {
+void CursesLocalIO::FastPuts(const std::string& text) {
   SetColor(curatr());
   const auto w = wwiv::core::cp437_to_utf8w(text);
   window_->PutsW(w);

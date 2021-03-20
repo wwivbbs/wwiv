@@ -18,13 +18,9 @@
 /**************************************************************************/
 #include "core/fake_clock.h"
 
-#include <chrono>
-#include <string>
-
 #include "core/datetime.h"
 #include "core/strings.h"
-
-using std::string;
+#include <chrono>
 
 using namespace std::chrono;
 using namespace wwiv::strings;

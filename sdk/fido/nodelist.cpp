@@ -27,8 +27,6 @@
 #include <set>
 #include <string>
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -59,7 +57,7 @@ static inline bool bool_flag(const std::string& value, const std::string& flag_n
   return false;
 }
 
-static bool internet_flag(const std::string& value, const std::string& flag_name, bool& f, string& host, uint16_t& port) {
+static bool internet_flag(const std::string& value, const std::string& flag_name, bool& f, std::string& host, uint16_t& port) {
   if (!contains(value, ':')) return false;
   auto parts = SplitString(value, ":");
   if (parts.size() > 3) return false;
@@ -78,9 +76,9 @@ static bool internet_flag(const std::string& value, const std::string& flag_name
   return false;
 }
 
-static bool bool_flag(const std::string& value, const std::string& flag_name, bool& f, string& fs) {
+static bool bool_flag(const std::string& value, const std::string& flag_name, bool& f, std::string& fs) {
   if (!contains(value, ':')) return false;
-  vector<string> parts = SplitString(value, ":");
+  std::vector<std::string> parts = SplitString(value, ":");
   if (parts.size() > 2) return false;
 
   if (parts.front() == flag_name) {
@@ -94,8 +92,8 @@ static bool bool_flag(const std::string& value, const std::string& flag_name, bo
   return false;
 }
 
-static string ToSpaces(const std::string& orig) {
-  string s(orig);
+static std::string ToSpaces(const std::string& orig) {
+  std::string s(orig);
   std::replace(std::begin(s), std::end(s), '_', ' ');
   return s;
 }
@@ -165,7 +163,7 @@ Nodelist::Nodelist(const std::filesystem::path& path)
 Nodelist::Nodelist(const std::vector<std::string>& lines) 
   : initialized_(Load(lines)) {}
 
-bool Nodelist::HandleLine(const string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub) {
+bool Nodelist::HandleLine(const std::string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub) {
   if (line.empty()) return true;
   if (line.front() == ';') {
     // TODO(rushfan): Do we care to do anything with this?
@@ -222,9 +220,9 @@ bool Nodelist::Load(const std::filesystem::path& path) {
   if (!f) {
     return false;
   }
-  string line;
-  uint16_t zone = 0, region = 0, net = 0, hub = 0;
+  std::string line;
   while (f.ReadLine(&line)) {
+    uint16_t zone = 0, region = 0, net = 0, hub = 0;
     StringTrim(&line);
     HandleLine(line, zone, region, net, hub);
   }
@@ -233,8 +231,8 @@ bool Nodelist::Load(const std::filesystem::path& path) {
 
 bool Nodelist::Load(const std::vector<std::string>& lines) {
   if (lines.empty()) return false;
-  uint16_t zone = 0, region = 0, net = 0, hub = 0;
   for (const auto& raw_line : lines) {
+    uint16_t zone = 0, region = 0, net = 0, hub = 0;
     auto line = StringTrim(raw_line);
     HandleLine(line, zone, region, net, hub);
   }

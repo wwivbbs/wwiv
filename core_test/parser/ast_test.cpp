@@ -22,9 +22,7 @@
 #include "core/parser/ast.h"
 #include "core/parser/lexer.h"
 #include <string>
-#include <iostream>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::core::parser;
 
@@ -64,23 +62,21 @@ public:
   }
   ::testing::AssertionResult HasExpression(Expression* e, std::string l, Operator op,
                                            std::string r) {
-    auto has_op = HasOp(e, op);
-    if (!has_op)
+    if (auto has_op = HasOp(e, op); !has_op) {
       return has_op;
-    auto has_left = HasLeftFactor(e, l);
-    if (!has_left) {
+    }
+    if (auto has_left = HasLeftFactor(e, l); !has_left) {
       return has_left;
     }
-    auto has_right = HasRightFactor(e, r);
-    if (!has_right) {
+    if (auto has_right = HasRightFactor(e, r); !has_right) {
       return has_right;
     }
     return ::testing::AssertionSuccess();
   }
 };
 
-TEST_F(AstTest, Expr_Add) { 
-  Lexer l("1+2"); 
+TEST_F(AstTest, Expr_Add) {
+  const Lexer l("1+2"); 
 
   Ast ast;
   ASSERT_TRUE(ast.parse(l));
@@ -120,10 +116,10 @@ TEST_F(AstTest, Expr_Parens) {
   EXPECT_TRUE(HasOp(expr, Operator::logical_or)) << root->ToString();
   ASSERT_NE(nullptr, expr);
 
-  auto* left = dynamic_cast<Expression*>(expr->left());
+  auto* left = expr->left();
   VLOG(1) << "Left: " << left->ToString();
   EXPECT_TRUE(HasExpression(left, "user.sl", Operator::gt, "200"));
-  auto* right = dynamic_cast<Expression*>(expr->right());
+  auto* right = expr->right();
   VLOG(1) << "Right: " << right->ToString();
   EXPECT_TRUE(HasExpression(right, "user.ar", Operator::eq, "A"));
 }
@@ -134,14 +130,16 @@ TEST_F(AstTest, Visitor) {
 
   class PrintVisitor : public AstVisitor {
   public:
-    virtual void visit(AstNode* n) {
+    void visit(AstNode* n) override {
       LOG(INFO) << "Visit AstNode: " << n->ToString();
     };
-    virtual void visit(Expression* n) {
+
+    void visit(Expression* n) override {
       LOG(INFO) << "Visit Expression: " << n->ToString(false);
       ++count;
     };
-    virtual void visit(Factor* n) {
+
+    void visit(Factor* n) override {
       LOG(INFO) << "Visit Factor: " << n->ToString();
       ++count;
     };

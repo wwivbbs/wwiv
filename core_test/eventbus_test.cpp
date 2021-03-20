@@ -19,9 +19,6 @@
 #include "gtest/gtest.h"
 #include "core/eventbus.h"
 #include <iostream>
-#include <string>
-
-using std::string;
 
 using namespace wwiv::core;
 

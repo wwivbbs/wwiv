@@ -27,8 +27,6 @@
 #include <utility>
 #include <vector>
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -44,14 +42,13 @@ ParseFloFile(const std::filesystem::path& path) {
   }
 
   std::vector<std::pair<std::string, flo_directive>> result;
-  string line;
+  std::string line;
   while (file.ReadLine(&line)) {
     StringTrim(&line);
     if (line.empty()) {
       continue;
     }
-    auto st = line.front();
-    if (st == '^' || st == '#' || st == '~') {
+    if (auto st = line.front(); st == '^' || st == '#' || st == '~') {
       const auto fn = line.substr(1);
       result.emplace_back(fn, static_cast<flo_directive>(st));
     }
@@ -122,7 +119,7 @@ bool FloFile::clear() noexcept {
 }
 
 bool FloFile::erase(const std::string& file) {
-  for (auto it = entries_.begin(); it != entries_.end(); it++) {
+  for (auto it = entries_.begin(); it != entries_.end(); ++it) {
     if ((*it).first == file) {
       entries_.erase(it);
       return true;

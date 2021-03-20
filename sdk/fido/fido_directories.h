@@ -26,8 +26,8 @@ namespace wwiv::sdk::fido {
 
 class FtnDirectories {
 public:
-  FtnDirectories(const std::filesystem::path& bbsdir, const net_networks_rec& net,
-                 const std::filesystem::path& receive_dir);
+  FtnDirectories(std::filesystem::path bbsdir, const net_networks_rec& net,
+                 std::filesystem::path receive_dir);
   FtnDirectories(const std::filesystem::path& bbsdir, const net_networks_rec& net);
   virtual ~FtnDirectories();
 

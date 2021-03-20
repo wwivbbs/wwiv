@@ -18,7 +18,6 @@
 #include "sdk/fido/fido_address.h"
 
 #include "core/cereal_utils.h"
-#include "core/file.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -26,7 +25,6 @@
 #include <set>
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
@@ -34,7 +32,7 @@ using namespace wwiv::stl;
 namespace wwiv::sdk::fido {
 
 template <typename T, typename C, typename I> static T next_int(C& c, I& it, std::set<char> stop) {
-  string s;
+  std::string s;
   while (it != std::end(c) && !contains(stop, *it)) {
     if (!std::isdigit(*it)) {
       throw bad_fidonet_address(StrCat("Missing Unexpected nondigit. address: ", c));
@@ -70,7 +68,7 @@ FidoAddress::FidoAddress(const std::string& address) {
     point_ = next_int<int16_t>(address, it, {'@'});
   }
   if (has_domain) {
-    domain_ = string(it, std::end(address));
+    domain_ = std::string(it, std::end(address));
   }
 }
 

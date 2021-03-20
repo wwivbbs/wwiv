@@ -32,7 +32,6 @@
 #include <set>
 #include <string>
 
-using std::string;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::stl;
@@ -66,7 +65,7 @@ void Input::input(char* out_text, int max_length, bool auto_mpl) {
 }
 
 // This will input an upper-case string
-string Input::input(int max_length, bool auto_mpl) {
+std::string Input::input(int max_length, bool auto_mpl) {
   const auto line = std::make_unique<char[]>(max_length + 1);
   input(line.get(), max_length, auto_mpl);
   return line.get();
@@ -195,7 +194,7 @@ char Input::ynq() {
 //
 // Returns: length of string
 //==================================================================
-void Input::Input1(char* out_text, const string& orig_text, int max_length, bool insert,
+void Input::Input1(char* out_text, const std::string& orig_text, int max_length, bool insert,
                    InputMode mode, bool auto_mpl) {
   char szTemp[255];
   static const auto dash = '-';
@@ -438,7 +437,7 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
   bout.nl();
 }
 
-string Input::Input1(const string& orig_text, int max_length, bool bInsert, InputMode mode, bool auto_mpl) {
+std::string Input::Input1(const std::string& orig_text, int max_length, bool bInsert, InputMode mode, bool auto_mpl) {
   const auto line = std::make_unique<char[]>(max_length + 1);
   Input1(line.get(), orig_text, max_length, bInsert, mode, auto_mpl);
   return line.get();
@@ -505,7 +504,7 @@ void Input::input1(char* out_text, int max_length, InputMode lc, bool crend, boo
         case InputMode::CMDLINE:
         case InputMode::FILENAME:
         case InputMode::FULL_PATH_NAME: {
-          string disallowed =
+          std::string disallowed =
               lc == InputMode::FILENAME ? FILENAME_DISALLOWED : FULL_PATH_NAME_DISALLOWED;
           if (disallowed.find(chCurrent) != std::string::npos) {
             chCurrent = 0;
@@ -647,7 +646,7 @@ std::string Input::input_password_minimal(int max_length) {
   return "";
 }
 
-std::string Input::input_password(const string& prompt_text, int max_length) {
+std::string Input::input_password(const std::string& prompt_text, int max_length) {
   if (!prompt_text.empty()) {
     bout << prompt_text;
   }

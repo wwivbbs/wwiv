@@ -18,12 +18,10 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "core/log.h"
 #include "core/ip_address.h"
 #include <sstream>
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 
 class IpAddressTest : public ::testing::Test {
@@ -34,19 +32,19 @@ public:
 TEST_F(IpAddressTest, Smoke_Home_V4) {
   auto o = ip_address::from_string("127.0.0.1");
   ASSERT_TRUE(o.has_value());
-  auto a = o.value();
+  const auto a = o.value();
   EXPECT_EQ("127.0.0.1", a.to_string());
 }
 
 TEST_F(IpAddressTest, Smoke_Home_V6) {
   auto o = ip_address::from_string("::1");
   ASSERT_TRUE(o.has_value());
-  auto a = o.value();
+  const auto a = o.value();
   EXPECT_EQ("::1", a.to_string());
 }
 
 TEST_F(IpAddressTest, Empty) {
-  auto e = ip_address();
+  const auto e = ip_address();
   EXPECT_TRUE(e.empty());
 }
 
@@ -64,11 +62,11 @@ TEST_F(IpAddressTest, Chevron) {
 }
 
 TEST_F(IpAddressTest, Equality) {
-  auto ip4 = ip_address::from_string("127.0.0.1").value();
-  auto ip4a = ip_address::from_string("127.0.0.1").value();
-  auto ip4dif = ip_address::from_string("10.0.0.1").value();
-  auto ip6 = ip_address::from_string("::1").value();
-  auto ip6a = ip_address::from_string("::1").value();
+  const auto ip4 = ip_address::from_string("127.0.0.1").value();
+  const auto ip4a = ip_address::from_string("127.0.0.1").value();
+  const auto ip4dif = ip_address::from_string("10.0.0.1").value();
+  const auto ip6 = ip_address::from_string("::1").value();
+  const auto ip6a = ip_address::from_string("::1").value();
 
   EXPECT_EQ(ip4, ip4a);
   EXPECT_EQ(ip6, ip6a);

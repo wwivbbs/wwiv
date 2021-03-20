@@ -19,9 +19,6 @@
 #include "gtest/gtest.h"
 #include "core/clock.h"
 #include "core/datetime.h"
-#include <string>
-
-using std::string;
 
 using namespace wwiv::core;
 

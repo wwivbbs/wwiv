@@ -27,7 +27,6 @@
 #include <string>
 #include <utility>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -59,8 +58,7 @@ bool FileAreaExtendedDesc::Load() {
   for (long file_pos = 0, count = 0; file_pos < file_size && count <= num_files_; count++) {
     f.Seek(file_pos, File::Whence::begin);
     ext_desc_type ed{};
-    const auto num_read = f.Read(&ed, sizeof(ext_desc_type));
-    if (num_read != sizeof(ext_desc_type)) {
+    if (const auto num_read = f.Read(&ed, sizeof(ext_desc_type)); num_read != sizeof(ext_desc_type)) {
       // LOG ERROR? Return false here?
       break;
     }
@@ -135,7 +133,7 @@ bool FileAreaExtendedDesc::DeleteExtended(const std::string& file_name) {
     file.Seek(r, File::Whence::begin);
     file.Read(&ed, sizeof(ext_desc_type));
     if (ed.len < 10000) {
-      string ss;
+      std::string ss;
       ss.resize(ed.len);
       file.Read(&ss[0], ed.len);
       if (file_name != ed.name) {
@@ -175,12 +173,12 @@ std::optional<std::string> FileAreaExtendedDesc::ReadExtended(const std::string&
     }
     file.Seek(ext.offset, File::Whence::begin);
     ext_desc_type ed{};
-    const auto num_read = file.Read(&ed, sizeof(ext_desc_type));
-    if (num_read != sizeof(ext_desc_type) || file_name != ed.name) {
+    if (const auto num_read = file.Read(&ed, sizeof(ext_desc_type));
+        num_read != sizeof(ext_desc_type) || file_name != ed.name) {
       Close();
       return std::nullopt;
     }
-    string ss;
+    std::string ss;
     ss.resize(ed.len);
     file.Read(&ss[0], ed.len);
     file.Close();

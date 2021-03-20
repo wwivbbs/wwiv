@@ -18,19 +18,18 @@
 /**************************************************************************/
 #include "core/semaphore_file.h"
 
-
 #include "stl.h"
 #include "core/log.h"
 #include "core/os.h"
 #include <cerrno>
 #include <fcntl.h>
-#include <sstream>
 #include <string>
+#include <utility>
 
 #ifdef _WIN32
-#include <direct.h>
+//#include <direct.h>
 #include <io.h>
-#include <share.h>
+//#include <share.h>
 
 #else // _WIN32
 #include <sys/file.h>
@@ -40,7 +39,6 @@
 #include <utime.h>
 #endif  // _WIN32
 
-using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
 
@@ -67,10 +65,9 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath,
   const auto end = start + timeout;
   while (true) {
     const auto fn = filepath.string();
-    const auto fd = open(fn.c_str(), mode, pmode);
-    if (fd >= 0) {
-      const auto written = write(fd, text.c_str(), wwiv::stl::size_int(text));
-      if (written != wwiv::stl::ssize(text)) {
+    if (const auto fd = open(fn.c_str(), mode, pmode); fd >= 0) {
+      if (const auto written = write(fd, text.c_str(), wwiv::stl::size_int(text));
+          written != wwiv::stl::ssize(text)) {
         LOG(WARNING) << "Short write on Semaphore file: " << written << "; vs: " << text.size();
       }
       return {filepath, fd};
@@ -89,8 +86,8 @@ SemaphoreFile SemaphoreFile::acquire(const std::filesystem::path& filepath,
   return try_acquire(filepath, text, std::chrono::duration<double>::max());
 }
 
-SemaphoreFile::SemaphoreFile(const std::filesystem::path& path, int fd)
-  : path_(path), fd_(fd) {
+SemaphoreFile::SemaphoreFile(std::filesystem::path path, int fd)
+  : path_(std::move(path)), fd_(fd) {
 }
 
 SemaphoreFile::~SemaphoreFile() {

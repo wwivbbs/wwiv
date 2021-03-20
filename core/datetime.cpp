@@ -28,8 +28,6 @@
 #include <sstream>
 #include <string>
 
-using std::string;
-
 using namespace std::chrono;
 using namespace wwiv::strings;
 
@@ -83,7 +81,7 @@ std::string fulldate() {
   return dt.to_string("%m/%d/%Y");
 }
 
-string times() {
+std::string times() {
   const auto dt = DateTime::now();
   return dt.to_string("%H:%M:%S");
 }
@@ -154,8 +152,7 @@ std::optional<duration<double>> parse_time_span(const std::string& s) {
     return std::nullopt;
   }
 
-  const auto qchar = to_lower_case(s.back());
-  switch (qchar) {
+  switch (to_lower_case(s.back())) {
   case 's':
     return seconds(num);
   case 'm':
@@ -299,7 +296,7 @@ std::string DateTime::to_string() const {
   if (!t) {
     return {};
   }
-  auto s = string(t);
+  auto s = std::string(t);
   StringTrimEnd(&s);
   return s;
 }
@@ -343,12 +340,12 @@ bool operator<=(const DateTime& lhs, const DateTime& rhs) { return !(lhs > rhs);
 
 bool operator>=(const DateTime& lhs, const DateTime& rhs) { return !(lhs < rhs); }
 
-DateTime operator+(DateTime lhs, duration<double> d) {
+DateTime operator+(const DateTime& lhs, duration<double> d) {
   const auto du = std::chrono::duration_cast<seconds>(d);
   return DateTime::from_time_t(lhs.to_time_t() + static_cast<time_t>(du.count()));
 }
 
-DateTime operator-(DateTime lhs, duration<double> d) {
+DateTime operator-(const DateTime& lhs, duration<double> d) {
   const auto du = std::chrono::duration_cast<seconds>(d);
   return DateTime::from_time_t(lhs.to_time_t() - static_cast<time_t>(du.count()));
 }

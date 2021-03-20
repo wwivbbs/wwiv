@@ -21,16 +21,14 @@
 #include <string>
 #include "core/strings.h"
 
-using std::string;
 using namespace wwiv::strings;
-
 
 /*
  * Returns bitmapped word representing an AR or DAR string.
  */
 uint16_t str_to_arword(const std::string& arstr) {
   uint16_t rar = 0;
-  auto s = ToStringUpperCase(arstr);
+  const auto s = ToStringUpperCase(arstr);
 
   for (int i = 0; i < 16; i++) {
     if (s.find(static_cast<char>(i + 'A')) != std::string::npos) {

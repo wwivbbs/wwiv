@@ -39,7 +39,6 @@
 #include "core/socket_exceptions.h"
 #include "core/strings.h"
 
-using std::string;
 using namespace wwiv::strings;
 
 namespace wwiv::core {
@@ -136,7 +135,7 @@ SOCKET CreateListenSocket(int port) {
  * lookup against a DNSRBL.
  */
 static std::string dns_rbl_name(const std::string& address, const std::string& rbl_address) {
-  string out;
+  std::string out;
   auto v = SplitString(address, ".");
   for (auto it = v.rbegin(); it != v.rend(); ++it) {
     out.append(*it);

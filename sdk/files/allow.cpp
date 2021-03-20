@@ -27,8 +27,6 @@
 #include <algorithm>
 #include <string>
 
-using std::endl;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 

@@ -27,7 +27,6 @@
 #include <cmath>
 #include <iostream>
 
-using std::string;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -40,7 +39,7 @@ namespace wwiv::localui {
 
 static std::vector<HelpItem> StandardHelpItems() { return {{"Esc", "Exit"}}; }
 
-ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
+ListBox::ListBox(UIWindow* parent, const std::string& title, int max_x, int max_y,
                  std::vector<ListBoxItem>& items, ColorScheme* scheme)
     : title_(title), items_(items), color_scheme_(scheme), window_top_min_(1), parent_(parent) {
   height_ = std::min<int>(size_int(items), max_y);
@@ -72,7 +71,7 @@ ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
   help_items_ = StandardHelpItems();
 }
 
-ListBox::ListBox(UIWindow* parent, const string& title,
+ListBox::ListBox(UIWindow* parent, const std::string& title,
                  std::vector<ListBoxItem>& items)
     : ListBox(parent, title,
               static_cast<int>(floor(curses_out->window()->GetMaxX() * RATIO_LISTBOX_WIDTH)),
@@ -123,8 +122,7 @@ ListBoxResult ListBox::RunDialog() {
       window_->Refresh();
     }
     need_redraw = true;
-    auto ch = window_->GetChar();
-    switch (ch) {
+    switch (auto ch = window_->GetChar(); ch) {
     case KEY_HOME:
       selected_ = 0;
       window_top_ = window_top_min_;
@@ -201,7 +199,7 @@ ListBoxResult ListBox::RunDialog() {
       return ListBoxResult{ListBoxResultType::NO_SELECTION, 0, 0};
     default:
       ch = toupper(ch);
-      if (hotkeys_.find(static_cast<char>(ch & 0xff)) != string::npos) {
+      if (hotkeys_.find(static_cast<char>(ch & 0xff)) != std::string::npos) {
         // Since a hotkey was pressed, update selected_ to match the index
         // of the item containing the hotkey.
         for (auto i = 0; i < wwiv::stl::ssize(items_); i++) {

@@ -27,7 +27,6 @@
 
 namespace wwiv::sdk::msgapi {
 
-using std::string;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -36,7 +35,7 @@ constexpr char CZ = 26;
 static std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
   auto temp(s);
   const auto cz_pos = temp.find(CZ);
-  if (cz_pos != string::npos) {
+  if (cz_pos != std::string::npos) {
     // We stop the message at control-Z if it exists.
     temp = temp.substr(0, cz_pos);
   }
@@ -97,7 +96,7 @@ bool ParsedMessageText::add_control_line_after(const std::string& near_line,
     auto l = *it;
     if (!l.empty() && starts_with(l, control_char_)) {
       l = l.substr(control_char_.size());
-      if (l.find(near_line) != string::npos) {
+      if (l.find(near_line) != std::string::npos) {
         // current item has it.
         if (it == lines_.end()) {
           // at the end of the list, add to the end.
@@ -143,7 +142,7 @@ bool ParsedMessageText::remove_control_line(const std::string& start_of_line) {
     auto l = *it;
     if (!l.empty() && starts_with(l, control_char_)) {
       l = l.substr(control_char_.size());
-      if (l.find(start_of_line) != string::npos) {
+      if (l.find(start_of_line) != std::string::npos) {
         it = lines_.erase(it);
         return true;
       }

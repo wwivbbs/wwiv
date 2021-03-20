@@ -41,10 +41,6 @@
 
 namespace wwiv::sdk::msgapi {
 
-using std::make_unique;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
@@ -244,12 +240,12 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
         auto text_line = *it;
         // Terminate the string with a control-Z.
         const auto cz_pos = text_line.find(CZ);
-        if (cz_pos != string::npos) {
+        if (cz_pos != std::string::npos) {
           text_line = text_line.substr(0, cz_pos);
         }
         // Trim all remaining nulls.
         const auto null_pos = text_line.find(static_cast<char>(0));
-        if (null_pos != string::npos) {
+        if (null_pos != std::string::npos) {
           text_line.resize(null_pos);
         }
         StringTrim(&text_line);
@@ -264,10 +260,10 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
   return {r};
 }
 
-unique_ptr<Message> WWIVMessageArea::ReadMessage(int message_number) {
+std::unique_ptr<Message> WWIVMessageArea::ReadMessage(int message_number) {
   const auto num_messages = number_of_messages();
   if (message_number < 1) {
-    return unique_ptr<Message>();
+    return std::unique_ptr<Message>();
   }
   if (message_number > num_messages) {
     message_number = num_messages;
@@ -287,14 +283,14 @@ unique_ptr<Message> WWIVMessageArea::ReadMessage(int message_number) {
 
   if (auto o = ParseMessageText(header, message_number)) {
     auto& r = o.value();
-    return make_unique<WWIVMessage>(
-        make_unique<WWIVMessageHeader>(header, r.from_username, r.to, r.in_reply_to, api_),
-        make_unique<WWIVMessageText>(r.text));
+    return std::make_unique<WWIVMessage>(
+        std::make_unique<WWIVMessageHeader>(header, r.from_username, r.to, r.in_reply_to, api_),
+        std::make_unique<WWIVMessageText>(r.text));
   }
   return {};
 }
 
-unique_ptr<MessageHeader> WWIVMessageArea::ReadMessageHeader(int message_number) {
+std::unique_ptr<MessageHeader> WWIVMessageArea::ReadMessageHeader(int message_number) {
   auto msg = ReadMessage(message_number);
   if (!msg) {
     return {};
@@ -302,7 +298,7 @@ unique_ptr<MessageHeader> WWIVMessageArea::ReadMessageHeader(int message_number)
   return msg->release_header();
 }
 
-unique_ptr<MessageText> WWIVMessageArea::ReadMessageText(int message_number) {
+std::unique_ptr<MessageText> WWIVMessageArea::ReadMessageText(int message_number) {
   auto msg = ReadMessage(message_number);
   if (!msg) {
     return {};
@@ -310,7 +306,7 @@ unique_ptr<MessageText> WWIVMessageArea::ReadMessageText(int message_number) {
   return msg->release_text();
 }
 
-static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
+static uint32_t next_qscan_value_and_increment_post(const std::string& bbsdir) {
   statusrec_t statusrec{};
   const Config config(bbsdir);
   if (!config.IsInitialized()) {
@@ -356,8 +352,7 @@ int WWIVMessageArea::DeleteExcess() {
       LOG(INFO) << "overflow_strategy is delete_one.";
       done = true;
     }
-    const auto num = number_of_messages();
-    if (num <= max_messages_) {
+    if (const auto num = number_of_messages(); num <= max_messages_) {
       VLOG(1) << "No overflow messages. " << num << " <= " << max_messages_;
       return result;
     }
@@ -549,8 +544,7 @@ bool WWIVMessageArea::DeleteMessage(int message_number) {
 bool WWIVMessageArea::ResyncMessage(int& message_number) {
   const auto m = ReadMessage(message_number);
   if (!m) {
-    const auto num_messages = number_of_messages();
-    if (message_number > num_messages) {
+    if (const auto num_messages = number_of_messages(); message_number > num_messages) {
       message_number = num_messages;
       return true;
     }
@@ -596,8 +590,7 @@ bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_messag
   const auto& wwiv_header = dynamic_cast<const WWIVMessageHeader&>(message.header());
   const auto& p = wwiv_header.data();
 
-  const auto num_messages = number_of_messages();
-  if (message_number > num_messages) {
+  if (const auto num_messages = number_of_messages(); message_number > num_messages) {
     message_number = num_messages;
     return true;
   }
@@ -613,9 +606,7 @@ bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_messag
     return true;
   }
   if (p.qscan < pp1_header.qscan) {
-    // Search from the current message to the first.
-    const auto num_msgs = number_of_messages();
-    if (message_number > num_msgs) {
+    if (const auto num_msgs = number_of_messages(); message_number > num_msgs) {
       message_number = num_msgs + 1;
     }
     for (auto i = message_number - 1; i > 0; i--) {
@@ -650,8 +641,8 @@ bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_messag
 }
 
 std::unique_ptr<Message> WWIVMessageArea::CreateMessage() {
-  return make_unique<WWIVMessage>(make_unique<WWIVMessageHeader>(api_),
-                                  make_unique<WWIVMessageText>());
+  return std::make_unique<WWIVMessage>(std::make_unique<WWIVMessageHeader>(api_),
+                                  std::make_unique<WWIVMessageText>());
 }
 
 bool WWIVMessageArea::Exists(daten_t d, const std::string& title, uint16_t from_system,

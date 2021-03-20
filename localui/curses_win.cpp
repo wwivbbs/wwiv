@@ -29,7 +29,6 @@
 #include <chrono>
 #include <string>
 
-using std::string;
 using namespace std::chrono;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

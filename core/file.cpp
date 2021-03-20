@@ -69,7 +69,6 @@ static constexpr int LOCK_UN = 8;
 
 #endif // _WIN32
 
-using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
 using namespace std::filesystem;

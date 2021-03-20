@@ -25,8 +25,6 @@
 #include "sdk/files/files_ext.h"
 #include <string>
 
-using std::endl;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 

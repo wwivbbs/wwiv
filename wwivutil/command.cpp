@@ -23,14 +23,10 @@
 #include "core/strings.h"
 #include "sdk/config.h"
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-using std::map;
-using std::string;
-using std::vector;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 

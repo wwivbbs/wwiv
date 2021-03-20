@@ -18,12 +18,11 @@
 /**************************************************************************/
 #include "core/os.h"
 
-#include "core/strings.h"
 #include "core/file.h"
+#include "core/strings.h"
 #include <chrono>
-#include <cstdlib>
 #include <cstdint>
-#include <limits>
+#include <cstdlib>
 #include <sstream>
 
 // Windows headers
@@ -33,8 +32,6 @@
 
 #pragma comment (lib, "DbgHelp.lib")
 
-using std::numeric_limits;
-using std::string;
 using std::stringstream;
 using namespace std::chrono;
 using namespace wwiv::strings;
@@ -43,8 +40,8 @@ namespace wwiv::os {
 
 void sleep_for(duration<double> d) {
   auto count = duration_cast<milliseconds>(d).count();
-  if (count > numeric_limits<uint32_t>::max()) {
-    count = numeric_limits<uint32_t>::max();
+  if (count > std::numeric_limits<uint32_t>::max()) {
+    count = std::numeric_limits<uint32_t>::max();
   }
   Sleep(static_cast<uint32_t>(count));
 }
@@ -66,18 +63,17 @@ std::string environment_variable(const std::string& variable_name) {
   // See http://techunravel.blogspot.com/2011/08/win32-env-variable-pitfall-of.html
   // Use Win32 functions to get since we do to set...
   char buffer[4096];
-  const DWORD size = GetEnvironmentVariable(variable_name.c_str(), buffer, 4096);
-  if (size == 0) {
+  if (const auto size = GetEnvironmentVariable(variable_name.c_str(), buffer, 4096); size == 0) {
     // error or does not exits.
     return "";
   }
-  return string(buffer);
+  return std::string(buffer);
 }
 
-string stacktrace() {
+std::string stacktrace() {
   // ReSharper disable once CppUseAuto
   // ReSharper disable once CppLocalVariableMayBeConst
-  HANDLE process = GetCurrentProcess();
+  auto process = GetCurrentProcess();
   if (process == nullptr) {
     return "";
   }

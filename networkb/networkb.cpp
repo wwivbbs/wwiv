@@ -40,19 +40,10 @@
 #include "sdk/status.h"
 #include <chrono>
 #include <csignal>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
-using std::cout;
-using std::endl;
-using std::exception;
-using std::map;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 
 using namespace std::chrono;
 using namespace wwiv::core;
@@ -74,7 +65,7 @@ static void RegisterNetworkBCommands(CommandLine& cmdline) {
 }
 
 static void ShowHelp(const NetworkCommandLine& cmdline) {
-  cout << cmdline.GetHelp() << endl;
+  std::cout << cmdline.GetHelp() << std::endl;
   exit(1);
 }
 
@@ -94,11 +85,11 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
 
   do {  // NOLINT(bugprone-infinite-loop)
     try {
-      string ip;
+      std::string ip;
       if (GetRemotePeerAddress(sock, ip)) {
         LOG(INFO) << "Received connection from: " << ip;
       }
-      unique_ptr<SocketConnection> c;
+      std::unique_ptr<SocketConnection> c;
       if (socket_connected) {
         c = std::make_unique<SocketConnection>(sock);
       } else {
@@ -108,8 +99,8 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
         auto s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
         c = std::make_unique<SocketConnection>(s);
       }
-      BinkP::received_transfer_file_factory_t factory = [&](const string& network_name,
-                                                            const string& filename) {
+      BinkP::received_transfer_file_factory_t factory = [&](const std::string& network_name,
+                                                            const std::string& filename) {
         const auto dir = bink_config.receive_dir(network_name);
         return new WFileTransferFile(filename, std::make_unique<File>(FilePath(dir, filename)));
       };
@@ -119,14 +110,14 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
       LOG(ERROR) << "CONNECTION ERROR: [networkb]: " << e.what();
     } catch (const socket_error& e) {
       LOG(ERROR) << "SOCKET ERROR: [networkb]: " << e.what();
-    } catch (const exception& e) {
+    } catch (const std::exception& e) {
       LOG(ERROR) << "ERROR: [networkb]: " << e.what();
     }
   } while (loop);
   return true;
 }
 
-static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const string& sendto_node,
+static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const std::string& sendto_node,
                  const std::string& network_name) {
   LOG(INFO) << "BinkP send to: " << sendto_node;
   const auto start_time = system_clock::now();
@@ -136,7 +127,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
     LOG(ERROR) << "Unable to find node config for node: " << sendto_node;
     return false;
   }
-  unique_ptr<SocketConnection> c;
+  std::unique_ptr<SocketConnection> c;
   try {
     c = Connect(node_config->host, node_config->port);
   } catch (const connection_error& e) {
@@ -156,12 +147,12 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
   }
 
   const auto& net = bink_config.networks()[network_name];
-  BinkP::received_transfer_file_factory_t factory = [&](const string&, const string& filename) {
+  BinkP::received_transfer_file_factory_t factory = [&](const std::string&, const std::string& filename) {
     const auto dir = bink_config.receive_dir(network_name);
     return new WFileTransferFile(filename, std::make_unique<File>(FilePath(dir, filename)));
   };
 
-  string sendto_ftn_node;
+  std::string sendto_ftn_node;
   if (net.type == network_type_t::wwivnet) {
     sendto_ftn_node = StrCat("20000:20000/", sendto_node, "@", network_name);
   } else if (net.type == network_type_t::ftn) {
@@ -240,7 +231,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     LOG(ERROR) << "CONNECTION ERROR: [networkb]: " << e.what();
   } catch (const socket_error& e) {
     LOG(ERROR) << "SOCKET ERROR: [networkb]: " << e.what();
-  } catch (const exception& e) {
+  } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [networkb]: " << e.what();
   } catch (...) {
     LOG(ERROR) << "ERROR: [networkb]: (Unknown)";

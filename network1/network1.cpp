@@ -34,21 +34,13 @@
 #include "sdk/filenames.h"
 #include "sdk/net/contact.h"
 #include "sdk/net/packets.h"
+
 #include <cstdlib>
 #include <iostream>
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 #include <vector>
-
-using std::cout;
-using std::endl;
-using std::map;
-using std::set;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
@@ -59,7 +51,7 @@ using namespace wwiv::stl;
 using namespace wwiv::os;
 
 static void ShowHelp(const NetworkCommandLine& cmdline) {
-  cout << cmdline.GetHelp() << endl;
+  std::cout << cmdline.GetHelp() << std::endl;
   exit(1);
 }
 
@@ -128,7 +120,7 @@ bool Network1::handle_packet(Packet& p) {
   return write_multiple_wwivnet_packets(p.nh, p.list, p.text());
 }
 
-bool Network1::handle_file(const string& name) {
+bool Network1::handle_file(const std::string& name) {
   File f(FilePath(net_.dir, name));
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(INFO) << "Unable to open file: " << net_.dir << name;

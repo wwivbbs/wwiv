@@ -40,7 +40,6 @@
 #include <unistd.h>
 #endif  // _WIN32
 
-using std::string;
 using std::chrono::milliseconds;
 using wwiv::core::File;
 using wwiv::strings::StringReplace;
@@ -121,7 +120,7 @@ static std::string fopen_compatible_mode(const std::string& m) noexcept {
   return StringReplace(&s, "d", "t");
 }
 
-TextFile::TextFile(const std::filesystem::path& file_name, const string& file_mode) noexcept
+TextFile::TextFile(const std::filesystem::path& file_name, const std::string& file_mode) noexcept
   : file_name_(file_name), file_(OpenImpl(file_name.string(), fopen_compatible_mode(file_mode))),
     open_(file_ != nullptr), dos_mode_(strchr(file_mode.c_str(), 'd') != nullptr) {
 }
@@ -148,7 +147,7 @@ ssize_t TextFile::Write(const std::string& text) noexcept {
   return static_cast<ssize_t>((fputs(text.c_str(), file_) >= 0) ? text.size() : 0);
 }
 
-ssize_t TextFile::WriteLine(const string& text) noexcept {
+ssize_t TextFile::WriteLine(const std::string& text) noexcept {
   if (file_ == nullptr) {
     return -1;
   }
@@ -177,7 +176,7 @@ static void StripLineEnd(char* str) noexcept {
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
-bool TextFile::ReadLine(string* out) noexcept {
+bool TextFile::ReadLine(std::string* out) noexcept {
   try {
     if (file_ == nullptr) {
       out->clear();
@@ -229,7 +228,7 @@ std::string TextFile::ReadFileIntoString() {
     return {};
   }
 
-  string contents;
+  std::string contents;
   contents.resize(len);
   const auto num_read = fread(&contents[0], 1, contents.size(), file_);
   contents.resize(num_read);
@@ -241,7 +240,7 @@ std::vector<std::string> TextFile::ReadFileIntoVector(int64_t max_lines) {
     max_lines = std::numeric_limits<int64_t>::max();
   }
   std::vector<std::string> result;
-  string line;
+  std::string line;
   while (ReadLine(&line) && max_lines-- > 0) {
     result.push_back(line);
   }
@@ -254,7 +253,7 @@ std::vector<std::string> TextFile::ReadLastLinesIntoVector(int num_lines) {
   const auto pos = std::max<int>(0, len - (num_lines * 1024));
   // move to new pos
   fseek(file_, pos, SEEK_SET);
-  string contents;
+  std::string contents;
   contents.resize(len - pos + 1);
   const auto num_read = fread(&contents[0], 1, contents.size(), file_);
   contents.resize(num_read);

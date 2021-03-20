@@ -38,15 +38,8 @@
 #include "sdk/net/packets.h"
 #include <cstdlib>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <string>
-
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
-using std::unique_ptr;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
@@ -59,7 +52,7 @@ using namespace wwiv::os;
 using namespace wwiv::sdk::fido;
 
 static void ShowHelp(const NetworkCommandLine& cmdline) {
-  cout << cmdline.GetHelp() << endl;
+  std::cout << cmdline.GetHelp() << std::endl;
   exit(1);
 }
 

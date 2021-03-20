@@ -20,13 +20,8 @@
 #include "core/crc32.h"
 #include "core/file.h"
 #include "core_test/file_helper.h"
-#include <map>
 #include <string>
 #include <vector>
-
-using std::map;
-using std::string;
-using std::vector;
 
 using namespace wwiv::core;
 

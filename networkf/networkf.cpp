@@ -47,7 +47,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <set>
 #include <sstream>
@@ -66,17 +65,11 @@ using namespace wwiv::sdk::net;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 
 namespace wwiv::net::networkf {
 
-static vector<arcrec> read_arcs(const std::string& datadir) {
-  vector<arcrec> arcs;
+static std::vector<arcrec> read_arcs(const std::string& datadir) {
+  std::vector<arcrec> arcs;
   if (auto file = DataFile<arcrec>(FilePath(datadir, ARCHIVER_DAT))) {
     file.ReadVector(arcs, 20);
   }
@@ -84,7 +77,7 @@ static vector<arcrec> read_arcs(const std::string& datadir) {
 }
 
 /** returns the arcrec for the extension, or the 1st one if none match */
-static arcrec find_arc(const vector<arcrec>& arcs, const std::string& extension) {
+static arcrec find_arc(const std::vector<arcrec>& arcs, const std::string& extension) {
   const auto ue = ToStringUpperCase(extension);
   for (const auto& a : arcs) {
     if (ue == a.extension) {
@@ -119,12 +112,12 @@ static std::string arc_stuff_in(const std::string& command_line, const std::stri
 }
 
 static void ShowHelp(const NetworkCommandLine& cmdline) {
-  cout << cmdline.GetHelp() << endl
-       << "commands: " << endl
-       << endl
-       << " import    Import messages from FTN Packet to WWIV (P*.net_)" << endl
-       << " export    Export messages from WWIV (p*.net_) to FTN packet" << endl
-       << endl;
+  std::cout << cmdline.GetHelp() << std::endl
+       << "commands: " << std::endl
+       << std::endl
+       << " import    Import messages from FTN Packet to WWIV (P*.net_)" << std::endl
+       << " export    Export messages from WWIV (p*.net_) to FTN packet" << std::endl
+       << std::endl;
 
   exit(1);
 }
@@ -590,7 +583,7 @@ static packet_header_2p_t CreateType2PlusPacketHeader(const FidoAddress& from_ad
   return header;
 }
 
-static std::string remove_fido_addr(string to_user) {
+static std::string remove_fido_addr(std::string to_user) {
   std::string to_user_new;
 
   for (auto i = 0; i < ssize(to_user); i++) {
@@ -723,7 +716,7 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
     opts.wwiv_heart_color_codes = net_.fido.wwiv_heart_color_codes;
     opts.wwiv_pipe_color_codes = net_.fido.wwiv_pipe_color_codes;
     opts.allow_any_pipe_codes = net_.fido.allow_any_pipe_codes;
-    auto bbs_text = WWIVToFidoText(string(iter, raw_text.end()), opts);
+    auto bbs_text = WWIVToFidoText(std::string(iter, raw_text.end()), opts);
     text << bbs_text;
 
     // Now we need tear + origin lines
@@ -1045,7 +1038,7 @@ bool NetworkF::Run() {
   VLOG(3) << "Command: " << cmd;
   VLOG(3) << "Args: ";
   for (const auto& r : cmds) {
-    VLOG(3) << r << endl;
+    VLOG(3) << r << std::endl;
   }
 
   FtnDirectories dirs(net_cmdline_.config().root_directory(), net_);
