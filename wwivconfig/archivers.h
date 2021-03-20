@@ -22,9 +22,11 @@
 #include "sdk/config.h"
 #include <filesystem>
 
+namespace wwiv::localui {
 class UIWindow;
+}
 
 bool edit_archivers(wwiv::sdk::Config&);
-bool create_arcs(UIWindow* window, const std::filesystem::path& datadir);
+bool create_arcs(wwiv::localui::UIWindow* window, const std::filesystem::path& datadir);
 
 #endif

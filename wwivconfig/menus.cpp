@@ -33,15 +33,12 @@
 #include "sdk/fido/fido_callout.h"
 #include "sdk/menus/menu.h"
 #include <filesystem>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-using std::pair;
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
+using namespace wwiv::localui;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
@@ -438,18 +435,18 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
     m.menu.title = "New WWIV Menu";
   }
 
-  const std::vector<pair<wwiv::sdk::menus::menu_numflag_t, std::string>> numbers_action = {
+  const std::vector<std::pair<wwiv::sdk::menus::menu_numflag_t, std::string>> numbers_action = {
       {menus::menu_numflag_t::none, "Nothing"},
       {menus::menu_numflag_t::subs, "Set Sub Number"},
       {menus::menu_numflag_t::dirs, "Set Dir Number"}};
 
-  const std::vector<pair<menus::menu_logtype_t, std::string>> logging_action = {
+  const std::vector<std::pair<menus::menu_logtype_t, std::string>> logging_action = {
       {menus::menu_logtype_t::none, "Nothing"},
       {menus::menu_logtype_t::command, "Command"},
       {menus::menu_logtype_t::key, "Key"},
       {menus::menu_logtype_t::description, "Description"}};
 
-  const std::vector<pair<menus::menu_help_display_t, std::string>> help_action = {
+  const std::vector<std::pair<menus::menu_help_display_t, std::string>> help_action = {
       {menus::menu_help_display_t::never, "Never"},
       {menus::menu_help_display_t::always, "Always"},
       {menus::menu_help_display_t::on_entrance, "On Entrance"},
@@ -575,7 +572,7 @@ static void select_menu(const wwiv::sdk::Config& config, const std::string& menu
   }
 }
 
-static bool check_for_menu_help(const string& datadir) {
+static bool check_for_menu_help(const std::string& datadir) {
   const auto path = FilePath(datadir, "menu_commands.json");
   if (!File::Exists(path)) {
     auto* window = curses_out->window();

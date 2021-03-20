@@ -44,9 +44,8 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::localui;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -77,7 +76,7 @@ static bool unzip_file(UIWindow* window, const std::string& zipfile, const std::
   return false;
 }
 
-static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files) {
+static void init_files(UIWindow* window, const std::string& bbsdir, bool unzip_files) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Creating Data Files.\n");
   window->SetColor(SchemeId::NORMAL);
@@ -335,7 +334,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   window->SetColor(SchemeId::NORMAL);
 }
 
-bool new_init(UIWindow* window, const string& bbsdir, bool unzip_files) {
+bool new_init(UIWindow* window, const std::string& bbsdir, bool unzip_files) {
   const std::vector<std::string> dirnames = {
       "attach", "data",        "data/regions", "data/zip-city", "gfiles",  "menus", "msgs",
       "dloads", "dloads/misc", "dloads/sysop", "temp",          "temp/1",  "temp/2",       "temp/3",
@@ -346,8 +345,7 @@ bool new_init(UIWindow* window, const string& bbsdir, bool unzip_files) {
   window->SetColor(SchemeId::NORMAL);
   for (const auto& dirname : dirnames) {
     window->SetColor(SchemeId::NORMAL);
-    const auto chdir_ok = File::set_current_directory(dirname);
-    if (!chdir_ok) {
+    if (const auto chdir_ok = File::set_current_directory(dirname); !chdir_ok) {
       if (!File::mkdir(dirname)) {
         window->SetColor(SchemeId::ERROR_TEXT);
         window->Puts(StrCat("\n\nERROR!!! Couldn't make '", dirname, "' Sub-Dir.\nExiting..."));

@@ -21,8 +21,10 @@
 
 #include <string>
 
+namespace wwiv::localui {
 class UIWindow;
+}
 
-bool new_init(UIWindow* window, const std::string& bbsdir, bool unzip_files);
+bool new_init(wwiv::localui::UIWindow* window, const std::string& bbsdir, bool unzip_files);
 
 #endif // INCLUDED_WWIVCONFIG_NEWINIT_H

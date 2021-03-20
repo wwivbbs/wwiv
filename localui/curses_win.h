@@ -25,6 +25,8 @@
 #include <chrono>
 #include <string>
 
+namespace wwiv::localui {
+
 // Curses implementation of screen display routines for wwivconfig.
 class CursesWindow final : public UIWindow {
 public:
@@ -79,5 +81,7 @@ private:
   CursesWindow* parent_;
   ColorScheme* color_scheme_;
 };
+
+}
 
 #endif

@@ -57,7 +57,7 @@ CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1) {}
 
 CursesLocalIO::CursesLocalIO(int num_lines) {
   InitPairs();
-  window_.reset(new CursesWindow(nullptr, curses_out->color_scheme(), num_lines, 80, 0, 0));
+  window_.reset(new wwiv::localui::CursesWindow(nullptr, wwiv::localui::curses_out->color_scheme(), num_lines, 80, 0, 0));
   auto* w = std::any_cast<WINDOW*>(window_->window());
   scrollok(w, true);
   window_->Clear();

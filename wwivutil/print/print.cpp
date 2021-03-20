@@ -38,6 +38,7 @@ using std::cout;
 using std::endl;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace std::chrono_literals;
+using namespace wwiv::localui;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::ansi;

@@ -51,6 +51,7 @@
 #include <filesystem>
 
 using namespace wwiv::core;
+using namespace wwiv::localui;
 using namespace wwiv::sdk::files;
 using namespace wwiv::sdk::menus;
 using namespace wwiv::sdk;

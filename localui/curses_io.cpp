@@ -31,6 +31,8 @@ using std::unique_ptr;
 using std::string;
 using namespace wwiv::strings;
 
+namespace wwiv::localui {
+
 static const char* copyrightString = "Copyright (c) 1998-2021, WWIV Software Services";
 
 #if defined ( _WIN32 )
@@ -239,3 +241,4 @@ int CursesIO::GetMaxY() const {
   return getmaxy(stdscr);
 }
 
+}

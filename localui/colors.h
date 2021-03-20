@@ -22,6 +22,9 @@
 #include <map>
 #include <memory>
 
+namespace wwiv::localui {
+
+
 // Color Scheme
 enum class SchemeId { 
   NORMAL=1, ERROR_TEXT, WARNING, HIGHLIGHT, HEADER, HEADER_COPYRIGHT, 
@@ -69,5 +72,7 @@ private:
   static std::map<SchemeId, SchemeDescription> LoadColorSchemes();
   const std::map<SchemeId, SchemeDescription> scheme_;
 };
+
+}
 
 #endif

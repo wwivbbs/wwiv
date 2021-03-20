@@ -24,13 +24,10 @@
 #include "localui/input.h"
 
 #include <cstdint>
-#include <memory>
 #include <string>
 
-using std::unique_ptr;
-using std::string;
+using namespace wwiv::localui;
 using namespace wwiv::strings;
-
 
 void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& nc, CursesWindow*) {
   const std::vector<std::pair<wwiv::sdk::newuser_item_type_t, std::string>> newuser_item_type_list =
@@ -44,7 +41,7 @@ void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& nc
   auto newusersl = config.newuser_sl();
   auto newuserdsl = config.newuser_dsl();
   auto newuser_restrict = config.newuser_restrict();
-  auto validated_sl = config.validated_sl();
+  const auto validated_sl = config.validated_sl();
 
   auto y = 1;
   EditItems items{};

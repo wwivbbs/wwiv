@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+using namespace wwiv::localui;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

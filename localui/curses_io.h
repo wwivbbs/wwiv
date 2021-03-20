@@ -24,6 +24,9 @@
 #include <memory>
 #include <vector>
 
+namespace wwiv::localui {
+
+
 // Indicator mode for the header bar while editing text.
 enum class IndicatorMode { insert, overwrite, none };
 
@@ -84,5 +87,7 @@ class CursesIO final {
 };
 
 extern CursesIO* curses_out;
+
+}
 
 #endif

@@ -23,14 +23,10 @@
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "sdk/wwivd_config.h"
-#include <memory>
 #include <string>
-#include <utility>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::localui;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -39,7 +35,7 @@ using namespace wwiv::strings;
 static void blocked_country_subdialog(const Config&, wwivd_blocking_t& b_, CursesWindow* window) {
   auto done = false;
   do {
-    vector<ListBoxItem> items;
+    std::vector<ListBoxItem> items;
     for (const auto& e : b_.block_cc_countries) {
       items.emplace_back(std::to_string(e));
     }
@@ -48,8 +44,7 @@ static void blocked_country_subdialog(const Config&, wwivd_blocking_t& b_, Curse
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-    const auto result = list.Run();
-    if (result.type == ListBoxResultType::HOTKEY) {
+    if (const auto result = list.Run(); result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D': {
         if (items.empty()) {
@@ -67,8 +62,7 @@ static void blocked_country_subdialog(const Config&, wwivd_blocking_t& b_, Curse
           break;
         }
         auto code_num = to_number<int>(code_str);
-        const auto pos = result.selected;
-        if (pos >= 0 && pos < ssize(items)) {
+        if (const auto pos = result.selected; pos >= 0 && pos < ssize(items)) {
           insert_at(b_.block_cc_countries, pos, code_num);
         } else {
           b_.block_cc_countries.push_back(code_num);
@@ -192,7 +186,7 @@ static void edit_matrix_entry(const Config& config, wwivd_matrix_entry_t& b) {
 static void matrix_subdialog(const Config& config, wwivd_config_t& c, CursesWindow* window) {
   auto done = false;
   do {
-    vector<ListBoxItem> items;
+    std::vector<ListBoxItem> items;
     for (const auto& e : c.bbses) {
       items.emplace_back(e.name);
     }
@@ -201,8 +195,7 @@ static void matrix_subdialog(const Config& config, wwivd_config_t& c, CursesWind
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-    auto result = list.Run();
-    if (result.type == ListBoxResultType::HOTKEY) {
+    if (auto result = list.Run(); result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D': {
         if (items.empty()) {
@@ -221,8 +214,7 @@ static void matrix_subdialog(const Config& config, wwivd_config_t& c, CursesWind
         wwivd_matrix_entry_t e{};
         e.name = name;
         e.key = name.front();
-        auto pos = result.selected;
-        if (pos >= 0 && pos < ssize(items)) {
+        if (auto pos = result.selected; pos >= 0 && pos < ssize(items)) {
           insert_at(c.bbses, pos, e);
         } else {
           c.bbses.push_back(e);

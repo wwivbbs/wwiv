@@ -72,7 +72,7 @@ private:
   int x_{0};
   int y_{0};
 
-  std::unique_ptr<CursesWindow> window_;
+  std::unique_ptr<wwiv::localui::CursesWindow> window_;
 };
 
 #endif // __INCLUDED_LOCAL_IO_CURSES_H__

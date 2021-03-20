@@ -34,6 +34,7 @@
 #include "core/version.h"
 #include "local_io/local_io_curses.h"
 #include "localui/curses_io.h"
+using namespace wwiv::localui;
 #include <unistd.h>
 #endif
 

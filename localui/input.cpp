@@ -51,6 +51,8 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+namespace wwiv::localui {
+
 
 void Label::Display(CursesWindow* window) const {
   window->GotoXY(x_, y_);
@@ -725,4 +727,6 @@ void trimstrpath(char* s) {
     s[i] = File::pathSeparatorChar;
     s[i + 1] = 0;
   }
+}
+
 }

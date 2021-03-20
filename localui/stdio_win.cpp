@@ -22,6 +22,9 @@
 #include <iostream>
 #include <string>
 
+namespace wwiv::localui {
+
+
 int StdioWindow::GetChar() const { return std::cin.get(); }
 
 void StdioWindow::Putch(uint32_t ch) { std::cout << ch; }
@@ -40,4 +43,6 @@ void StdioWindow::PutsW(const std::wstring& text) {
 
 void StdioWindow::PutsXYW(int, int, const std::wstring& text) {
   PutsW(text);
+}
+
 }

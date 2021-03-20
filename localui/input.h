@@ -38,6 +38,8 @@
 #include <utility>
 #include <vector>
 
+namespace wwiv::localui {
+
 enum class EditLineMode { NUM_ONLY, UPPER_ONLY, LOWER, ALL, SET };
 
 #ifdef __unix__
@@ -1001,5 +1003,7 @@ protected:
 
   const std::filesystem::path path_;
 };
+
+}
 
 #endif

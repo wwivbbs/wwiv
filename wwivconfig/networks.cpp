@@ -36,18 +36,14 @@
 #include "wwivconfig/utility.h"
 
 #include <cstring>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 constexpr ssize_t MAX_NETWORKS = 100;
 
-using std::pair;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::localui;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
@@ -198,13 +194,13 @@ public:
               1, y);
     ++y;
     dy_start_ = y;
-    const vector<pair<fido_mailer_t, string>> mailerlist = {
+    const std::vector<std::pair<fido_mailer_t, std::string>> mailerlist = {
         {fido_mailer_t::flo, "BSO (FLO) [Recommended]"},
         {fido_mailer_t::attach, "NetMail (ATTACH)"}};
     items.add(new Label("Mailer:"), new ToggleEditItem<fido_mailer_t>(mailerlist, &n->mailer_type),
               "Select BSO if using WWIV's Native BinkP.", 1, y);
     ++y;
-    const vector<pair<fido_transport_t, string>> transportlist = {
+    const std::vector<std::pair<fido_transport_t, std::string>> transportlist = {
         {fido_transport_t::directory, "Directory"}, {fido_transport_t::binkp, "WWIV BinkP"}};
     items.add(new Label("Transport:"),
               new ToggleEditItem<fido_transport_t>(transportlist, &n->transport),
@@ -246,7 +242,7 @@ private:
 static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   auto& p = n.packet_config;
   EditItems items{};
-  const vector<pair<fido_packet_t, string>> packetlist = {
+  const std::vector<std::pair<fido_packet_t, std::string>> packetlist = {
       {fido_packet_t::unset, "unset"}, {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}};
 
   auto y = 1;
@@ -279,7 +275,7 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   items.add(new Label("Max Pkt Size:"), new NumberEditItem<int>(&p.max_packet_size),
             "NOT IMPLEMENTED YET", 1, y);
 
-  const vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
+  const std::vector<std::pair<fido_bundle_status_t, std::string>> bundlestatuslist = {
       {fido_bundle_status_t::normal, "Normal"}, {fido_bundle_status_t::crash, "Crash"},
       {fido_bundle_status_t::direct, "Direct"}, {fido_bundle_status_t::immediate, "Immediate"},
       {fido_bundle_status_t::hold, "Hold"},
@@ -335,7 +331,7 @@ public:
     }
     auto done = false;
     do {
-      vector<ListBoxItem> items;
+      std::vector<ListBoxItem> items;
       for (const auto& e : callout.node_configs_map()) {
         items.emplace_back(e.first.as_string());
       }
@@ -359,8 +355,8 @@ public:
           }
         } break;
         case 'I': {
-          const string prompt = "Enter Address (Z:N/O) : ";
-          const string address_string = dialog_input_string(window, prompt, 20);
+          const std::string prompt = "Enter Address (Z:N/O) : ";
+          const auto address_string = dialog_input_string(window, prompt, 20);
           if (address_string.empty()) {
             break;
           }
@@ -436,7 +432,7 @@ public:
     Callout callout(t_, config().max_backups());
     auto done = false;
     do {
-      vector<ListBoxItem> items;
+      std::vector<ListBoxItem> items;
       for (const auto& e : callout.callout_config()) {
         items.emplace_back(StrCat("@", e.first));
       }
@@ -462,7 +458,7 @@ public:
           }
         } break;
         case 'I': {
-          const string prompt = "Enter Address (Node number only) : @";
+          const std::string prompt = "Enter Address (Node number only) : @";
           const auto address_string = dialog_input_string(window, prompt, 20);
           if (address_string.empty()) {
             break;
@@ -667,7 +663,7 @@ void networks(const wwiv::sdk::Config& config, std::set<int>& need_network3) {
 
     bool done = false;
     do {
-      vector<ListBoxItem> items;
+      std::vector<ListBoxItem> items;
       int num = 0;
       for (const auto& n : networks.networks()) {
         items.emplace_back(fmt::sprintf("@%-5u %-16s [.%d]", n.sysnum, n.name, num++));

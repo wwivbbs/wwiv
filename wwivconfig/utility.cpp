@@ -51,7 +51,7 @@ int number_userrecs(const std::string& datadir) {
           DataFile<userrec>(FilePath(datadir, USER_LST),
                             File::modeReadWrite | File::modeBinary | File::modeCreateFile,
                             File::shareDenyReadWrite)) {
-    return static_cast<int>(file.number_of_records()) - 1;
+    return file.number_of_records() - 1;
   }
   return -1;
 }
@@ -60,8 +60,7 @@ void read_user(const Config& config, int un, userrec* u) {
   if (auto file = DataFile<userrec>(FilePath(config.datadir(), USER_LST),
                                     File::modeReadWrite | File::modeBinary | File::modeCreateFile,
                                     File::shareDenyReadWrite)) {
-    const auto nu = static_cast<int>(file.number_of_records()) - 1;
-    if (un > nu) {
+    if (const auto nu = file.number_of_records() - 1; un > nu) {
       u->inact = User::userDeleted;
       fix_user_rec(u);
       return;

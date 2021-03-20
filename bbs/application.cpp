@@ -74,6 +74,7 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include "bbs/batch.h"
 // ReSharper disable once CppUnusedIncludeDirective
+#include "localui/curses_io.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
@@ -177,8 +178,8 @@ Application::~Application() {
     local_io_->SetCursor(LocalIO::cursorNormal);
   }
   // CursesIO.
-  delete curses_out;
-  curses_out = nullptr;
+  delete wwiv::localui::curses_out;
+  wwiv::localui::curses_out = nullptr;
 }
 
 SessionContext& Application::sess() { return *session_context_; }

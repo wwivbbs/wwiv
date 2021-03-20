@@ -22,6 +22,8 @@
 #include "localui/colors.h"
 #include <string>
 
+namespace wwiv::localui {
+
 // Generic implementation of screen display routines for wwivconfig.
 class UIWindow {
 public:
@@ -78,5 +80,7 @@ private:
   ColorScheme* color_scheme_;
   SchemeId current_scheme_id_{SchemeId::UNKNOWN};
 };
+
+}
 
 #endif

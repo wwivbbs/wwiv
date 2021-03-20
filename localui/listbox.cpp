@@ -35,6 +35,9 @@ static constexpr int MINIMUM_LISTBOX_HEIGHT = 10;
 static constexpr double RATIO_LISTBOX_HEIGHT = 0.8;
 static constexpr double RATIO_LISTBOX_WIDTH = 0.9;
 
+namespace wwiv::localui {
+
+
 static std::vector<HelpItem> StandardHelpItems() { return {{"Esc", "Exit"}}; }
 
 ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
@@ -218,4 +221,6 @@ void ListBox::DisplayFooter() {
   curses_out->footer()->window()->Move(1, 0);
   curses_out->footer()->window()->ClrtoEol(); 
   curses_out->footer()->ShowHelpItems(0, help_items_);
+}
+
 }

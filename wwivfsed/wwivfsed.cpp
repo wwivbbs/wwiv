@@ -45,6 +45,7 @@
 
 #ifndef _WIN32
 #include "localui/curses_io.h"
+using namespace wwiv::localui;
 #endif
 
 
