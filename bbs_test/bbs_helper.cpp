@@ -41,7 +41,7 @@ BbsHelper::BbsHelper() : CommonHelper(42) {
   app_.reset(CreateSession(io_->local_io()));
   app_->SetCommForTest(io_->remote_io());
   app_->set_config_for_test(*config_);
-  app_->instance_number_ = 42;
+  app_->sess().instance_number(42);
 }
 
 void BbsHelper::SetUp() {

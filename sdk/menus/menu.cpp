@@ -311,8 +311,13 @@ std::vector<std::string> GenerateMenuLines(const Config& config, int eff_sl, con
     if (mi.item_key.empty()) {
       continue;
     }
+    // LocalUI and LocalIO need to be in different namepaces otherwise they
+    // collide on EditlineResult.
+    //NullLocalIO null_io;
+    //wwiv::common::SessionContext sess(&null_io);
+    //wwiv::sdk::value::BbsValueProvider bbs_provider(config_, sess);
     value::UserValueProvider up(config, user, eff_sl, config.sl(eff_sl));
-    if (auto [result, debug_lines] = acs::check_acs(config, up, mi.acs); !result) {
+    if (auto [result, debug_lines] = acs::check_acs(config, mi.acs, &up); !result) {
       continue;
     }
     if (!g.show_empty_text && StringTrim(mi.item_text).empty()) {

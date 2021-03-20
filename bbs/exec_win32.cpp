@@ -80,7 +80,7 @@ static std::filesystem::path GetDosXtrnPath() {
 static std::string CreateSyncFosCommandLine(const string& tempFilePath, int nSyncMode) {
   std::stringstream ss;
   ss << GetDosXtrnPath().string() << " " << tempFilePath << " " << "NT" << " ";
-  ss << a()->instance_number() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
+  ss << a()->sess().instance_number() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
   return ss.str();
 }
 
@@ -175,7 +175,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       if (hSyncWriteSlot == INVALID_HANDLE_VALUE) {
         // Create Write handle.
         wwiv::os::sleep_for(500ms);
-        auto write_slot_name = fmt::format(R"(\\.\mailslot\sbbsexec\wr{})", a()->instance_number());
+        auto write_slot_name = fmt::format(R"(\\.\mailslot\sbbsexec\wr{})", a()->sess().instance_number());
         LogToSync(StrCat("Creating Mail Slot: '", write_slot_name, "'\r\n"));
 
         hSyncWriteSlot = CreateFile(write_slot_name.c_str(),
@@ -282,7 +282,7 @@ static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HAND
   dwCreationFlags |= CREATE_SEPARATE_WOW_VDM;
 
   // Create Hangup Event.
-  const auto event_name = fmt::format("sbbsexec_hungup{}", a()->instance_number());
+  const auto event_name = fmt::format("sbbsexec_hungup{}", a()->sess().instance_number());
   hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, event_name.c_str());
   if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
     LogToSync(StrCat("!!! Unable to create Hangup Event for SyncFoss External program: ", GetLastError()));
@@ -291,7 +291,7 @@ static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HAND
   }
 
   // Create Read Mail Slot
-  const auto readslot_name = fmt::format(R"(\\.\mailslot\sbbsexec\rd{})", a()->instance_number());
+  const auto readslot_name = fmt::format(R"(\\.\mailslot\sbbsexec\rd{})", a()->sess().instance_number());
   hSyncReadSlot = CreateMailslot(readslot_name.c_str(), CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
   if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
     LogToSync(StrCat("!!! Unable to create mail slot for reading for SyncFoss External program: ", GetLastError()));
@@ -402,7 +402,7 @@ int exec_cmdline(const string& user_command_line, int flags) {
     strcpy(title.get(), "NETWORK");
   } else {
     sprintf(title.get(), "%s in door on node %d",
-        a()->user()->GetName(), a()->instance_number());
+        a()->user()->GetName(), a()->sess().instance_number());
   }
   si.lpTitle = title.get();
 

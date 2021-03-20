@@ -238,7 +238,7 @@ void CreatePCBoardSysDropFile() {
     strcpy(pcb.slanguage, a()->sess().current_language().c_str());
     strcpy(pcb.name, u.GetName());
     pcb.sminsleft = pcb.time_limit;
-    pcb.snodenum = static_cast<char>((num_instances() > 1) ? a()->instance_number() : 0);
+    pcb.snodenum = static_cast<char>((num_instances() > 1) ? a()->sess().instance_number() : 0);
     memcpy(pcb.seventtime, "01:00", 5);
     memcpy(pcb.seventactive, " 0", 2);
     memcpy(pcb.sslide, " 0", 2);
@@ -368,7 +368,7 @@ void CreateDoor32SysDropFile() {
   file.WriteLine(u.sl());
   file.WriteLine(60 * GetMinutesRemainingForDropFile());
   file.WriteLine(GetDoor32Emulation());
-  file.WriteLine(a()->instance_number());
+  file.WriteLine(a()->sess().instance_number());
 }
 
 /** Create generic DOOR.SYS dropfile.
@@ -386,7 +386,7 @@ void CreateDoorSysDropFile() {
     const auto real_name = u.real_name();
     auto line = fmt::sprintf("COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
             a()->sess().using_modem() ? a()->primary_port() : 0, cspeed, '8',
-            a()->instance_number(), // node
+            a()->sess().instance_number(), // node
             a()->sess().using_modem() ? a()->modem_speed_ : 38400,
             'Y', // screen display
             'N', // log to printer

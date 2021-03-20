@@ -39,16 +39,14 @@ static bool open_qscn() {
   return true;
 }
 
-
 void close_qscn() {
   if (qscanFile->IsOpen()) {
     qscanFile.reset();
   }
 }
 
-
-void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead) {
-  if (!bForceRead) {
+void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool force_read) {
+  if (!force_read) {
     if ((a()->sess().IsUserOnline() && user_number == a()->sess().user_num()) ||
         (a()->at_wfc() && user_number == 1)) {
       if (qscn != a()->sess().qsc) {
@@ -60,9 +58,10 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
     }
   }
   if (open_qscn()) {
-    long lPos = static_cast<long>(a()->config()->qscn_len()) * static_cast<long>(user_number);
-    if (lPos + static_cast<long>(a()->config()->qscn_len()) <= qscanFile->length()) {
-      qscanFile->Seek(lPos, File::Whence::begin);
+    if (const auto pos =
+            static_cast<long>(a()->config()->qscn_len()) * static_cast<long>(user_number);
+        pos + static_cast<long>(a()->config()->qscn_len()) <= qscanFile->length()) {
+      qscanFile->Seek(pos, File::Whence::begin);
       qscanFile->Read(qscn, a()->config()->qscn_len());
       if (!stay_open) {
         close_qscn();
@@ -76,7 +75,6 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
 
   a()->sess().ResetQScanPointers(*a()->config());
 }
-
 
 void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
   if (user_number < 1 || user_number > a()->config()->max_users() ||
@@ -93,7 +91,7 @@ void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
     }
   }
   if (open_qscn()) {
-    auto pos = static_cast<long>(a()->config()->qscn_len()) * static_cast<long>(user_number);
+    const auto pos = static_cast<long>(a()->config()->qscn_len()) * static_cast<long>(user_number);
     qscanFile->Seek(pos, File::Whence::begin);
     qscanFile->Write(qscn, a()->config()->qscn_len());
     if (!stay_open) {

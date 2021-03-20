@@ -809,7 +809,7 @@ void auto_purge() {
   int skipsl = 0;
   {
     IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
-                {StrCat("WWIV-", a()->instance_number()), INI_TAG});
+                {StrCat("WWIV-", a()->sess().instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       days = ini.value<int>("AUTO_USER_PURGE");
       skipsl = ini.value<int>("NO_PURGE_SL");
@@ -846,7 +846,7 @@ void auto_purge() {
 
 void beginday(bool displayStatus) {
   if ((a()->GetBeginDayNodeNumber() > 0)
-      && (a()->instance_number() != a()->GetBeginDayNodeNumber())) {
+      && (a()->sess().instance_number() != a()->GetBeginDayNodeNumber())) {
     // If BEGINDAYNODENUMBER is > 0 or defined in WWIV.INI only handle beginday events on that node number
     a()->status_manager()->reload_status();
     return;

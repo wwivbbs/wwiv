@@ -17,4 +17,4 @@
 |#9Downloads      : |#2|@k|#9k in |#2|@D |#9files
 |#9Transfer Ratio : |#2|@z
 
-|{pause}
+|{pausescr}

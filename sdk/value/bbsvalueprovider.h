@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2021, WWIV Software Services             */
+/*                            WWIV Version 5                              */
+/*           Copyright (C)2020-2021, WWIV Software Services               */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,14 +14,42 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WSTATUS_H__
-#define __INCLUDED_WSTATUS_H__
+#ifndef INCLUDED_SDK_VALUE_BBSVALUEPROVIDER_H
+#define INCLUDED_SDK_VALUE_BBSVALUEPROVIDER_H
 
-#include "sdk/status.h"
-//using wwiv::sdk::Status;
-//using wwiv::sdk::StatusMgr;
+#include "sdk/config.h"
+#include "sdk/user.h"
+#include "sdk/value/value.h"
+#include "sdk/value/valueprovider.h"
+#include <optional>
+#include <string>
 
-#endif // __INCLUDED_WSTATUS_H__
+namespace wwiv {
+namespace common {
+class SessionContext;
+}
+}
 
+namespace wwiv::sdk::value {
+
+/**
+ * ValueProvider for "bbs" or system attributes.
+ */
+class BbsValueProvider final : public ValueProvider {
+public:
+  /** 
+   * Constructs a new ValueProvider.  'user' must remain valid for 
+   * the duration of this instance lifetime.
+   */
+  BbsValueProvider(const Config& config, const common::SessionContext& sess);
+  [[nodiscard]] std::optional<Value> value(const std::string& name) const override;
+
+private:
+  const Config& config_;
+  const common::SessionContext& sess_;
+};
+
+}
+
+#endif

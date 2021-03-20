@@ -200,7 +200,7 @@ static int ShowLoginAndGetUserNumber(const std::string& remote_username) {
 
 static bool IsPhoneRequired() {
   const IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
-                    {StrCat("WWIV-", a()->instance_number()), INI_TAG});
+                    {StrCat("WWIV-", a()->sess().instance_number()), INI_TAG});
   if (ini.IsOpen() && ini.value<bool>("LOGON_PHONE", false)) {
     return true;
   }
@@ -570,7 +570,7 @@ static void UpdateLastOnFile() {
                                              f,
                                              a()->GetCurrentSpeed(),
                                              a()->user()->ontoday(),
-                                             a()->instance_number());
+                                             a()->sess().instance_number());
     sysoplog(false) << "";
     sysoplog(false) << stripcolors(sysop_log_line);
     sysoplog(false) << "";
@@ -751,7 +751,7 @@ static void DisplayUserLoginInformation() {
   bout.nl();
 
   bout << "|#9Host OS|#0........... |#2" << os_version_string() << wwiv::endl;
-  bout << "|#9Instance|#0.......... |#2" << a()->instance_number() << "\r\n\n";
+  bout << "|#9Instance|#0.......... |#2" << a()->sess().instance_number() << "\r\n\n";
   if (a()->user()->forward_usernum()) {
     if (a()->user()->forward_systemnum() != 0) {
       set_net_num(a()->user()->forward_netnum());

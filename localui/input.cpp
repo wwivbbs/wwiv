@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "localui/input.h"
 
+// has to go before cureses
+
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -28,6 +30,7 @@
 #include "localui/wwiv_curses.h"
 #include "local_io/keycodes.h"
 #include "sdk/acs/acs.h"
+#include "sdk/value/bbsvalueprovider.h"
 #include "sdk/value/uservalueprovider.h"
 #include <algorithm>
 #include <cctype>
@@ -97,8 +100,13 @@ EditlineResult ACSEditItem::Run(CursesWindow* window) {
     user.dsl(255);
     user.ar_int(0xffff);
     user.dar_int(0xffff);
+    // LocalUI and LocalIO need to be in different namepaces otherwise they
+    // collide on EditlineResult.
+    //NullLocalIO null_io;
+    //wwiv::common::SessionContext sess(&null_io);
+    //wwiv::sdk::value::BbsValueProvider bbs_provider(config_, sess);
     wwiv::sdk::value::UserValueProvider up(config_, user, 255, config_.sl(255));
-    auto [result, ex, info] = wwiv::sdk::acs::validate_acs(up, acs);
+    auto [result, ex, info] = wwiv::sdk::acs::validate_acs(acs, &up);
     window->SetColor(SchemeId::WINDOW_DATA);
     if (result) {
       curses_out->footer()->ShowContextHelp("The expression is valid.");

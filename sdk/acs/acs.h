@@ -30,19 +30,35 @@ namespace wwiv::sdk::acs {
 
 enum class acs_debug_t { local, remote, none };
 
-// Result: (true|false), debug lines
-std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const value::ValueProvider& user,
-                                                     const std::string& expression);
-std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const std::vector<const value::ValueProvider*>& providers,
-                                                     const std::string& expression);
+template <typename... Args>
+std::vector<const value::ValueProvider*> make_vector(Args&&... args) {
+    return {std::forward<Args>(args)...};
+}
 
+// Result: (true|false), debug lines
+std::tuple<bool, std::vector<std::string>>
+check_acs(const Config& config, const std::string& expression,
+          const std::vector<const value::ValueProvider*>& providers);
+
+template <typename... Args>
+std::tuple<bool, std::vector<std::string>>
+check_acs(const Config& config, const std::string& expression, Args... args) {
+  auto v = make_vector(args...);
+  return check_acs(config, expression, v);
+}
 
 // Result: (true|false), exception message (if any), debug lines
-std::tuple<bool, std::string, std::vector<std::string>> validate_acs(const value::ValueProvider& user,
-                                                                     const std::string& expression);
+std::tuple<bool, std::string, std::vector<std::string>>
+validate_acs(const std::string& expression,
+             const std::vector<const value::ValueProvider*>& providers);
 
-std::tuple<bool, std::string, std::vector<std::string>> validate_acs(const std::vector<const value::ValueProvider*>& providers,
-                                                                     const std::string& expression);
+// Result: (true|false), exception message (if any), debug lines
+template <typename... Args>
+std::tuple<bool, std::string, std::vector<std::string>>
+validate_acs(const std::string& expression, Args... args) {
+  auto v = make_vector(args...);
+  return validate_acs(expression, v);
+}
 
 } // namespace wwiv::sdk::acs
 

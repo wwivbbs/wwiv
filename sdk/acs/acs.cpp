@@ -38,8 +38,8 @@ using namespace wwiv::strings;
 namespace wwiv::sdk::acs {
 
 std::tuple<bool, std::vector<std::string>>
-check_acs(const Config&, const std::vector<const ValueProvider*>& providers,
-          const std::string& expression) {
+check_acs(const Config&, const std::string& expression,
+  const std::vector<const ValueProvider*>& providers) {
   if (StringTrim(expression).empty()) {
     // Empty expression is always allowed.
     std::vector<std::string> debug_lines;
@@ -54,18 +54,8 @@ check_acs(const Config&, const std::vector<const ValueProvider*>& providers,
   return std::make_tuple(result, eval.debug_info());  
 }
 
-std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const ValueProvider& user,
-                                                     const std::string& expression) {
-  return check_acs(config, {&user}, expression);
-}
-
 std::tuple<bool, std::string, std::vector<std::string>>
-validate_acs(const ValueProvider& user, const std::string& expression) {
-  return validate_acs({&user}, expression);
-}
-
-std::tuple<bool, std::string, std::vector<std::string>>
-validate_acs(const std::vector<const ValueProvider*>& providers, const std::string& expression) {
+validate_acs(const std::string& expression, const std::vector<const ValueProvider*>& providers) {
   Eval eval(expression);
   for (const auto* p : providers) {
     eval.add(p);

@@ -133,7 +133,7 @@ std::string stuff_in(const string& commandline, const string& arg1, const string
         os << a()->modem_speed_;
         break;
       case 'N':
-        os << a()->instance_number();
+        os << a()->sess().instance_number();
         break;
       case 'O':
         os << create_dropfile_filename(drop_file_t::PCBOARD_SYS);

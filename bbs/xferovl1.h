@@ -20,13 +20,9 @@
 
 #include <string>
 
-namespace wwiv {
-namespace sdk {
-namespace files {
+namespace wwiv::sdk::files {
 struct directory_t;
 class FileRecord;
-}
-}
 }
 
 void modify_extended_description(std::string* sss, const std::string& dest);

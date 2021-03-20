@@ -437,7 +437,7 @@ static void end_ymodem_batch() {
     }
     if (ch == CU) {
       const auto fn = FilePath(a()->sess().dirs().temp_directory(),
-                                   StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
+                                   StrCat(".does-not-exist-", a()->sess().instance_number(), ".$$$"));
       File::Remove(fn);
       File nullFile(fn);
       int terr = 0;
@@ -533,7 +533,7 @@ static double ratio1(unsigned long xa) {
 }
 
 static string make_ul_batch_list() {
-  const auto fn = fmt::sprintf("%s.%3.3u", FILESUL_NOEXT, a()->instance_number());
+  const auto fn = fmt::sprintf("%s.%3.3u", FILESUL_NOEXT, a()->sess().instance_number());
   // TODO(rushfan): This should move to a temp directory.
   const auto list_filename = FilePath(a()->bbspath(), fn);
 
@@ -551,7 +551,7 @@ static string make_ul_batch_list() {
 }
 
 static std::filesystem::path make_dl_batch_list() {
-  const auto fn = fmt::sprintf("%s.%3.3u", FILESDL_NOEXT, a()->instance_number());
+  const auto fn = fmt::sprintf("%s.%3.3u", FILESDL_NOEXT, a()->sess().instance_number());
   auto list_filename = FilePath(a()->bbspath(), fn);
 
   File::Remove(list_filename, true);

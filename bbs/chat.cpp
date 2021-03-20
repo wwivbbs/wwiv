@@ -151,7 +151,7 @@ static string StripName(const std::string& in) {
 
 // Sets color_string string for current node
 static void get_colors(char* color_string, const IniFile* pIniFile) {
-  const auto s = pIniFile->value<string>(StrCat("C", a()->instance_number()));
+  const auto s = pIniFile->value<string>(StrCat("C", a()->sess().instance_number()));
   strcpy(color_string, s.c_str());
 }
 
@@ -289,7 +289,7 @@ int f_action(int start_pos, int end_pos, char* aword) {
 static void out_msg(const std::string& message, int loc) {
   for (auto i = 1; i <= num_instances(); i++) {
     auto ir = a()->instances().at(i);
-    if (ir.loc_code() == loc && i != a()->instance_number()) {
+    if (ir.loc_code() == loc && i != a()->sess().instance_number()) {
       send_inst_str(i, message);
     }
   }
@@ -411,7 +411,7 @@ std::vector<int> who_online(int loc) {
   for (auto i = 1; i <= wwiv::stl::size_int(a()->instances()); i++) {
     const auto ir = a()->instances().at(i);
     if (!ir.invisible() || so()) {
-      if (ir.loc_code() == loc && i != a()->instance_number()) {
+      if (ir.loc_code() == loc && i != a()->sess().instance_number()) {
         r.emplace_back(i);
       }
     }
@@ -464,7 +464,7 @@ void ch_direct(const string& message, int loc, char* color_string, int node) {
                                 u.name(), color_string, message);
     for (auto i = 1; i <= num_instances(); i++) {
       ir = a()->instances().at(i);
-      if (ir.loc_code() == loc && i != a()->instance_number()) {
+      if (ir.loc_code() == loc && i != a()->sess().instance_number()) {
         send_inst_str(i, s);
       }
     }
@@ -566,7 +566,7 @@ void page_user(int loc) {
     }
     i = to_number<int>(s);
   }
-  if (i == a()->instance_number()) {
+  if (i == a()->sess().instance_number()) {
     bout << "|#1[|#9Cannot page the instance you are on|#1]\r\n";
     return;
   }
@@ -706,7 +706,7 @@ void exec_action(const char* message, char* color_string, int loc, int nact) {
     sprintf(final, "%s%s", color_string, tmsg);
     for (int c = 1; c <= num_instances(); c++) {
       const auto ir = a()->instances().at(c);
-      if (ir.loc_code() == loc && c != a()->instance_number() && c != p) {
+      if (ir.loc_code() == loc && c != a()->sess().instance_number() && c != p) {
         send_inst_str(c, final);
       }
     }

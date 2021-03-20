@@ -118,6 +118,9 @@ public:
   [[nodiscard]] bool ok_modem_stuff() const noexcept { return ok_modem_stuff_; }
   void ok_modem_stuff(bool o) { ok_modem_stuff_ = o; }
 
+  [[nodiscard]] int instance_number() const { return instance_number_; }
+  void instance_number(int i) { instance_number_ = i; }
+
   [[nodiscard]] bool incom() const noexcept { return incom_; }
   void incom(bool i) { incom_ = i; }
   [[nodiscard]] bool outcom() const noexcept { return outcom_; }
@@ -275,6 +278,7 @@ private:
   std::unique_ptr<uint32_t[]> qscan_;
 
   bool ok_modem_stuff_{false};
+  int instance_number_{-1};
   bool incom_{false};
   bool outcom_{false};
   bool okmacro_{true};

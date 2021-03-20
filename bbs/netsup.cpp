@@ -119,7 +119,7 @@ void cleanup_net() {
     std::ostringstream ss;
     ss << CreateNetworkBinary("networkc");
     ss << " --quiet";
-    ss << " --process_instance=" << a()->instance_number();
+    ss << " --process_instance=" << a()->sess().instance_number();
     ss << " ." << nNetNumber;
     const auto networkc_cmd = ss.str();
     VLOG(1) << "Executing Network Command: '" << networkc_cmd << "'";
@@ -452,7 +452,7 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   if (!got_color) {
     got_color = 1;
     IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
-                {StrCat("WWIV-", a()->instance_number()), INI_TAG});
+                {StrCat("WWIV-", a()->sess().instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       color = ini.value("CALLOUT_COLOR_TEXT", 14);
     }
@@ -524,7 +524,7 @@ static std::pair<int, int> ansicallout() {
     color3 = 3;
     color4 = 14;
     IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
-                {StrCat("WWIV-", a()->instance_number()), INI_TAG});
+                {StrCat("WWIV-", a()->sess().instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       callout_ansi = ini.value<bool>("CALLOUT_ANSI");
       color1 = ini.value("CALLOUT_COLOR", color1);

@@ -21,6 +21,7 @@
 #include "common/output.h"
 #include "sdk/acs/acs.h"
 #include "sdk/acs/eval.h"
+#include "sdk/value/bbsvalueprovider.h"
 #include "sdk/value/uservalueprovider.h"
 #include "sdk/value/valueprovider.h"
 
@@ -82,7 +83,8 @@ static std::optional<pipe_expr_token_t> parse_number(string::const_iterator& it,
   return std::make_optional(e);
 }
 
-static std::optional<pipe_expr_token_t> parse_variable(string::const_iterator& it, const string::const_iterator& end) {  
+std::optional<pipe_expr_token_t> PipeEval::parse_variable(string::const_iterator& it,
+                                                          const string::const_iterator& end) {  
   std::string s;
   for (; it != end && (isalpha(*it) || *it == '.' || *it == '_'); ++it) {
     s.push_back(*it);
@@ -90,29 +92,17 @@ static std::optional<pipe_expr_token_t> parse_variable(string::const_iterator& i
   StringTrim(&s);
   StringLowerCase(&s);
   pipe_expr_token_t e{};
-  e.type = pipe_expr_token_type_t::variable;
+  if (stl::contains(fn_map_, s)) {
+    e.type = pipe_expr_token_type_t::fn;
+  } else {
+    e.type = pipe_expr_token_type_t::variable;
+  }
   e.lexeme = s;
-  if (s == "set") {
-    e.type = pipe_expr_token_type_t::fn;
-  }
-  if (s == "if") {
-    e.type = pipe_expr_token_type_t::fn;
-  }
-  if (s == "mpl") {
-    e.type = pipe_expr_token_type_t::fn;
-  }
-  if (s == "random") {
-    e.type = pipe_expr_token_type_t::fn;
-  }
-  if (s == "pause" && (it == end || *it != '=')) {
-    // pause can be both a variable
-    e.type = pipe_expr_token_type_t::fn;
-  }
-
   return std::make_optional(e);
 }
 
-static std::vector<pipe_expr_token_t> tokenize(std::string::const_iterator& it, const std::string::const_iterator& end) {
+std::vector<pipe_expr_token_t> PipeEval::tokenize(std::string::const_iterator& it,
+                                                  const std::string::const_iterator& end) {
   std::vector<pipe_expr_token_t> r;
 
   std::string l;
@@ -154,6 +144,11 @@ std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
     const UserValueProvider user(context_.config(), context_.u(), eff_sl, eslrec);
     return user.value(suffix)->as_string();
   }
+  if (prefix == "bbs") {
+    const BbsValueProvider bbs_provider(context_.config(), context_.session_context());
+    return bbs_provider.value(suffix)->as_string();
+  }
+
   for (const auto& v : context_.value_providers()) {
     // O(N) is on for small values of n
     if (iequals(prefix, v->prefix())) {
@@ -172,7 +167,7 @@ static bool is_truthy(const std::string& s) {
   return false;
 }
 
-std::string PipeEval::eval_fn_mpl(const std::vector<pipe_expr_token_t>& args) {
+std::string eval_fn_mpl(Context&, const std::vector<pipe_expr_token_t>& args) {
   if (args.size() != 1) {
     return "ERROR: MPL expression requires 1 argument.";
   }
@@ -186,7 +181,7 @@ std::string PipeEval::eval_fn_mpl(const std::vector<pipe_expr_token_t>& args) {
   return {};
 }
 
-std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
+std::string eval_fn_set(Context& context_, const std::vector<pipe_expr_token_t>& args) {
   // Set command only
   if (args.size() != 2) {
     return "ERROR: Set expression requires two arguments.";
@@ -215,16 +210,24 @@ std::string PipeEval::eval_fn_set(const std::vector<pipe_expr_token_t>& args) {
   return {};
 }
 
-// TODO(rushfan): make sdk::acs::check_acs take optional vector of ValueProviders
-static bool check_acs_pipe(const ValueProvider& user, const std::string& expression,
-                           const std::vector<std::unique_ptr<MapValueProvider>>& maps) {
+template <typename... Args>
+std::vector<const ValueProvider*> make_vector(Args&&... args) {
+    return {std::forward<Args>(args)...};
+}
+
+template <typename... Args>
+static bool check_acs_pipe(const std::string& expression, const std::vector<std::unique_ptr<MapValueProvider>>& maps,
+  Args... args) {
   if (StringTrim(expression).empty()) {
     // Empty expression is always allowed.
     return true;
   }
 
   acs::Eval eval(expression);
-  eval.add(&user);
+  auto v = make_vector(args...);
+  for (const auto& vp : v) {
+    eval.add(vp);
+  }
 
   for (const auto& m : maps) {
     eval.add(m.get());
@@ -233,7 +236,7 @@ static bool check_acs_pipe(const ValueProvider& user, const std::string& express
   return eval.eval();
 }
 
-std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
+std::string eval_fn_if(Context& context_, const std::vector<pipe_expr_token_t>& args) {
   // Set command only
   if (args.size() != 3) {
     return "ERROR: Set expression requires three arguments.";
@@ -253,34 +256,25 @@ std::string PipeEval::eval_fn_if(const std::vector<pipe_expr_token_t>& args) {
     eff_sl = context_.u().sl();
   }
   const auto& eslrec = context_.config().sl(eff_sl);
-  const value::UserValueProvider user_provider(context_.config(), context_.u(), eff_sl, eslrec);
-  const auto b = check_acs_pipe(user_provider, expr, context_.value_providers());
+  const BbsValueProvider bbs_provider(context_.config(), context_.session_context());
+  const UserValueProvider user_provider(context_.config(), context_.u(), eff_sl, eslrec);
+  const auto b = check_acs_pipe(expr, context_.value_providers(), &user_provider, &bbs_provider);
   return b ? yes : no;
 }
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
-std::string PipeEval::eval_fn_random(const std::vector<pipe_expr_token_t>& args) {
-  const auto num = os::random_number(args.size() - 1);
+std::string eval_fn_random(Context&, const std::vector<pipe_expr_token_t>& args) {
+  const auto num = os::random_number(stl::size_int(args) - 1);
   return args.at(num).lexeme;
 }
 
 std::string PipeEval::eval_fn(const std::string& fn, const std::vector<pipe_expr_token_t>& args) {
-  if (fn == "pause") {
-    bout.pausescr();
-    return {};
+  if (const auto it = fn_map_.find(fn); it != std::end(fn_map_)) {
+    if (it->second) {
+      return it->second(context_, args);
+    }
   }
-  if (fn == "set") {
-    return eval_fn_set(args);
-  }
-  if (fn == "if") {
-    return eval_fn_if(args);
-  }
-  if (fn == "mpl") {
-    return eval_fn_mpl(args);
-  }
-  if (fn == "random") {
-    return eval_fn_random(args);
-  }
+
   return fmt::format("ERROR: Unknown function: {}", fn);
 }
 
@@ -320,6 +314,47 @@ std::string PipeEval::evaluate_pipe_expression_string(const std::string& expr) {
 }
 
 PipeEval::PipeEval(Context& context) : context_(context) {
+  fn_map_.try_emplace("pausescr", [](Context&, const std::vector<pipe_expr_token_t>&) -> std::string {
+    bout.pausescr();
+    return {};
+  });
+  fn_map_.try_emplace("random", eval_fn_random);
+  fn_map_.try_emplace("if", eval_fn_if);
+  fn_map_.try_emplace("mpl", eval_fn_mpl);
+  fn_map_.try_emplace("set", eval_fn_set);
+  fn_map_.try_emplace("sleep", [](Context&, const std::vector<pipe_expr_token_t>& a) -> std::string {
+    if (a.empty()) {
+      return {};
+    }
+    const auto num = to_number<int>(a.front().lexeme);
+    os::sleep_for(std::chrono::milliseconds(num));
+    return {};
+  });
+  fn_map_.try_emplace("spin", [](Context&, const std::vector<pipe_expr_token_t>& a) -> std::string {
+    if (a.size() < 2) {
+      return {};
+    }
+    const auto text = a.at(0).lexeme;
+    const auto color = to_number<int>(a.at(1).lexeme);
+    bout.spin_puts(text, color);
+    return {};
+  });
+  fn_map_.try_emplace("backprint", [](Context&, const std::vector<pipe_expr_token_t>& a) -> std::string {
+    if (a.size() < 4) {
+      return {};
+    }
+    const auto text = a.at(0).lexeme;
+    const auto color = to_number<int>(a.at(1).lexeme);
+    const auto char_delay = std::chrono::milliseconds(to_number<int>(a.at(2).lexeme));
+    const auto str_delay = std::chrono::milliseconds(to_number<int>(a.at(3).lexeme));
+    bout.back_puts(text, color, char_delay, str_delay);
+    return {};
+  });
+  fn_map_.try_emplace("rainbow", [](Context&, const std::vector<pipe_expr_token_t>& a) -> std::string {
+    const auto text = a.at(0).lexeme;
+    bout.rainbow(text);
+    return {};
+  });
 }
 
 std::string PipeEval::eval(std::string expr) {

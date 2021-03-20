@@ -411,8 +411,8 @@ void WWIVVersion() {
        << wwiv::endl << wwiv::endl;
   bout << "|#9Compile Time    : |#2" << wwiv_compile_datetime() << wwiv::endl;
   bout << "|#9SysOp Name      : |#2" << a()->config()->sysop_name() << wwiv::endl;
-  bout << "|#9OS              : |#2" << wwiv::os::os_version_string() << wwiv::endl;
-  bout << "|#9Instance        : |#2" << a()->instance_number() << wwiv::endl;
+  bout << "|#9OS              : |#2" << os::os_version_string() << wwiv::endl;
+  bout << "|#9Instance        : |#2" << a()->sess().instance_number() << wwiv::endl;
 
   if (!a()->nets().empty()) {
     const auto status = a()->status_manager()->get_status();

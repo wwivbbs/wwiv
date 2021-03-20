@@ -23,6 +23,8 @@
 #include "common/input.h"
 #include "core/stl.h"
 #include "sdk/acs/acs.h"
+
+#include "sdk/value/bbsvalueprovider.h"
 #include "sdk/value/uservalueprovider.h"
 #include <memory>
 #include <string>
@@ -45,8 +47,10 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
   const auto eff_sl = a()->sess().effective_sl();
   const auto& eslrec = a()->config()->sl(eff_sl);
   const UserValueProvider user_provider(*a()->config(), *a()->user(), eff_sl, eslrec);
+  const BbsValueProvider bbs_provider(*a()->config(), a()->sess());
 
-  auto [result, debug_info] = sdk::acs::check_acs(*a()->config(), user_provider, expression);
+  auto [result, debug_info] =
+      sdk::acs::check_acs(*a()->config(), expression, &user_provider, &bbs_provider);
   for (const auto& l : debug_info) {
     if (debug == acs_debug_t::local) {
       LOG(INFO) << l;
@@ -61,7 +65,9 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
 bool validate_acs(const std::string& expression, acs_debug_t debug) {
   const auto eff_sl = a()->sess().effective_sl();
   const UserValueProvider up(*a()->config(), *a()->user(), eff_sl, a()->config()->sl(eff_sl));
-  auto [result, ex_what, debug_info] = sdk::acs::validate_acs(up, expression);
+  const BbsValueProvider bbsp(*a()->config(), a()->sess());
+  auto [result, ex_what, debug_info] = 
+    sdk::acs::validate_acs(expression, &up, &bbsp);
   if (result) {
     return true;
   }

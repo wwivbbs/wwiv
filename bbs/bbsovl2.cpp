@@ -20,7 +20,6 @@
 #include "sdk/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/confutil.h"
-#include "bbs/utility.h"
 #include "common/output.h"
 #include "core/os.h"
 #include "core/strings.h"
@@ -242,66 +241,10 @@ void OnlineUserEditor() {
   a()->DisplaySysopWorkingIndicator(false);
 }
 
-/**
- * This function prints out a string, with a user-specifiable delay between
- * each character, and a user-definable pause after the entire string has
- * been printed, then it backspaces the string. The color is also definable.
- * The parameters are as follows:
- * <p>
- * <em>Note: ANSI is not required.</em>
- * <p>
- * Example:
- * <p>
- * BackPrint("This is an example.",3,20,500);
- *
- * @param strText  The string to print
- * @param nColorCode The color of the string
- * @param nCharDelay Delay between each character, in milliseconds
- * @param nStringDelay Delay between completion of string and backspacing
- */
 void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStringDelay) {
-  bout.Color(nColorCode);
-  sleep_for(milliseconds(nCharDelay));
-  for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->sess().hangup(); ++iter) {
-    bout.bputch(*iter);
-    sleep_for(milliseconds(nCharDelay));
-  }
-
-  sleep_for(milliseconds(nStringDelay));
-  for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->sess().hangup(); ++iter) {
-    bout.bs();
-    sleep_for(milliseconds(5));
-  }
+  bout.back_puts(strText, nColorCode, milliseconds(nCharDelay), milliseconds(nStringDelay));
 }
 
-/**
- * This function will print out a string, making each character "spin"
- * using the / - \ | sequence. The color is definable and is the
- * second parameter, not the first. If the user does not have ANSI
- * then the string is simply printed normally.
- * @param
- */
-void SpinPuts(const string& strText, int nColorCode) {
-  if (okansi()) {
-    bout.Color(nColorCode);
-    const int dly = 30;
-    for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->sess().hangup(); ++iter) {
-      sleep_for(milliseconds(dly));
-      bout << "/";
-      bout.Left(1);
-      sleep_for(milliseconds(dly));
-      bout << "-";
-      bout.Left(1);
-      sleep_for(milliseconds(dly));
-      bout << "\\";
-      bout.Left(1);
-      sleep_for(milliseconds(dly));
-      bout << "|";
-      bout.Left(1);
-      sleep_for(milliseconds(dly));
-      bout.bputch(*iter);
-    }
-  } else {
-    bout << strText;
-  }
+void SpinPuts(const string& strText, int color) {
+  bout.spin_puts(strText, color);
 }
