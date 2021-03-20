@@ -492,6 +492,16 @@ void Output::back_puts(const std::string& text, int color, std::chrono::duration
   }  
 }
 
+void Output::rainbow(const std::string& text) {
+  int c = 0;
+  for (char ch : text) {
+    Color(c++);
+    bputch(ch, true);
+    c %= 8;
+  }
+  flush();
+}
+
 void Output::spin_puts(const std::string& text, int color) {
   if (!okansi(user())) {
     bputs(text);

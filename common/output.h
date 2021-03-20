@@ -254,6 +254,10 @@ public:
  */
   void back_puts(const std::string& text, int color, std::chrono::duration<double> char_dly, std::chrono::duration<double> string_dly);
 
+  /**
+   * Displays the text using a rainbow effect, cycling through the 1st 8 colors.
+   */
+  void rainbow(const std::string& text);
 
   /**
    * Displays the text in the strings file referred to by key adding all

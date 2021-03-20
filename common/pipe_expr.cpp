@@ -350,6 +350,11 @@ PipeEval::PipeEval(Context& context) : context_(context) {
     bout.back_puts(text, color, char_delay, str_delay);
     return {};
   });
+  fn_map_.try_emplace("rainbow", [](Context&, const std::vector<pipe_expr_token_t>& a) -> std::string {
+    const auto text = a.at(0).lexeme;
+    bout.rainbow(text);
+    return {};
+  });
 }
 
 std::string PipeEval::eval(std::string expr) {
