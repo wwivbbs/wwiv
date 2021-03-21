@@ -23,20 +23,11 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -72,7 +63,7 @@ public:
   }
   int Execute() override {
     if (remaining().empty()) {
-      std::cout << GetUsage() << GetHelp() << endl;
+      std::cout << GetUsage() << GetHelp() << std::endl;
       return 2;
     }
     const auto set_or_get = ToStringLowerCase(remaining().front());
@@ -82,16 +73,16 @@ public:
     }
     if (set_or_get == "set") {
       if (remaining().size() < 2) {
-        std::cout << "qscan set requires a value" << endl;
+        std::cout << "qscan set requires a value" << std::endl;
         return 2;
       }
       const auto s = stl::at(remaining(), 1);
       const auto v = to_number<uint32_t>(s);
       if (v <= 0) {
-        std::cout << "invalid value: '" << s << "' (" << v << ")" << endl;
+        std::cout << "invalid value: '" << s << "' (" << v << ")" << std::endl;
         return 1;
       }
-      std::cout << "Setting qscanptr to : " << v << endl;
+      std::cout << "Setting qscanptr to : " << v << std::endl;
       set_qscan(*this->config()->config(), v);
     }
     return 1;
@@ -131,8 +122,8 @@ public:
 };
 
 bool StatusCommand::AddSubCommands() {
-  add(make_unique<StatusQScanCommand>());
-  add(make_unique<StatusDumpCommand>());
+  add(std::make_unique<StatusQScanCommand>());
+  add(std::make_unique<StatusDumpCommand>());
   return true;
 }
 

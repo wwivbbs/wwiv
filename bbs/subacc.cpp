@@ -25,7 +25,6 @@
 #include "common/output.h"
 #include "core/datetime.h"
 #include "core/file.h"
-#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
@@ -34,10 +33,10 @@
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
+
 #include <memory>
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -51,7 +50,6 @@ using namespace wwiv::strings;
 static std::unique_ptr<File> fileSub; // File object for '.sub' file
 static char subdat_fn[MAX_PATH];      // filename of .sub file
 
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -88,8 +86,7 @@ uint32_t WWIVReadLastRead(int sub_number) {
       FilePath(a()->config()->datadir(), StrCat(a()->subs().sub(sub_number).filename, ".sub"));
   if (!File::Exists(fn)) {
     File subFile(fn);
-    auto created = subFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    if (!created) {
+    if (!subFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       return 0;
     }
     p.owneruser = 0;

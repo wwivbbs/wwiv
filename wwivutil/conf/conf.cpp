@@ -30,14 +30,6 @@
 #include <string>
 #include <vector>
 
-using std::clog;
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -59,11 +51,11 @@ class ConfDumpCommand final : public UtilCommand {
 public:
   ConfDumpCommand() : UtilCommand("dump", "Displays the info about a conference") {}
 
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   dump --conf_type=[subs|dirs] [conf key]" << endl;
-    ss << "Example: dump --conf_type=subs A" << endl << endl;
-    ss << "         Note that an empty conference key dumps all converences" << endl;
+    ss << "Usage:   dump --conf_type=[subs|dirs] [conf key]" << std::endl;
+    ss << "Example: dump --conf_type=subs A" << std::endl << std::endl;
+    ss << "         Note that an empty conference key dumps all converences" << std::endl;
     return ss.str();
   }
 
@@ -107,13 +99,13 @@ class ConfConvertCommand final : public UtilCommand {
 public:
   ConfConvertCommand() : UtilCommand("convert", "Converts 4.3x conferences to 5.6 format") {}
 
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   convert " << endl;
+    ss << "Usage:   convert " << std::endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     const auto datadir = config()->config()->datadir();
     Subs subs(datadir, config()->networks().networks());
     files::Dirs dirs(datadir, 0);
@@ -159,10 +151,10 @@ public:
 };
 
 bool ConfCommand::AddSubCommands() {
-  if (!add(make_unique<ConfDumpCommand>())) {
+  if (!add(std::make_unique<ConfDumpCommand>())) {
     return false;
   }
-  if (!add(make_unique<ConfConvertCommand>())) {
+  if (!add(std::make_unique<ConfConvertCommand>())) {
     return false;
   }
 

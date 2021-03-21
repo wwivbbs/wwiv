@@ -25,7 +25,6 @@
 #include <memory>
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -37,26 +36,26 @@ protected:
     hello_world_path_ = helper_.CreateTempFile(test_name_, kHelloWorld);
   }
 
-  [[nodiscard]] const string& test_name() const { return test_name_; }
+  [[nodiscard]] const std::string& test_name() const { return test_name_; }
 
   FileHelper helper_;
   std::filesystem::path hello_world_path_;
-  string test_name_;
-  static const string kHelloWorld;
+  std::string test_name_;
+  static const std::string kHelloWorld;
 };
 
-const string TextFileTest::kHelloWorld = "Hello World\n";
+const std::string TextFileTest::kHelloWorld = "Hello World\n";
 
 TEST_F(TextFileTest, Constructor_SunnyCase) {
   TextFile file(hello_world_path_, "rt");
-  string s;
+  std::string s;
   EXPECT_TRUE(file.ReadLine(&s));
   EXPECT_EQ("Hello World", s);
 }
 
 TEST_F(TextFileTest, Constructor_Path_And_Name) {
   TextFile file(FilePath(helper_.TempDir(), this->test_name()), "rt");
-  string s;
+  std::string s;
   EXPECT_TRUE(file.ReadLine(&s));
   EXPECT_EQ("Hello World", s);
 }
@@ -88,7 +87,7 @@ TEST_F(TextFileTest, ReadLine_CA) {
 TEST_F(TextFileTest, ReadLine_String) {
   const auto path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
   TextFile file(path, "rt");
-  string s;
+  std::string s;
   EXPECT_TRUE(file.ReadLine(&s));
   EXPECT_EQ("a", s);
   EXPECT_TRUE(file.ReadLine(&s));
@@ -99,7 +98,7 @@ TEST_F(TextFileTest, ReadLine_String) {
 }
 
 TEST_F(TextFileTest, Write) {
-  string filename;
+  std::string filename;
   {
     TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
     file.Write("Hello");
@@ -110,7 +109,7 @@ TEST_F(TextFileTest, Write) {
 }
 
 TEST_F(TextFileTest, Insertion_Basic) {
-  string filename;
+  std::string filename;
   {
     TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
     file << "Hello" << " " << "World";
@@ -121,7 +120,7 @@ TEST_F(TextFileTest, Insertion_Basic) {
 }
 
 TEST_F(TextFileTest, Insertion_TwoLines) {
-  string filename;
+  std::string filename;
   {
     TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
     file << "Hello" << std::endl;
@@ -136,7 +135,7 @@ TEST_F(TextFileTest, Insertion_TwoLines) {
 }
 
 TEST_F(TextFileTest, WriteChar) {
-  string filename;
+  std::string filename;
   {
     TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
     file.WriteChar('H');
@@ -147,7 +146,7 @@ TEST_F(TextFileTest, WriteChar) {
 }
 
 TEST_F(TextFileTest, WriteBinary) {
-  string filename;
+  std::string filename;
   {
     TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
     file.WriteBinary(kHelloWorld.c_str(), kHelloWorld.size() - 1); // trim off \n
@@ -175,7 +174,7 @@ TEST_F(TextFileTest, Close_SecondCloseReturnsFalse) {
 
 TEST_F(TextFileTest, IsEOF) {
   TextFile file(hello_world_path_, "rt");
-  string s;
+  std::string s;
   EXPECT_TRUE(file.ReadLine(&s));
   EXPECT_EQ("Hello World", s);
 
@@ -187,7 +186,7 @@ TEST_F(TextFileTest, GetPosition) {
   const auto path = helper_.CreateTempFile(test_name_, "a\nb\nc\n");
   TextFile file(path, "rt");
   ASSERT_EQ(0, file.position());
-  string s;
+  std::string s;
   EXPECT_TRUE(file.ReadLine(&s));
   EXPECT_EQ("a", s);
 #ifdef _WIN32

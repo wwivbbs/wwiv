@@ -22,16 +22,13 @@
 #include "binkp/cram.h"
 #include <string>
 
-using std::endl;
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::net;
 using namespace wwiv::strings;
 
 
 TEST(CramTest, Basic) {
   Cram c;
-  string h = c.CreateHashedSecret("cafebabecafebabecafebabecafebabe", "WELCOME");
+  std::string h = c.CreateHashedSecret("cafebabecafebabecafebabecafebabe", "WELCOME");
   // fidopoll from mystic returned bfd5323f395243161863e7a9cd1de854
   EXPECT_EQ("bfd5323f395243161863e7a9cd1de854", h);
 }

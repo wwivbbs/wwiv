@@ -25,13 +25,11 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include <memory>
 #include <string>
 
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -88,7 +86,7 @@ void FullScreenView::DrawTopBar() {
   bout_.GotoXY(1, num_header_lines_ + 1);
   std::ostringstream ss;
   ss << "|#7" << static_cast<unsigned char>(198)
-     << string(screen_width_ - 2, static_cast<unsigned char>(205))
+     << std::string(screen_width_ - 2, static_cast<unsigned char>(205))
      << static_cast<unsigned char>(181);
   bout_.bputs(ss.str());
 }
@@ -100,7 +98,7 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
   ScopeExit at_ext([=] { bout.SystemColor(saved_color); });
 
   bout_ << "|09" << static_cast<unsigned char>(198)
-        << string(screen_width_ - 2, static_cast<unsigned char>(205))
+        << std::string(screen_width_ - 2, static_cast<unsigned char>(205))
         << static_cast<unsigned char>(181);
 
   if (text.empty()) {

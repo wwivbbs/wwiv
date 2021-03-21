@@ -16,18 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
-#include "bbs/bbs.h"
 #include "bbs_test/bbs_helper.h"
 #include "common/output.h"
 #include "common/pause.h"
-#include <iostream>
-#include <string>
 
-using std::cout;
-using std::endl;
-using std::string;
+#include "gtest/gtest.h"
+#include <string>
 
 using namespace wwiv::common;
 using wwiv::sdk::User;

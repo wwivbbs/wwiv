@@ -18,18 +18,14 @@
 /**************************************************************************/
 #include "sdk/wwivd_config.h"
 
-#include <iostream>
-#include <map>
-#include <string>
-#include <cereal/cereal.hpp>
-#include <cereal/access.hpp>
+#include "core/cereal_utils.h"
 #include "core/file.h"
 #include "core/jsonfile.h"
-#include "core/cereal_utils.h"
 #include "sdk/config.h"
 
-using std::map;
-using std::string;
+#include <cereal/access.hpp>
+#include <cereal/cereal.hpp>
+
 using namespace wwiv::core;
 
 #ifdef DELETE

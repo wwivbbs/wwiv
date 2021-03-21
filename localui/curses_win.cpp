@@ -29,10 +29,11 @@
 #include <chrono>
 #include <string>
 
-using std::string;
 using namespace std::chrono;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
+
+namespace wwiv::local::ui {
 
 CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols,
                            int begin_y, int begin_x)
@@ -315,4 +316,6 @@ void CursesWindow::PutsWithPipeColors(const std::string& s) {
 void CursesWindow::PutsWithPipeColors(int x, int y, const std::string& text) {
   GotoXY(x, y);
   PutsWithPipeColors(text);
+}
+
 }

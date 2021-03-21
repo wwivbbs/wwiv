@@ -72,9 +72,6 @@ using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 using std::chrono::seconds;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;
@@ -174,7 +171,7 @@ static int ShowLoginAndGetUserNumber(const std::string& remote_username) {
   // bout << "Enter number or name or 'NEW'\r\nNN: ";
   bout.str("NN_PROMPT");
 
-  string user_name;
+  std::string user_name;
   if (remote_username.empty()) {
     user_name = bin.input_upper(30);
   } else {
@@ -312,7 +309,7 @@ static void logon_guest() {
   bout.printfile(GUEST_NOEXT);
   bout.pausescr();
 
-  string userName, reason;
+  std::string userName, reason;
   auto count = 0;
   do {
     bout << "\r\n|#5Enter your real name : ";
@@ -363,8 +360,8 @@ void getuser() {
   const auto ans = GetAnsiStatusAndShowWelcomeScreen();
   auto first_time = true;
   do {
-    string remote_username;
-    string remote_password;
+    std::string remote_username;
+    std::string remote_password;
     if (first_time) {
       remote_username = ToStringUpperCase(a()->remoteIO()->remote_info().username);
       remote_password = ToStringUpperCase(a()->remoteIO()->remote_info().password);
@@ -491,12 +488,12 @@ static void PrintUserSpecificFiles() {
 }
 
 static std::string CreateLastOnLogLine(const Status& status) {
-  string log_line;
+  std::string log_line;
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
     a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
-    const string username_num = a()->user()->name_and_number();
-    const string t = times();
-    const string f = fulldate();
+    const std::string username_num = a()->user()->name_and_number();
+    const std::string t = times();
+    const std::string f = fulldate();
     log_line = fmt::sprintf(
       "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
       status.caller_num(),
@@ -522,7 +519,7 @@ static std::string CreateLastOnLogLine(const Status& status) {
 
 static void UpdateLastOnFile() {
   const auto laston_txt_filename = FilePath(a()->config()->gfilesdir(), LASTON_TXT);
-  vector<string> lines;
+  std::vector<std::string> lines;
   {
     TextFile laston_file(laston_txt_filename, "r");
     lines = laston_file.ReadFileIntoVector();
@@ -808,13 +805,13 @@ static void LoginCheckForNewMail() {
   }
 }
 
-static vector<bool> read_voting() {
+static std::vector<bool> read_voting() {
   DataFile<votingrec> file(FilePath(a()->config()->datadir(), VOTING_DAT));
-  vector<bool> questused(20);
+  std::vector<bool> questused(20);
   if (!file) {
     return questused;
   }
-  vector<votingrec> votes;
+  std::vector<votingrec> votes;
   file.ReadVector(votes);
   int cur = 0;
   for (const auto& v : votes) {
@@ -965,7 +962,7 @@ void logoff() {
     return;
   }
 
-  string text = "  Logged Off At ";
+  std::string text = "  Logged Off At ";
   text += times();
   if (a()->sess().effective_sl() != 255 || a()->sess().incom()) {
     sysoplog(false) << "";

@@ -28,7 +28,6 @@
 
 namespace wwiv::common {
 
-using std::string;
 using namespace std::chrono;
 using namespace wwiv::core;
 

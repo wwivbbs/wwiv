@@ -35,14 +35,6 @@
 #include <string>
 #include <vector>
 
-using std::clog;
-using std::cout;
-using std::endl;
-using std::setw;
-using std::string;
-using std::make_unique;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -52,7 +44,7 @@ constexpr char CD = 4;
 
 namespace wwiv::wwivutil::files {
 
-static std::optional<vector<sdk::files::directory_t>> ReadAreas(const std::string& datadir) {
+static std::optional<std::vector<sdk::files::directory_t>> ReadAreas(const std::string& datadir) {
   sdk::files::Dirs dirs(datadir, 0);
   if (dirs.Load()) {
     return {dirs.dirs()};
@@ -67,7 +59,7 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   areas" << endl;
+    ss << "Usage:   areas" << std::endl;
     return ss.str();
   }
 
@@ -78,11 +70,11 @@ public:
     }
 
     int num = 0;
-    cout << "#Num FileName " << std::setw(30) << std::left << "Name" << " " 
+    std::cout << "#Num FileName " << std::setw(30) << std::left << "Name" << " " 
          << "Path" << std::endl;
-    cout << string(78, '=') << endl;
+    std::cout << std::string(78, '=') << std::endl;
     for (const auto& d : dirs.value()) {
-      cout << "#" << std::setw(3) << std::left << num++ << " "
+      std::cout << "#" << std::setw(3) << std::left << num++ << " "
            << std::setw(8) << d.filename << " " 
            << std::setw(30) << d.name << " " << d.path
            << std::endl;
@@ -103,14 +95,14 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   list [num]" << endl;
+    ss << "Usage:   list [num]" << std::endl;
     return ss.str();
   }
 
   int Execute() override {
     if (remaining().empty()) {
-      clog << "Missing file areas #." << endl;
-      cout << GetUsage() << GetHelp() << endl;
+      std::clog << "Missing file areas #." << std::endl;
+      std::cout << GetUsage() << GetHelp() << std::endl;
       return 2;
     }
     auto o = ReadAreas(config()->config()->datadir());
@@ -143,19 +135,19 @@ public:
       return 1;
     }
     auto num_files = area->number_of_files();
-    cout << fmt::format("File Area: {} ({} files)", dir.name, num_files) << std::endl;
-    cout << std::endl;
+    std::cout << fmt::format("File Area: {} ({} files)", dir.name, num_files) << std::endl;
+    std::cout << std::endl;
     const auto& h = area->header();
     if (static_cast<int>(h.num_files()) != num_files) {
-      cout << fmt::format("WARNING: Header doesn't match header:{} vs. size:{}", h.num_files(),
+      std::cout << fmt::format("WARNING: Header doesn't match header:{} vs. size:{}", h.num_files(),
                           num_files)
            << std::endl;
     }
-    cout << "#Num File Name   " << std::left << "Description" << std::endl;
-    cout << string(78, '=') << endl;
+    std::cout << "#Num File Name   " << std::left << "Description" << std::endl;
+    std::cout << std::string(78, '=') << std::endl;
     for (auto num = 1; num <= num_files; num++) {
       auto f = area->ReadFile(num);
-      cout << fmt::format("#{: <3} {: <12} {}", num, f.unaligned_filename(), f.description()) << std::endl;
+      std::cout << fmt::format("#{: <3} {: <12} {}", num, f.unaligned_filename(), f.description()) << std::endl;
       if (f.has_extended_description() && barg("ext")) {
         auto so = area->ReadExtendedDescriptionAsString(f);
         if (!so) {
@@ -163,7 +155,7 @@ public:
         }
         auto lines = SplitString(so.value(), "\n", false);
         for(const auto& l : lines) {
-          cout << std::string(18, ' ') << StringTrim(l) << std::endl;
+          std::cout << std::string(18, ' ') << StringTrim(l) << std::endl;
         }
       }
     }
@@ -182,15 +174,15 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   delete --num=NN <sub #>" << endl;
-    ss << "Example: delete --num=10 1" << endl;
+    ss << "Usage:   delete --num=NN <sub #>" << std::endl;
+    ss << "Example: delete --num=10 1" << std::endl;
     return ss.str();
   }
 
   int Execute() override {
     if (remaining().empty()) {
-      clog << "Missing file area #." << endl;
-      cout << GetUsage() << GetHelp() << endl;
+      std::clog << "Missing file area #." << std::endl;
+      std::cout << GetUsage() << GetHelp() << std::endl;
       return 2;
     }
 
@@ -237,22 +229,22 @@ public:
 };
 
 bool FilesCommand::AddSubCommands() {
-  if (!add(make_unique<AllowCommand>())) {
+  if (!add(std::make_unique<AllowCommand>())) {
     return false;
   }
-  if (!add(make_unique<ArcCommand>())) {
+  if (!add(std::make_unique<ArcCommand>())) {
     return false;
   }
-  if (!add(make_unique<TicCommand>())) {
+  if (!add(std::make_unique<TicCommand>())) {
     return false;
   }
-  if (!add(make_unique<AreasCommand>())) {
+  if (!add(std::make_unique<AreasCommand>())) {
     return false;
   }
-  if (!add(make_unique<ListCommand>())) {
+  if (!add(std::make_unique<ListCommand>())) {
     return false;
   }
-  if (!add(make_unique<DeleteFileCommand>())) {
+  if (!add(std::make_unique<DeleteFileCommand>())) {
     return false;
   }
   return true;

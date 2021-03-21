@@ -20,7 +20,6 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "common/com.h"
 #include "common/input.h"
 #include "common/output.h"
 #include "core/datafile.h"
@@ -31,10 +30,9 @@
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
-#include <cstdarg>
+
 #include <string>
 
-using std::string;;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;

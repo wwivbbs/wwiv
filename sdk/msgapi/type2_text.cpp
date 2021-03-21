@@ -22,7 +22,6 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/vardec.h"
-#include <memory>
 #include <optional>
 #include <string>
 #include <utility>
@@ -30,10 +29,6 @@
 
 namespace wwiv::sdk::msgapi {
 
-using std::string;
-using std::make_unique;
-using std::unique_ptr;
-using std::vector;
 using wwiv::core::DataFile;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -153,15 +148,15 @@ std::optional<std::string> Type2Text::readfile(const messagerec& msg) {
 
   const auto last_cz = out.find_last_of(CZ);
   const auto last_block_start = out.length() - MSG_BLOCK_SIZE;
-  if (last_cz != string::npos && last_block_start >= 0 && last_cz > last_block_start) {
+  if (last_cz != std::string::npos && last_block_start >= 0 && last_cz > last_block_start) {
     // last block has a Control-Z in it.  Make sure we add a 0 after it.
     out.resize(last_cz);
   }
   return {out};
 }
 
-std::optional<messagerec> Type2Text::savefile(const string& text) {
-  vector<gati_t> gati;
+std::optional<messagerec> Type2Text::savefile(const std::string& text) {
+  std::vector<gati_t> gati;
   auto msgfile(OpenMessageFile());
   if (!msgfile || !msgfile->IsOpen()) {
     // Unable to write to the message file.

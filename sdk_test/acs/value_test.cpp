@@ -24,7 +24,6 @@
 #include "sdk/value/uservalueprovider.h"
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::core::parser;
 using namespace wwiv::sdk::acs;

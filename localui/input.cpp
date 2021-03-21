@@ -44,12 +44,11 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
+
+namespace wwiv::local::ui {
 
 
 void Label::Display(CursesWindow* window) const {
@@ -95,7 +94,7 @@ EditlineResult ACSEditItem::Run(CursesWindow* window) {
     }
     last_expr = acs;
 
-    wwiv::sdk::User user{};
+    sdk::User user{};
     user.sl(255);
     user.dsl(255);
     user.ar_int(0xffff);
@@ -171,7 +170,7 @@ EditlineResult CustomEditItem::Run(CursesWindow* window) {
 void CustomEditItem::Display(CursesWindow* window) const {
   window->GotoXY(x_, y_);
   // The width_ may be wider than the field width, so we need use field_width_.
-  const string blanks(field_width_, ' ');
+  const std::string blanks(field_width_, ' ');
   window->Puts(blanks);
 
   const auto s = to_field_();
@@ -204,12 +203,12 @@ static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
   return dialog;
 }
 
-bool dialog_yn(CursesWindow* window, const vector<string>& text) {
+bool dialog_yn(CursesWindow* window, const std::vector<std::string>& text) {
   auto maxlen = 4;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, size_int(s));
   }
-  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, size_int(text), maxlen));
+  std::unique_ptr<UIWindow> dialog(CreateDialogWindow(window, size_int(text), maxlen));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
   auto curline = 1;
   for (const auto& s : text) {
@@ -220,16 +219,16 @@ bool dialog_yn(CursesWindow* window, const vector<string>& text) {
   return toupper(dialog->GetChar()) == 'Y';
 }
 
-bool dialog_yn(CursesWindow* window, const string& text) {
-  const vector<string> text_vector = {text};
+bool dialog_yn(CursesWindow* window, const std::string& text) {
+  const std::vector<std::string> text_vector = {text};
   return dialog_yn(window, text_vector);
 }
 
-static void winput_password(CursesWindow* dialog, string* output, int max_length) {
+static void winput_password(CursesWindow* dialog, std::string* output, int max_length) {
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
 
   auto curpos = 0;
-  string s;
+  std::string s;
   s.resize(max_length);
   output->clear();
   for (;;) {
@@ -293,14 +292,14 @@ static void winput_password(CursesWindow* dialog, string* output, int max_length
   }
 }
 
-void input_password(CursesWindow* window, const string& prompt, const vector<string>& text,
-                    string* output, int max_length) {
+void input_password(CursesWindow* window, const std::string& prompt, const std::vector<std::string>& text,
+                    std::string* output, int max_length) {
   auto maxlen = size_int(prompt) + max_length;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, size_int(s));
   }
   CHECK(window->IsGUI()) << "input_password needs a GUI.";
-  unique_ptr<CursesWindow> dialog(
+  std::unique_ptr<CursesWindow> dialog(
       dynamic_cast<CursesWindow*>(CreateDialogWindow(window, size_int(text) + 2, maxlen)));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
 
@@ -314,18 +313,18 @@ void input_password(CursesWindow* window, const string& prompt, const vector<str
   winput_password(dialog.get(), output, max_length);
 }
 
-int messagebox(UIWindow* window, const string& text) {
-  const vector<string> vector = {text};
+int messagebox(UIWindow* window, const std::string& text) {
+  const std::vector<std::string> vector = {text};
   return messagebox(window, vector);
 }
 
-int messagebox(UIWindow* window, const vector<string>& text) {
-  const string prompt = "Press Any Key";
+int messagebox(UIWindow* window, const std::vector<std::string>& text) {
+  const std::string prompt = "Press Any Key";
   auto maxlen = size_int(prompt) + 2;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, size_int(s));
   }
-  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, size_int(text) + 2, maxlen));
+  std::unique_ptr<UIWindow> dialog(CreateDialogWindow(window, size_int(text) + 2, maxlen));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
   auto curline = 1;
   for (const auto& s : text) {
@@ -338,12 +337,12 @@ int messagebox(UIWindow* window, const vector<string>& text) {
   return dialog->GetChar();
 }
 
-int input_select_item(UIWindow* window, const std::string& prompt, const vector<string>& items) {
+int input_select_item(UIWindow* window, const std::string& prompt, const std::vector<std::string>& items) {
   auto maxlen = size_int(prompt) + 2;
   for (const auto& s : items) {
     maxlen = std::max<int>(maxlen, size_int(s));
   }
-  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, size_int(items) + 2, maxlen));
+  std::unique_ptr<UIWindow> dialog(CreateDialogWindow(window, size_int(items) + 2, maxlen));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
   auto curline = 1;
   int index = 0;
@@ -362,12 +361,12 @@ int input_select_item(UIWindow* window, const std::string& prompt, const vector<
 
 std::string dialog_input_string(CursesWindow* window, const std::string& prompt,
                                 int max_length) {
-  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, 3, size_int(prompt) + 4 + max_length));
+  std::unique_ptr<UIWindow> dialog(CreateDialogWindow(window, 3, size_int(prompt) + 4 + max_length));
   dialog->PutsXY(2, 2, prompt);
   dialog->Refresh();
 
   CHECK(window->IsGUI()) << "dialog_input_string needs a GUI.";
-  string s;
+  std::string s;
   editline(dynamic_cast<CursesWindow*>(dialog.get()), &s, max_length, EditLineMode::ALL, "");
   return s;
 }
@@ -376,15 +375,15 @@ static int max_length_for_number(int64_t n) {
   return (n == 0) ? 1 : static_cast<int>(std::floor(std::log10(std::abs(n)))) + 1;
 }
 
-int dialog_input_number(CursesWindow* window, const string& prompt, int min_value, int max_value) {
+int dialog_input_number(CursesWindow* window, const std::string& prompt, int min_value, int max_value) {
   const auto num_digits = max_length_for_number(max_value);
   CHECK(window->IsGUI()) << "dialog_input_number needs a GUI.";
-  unique_ptr<CursesWindow> dialog(
+  std::unique_ptr<CursesWindow> dialog(
       dynamic_cast<CursesWindow*>(CreateDialogWindow(window, 3, size_int(prompt) + 4 + num_digits)));
   dialog->PutsXY(2, 2, prompt);
   dialog->Refresh();
 
-  string s;
+  std::string s;
   editline(dialog.get(), &s, num_digits, EditLineMode::NUM_ONLY, "");
   if (s.empty()) {
     return min_value;
@@ -430,12 +429,12 @@ static int editlinestrlen(char* text) {
 }
 
 
-EditlineResult editline(CursesWindow* window, string* s, int len, EditLineMode status,
+EditlineResult editline(CursesWindow* window, std::string* s, int len, EditLineMode status,
                          const char* ss) {
   return editline(window, s, len, status, ss, {});
 }
 
-EditlineResult editline(CursesWindow* window, string* s, int len, EditLineMode status,
+EditlineResult editline(CursesWindow* window, std::string* s, int len, EditLineMode status,
                          const char* ss, edline_validation_fn fn) {
   char buffer[255];
   to_char_array(buffer, *s);
@@ -451,7 +450,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
 
 /* Edits a string, doing I/O to the screen only. */
 EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode status,
-                         const char* ss, edline_validation_fn fn) {
+                         const char* ss, const edline_validation_fn& fn) {
   uint32_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
@@ -507,7 +506,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
         window->GotoXY(cx + pos, cy);
       }
       break;
-    case CO:     // return
+    case io::CO:     // return
     case KEY_UP: // curses
       done = true;
       rc = EditlineResult::PREV;
@@ -535,7 +534,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
       }
       break;
     case KEY_DC: // curses
-    case CD:     // control-d
+    case io::CD: // control-d
       if (status != EditLineMode::SET) {
         for (int i = pos; i < len; i++) {
           s[i] = s[i + 1];
@@ -602,18 +601,18 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
 #ifdef PADENTER
     case PADENTER:
 #endif
-    case RETURN: // return
-    case TAB:
+    case io::ENTER: // return
+    case io::TAB:
       done = true;
       rc = EditlineResult::NEXT;
       break;
-    case ESC: // esc
+    case io::ESC: // esc
       done = true;
       rc = EditlineResult::DONE;
       break;
     case 0x7f:          // yet some other delete key
     case KEY_BACKSPACE: // curses
-    case BACKSPACE:     // backspace
+    case io::BACKSPACE: // backspace
       if (status != EditLineMode::SET) {
         if (pos > 0) {
           for (int i = pos - 1; i < len; i++) {
@@ -626,11 +625,11 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
         }
       }
       break;
-    case CA: // control-a
+    case io::CA: // control-a
       pos = 0;
       window->GotoXY(cx, cy);
       break;
-    case CE: // control-e
+    case io::CE: // control-e
       pos = editlinestrlen(s);
       window->GotoXY(cx + pos, cy);
       break;
@@ -679,12 +678,12 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
     const auto ch = window->GetChar();
     switch (ch) {
     case KEY_ENTER:
-    case RETURN:
-    case TAB:
+    case io::ENTER:
+    case io::TAB:
       done = true;
       *rc = EditlineResult::NEXT;
       break;
-    case ESC:
+    case io::ESC:
     case KEY_F(1): // F1
       done = true;
       *rc = EditlineResult::DONE;
@@ -703,7 +702,7 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
         value = (value + 1) % strings.size();
         auto s = strings.at(value);
         if (s.size() < max_size) {
-          s += string(max_size - s.size(), ' ');
+          s += std::string(max_size - s.size(), ' ');
         }
         window->PutsXY(cx, cy, s);
         window->GotoXY(cx, cy);
@@ -720,9 +719,10 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
 void trimstrpath(char* s) {
   StringTrimEnd(s);
 
-  const auto i = strlen(s);
-  if (i && (s[i - 1] != File::pathSeparatorChar)) {
+  if (const auto i = strlen(s); i && (s[i - 1] != File::pathSeparatorChar)) {
     s[i] = File::pathSeparatorChar;
     s[i + 1] = 0;
   }
+}
+
 }

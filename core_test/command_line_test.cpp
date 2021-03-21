@@ -22,8 +22,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-
 using namespace wwiv::core;
 
 class CommandLineTest: public ::testing::Test {};

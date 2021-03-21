@@ -43,8 +43,8 @@ public:
   IOBase() = default;
   virtual ~IOBase() = default;
 
-  virtual void SetLocalIO(LocalIO* local_io) { local_io_ = local_io; }
-  [[nodiscard]] LocalIO* localIO() const noexcept { return local_io_; }
+  virtual void SetLocalIO(local::io::LocalIO* local_io) { local_io_ = local_io; }
+  [[nodiscard]] local::io::LocalIO* localIO() const noexcept { return local_io_; }
 
   void SetComm(RemoteIO* comm) { comm_ = comm; }
   [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
@@ -59,7 +59,7 @@ public:
   Context& context();
 
 protected:
-  LocalIO* local_io_{nullptr};
+  local::io::LocalIO* local_io_{nullptr};
   RemoteIO* comm_{nullptr};
   mutable context_provider_t context_provider_;
 };

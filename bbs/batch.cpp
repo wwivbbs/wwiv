@@ -59,18 +59,16 @@
 #include <string>
 #include <utility>
 
-using std::begin;
-using std::end;
-using std::string;
 using namespace std::chrono;
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 // trytoul.cpp
-int try_to_ul(const string& file_name);
+int try_to_ul(const std::string& file_name);
 
 // normupld.cpp
 void normalupload(int dn);
@@ -96,7 +94,7 @@ static void listbatch() {
     if (abort || a()->sess().hangup()) {
       break;
     }
-    string buffer;
+    std::string buffer;
     ++current_num;
     if (b.sending()) {
       const auto t = ctim(b.time(a()->modem_speed_));
@@ -111,7 +109,7 @@ static void listbatch() {
   bout.nl();
 }
 
-static void downloaded(const string& file_name, long lCharsPerSecond) {
+static void downloaded(const std::string& file_name, long lCharsPerSecond) {
 
   for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); ++it) {
     const auto& b = *it;
@@ -180,7 +178,7 @@ void didnt_upload(const BatchEntry& b) {
   }
 }
 
-static void uploaded(const string& file_name, long lCharsPerSecond) {
+static void uploaded(const std::string& file_name, long lCharsPerSecond) {
   for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); ++it) {
     const auto& b = *it;
     if (file_name == b.aligned_filename() && !b.sending()) {
@@ -532,7 +530,7 @@ static double ratio1(unsigned long xa) {
   return std::min<double>(r, 99.998);
 }
 
-static string make_ul_batch_list() {
+static std::string make_ul_batch_list() {
   const auto fn = fmt::sprintf("%s.%3.3u", FILESUL_NOEXT, a()->sess().instance_number());
   // TODO(rushfan): This should move to a temp directory.
   const auto list_filename = FilePath(a()->bbspath(), fn);
@@ -564,7 +562,7 @@ static std::filesystem::path make_dl_batch_list() {
     if (!b.sending()) {
       continue;
     }
-    string filename_to_send;
+    std::string filename_to_send;
     if (a()->dirs()[b.dir()].mask & mask_cdrom) {
       const auto fileToSend =
           FilePath(a()->sess().dirs().temp_directory(), files::FileName(b.aligned_filename()));
@@ -597,9 +595,9 @@ static std::filesystem::path make_dl_batch_list() {
   return list_filename;
 }
 
-static void run_cmd(const string& orig_commandline, const string& downlist, const string& uplist,
-                    const string& dl, bool bHangupAfterDl) {
-  string commandLine = stuff_in(orig_commandline,
+static void run_cmd(const std::string& orig_commandline, const std::string& downlist, const std::string& uplist,
+                    const std::string& dl, bool bHangupAfterDl) {
+  std::string commandLine = stuff_in(orig_commandline,
                                 std::to_string(std::min<int>(a()->modem_speed_, 57600)),
                                 std::to_string(a()->primary_port()),
                                 downlist,
@@ -712,7 +710,7 @@ int batchdl(int mode) {
     case 'R': {
       bout.nl();
       bout << "|#9Remove which? ";
-      string s = bin.input(4);
+      std::string s = bin.input(4);
       auto i = to_number<int>(s);
       if (i > 0 && i <= ssize(a()->batch().entry)) {
         didnt_upload(a()->batch().entry[i - 1]);

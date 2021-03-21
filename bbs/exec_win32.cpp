@@ -56,7 +56,6 @@ const DWORD SBBSEXEC_IOCTL_STOP = 0x8006;
 const int CONST_NUM_LOOPS_BEFORE_EXIT_CHECK = 500;
 typedef HANDLE(WINAPI* OPENVXDHANDLEFUNC)(HANDLE);
 
-using std::string;
 using namespace std::chrono_literals;
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -77,7 +76,7 @@ static std::filesystem::path GetDosXtrnPath() {
   return FilePath(a()->bindir(), "dosxtrn.exe");
 }
 
-static std::string CreateSyncFosCommandLine(const string& tempFilePath, int nSyncMode) {
+static std::string CreateSyncFosCommandLine(const std::string& tempFilePath, int nSyncMode) {
   std::stringstream ss;
   ss << GetDosXtrnPath().string() << " " << tempFilePath << " " << "NT" << " ";
   ss << a()->sess().instance_number() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
@@ -94,7 +93,7 @@ static bool DeleteSyncTempFile() {
   return false;
 }
 
-static bool CreateSyncTempFile(string *out, const string& commandLine) {
+static bool CreateSyncTempFile(std::string *out, const std::string& commandLine) {
   out->assign(GetSyncFosTempFilePath().string());
   DeleteSyncTempFile();
 
@@ -324,14 +323,14 @@ static std::string ErrorAsString(DWORD last_error) {
 }
 //  Main code that launches external programs and handle sbbsexec support
 
-int exec_cmdline(const string& user_command_line, int flags) {
+int exec_cmdline(const std::string& user_command_line, int flags) {
   STARTUPINFO si{};
   PROCESS_INFORMATION pi{};
 
   ZeroMemory(&si, sizeof(si));
   si.cb = sizeof(si);
   ZeroMemory(&pi, sizeof(pi));
-  string working_cmdline;
+  std::string working_cmdline;
 
   const auto saved_binary_mode = a()->remoteIO()->binary_mode();
 
@@ -367,7 +366,7 @@ int exec_cmdline(const string& user_command_line, int flags) {
   }
 
   if (should_use_sync) {
-    string syncFosTempFile;
+    std::string syncFosTempFile;
     if (!CreateSyncTempFile(&syncFosTempFile, user_command_line)) {
       return -1;
     }

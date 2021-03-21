@@ -28,7 +28,6 @@
 #include <string>
 #include <utility>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -106,7 +105,7 @@ std::tuple<Packet, ReadPacketResponse>  read_packet(File& f, bool process_de) {
   return std::make_tuple(packet, ReadPacketResponse::OK);
 }
 
-bool write_wwivnet_packet(const string& filename, const net_networks_rec& net, const Packet& p) {
+bool write_wwivnet_packet(const std::string& filename, const net_networks_rec& net, const Packet& p) {
   VLOG(2) << "write_wwivnet_packet: " << filename;
   LOG(INFO) << "write_wwivnet_packet: Writing type " << p.nh.main_type << "/" << p.nh.minor_type
             << " message to packet: " << filename;
@@ -142,7 +141,7 @@ bool write_wwivnet_packet(const string& filename, const net_networks_rec& net, c
   return true;
 }
 
-static string NetInfoFileName(uint16_t type) {
+static std::string NetInfoFileName(uint16_t type) {
   switch (type) {
   case net_info_bbslist:
     return BBSLIST_NET;
@@ -191,7 +190,7 @@ NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
   const uint16_t flags = (text.at(1) << 8) | text.at(0);
   VLOG(2) << "flags: " << flags;
   const char* fntemp = &text[2];
-  string fn(fntemp);
+  std::string fn(fntemp);
   if (fn.empty() || fn.size() > 8) {
     // still BAD.
     LOG(ERROR) << "filename length not right; must be at [0,8]; was: " << fn.size();
@@ -385,7 +384,7 @@ ParsedPacketText ParsedPacketText::FromPacketText(uint16_t typ, const std::strin
 
   // This is the message body including any control lines (^D0 or ^A)
   // that are part of it.
-  p.text_ = string(iter, std::end(raw));
+  p.text_ = std::string(iter, std::end(raw));
   return p;
 }
 
@@ -411,7 +410,7 @@ std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
   return text;
 }
 
-void rename_pend(const std::filesystem::path& directory, const string& filename, char network_app_id) {
+void rename_pend(const std::filesystem::path& directory, const std::string& filename, char network_app_id) {
   const auto pend_filename(FilePath(directory, filename));
   if (!File::Exists(pend_filename)) {
     LOG(INFO) << " pending file does not exist: " << pend_filename;
@@ -449,7 +448,7 @@ std::string create_pend(const std::filesystem::path& directory, bool local, char
   return "";
 }
 
-string main_type_name(uint16_t typ) {
+std::string main_type_name(uint16_t typ) {
   switch (typ) {
   case main_type_net_info:
     return "main_type_net_info";
@@ -502,7 +501,7 @@ string main_type_name(uint16_t typ) {
   }
 }
 
-string net_info_minor_type_name(uint16_t typ) {
+std::string net_info_minor_type_name(uint16_t typ) {
   switch (typ) {
   case net_info_general_message:
     return "net_info_general_message";
@@ -585,7 +584,7 @@ static std::string change_subtype_to(const std::string& org_text, const std::str
   auto subtype = get_message_field(org_text, iter, {'\0', '\r', '\n'}, 80);
   auto result = new_subtype;
   result.push_back(0); // Add NULL
-  result += string(iter, std::end(org_text));
+  result += std::string(iter, std::end(org_text));
   return result;
 }
 

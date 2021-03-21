@@ -257,7 +257,7 @@ private:
   int bgetch_handle_escape(int key);
 
 private:
-  LocalIO* local_io_{nullptr};
+  local::io::LocalIO* local_io_{nullptr};
   RemoteIO* comm_{nullptr};
   bool last_key_local_{true};
   int nsp_{0};

@@ -23,6 +23,8 @@
 #include "local_io/local_io.h"
 #include <string>
 
+namespace wwiv::local::io {
+
 class CursesLocalIO final : public LocalIO {
 public:
   // Constructor/Destructor
@@ -72,7 +74,9 @@ private:
   int x_{0};
   int y_{0};
 
-  std::unique_ptr<CursesWindow> window_;
+  std::unique_ptr<wwiv::local::ui::CursesWindow> window_;
 };
 
-#endif // __INCLUDED_LOCAL_IO_CURSES_H__
+}
+
+#endif

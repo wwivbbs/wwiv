@@ -72,7 +72,7 @@ private:
   int lines_end_{0};
   int command_line_{0};
 
-  LocalIO::topdata_t saved_topdata{LocalIO::topdata_t::none};
+  local::io::LocalIO::topdata_t saved_topdata{local::io::LocalIO::topdata_t::none};
 };
 
 } // namespace wwiv::common

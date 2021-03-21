@@ -78,7 +78,7 @@ public:
   SemaphoreFile& operator=(const SemaphoreFile&) = delete;
 
 private:
-  SemaphoreFile(const std::filesystem::path&, int fd);
+  SemaphoreFile(std::filesystem::path, int fd);
 
   const std::filesystem::path path_;
   int fd_{-1};

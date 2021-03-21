@@ -25,7 +25,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
 using namespace wwiv::strings;
 
 namespace wwiv::core {
@@ -69,7 +68,7 @@ bool HttpServer::add(HttpMethod method, const std::string& root, HttpHandler* ha
 }
 
 
-static string current_time_as_string() {
+static std::string current_time_as_string() {
   const auto dt = DateTime::now();
   return dt.to_string();
 };
@@ -115,8 +114,7 @@ bool HttpServer::Run() {
   }
   const auto& path = cmd_parts.at(1);
   const auto headers = read_lines(conn_.get());
-  const auto& cmd = cmd_parts.at(0);
-  if (cmd == "GET") {
+  if (const auto & cmd = cmd_parts.at(0); cmd == "GET") {
     for (const auto& e : get_) {
       if (starts_with(path, e.first)) {
         const auto r = e.second->Handle(HttpMethod::GET, path, headers);

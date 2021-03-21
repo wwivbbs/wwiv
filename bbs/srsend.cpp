@@ -17,13 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/bbs.h"
-#include "common/com.h"
 #include "bbs/crc.h"
-#include "common/datetime.h"
-#include "common/remote_io.h"
 #include "bbs/sr.h"
 #include "bbs/xfer.h"
+#include "common/datetime.h"
 #include "common/output.h"
+#include "common/remote_io.h"
 #include "core/numbers.h"
 #include "core/os.h"
 #include "core/strings.h"
@@ -31,14 +30,15 @@
 #include "local_io/keycodes.h"
 #include "local_io/local_io.h"
 #include "sdk/files/file_record.h"
+
 #include <chrono>
 #include <cmath>
 #include <string>
 
-using std::string;
 using namespace std::chrono;
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
@@ -251,7 +251,7 @@ void xymodem_send(const std::filesystem::path& path, bool *sent, double *percent
       bUse1kBlocks = false;
     }
     a()->localIO()->PutsXY(65, 3, fmt::sprintf("%ld - %ldk", cp / 128 + 1, cp / 1024 + 1));
-    const string t = ctim(std::lround((file_size - cp) * tpb));
+    const std::string t = ctim(std::lround((file_size - cp) * tpb));
     a()->localIO()->PutsXY(65, 1, t);
     a()->localIO()->PutsXY(69, 4, "0");
 

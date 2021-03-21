@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "common/quote.h"
 
-#include "common/com.h"
 #include "common/common_events.h"
 #include "common/input.h"
 #include "common/output.h"
@@ -30,16 +29,13 @@
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/parsed_message.h"
-#include <deque>
 #include <memory>
 #include <string>
 #include <vector>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::local::io;
 using namespace wwiv::strings;
 
 namespace wwiv::common {
@@ -47,8 +43,8 @@ namespace wwiv::common {
 static std::unique_ptr<std::vector<std::string>> quotes_ind;
 
 
-static string FirstLettersOfVectorAsString(const vector<string>& parts) {
-  string result;
+static std::string FirstLettersOfVectorAsString(const std::vector<std::string>& parts) {
+  std::string result;
   for (const auto& part : parts) {
     result.push_back(part.front());
   }
@@ -57,7 +53,7 @@ static string FirstLettersOfVectorAsString(const vector<string>& parts) {
 
 void set_quotes_ind(std::unique_ptr<std::vector<std::string>>&& u) { quotes_ind = std::move(u); }
 
-string GetQuoteInitials(const string& orig_name) {
+std::string GetQuoteInitials(const std::string& orig_name) {
   if (orig_name.empty()) {
     return {};
   }
@@ -66,8 +62,8 @@ string GetQuoteInitials(const string& orig_name) {
     name = name.substr(2);
   }
 
-  const auto paren_start = name.find('(');
-  if (paren_start != std::string::npos && !isdigit(name.at(paren_start + 1))) {
+  if (const auto paren_start = name.find('(');
+      paren_start != std::string::npos && !isdigit(name.at(paren_start + 1))) {
     const auto inner = name.substr(paren_start + 1);
     return GetQuoteInitials(inner);
   }
@@ -84,7 +80,7 @@ void clear_quotes(wwiv::common::SessionContext& ctx) {
   quotes_ind.reset();
 }
 
-static string to_quote_date_format(time_t t, bool use_24h_format) {
+static std::string to_quote_date_format(time_t t, bool use_24h_format) {
   const auto dt = DateTime::from_time_t(t);
   std::ostringstream ss;
   ss << dt.to_string("%A,%B %d, %Y") << " at ";
@@ -97,7 +93,7 @@ static string to_quote_date_format(time_t t, bool use_24h_format) {
 }
 
 static std::string to_quote_date_line(quote_date_format_t type, bool use_24h_format, time_t tt,
-                                      const string& tb) {
+                                      const std::string& tb) {
   const auto datetime = to_quote_date_format(tt, use_24h_format);
   std::string date_line;
   switch (type) {
@@ -233,7 +229,7 @@ std::vector<std::string> query_quote_lines(wwiv::common::SessionContext& ctx) {
       }
       // Add line s to the list of lines.
       lines.emplace_back(line);
-    };
+    }
     --num_lines;
     bout.nl();
     // If the user has hungup, this will throw an exception.
@@ -280,9 +276,9 @@ std::vector<std::string> query_quote_lines(wwiv::common::SessionContext& ctx) {
   return std::vector<std::string>(std::begin(lines) + start_line - 1, std::begin(lines) + end_line);
 }
 
-string strip_to_node(const string& txt) {
+std::string strip_to_node(const std::string& txt) {
   std::ostringstream os;
-  if (txt.find("@") != string::npos) {
+  if (txt.find('@') != std::string::npos) {
     bool ok = true;
     for (auto i = txt.begin(); i != txt.end(); i++) {
       if (ok) {
@@ -293,9 +289,9 @@ string strip_to_node(const string& txt) {
       }
     }
     return os.str();
-  } else if (txt.find("AT") != string::npos) {
+  } else if (txt.find("AT") != std::string::npos) {
     bool ok = true;
-    for (string::const_iterator i = txt.begin() + 2; i != txt.end(); i++) {
+    for (std::string::const_iterator i = txt.begin() + 2; i != txt.end(); ++i) {
       if (ok) {
         os << *i;
       }

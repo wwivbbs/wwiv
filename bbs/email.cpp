@@ -47,7 +47,6 @@
 #include "sdk/fido/nodelist.h"
 #include "sdk/net/networks.h"
 
-
 #include <chrono>
 #include <memory>
 #include <string>
@@ -55,9 +54,6 @@
 static constexpr int NUM_ATTEMPTS_TO_OPEN_EMAIL = 5;
 static constexpr int DELAY_BETWEEN_EMAIL_ATTEMPTS = 9;
 
-using std::string;
-using std::stringstream;
-using std::unique_ptr;
 using std::chrono::seconds;
 using namespace wwiv::common;
 using namespace wwiv::core;
@@ -286,7 +282,7 @@ void sendout_email(EmailData& data) {
       packet.Close();
     }
   }
-  string logMessage = "Mail sent to ";
+  std::string logMessage = "Mail sent to ";
   if (data.system_number == 0) {
     User userRecord;
     a()->users()->readuser(&userRecord, data.user_number);
@@ -313,7 +309,7 @@ void sendout_email(EmailData& data) {
       }
     }
   } else {
-    string logMessagePart;
+    std::string logMessagePart;
     if ((data.system_number == 1 && a()->current_net().type == network_type_t::internet) ||
         data.system_number == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
       logMessagePart = a()->net_email_name;
@@ -400,10 +396,10 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
   return true;
 }
 
-void email(const string& title, uint16_t user_number, uint16_t system_number, bool forceit, int anony, bool bAllowFSED) {
+void email(const std::string& title, uint16_t user_number, uint16_t system_number, bool forceit, int anony, bool bAllowFSED) {
   auto nNumUsers = 0;
   messagerec msg{};
-  string destination;
+  std::string destination;
   struct {
     uint16_t user_number;
     uint16_t system_number;
@@ -562,7 +558,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
       nNumUsers++;
       do {
         bout << "|#9Enter Address (blank to end) : ";
-        string emailAddress = bin.input(75);
+        std::string emailAddress = bin.input(75);
         if (emailAddress.empty()) {
           done = true;
           break;
@@ -590,7 +586,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
 
   if (cc && !bcc) {
     int listed = 0;
-    string s1 = "\003""6Carbon Copy: \003""1";
+    std::string s1 = "\003""6Carbon Copy: \003""1";
     lineadd(&msg, "\003""7----", "email");
     for (int j = 0; j < nNumUsers; j++) {
       if (carbon_copy[j].system_number == 0) {
@@ -681,7 +677,7 @@ void imail(const std::string& title, uint16_t user_number, uint16_t system_numbe
     return;
   }
 
-  string internet_email_address;
+  std::string internet_email_address;
   if (fwdm) {
     internet_email_address = read_inet_addr(user_number);
   }

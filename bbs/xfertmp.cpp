@@ -39,9 +39,6 @@
 #include <string>
 #include <vector>
 
-using std::function;
-using std::string;
-using std::vector;
 using wwiv::sdk::files::FileName;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -84,7 +81,7 @@ void move_file_t() {
       std::filesystem::path s1;
       if (ch == 'Y') {
         s1 = FilePath(dir.path, f);
-        string dirnum;
+        std::string dirnum;
         do {
           bout << "|#2To which directory? ";
           dirnum = mmkey(MMKeyAreaType::dirs);
@@ -190,7 +187,7 @@ void removefile() {
           abort = true;
         } else if (ch == 'Y') {
           bool bRemoveDlPoints = true;
-          bool bDeleteFileToo = false;
+          bool bDeleteFileToo;
           if (dcs()) {
             bout << "|#5Delete file too? ";
             bDeleteFileToo = bin.yesno();

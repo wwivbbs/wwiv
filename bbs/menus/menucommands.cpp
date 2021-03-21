@@ -39,13 +39,9 @@
 #include "core/strings.h"
 #include <functional>
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 
-using std::map;
-using std::string;
-using std::unique_ptr;
 using wwiv::core::IniFile;
 
 using namespace wwiv::strings;
@@ -75,9 +71,8 @@ std::optional<MenuContext> InterpretCommand(Menu* menu, const std::string& cmd,
   if (cmd.empty()) {
     return std::nullopt;
   }
-  static auto functions = CreateCommandMap(); // NOLINT(clang-diagnostic-exit-time-destructors)
 
-  if (contains(functions, cmd)) {
+  if (static auto functions = CreateCommandMap(); contains(functions, cmd)) {
     MenuContext context(menu, data);
     at(functions, cmd).f_(context);
     if (menu) {
@@ -88,8 +83,8 @@ std::optional<MenuContext> InterpretCommand(Menu* menu, const std::string& cmd,
   return std::nullopt;
 }
 
-map<string, MenuItem, ci_less> CreateCommandMap() {
-  map<string, MenuItem, ci_less> m;
+std::map<std::string, MenuItem, ci_less> CreateCommandMap() {
+  std::map<std::string, MenuItem, ci_less> m;
 
   m.emplace("MENU", MenuItem(R"(<menu>
   Loads up and starts running a new menu set, where <menu> equals the name of

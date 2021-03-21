@@ -28,9 +28,6 @@
 #include <memory>
 #include <string>
 
-using std::endl;
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido;
@@ -102,26 +99,26 @@ TEST_F(FidoUtilTest, ToNetNodeZone) {
 }
 
 TEST_F(FidoUtilTest, FidoToWWIVText_Basic) {
-  const string fido = "Hello\rWorld\r";
-  const string wwiv = FidoToWWIVText(fido);
+  const std::string fido = "Hello\rWorld\r";
+  const std::string wwiv = FidoToWWIVText(fido);
   EXPECT_EQ("Hello\r\nWorld\r\n", wwiv);
 }
 
 TEST_F(FidoUtilTest, FidoToWWIVText_BlankLines) {
-  const string fido = "Hello\r\r\rWorld\r";
+  const std::string fido = "Hello\r\r\rWorld\r";
   const auto wwiv = FidoToWWIVText(fido);
   EXPECT_EQ("Hello\r\n\r\n\r\nWorld\r\n", wwiv);
 }
 
 TEST_F(FidoUtilTest, FidoToWWIVText_SoftCr) {
-  const string fido = "a\x8d"
+  const std::string fido = "a\x8d"
                 "b\r";
   const auto wwiv = FidoToWWIVText(fido);
   EXPECT_EQ("a\r\nb\r\n", wwiv);
 }
 
 TEST_F(FidoUtilTest, FidoToWWIVText_ControlLine) {
-  const string fido = "\001"
+  const std::string fido = "\001"
                 "PID\rWorld\r";
   const auto wwiv = FidoToWWIVText(fido);
   EXPECT_EQ("\004"
@@ -138,7 +135,7 @@ TEST_F(FidoUtilTest, FidoToWWIVText_SeenBy) {
 }
 
 TEST_F(FidoUtilTest, FidoToWWIVText_ControlLine_DoNotConvert) {
-  const string fido = "\001"
+  const std::string fido = "\001"
                 "PID\rWorld\r";
   const auto  wwiv = FidoToWWIVText(fido, false);
   EXPECT_EQ("\001"
@@ -147,77 +144,77 @@ TEST_F(FidoUtilTest, FidoToWWIVText_ControlLine_DoNotConvert) {
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_Basic) {
-  const string wwiv = "a\r\nb\r\n";
+  const std::string wwiv = "a\r\nb\r\n";
   const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_BlankLines) {
-  const string wwiv = "a\r\n\r\n\r\nb\r\n";
+  const std::string wwiv = "a\r\n\r\n\r\nb\r\n";
   const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\r\r\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_MalformedControlLine) {
-  const string wwiv = "a\r\nb\r\n\004"
+  const std::string wwiv = "a\r\nb\r\n\004"
                 "0Foo:\r\n";
   const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_MsgId) {
-  const string wwiv = "a\r\nb\r\n\004"
+  const std::string wwiv = "a\r\nb\r\n\004"
                 "0MSGID: 1234 5678\r\n";
   const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r\001MSGID: 1234 5678\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_SeenBy) {
-  const string wwiv = "a\r\nb\r\n\004"
+  const std::string wwiv = "a\r\nb\r\n\004"
                 "0SEEN-BY: 1/1\r\n";
   const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\rSEEN-BY: 1/1\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_Reply) {
-  const string wwiv = "a\r\nb\r\n\004"
+  const std::string wwiv = "a\r\nb\r\n\004"
                 "0REPLY: 1234 5678\r\n";
   const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r\001REPLY: 1234 5678\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_RemovesControlZ) {
-  const string wwiv = "a\r\n\x1a";
+  const std::string wwiv = "a\r\n\x1a";
   const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_RemovesControlZs) {
-  const string wwiv = "a\r\n\x1a\x1a\x1a\x1a";
+  const std::string wwiv = "a\r\n\x1a\x1a\x1a\x1a";
   const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_RemovesControlA) {
-  const string wwiv = "a\r\nb\001\r\n";
+  const std::string wwiv = "a\r\nb\001\r\n";
   const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_RemovesControlB) {
-  const string wwiv = "a\r\n\002b\r\n";
+  const std::string wwiv = "a\r\n\002b\r\n";
   const auto fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_RemovesHeart) {
-  const string wwiv = "a\r\n\003""1b\r\n";
+  const std::string wwiv = "a\r\n\003""1b\r\n";
   const auto fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_RemovesHeartAndPipes) {
-  const string wwiv = "a\r\n\003""1b|#1c|#0\r\n";
+  const std::string wwiv = "a\r\n\003""1b|#1c|#0\r\n";
   opts.wwiv_heart_color_codes = false;
   opts.wwiv_pipe_color_codes = false;
   opts.allow_any_pipe_codes = false;
@@ -226,7 +223,7 @@ TEST_F(FidoUtilTest, WWIVToFido_RemovesHeartAndPipes) {
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_HeartAtEnd) {
-  const string wwiv = "a\r\n\003";
+  const std::string wwiv = "a\r\n\003";
   opts.wwiv_heart_color_codes = true;
   opts.wwiv_pipe_color_codes = true;
   opts.allow_any_pipe_codes = true;
@@ -235,7 +232,7 @@ TEST_F(FidoUtilTest, WWIVToFido_HeartAtEnd) {
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_PipeAtEnd) {
-  const string wwiv = "a\r\n|";
+  const std::string wwiv = "a\r\n|";
   opts.wwiv_heart_color_codes = true;
   opts.wwiv_pipe_color_codes = true;
   opts.allow_any_pipe_codes = true;
@@ -244,28 +241,28 @@ TEST_F(FidoUtilTest, WWIVToFido_PipeAtEnd) {
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_ConvertsHeart) {
-  const string wwiv = "a\r\n\003""1b\r\n";
+  const std::string wwiv = "a\r\n\003""1b\r\n";
   opts.wwiv_heart_color_codes = true;
   const auto fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\r|11b\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_ConvertsHeartOnly) {
-  const string wwiv = "\003""1";
+  const std::string wwiv = "\003""1";
   opts.wwiv_heart_color_codes = true;
   const auto fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("|11\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_ConvertsUserColorPipe) {
-  const string wwiv = "a\r\n|#1b\r\n";
+  const std::string wwiv = "a\r\n|#1b\r\n";
   opts.wwiv_pipe_color_codes = true;
   const auto fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\r|11b\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_DoesntWhenNotSelected_ConvertsUserColorPipe) {
-  const string wwiv = "a\r\n|#1b\r\n";
+  const std::string wwiv = "a\r\n|#1b\r\n";
   opts.wwiv_pipe_color_codes = false;
   opts.wwiv_heart_color_codes = true;
   const auto fido = WWIVToFidoText(wwiv, opts);
@@ -365,7 +362,7 @@ TEST_F(FidoUtilTest, TzOffsetFromUTC) {
   memset(s, 0, sizeof s);
   ASSERT_NE(0UL, strftime(s, sizeof s, "%z", tm));
   
-  string ss{s};
+  std::string ss{s};
   if (ss.front() == '+') {
     ss = ss.substr(1);
   }

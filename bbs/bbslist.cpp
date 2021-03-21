@@ -24,7 +24,6 @@
 #include "bbs/sysopf.h"
 #include "common/com.h"
 #include "common/input.h"
-#include "common/pause.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -35,7 +34,6 @@
 #include "sdk/filenames.h"
 #include <iomanip>
 #include <map>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -48,13 +46,6 @@
 #include <cereal/archives/json.hpp>
 #include <cereal/types/memory.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
-
-using std::left;
-using std::map;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 
 using wwiv::common::InputMode;
 using namespace wwiv::core;
@@ -110,7 +101,7 @@ template <class Archive> void serialize(Archive& ar, BbsListAddress& a) {
   SERIALIZE(a, address);
 }
 
-bool LoadFromJSON(const std::filesystem::path& dir, const string& filename,
+bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
                   std::vector<BbsListEntry>& entries) {
   entries.clear();
 
@@ -132,7 +123,7 @@ bool LoadFromJSON(const std::filesystem::path& dir, const string& filename,
   return true;
 }
 
-bool SaveToJSON(const std::filesystem::path& dir, const string& filename,
+bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename,
                 const std::vector<BbsListEntry>& entries) {
   std::ostringstream ss;
   {
@@ -151,7 +142,7 @@ bool SaveToJSON(const std::filesystem::path& dir, const string& filename,
   return true;
 }
 
-static bool ConvertLegacyList(const string& dir, const string& legacy_filename,
+static bool ConvertLegacyList(const std::string& dir, const std::string& legacy_filename,
                               std::vector<BbsListEntry>& entries) {
 
   TextFile legacy_file(FilePath(dir, legacy_filename), "r");
@@ -159,7 +150,7 @@ static bool ConvertLegacyList(const string& dir, const string& legacy_filename,
     return false;
   }
 
-  string line;
+  std::string line;
   while (legacy_file.ReadLine(&line)) {
     if (line.size() < 79) {
       // All real bbs entry lines are 79
@@ -180,7 +171,7 @@ static bool ConvertLegacyList(const string& dir, const string& legacy_filename,
   return true;
 }
 
-static void ReadBBSList(const vector<BbsListEntry>& entries) {
+static void ReadBBSList(const std::vector<BbsListEntry>& entries) {
   auto cnt = 0;
   bout.cls();
   bout.litebar(StrCat(a()->config()->system_name(), " BBS List"));
@@ -196,7 +187,7 @@ static void ReadBBSList(const vector<BbsListEntry>& entries) {
 }
 
 void delete_bbslist() {
-  vector<BbsListEntry> entries;
+  std::vector<BbsListEntry> entries;
   LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
 
   if (entries.empty()) {
@@ -236,7 +227,7 @@ static bool IsBBSPhoneNumberValid(const std::string& phoneNumber) {
   return true;
 }
 
-static bool IsBBSPhoneNumberUnique(const string& phoneNumber, const vector<BbsListEntry>& entries) {
+static bool IsBBSPhoneNumberUnique(const std::string& phoneNumber, const std::vector<BbsListEntry>& entries) {
   for (const auto& e : entries) {
     for (const auto& a : e.addresses) {
       if (a.type != "modem") {
@@ -250,7 +241,7 @@ static bool IsBBSPhoneNumberUnique(const string& phoneNumber, const vector<BbsLi
   return true;
 }
 
-static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
+static bool AddBBSListEntry(std::vector<BbsListEntry>& entries) {
   bout.nl();
   bout << "|#9Does this BBS have a modem line? (y/N) : ";
   const auto has_pots = bin.noyes();
@@ -323,7 +314,7 @@ static char ShowBBSListMenuAndGetChoice() {
 }
 
 void add_bbslist() {
-  vector<BbsListEntry> entries;
+  std::vector<BbsListEntry> entries;
   LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
   if (a()->sess().effective_sl() <= 10) {
     bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
@@ -339,7 +330,7 @@ void add_bbslist() {
 }
 
 void read_bbslist() {
-  vector<BbsListEntry> entries;
+  std::vector<BbsListEntry> entries;
   LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
   if (entries.empty()) {
     ConvertLegacyList(a()->config()->gfilesdir(), BBSLIST_MSG, entries);

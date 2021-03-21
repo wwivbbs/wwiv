@@ -44,10 +44,8 @@
 
 static constexpr int NONEDITABLE_DATA_POS = 50;
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::local::ui;
 using namespace wwiv::strings;
 
 static bool IsUserDeleted(userrec* user) { return user->inact & wwiv::sdk::User::userDeleted; }
@@ -56,7 +54,7 @@ static void show_user(EditItems* items, userrec* user) {
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
   const auto height = items->window()->GetMaxY() - 2;
   const auto width = items->window()->GetMaxX() - 2;
-  const string blank(width - NONEDITABLE_DATA_POS, ' ');
+  const std::string blank(width - NONEDITABLE_DATA_POS, ' ');
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
   for (int i = 1; i < height; i++) {
     items->window()->PutsXY(NONEDITABLE_DATA_POS, i, blank);
@@ -92,13 +90,13 @@ static void show_error_no_users(CursesWindow* window) {
   messagebox(window, "You must have users added before using user editor.");
 }
 
-static vector<HelpItem> create_extra_help_items() {
-  vector<HelpItem> help_items = {{"D", "Delete"}, {"J", "Jump"}, {"R", "Restore"}};
+static std::vector<HelpItem> create_extra_help_items() {
+  std::vector<HelpItem> help_items = {{"D", "Delete"}, {"J", "Jump"}, {"R", "Restore"}};
   return help_items;
 }
 
 static int JumpToUser(CursesWindow* window, const std::string& datadir) {
-  vector<ListBoxItem> items;
+  std::vector<ListBoxItem> items;
   {
     DataFile<smalrec> file(FilePath(datadir, NAMES_LST), File::modeReadOnly | File::modeBinary,
                            File::shareDenyWrite);
@@ -119,8 +117,7 @@ static int JumpToUser(CursesWindow* window, const std::string& datadir) {
   }
 
   ListBox list(window, "Select User", items);
-  const auto result = list.Run();
-  if (result.type == ListBoxResultType::SELECTION) {
+  if (const auto result = list.Run(); result.type == ListBoxResultType::SELECTION) {
     return items[result.selected].data();
   }
   return -1;
@@ -156,7 +153,7 @@ void user_editor(const wwiv::sdk::Config& config) {
   auto need_names_list_rebuilt{false};
 
   if (number_users < 1) {
-    unique_ptr<CursesWindow> window(curses_out->CreateBoxedWindow("User Editor", 18, 76));
+    std::unique_ptr<CursesWindow> window(curses_out->CreateBoxedWindow("User Editor", 18, 76));
     show_error_no_users(window.get());
     return;
   }
@@ -169,14 +166,14 @@ void user_editor(const wwiv::sdk::Config& config) {
       new StringEditItem<unsigned char*>(30, user.name, EditLineMode::UPPER_ONLY);
   user_name_field->set_displayfn(
       // Not sure why but fmt::format("{} #{}"...) was crashing on linux.
-      [&]() -> string { return StrCat(user.name, " #", current_usernum); });
+      [&]() -> std::string { return StrCat(user.name, " #", current_usernum); });
 
   auto* birthday_field = new CustomEditItem(
       10,
-      [&]() -> string {
+      [&]() -> std::string {
         return fmt::sprintf("%2.2d/%2.2d/%4.4d", user.month, user.day, user.year + 1900);
       },
-      [&](const string& s) {
+      [&](const std::string& s) {
         if (s[2] != '/' || s[5] != '/') {
           return;
         }
@@ -190,8 +187,7 @@ void user_editor(const wwiv::sdk::Config& config) {
         }
         const auto year = to_number<int>(s.substr(6, 4));
         const auto dt = DateTime::now();
-        const auto current_year = dt.year();
-        if (year < 1900 || year > current_year) {
+        if (const auto current_year = dt.year(); year < 1900 || year > current_year) {
           return;
         }
         user.month = month;
@@ -201,15 +197,15 @@ void user_editor(const wwiv::sdk::Config& config) {
 
   auto* gender_field = new CustomEditItem(
       1,
-      [&]() -> string {
+      [&]() -> std::string {
         return std::string(1, user.sex);
       },
-      [&](const string& s) {
+      [&](const std::string& s) {
         if (s.empty()) {
           user.sex = 0;
           return;
         }
-        auto g = to_upper_case_char(s.front());
+        const auto g = to_upper_case_char(s.front());
         user.sex = (g == 'U') ? 0 : g;
       });
 
@@ -284,8 +280,7 @@ void user_editor(const wwiv::sdk::Config& config) {
 
   const NavigationKeyConfig nav("DJR\r");
   for (;;) {
-    const auto ch = items.GetKeyWithNavigation(nav);
-    switch (ch) {
+    switch (const auto ch = items.GetKeyWithNavigation(nav); ch) {
     case '\r': {
       if (IsUserDeleted(&user)) {
         items.window()->SetColor(SchemeId::ERROR_TEXT);
@@ -310,8 +305,7 @@ void user_editor(const wwiv::sdk::Config& config) {
                      StrCat("Are you sure you want to delete ", u.name(), "? "))) {
         break;
       }
-      wwiv::sdk::UserManager um(config);
-      if (!um.delete_user(current_usernum)) {
+      if (wwiv::sdk::UserManager um(config); !um.delete_user(current_usernum)) {
         messagebox(items.window(), "Error trying to restore user.");
       }
       need_names_list_rebuilt = true;
@@ -322,13 +316,10 @@ void user_editor(const wwiv::sdk::Config& config) {
       }
     } break;
     case 'R': {
-      // Restore Deleted User.
-      wwiv::sdk::User u(user, current_usernum);
-      if (!u.deleted()) {
+      if (wwiv::sdk::User u(user, current_usernum); !u.deleted()) {
         break;
       }
-      wwiv::sdk::UserManager um(config);
-      if (!um.restore_user(current_usernum)) {
+      if (wwiv::sdk::UserManager um(config); !um.restore_user(current_usernum)) {
         messagebox(items.window(), "Error trying to restore user.");
       }
       need_names_list_rebuilt = true;

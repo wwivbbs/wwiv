@@ -24,6 +24,8 @@
 
 #include <string>
 
+namespace wwiv::local::io {
+
 enum class AllowedKeys { NUM_ONLY, UPPER_ONLY, ALL, SET };
 
 struct LocalIOData {
@@ -131,8 +133,8 @@ public:
   void increment_topdata();
 
   // curatr_provider interface
-  virtual void set_curatr_provider(wwiv::local_io::curatr_provider* p);
-  virtual wwiv::local_io::curatr_provider* curatr_provider();
+  virtual void set_curatr_provider(wwiv::local::io::curatr_provider* p);
+  virtual wwiv::local::io::curatr_provider* curatr_provider();
   [[nodiscard]] virtual uint8_t curatr() const;
   virtual void curatr(int c);
 
@@ -144,8 +146,10 @@ private:
   uint8_t top_screen_color_{27};
   uint8_t user_editor_color_{9};
   uint8_t edit_line_color_{31};
-  wwiv::local_io::curatr_provider* curatr_;
+  wwiv::local::io::curatr_provider* curatr_;
   topdata_t topdata_{topdata_t::none};
 };
+
+}
 
 #endif

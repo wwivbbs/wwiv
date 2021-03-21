@@ -16,25 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
-#include <cstring>
-#include <type_traits>
-
 #include "core/stl.h"
 #include "sdk/fido/fido_address.h"
 
-using std::cout;
-using std::endl;
-using std::is_standard_layout;
-using std::string;
+#include "gtest/gtest.h"
 
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::sdk::fido;
 
 TEST(FidoAddressTest, Basic) {
-  FidoAddress f("11:10/211.123@wwiv-ftn");
+  const FidoAddress f("11:10/211.123@wwiv-ftn");
   EXPECT_EQ(11, f.zone());
   EXPECT_EQ(10, f.net());
   EXPECT_EQ(211, f.node());
@@ -45,7 +37,7 @@ TEST(FidoAddressTest, Basic) {
 }
 
 TEST(FidoAddressTest, ZoneNetNode) {
-  FidoAddress f("11:10/211");
+  const FidoAddress f("11:10/211");
   EXPECT_EQ(11, f.zone());
   EXPECT_EQ(10, f.net());
   EXPECT_EQ(211, f.node());
@@ -56,7 +48,7 @@ TEST(FidoAddressTest, ZoneNetNode) {
 }
 
 TEST(FidoAddressTest, DefaultZone) {
-  FidoAddress f("10/211");
+  const FidoAddress f("10/211");
   EXPECT_EQ(1, f.zone());  // 1 is the default
   EXPECT_EQ(10, f.net());
   EXPECT_EQ(211, f.node());
@@ -75,26 +67,26 @@ TEST(FidoAddressTest, MissingNetOrNode) {
 }
 
 TEST(FidoAddressTest, LT) {
-  FidoAddress f1("11:10/211");
-  FidoAddress f2("11:10/212");
+  const FidoAddress f1("11:10/211");
+  const FidoAddress f2("11:10/212");
 
   EXPECT_LT(f1, f2);
 }
 
 TEST(FidoAddressTest, Set) {
-  FidoAddress f1("11:10/211");
-  FidoAddress f2("11:10/212");
-  FidoAddress f3("11:10/213");
+  const FidoAddress f1("11:10/211");
+  const FidoAddress f2("11:10/212");
+  const FidoAddress f3("11:10/213");
 
-  std::set<FidoAddress> addrs{f1, f2};
+  const std::set<FidoAddress> addrs{f1, f2};
   EXPECT_TRUE(contains(addrs, f1));
   EXPECT_TRUE(contains(addrs, f2));
   EXPECT_FALSE(contains(addrs, f3));
 }
 
 TEST(FidoAddressTest, Streams) {
-  const string kAddr = "11:10/211";
-  FidoAddress f1(kAddr);
+  const std::string kAddr = "11:10/211";
+  const FidoAddress f1(kAddr);
 
   std::ostringstream ss;
   ss << f1;
@@ -103,8 +95,8 @@ TEST(FidoAddressTest, Streams) {
 
 // 1:0/120<1:103/17
 TEST(FidoAddressTest, LTGT) {
-  FidoAddress f1("1:0/120");
-  FidoAddress f2("1:103/17");
+  const FidoAddress f1("1:0/120");
+  const FidoAddress f2("1:103/17");
 
   EXPECT_LT(f1, f2);
   EXPECT_FALSE(f2 < f1);

@@ -24,9 +24,7 @@
 #include "bbs/dirlist.h"
 #include "common/input.h"
 #include "bbs/listplus.h"
-#include "common/pause.h"
 #include "bbs/sysoplog.h"
-#include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
@@ -39,21 +37,19 @@
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
-#include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/files/files.h"
 #include <chrono>
+#include <string>
 
 using std::chrono::milliseconds;
-using std::string;
-
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static void t2u_error(const string& file_name, const string& msg) {
+static void t2u_error(const std::string& file_name, const std::string& msg) {
   bout.nl(2);
   const auto s1 = StrCat("**  ", file_name, " failed T2U qualifications");
   bout << s1 << wwiv::endl;
@@ -65,7 +61,7 @@ static void t2u_error(const string& file_name, const string& msg) {
   sysoplog() << s2;
 }
 
-static int try_to_ul_wh(const string& orig_file_name) {
+static int try_to_ul_wh(const std::string& orig_file_name) {
   wwiv::sdk::files::directory_t d{};
   char key;
   auto ok = 0, dn = 0;
@@ -151,14 +147,14 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
-  string aligned_file_name = aligns(file_name);
+  std::string aligned_file_name = aligns(file_name);
   if (contains(aligned_file_name, '?')) {
     t2u_error(file_name, "Contains wildcards");
     return 1;
   }
   if (d.mask & mask_archive) {
     ok = 0;
-    string s1;
+    std::string s1;
     for (size_t i = 0; i < MAX_ARCS; i++) {
       if (a()->arcs[i].extension[0] && a()->arcs[i].extension[0] != ' ') {
         if (!s1.empty()) s1 += ", ";
@@ -329,7 +325,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   return 0;                                 // This means success
 }
 
-int try_to_ul(const string& file_name) {
+int try_to_ul(const std::string& file_name) {
   auto ac = false;
 
   if (ok_multiple_conf(a()->user(), a()->uconfsub)) {

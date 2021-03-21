@@ -32,18 +32,15 @@
 #include "sdk/vardec.h"
 #include <cstdint>
 #include <cstring>
-#include <memory>
 #include <string>
 #include <vector>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::local::ui;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static std::string prot_name(const vector<newexternalrec>& externs, int pn) {
+static std::string prot_name(const std::vector<newexternalrec>& externs, int pn) {
   switch (pn) {
   case 1:
     return "ASCII";
@@ -63,7 +60,8 @@ static std::string prot_name(const vector<newexternalrec>& externs, int pn) {
   return ">NONE<";
 }
 
-static void load_protocols(const std::string& datadir, vector<newexternalrec>& externs, vector<newexternalrec>& over_intern) {
+static void load_protocols(const std::string& datadir, std::vector<newexternalrec>& externs,
+                           std::vector<newexternalrec>& over_intern) {
   externs.clear();
   over_intern.clear();
   if (auto file = DataFile<newexternalrec>(FilePath(datadir, NEXTERN_DAT),
@@ -80,7 +78,8 @@ static void load_protocols(const std::string& datadir, vector<newexternalrec>& e
   }
 }
 
-static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& over_intern, int n) {
+static void edit_prot(std::vector<newexternalrec>& externs,
+                      std::vector<newexternalrec>& over_intern, int n) {
   if (n == 5) {
     // This is the "Batch" protocol which has no override.
     return;
@@ -151,14 +150,14 @@ NOTE: Batch protocols >MUST< correctly support DSZLOG.)""""), 1, y);
 }
 
 void extrn_prots(const std::string& datadir) {
-  vector<newexternalrec> externs;
-  vector<newexternalrec> over_interns;
+  std::vector<newexternalrec> externs;
+  std::vector<newexternalrec> over_interns;
   load_protocols(datadir, externs, over_interns);
 
   bool done = false;
   do {
     curses_out->Cls(ACS_CKBOARD);
-    vector<ListBoxItem> items;
+    std::vector<ListBoxItem> items;
     items.emplace_back("2. XModem (Internal)", 0, 2);
     items.emplace_back("X. XModem CRC (Internal)", 0, 3);
     items.emplace_back("Y. YModem (Internal)", 0, 4);

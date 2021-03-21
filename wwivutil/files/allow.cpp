@@ -24,14 +24,9 @@
 #include "sdk/filenames.h"
 
 #include <iostream>
-#include <map>
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::files;
@@ -46,7 +41,7 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   list [search spec]" << endl;
+    ss << "Usage:   list [search spec]" << std::endl;
     return ss.str();
   }
 
@@ -66,7 +61,7 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final { return true; }
+  bool AddSubCommands() override { return true; }
 };
 
 class AllowAddCommand final : public UtilCommand {
@@ -75,7 +70,7 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   add <filename>" << endl;
+    ss << "Usage:   add <filename>" << std::endl;
     return ss.str();
   }
 
@@ -98,7 +93,7 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final { return true; }
+  bool AddSubCommands() override { return true; }
 };
 
 class AllowedCommand final : public UtilCommand {
@@ -107,19 +102,18 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   allowed <filename>" << endl;
+    ss << "Usage:   allowed <filename>" << std::endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     if (remaining().empty()) {
       std::cerr << "missing filename";
       return 2;
     }
     const auto& fn = remaining().front();
     Allow allow(*config()->config());
-    const auto allowed = allow.IsAllowed(fn);
-    if (allowed) {
+    if (const auto allowed = allow.IsAllowed(fn); allowed) {
       std::cout << "filename allowed:     " << fn;
     } else {
       std::cout << "filename NOT allowed: " << fn;
@@ -127,16 +121,16 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final { return true; }
+  bool AddSubCommands() override { return true; }
 };
 
 class AllowDeleteCommand final : public UtilCommand {
 public:
   AllowDeleteCommand() : UtilCommand("delete", "Delete from the contents of allow.dat") {}
 
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   delete <filename>" << endl;
+    ss << "Usage:   delete <filename>" << std::endl;
     return ss.str();
   }
 
@@ -159,11 +153,12 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final { return true; }
+  bool AddSubCommands() override { return true; }
 };
+
 std::string AllowCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   allow " << endl;
+  ss << "Usage:   allow " << std::endl;
   return ss.str();
 }
 

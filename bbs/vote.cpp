@@ -31,7 +31,6 @@
 #include "sdk/status.h"
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -223,7 +222,7 @@ void vote() {
     bout.nl();
     bout << "|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ";
     bout.mpl(2);
-    string answer= mmkey(odc);
+    std::string answer= mmkey(odc);
     int nQuestionNum = to_number<int>(answer);
     if (nQuestionNum > 0 && nQuestionNum <= mapp) {
       vote_question(nQuestionNum, map[ nQuestionNum ]);

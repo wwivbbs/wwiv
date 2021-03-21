@@ -25,7 +25,6 @@
 #include "sdk/files/arc.h"
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 

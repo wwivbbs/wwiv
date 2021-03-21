@@ -28,6 +28,8 @@
 #include <string>
 #include <vector>
 
+namespace wwiv::local::ui {
+
 enum class cell_type_t { label, edit_item };
 /**
  * Represent a cell in the UI.
@@ -173,5 +175,7 @@ private:
   std::map<int, std::map<int, Cell>> cells_;
   std::set<int> align_label_cols_;
 };
+
+}
 
 #endif

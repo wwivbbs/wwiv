@@ -24,15 +24,11 @@
 #include "sdk/bbslist.h"
 #include "sdk/net/networks.h"
 #include "sdk/net/packets.h"
+
 #include <iostream>
-#include <map>
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
@@ -42,8 +38,8 @@ namespace wwiv::wwivutil {
 
 std::string SubReqCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   req <A|D> <subtype> <host>" << endl;
-  ss << "Example: req A GENCHAT 1" << endl;
+  ss << "Usage:   req <A|D> <subtype> <host>" << std::endl;
+  ss << "Example: req A GENCHAT 1" << std::endl;
   return ss.str();
 }
 
@@ -62,7 +58,7 @@ int SubReqCommand::Execute() {
 
   const auto r = this->remaining();
   if (r.size() < 3) {
-    cout << GetUsage() << GetHelp();
+    std::cout << GetUsage() << GetHelp();
     return 2;
   }
 

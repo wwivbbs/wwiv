@@ -21,21 +21,13 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "fmt/format.h"
-#include "fmt/printf.h"
 #include "binkp/config_exceptions.h"
 #include "sdk/net/networks.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
-#include <map>
 #include <memory>
 #include <string>
 
-using std::endl;
-using std::map;
-using std::string;
-using std::stringstream;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
@@ -103,7 +95,7 @@ std::string BinkConfig::receive_dir(const std::string& network_name) const {
   return dir;
 }
 
-static net_networks_rec test_net(const string& network_dir) {
+static net_networks_rec test_net(const std::string& network_dir) {
   net_networks_rec net{};
   net.sysnum = 1;
   net.name = "wwivnet";
@@ -114,7 +106,7 @@ static net_networks_rec test_net(const string& network_dir) {
 
 // For testing
 BinkConfig::BinkConfig(int node_number, const wwiv::sdk::Config& config,
-                       const string& network_dir)
+                       const std::string& network_dir)
     : config_(config), callout_wwivnet_node_(node_number),
       networks_({test_net(network_dir)}) {
   binkp_.reset(new Binkp(network_dir));

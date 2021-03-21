@@ -27,25 +27,22 @@
 #include "sdk/net/net.h"
 #include <string>
 
-using std::endl;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 SSM::SSM(const wwiv::sdk::Config& config, wwiv::sdk::UserManager& user_manager)
   : data_directory_(config.datadir()), user_manager_(user_manager) {
 
 }
 
-SSM::~SSM() {}
+SSM::~SSM() = default;
 
 bool SSM::send_remote(const net_networks_rec& net, uint16_t system_number, uint32_t from_user_number, uint32_t user_number, const std::string& t) {
   net_header_rec nh{};
-  nh.tosys = static_cast<uint16_t>(system_number);
+  nh.tosys = system_number;
   nh.touser = static_cast<uint16_t>(user_number);
   // This was user_number, but that seems really wrong.  Changing to net.sysnum.
   nh.fromsys = net.sysnum;
@@ -128,5 +125,4 @@ bool SSM::delete_local_to_user(uint32_t user_number) {
   return true;
 }
 
-}
 }

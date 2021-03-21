@@ -29,11 +29,6 @@
 #include <string>
 #include <vector>
 
-using std::clog;
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
 using wwiv::sdk::Contact;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -43,8 +38,8 @@ namespace wwiv::wwivutil {
 
 std::string DumpContactCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   contact" << endl;
-  ss << "Example: contact" << endl;
+  ss << "Usage:   contact" << std::endl;
+  ss << "Example: contact" << std::endl;
   return ss.str();
 }
 
@@ -61,16 +56,16 @@ int DumpContactCommand::Execute() {
     return 1;
   }
 
-  map<const string, Contact> contacts;
+  std::map<const std::string, Contact> contacts;
   for (const auto& net : networks.networks()) {
     const auto lower_case_network_name = ToStringLowerCase(net.name);
     contacts.emplace(lower_case_network_name, Contact(net, false));
   }
 
   for (const auto& c : contacts) {
-    cout << "contact.net information: : " << c.first << endl;
-    cout << "===========================================================" << endl;
-    cout << c.second.ToString() << endl;
+    std::cout << "contact.net information: : " << c.first << std::endl;
+    std::cout << "===========================================================" << std::endl;
+    std::cout << c.second.ToString() << std::endl;
   }
 
   if (barg("save")) {

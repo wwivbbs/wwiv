@@ -23,10 +23,9 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include <string>
+#include <utility>
 #include <vector>
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -45,16 +44,16 @@ static void md(const std::vector<std::filesystem::path>& paths) {
   }
 }
 // Receive dirs is relative to BBS home.
-FtnDirectories::FtnDirectories(const std::filesystem::path& bbsdir, const net_networks_rec& net,
-                               const std::filesystem::path& receive_dir)
-    : bbsdir_(bbsdir), net_(net), net_dir_(net.dir),
+FtnDirectories::FtnDirectories(std::filesystem::path bbsdir, const net_networks_rec& net,
+                               std::filesystem::path receive_dir)
+    : bbsdir_(std::move(bbsdir)), net_(net), net_dir_(net.dir),
       inbound_dir_(File::absolute(net_dir_, net_.fido.inbound_dir)),
       temp_inbound_dir_(File::absolute(net_dir_, net_.fido.temp_inbound_dir)),
       temp_outbound_dir_(File::absolute(net_dir_, net_.fido.temp_outbound_dir)),
       outbound_dir_(File::absolute(net_dir_, net_.fido.outbound_dir)),
       netmail_dir_(File::absolute(net_dir_, net_.fido.netmail_dir)),
       bad_packets_dir_(File::absolute(net_dir_, net_.fido.bad_packets_dir)),
-      receive_dir_(receive_dir),
+      receive_dir_(std::move(receive_dir)),
       tic_dir_(File::absolute(net_dir_, net_.fido.tic_dir)),
       unknown_dir_(File::absolute(net_dir_, net_.fido.unknown_dir)) {
   VLOG(1) << "FtnDirectories: receive_dir: " << receive_dir_;

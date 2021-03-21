@@ -26,11 +26,6 @@
 #include <string>
 #include <thread>
 
-using std::clog;
-using std::endl;
-using std::string;
-using std::thread;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::strings;

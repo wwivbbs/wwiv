@@ -16,22 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
 #include "bbs/bbs.h"
 #include "bbs/interpret.h"
 #include "bbs_test/bbs_helper.h"
 #include "common/context.h"
 #include "common/macro_context.h"
 #include "common/pipe_expr.h"
-#include <iostream>
+
+#include "gtest/gtest.h"
 #include <string>
 
 using namespace wwiv::common;
-using std::cout;
-using std::endl;
-using std::string;
-
 
 class BbsMacroContextTest : public ::testing::Test {
 protected:

@@ -33,9 +33,9 @@
 #include <cctype>
 #include <string>
 
-using std::ostream;
 using namespace std::chrono;
 using namespace wwiv::common;
+using namespace wwiv::local::io;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::ansi;

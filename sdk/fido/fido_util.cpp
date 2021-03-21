@@ -34,8 +34,6 @@
 #include <utility>
 #include <vector>
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -63,7 +61,7 @@ std::string net_node_name(const FidoAddress& dest, const std::string& extension)
 }
 
 std::string flo_name(const FidoAddress& dest, fido_bundle_status_t status) {
-  string extension = "flo";
+  std::string extension = "flo";
   if (status != fido_bundle_status_t::unknown) {
     extension[0] = static_cast<char>(status);
   }
@@ -76,7 +74,7 @@ std::string bundle_name(const FidoAddress& source, const FidoAddress& dest, int 
 }
 
 std::vector<std::string> dow_prefixes() {
-  return std::vector<string> {"su", "mo", "tu", "we", "th", "fr", "sa", "su"};
+  return std::vector<std::string> {"su", "mo", "tu", "we", "th", "fr", "sa", "su"};
 }
 
 std::string dow_extension(int dow_num, int bundle_number) {
@@ -94,7 +92,7 @@ std::string dow_extension(int dow_num, int bundle_number) {
 
 bool is_bundle_file(const std::string& name) {
   const auto dot = name.find_last_of('.');
-  if (dot == string::npos) {
+  if (dot == std::string::npos) {
     return false;
   }
   auto ext = name.substr(dot + 1);
@@ -103,13 +101,13 @@ bool is_bundle_file(const std::string& name) {
   }
   ext.pop_back();
   StringLowerCase(&ext);
-  auto dow = dow_prefixes();
+  const auto dow = dow_prefixes();
   return contains(dow, ext);
 }
 
 bool is_packet_file(const std::string& name) {
   const auto dot = name.find_last_of('.');
-  if (dot == string::npos) {
+  if (dot == std::string::npos) {
     return false;
   }
   auto ext = name.substr(dot + 1);
@@ -120,8 +118,8 @@ bool is_packet_file(const std::string& name) {
   return ext == "pkt";
 }
 
-static string control_file_extension(fido_bundle_status_t status) {
-  string s = "flo";
+static std::string control_file_extension(fido_bundle_status_t status) {
+  std::string s = "flo";
   s[0] = static_cast<char>(status);
   return s;
 }
@@ -144,13 +142,13 @@ std::string daten_to_fido(time_t t) {
 // Format: 10 Nov 16  21:15:45
 daten_t fido_to_daten(std::string d) {
   try {
-    vector<string> months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    std::vector<std::string> months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     std::stringstream stream(d);
     auto now = time_t_now();
     auto* t = localtime(&now);
     stream >> t->tm_mday;
-    string mon_str;
+    std::string mon_str;
     stream >> mon_str;
     if (!contains(months, mon_str)) {
       // Unparsable date. return now.
@@ -164,7 +162,7 @@ daten_t fido_to_daten(std::string d) {
     // This will work until 2099.
     t->tm_year = 100 + year;
 
-    string hms;
+    std::string hms;
     stream >> hms;
     auto parts = SplitString(hms, ":");
     t->tm_hour = to_number<int>(at(parts, 0)) - 1;
@@ -196,7 +194,7 @@ std::string to_zone_net_node_point(const wwiv::sdk::fido::FidoAddress& a) {
 }
 
 std::vector<std::string> split_message(const std::string& s) {
-  string temp(s);
+  std::string temp(s);
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
   temp.erase(std::remove(temp.begin(), temp.end(), '\x8d'), temp.end());
   return SplitString(temp, "\r");
@@ -220,17 +218,16 @@ static FtnControlLineType determine_kludge_line_type(const std::string& line) {
   return FtnControlLineType::none;
 }
 
-string FidoToWWIVText(const string& ft, bool convert_control_codes) {
+std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
   // Some editors just use \n for line endings, we need \r\n for
   // FidoToWWIVText to work.  Replace the sole \n with \r\n
   const auto lf_only = ft.find('\r') == std::string::npos;
 
   // Split text into lines and process one at a time
   // this is easier to handle control lines, etc.
-  string wt;
+  std::string wt;
   for (const auto& sc : ft) {
-    const auto c = static_cast<unsigned char>(sc);
-    if (c == 0x8d) {
+    if (const auto c = static_cast<unsigned char>(sc); c == 0x8d) {
       // FIDOnet style Soft CR. Convert to CR
       wt.push_back(13);
     } else if (c == 10) {
@@ -281,7 +278,7 @@ string FidoToWWIVText(const string& ft, bool convert_control_codes) {
   return wt;
 }
 
-string WWIVToFidoText(const string& wt, const wwiv_to_fido_options& opts) {
+std::string WWIVToFidoText(const std::string& wt, const wwiv_to_fido_options& opts) {
   auto temp = wt;
   // Fido Text is CR, not CRLF, so remove the LFs
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
@@ -388,7 +385,7 @@ string WWIVToFidoText(const string& wt, const wwiv_to_fido_options& opts) {
 FidoAddress get_address_from_single_line(const std::string& line) {
   const auto start = line.find_last_of('(');
   const auto end = line.find_last_of(')');
-  if (start == string::npos || end == string::npos) {
+  if (start == std::string::npos || end == std::string::npos) {
     return EMPTY_FIDO_ADDRESS;
   }
 
@@ -411,8 +408,7 @@ FidoAddress get_address_from_origin(const std::string& text) {
 }
 
 FidoAddress get_address_from_packet(const FidoPackedMessage& msg, const packet_header_2p_t& header) {
-  auto a = get_address_from_origin(msg.vh.text);
-  if (a.zone() > 0) {
+  if (auto a = get_address_from_origin(msg.vh.text); a.zone() > 0) {
     return a;
   }
   auto zone = header.orig_zone;
@@ -426,8 +422,7 @@ FidoAddress get_address_from_packet(const FidoPackedMessage& msg, const packet_h
 }
 
 FidoAddress get_address_from_stored_message(const FidoStoredMessage& msg) {
-  auto a = get_address_from_origin(msg.text);
-  if (a.zone() > 0) {
+  if (auto a = get_address_from_origin(msg.text); a.zone() > 0) {
     return a;
   }
   const auto zone = msg.nh.orig_zone;
@@ -550,7 +545,7 @@ bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net)
 }
 
 bool exists_bundle(const std::filesystem::path& dir) {
-  const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
+  const std::vector<std::string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
   for (const auto& e : extensions) {
     {
       FindFiles ff(FilePath(dir, StrCat("*.", e)), FindFiles::FindFilesType::files);

@@ -19,12 +19,6 @@
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 
-#include <cstdint>
-#include <string>
-
-using std::endl;
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::strings;
 
 

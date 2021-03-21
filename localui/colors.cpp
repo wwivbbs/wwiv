@@ -21,6 +21,8 @@
 #include "core/strings.h"
 #include "localui/wwiv_curses.h"
 
+namespace wwiv::local::ui {
+
 SchemeDescription::SchemeDescription(SchemeId scheme, int f, int b, bool bold)
   : scheme_(scheme), f_(f), b_(b), bold_(bold) {}
 
@@ -82,4 +84,6 @@ std::map<SchemeId, SchemeDescription> ColorScheme::LoadColorSchemes() {
   scheme[SchemeId::WINDOW_DATA] = SchemeDescription(SchemeId::WINDOW_SELECTED, COLOR_YELLOW, COLOR_BLACK, true);
   scheme[SchemeId::WINDOW_TITLE] = SchemeDescription(SchemeId::WINDOW_TITLE, COLOR_YELLOW, COLOR_BLUE, true);
   return scheme;
+}
+
 }

@@ -17,25 +17,20 @@
 /**************************************************************************/
 #include "binkp/ppp_config.h"
 
+#include "binkp/config_exceptions.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/format.h"
-#include "binkp/config_exceptions.h"
 #include "sdk/filenames.h"
 #include "sdk/net/networks.h"
+
 #include <filesystem>
 #include <map>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
 
-using std::map;
-using std::string;
-using std::stringstream;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
@@ -43,17 +38,17 @@ using namespace wwiv::sdk;
 namespace wwiv::net {
 
 // [[ VisibleForTesting ]]
-bool ParseAddressNetLine(const string& line, uint16_t* node, PPPNodeConfig* config) {
+bool ParseAddressNetLine(const std::string& line, uint16_t* node, PPPNodeConfig* config) {
   if (line.empty() || line[0] != '@') {
     // skip empty lines and those not starting with @.
     return false;
   }
   
-  stringstream stream(line);
-  string node_str;
+  std::stringstream stream(line);
+  std::string node_str;
   stream >> node_str;
   *node = to_number<uint16_t>(node_str.substr(1));
-  string email_address;
+  std::string email_address;
   stream >> config->email_address;
   
   return true;
@@ -65,7 +60,7 @@ static bool ParseAddressesFile(std::map<int, PPPNodeConfig>* node_config_map, co
     return false;
   }
   // A line will be of the format @node host:port [password].
-  string line;
+  std::string line;
   while (node_config_file.ReadLine(&line)) {
     uint16_t node_number;
     PPPNodeConfig node_config;
@@ -93,7 +88,7 @@ PPPConfig::PPPConfig(const std::string& callout_network_name, const Config& conf
   ParseAddressesFile(&node_config_, net.dir);
 }
 
-PPPConfig::PPPConfig(int node_number, string system_name, const string& network_dir)
+PPPConfig::PPPConfig(int node_number, std::string system_name, const std::string& network_dir)
     : node_(node_number), system_name_(std::move(system_name)) {
   ParseAddressesFile(&node_config_, network_dir);
 }

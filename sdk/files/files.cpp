@@ -30,8 +30,6 @@
 #include <string>
 #include <utility>
 
-using std::endl;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -82,8 +80,7 @@ std::unique_ptr<FileArea> FileApi::Open(const directory_t& dir) {
 }
 
 std::unique_ptr<FileArea> FileApi::CreateOrOpen(const directory_t& dir) {
-  auto o = Open(dir);
-  if (o) {
+  if (auto o = Open(dir); o) {
     return o;
   }
   if (Create(dir)) {
@@ -392,8 +389,7 @@ std::optional<int> FileArea::FindFile(const FileName& f) {
 
 std::optional<int> FileArea::FindFile(const std::string& file_name) {
   for (auto i = 0; i < stl::ssize(files_); i++) {
-    const auto& c = stl::at(files_, i);
-    if (file_name == c.filename) {
+    if (const auto & c = stl::at(files_, i); file_name == c.filename) {
       return {i};
     }
   }
@@ -414,14 +410,12 @@ bool aligned_wildcard_match(const std::string& l, const std::string& r) {
 }
 
 std::optional<int> FileArea::SearchFile(const std::string& filemask, int start_num) {
-  const auto numf = number_of_files();
-  if (numf < 1 || start_num > numf) { // was >=
+  if (const auto numf = number_of_files(); numf < 1 || start_num > numf) { // was >=
     return std::nullopt;
   }
 
   for (auto i = start_num; i < stl::ssize(files_); i++) {
-    const auto& c = stl::at(files_, i);
-    if (aligned_wildcard_match(filemask, c.filename)) {
+    if (const auto & c = stl::at(files_, i); aligned_wildcard_match(filemask, c.filename)) {
       return {i};
     }
   }
@@ -461,8 +455,7 @@ std::filesystem::path FileArea::ext_path() {
 }
 
 bool FileArea::ValidateFileNum(const FileRecord& f, int num) {
-  const auto& o = stl::at(files_, num);
-  if (f.aligned_filename() != o.filename) {
+  if (const auto & o = stl::at(files_, num); f.aligned_filename() != o.filename) {
     LOG(ERROR) << "Mismatched File call for " << f.aligned_filename() << " vs: " << o.filename
                << " at pos: " << num;
     return false;

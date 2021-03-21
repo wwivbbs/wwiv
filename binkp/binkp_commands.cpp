@@ -19,9 +19,6 @@
 #include <map>
 #include <string>
 
-using std::map;
-using std::string;
-
 namespace wwiv::net {
 
 const int BinkpCommands::M_NUL;
@@ -37,8 +34,8 @@ const int BinkpCommands::M_GET;
 const int BinkpCommands::M_SKIP;
 
 // static
-string BinkpCommands::command_id_to_name(int command_id) {
-  static const map<int, string> map = {
+std::string BinkpCommands::command_id_to_name(int command_id) {
+  static const std::map<int, std::string> map = {
     {M_NUL, "M_NUL"},
     {M_ADR, "M_ADR"},
     {M_PWD, "M_PWD"},

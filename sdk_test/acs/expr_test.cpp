@@ -21,9 +21,7 @@
 #include "core/parser/ast.h"
 #include "core/strings.h"
 #include "sdk/acs/expr.h"
-#include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace parser;
 using namespace wwiv::sdk::acs;

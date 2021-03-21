@@ -22,21 +22,13 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
+#include "sdk/fido/fido_address.h"
 #include "sdk/net/networks.h"
 #include <map>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
-
-using std::endl;
-using std::map;
-using std::string;
-using std::stringstream;
-using std::unique_ptr;
-using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::strings;

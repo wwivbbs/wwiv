@@ -27,9 +27,6 @@
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -56,27 +53,27 @@ static int dump_file(const std::string& filename) {
   }
 
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  cout << "Read " << subscribers.size() << " in " << elapsed.count() << " milliseconds. "
+  std::cout << "Read " << subscribers.size() << " in " << elapsed.count() << " milliseconds. "
        << std::endl;
-  cout << "Read " << subscribers.size() << " in " << elapsed.count() / 1000 << " seconds. "
+  std::cout << "Read " << subscribers.size() << " in " << elapsed.count() / 1000 << " seconds. "
        << std::endl;
 
   for (const auto& e : subscribers) {
-    cout << "@" << e << std::endl;
+    std::cout << "@" << e << std::endl;
   }
   return 0;
 }
 
 std::string DumpSubscribersCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   subscribers <subscriber filename>" << endl;
-  ss << "Example: subscribers net/ftn/nGENCHAT.net" << endl;
+  ss << "Usage:   subscribers <subscriber filename>" << std::endl;
+  ss << "Example: subscribers net/ftn/nGENCHAT.net" << std::endl;
   return ss.str();
 }
 
 int DumpSubscribersCommand::Execute() {
   if (remaining().empty()) {
-    cout << GetUsage() << GetHelp() << endl;
+    std::cout << GetUsage() << GetHelp() << std::endl;
     return 2;
   }
   const auto filename = remaining().front();

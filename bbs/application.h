@@ -38,7 +38,6 @@ struct asv_rec {
 
 class Batch;
 class BbsMacroContext;
-class LocalIO;
 struct arcrec;
 struct editorrec;
 struct net_networks_rec;
@@ -47,6 +46,12 @@ struct tagrec_t;
 struct usersubrec;
 
 namespace wwiv {
+namespace local {
+namespace io {
+class LocalIO;
+}
+}
+
 namespace common {
 class SessionContext;
 enum class CommunicationType;
@@ -105,7 +110,7 @@ public:
   static constexpr int exitLevelNotOK = 1;
   static constexpr int exitLevelQuit = 2;
 
-  explicit Application(LocalIO* localIO);
+  explicit Application(wwiv::local::io::LocalIO* localIO);
   Application() = delete;
   Application(Application&&) = delete;
   Application(const Application&) = delete;
@@ -140,8 +145,8 @@ public:
   void tleft(bool check_for_timeout);
   void DisplaySysopWorkingIndicator(bool displayWait);
   [[nodiscard]] wwiv::common::RemoteIO* remoteIO() const { return comm_.get(); }
-  [[nodiscard]] LocalIO* localIO() const;
-  bool reset_local_io(LocalIO* wlocal_io);
+  [[nodiscard]] wwiv::local::io::LocalIO* localIO() const;
+  bool reset_local_io(wwiv::local::io::LocalIO* wlocal_io);
   [[nodiscard]] const std::string& GetAttachmentDirectory() const { return attach_dir_; }
   [[nodiscard]] const std::filesystem::path& netfoss_dir() const { return netfoss_dir_; }
   [[nodiscard]] const std::string& network_extension() const { return network_extension_; }
@@ -419,7 +424,7 @@ private:
 private:
   // Constructor parameters
 
-  std::unique_ptr<LocalIO> local_io_;
+  std::unique_ptr<wwiv::local::io::LocalIO> local_io_;
   int oklevel_;
   int errorlevel_;
   std::unique_ptr<wwiv::common::SessionContext> session_context_;

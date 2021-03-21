@@ -55,8 +55,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -112,7 +110,7 @@ static void colorize_foundtext(char* text, search_record* search_rec, int color)
   }
 }
 
-static void colorize_foundtext(string* text, search_record* search_rec, int color) {
+static void colorize_foundtext(std::string* text, search_record* search_rec, int color) {
   std::unique_ptr<char[]> s(new char[text->size() * 2 + (12 * 10)]); // extra padding for colorized
   strcpy(s.get(), text->c_str());
   colorize_foundtext(s.get(), search_rec, color);
@@ -121,7 +119,7 @@ static void colorize_foundtext(string* text, search_record* search_rec, int colo
 
 static void build_header() {
   int desc_pos = 30;
-  string header(" Tag # ");
+  std::string header(" Tag # ");
   if (a()->user()->data.lp_options & cfl_fname) {
     header += "FILENAME";
   }
@@ -160,7 +158,7 @@ static void build_header() {
 }
 
 static void printtitle_plus_old() {
-  bout << "|16|15" << string(79, '\xDC') << wwiv::endl;
+  bout << "|16|15" << std::string(79, '\xDC') << wwiv::endl;
 
   const auto buf =
       fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
@@ -172,7 +170,7 @@ static void printtitle_plus_old() {
     build_header();
   }
 
-  bout << "|16|08" << string(79, '\xDF') << wwiv::endl;
+  bout << "|16|08" << std::string(79, '\xDF') << wwiv::endl;
   bout.Color(0);
 }
 
@@ -233,7 +231,7 @@ int listfiles_plus(int type) {
   ext_is_on = a()->user()->GetFullFileDescriptions();
   signal(SIGFPE, catch_divide_by_zero);
 
-  a()->localIO()->topdata(LocalIO::topdata_t::none);
+  a()->localIO()->topdata(wwiv::local::io::LocalIO::topdata_t::none);
   a()->UpdateTopScreen();
   bout.cls();
 
@@ -324,7 +322,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
   int width = 7;
   bout.clear_lines_listed();
 
-  string buffer;
+  std::string buffer;
   if (a()->user()->data.lp_options & cfl_fname) {
     buffer = basename;
     if (search_rec) {
@@ -435,7 +433,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
       bout.nl();
       ++numl;
     }
-    auto tmp = properize(string(u->upby));
+    auto tmp = properize(std::string(u->upby));
     file_information = fmt::sprintf("|%02dUpby: %-15s", a()->user()->data.lp_colors[7], tmp);
   }
 
@@ -489,7 +487,7 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
 void show_fileinfo(uploadsrec* u) {
   bout.cls();
   bout.Color(7);
-  bout << string(78, '\xCD');
+  bout << std::string(78, '\xCD');
   bout.nl();
   bout << "  |#9Filename    : |#2" << u->filename << wwiv::endl;
   bout << "  |#9Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
@@ -501,7 +499,7 @@ void show_fileinfo(uploadsrec* u) {
   bout << "  |#9Description : |#2" << u->description << wwiv::endl;
   print_extended(u->filename, 255, 16, Color::YELLOW, nullptr);
   bout.Color(7);
-  bout << string(78, '\xCD');
+  bout << std::string(78, '\xCD');
   bout.nl();
   bout.pausescr();
 }
@@ -833,7 +831,7 @@ short SelectColor(int which) {
 }
 
 static void update_user_config_screen(uploadsrec* u, int which) {
-  const vector<string> lp_color_list{
+  const std::vector<std::string> lp_color_list{
       "Black   ",
       "Blue    ",
       "Green   ",
@@ -950,7 +948,7 @@ void config_file_list() {
   to_char_array(u.filename, "WWIV55.ZIP");
   to_char_array(u.description, "This is a sample description!");
   to_char_array(u.date, date());
-  const string username_num = a()->user()->name_and_number();
+  const std::string username_num = a()->user()->name_and_number();
   to_char_array(u.upby, username_num);
   u.numdloads = 50;
   u.numbytes = 655535L;
@@ -971,8 +969,7 @@ void config_file_list() {
   auto done = false;
   while (!done && !a()->sess().hangup()) {
     update_user_config_screen(&u, which);
-    const int key = onek("Q2346789H!@#$%^&*(");
-    switch (key) {
+    switch (const int key = onek("Q2346789H!@#$%^&*("); key) {
     case '2':
     case '3':
     case '4':
@@ -1088,7 +1085,7 @@ static int rename_filename(const std::string& file_name, int dn) {
   int ret = 1;
 
   dliscan1(dn);
-  string s = file_name;
+  std::string s = file_name;
   if (s.empty()) {
     return 1;
   }
@@ -1301,7 +1298,7 @@ static int move_filename(const std::string& file_name, int dn) {
       ret = 0;
     } else if (ch == 'Y') {
       if (!bulk_move) {
-        string ss;
+        std::string ss;
         do {
           bout.nl(2);
           bout << "|#2To which directory? ";

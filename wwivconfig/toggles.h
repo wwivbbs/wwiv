@@ -22,6 +22,6 @@
 #include "localui/curses_win.h"
 #include "sdk/config.h"
 
-void toggles(wwiv::sdk::Config& config, wwiv::sdk::system_toggles_t& b_, CursesWindow* window);
+void toggles(wwiv::sdk::Config& config, wwiv::sdk::system_toggles_t& b_, wwiv::local::ui::CursesWindow* window);
 
 #endif // INCLUDED_WWIVCONFIG_NEW_USER_H

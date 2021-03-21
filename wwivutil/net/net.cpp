@@ -19,8 +19,6 @@
 #include "wwivutil/net/net.h"
 
 #include "core/command_line.h"
-#include "core/file.h"
-#include "sdk/config.h"
 #include "wwivutil/net/dump_bbsdata.h"
 #include "wwivutil/net/dump_callout.h"
 #include "wwivutil/net/dump_connect.h"
@@ -31,32 +29,23 @@
 #include "wwivutil/net/req.h"
 #include "wwivutil/net/send.h"
 
-#include <iomanip>
 #include <memory>
-#include <string>
-#include <vector>
 
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 
 namespace wwiv::wwivutil {
 
 bool NetCommand::AddSubCommands() {
-  add(make_unique<DumpPacketCommand>());
-  add(make_unique<DumpCalloutCommand>());
-  add(make_unique<DumpConnectCommand>());
-  add(make_unique<DumpContactCommand>());
-  add(make_unique<DumpBbsDataCommand>());
-  add(make_unique<wwiv::wwivutil::net::DumpSubscribersCommand>());
-  add(make_unique<SubReqCommand>());
-  add(make_unique<NetListCommand>());
-  add(make_unique<net::SubSendCommand>());
+  add(std::make_unique<DumpPacketCommand>());
+  add(std::make_unique<DumpCalloutCommand>());
+  add(std::make_unique<DumpConnectCommand>());
+  add(std::make_unique<DumpContactCommand>());
+  add(std::make_unique<DumpBbsDataCommand>());
+  add(std::make_unique<wwiv::wwivutil::net::DumpSubscribersCommand>());
+  add(std::make_unique<SubReqCommand>());
+  add(std::make_unique<NetListCommand>());
+  add(std::make_unique<net::SubSendCommand>());
   return true;
 }
 

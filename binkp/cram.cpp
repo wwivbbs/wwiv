@@ -29,7 +29,6 @@
 #include <sstream>
 #include <string>
 
-using std::string;
 using namespace wwiv::strings;
 
 namespace wwiv::net {
@@ -68,7 +67,7 @@ static std::string FromHex(const std::string& hex) {
   auto len = 0;
   auto it = hex.begin();
   while (it != hex.end()) {
-    string s;
+    std::string s;
     s.push_back(*it++);
     s.push_back(*it++);
 
@@ -93,7 +92,7 @@ static std::string SecretOrHash(const std::string& secret) {
   MD5_Update(&ctx, &secret[0], secret.size());
   MD5_Final(hash, &ctx);
 
-  return string(reinterpret_cast<const char*>(hash), 16);
+  return std::string(reinterpret_cast<const char*>(hash), 16);
 }
 
 std::string Cram::CreateHashedSecret(

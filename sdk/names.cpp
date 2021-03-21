@@ -29,8 +29,6 @@
 #include <algorithm>
 #include <string>
 
-using std::endl;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -54,7 +52,7 @@ std::string Names::UserName(uint32_t user_number) const {
   if (sr.number == 0) {
     return "";
   }
-  const auto name = properize(string(reinterpret_cast<const char*>(sr.name)));
+  const auto name = properize(std::string(reinterpret_cast<const char*>(sr.name)));
   return fmt::format("{} #{}", name, user_number);
 }
 
@@ -90,7 +88,7 @@ bool Names::AddUnsorted(const std::string& name, uint32_t user_number) {
 }
 
 bool Names::Remove(uint32_t user_number) {
-  const string name(reinterpret_cast<char*>(smalrec_for(user_number, names_).name));
+  const std::string name(reinterpret_cast<char*>(smalrec_for(user_number, names_).name));
   if (name.empty()) {
     return false;
   }

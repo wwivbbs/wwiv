@@ -19,14 +19,10 @@
 #include "gtest/gtest.h"
 
 #include "bbs/bbs.h"
-#include "common/output.h"
 #include "bbs_test/bbs_helper.h"
+#include "common/output.h"
 #include <iostream>
 #include <string>
-
-using std::cout;
-using std::endl;
-using std::string;
 
 class BPutsTest : public ::testing::Test {
 protected:
@@ -47,27 +43,27 @@ TEST_F(BPutsTest, SingleLetter) {
 }
 
 TEST_F(BPutsTest, MultipleLetters) {
-  const string kHelloWorld = "Hello World\r\n";
+  const std::string kHelloWorld = "Hello World\r\n";
   EXPECT_EQ(wwiv::stl::ssize(kHelloWorld), Puts(kHelloWorld));
   EXPECT_EQ(kHelloWorld, helper.io()->captured());
 }
 
 TEST_F(BPutsTest, SinglePipe) {
-  const string kPlainHelloWorld = "Hello World";
-  const string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World";
-  const string s = "|#1Hello World";
+  const std::string kPlainHelloWorld = "Hello World";
+  const std::string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World";
+  const std::string s = "|#1Hello World";
   Puts(s);
   EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
   EXPECT_EQ(kAnsiHelloWorld, helper.io()->rcaptured());
 }
 
 TEST_F(BPutsTest, SinglePipe_WithEndLine) {
-  const string kPlainHelloWorld = "Hello World\r\n";
-  const string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
+  const std::string kPlainHelloWorld = "Hello World\r\n";
+  const std::string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
   // TODO(rushfan): Our wonky linux handling adds the \r before all \n, however
   // this causes deltas here. The output is OK, but just has an extra \r
-  const string kAnsiHelloWorldUnix = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\r\n";
-  const string s = "|#1Hello World\r\n";
+  const std::string kAnsiHelloWorldUnix = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\r\n";
+  const std::string s = "|#1Hello World\r\n";
   Puts(s);
   EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
 #ifdef _WIN32
@@ -78,19 +74,19 @@ TEST_F(BPutsTest, SinglePipe_WithEndLine) {
 }
 
 TEST_F(BPutsTest, RepeatedPipe) {
-  const string kPlainHelloWorld = "Hello World";
-  const string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World";
-  const string s = "|#1Hello |#1World";
+  const std::string kPlainHelloWorld = "Hello World";
+  const std::string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World";
+  const std::string s = "|#1Hello |#1World";
   Puts(s);
   EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
   EXPECT_EQ(kAnsiHelloWorld, helper.io()->rcaptured());
 }
 
 TEST_F(BPutsTest, RepeatedPipe_WithEndLine) {
-  const string kPlainHelloWorld = "Hello World\r\n";
-  const string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
-  const string kAnsiHelloWorldUnix = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\r\n";
-  const string s = "|#1Hello |#1World\r\n";
+  const std::string kPlainHelloWorld = "Hello World\r\n";
+  const std::string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
+  const std::string kAnsiHelloWorldUnix = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\r\n";
+  const std::string s = "|#1Hello |#1World\r\n";
   Puts(s);
   EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
 #ifdef _WIN32

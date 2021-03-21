@@ -42,10 +42,9 @@
 #include <utime.h>
 #endif // WIN32
 
-using std::string;
-using std::vector;
 using namespace std::chrono;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
@@ -100,7 +99,7 @@ long nsl() {
   if (!a()->sess().IsUserOnline()) {
     return 1;
   }
-  auto tot = duration_cast<seconds>(dd - a()->sess().system_logon_time());
+  const auto tot = duration_cast<seconds>(dd - a()->sess().system_logon_time());
 
   const auto tpl = minutes(a()->config()->sl(a()->sess().effective_sl()).time_per_logon);
   const auto tpd = minutes(a()->config()->sl(a()->sess().effective_sl()).time_per_day);
@@ -108,8 +107,8 @@ long nsl() {
       duration_cast<seconds>(a()->user()->extra_time() + a()->extratimecall());
   const auto tlc = std::chrono::duration_cast<seconds>(tpl - tot + extra_time);
   // time left today
-  auto tld = std::chrono::duration_cast<seconds>(tpd - tot - a()->user()->timeontoday() +
-                                                 a()->user()->extra_time());
+  const auto tld = std::chrono::duration_cast<seconds>(tpd - tot - a()->user()->timeontoday() +
+                                                       a()->user()->extra_time());
   const auto tlt = std::min<seconds>(tlc, tld);
   a()->sess().SetTimeOnlineLimited(false);
   return static_cast<long>(in_range<int64_t>(0, 32767, duration_cast<seconds>(tlt).count()));
@@ -117,7 +116,7 @@ long nsl() {
 
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text,
               const std::string& byname) {
-  const string filename = StrCat(a()->network_directory(), "p1", a()->network_extension());
+  const auto filename = StrCat(a()->network_directory(), "p1", a()->network_extension());
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
@@ -151,7 +150,7 @@ void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string&
 }
 
 std::string stripfn(const std::string& file_name) {
-  std::filesystem::path p(file_name);
+  const std::filesystem::path p(file_name);
   if (!p.has_filename()) {
     return {};
   }
@@ -228,14 +227,14 @@ std::string get_wildlist(const std::string& orig_file_mask) {
   return pszPath;
 }
 
-int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items, int xpos,
+int side_menu(int* menu_pos, bool bNeedsRedraw, const std::vector<std::string>& menu_items, int xpos,
               int ypos, side_menu_colors* smc) {
-  static int positions[20], amount = 1;
+  static int positions[20];
 
   a()->tleft(true);
 
   if (bNeedsRedraw) {
-    amount = 1;
+    static int amount = 1;
     positions[0] = xpos;
     for (const auto& menu_item : menu_items) {
       positions[amount] = positions[amount - 1] + wwiv::stl::ssize(menu_item) + 2;
@@ -245,7 +244,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
     int x = 0;
     bout.SystemColor(smc->normal_menu_item);
 
-    for (const string& menu_item : menu_items) {
+    for (const auto& menu_item : menu_items) {
       if (a()->sess().hangup()) {
         break;
       }
@@ -271,7 +270,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
     const auto event = bin.bgetch_event(wwiv::common::Input::numlock_status_t::NOTNUMBERS);
     if (event < 128) {
       int x = 0;
-      for (const string& menu_item : menu_items) {
+      for (const auto& menu_item : menu_items) {
         if (event == to_upper_case<int>(menu_item[0]) ||
             event == to_lower_case<int>(menu_item[0])) {
           bout.GotoXY(positions[*menu_pos], ypos);

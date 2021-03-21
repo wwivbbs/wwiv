@@ -35,7 +35,6 @@ static WFindFileTypeMask s_typemask;
 static const char* filespec_ptr;
 static std::string s_path;
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -80,7 +79,7 @@ static int fname_ok(const struct dirent* ent) {
   return 0;
 }
 
-bool WFindFile::open(const string& filespec, WFindFileTypeMask nTypeMask) {
+bool WFindFile::open(const std::string& filespec, WFindFileTypeMask nTypeMask) {
   __open(filespec, nTypeMask);
   filename_.clear();
 

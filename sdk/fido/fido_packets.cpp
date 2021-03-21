@@ -24,7 +24,6 @@
 #include <algorithm>
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::net;
@@ -33,8 +32,7 @@ namespace wwiv::sdk::fido {
 
 static char ReadCharFromFile(File& f) {
   char buf[1];
-  const auto num_read = f.Read(buf, 1);
-  if (num_read == 0) {
+  if (const auto num_read = f.Read(buf, 1); num_read == 0) {
     return 0;
   }
   return buf[0];
@@ -43,7 +41,7 @@ static char ReadCharFromFile(File& f) {
 static std::string ReadRestOfFile(File& f, int max_size) {
   auto current = f.current_position();
   const auto size = f.length();
-  string s;
+  std::string s;
 
   const auto to_read = std::min<decltype(current)>(max_size, size - current);
   s.resize(to_read + 1);
@@ -57,7 +55,7 @@ static std::string ReadRestOfFile(File& f, int max_size) {
  * any trailing nulls.
  */
 static std::string ReadFixedLengthField(File& f, int len) {
-  string s;
+  std::string s;
   s.resize(len + 1);
   const auto num_read = f.Read(&s[0], len);
   s.resize(num_read);
@@ -73,7 +71,7 @@ static std::string ReadFixedLengthField(File& f, int len) {
  * character.
  */
 static std::string ReadVariableLengthField(File& f, int max_len) {
-  string s;
+  std::string s;
   for (auto i = 0; i < max_len; i++) {
     const auto ch = ReadCharFromFile(f);
     if (ch == 0) {
@@ -87,8 +85,8 @@ static std::string ReadVariableLengthField(File& f, int max_len) {
 FidoStoredMessage::~FidoStoredMessage()  = default;
 
 bool write_fido_packet_header(File& f, packet_header_2p_t& header) {
-  const auto num_written = f.Write(&header, sizeof(packet_header_2p_t));
-  if (num_written != sizeof(packet_header_2p_t)) {
+  if (const auto num_written = f.Write(&header, sizeof(packet_header_2p_t));
+      num_written != sizeof(packet_header_2p_t)) {
     LOG(ERROR) << "short write to packet, wrote " << num_written
                << "; expected: " << sizeof(packet_header_2p_t);
     return false;
@@ -97,8 +95,8 @@ bool write_fido_packet_header(File& f, packet_header_2p_t& header) {
 }
 
 bool write_packed_message(File& f, FidoPackedMessage& packet) {
-  const auto num_written = f.Write(&packet.nh, sizeof(fido_packed_message_t));
-  if (num_written != sizeof(fido_packed_message_t)) {
+  if (const auto num_written = f.Write(&packet.nh, sizeof(fido_packed_message_t));
+      num_written != sizeof(fido_packed_message_t)) {
     LOG(ERROR) << "short write to packet, wrote " << num_written
                << "; expected: " << sizeof(fido_packed_message_t);
     return false;
@@ -119,8 +117,8 @@ bool write_packed_message(File& f, FidoPackedMessage& packet) {
 }
 
 bool write_stored_message(File& f, FidoStoredMessage& packet) {
-  const auto num = f.Write(&packet.nh, sizeof(fido_stored_message_t));
-  if (num != sizeof(fido_stored_message_t)) {
+  if (const auto num = f.Write(&packet.nh, sizeof(fido_stored_message_t));
+      num != sizeof(fido_stored_message_t)) {
     LOG(ERROR) << "Short write on write_stored_message. Wrote: " << num
                << "; expected: " << sizeof(fido_stored_message_t);
     return false;
@@ -163,8 +161,7 @@ ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
 }
 
 ReadPacketResponse read_stored_message(File& f, FidoStoredMessage& packet) {
-  const auto num_read = f.Read(&packet.nh, sizeof(fido_stored_message_t));
-  if (num_read == 0) {
+  if (const auto num_read = f.Read(&packet.nh, sizeof(fido_stored_message_t)); num_read == 0) {
     // at the end of the packet.
     return ReadPacketResponse::END_OF_FILE;
   }

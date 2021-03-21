@@ -36,7 +36,6 @@
 #include <utime.h>
 #endif // _WIN32
 
-using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
 
@@ -50,7 +49,7 @@ FileLock::FileLock(int fd, const std::string& filename, FileLockType lock_type)
 
 FileLock::~FileLock() {
 #ifdef _WIN32
-  HANDLE h = reinterpret_cast<HANDLE>(_get_osfhandle(fd_));
+  auto h = reinterpret_cast<HANDLE>(_get_osfhandle(fd_));
   OVERLAPPED overlapped = {0};
   if (!UnlockFileEx(h, 0, MAXDWORD, MAXDWORD, &overlapped)) {
     LOG(ERROR) << "Error Unlocking file: " << filename_;

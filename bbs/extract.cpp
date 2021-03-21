@@ -22,7 +22,6 @@
 #include "common/com.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "common/pause.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/config.h"
@@ -30,7 +29,6 @@
 
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 

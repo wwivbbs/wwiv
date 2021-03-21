@@ -37,8 +37,6 @@
 
 namespace wwiv::wwivd {
 
-using std::map;
-using std::string;
 using namespace std::chrono_literals;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -46,7 +44,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-static bool LoadLinesIntoSet(std::unordered_set<string>& s, const std::vector<std::string>& lines) {
+static bool LoadLinesIntoSet(std::unordered_set<std::string>& s, const std::vector<std::string>& lines) {
   for (auto line : lines) {
     const auto space = line.find(' ');
     if (space != std::string::npos) {

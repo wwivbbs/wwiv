@@ -87,10 +87,10 @@
 #include <memory>
 #include <string>
 
-using std::string;
 using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -100,8 +100,7 @@ namespace wwiv::bbs::menus {
 void UnQScan() {
   bout.nl();
   bout << "|#9Mark messages as unread on [C]urrent sub or [A]ll subs (A/C/Q)? ";
-  const char ch = onek("QAC\r");
-  switch (ch) {
+  switch (const char ch = onek("QAC\r"); ch) {
   case 'Q':
   case RETURN:
     break;
@@ -247,7 +246,7 @@ void LastCallers() {
     bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
   }
   const char filler_char = okansi() ? '\xCD' : '=';
-  bout << "|#7" << string(79, filler_char) << wwiv::endl;
+  bout << "|#7" << std::string(79, filler_char) << wwiv::endl;
   bout.printfile(LASTON_TXT);
 }
 
@@ -288,8 +287,7 @@ void GoodBye() {
     do {
       bout.cls();
       bout.printfile(filename.string());
-      int ch = onek("QFTO", true);
-      switch (ch) {
+      switch (int ch = onek("QFTO", true); ch) {
       case 'Q':
         cycle = 1;
         break;
@@ -643,8 +641,7 @@ void ChatRoom() {
 void ClearQScan() {
   bout.nl();
   bout << "|#5Mark messages as read on [C]urrent sub or [A]ll subs (A/C/Q)? ";
-  char ch = onek("QAC\r");
-  switch (ch) {
+  switch (char ch = onek("QAC\r"); ch) {
   case 'Q':
   case RETURN:
     break;

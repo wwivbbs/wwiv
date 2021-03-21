@@ -19,27 +19,21 @@
 #include "common/printfile.h"
 
 
-#include "bbs/bbs.h"
 #include "common/input.h"
 #include "common/menu_data_util.h"
-#include "common/pause.h"
 #include "core/file.h"
 #include "core/os.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "local_io/keycodes.h"
-#include "sdk/config.h"
-#include "core/scope_exit.h"
 #include <chrono>
-#include <memory>
 #include <string>
 #include <vector>
 
 namespace wwiv::common {
 
-using std::string;
-using std::unique_ptr;
 using namespace std::chrono;
 using namespace std::chrono_literals;
 using namespace wwiv::core;
@@ -51,10 +45,10 @@ using namespace wwiv::strings;
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
 std::filesystem::path CreateFullPathToPrint(const std::vector<std::filesystem::path>& dirs,
-                                            const User& user, const string& basename) {
+                                            const User& user, const std::string& basename) {
   for (const auto& base : dirs) {
     auto file{FilePath(base, basename)};
-    if (basename.find('.') != string::npos) {
+    if (basename.find('.') != std::string::npos) {
       // We have a file with extension.
       if (File::Exists(file)) {
         return file;
@@ -159,8 +153,7 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
     // No need to print a file that does not exist.
     return false;
   }
-  std::error_code ec;
-  if (!is_regular_file(file_path, ec)) {
+  if (std::error_code ec; !is_regular_file(file_path, ec)) {
     // Not a file, no need to print a file that is not a file.
     return false;
   }
@@ -176,14 +169,13 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
   for (const auto& s : v) {
     num_written += bout.bputs(s);
     bout.nl();
-    const auto has_ansi = contains(s, ESC);
     // If this is an ANSI file, then don't pause
     // (since we may be moving around
     // on the screen, unless the caller tells us to pause anyway)
-    if (has_ansi && !force_pause) {
+    if (const auto has_ansi = contains(s, local::io::ESC); has_ansi && !force_pause) {
       bout.clear_lines_listed();
     }
-    if (contains(s, CZ)) {
+    if (contains(s, local::io::CZ)) {
       // We are done here on a control-Z since that's DOS EOF.  Also ANSI
       // files created with PabloDraw expect that anything after a Control-Z
       // is fair game for metadata and includes SAUCE metadata after it which
@@ -230,7 +222,7 @@ bool Output::print_help_file(const std::string& filename) {
 /**
  * Displays a file locally.
  */
-void Output::print_local_file(const string& filename) {
+void Output::print_local_file(const std::string& filename) {
   printfile(filename);
   bout.nl(2);
   bout.pausescr();

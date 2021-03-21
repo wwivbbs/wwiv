@@ -23,13 +23,10 @@
 #include "sdk/acs/eval_error.h"
 #include "sdk/value/uservalueprovider.h"
 
-#include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
 
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::stl;
 using namespace wwiv::sdk::acs;
 using namespace wwiv::sdk::value;

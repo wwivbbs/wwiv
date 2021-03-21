@@ -27,16 +27,9 @@
 #include <cctype>
 #include <cfloat>
 #include <map>
-#include <memory>
 #include <sstream>
 #include <string>
 
-using std::endl;
-using std::map;
-using std::string;
-using std::stringstream;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
@@ -45,7 +38,7 @@ namespace wwiv::sdk {
 
 template <typename I, typename C> 
 static uint16_t PopStringToUnsignedShort(I& iter, const C& c) {
-  string s;
+  std::string s;
   while (iter != std::end(c) && std::isdigit(*iter)) {
     s.push_back(*iter++);
   }
@@ -54,7 +47,7 @@ static uint16_t PopStringToUnsignedShort(I& iter, const C& c) {
 
 template <typename I, typename C>
 static float PopStringToFloat(I& iter, const C& c) {
-  string s;
+  std::string s;
   while (iter != std::end(c) && (std::isdigit(*iter) || *iter == '.')) {
     s.push_back(*iter++);
   }
@@ -70,7 +63,7 @@ static void SkipWhiteSpace(I& iter, const C& c) {
 }
 
 // [[ VisibleForTesting ]]
-bool ParseConnectNetLine(const string& ss, net_interconnect_rec* con) {
+bool ParseConnectNetLine(const std::string& ss, net_interconnect_rec* con) {
   // A line will be of the format: @node (node=cost)+
   if (ss.empty() || ss[0] != '@') {
     // skip empty lines and those not starting with @.
@@ -81,7 +74,7 @@ bool ParseConnectNetLine(const string& ss, net_interconnect_rec* con) {
   con->clear();
   auto iter = ss.begin();
   // We know 1st char is @
-  iter++;
+  ++iter;
   con->sysnum = PopStringToUnsignedShort(iter, ss);
   SkipWhiteSpace(iter, ss);
 
@@ -92,7 +85,7 @@ bool ParseConnectNetLine(const string& ss, net_interconnect_rec* con) {
       return false;
     }
     // skip =
-    iter++;
+    ++iter;
     float cost = PopStringToFloat(iter, ss);
     SkipWhiteSpace(iter, ss);
     con->connect.push_back(dest);
@@ -113,7 +106,7 @@ static bool ParseConnectFile(std::map<uint16_t, net_interconnect_rec>* node_conf
     return false;
   }
   // A line will be of the format: @node (node=cost)+
-  string line;
+  std::string line;
   while (connect_file.ReadLine(&line)) {
     StringTrim(&line);
     net_interconnect_rec rec{};

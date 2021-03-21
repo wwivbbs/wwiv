@@ -18,20 +18,16 @@
 /**************************************************************************/
 #include "core/os.h"
 
+#include "core/strings.h"
 #include <chrono>
-#include <functional>
 #include <random>
 
-#include "core/strings.h"
-
-using std::function;
-using std::string;
 using namespace std::chrono;
 using namespace wwiv::strings;
 
 namespace wwiv::os {
 
-bool wait_for(function<bool()> predicate, duration<double> d) {
+bool wait_for(std::function<bool()> predicate, duration<double> d) {
   auto now = steady_clock::now();
   const auto end = now + d;
   while (!predicate() && now < end) {

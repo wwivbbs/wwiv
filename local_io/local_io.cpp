@@ -20,9 +20,11 @@
 
 #include "core/strings.h"
 
+namespace wwiv::local::io {
+
 using namespace wwiv::strings;
 
-class DefaultCurAttrProvider final : public wwiv::local_io::curatr_provider {
+class DefaultCurAttrProvider final : public wwiv::local::io::curatr_provider {
 public:
   DefaultCurAttrProvider() = default;
   [[nodiscard]] uint8_t curatr() const noexcept override { return a_; }
@@ -38,8 +40,8 @@ static std::unique_ptr<DefaultCurAttrProvider> default_curatr_provider_ =
 LocalIO::LocalIO() : curatr_(default_curatr_provider_.get()) {}
 LocalIO::~LocalIO() = default;
 
-void LocalIO::set_curatr_provider(wwiv::local_io::curatr_provider* p) { curatr_ = p; }
-wwiv::local_io::curatr_provider* LocalIO::curatr_provider() { return curatr_; }
+void LocalIO::set_curatr_provider(wwiv::local::io::curatr_provider* p) { curatr_ = p; }
+wwiv::local::io::curatr_provider* LocalIO::curatr_provider() { return curatr_; }
 
 uint8_t LocalIO::curatr() const { return curatr_->curatr(); }
 void LocalIO::curatr(int c) { curatr_->curatr(c); }
@@ -70,4 +72,6 @@ void LocalIO::increment_topdata() {
     topdata_ = topdata_t::none;
     break;
   }
+}
+
 }

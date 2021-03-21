@@ -21,14 +21,8 @@
 #include "bbs/basic/util.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/stl.h"
-#include "core/strings.h"
 #include "deps/my_basic/core/my_basic.h"
-#include <iostream>
-#include <string>
 
-using std::cout;
-using std::endl;
-using std::string;
 using namespace wwiv::stl;
 using namespace wwiv::bbs::basic;
 

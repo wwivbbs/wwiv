@@ -25,32 +25,26 @@
 #include <vector>
 #include "core/strings.h"
 
-using std::cout;
-using std::endl;
-using std::ostringstream;
-using std::string;
-using std::vector;
-
 using namespace wwiv::strings;
 
 TEST(StringsTest, StripColors) {
-  EXPECT_EQ(string(""), stripcolors(string("")));
-  EXPECT_EQ(string("|"), stripcolors(string("|")));
-  EXPECT_EQ(string("|0"), stripcolors(string("|0")));
-  EXPECT_EQ(string("12345"), stripcolors(string("12345")));
-  EXPECT_EQ(string("abc"), stripcolors(string("abc")));
-  EXPECT_EQ(string("1 abc"), stripcolors(string("\x031 abc")));
-  EXPECT_EQ(string("\x03 abc"), stripcolors(string("\x03 abc")));
-  EXPECT_EQ(string("abc"), stripcolors(string("|15abc")));
+  EXPECT_EQ(std::string(""), stripcolors(std::string("")));
+  EXPECT_EQ(std::string("|"), stripcolors(std::string("|")));
+  EXPECT_EQ(std::string("|0"), stripcolors(std::string("|0")));
+  EXPECT_EQ(std::string("12345"), stripcolors(std::string("12345")));
+  EXPECT_EQ(std::string("abc"), stripcolors(std::string("abc")));
+  EXPECT_EQ(std::string("1 abc"), stripcolors(std::string("\x031 abc")));
+  EXPECT_EQ(std::string("\x03 abc"), stripcolors(std::string("\x03 abc")));
+  EXPECT_EQ(std::string("abc"), stripcolors(std::string("|15abc")));
 }
 
 TEST(StringsTest, StripColors_AnsiSeq) {
-  EXPECT_EQ(string(""), stripcolors(string("\x1b[0m")));
-  EXPECT_EQ(string(""), stripcolors(string("\x1b[0;33;46;1m")));
-  EXPECT_EQ(string("|"), stripcolors(string("|\x1b[0;33;46;1m")));
-  EXPECT_EQ(string("abc"), stripcolors(string("|15\x1b[0;33;46;1mabc")));
-  EXPECT_EQ(string("abc"),
-            stripcolors(string("\x1b[0m|15\x1b[0;33;46;1ma\x1b[0mb\x1b[0mc\x1b[0m")));
+  EXPECT_EQ(std::string(""), stripcolors(std::string("\x1b[0m")));
+  EXPECT_EQ(std::string(""), stripcolors(std::string("\x1b[0;33;46;1m")));
+  EXPECT_EQ(std::string("|"), stripcolors(std::string("|\x1b[0;33;46;1m")));
+  EXPECT_EQ(std::string("abc"), stripcolors(std::string("|15\x1b[0;33;46;1mabc")));
+  EXPECT_EQ(std::string("abc"),
+            stripcolors(std::string("\x1b[0m|15\x1b[0;33;46;1ma\x1b[0mb\x1b[0mc\x1b[0m")));
 }
 
 TEST(StringsTest, StringColors_CharStarVersion) {
@@ -61,22 +55,22 @@ TEST(StringsTest, StringColors_CharStarVersion) {
 }
 
 TEST(StringsTest, Properize) {
-  EXPECT_EQ(string("Rushfan"), properize(string("rushfan")));
-  EXPECT_EQ(string("Rushfan"), properize(string("rUSHFAN")));
-  EXPECT_EQ(string(""), properize(string("")));
-  EXPECT_EQ(string(" "), properize(string(" ")));
-  EXPECT_EQ(string("-"), properize(string("-")));
-  EXPECT_EQ(string("."), properize(string(".")));
-  EXPECT_EQ(string("R"), properize(string("R")));
-  EXPECT_EQ(string("R"), properize(string("r")));
-  EXPECT_EQ(string("Ru"), properize(string("RU")));
-  EXPECT_EQ(string("R.U"), properize(string("r.u")));
-  EXPECT_EQ(string("R U"), properize(string("r u")));
-  EXPECT_EQ(string("Rushfan"), properize(string("Rushfan")));
+  EXPECT_EQ(std::string("Rushfan"), properize(std::string("rushfan")));
+  EXPECT_EQ(std::string("Rushfan"), properize(std::string("rUSHFAN")));
+  EXPECT_EQ(std::string(""), properize(std::string("")));
+  EXPECT_EQ(std::string(" "), properize(std::string(" ")));
+  EXPECT_EQ(std::string("-"), properize(std::string("-")));
+  EXPECT_EQ(std::string("."), properize(std::string(".")));
+  EXPECT_EQ(std::string("R"), properize(std::string("R")));
+  EXPECT_EQ(std::string("R"), properize(std::string("r")));
+  EXPECT_EQ(std::string("Ru"), properize(std::string("RU")));
+  EXPECT_EQ(std::string("R.U"), properize(std::string("r.u")));
+  EXPECT_EQ(std::string("R U"), properize(std::string("r u")));
+  EXPECT_EQ(std::string("Rushfan"), properize(std::string("Rushfan")));
 }
 
 TEST(StringsTest, StrCat_Smoke) {
-  static const string kRushfan = "rushfan";
+  static const std::string kRushfan = "rushfan";
   EXPECT_EQ(kRushfan, StrCat("rush", "fan"));
   EXPECT_EQ(kRushfan, StrCat("ru", "sh", "fan"));
   EXPECT_EQ(kRushfan, StrCat("ru", "sh", "f", "an"));
@@ -85,74 +79,74 @@ TEST(StringsTest, StrCat_Smoke) {
 }
 
 TEST(StringsTest, StrCat_AlphaNumeric) {
-  static const string kWoot = "w00t";
+  static const std::string kWoot = "w00t";
   EXPECT_EQ(kWoot, StrCat("w", 0, 0, "t"));
 }
 
 TEST(StringsTest, StringReplace_EntireString) {
-  string s = "Hello";
-  const string world = "World";
+  std::string s = "Hello";
+  const std::string world = "World";
   EXPECT_EQ(world, StringReplace(&s, "Hello", "World"));
   EXPECT_EQ(world, s);
 }
 
 TEST(StringsTest, StringReplace_PartialString) {
-  string s = "Hello World";
-  const string expected = "World World";
+  std::string s = "Hello World";
+  const std::string expected = "World World";
   EXPECT_EQ(expected, StringReplace(&s, "Hello", "World"));
   EXPECT_EQ(expected, s);
 }
 
 TEST(StringsTest, StringReplace_NotFound) {
-  string s = "Hello World";
-  const string expected(s);
+  std::string s = "Hello World";
+  const std::string expected(s);
   EXPECT_EQ(expected, StringReplace(&s, "Dude", "Where's my car"));
   EXPECT_EQ(expected, s);
 }
 
 TEST(StringsTest, SplitString_Basic) {
-  const string s = "Hello World";
-  const vector<string> expected = {"Hello", "World"};
-  vector<string> actual;
+  const std::string s = "Hello World";
+  const std::vector<std::string> expected = {"Hello", "World"};
+  std::vector<std::string> actual;
   SplitString(s, " ", &actual);
   EXPECT_EQ(expected, actual);
 }
 
 TEST(StringsTest, SplitString_BasicReturned) {
-  const string s = "Hello World";
-  const vector<string> expected = {"Hello", "World"};
+  const std::string s = "Hello World";
+  const std::vector<std::string> expected = {"Hello", "World"};
   const auto actual = SplitString(s, " ");
   EXPECT_EQ(expected, actual);
 }
 
 TEST(StringsTest, SplitString_ExtraSingleDelim) {
-  const string s = "Hello   World";
-  const vector<string> expected = {"Hello", "World"};
-  vector<string> actual;
+  const std::string s = "Hello   World";
+  const std::vector<std::string> expected = {"Hello", "World"};
+  std::vector<std::string> actual;
   SplitString(s, " ", &actual);
   EXPECT_EQ(expected, actual);
 }
 
 TEST(StringsTest, SplitString_ExtraSingleDelim_NoSkipEmpty) {
-  const string s = "Hello   World";
-  const vector<string> expected = {"Hello", "", "", "World"};
-  vector<string> actual;
+  const std::string s = "Hello   World";
+  const std::vector<std::string> expected = {"Hello", "", "", "World"};
+  std::vector<std::string> actual;
   SplitString(s, " ", false, &actual);
   EXPECT_EQ(expected, actual);
 }
 
 TEST(StringsTest, SplitString_TwoDelims) {
-  const string s = "Hello\tWorld Everyone";
-  const vector<string> expected = {"Hello", "World", "Everyone"};
-  vector<string> actual;
+  const std::string s = "Hello\tWorld Everyone";
+  const std::vector<std::string> expected = {"Hello", "World", "Everyone"};
+  std::vector<std::string> actual;
   SplitString(s, " \t", &actual);
   EXPECT_EQ(expected, actual);
 }
 
 TEST(StringsTest, SplitString_TwoDelimsBackToBack) {
-  const string s = "Hello\t\tWorld  \t\t  Everyone";
-  const vector<string> expected = {"Hello", "World", "Everyone"};
-  vector<string> actual;
+  const std::string s = "Hello\t\tWorld  \t\t  Everyone";
+  const std::vector<std::string> expected = {"Hello", "World", "Everyone"};
+  std::vector<std::string> actual;
   SplitString(s, " \t", &actual);
   EXPECT_EQ(expected, actual);
 }
@@ -270,85 +264,85 @@ TEST(StringsTest, EndssWith) {
 }
 
 TEST(StringsTest, StringJustify_Left) {
-  string a("a");
+  std::string a("a");
   StringJustify(&a, 2, ' ', JustificationType::LEFT);
   EXPECT_EQ("a ", a);
 
-  string b("b");
+  std::string b("b");
   StringJustify(&b, 2, ' ', JustificationType::LEFT);
   EXPECT_EQ("b ", b);
 }
 
 TEST(StringsTest, StringJustify_LeftOtherChar) {
-  string a("a");
+  std::string a("a");
   StringJustify(&a, 2, '.', JustificationType::LEFT);
   EXPECT_EQ("a.", a);
 
-  string b("b");
+  std::string b("b");
   StringJustify(&b, 2, '.', JustificationType::LEFT);
   EXPECT_EQ("b.", b);
 }
 
 TEST(StringsTest, StringJustify_Right) {
-  string a("a");
+  std::string a("a");
   StringJustify(&a, 2, ' ', JustificationType::RIGHT);
   EXPECT_EQ(" a", a);
 
-  string b("b");
+  std::string b("b");
   StringJustify(&b, 2, ' ', JustificationType::RIGHT);
   EXPECT_EQ(" b", b);
 }
 
 TEST(StringsTest, StringJustify_RightOtherChar) {
-  string a("a");
+  std::string a("a");
   StringJustify(&a, 2, '.', JustificationType::RIGHT);
   EXPECT_EQ(".a", a);
 
-  string b("b");
+  std::string b("b");
   StringJustify(&b, 2, '.', JustificationType::RIGHT);
   EXPECT_EQ(".b", b);
 }
 
 TEST(StringsTest, StringJustify_LongerString) {
-  string a("aaa");
+  std::string a("aaa");
   StringJustify(&a, 2, ' ', JustificationType::LEFT);
   EXPECT_EQ("aa", a);
 
-  string b("bbb");
+  std::string b("bbb");
   StringJustify(&b, 2, ' ', JustificationType::RIGHT);
   EXPECT_EQ("bb", b);
 }
 
 TEST(StringsTest, StringTrim) {
-  string a = " a ";
+  std::string a = " a ";
   StringTrim(&a);
   EXPECT_EQ("a", a);
 
-  string b = "b";
+  std::string b = "b";
   StringTrim(&b);
   EXPECT_EQ("b", b);
 }
 
 TEST(StringsTest, StringTrimBegin) {
-  string a = " a ";
+  std::string a = " a ";
   StringTrimBegin(&a);
   EXPECT_EQ("a ", a);
 }
 
 TEST(StringsTest, StringTrimEnd) {
-  string a = " a ";
+  std::string a = " a ";
   StringTrimEnd(&a);
   EXPECT_EQ(" a", a);
 }
 
 TEST(StringsTest, StringUpperCase) {
-  string a = "aB";
+  std::string a = "aB";
   StringUpperCase(&a);
   EXPECT_EQ("AB", a);
 }
 
 TEST(StringsTest, StringLowerCase) {
-  string a = "aB";
+  std::string a = "aB";
   StringLowerCase(&a);
   EXPECT_EQ("ab", a);
 }
@@ -366,11 +360,11 @@ TEST(StringsTest, IEQuals_charstar) {
 }
 
 TEST(StringsTest, IEQuals) {
-  EXPECT_TRUE(iequals(string("foo"), string("foo")));
-  EXPECT_FALSE(iequals(string("foo"), string("fo")));
-  EXPECT_FALSE(iequals(string("fo"), string("foo")));
-  EXPECT_FALSE(iequals(string(""), string("foo")));
-  EXPECT_FALSE(iequals(string("foo"), string("")));
+  EXPECT_TRUE(iequals(std::string("foo"), std::string("foo")));
+  EXPECT_FALSE(iequals(std::string("foo"), std::string("fo")));
+  EXPECT_FALSE(iequals(std::string("fo"), std::string("foo")));
+  EXPECT_FALSE(iequals(std::string(""), std::string("foo")));
+  EXPECT_FALSE(iequals(std::string("foo"), std::string("")));
 }
 
 TEST(StringsTest, SizeWithoutColors) {

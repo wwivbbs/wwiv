@@ -27,9 +27,9 @@
 #include <memory>
 #include <stdexcept>
 
-using std::unique_ptr;
-using std::string;
 using namespace wwiv::strings;
+
+namespace wwiv::local::ui {
 
 static const char* copyrightString = "Copyright (c) 1998-2021, WWIV Software Services";
 
@@ -73,7 +73,7 @@ void CursesFooter::SetDefaultFooter() const {
   window_->Refresh();
 }
 
-CursesIO::CursesIO(const string& title) 
+CursesIO::CursesIO(const std::string& title) 
     : max_x_(0), max_y_(0), window_(nullptr), footer_(nullptr), 
       header_(nullptr), indicator_mode_(IndicatorMode::none) {
 
@@ -209,7 +209,7 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
 
 CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, int ncols) const {
   ncols = std::max<int>(ncols, title.size() + 6);
-  unique_ptr<CursesWindow> window(new CursesWindow(window_.get(), color_scheme_.get(), nlines, ncols));
+  std::unique_ptr<CursesWindow> window(new CursesWindow(window_.get(), color_scheme_.get(), nlines, ncols));
   window->SetColor(SchemeId::WINDOW_BOX);
   window->Box(0, 0);
   window->SetTitle(title);
@@ -239,3 +239,4 @@ int CursesIO::GetMaxY() const {
   return getmaxy(stdscr);
 }
 
+}

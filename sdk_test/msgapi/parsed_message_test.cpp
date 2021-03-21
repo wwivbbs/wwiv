@@ -18,16 +18,16 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "local_io/keycodes.h"
 #include "bbs/msgbase1.h"
+#include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/datetime.h"
 #include "core/textfile.h"
+#include "local_io/keycodes.h"
 #include "sdk/msgapi/parsed_message.h"
 
-using std::string;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -45,7 +45,7 @@ protected:
   ParsedMessageTest()
     : ca("\001"),
       cd("\004"),
-      cz(string(1, static_cast<char>(CZ))) {}
+      cz(std::string(1, static_cast<char>(CZ))) {}
 
   void SetUp() override {
     expected_list_.emplace_back("Title");
@@ -159,7 +159,7 @@ TEST(WWIVParsedMessageTest, ToString_StaysSingleLine) {
   const std::string cz(1, static_cast<char>(CZ));
   const std::string text = "This is a long line and this is a long line and this is a long line and this too is a long line and this too is a long line";
 
-  WWIVParsedMessageText p(text);
+  const WWIVParsedMessageText p(text);
   EXPECT_EQ(StrCat(text, "\r\n", cz), p.to_string());
 }
 
@@ -168,7 +168,7 @@ TEST(WWIVParsedMessageTest, ToString_SplitLineWithContinuations) {
   const std::string text = "This is a long line and this is a long line and this is a long line and this\x1\r\n too is a long line and this too is a long line";
   const std::string expected = "This is a long line and this is a long line and this is a long line and this too is a long line and this too is a long line";
 
-  WWIVParsedMessageText p(text);
+  const WWIVParsedMessageText p(text);
   EXPECT_EQ(StrCat(expected, "\r\n", cz), p.to_string());
 }
 
@@ -177,7 +177,7 @@ TEST(WWIVParsedMessageTest, ToLines_Smoke) {
   const std::string text = 
     "This is a long line and this is a long line and this is a long line and this\x1\r\n too is a long line and this too is a long line";
 
-  WWIVParsedMessageText p(text);
+  const WWIVParsedMessageText p(text);
   parsed_message_lines_style_t style{};
   style.line_length = 40;
   const auto lines = p.to_lines(style);
@@ -194,7 +194,7 @@ TEST(WWIVParsedMessageTest, ToLines_ReattributeQuote) {
   const std::string text =     "RF> This is a long line of text\r\nRF> xxxx of the text";
   const std::string expected = "RF> This is a long\x1|RF> line of text|RF> xxxx of the text|";
 
-  WWIVParsedMessageText p(text);
+  const WWIVParsedMessageText p(text);
   parsed_message_lines_style_t style{};
   style.line_length = 20;
   style.reattribute_quotes = true;

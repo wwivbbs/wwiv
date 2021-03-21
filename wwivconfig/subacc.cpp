@@ -27,9 +27,7 @@
 #include "sdk/vardec.h"
 #include <memory>
 #include <string>
-#include <vector>
 
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

@@ -32,6 +32,9 @@
 
 using namespace wwiv::stl;
 
+namespace wwiv::local::ui {
+
+
 void EditItems::Run(const std::string& title) {
   if (!window_) {
     curses_out->Cls(ACS_CKBOARD);
@@ -347,4 +350,6 @@ EditItems::~EditItems() {
   curses_out->footer()->window()->Erase();
   curses_out->footer()->window()->Refresh();
   curses_out->SetIndicatorMode(IndicatorMode::none);
+}
+
 }

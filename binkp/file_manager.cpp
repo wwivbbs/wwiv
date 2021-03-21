@@ -30,18 +30,14 @@
 #include <string>
 #include <vector>
 
-using std::map;
-using std::string;
-using std::vector;
-
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido;
 
 namespace wwiv::net {
 
-vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(int destination_node) const {
-  vector<TransferFile*> result;
+std::vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(int destination_node) const {
+  std::vector<TransferFile*> result;
   const auto node_net = fmt::format("s{}.net", destination_node);
   const auto path = FilePath(dirs_.net_dir(), node_net);
   VLOG(2) << "       CreateWWIVnetTransferFileList: search_path: " << path;
@@ -54,7 +50,7 @@ vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(int destination
   return result;
 }
 
-std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& address) const {
+std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const std::string& address) const {
   VLOG(1) << "CreateFtnTransferFileList: " << address;
 
   std::vector<fido_bundle_status_t> statuses{
@@ -64,7 +60,7 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
       fido_bundle_status_t::immediate
   };
 
-  map<string, TransferFile*> result_map;
+  std::map<std::string, TransferFile*> result_map;
 
   FidoAddress dest(address);
   const auto dir = dirs_.outbound_dir();
@@ -91,7 +87,7 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   }
   // Return a vector of the transfer files.  This way we don't
   // have duplicate entries.
-  vector<TransferFile*> result;
+  std::vector<TransferFile*> result;
   for (const auto& e : result_map) {
     result.push_back(e.second);
   }
@@ -126,14 +122,14 @@ void FileManager::ReceiveFile(const std::string& filename) {
   received_files_.push_back(filename);
 }
 
-static void rename_wwivnet_pend(const string& receive_directory, const std::string& net_dir, const string& filename) {
+static void rename_wwivnet_pend(const std::string& receive_directory, const std::string& net_dir, const std::string& filename) {
   const auto pend_filename = FilePath(receive_directory, filename);
   if (!File::Exists(pend_filename)) {
     LOG(ERROR) << " pending file does not exist: " << pend_filename;
     return;
   }
   const auto num = filename.substr(1);
-  const string prefix = (to_number<int>(num)) ? "1" : "0";
+  const std::string prefix = (to_number<int>(num)) ? "1" : "0";
 
   for (auto i = 0; i < 1000; i++) {
     const auto new_basename = fmt::format("p{}-0-{}.net", prefix, i);

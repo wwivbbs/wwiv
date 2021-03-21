@@ -18,14 +18,7 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "bbs/bbs.h"
 #include "bbs_test/bbs_helper.h"
-#include <iostream>
-#include <string>
-
-using std::cout;
-using std::endl;
-using std::string;
 
 using wwiv::sdk::User;
 
@@ -33,8 +26,6 @@ class InputTest : public ::testing::Test {
 protected:
   void SetUp() override {}
 };
-
-// std::vector<std::set<char>> create_allowed_charmap(int64_t minv, int64_t maxv) 
 
 TEST_F(InputTest, Smoke) { 
 }

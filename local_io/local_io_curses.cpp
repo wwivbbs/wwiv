@@ -37,7 +37,8 @@
 #include <unistd.h>
 #endif
 
-using std::string;
+namespace wwiv::local::io {
+
 using namespace wwiv::strings;
 
 static const int default_screen_bottom = 20;
@@ -57,7 +58,7 @@ CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1) {}
 
 CursesLocalIO::CursesLocalIO(int num_lines) {
   InitPairs();
-  window_.reset(new CursesWindow(nullptr, curses_out->color_scheme(), num_lines, 80, 0, 0));
+  window_.reset(new wwiv::local::ui::CursesWindow(nullptr, wwiv::local::ui::curses_out->color_scheme(), num_lines, 80, 0, 0));
   auto* w = std::any_cast<WINDOW*>(window_->window());
   scrollok(w, true);
   window_->Clear();
@@ -137,18 +138,18 @@ void CursesLocalIO::Putch(unsigned char ch) {
   }
 }
 
-void CursesLocalIO::Puts(const string& s) {
+void CursesLocalIO::Puts(const std::string& s) {
   for (auto ch : s) {
     Putch(ch);
   }
 }
 
-void CursesLocalIO::PutsXY(int x, int y, const string& text) {
+void CursesLocalIO::PutsXY(int x, int y, const std::string& text) {
   GotoXY(x, y);
   FastPuts(text);
 }
 
-void CursesLocalIO::PutsXYA(int x, int y, int a, const string& text) {
+void CursesLocalIO::PutsXYA(int x, int y, int a, const std::string& text) {
   const auto old_color = curatr();
   curatr(a);
 
@@ -158,7 +159,7 @@ void CursesLocalIO::PutsXYA(int x, int y, int a, const string& text) {
   curatr(old_color);
 }
 
-void CursesLocalIO::FastPuts(const string& text) {
+void CursesLocalIO::FastPuts(const std::string& text) {
   SetColor(curatr());
   const auto w = wwiv::core::cp437_to_utf8w(text);
   window_->PutsW(w);
@@ -574,3 +575,4 @@ void CursesLocalIO::ReenableLocalIO() {
   window_->Refresh();
 }
 
+}

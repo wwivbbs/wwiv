@@ -40,8 +40,6 @@
 #include <vector>
 
 using cereal::make_nvp;
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

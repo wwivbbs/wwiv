@@ -30,7 +30,7 @@ namespace ansi {
 
 class LocalIOScreen : public VScreen {
 public:
-  explicit LocalIOScreen(LocalIO* io, int cols);
+  explicit LocalIOScreen(local::io::LocalIO* io, int cols);
   virtual ~LocalIOScreen() = default;
 
   /** Writes c using a, handles \r and \n */
@@ -80,9 +80,9 @@ public:
   [[nodiscard]] int y() const noexcept override { return io_->WhereY(); }
 
 private:
-  LocalIO* io_;
+  local::io::LocalIO* io_;
   int cols_;
-  std::unique_ptr<wwiv::local_io::curatr_provider> curatr_provider_;
+  std::unique_ptr<wwiv::local::io::curatr_provider> curatr_provider_;
 };
 
 } // namespace ansi

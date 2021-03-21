@@ -32,10 +32,6 @@
 #include <iostream>
 #include <string>
 
-using std::cout;
-using std::endl;
-using std::string;
-
 using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::bbs::basic;

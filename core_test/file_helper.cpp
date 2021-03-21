@@ -31,7 +31,6 @@
 #include <filesystem>
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -44,18 +43,18 @@ FileHelper::FileHelper() {
   tmp_ = CreateTempDir(dir);
 }
 
-string FileHelper::DirName(const string& oname) const {
+std::string FileHelper::DirName(const std::string& oname) const {
   const auto name = File::FixPathSeparators(oname);
   const auto tmpname = FilePath(tmp_, name).string();
   return File::EnsureTrailingSlash(tmpname);
 }
 
-std::filesystem::path FileHelper::Dir(const string& oname) const {
+std::filesystem::path FileHelper::Dir(const std::string& oname) const {
   const auto name = File::FixPathSeparators(oname);
   return FilePath(tmp_, name);
 }
 
-bool FileHelper::Mkdir(const string& oname) const {
+bool FileHelper::Mkdir(const std::string& oname) const {
   return File::mkdir(Dir(File::FixPathSeparators(oname)));
 }
 
@@ -106,13 +105,12 @@ std::filesystem::path FileHelper::GetTestTempDir() {
 }
 
 // static
-std::filesystem::path FileHelper::CreateTempDir(const string& base) {
+std::filesystem::path FileHelper::CreateTempDir(const std::string& base) {
   const auto temp_path = GetTestTempDir();
   // TODO(rushfan): This may be good enough for linux too.
 #ifdef _WIN32
   auto dir = FilePath(temp_path, StrCat(base, ".", time_t_now()));
-  std::error_code ec;
-  if (create_directories(dir, ec)) {
+  if (std::error_code ec; create_directories(dir, ec)) {
     return dir;
   }
 #else
@@ -127,12 +125,12 @@ std::filesystem::path FileHelper::CreateTempDir(const string& base) {
   return {};
 }
 
-std::filesystem::path FileHelper::CreateTempFilePath(const string& orig_name) const {
+std::filesystem::path FileHelper::CreateTempFilePath(const std::string& orig_name) const {
   const auto name{File::FixPathSeparators(orig_name)};
   return FilePath(TempDir(), name);
 }
 
-std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const string& orig_name) const {
+std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const std::string& orig_name) const {
   const auto path = CreateTempFilePath(orig_name);
   const auto fn = path.string();
   auto* fp = fopen(fn.c_str(), "wt");
@@ -141,7 +139,7 @@ std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const string& 
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
-std::filesystem::path FileHelper::CreateTempFile(const string& orig_name, const string& contents) {
+std::filesystem::path FileHelper::CreateTempFile(const std::string& orig_name, const std::string& contents) {
   auto [file, path] = OpenTempFile(orig_name);
   assert(file);
   fputs(contents.c_str(), file);
@@ -151,7 +149,7 @@ std::filesystem::path FileHelper::CreateTempFile(const string& orig_name, const 
 
 // N.B.: We don't use TextFile::ReadFileIntoString since we are
 // testing TextFile with this helper.
-string FileHelper::ReadFile(const std::filesystem::path& name) const {
+std::string FileHelper::ReadFile(const std::filesystem::path& name) const {
   const auto name_string = name.string();
   // ReSharper disable once CppLocalVariableMayBeConst
   auto* fp = fopen(name_string.c_str(), "rt");
@@ -159,7 +157,7 @@ string FileHelper::ReadFile(const std::filesystem::path& name) const {
     const auto msg = StrCat("Unable to open file: ", name_string, "; errno: ", errno);
     throw std::runtime_error(msg);
   }
-  string contents;
+  std::string contents;
   fseek(fp, 0, SEEK_END);
   contents.resize(ftell(fp));
   rewind(fp);

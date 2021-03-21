@@ -23,7 +23,6 @@
 #include <iostream>
 #include <string>
 
-using std::string;
 using namespace std::chrono;
 using namespace wwiv::os;
 using namespace wwiv::strings;
@@ -64,13 +63,13 @@ TEST(OsTest, EnvironmentVariable_Exists) {
 }
 
 TEST(OsTest, EnvironmentVariable_DoesNotExist) {
-  string name = test_info_->name();
+  std::string name = test_info_->name();
   StringUpperCase(&name);
   EXPECT_EQ("", environment_variable(name));
 }
 
 TEST(OsTest, SetEnvironmentVariable) {
-  string name = test_info_->name();
+  std::string name = test_info_->name();
   StringUpperCase(&name);
   // Clear the environment
   std::cout << name;

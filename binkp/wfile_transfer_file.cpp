@@ -24,12 +24,8 @@
 #include "sdk/fido/fido_util.h"
 #include <algorithm>
 #include <chrono>
-#include <iostream>
 #include <string>
 
-using std::clog;
-using std::endl;
-using std::string;
 using std::chrono::seconds;
 using std::chrono::system_clock;
 using namespace wwiv::core;
@@ -39,12 +35,12 @@ using namespace wwiv::strings;
 
 namespace wwiv::net {
 
-WFileTransferFile::WFileTransferFile(const string& filename, std::unique_ptr<File>&& file)
+WFileTransferFile::WFileTransferFile(const std::string& filename, std::unique_ptr<File>&& file)
     : TransferFile(filename, file->Exists() ? file->last_write_time() : time_t_now(),
                    crc32file(file->path())),
       file_(std::move(file)) {
   VLOG(1) << "WFileTransferFile: " << filename;
-  if (filename.find(File::pathSeparatorChar) != string::npos) {
+  if (filename.find(File::pathSeparatorChar) != std::string::npos) {
     // Don't allow filenames with slashes in it.
     throw std::invalid_argument("filename can not be relative pathed");
   }

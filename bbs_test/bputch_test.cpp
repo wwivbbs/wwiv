@@ -18,21 +18,15 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "bbs/bbs.h"
 #include "bbs_test/bbs_helper.h"
 #include "common/output.h"
-#include <iostream>
 #include <string>
-
-using std::cout;
-using std::endl;
-using std::string;
 
 class BPutchTest : public ::testing::Test {
 protected:
   void SetUp() override { helper.SetUp(); }
 
-  virtual int Puts(string s) {
+  virtual int Puts(std::string s) {
     auto count = 0;
     for (const auto& c : s) {
       count += bout.bputch(c);
@@ -49,7 +43,7 @@ TEST_F(BPutchTest, SingleLetter) {
 }
 
 TEST_F(BPutchTest, MultipleLetters) {
-  const string kHelloWorld = "Hello World\r\n";
+  const std::string kHelloWorld = "Hello World\r\n";
   EXPECT_EQ(wwiv::stl::ssize(kHelloWorld), Puts(kHelloWorld));
   EXPECT_EQ(kHelloWorld, helper.io()->captured());
 }

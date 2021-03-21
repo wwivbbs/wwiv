@@ -67,18 +67,15 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
-using wwiv::endl;
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static string GetScanReadPrompts(int msg_num) {
+static std::string GetScanReadPrompts(int msg_num) {
   if (a()->sess().forcescansub()) {
     if (msg_num < a()->GetNumMessagesInCurrentMessageArea()) {
       return "|#1Press |#7[|#2ENTER|#7]|#1 to go to the next message...";
@@ -86,7 +83,7 @@ static string GetScanReadPrompts(int msg_num) {
     return "|#1Press |#7[|#2ENTER|#7]|#1 to continue...";
   }
 
-  string local_network_name = "Local";
+  std::string local_network_name = "Local";
   if (!a()->current_sub().nets.empty()) {
     local_network_name = a()->network_name();
   } else {
@@ -107,7 +104,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
   if (!lcs() && post->status & (status_unvalidated | status_delete)) {
     return;
   }
-  string reply_to_name;
+  std::string reply_to_name;
   if (post->ownersys && !post->owneruser) {
     reply_to_name = grab_user_name(&post->msg, a()->current_sub().filename, a()->net_num());
   }
@@ -175,7 +172,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
           break;
         }
         auto b = o.value();
-        string filename = "EXTRACT.TMP";
+        std::string filename = "EXTRACT.TMP";
         if (File::Exists(filename)) {
           File::Remove(filename);
         }
@@ -277,7 +274,7 @@ static std::string CreateLine(std::unique_ptr<Message>&& msg, const int msgnum) 
   if (!msg) {
     return "";
   }
-  string tmpbuf;
+  std::string tmpbuf;
   const auto& h = msg->header();
   if (h.local() && h.from_usernum() == a()->sess().user_num()) {
     tmpbuf = fmt::sprintf("|09[|11%d|09]", msgnum);
@@ -286,7 +283,7 @@ static std::string CreateLine(std::unique_ptr<Message>&& msg, const int msgnum) 
   } else {
     tmpbuf = fmt::sprintf("|09(|11%d|09)", msgnum);
   }
-  string line = "       ";
+  std::string line = "       ";
   if (h.storage_type() == 2) {
     // HACK: Need to make this generic. this before supporting JAM.
     // N.B. If for some reason dynamic_cast fails, a std::bad_cast is thrown.
@@ -330,7 +327,7 @@ static std::string CreateLine(std::unique_ptr<Message>&& msg, const int msgnum) 
 }
 
 static std::vector<std::string> CreateMessageTitleVector(MessageArea* area, int start, int num) {
-  vector<string> lines;
+  std::vector<std::string> lines;
   for (auto i = start; i < start + num; i++) {
     if (auto line = CreateLine(area->ReadMessage(i), i); !line.empty()) {
       lines.push_back(line);
@@ -365,7 +362,7 @@ static void display_titles_new(const std::vector<std::string>& lines, const Full
 static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& scan_option_type) {
   bout.cls();
   auto* api = a()->msgapi();
-  unique_ptr<MessageArea> area(
+  std::unique_ptr<MessageArea> area(
       api->Open(a()->current_sub(), a()->sess().GetCurrentReadMessageArea()));
   if (!area) {
     ReadMessageResult result;
@@ -569,7 +566,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
 static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
   bout.cls();
   auto* api = a()->msgapi();
-  unique_ptr<MessageArea> area(
+  std::unique_ptr<MessageArea> area(
       api->Open(a()->current_sub(), a()->sess().GetCurrentReadMessageArea()));
   if (!area) {
     return;
@@ -584,7 +581,7 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
   }
 
   bout << "|#7" << static_cast<unsigned char>(198)
-       << string(a()->user()->GetScreenChars() - 3, static_cast<unsigned char>(205))
+       << std::string(a()->user()->GetScreenChars() - 3, static_cast<unsigned char>(205))
        << static_cast<unsigned char>(181) << "\r\n";
   const auto num_title_lines = std::max<int>(a()->sess().num_screen_lines() - 6, 1);
   auto i = 0;
@@ -597,7 +594,7 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
     }
   }
   bout << "|#7" << static_cast<unsigned char>(198)
-       << string(a()->user()->GetScreenChars() - 3, static_cast<unsigned char>(205))
+       << std::string(a()->user()->GetScreenChars() - 3, static_cast<unsigned char>(205))
        << static_cast<unsigned char>(181) << "\r\n";
 }
 
@@ -632,7 +629,7 @@ static void HandleMessageDownload(int msgnum) {
 void HandleMessageMove(int& msg_num) {
   if ((lcs()) && (msg_num > 0) &&
       (msg_num <= a()->GetNumMessagesInCurrentMessageArea())) {
-    string ss1;
+    std::string ss1;
     tmp_disable_conf(true);
     bout.nl();
     do {
@@ -652,7 +649,7 @@ void HandleMessageMove(int& msg_num) {
       if (ss1 == a()->usub[i1].keys) {
         temp_sub_num = i1;
         bout.nl();
-        bout << "|#9Copying to " << a()->subs().sub(a()->usub[temp_sub_num].subnum).name << endl;
+        bout << "|#9Copying to " << a()->subs().sub(a()->usub[temp_sub_num].subnum).name << wwiv::endl;
         ok = true;
       }
     }
@@ -806,7 +803,7 @@ static void HandleMessageDelete(int& msg_num) {
       tu.messages_posted(tu.messages_posted() - num_credits);
     }
     bout.nl();
-    bout << "|#7Post credit removed = " << num_credits << endl;
+    bout << "|#7Post credit removed = " << num_credits << wwiv::endl;
     tu.deleted_posts(tu.deleted_posts() + 1);
     a()->users()->writeuser(&tu, p2.owneruser);
     a()->UpdateTopScreen();
@@ -1057,7 +1054,7 @@ static void network_validate() {
   bout << "|#5Network validate here? ";
   if (bin.yesno()) {
     int nNumMsgsSent = 0;
-    vector<postrec> to_validate;
+    std::vector<postrec> to_validate;
     {
       wwiv::bbs::OpenSub opened_sub(true);
       for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea(); i++) {

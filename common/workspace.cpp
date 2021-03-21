@@ -18,22 +18,20 @@
 /**************************************************************************/
 #include "common/workspace.h"
 
-#include <memory>
-#include <string>
-#include "core/file.h"
-#include "core/textfile.h"
 #include "common/context.h"
 #include "common/output.h"
+#include "core/file.h"
+#include "core/textfile.h"
 #include "sdk/filenames.h"
+#include <string>
 
-using std::unique_ptr;
 using namespace wwiv::core;
 
 namespace wwiv::common {
 
 bool use_workspace;
 
-void LoadFileIntoWorkspace(wwiv::common::Context& context, const std::filesystem::path& filename,
+void LoadFileIntoWorkspace(Context& context, const std::filesystem::path& filename,
                            bool no_edit_allowed, bool silent_mode) {
   TextFile tf(filename, "rt");
   if (!tf) {

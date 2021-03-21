@@ -23,7 +23,6 @@
 #include "sdk/config.h"
 #include <string>
 
-using std::string;
 using namespace wwiv::net;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
@@ -31,7 +30,7 @@ using namespace wwiv::sdk;
 class ParseBinkConfigLineTest : public testing::Test {};
 
 TEST_F(ParseBinkConfigLineTest, NoPort) {
-  const string line = "@1234 myhost";
+  const std::string line = "@1234 myhost";
   auto r = ParseBinkConfigLine(line);
   ASSERT_TRUE(r.has_value());
   auto& [node, config] = r.value();
@@ -41,7 +40,7 @@ TEST_F(ParseBinkConfigLineTest, NoPort) {
 }
 
 TEST_F(ParseBinkConfigLineTest, Port) {
-  const string line = "@1234 myhost:2345";
+  const std::string line = "@1234 myhost:2345";
   auto r = ParseBinkConfigLine(line);
   ASSERT_TRUE(r.has_value());
   auto& [node, config] = r.value();
@@ -51,7 +50,7 @@ TEST_F(ParseBinkConfigLineTest, Port) {
 }
 
 TEST_F(ParseBinkConfigLineTest, InvalidLine) {
-  const string line = "*@1234 myhost";
+  const std::string line = "*@1234 myhost";
   const auto r = ParseBinkConfigLine(line);
   ASSERT_FALSE(r.has_value());
 }
@@ -59,7 +58,7 @@ TEST_F(ParseBinkConfigLineTest, InvalidLine) {
 TEST(BinkConfigTest, NodeConfig) {
   FileHelper files;
   ASSERT_TRUE(files.Mkdir("network"));
-  const string line("@2 example.com");
+  const std::string line("@2 example.com");
   files.CreateTempFile("network/binkp.net", line);
   const auto network_dir = files.DirName("network");
   const Config wwiv_config(files.TempDir());

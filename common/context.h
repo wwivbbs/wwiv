@@ -30,7 +30,9 @@
 #include <string>
 #include <utility>
 
+namespace wwiv::local::io {
 class LocalIO;
+}
 
 namespace wwiv::common {
 
@@ -92,8 +94,8 @@ enum class chatting_t { none, one_way, two_way };
 
 class SessionContext final {
 public:
-  explicit SessionContext(LocalIO* io);
-  SessionContext(LocalIO* io, const std::filesystem::path& root_directory);
+  explicit SessionContext(wwiv::local::io::LocalIO* io);
+  SessionContext(wwiv::local::io::LocalIO* io, const std::filesystem::path& root_directory);
   ~SessionContext() = default;
 
   /**
@@ -113,7 +115,7 @@ public:
   void reset();
 
   /** Resets the local IO pointer */
-  void reset_local_io(LocalIO* io);
+  void reset_local_io(wwiv::local::io::LocalIO* io);
 
   [[nodiscard]] bool ok_modem_stuff() const noexcept { return ok_modem_stuff_; }
   void ok_modem_stuff(bool o) { ok_modem_stuff_ = o; }
@@ -274,7 +276,7 @@ public:
   char irt_[81];
 
 private:
-  LocalIO* io_;
+  wwiv::local::io::LocalIO* io_;
   std::unique_ptr<uint32_t[]> qscan_;
 
   bool ok_modem_stuff_{false};

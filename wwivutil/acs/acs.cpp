@@ -29,8 +29,6 @@
 #include <iostream>
 #include <string>
 
-using std::cout;
-using std::endl;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -50,7 +48,7 @@ std::string AcsCommand::GetUsage() const {
 
 int AcsCommand::Execute() {
   if (remaining().empty()) {
-    std::cout << GetUsage() << GetHelp() << endl;
+    std::cout << GetUsage() << GetHelp() << std::endl;
     return 2;
   }
   const auto expr = remaining().front();

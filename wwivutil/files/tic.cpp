@@ -22,13 +22,8 @@
 #include "core/strings.h"
 
 #include <iostream>
-#include <map>
 #include <string>
 
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -36,17 +31,17 @@ using namespace wwiv::strings;
 namespace wwiv::wwivutil::files {
 
 
-class TicValidateCommand : public UtilCommand {
+class TicValidateCommand final : public UtilCommand {
 public:
   TicValidateCommand() : UtilCommand("validate", "Validates the contents of a TIC file.") {}
 
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   list [search spec]" << endl;
+    ss << "Usage:   list [search spec]" << std::endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     if (remaining().empty()) {
       std::cerr << "missing filename";
       return 2;
@@ -59,8 +54,7 @@ public:
       LOG(ERROR) << "Failed to parse TIC file: " << fn.string();
       return 1;
     }
-    const auto& tic = otic.value();
-    if (!tic.IsValid()) {
+    if (const auto & tic = otic.value(); !tic.IsValid()) {
       LOG(INFO) << "TIC file:   '" << fn.string() << " is not valid. ";
       LOG(INFO) << "crc_valid:  " << tic.crc_valid();
       LOG(INFO) << "size_valid: " << tic.size_valid();
@@ -72,12 +66,12 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final { return true; }
+  bool AddSubCommands() override { return true; }
 };
 
 std::string TicCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   tic " << endl;
+  ss << "Usage:   tic " << std::endl;
   return ss.str();
 }
 

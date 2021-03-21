@@ -42,17 +42,17 @@
 #include <string>
 #include <vector>
 
-using std::string;
 using wwiv::common::InputMode;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static void save_subs() { a()->subs().Save(); }
 
-static string boarddata(size_t n, const subboard_t& r) {
-  string stype;
+static std::string boarddata(size_t n, const subboard_t& r) {
+  std::string stype;
   if (!r.nets.empty()) {
     stype = r.nets[0].stype;
   }
@@ -81,9 +81,9 @@ static void showsubs() {
   }
 }
 
-static string GetKey(const subboard_t& r) { return (r.key == 0) ? "None." : string(1, r.key); }
+static std::string GetKey(const subboard_t& r) { return (r.key == 0) ? "None." : std::string(1, r.key); }
 
-static string GetAnon(const subboard_t& r) {
+static std::string GetAnon(const subboard_t& r) {
   switch (r.anony & 0x0f) {
   case 0:
     return YesNoString(false);
@@ -142,7 +142,7 @@ static void DisplayNetInfo(size_t nSubNum) {
 }
 
 // returns the sub name using the file filename or empty string.
-static string subname_using(const string& filename) {
+static std::string subname_using(const std::string& filename) {
   for (const auto& sub : a()->subs().subs()) {
     if (iequals(filename, sub.filename)) {
       return sub.name;
@@ -265,7 +265,7 @@ static void modify_sub(int n) {
       r.post_acs = wwiv::bbs::input_acs(bin, bout, "New Post ACS?", r.post_acs, 78);
     } break;
     case 'F': {
-      string allowed("NYDFR");
+      std::string allowed("NYDFR");
       bout.nl();
       bout << "|#2New Anony (Y,N,D,F,R) ? ";
       const auto Y = YesNoString(true)[0];
@@ -333,7 +333,7 @@ static void modify_sub(int n) {
           bout << "|#2Modify which (a-";
         }
         bout << static_cast<char>('a' + a()->subs().sub(n).nets.size() - 1) << "), <space>=Quit? ";
-        string charstring;
+        std::string charstring;
         for (size_t i = 0; i < a()->subs().sub(n).nets.size(); i++) {
           charstring.push_back(static_cast<char>('A' + i));
         }
@@ -568,8 +568,7 @@ void boardedit() {
   do {
     bout.nl();
     bout << "|#9(|#2Q|#9)uit (|#2D|#9)elete, (|#2I|#9)nsert, (|#2M|#9)odify, (|#2S|#9)wapSubs, (|#2C|#9)onferences : ";
-    const auto ch = onek("QSDIMC?");
-    switch (ch) {
+    switch (const auto ch = onek("QSDIMC?"); ch) {
     case '?':
       showsubs();
       break;

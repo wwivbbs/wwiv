@@ -18,17 +18,12 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "core/file.h"
+#include "bbs_test/bbs_helper.h"
 #include "common/output.h"
 #include "common/printfile.h"
-#include "bbs_test/bbs_helper.h"
+#include "core/file.h"
 #include "core_test/file_helper.h"
-#include <iostream>
 #include <string>
-
-using std::cout;
-using std::endl;
-using std::string;
 
 using wwiv::sdk::User;
 using namespace wwiv::common;

@@ -20,32 +20,29 @@
 
 #include "core/log.h"
 #include <functional>
-#include <string>
 
-using std::string;
 using namespace wwiv::core;
-
 
 namespace wwiv::common {
 
 // Context stuff
 
-wwiv::sdk::User& IOBase::user() const { 
+sdk::User& IOBase::user() const { 
   DCHECK(context_provider_);
   return context_provider_().u();
 }
 
-wwiv::common::SessionContext& IOBase::sess() { 
+SessionContext& IOBase::sess() { 
   DCHECK(context_provider_);
   return context_provider_().session_context();
 }
 
-wwiv::common::SessionContext& IOBase::sess() const { 
+SessionContext& IOBase::sess() const { 
   DCHECK(context_provider_);
   return context_provider_().session_context();
 }
 
-wwiv::common::Context& IOBase::context() { 
+Context& IOBase::context() { 
   DCHECK(context_provider_);
   return context_provider_(); 
 }

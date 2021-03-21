@@ -18,6 +18,7 @@
 #include "sdk/fido/fido_callout.h"
 
 #include <cereal/access.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/cereal.hpp>
 #include "core/file.h"
 #include "core/jsonfile.h"
@@ -29,7 +30,6 @@
 #include <exception>
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

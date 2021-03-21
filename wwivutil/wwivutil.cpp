@@ -38,14 +38,9 @@
 #include "wwivutil/status/status.h"
 #include "wwivutil/subs/subs.h"
 #include <algorithm>
-#include <map>
 #include <memory>
-#include <string>
 #include <vector>
 
-using std::map;
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;

@@ -28,25 +28,15 @@
 #include "network2/context.h"
 #include "sdk/config.h"
 #include "sdk/ssm.h"
+#include "sdk/subxtr.h"
 #include "sdk/net/packets.h"
 #include "sdk/net/subscribers.h"
-#include "sdk/subxtr.h"
-#include <iostream>
+
 #include <iterator>
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 #include <vector>
-
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::map;
-using std::set;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
@@ -66,11 +56,11 @@ struct sub_info_t {
   uint16_t category = 0;
 };
 
-static string to_string(sub_info_t& s, uint16_t system_number) {
+static std::string to_string(sub_info_t& s, uint16_t system_number) {
   return fmt::sprintf("%-7s %5u %-5s %s~%u", s.stype, system_number, s.flags, s.description, s.category);
 }
 
-static std::vector<string> create_sub_info(Context& context) {
+static std::vector<std::string> create_sub_info(Context& context) {
   auto current = 0;
   std::vector <std::string> result;
   for (const auto& x : context.subs.subs()) {
@@ -118,7 +108,7 @@ static std::vector<string> create_sub_info(Context& context) {
   return result;
 }
 
-static string SubTypeFromText(const std::string& text) {
+static std::string SubTypeFromText(const std::string& text) {
   auto subtype = StringTrim(text);
   if (subtype.back() == '\0') subtype.pop_back();
   if (subtype.size() > 7) {
@@ -139,7 +129,7 @@ static bool send_sub_add_drop_resp(Context& context,
   nh.main_type = main_type;
   nh.tosys = orig.fromsys;
   nh.touser = orig.fromuser;
-  string title; // empty
+  std::string title; // empty
 
   auto text = subtype;
   text.push_back(0); // null after subtype.
@@ -178,9 +168,9 @@ static bool IsHostedHere(Context& context, const std::string& subtype) {
 bool handle_sub_add_req(Context& context, Packet& p) {
   const auto subtype = SubTypeFromText(p.text());
   const auto resp = [&](uint8_t code) -> bool {
-    const string base = (code == sub_adddrop_ok) ? "sa" : "sr";
+    const std::string base = (code == sub_adddrop_ok) ? "sa" : "sr";
     const auto response_file = StrCat(base, subtype, ".net");
-    string text;
+    std::string text;
     LOG(INFO) << "Candidate sa file: " << FilePath(context.net.dir, response_file).string();
     if (File::Exists(FilePath(context.net.dir, response_file))) {
       TextFile tf(FilePath(context.net.dir, response_file), "r");
@@ -205,8 +195,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
     LOG(WARNING) << msg;
     return resp(sub_adddrop_error);
   }
-  const auto result = subscribers.insert(p.nh.fromsys);
-  if (result.second == false) {
+  if (const auto result = subscribers.insert(p.nh.fromsys); result.second == false) {
     context.ssm.send_local(1, fmt::format("Can't add system @{} to subtype: {}, it's already there.",p.nh.fromsys, subtype));
     return resp(sub_adddrop_already_there);
   }
@@ -240,8 +229,7 @@ bool handle_sub_drop_req(Context& context, Packet& p) {
     LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
-  const auto num_removed = subscribers.erase(p.nh.fromsys);
-  if (num_removed == 0) {
+  if (const auto num_removed = subscribers.erase(p.nh.fromsys); num_removed == 0) {
     return resp(sub_adddrop_not_there);
   }
   if (!WriteSubcriberFile(FilePath(context.net.dir, filename), subscribers)) {
@@ -254,7 +242,7 @@ bool handle_sub_drop_req(Context& context, Packet& p) {
   return resp(sub_adddrop_ok);
 }
 
-static string SubAddDropResponseMessage(uint8_t code) {
+static std::string SubAddDropResponseMessage(uint8_t code) {
   switch (code) {
   case sub_adddrop_already_there: return "You are already there";
   case sub_adddrop_error: return "Error Adding or Droppign Sub";
@@ -296,7 +284,7 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
   auto sender_date = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
   auto orig_date = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
 
-  auto message_text = string(b, std::end(p.text()));
+  auto message_text = std::string(b, std::end(p.text()));
   net_header_rec nh = {};
 
   auto title = StrCat("WWIV AreaFix (", context.net.name, ") Response for subtype '", subname, "'");

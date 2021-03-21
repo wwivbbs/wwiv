@@ -16,8 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
 #include "common_test/common_helper.h"
 
 #include "common/output.h"
@@ -25,16 +23,10 @@
 #include "core/log.h"
 #include "sdk/config.h"
 #include "sdk/user.h"
-#include <algorithm>
+
+#include "gtest/gtest.h"
 #include <memory>
 #include <string>
-
-using std::begin;
-using std::end;
-using std::move;
-using std::make_unique;
-using std::unique_ptr;
-using std::replace;
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -126,7 +118,7 @@ std::string TestIO::rcaptured() {
   return captured;
 }
 
-TestLocalIO::TestLocalIO(std::string* captured) : LocalIO(), captured_(captured) {}
+TestLocalIO::TestLocalIO(std::string* captured) : wwiv::local::io::LocalIO(), captured_(captured) {}
 
 void TestLocalIO::Putch(unsigned char ch) {
   captured_->push_back(ch);

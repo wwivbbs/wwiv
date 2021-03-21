@@ -32,10 +32,9 @@
 
 #endif  // _WIN32
 
+#include "cryptlib.h"
 #include "core/log.h"
 #include "core/net.h"
-#include "core/os.h"
-#include "cryptlib.h"
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -45,9 +44,6 @@
 using wwiv::common::RemoteInfo;
 using wwiv::common::RemoteSocketIO;
 using wwiv::common::RemoteIO;
-using std::string;
-using std::thread;
-using std::unique_ptr;
 
 namespace wwiv::bbs{
 
@@ -204,7 +200,7 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
 
 int SSHSession::PushData(const char* data, size_t size) {
   int bytes_copied = 0;
-  VLOG(2) << "SSHSession::PushData: " << string(data, size);
+  VLOG(2) << "SSHSession::PushData: " << std::string(data, size);
   std::lock_guard<std::mutex> lock(mu_);
   int status = cryptPushData(session_, data, size, &bytes_copied);
   if (!OK(status)) return 0;
@@ -232,13 +228,13 @@ bool SSHSession::close() {
 }
 
 std::string SSHSession::GetAndClearRemoteUserName() {
-  string temp = remote_username_;
+  std::string temp = remote_username_;
   remote_username_.clear();
   return temp;
 }
 
 std::string SSHSession::GetAndClearRemotePassword() {
-  string temp = remote_password_;
+  std::string temp = remote_password_;
   remote_password_.clear();
   return temp;
 }
@@ -405,8 +401,8 @@ bool IOSSH::ssh_initalize() {
   closesocket(listener);
 
   // assign and start the threads.
-  ssh_receive_thread_ = thread(reader_thread, std::ref(session_), pipe_socket);
-  ssh_send_thread_ = thread(writer_thread, std::ref(session_), pipe_socket);
+  ssh_receive_thread_ = std::thread(reader_thread, std::ref(session_), pipe_socket);
+  ssh_send_thread_ = std::thread(writer_thread, std::ref(session_), pipe_socket);
   return true;
 }
 

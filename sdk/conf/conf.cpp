@@ -37,7 +37,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -194,7 +193,7 @@ std::vector<confrec_430_t> read_conferences_430(const std::filesystem::path& pat
   }
 
   std::vector<confrec_430_t> result;
-  string ls;
+  std::string ls;
   confrec_430_t c{};
   while (f.ReadLine(&ls) && result.size() < MAX_CONFERENCES) {
     StringTrim(&ls);

@@ -26,6 +26,8 @@
 #include <utility>
 #include <vector>
 
+namespace wwiv::local::ui {
+
 class ColorScheme;
 
 class ListBoxItem {
@@ -103,5 +105,7 @@ private:
   bool selection_returns_hotkey_{false};
   UIWindow* parent_{nullptr};
 };
+
+}
 
 #endif

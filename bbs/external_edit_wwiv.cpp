@@ -29,7 +29,6 @@
 
 #include <string>
 
-using std::string;
 using wwiv::core::ScopeExit;
 using namespace wwiv::common;
 using namespace wwiv::core;
@@ -49,11 +48,11 @@ void ExternalWWIVMessageEditor::CleanupControlFiles() {
   File::Remove(FilePath(temp_directory_, EDITOR_INF), true);
 }
 
-static void ReadWWIVResultFiles(string* title, int* anon, const std::filesystem::path& tempdir) {
+static void ReadWWIVResultFiles(std::string* title, int* anon, const std::filesystem::path& tempdir) {
   const auto fp = FilePath(tempdir, RESULT_ED);
   if (File::Exists(fp)) {
     TextFile file(fp, "rt");
-    string anon_string;
+    std::string anon_string;
     if (file.ReadLine(&anon_string)) {
       *anon = to_number<int>(anon_string);
       if (file.ReadLine(title)) {
@@ -74,8 +73,8 @@ static void ReadWWIVResultFiles(string* title, int* anon, const std::filesystem:
   }
 }
 
-static void WriteWWIVEditorControlFiles(const string& title, const string& sub_name,
-                                        const string& to_name, int flags,
+static void WriteWWIVEditorControlFiles(const std::string& title, const std::string& sub_name,
+                                        const std::string& to_name, int flags,
                                         const std::filesystem::path& tempdir) {
   TextFile f(FilePath(tempdir, EDITOR_INF), "wt");
   if (f.IsOpen()) {

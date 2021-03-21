@@ -45,6 +45,7 @@
 
 #ifndef _WIN32
 #include "localui/curses_io.h"
+using namespace wwiv::local::ui;
 #endif
 
 
@@ -200,7 +201,6 @@ bool FsedApplication::LoadQuotesQBBS(const MessageEditorData&) {
   return true;
 }
 
-
 bool FsedApplication::DoFsed() {
   auto path = config_->file_path();
 
@@ -209,8 +209,7 @@ bool FsedApplication::DoFsed() {
 
   // Data needs to_name, from_name, sub_name, title
   FsedModel ed(1000);
-  auto file_lines = read_file(path, ed.maxli());
-  if (!file_lines.empty()) {
+  if (auto file_lines = read_file(path, ed.maxli()); !file_lines.empty()) {
     ed.set_lines(std::move(file_lines));
   }
   if (config_->file()) {
@@ -218,8 +217,7 @@ bool FsedApplication::DoFsed() {
   }
   // We don't want control-A,D,F to work natively so key bindings will.
   bin.okskey(false);
-  auto save = fsed::fsed(context(), ed, data, config_->file());
-  if (!save) {
+  if (auto save = fsed::fsed(context(), ed, data, config_->file()); !save) {
     return false;
   }
 

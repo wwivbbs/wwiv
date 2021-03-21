@@ -19,9 +19,6 @@
 #ifndef INCLUDED_WWIVCONFIG_NEW_USER_H
 #define INCLUDED_WWIVCONFIG_NEW_USER_H
 
-#include "localui/curses_win.h"
-#include "sdk/config.h"
-
 // Minimal New User is:
 // Country first then:
 // Alias, Birthday, Gender, Zip, (city/state filled in or prompted), then email.
@@ -58,7 +55,20 @@ Enter your VOICE phone no. in the form:
  Enter your amateur radio callsign, or just hit <ENTER> if none.
 :*/
 
+namespace wwiv {
+namespace local {
+namespace ui {
+class CursesWindow;
+}
+}
 
-void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& b_, CursesWindow* window);
+namespace sdk {
+class Config;
+struct newuser_config_t;
+}
+}
+
+void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& nc,
+                      wwiv::local::ui::CursesWindow*);
 
 #endif // INCLUDED_WWIVCONFIG_NEW_USER_H

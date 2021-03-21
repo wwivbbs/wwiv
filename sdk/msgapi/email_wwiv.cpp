@@ -24,21 +24,15 @@
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
 #include <filesystem>
-#include <memory>
 #include <string>
 #include <vector>
 
 namespace wwiv::sdk::msgapi {
 
-using std::string;
-using std::make_unique;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -258,8 +252,8 @@ bool WWIVEmail::DeleteAllMailToOrFrom(int user_number) {
     return false;
   }
   for (auto i = 0; i < ssize(headers); i++) {
-    const auto& m = at(headers, i);
-    if ((m.tosys == 0 && m.touser == user_number) || (m.fromsys == 0 && m.fromuser == user_number)) {
+    if (const auto& m = at(headers, i);
+        (m.tosys == 0 && m.touser == user_number) || (m.fromsys == 0 && m.fromuser == user_number)) {
       DeleteMessage(i);
     }
   }
@@ -273,8 +267,7 @@ bool WWIVEmail::add_email(const mailrec& m) {
     return false;
   }
   auto recno = 0;
-  const int max_size = static_cast<int>(mail_file_.number_of_records());
-  if (max_size > 0) {
+  if (const int max_size = mail_file_.number_of_records(); max_size > 0) {
     mailrec temprec{};
     recno = max_size - 1;
     mail_file_.Read(recno, &temprec);

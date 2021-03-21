@@ -16,18 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
 #include "core/fake_clock.h"
 #include "sdk/config.h"
 #include "sdk/user.h"
-#include <cstring>
-#include <type_traits>
 
-using std::cout;
-using std::endl;
-using std::is_standard_layout;
-using std::string;
+#include "gtest/gtest.h"
 
 using namespace wwiv::sdk;
 
@@ -54,7 +47,7 @@ TEST(UserAsvTest, SL) {
   User u{};
   u.sl(10);
 
-  validation_config_t v{"", 20, 0, 0, 0, 0};
+  const validation_config_t v{"", 20, 0, 0, 0, 0};
   ASSERT_TRUE(u.asv(v));
   EXPECT_EQ(20, u.sl());
 }
@@ -63,7 +56,7 @@ TEST(UserAsvTest, SL_Lower) {
   User u{};
   u.sl(50);
 
-  validation_config_t v{"", 20, 0, 0, 0, 0};
+  const validation_config_t v{"", 20, 0, 0, 0, 0};
   ASSERT_TRUE(u.asv(v));
   EXPECT_EQ(50, u.sl());
 }
@@ -72,7 +65,7 @@ TEST(UserAsvTest, DSL) {
   User u{};
   u.dsl(30);
 
-  validation_config_t v{"", 20, 50, 0, 0, 0};
+  const validation_config_t v{"", 20, 50, 0, 0, 0};
   ASSERT_TRUE(u.asv(v));
   EXPECT_EQ(50, u.dsl());
 }
@@ -81,7 +74,7 @@ TEST(UserAsvTest, DSL_Lower) {
   User u{};
   u.dsl(50);
 
-  validation_config_t v{"", 20, 30, 0, 0, 0};
+  const validation_config_t v{"", 20, 30, 0, 0, 0};
   ASSERT_TRUE(u.asv(v));
   EXPECT_EQ(50, u.dsl());
 }
@@ -99,7 +92,7 @@ User CreateUser(int sl, int dsl, int ar, int dar, uint16_t r) {
 TEST(UserAsvTest, AR) {
   User u = CreateUser(10, 0, 1, 0, 0);
 
-  validation_config_t v{"", 20, 0, 4, 0, 0};
+  const validation_config_t v{"", 20, 0, 4, 0, 0};
   ASSERT_TRUE(u.asv(v));
   EXPECT_EQ(5, u.ar_int());
 }
@@ -107,7 +100,7 @@ TEST(UserAsvTest, AR) {
 TEST(UserAsvTest, AR_Lower) {
   User u = CreateUser(10, 0, 1, 0, 0);
 
-  validation_config_t v{"", 10, 0, 3, 0, 0};
+  const validation_config_t v{"", 10, 0, 3, 0, 0};
   ASSERT_TRUE(u.asv(v));
   EXPECT_EQ(3, u.ar_int());
 }
@@ -115,7 +108,7 @@ TEST(UserAsvTest, AR_Lower) {
 TEST(UserAsvTest, DAR) {
   User u = CreateUser(10, 0, 0, 1, 0);
 
-  validation_config_t v{"", 20, 0, 0, 4, 0};
+  const validation_config_t v{"", 20, 0, 0, 4, 0};
   ASSERT_TRUE(u.asv(v));
   EXPECT_EQ(5, u.dar_int());
 }
@@ -123,7 +116,7 @@ TEST(UserAsvTest, DAR) {
 TEST(UserAsvTest, DAR_Lower) {
   User u = CreateUser(10, 0, 0, 1, 0);
 
-  validation_config_t v{"", 10, 0, 0, 3, 0};
+  const validation_config_t v{"", 10, 0, 0, 3, 0};
   ASSERT_TRUE(u.asv(v));
   EXPECT_EQ(3, u.dar_int());
 }
@@ -131,7 +124,7 @@ TEST(UserAsvTest, DAR_Lower) {
 TEST(UserAsvTest, Restrict) {
   auto u = CreateUser(10, 0, 1, 0, 2);
 
-  validation_config_t v{"", 20, 0, 1, 0, 4};
+  const validation_config_t v{"", 20, 0, 1, 0, 4};
   ASSERT_TRUE(u.asv(v));
   EXPECT_EQ(0, u.restriction());
 }
@@ -139,7 +132,7 @@ TEST(UserAsvTest, Restrict) {
 TEST(UserAsvTest, Restrict_Lower) {
   auto u = CreateUser(10, 0, 1, 0, 6);
 
-  validation_config_t v{"", 10, 0, 3, 0, 4};
+  const validation_config_t v{"", 10, 0, 3, 0, 4};
   ASSERT_TRUE(u.asv(v));
   EXPECT_EQ(4, u.restriction());
 }

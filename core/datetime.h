@@ -129,7 +129,7 @@ public:
   /** Returns this Datetime as a time_point in the std::chrono::system_clock */
   [[nodiscard]] std::chrono::system_clock::time_point to_system_clock() const noexcept;
 
-  friend DateTime operator+(DateTime lhs, std::chrono::duration<double> d);
+  friend DateTime operator+(const DateTime& lhs, std::chrono::duration<double> d);
 
   DateTime& operator+=(std::chrono::duration<double> d) {
     const auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
@@ -138,7 +138,7 @@ public:
     return *this;
   }
 
-  friend DateTime operator-(DateTime lhs, std::chrono::duration<double> d);
+  friend DateTime operator-(const DateTime& lhs, std::chrono::duration<double> d);
 
   DateTime& operator-=(std::chrono::duration<double> d) {
     const auto du = std::chrono::duration_cast<std::chrono::seconds>(d);

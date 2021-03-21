@@ -17,13 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/fake_clock.h"
-
 #include "gtest/gtest.h"
-#include <string>
-
-using std::map;
-using std::string;
-using std::vector;
 
 using namespace std::chrono;
 using namespace std::chrono_literals;

@@ -23,6 +23,8 @@
 #include "localui/ui_win.h"
 #include <string>
 
+namespace wwiv::local::ui {
+
 // Generic implementation of screen display routines for wwivconfig.
 class StdioWindow : public UIWindow {
 public:
@@ -52,5 +54,7 @@ public:
    */
   [[nodiscard]] bool IsGUI() const override { return false; }
 };
+
+}
 
 #endif

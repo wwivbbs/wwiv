@@ -18,33 +18,22 @@
 #include "wwivutil/fido/fido.h"
 
 #include "core/command_line.h"
-#include "core/file.h"
 #include "sdk/config.h"
 #include "wwivutil/fido/dump_fido_packet.h"
 #include "wwivutil/fido/dump_fido_subscribers.h"
 #include "wwivutil/fido/dump_nodelist.h"
 
-#include <iomanip>
-#include <iostream>
 #include <memory>
-#include <string>
-#include <vector>
 
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 
 namespace wwiv::wwivutil::fido {
 
 bool FidoCommand::AddSubCommands() {
-  add(make_unique<DumpFidoPacketCommand>());
-  add(make_unique<DumpNodelistCommand>());
-  add(make_unique<DumpFidoSubscribersCommand>());
+  add(std::make_unique<DumpFidoPacketCommand>());
+  add(std::make_unique<DumpNodelistCommand>());
+  add(std::make_unique<DumpFidoSubscribersCommand>());
   return true;
 }
 

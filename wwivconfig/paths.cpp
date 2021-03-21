@@ -21,12 +21,10 @@
 #include "core/strings.h"
 #include "localui/edit_items.h"
 #include "localui/input.h"
-#include <memory>
 #include <string>
 
-using std::unique_ptr;
-using std::string;
 using namespace wwiv::core;
+using namespace wwiv::local::ui;
 using namespace wwiv::strings;
 
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir, scriptdir, logdir */

@@ -25,20 +25,11 @@
 #include "sdk/menus/menu.h"
 #include "wwivutil/util.h"
 
-#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
 
-using std::clog;
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -62,19 +53,19 @@ static void DisplayMenu(const menus::Menu56& m5) {
   }
 }
 
-class MenusDumpCommand : public UtilCommand {
+class MenusDumpCommand final : public UtilCommand {
 public:
   MenusDumpCommand() : UtilCommand("dump", "Displays the info of a menu") {}
 
-  [[nodiscard]] std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   dump --menu_set=[menu set] <menu name>" << endl;
-    ss << "Example: dump --menu_set=wwiv main.mnu" << endl << endl;
-    ss << "         Note that menu_set defaults to 'wwiv'" << endl;
+    ss << "Usage:   dump --menu_set=[menu set] <menu name>" << std::endl;
+    ss << "Example: dump --menu_set=wwiv main.mnu" << std::endl << std::endl;
+    ss << "         Note that menu_set defaults to 'wwiv'" << std::endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     const auto menu_set = sarg("menu_set");
     if (menu_set.empty()) {
       std::cout << "--menu_set is missing. " << std::endl;
@@ -100,7 +91,7 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument(BooleanCommandLineArgument("full", "Display full info about every command.", false));
     add_argument({"menu_set", "The menuset to use", "wwiv"});
     return true;
@@ -113,9 +104,9 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   convert --menu_set=<menu set> <menu name>" << endl;
-    ss << "Example: convert --menu_set=wwiv main" << endl;
-    ss << "         Note that menu_set defaults to 'wwiv'" << endl;
+    ss << "Usage:   convert --menu_set=<menu set> <menu name>" << std::endl;
+    ss << "Example: convert --menu_set=wwiv main" << std::endl;
+    ss << "         Note that menu_set defaults to 'wwiv'" << std::endl;
     return ss.str();
   }
 
@@ -154,10 +145,10 @@ public:
 };
 
 bool MenusCommand::AddSubCommands() {
-  if (!add(make_unique<MenusDumpCommand>())) {
+  if (!add(std::make_unique<MenusDumpCommand>())) {
     return false;
   }
-  if (!add(make_unique<MenusConvertCommand>())) {
+  if (!add(std::make_unique<MenusConvertCommand>())) {
     return false;
   }
 

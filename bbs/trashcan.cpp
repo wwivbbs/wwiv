@@ -23,11 +23,8 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
-#include <algorithm>
-#include <chrono>
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -38,7 +35,7 @@ Trashcan::Trashcan(wwiv::sdk::Config& config)
 
 Trashcan::~Trashcan() = default;
 
-static bool Matches(string whole, string pattern) {
+static bool Matches(std::string whole, std::string pattern) {
   if (!contains(pattern, '*')) {
     return whole == pattern;
   }
@@ -52,17 +49,18 @@ static bool Matches(string whole, string pattern) {
     // We have *foo*
     auto s = pattern.substr(1);
     s.pop_back();
-    return whole.find(s) != string::npos;
-  } else if (pattern.front() == '*') {
+    return whole.find(s) != std::string::npos;
+  }
+  if (pattern.front() == '*') {
     return ends_with(whole, pattern.substr(1));
-  } else if (pattern.back() == '*') {
+  }
+  if (pattern.back() == '*') {
     auto s = pattern;
     s.pop_back();
     return starts_with(whole, s);
-  } else {
-    // Don't have a * at either end, so we don't support that pattern.
-    return false;
   }
+  // Don't have a * at either end, so we don't support that pattern.
+  return false;
 }
 
 bool Trashcan::IsTrashName(const std::string& rawname) {
@@ -80,7 +78,7 @@ bool Trashcan::IsTrashName(const std::string& rawname) {
 
   const auto name{ToStringUpperCase(rawname)};
 
-  string line;
+  std::string line;
   while (file.ReadLine(&line)) {
     StringUpperCase(&line);
     if (Matches(name, line)) {

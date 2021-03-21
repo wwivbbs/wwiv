@@ -22,7 +22,6 @@
 #include "core/uuid.h"
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 
 class UuidTest : public ::testing::Test {

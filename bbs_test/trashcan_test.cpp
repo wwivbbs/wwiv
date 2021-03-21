@@ -16,17 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
 #include "bbs/trashcan.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
-using std::cout;
-using std::endl;
-using std::ostringstream;
-using std::string;
+#include "gtest/gtest.h"
+#include <string>
 
 using namespace wwiv::strings;
 
@@ -34,7 +30,7 @@ class TrashcanTest : public testing::Test {
 protected:
   void SetUp() override {
     helper.SetUp();
-    const string text = "all\n*end\nstart*\n*sub*\n";
+    const std::string text = "all\n*end\nstart*\n*sub*\n";
     helper.files().CreateTempFile(StrCat("gfiles/", TRASHCAN_TXT), text);
   }
 

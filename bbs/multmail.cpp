@@ -44,8 +44,6 @@
 void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup);
 int  oneuser();
 
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -128,7 +126,7 @@ void multimail(int *pnUserNumber, int numu) {
     bout << s;
     bout.nl();
     if (show_all) {
-      const string pnunn2 = a()->names()->UserName(pnUserNumber[cv]);
+      const std::string pnunn2 = a()->names()->UserName(pnUserNumber[cv]);
       s1 = fmt::sprintf("%-22.22s  ", pnunn2);
       j++;
       if (j >= 3) {
@@ -294,7 +292,7 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
 
 void slash_e() {
   int user_number[MAX_LIST], numu, i;
-  char s[81], ch, *sss;
+  char s[81],*sss;
 
   mml_s = nullptr;
   mml_started = 0;
@@ -318,8 +316,7 @@ void slash_e() {
   do {
     bout.nl(2);
     bout << "|#2Multi-Mail: A,M,D,L,E,Q,? : ";
-    ch = onek("QAMDEL?");
-    switch (ch) {
+    switch (char ch = onek("QAMDEL?"); ch) {
     case '?':
       bout.printfile(MMAIL_NOEXT);
       break;

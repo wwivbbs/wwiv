@@ -32,8 +32,6 @@
 #include <vector>
 #include "cereal/external/rapidjson/document.h"
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;

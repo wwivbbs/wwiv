@@ -24,8 +24,6 @@
 #include <utility>
 #include <vector>
 
-using std::string;
-using std::vector;
 using namespace wwiv::strings;
 
 namespace wwiv::sdk::msgapi {

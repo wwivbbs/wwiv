@@ -61,12 +61,12 @@
 #include <memory>
 #include <string>
 
-using std::string;
 using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::seconds;
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
@@ -230,7 +230,7 @@ void Application::ReadINIFile(IniFile& ini) {
   for (const auto& kv : eventinfo) {
     spawn_opts_[kv.first] = kv.second;
     const auto key_name = to_array_key(INI_STR_SPAWNOPT, kv.first);
-    const auto ss = ini.value<string>(key_name);
+    const auto ss = ini.value<std::string>(key_name);
     if (!ss.empty()) {
       spawn_opts_[kv.first] = str2spawnopt(ss);
     }
@@ -264,13 +264,13 @@ void Application::ReadINIFile(IniFile& ini) {
   max_gfilesec = ini.value<uint16_t>(INI_STR_MAX_GFILESEC, max_gfilesec);
 
   // pull out strings
-  upload_cmd = ini.value<string>(INI_STR_UPLOAD_CMD);
-  beginday_cmd = ini.value<string>(INI_STR_BEGINDAY_CMD);
-  newuser_cmd = ini.value<string>(INI_STR_NEWUSER_CMD);
-  logon_cmd = ini.value<string>(INI_STR_LOGON_CMD);
-  logoff_cmd = ini.value<string>(INI_STR_LOGOFF_CMD);
-  cleanup_cmd = ini.value<string>(INI_STR_CLEANUP_CMD);
-  terminal_command = ini.value<string>(INI_STR_TERMINAL_CMD);
+  upload_cmd = ini.value<std::string>(INI_STR_UPLOAD_CMD);
+  beginday_cmd = ini.value<std::string>(INI_STR_BEGINDAY_CMD);
+  newuser_cmd = ini.value<std::string>(INI_STR_NEWUSER_CMD);
+  logon_cmd = ini.value<std::string>(INI_STR_LOGON_CMD);
+  logoff_cmd = ini.value<std::string>(INI_STR_LOGOFF_CMD);
+  cleanup_cmd = ini.value<std::string>(INI_STR_CLEANUP_CMD);
+  terminal_command = ini.value<std::string>(INI_STR_TERMINAL_CMD);
 
   forced_read_subnum_ = ini.value<uint16_t>(INI_STR_FORCE_SCAN_SUBNUM, forced_read_subnum_);
   internal_zmodem_ = ini.value<bool>(INI_STR_INTERNALZMODEM, true);
@@ -300,12 +300,12 @@ void Application::ReadINIFile(IniFile& ini) {
   config()->set_sysconfig(ini.GetFlags(sysconfig_flags, config()->sysconfig_flags()));
 
   // Sets up the default attach directory.
-  const auto attach_dir = ini.value<string>(INI_STR_ATTACH_DIR);
+  const auto attach_dir = ini.value<std::string>(INI_STR_ATTACH_DIR);
   attach_dir_ = !attach_dir.empty() ? attach_dir : FilePath(bbspath(), "attach").string();
   attach_dir_ = File::EnsureTrailingSlash(attach_dir_);
 
   // Sets up the default net fossil directory.
-  const std::filesystem::path netfoss_dir = ini.value<string>(INI_STR_NETFOSS_DIR);
+  const std::filesystem::path netfoss_dir = ini.value<std::string>(INI_STR_NETFOSS_DIR);
   netfoss_dir_ = !netfoss_dir.empty() ? netfoss_dir : FilePath(bbspath(), "netfoss");
   netfoss_dir_ = File::EnsureTrailingSlash(netfoss_dir_);
 
@@ -666,8 +666,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
 // begin dupphone additions
 
 void Application::check_phonenum() {
-  const auto fn = FilePath(config()->datadir(), PHONENUM_DAT);
-  if (!File::Exists(fn)) {
+  if (!File::Exists(FilePath(config()->datadir(), PHONENUM_DAT))) {
     create_phone_file();
   }
 }

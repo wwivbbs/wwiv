@@ -44,20 +44,9 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
-#include <vector>
-
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::map;
-using std::set;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
@@ -72,7 +61,7 @@ using namespace wwiv::strings;
 static bool email_changed = false;
 static bool posts_changed = false;
 
-static void update_filechange_status_dat(const string& datadir, bool email, bool posts) {
+static void update_filechange_status_dat(const std::string& datadir, bool email, bool posts) {
   StatusMgr sm(datadir);
   sm.Run([=](Status& s)
   {
@@ -86,7 +75,7 @@ static void update_filechange_status_dat(const string& datadir, bool email, bool
 }
 
 static void ShowHelp(const NetworkCommandLine& cmdline) {
-  cout << cmdline.GetHelp() << endl;
+  std::cout << cmdline.GetHelp() << std::endl;
   exit(1);
 }
 
@@ -241,7 +230,7 @@ static bool handle_packet(Context& context, Packet& p) {
   }
 }
 
-static bool handle_file(Context& context, const string& name) {
+static bool handle_file(Context& context, const std::string& name) {
   File f(FilePath(context.net.dir, name));
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(ERROR) << "Unable to open file: " << context.net.dir << name;
@@ -279,16 +268,16 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
     // By default, delete excess messages like net37 did.
     options.overflow_strategy = OverflowStrategy::delete_all;
 
-    const auto user_manager = make_unique<UserManager>(config);
+    const auto user_manager = std::make_unique<UserManager>(config);
     SystemClock clock{};
     NetDat netdat(config.gfilesdir(), config.logdir(), net, net_cmdline.net_cmd(), clock);
 
     Context context(config, net, *user_manager, networks.networks(), netdat);
     context.network_number = net_cmdline.network_number();
     context.set_email_api(
-        make_unique<WWIVMessageApi>(options, config, networks.networks(), new NullLastReadImpl()));
-    context.set_api(2, make_unique<WWIVMessageApi>(options, config, networks.networks(),
-                                                   new NullLastReadImpl()));
+        std::make_unique<WWIVMessageApi>(options, config, networks.networks(), new NullLastReadImpl()));
+    context.set_api(2, std::make_unique<WWIVMessageApi>(options, config, networks.networks(),
+                                                        new NullLastReadImpl()));
 
     LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {

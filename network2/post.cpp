@@ -30,21 +30,11 @@
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/net/packets.h"
 #include <iostream>
-#include <map>
 #include <memory>
 #include <set>
 #include <sstream>
 #include <string>
 #include <vector>
-
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::map;
-using std::set;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
@@ -57,7 +47,7 @@ using namespace wwiv::strings;
 
 namespace wwiv::net::network2 {
 
-static bool find_sub(const Subs& subs, int network_number, const string& netname, subboard_t& sub) {
+static bool find_sub(const Subs& subs, int network_number, const std::string& netname, subboard_t& sub) {
   auto current = 0;
   for (const auto& x : subs.subs()) {
     for (const auto& n : x.nets) {
@@ -120,7 +110,7 @@ bool handle_inbound_post(Context& context, Packet& p) {
     }
   }
 
-  unique_ptr<MessageArea> area(context.api(sub.storage_type).Open(sub, -1));
+  std::unique_ptr<MessageArea> area(context.api(sub.storage_type).Open(sub, -1));
   if (!area) {
     const auto msg = fmt::format("Failed to open message area: '{}'; writing to dead.net", sub.filename);
     context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
@@ -164,7 +154,7 @@ bool handle_inbound_post(Context& context, Packet& p) {
   return true;
 }
 
-static std::string set_to_string(const set<uint16_t>& lines) {
+static std::string set_to_string(const std::set<uint16_t>& lines) {
   std::ostringstream ss;
   for (const auto& line : lines) {
     ss << line << std::endl;
@@ -173,7 +163,7 @@ static std::string set_to_string(const set<uint16_t>& lines) {
 }
 
 bool send_post_to_subscribers(Context& context, Packet& template_packet,
-                              const set<uint16_t>& subscribers_to_skip) {
+                              const std::set<uint16_t>& subscribers_to_skip) {
   VLOG(1) << "DEBUG: send_post_to_subscribers; skipping: " << set_to_string(subscribers_to_skip);
 
   if (template_packet.nh.main_type != main_type_new_post) {

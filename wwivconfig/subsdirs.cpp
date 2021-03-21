@@ -28,15 +28,14 @@
 #include <memory>
 #include <string>
 
-using std::unique_ptr;
-using std::string;
 using namespace wwiv::core;
+using namespace wwiv::local::ui;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 template<typename T>
 static auto input_number(CursesWindow* window, int max_digits) -> T {
-  string s;
+  std::string s;
   editline(window, &s, max_digits, EditLineMode::NUM_ONLY, "");
   if (s.empty()) {
     return 0;
@@ -143,7 +142,8 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
 
 void up_subs_dirs(wwiv::sdk::Config& config) {
   curses_out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(curses_out->CreateBoxedWindow("Update Sub/Directory Maximums", 16, 76));
+  std::unique_ptr<CursesWindow> window(
+      curses_out->CreateBoxedWindow("Update Sub/Directory Maximums", 16, 76));
 
   int y=1;
   window->PutsXY(2, y++, StrCat("Current max # subs: ", config.max_subs()));

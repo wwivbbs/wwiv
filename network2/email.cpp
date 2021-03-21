@@ -30,21 +30,10 @@
 #include "sdk/msgapi/email_wwiv.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/net/packets.h"
-#include <iostream>
-#include <map>
+
 #include <memory>
 #include <set>
 #include <string>
-#include <vector>
-
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::map;
-using std::set;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
@@ -88,7 +77,7 @@ bool handle_email_byname(Context& context, Packet& p) {
   VLOG(1) << "Processing email by name to: '" << to_name << "'";
 
   // Rest of the message is the text.
-  const auto text = string(iter, std::end(p.text()));
+  const auto text = std::string(iter, std::end(p.text()));
 
   const auto user_number = GetUserNumber(to_name, context.user_manager);
   if (user_number == 0) {
@@ -138,7 +127,7 @@ bool handle_email(Context& context,
   d.title = get_message_field(p.text(), iter, {'\0', '\r', '\n'}, 80);
   // Rest of the message is the text of the form:
   // SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
-  d.text = string(iter, std::end(p.text()));
+  d.text = std::string(iter, std::end(p.text()));
   LOG(INFO) << "  Title: '" << d.title << "'";
 
   auto email = context.email_api().OpenEmail();
@@ -146,8 +135,7 @@ bool handle_email(Context& context,
     LOG(ERROR) << "    ! ERROR creating email class; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
-  auto added = email->AddMessage(d);
-  if (!added) {
+  if (auto added = email->AddMessage(d); !added) {
     LOG(ERROR) << "    ! ERROR adding email message; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }

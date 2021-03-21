@@ -30,18 +30,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
-#include <map>
-#include <memory>
 #include <string>
-#include <vector>
-
-
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
@@ -51,9 +40,9 @@ using namespace wwiv::stl;
 using namespace wwiv::os;
 
 static void ShowHelp(NetworkCommandLine& cmdline) {
-  cout << cmdline.GetHelp() << "   /N####" << std::setw(22) << " "
-       << "Network node number to dial." << endl
-       << endl;
+  std::cout << cmdline.GetHelp() << "   /N####" << std::setw(22) << " "
+            << "Network node number to dial." << std::endl
+            << std::endl;
   exit(1);
 }
 
@@ -61,7 +50,7 @@ static int LaunchOldNetworkingStack(const NetworkCommandLine& net_cmdline, const
   std::ostringstream os;
   os << FilePath(net_cmdline.cmdline().bindir(), exe).string();
   for (auto i = 1; i < argc; i++) {
-    const string s(argv[1]);
+    const std::string s(argv[1]);
     if (starts_with(s, "/")) {
       os << " " << argv[i];
     }

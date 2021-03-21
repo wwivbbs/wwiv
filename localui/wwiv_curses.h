@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_LOCALUI_CURSES_H
-#define INCLUDED_LOCALUI_CURSES_H
+#ifndef INCLUDED_LOCALUI_WWIV_CURSES_H
+#define INCLUDED_LOCALUI_WWIV_CURSES_H
 
 #ifdef MOUSE_MOVED
 #undef MOUSE_MOVED

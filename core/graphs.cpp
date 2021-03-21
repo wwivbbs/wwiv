@@ -4,23 +4,18 @@
 
 #include <cmath>
 #include <iostream>
-#include <vector>
-#include <string>
-#include <list>
 #include <limits>
+#include <list>
 #include <set>
-#include <utility>
-#include <algorithm>
-#include <iterator>
 #include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace wwiv::graphs {
 
-using std::list;
-using std::numeric_limits;
-
 static constexpr uint16_t NO_NODE = 0;
-static constexpr float max_cost = numeric_limits<float>::infinity();
+static constexpr float max_cost = std::numeric_limits<float>::infinity();
 
 Graph::Graph(uint16_t node, uint16_t max_size)
   : node_(node), adjacency_list_(max_size) {
@@ -62,8 +57,7 @@ void Graph::Compute() {
     const auto& edges = adjacency_list_[u];
     for (const auto& e : edges) {
       auto v = e.node_;
-      const auto cost_through_u = dist + e.cost_;
-      if (cost_through_u < cost_[v]) {
+      if (const auto cost_through_u = dist + e.cost_; cost_through_u < cost_[v]) {
         queue.erase(std::make_pair(cost_[v], v));
         cost_[v] = cost_through_u;
         previous_[v] = u;
@@ -86,8 +80,7 @@ std::string Graph::DumpCosts() const {
   std::ostringstream ss;
   ss << "costs_: ";
   for (auto i = 0; i < std::numeric_limits<uint16_t>::max(); i++) {
-    const auto cost = cost_[i];
-    if (std::isfinite(cost)) {
+    if (const auto cost = cost_[i]; std::isfinite(cost)) {
       ss << i << "[" << cost_[i] << "] ";
     }
   }

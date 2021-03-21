@@ -39,14 +39,6 @@
 #include <string>
 #include <vector>
 
-using std::clog;
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
@@ -65,7 +57,7 @@ static subboard_t default_sub(const std::string& fn) {
 
 // N.B(rushfan): This is similar to the one in post.cpp.  But that one uses
 // network number and network name as key and not filename for sub file.
-static std::optional<subboard_t> find_sub(const wwiv::sdk::Subs& subs, const string& filename) {
+static std::optional<subboard_t> find_sub(const wwiv::sdk::Subs& subs, const std::string& filename) {
   for (const auto& x : subs.subs()) {
     if (iequals(filename, x.filename)) {
       return {x};
@@ -119,34 +111,34 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   delete --num=NN <base sub filename>" << endl;
-    ss << "Example: delete --num=10 general" << endl;
+    ss << "Usage:   delete --num=NN <base sub filename>" << std::endl;
+    ss << "Example: delete --num=10 general" << std::endl;
     return ss.str();
   }
 
   int Execute() override {
     if (remaining().empty()) {
-      clog << "Missing sub basename." << endl;
-      cout << GetUsage() << GetHelp() << endl;
+      std::clog << "Missing sub basename." << std::endl;
+      std::cout << GetUsage() << GetHelp() << std::endl;
       return 2;
     }
 
     const auto basename(remaining().front());
     if (!CreateMessageApiMap(basename)) {
-      clog << "Error Creating message apis." << endl;
+      std::clog << "Error Creating message apis." << std::endl;
       return 1;
     }
     
-    unique_ptr<MessageArea> area(api().CreateOrOpen(sub(), -1));
+    std::unique_ptr<MessageArea> area(api().CreateOrOpen(sub(), -1));
     if (!area) {
-      clog << "Unable to Open message area: '" << sub().filename << "'." << endl;
+      std::clog << "Unable to Open message area: '" << sub().filename << "'." << std::endl;
       return 1;
     }
 
     const auto num_messages = area->number_of_messages();
     const auto message_number = arg("num").as_int();
-    cout << "Message Sub: '" << basename << "' has " << num_messages << " messages." << endl;
-    cout << string(72, '-') << endl;
+    std::cout << "Message Sub: '" << basename << "' has " << num_messages << " messages." << std::endl;
+    std::cout << std::string(72, '-') << std::endl;
 
     if (message_number < 0 || message_number > num_messages) {
       LOG(ERROR) << "Invalid message number #" << message_number;
@@ -188,27 +180,27 @@ public:
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   post --title=\"Welcome\" --from_usernum=1 <base sub filename> <text filename>"
-       << endl;
-    ss << "Example: post general mymessage.txt" << endl;
+       << std::endl;
+    ss << "Example: post general mymessage.txt" << std::endl;
     return ss.str();
   }
 
   [[nodiscard]] int Execute() override {
     if (remaining().size() < 2) {
-      clog << "Missing sub basename." << endl;
-      cout << GetUsage() << GetHelp();
+      std::clog << "Missing sub basename." << std::endl;
+      std::cout << GetUsage() << GetHelp();
       return 2;
     }
 
     const auto basename(remaining().front());
     if (!CreateMessageApiMap(basename)) {
-      clog << "Error Creating message apis." << endl;
+      std::clog << "Error Creating message apis." << std::endl;
       return 1;
     }
     
-    unique_ptr<MessageArea> area(api().CreateOrOpen(sub_, -1));
+    std::unique_ptr<MessageArea> area(api().CreateOrOpen(sub_, -1));
     if (!area) {
-      clog << "Error opening message area: '" << basename << "'." << endl;
+      std::clog << "Error opening message area: '" << basename << "'." << std::endl;
       return 1;
     }
 
@@ -217,8 +209,7 @@ public:
     auto title = arg("title").as_string();
     auto to = arg("to").as_string();
     auto daten = DateTime::now();
-    auto date_str = arg("date").as_string();
-    if (!date_str.empty()) {
+    if (auto date_str = arg("date").as_string(); !date_str.empty()) {
       std::istringstream ss(date_str);
       std::tm dt = {};
       ss >> std::get_time(&dt, "Www Mmm dd hh:mm:ss yyyy");
@@ -269,12 +260,12 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   pack <base sub filename>" << endl;
-    ss << "Example: post general" << endl;
+    ss << "Usage:   pack <base sub filename>" << std::endl;
+    ss << "Example: post general" << std::endl;
     return ss.str();
   }
 
-  static bool backup(const Config& config, const string& name) {
+  static bool backup(const Config& config, const std::string& name) {
     const auto max_backups = config.max_backups();
     const auto sb = backup_file(FilePath(config.datadir(), StrCat(name, ".sub")), max_backups);
     const auto db = backup_file(FilePath(config.msgsdir(), StrCat(name, ".dat")), max_backups);
@@ -283,23 +274,23 @@ public:
 
    int Execute() override {
     if (remaining().empty()) {
-      clog << "Missing sub basename." << endl;
-      cout << GetUsage() << GetHelp();
+      std::clog << "Missing sub basename." << std::endl;
+      std::cout << GetUsage() << GetHelp();
       return 2;
     }
 
     const auto basename(remaining().front());
     if (!CreateMessageApiMap(basename)) {
-      clog << "Error Creating message apis." << endl;
+      std::clog << "Error Creating message apis." << std::endl;
       return 1;
     }
 
     // Ensure we can open it.
     {
       try {
-        unique_ptr<MessageArea> area(api().CreateOrOpen(sub(), -1));
+        std::unique_ptr<MessageArea> area(api().CreateOrOpen(sub(), -1));
       } catch (const bad_message_area&) {
-        clog << "Error opening message area: '" << basename << "'." << endl;
+        std::clog << "Error opening message area: '" << basename << "'." << std::endl;
         return 1;
       }
     }
@@ -311,12 +302,12 @@ public:
     auto newsub = sub();
     newsub.filename = StrCat(basename, ".new");
     {
-      unique_ptr<MessageArea> area(api().Open(sub(), -1));
+      std::unique_ptr<MessageArea> area(api().Open(sub(), -1));
       if (!api().Create(newsub, -1)) {
-        clog << "Unable to create new area: " << newsub.filename;
+        std::clog << "Unable to create new area: " << newsub.filename;
         return 1;
       }
-      unique_ptr<MessageArea> newarea(api().Open(newsub, -1));
+      std::unique_ptr<MessageArea> newarea(api().Open(newsub, -1));
       const auto total = area->number_of_messages();
       for (auto i = 1; i <= total; i++) {
         auto message(area->ReadMessage(i));
@@ -327,7 +318,7 @@ public:
         if (!newarea->AddMessage(*message, {})) {
           LOG(ERROR) << "Error adding message: " << message->header().title();
         } else {
-          cout << "[" << i << "]";
+          std::cout << "[" << i << "]";
         }
       }
     }
@@ -338,7 +329,7 @@ public:
         FilePath(config()->config()->datadir(), StrCat(newsub.filename, ".sub"));
     File::Remove(orig_sub_fn);
     if (!File::Rename(new_sub_fn, orig_sub_fn)) {
-      clog << "Unable to move sub";
+      std::clog << "Unable to move sub";
     }
     const auto orig_dat_fn =
         FilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
@@ -346,7 +337,7 @@ public:
         FilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
     File::Remove(orig_dat_fn);
     if (!File::Rename(new_dat_fn, orig_dat_fn)) {
-      clog << "Unable to move dat";
+      std::clog << "Unable to move dat";
     }
 
     return 0;
@@ -355,16 +346,16 @@ public:
 
 
 bool MessagesCommand::AddSubCommands() {
-  if (!add(make_unique<MessagesDumpCommand>())) {
+  if (!add(std::make_unique<MessagesDumpCommand>())) {
     return false;
   }
-  if (!add(make_unique<DeleteMessageCommand>())) {
+  if (!add(std::make_unique<DeleteMessageCommand>())) {
     return false;
   }
-  if (!add(make_unique<PostMessageCommand>())) {
+  if (!add(std::make_unique<PostMessageCommand>())) {
     return false;
   }
-  if (!add(make_unique<PackMessageCommand>())) {
+  if (!add(std::make_unique<PackMessageCommand>())) {
     return false;
   }
   
@@ -376,8 +367,8 @@ MessagesDumpCommand::MessagesDumpCommand()
 
 std::string MessagesDumpCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   dump <base sub filename>" << endl;
-  ss << "Example: dump general" << endl;
+  ss << "Usage:   dump <base sub filename>" << std::endl;
+  ss << "Example: dump general" << std::endl;
   return ss.str();
 }
 
@@ -392,47 +383,47 @@ bool MessagesDumpCommand::AddSubCommands() {
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
-int MessagesDumpCommand::ExecuteImpl(MessageArea* area, const string& basename, int start, int end,
+int MessagesDumpCommand::ExecuteImpl(MessageArea* area, const std::string& basename, int start, int end,
                                      bool all) {
 
   const auto last_message = (end >= 0) ? end : area->number_of_messages();
-  cout << "Message Sub: '" << basename << "' has " << area->number_of_messages() << " messages."
-       << endl;
-  cout << string(72, '-') << endl;
+  std::cout << "Message Sub: '" << basename << "' has " << area->number_of_messages() << " messages."
+       << std::endl;
+  std::cout << std::string(72, '-') << std::endl;
   for (auto current = start; current <= last_message; current++) {
     const auto message = area->ReadMessage(current);
     if (!message) {
-      cout << "#" << current << "  ERROR " << endl;
+      std::cout << "#" << current << "  ERROR " << std::endl;
       VLOG(1) << "Failed to read message number: " << current;
-      cout << string(72, '-') << endl;
+      std::cout << std::string(72, '-') << std::endl;
       continue;
     }
     const auto& header = message->header();
-    cout << "#" << setw(5) << std::left << current << " From: " << setw(20) << header.from()
-         << "date: " << daten_to_wwivnet_time(header.daten()) << endl
+    std::cout << "#" << std::setw(5) << std::left << current << " From: " << std::setw(20) << header.from()
+         << "date: " << daten_to_wwivnet_time(header.daten()) << std::endl
          << "title: " << header.title();
     if (header.local()) {
-      cout << "[LOCAL]";
+      std::cout << "[LOCAL]";
     }
     if (header.deleted()) {
-      cout << "[DELETED]";
+      std::cout << "[DELETED]";
     }
     if (header.locked()) {
-      cout << "[LOCKED]";
+      std::cout << "[LOCKED]";
     }
     if (header.private_msg()) {
-      cout << "[PRIVATE]";
+      std::cout << "[PRIVATE]";
     }
-    cout << endl;
+    std::cout << std::endl;
     if (all) {
-      cout << "qscan: " << header.last_read() << endl;
+      std::cout << "qscan: " << header.last_read() << std::endl;
     }
     if (header.deleted()) {
       // Don't try to read the text of deleted messages.
       continue;
     }
     const auto& text = message->text();
-    cout << string(72, '-') << endl;
+    std::cout << std::string(72, '-') << std::endl;
     auto lines = wwiv::strings::SplitString(text.text(), "\n", false);
     for (const auto& line : lines) {
       if (line.empty()) {
@@ -440,26 +431,26 @@ int MessagesDumpCommand::ExecuteImpl(MessageArea* area, const string& basename, 
       }
       if (line.front() != CD || all) {
         for (const auto ch : line) {
-          dump_char(cout, ch);
+          dump_char(std::cout, ch);
         }
-        cout << endl;
+        std::cout << std::endl;
       }
     }
-    cout << "------------------------------------------------------------------------" << endl;
+    std::cout << "------------------------------------------------------------------------" << std::endl;
   }
   return 0;
 }
 
 int MessagesDumpCommand::Execute() {
   if (remaining().empty()) {
-    clog << "Missing sub basename." << endl;
-    cout << GetUsage() << GetHelp();
+    std::clog << "Missing sub basename." << std::endl;
+    std::cout << GetUsage() << GetHelp();
     return 2;
   }
 
   const auto basename(remaining().front());
   if (!CreateMessageApiMap(basename)) {
-    clog << "Error Creating message apis." << endl;
+    std::clog << "Error Creating message apis." << std::endl;
     return 1;
   }
     
@@ -469,9 +460,9 @@ int MessagesDumpCommand::Execute() {
   const auto end_date = sarg("end_date");
   const auto all = barg("all");
 
-  unique_ptr<MessageArea> area(api().Open(sub_, -1));
+  std::unique_ptr<MessageArea> area(api().Open(sub_, -1));
   if (!area) {
-    clog << "Error opening message area: '" << sub().filename << "'." << endl;
+    std::clog << "Error opening message area: '" << sub().filename << "'." << std::endl;
     return 1;
   }
   area->set_storage_type(sub().storage_type);
@@ -483,8 +474,7 @@ int MessagesDumpCommand::Execute() {
   if (!start_date.empty()) {
     const auto start_dt = parse_yyyymmdd_with_optional_hms(start_date).to_daten_t();
     for (start = 1; start <= last_message; start++) {
-      const auto h = area->ReadMessageHeader(start);
-      if (start_dt < h->daten()) {
+      if (const auto h = area->ReadMessageHeader(start); start_dt < h->daten()) {
         // We're past the start date, so use last message number.
         break;
       }
@@ -495,8 +485,7 @@ int MessagesDumpCommand::Execute() {
     const auto end_dt = parse_yyyymmdd_with_optional_hms(end_date).to_daten_t();
     // Find the closest message to the end date, or leave it -1
     for (auto i = 1, before_end = 1; i<= last_message; i++) {
-      const auto h = area->ReadMessageHeader(i);
-      if (end_dt < h->daten()) {
+      if (const auto h = area->ReadMessageHeader(i); end_dt < h->daten()) {
         // We're past the end date, so use last message number.
         end = before_end;
         break;

@@ -46,9 +46,6 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 
-using std::endl;
-using std::string;
-using std::unique_ptr;
 using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
@@ -148,7 +145,7 @@ SocketConnection::SocketConnection(SOCKET sock, ExitMode exit_mode)
   }
 }
 
-unique_ptr<SocketConnection> Connect(const string& host, int port) {
+std::unique_ptr<SocketConnection> Connect(const std::string& host, int port) {
   static auto initialized = InitializeSockets();
   if (!initialized) {
     throw socket_error("SocketConnection::Connect Unable to initialize sockets.");
@@ -268,20 +265,20 @@ int SocketConnection::receive_upto(void* data, const int size, duration<double> 
   return read_TYPE<void, 0>(sock_, data, d, false, size);
 }
 
-string SocketConnection::receive(int size, duration<double> d) {
+std::string SocketConnection::receive(int size, duration<double> d) {
   const auto data = std::make_unique<char[]>(size);
   const auto num_read = receive(data.get(), size, d);
-  return string(data.get(), num_read);
+  return std::string(data.get(), num_read);
 }
 
-string SocketConnection::receive_upto(int size, duration<double> d) {
+std::string SocketConnection::receive_upto(int size, duration<double> d) {
   const auto data = std::make_unique<char[]>(size);
   const auto num_read = receive_upto(data.get(), size, d);
-  return string(data.get(), num_read);
+  return std::string(data.get(), num_read);
 }
 
 std::string SocketConnection::read_line(int max_size, duration<double> d) {
-  string s;
+  std::string s;
   auto size = 0;
   try {
     while (true) {

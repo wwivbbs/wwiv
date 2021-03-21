@@ -59,6 +59,7 @@
 #include <cstdlib>
 
 using namespace wwiv::core;
+using namespace wwiv::local::ui;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::wwivconfig::convert;

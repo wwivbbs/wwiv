@@ -16,14 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
 #include "bbs/xfer.h"
-#include <string>
 
-using std::cout;
-using std::endl;
-using std::string;
+#include "gtest/gtest.h"
+#include <string>
 
 TEST(XferTest, Okfn) {
   EXPECT_TRUE(!okfn(""));

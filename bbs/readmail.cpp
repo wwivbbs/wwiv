@@ -64,9 +64,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -84,7 +81,7 @@ static bool same_email(tmpmailrec& tm, const mailrec& m) {
   return true;
 }
 
-static void purgemail(vector<tmpmailrec>& mloc, int mw, int* curmail, mailrec* m1, slrec* sl) {
+static void purgemail(std::vector<tmpmailrec>& mloc, int mw, int* curmail, mailrec* m1, slrec* sl) {
   mailrec m{};
 
   if (m1->anony & anony_sender && (sl->ability & ability_read_email_anony) == 0) {
@@ -130,7 +127,7 @@ static void purgemail(vector<tmpmailrec>& mloc, int mw, int* curmail, mailrec* m
   }
 }
 
-static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec* m, bool del,
+static void resynch_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec* m, bool del,
                           unsigned short stat) {
   int i;
   mailrec m1{};
@@ -314,7 +311,7 @@ static std::string from_name(const mailrec& m, const net_networks_rec& net, cons
     return ">UNKNOWN<";
   }
   auto csne = next_system(m.fromsys);
-  const string system_name = csne ? csne->name : "Unknown System";
+  const std::string system_name = csne ? csne->name : "Unknown System";
   if (m.fromsys == 0) {
     if (m.fromuser == 65535) {
       if (nn != 255) {
@@ -449,7 +446,7 @@ void readmail(bool newmail_only) {
     bout.nl(2);
     next = false;
 
-    if (string title = m.title; !read_same_email(mloc, mw, curmail, m, false, 0)) {
+    if (std::string title = m.title; !read_same_email(mloc, mw, curmail, m, false, 0)) {
       title += ">>> MAIL DELETED <<<";
       okmail = false;
       bout.nl(3);
@@ -544,7 +541,7 @@ void readmail(bool newmail_only) {
     do {
       char mnu[81];
       int delme;
-      string allowable;
+      std::string allowable;
       write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
       auto [net, nn] = network_and_num(m);
       set_net_num(nn);
@@ -656,9 +653,9 @@ void readmail(bool newmail_only) {
                         static_cast<long>(a()->user()->email_sent()) +
                         static_cast<long>(a()->user()->email_net());
             if (num_mail != num_mail1) {
-              const string userandnet =
+              const auto userandnet =
                   a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
-              string msg;
+              std::string msg;
               if (m.fromsys != 0) {
                 msg = StrCat(a()->network_name(), ": ", userandnet);
               } else {
@@ -728,7 +725,7 @@ void readmail(bool newmail_only) {
           }
           tmp_disable_conf(true);
           bout.nl();
-          string ss1;
+          std::string ss1;
           do {
             bout << "|#2Move to which sub? ";
             ss1 = mmkey(MMKeyAreaType::subs);
@@ -814,7 +811,7 @@ void readmail(bool newmail_only) {
           }
         } break;
       case 'D': {
-        string message;
+        std::string message;
         if (!okmail) {
           break;
         }
@@ -936,7 +933,7 @@ void readmail(bool newmail_only) {
                   file->Seek(mloc[curmail].index * sizeof(mailrec), File::Whence::begin);
                   file->Write(&m1, sizeof(mailrec));
                 } else {
-                  string b;
+                  std::string b;
                   if (auto o = readfile(&(m.msg), "email")) {
                     savefile(o.value(), &(m.msg), "email");
                   }
@@ -1009,7 +1006,7 @@ void readmail(bool newmail_only) {
           break;
         }
         if (m.fromuser != 65535) {
-          string reply_to_name;
+          std::string reply_to_name;
           // TODO: optimize this since we also call readfile in grab_user_name
           reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
           if (auto o = readfile(&(m.msg), "email")) {
@@ -1039,8 +1036,8 @@ void readmail(bool newmail_only) {
                     static_cast<long>(a()->user()->email_net());
         if (ch == 'A' || ch == '@') {
           if (num_mail != num_mail1) {
-            string message;
-            const string name = a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
+            std::string message;
+            const auto name = a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
             if (m.fromsys != 0) {
               message = a()->network_name();
               message += ": ";
@@ -1101,7 +1098,7 @@ void readmail(bool newmail_only) {
           break;
         }
         bout << "\r\n|#2Filename: ";
-        string fileName = bin.input_path(50);
+        auto fileName = bin.input_path(50);
         if (!fileName.empty()) {
           bout.nl();
           bout << "|#5Allow editing? ";

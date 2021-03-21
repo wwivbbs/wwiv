@@ -18,5 +18,9 @@
 /**************************************************************************/
 #include "local_io/null_local_io.h"
 
+namespace wwiv::local::io {
+
 NullLocalIO::NullLocalIO() = default;
 NullLocalIO::~NullLocalIO() = default;
+
+}

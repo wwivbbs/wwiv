@@ -41,7 +41,6 @@
 #include "fmt/format.h"
 #include "sdk/chains.h"
 #include "sdk/config.h"
-#include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/files/files.h"
@@ -50,7 +49,6 @@
 
 namespace wwiv::bbs::menus {
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -64,8 +62,8 @@ using namespace wwiv::strings;
 /* ---------------------------------------------------------------------- */
 
 // ToDO(rushfan): Move this to some place like menu_utils.cpp/h
-static void MenuSysopLog(const string& msg) {
-  const string log_message = StrCat("*MENU* : ", msg);
+static void MenuSysopLog(const std::string& msg) {
+  const std::string log_message = StrCat("*MENU* : ", msg);
   sysoplog() << log_message;
   bout << log_message << wwiv::endl;
 }

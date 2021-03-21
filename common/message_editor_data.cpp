@@ -21,7 +21,6 @@
 #include "core/strings.h"
 #include <string>
 
-using std::string;
 using namespace wwiv::strings;
 
 namespace wwiv::common {

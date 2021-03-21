@@ -29,8 +29,6 @@
 
 using std::chrono::system_clock;
 using std::chrono::time_point;
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::strings;
@@ -43,8 +41,8 @@ public:
   }
 
   const time_point<system_clock> now;
-  const string contents;
-  const string filename;
+  const std::string contents;
+  const std::string filename;
   InMemoryTransferFile file;
   std::filesystem::path full_filename;
   FileHelper file_helper_;
@@ -127,7 +125,7 @@ TEST_F(TransferFileTest, WFileTest_Read) {
 }
 
 TEST_F(TransferFileTest, WFileTest_Write) {
-  const string empty_filename = StrCat(filename, "_empty");
+  const std::string empty_filename = StrCat(filename, "_empty");
   const auto empty_file_fullpath = file_helper_.CreateTempFilePath(empty_filename);
   {
     WFileTransferFile wfile_file(empty_filename, std::make_unique<File>(empty_file_fullpath));

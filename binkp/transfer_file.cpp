@@ -28,17 +28,16 @@
 
 using std::chrono::seconds;
 using std::chrono::system_clock;
-using std::string;
 using namespace wwiv::strings;
 
 namespace wwiv::net {
 
-TransferFile::TransferFile(string filename, time_t timestamp, uint32_t crc)
+TransferFile::TransferFile(std::string filename, time_t timestamp, uint32_t crc)
   : filename_(std::move(filename)), timestamp_(timestamp), crc_(crc) {}
 
 TransferFile::~TransferFile() = default;
 
-string TransferFile::as_packet_data(int size, int offset) const {
+std::string TransferFile::as_packet_data(int size, int offset) const {
   auto dataline = fmt::format("{} {} {} {}", filename_, size, timestamp_, offset);
   if (crc_ != 0) {
     dataline += fmt::sprintf(" %08X", crc_);
@@ -67,7 +66,7 @@ bool InMemoryTransferFile::GetChunk(char* chunk, int start, int size) {
 }
 
 bool InMemoryTransferFile::WriteChunk(const char* chunk, int size) {
-  contents_.append(string(chunk, size));
+  contents_.append(std::string(chunk, size));
   return true;
 }
 

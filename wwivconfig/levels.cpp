@@ -25,24 +25,21 @@
 #include "localui/wwiv_curses.h"
 #include "sdk/vardec.h"
 #include <memory>
-#include <string>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
+using namespace wwiv::local::ui;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static constexpr int MAX_SL = 255;
 static constexpr int MIN_SL = 0;
 
-static vector<HelpItem> create_extra_help_items() {
-  vector<HelpItem> help_items = {{"J", "Jump"}};
+static std::vector<HelpItem> create_extra_help_items() {
+  std::vector<HelpItem> help_items = {{"J", "Jump"}};
   return help_items;
 }
 
 static uint8_t JumpToSl(CursesWindow* window) {
-  vector<ListBoxItem> items;
+  std::vector<ListBoxItem> items;
   for (int i = MIN_SL; i < MAX_SL; i++) {
     items.emplace_back(fmt::format("SL #{}", i), 0, i);
   }
@@ -119,7 +116,7 @@ void sec_levs(Config& config) {
       items.window()->Refresh();
     } break;
     case 'J': {
-      cursl = JumpToSl(items.window());;
+      cursl = JumpToSl(items.window());
     } break;
     case 'Q':
       return;

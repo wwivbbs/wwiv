@@ -25,8 +25,6 @@
 #include "sdk/value/uservalueprovider.h"
 #include "sdk/value/valueprovider.h"
 
-using std::string;
-using std::to_string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::value;
@@ -47,7 +45,8 @@ public:
   std::string lexeme;
 };
 
-static std::optional<pipe_expr_token_t> parse_string(string::const_iterator& it, const string::const_iterator& end) {
+static std::optional<pipe_expr_token_t> parse_string(std::string::const_iterator& it,
+                                                     const std::string::const_iterator& end) {
   if (*it != '"') {
     LOG(ERROR) << "Parse String called without string!";
     return std::nullopt;
@@ -68,7 +67,8 @@ static std::optional<pipe_expr_token_t> parse_string(string::const_iterator& it,
   return std::nullopt;
 }
 
-static std::optional<pipe_expr_token_t> parse_number(string::const_iterator& it, const string::const_iterator& end) {  
+static std::optional<pipe_expr_token_t> parse_number(std::string::const_iterator& it,
+                                                     const std::string::const_iterator& end) {  
   std::string s;
   for (; it != end && isdigit(*it); ++it) {
     const auto c = *it;
@@ -83,8 +83,8 @@ static std::optional<pipe_expr_token_t> parse_number(string::const_iterator& it,
   return std::make_optional(e);
 }
 
-std::optional<pipe_expr_token_t> PipeEval::parse_variable(string::const_iterator& it,
-                                                          const string::const_iterator& end) {  
+std::optional<pipe_expr_token_t> PipeEval::parse_variable(std::string::const_iterator& it,
+                                                          const std::string::const_iterator& end) {  
   std::string s;
   for (; it != end && (isalpha(*it) || *it == '.' || *it == '_'); ++it) {
     s.push_back(*it);

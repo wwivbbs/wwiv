@@ -34,11 +34,6 @@
 #include <sstream>
 #include <string>
 
-using std::endl;
-using std::map;
-using std::string;
-using std::stringstream;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
@@ -46,7 +41,7 @@ using namespace wwiv::sdk;
 namespace wwiv::sdk {
 
 // [[ VisibleForTesting ]]
-bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* reg_no) {
+bool ParseBbsListNetLine(const std::string& ss, net_system_list_rec* con, int32_t* reg_no) {
   if (ss.empty() || ss[0] != '@') {
     // skip empty lines and those not starting with @.
     return false;
@@ -55,10 +50,10 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
   *reg_no = 0;
   VLOG(2) << ss;
 
-  for (auto iter = ss.begin(); iter != ss.end(); iter++) {
+  for (auto iter = ss.begin(); iter != ss.end(); ++iter) {
       switch (*iter) {
       case '@': {
-        con->sysnum = to_number<uint16_t>(string(++iter, ss.end()));
+        con->sysnum = to_number<uint16_t>(std::string(++iter, ss.end()));
       } break;
       case '&':
         con->other |= other_net_coord;
@@ -108,7 +103,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
       // Phone number
       case '*': {
         ++iter;  // skip past *
-        string phone_number;
+        std::string phone_number;
         while (iter != ss.end() && !isspace(*iter)) {
           phone_number.push_back(*iter++);
         }
@@ -116,12 +111,12 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
       }
       break;
       case '#': {
-        con->speed = to_number<uint16_t>(string(++iter, ss.end()));
+        con->speed = to_number<uint16_t>(std::string(++iter, ss.end()));
       } break;
       // Reg Number.
       case '[': {
         ++iter;  // skip past [
-        string reg_number;
+        std::string reg_number;
         while (iter != ss.end() && *iter != ']') {
           reg_number.push_back(*iter++);
         }
@@ -129,7 +124,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
       } break;
       case '\"': {
         ++iter;  // skip past first "
-        string name;
+        std::string name;
         while (iter != ss.end() && *iter != '\"') {
           name.push_back(*iter++);
         }
@@ -155,7 +150,7 @@ static bool ParseBbsListNetFile(
   }
 
   // A line will be of the format @node *phone options [reg] "name"
-  string line;
+  std::string line;
   while (bbs_list_file.ReadLine(&line)) {
     StringTrim(&line);
     net_system_list_rec node_config{};
@@ -226,9 +221,9 @@ BbsListNet BbsListNet::ParseBbsListNet(uint16_t net_node_number,
 // static 
 BbsListNet BbsListNet::ReadBbsDataNet(const std::filesystem::path& network_dir) {
   BbsListNet b;
-  vector<net_system_list_rec> system_list;
 
   if (auto file = DataFile<net_system_list_rec>(FilePath(network_dir, BBSDATA_NET))) {
+    std::vector<net_system_list_rec> system_list;
     file.ReadVector(system_list);
     for (const auto& s : system_list) {
       b.node_config_.emplace(s.sysnum, s);
@@ -248,8 +243,7 @@ BbsListNet::BbsListNet(std::initializer_list<net_system_list_rec> l) {
 BbsListNet::~BbsListNet() = default;
 
 std::optional<net_system_list_rec> BbsListNet::node_config_for(int node) const {
-  const auto iter = node_config_.find(static_cast<uint16_t>(node));
-  if (iter != end(node_config_)) {
+  if (const auto iter = node_config_.find(static_cast<uint16_t>(node)); iter != end(node_config_)) {
     return {iter->second};
   }
   return std::nullopt;

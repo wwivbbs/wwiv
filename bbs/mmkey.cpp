@@ -29,7 +29,7 @@
 #include <set>
 #include <string>
 
-using std::string;
+using namespace wwiv::local::io;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
@@ -65,16 +65,16 @@ static int max_sub_key(std::vector<usersubrec>& container) {
   return key;
 }
 
-string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
+std::string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
   unsigned char ch;
-  string cmd1;
+  std::string cmd1;
 
   do {
     do {
       ch = mmkey_getch();
       if (bListOption && (ch == RETURN || ch == SPACE)) {
         ch = upcase(ch);
-        return string(1, ch);
+        return std::string(1, ch);
       }
     } while ((ch <= ' ' || ch > 126) && !a()->sess().hangup());
     ch = upcase(ch);
@@ -129,7 +129,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
   return{};
 }
 
-string mmkey(std::set<char>& x) {
+std::string mmkey(std::set<char>& x) {
   std::set<char> xx;
   return mmkey(x, xx, false);
 }

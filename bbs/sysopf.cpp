@@ -62,12 +62,11 @@
 #include <memory>
 #include <string>
 
-using std::string;
-using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -602,7 +601,7 @@ void print_net_listing(bool bForcePause) {
               strcpy(s, csne.phone);
               const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
               const auto town_fn = fmt::sprintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne.phone));
-              string areacode;
+              std::string areacode;
               if (File::Exists(FilePath(regions_dir, town_fn))) {
                 auto town = fmt::sprintf("%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
                 areacode = describe_area_code_prefix(to_number<int>(csne.phone), to_number<int>(town));
@@ -615,7 +614,7 @@ void print_net_listing(bool bForcePause) {
               bout.bpla("|#7-----  ============  ---------------------------------------- === ----- --", &abort);
             }
           }
-          string line;
+          std::string line;
           if (cmdbit != NET_SEARCH_NOCONNECT) {
             line = fmt::sprintf("%5u%c %12s  %-40s %3d %5u %2d", csne.sysnum, bbstype, csne.phone,
                                 csne.name, csne.numhops, csne.forsys, csne.group);
@@ -657,7 +656,7 @@ void mailr() {
       do {
         User user;
         a()->users()->readuser(&user, m.touser);
-        const string unn = a()->names()->UserName(m.touser);
+        const auto unn = a()->names()->UserName(m.touser);
         bout << "|#9  To|#7: ";
         bout.Color(a()->GetMessageColor());
         bout << unn << wwiv::endl;

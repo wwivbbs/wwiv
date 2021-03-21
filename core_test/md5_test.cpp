@@ -19,13 +19,7 @@
 #include "gtest/gtest.h"
 
 #include "core/md5.h"
-#include <map>
-#include <string>
 #include <vector>
-
-using std::map;
-using std::string;
-using std::vector;
 
 TEST(Md5Test, Welcome) {
   EXPECT_EQ("f851256dff2a8825ad4af615111b6a4f", md5("WELCOME"));

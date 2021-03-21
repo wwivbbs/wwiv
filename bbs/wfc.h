@@ -15,14 +15,10 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_WFC_H__
-#define __INCLUDED_BBS_WFC_H__
+#ifndef INCLUDED_BBS_WFC_H
+#define INCLUDED_BBS_WFC_H
 
-#include <memory>
 #include "bbs/application.h"
-
-#include "localui/curses_io.h"
-#include "localui/curses_win.h"
 
 void wfc_cls(Application* a);
 
@@ -33,7 +29,7 @@ enum class wfc_events_t { exit, login, login_fast };
 
 class WFC {
 public:
-  WFC(Application* a);
+  explicit WFC(Application* a);
   virtual ~WFC();
 
   std::tuple<wfc_events_t, int> doWFCEvents();
@@ -49,4 +45,4 @@ private:
 
 }  // namespace wwiv::bbs
 
-#endif  // __INCLUDED_BBS_WFC_H__
+#endif

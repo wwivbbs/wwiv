@@ -25,7 +25,6 @@
 #include <iostream>
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -102,7 +101,7 @@ TEST(FileTest, Exists_TrailingSlash) {
 }
 
 TEST(FileTest, Length_Open) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
@@ -111,7 +110,7 @@ TEST(FileTest, Length_Open) {
 }
 
 TEST(FileTest, Length_NotOpen) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
@@ -119,7 +118,7 @@ TEST(FileTest, Length_NotOpen) {
 }
 
 TEST(FileTest, IsDirectory_NotOpen) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
@@ -129,7 +128,7 @@ TEST(FileTest, IsDirectory_NotOpen) {
 }
 
 TEST(FileTest, IsDirectory_Open) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   const auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
@@ -140,7 +139,7 @@ TEST(FileTest, IsDirectory_Open) {
 }
 
 TEST(FileTest, LastWriteTime_NotOpen) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   const auto now = time(nullptr);
   const auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
@@ -149,7 +148,7 @@ TEST(FileTest, LastWriteTime_NotOpen) {
 }
 
 TEST(FileTest, LastWriteTime_Open) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   time_t now = time(nullptr);
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
@@ -159,7 +158,7 @@ TEST(FileTest, LastWriteTime_Open) {
 }
 
 TEST(FileTest, Read) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
@@ -171,7 +170,7 @@ TEST(FileTest, Read) {
 }
 
 TEST(FileTest, GetName) {
-  static const string kFileName = test_info_->name();
+  static const std::string kFileName = test_info_->name();
   FileHelper helper;
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
   File file{path};
@@ -182,7 +181,7 @@ TEST(FileTest, EnsureTrailingSlash) {
   const auto single_slash = fmt::format("temp{}", File::pathSeparatorChar);
   const auto double_slash =
       fmt::format("temp{}{}", File::pathSeparatorChar, File::pathSeparatorChar);
-  const string no_slash = "temp";
+  const std::string no_slash = "temp";
 
   EXPECT_EQ(single_slash, File::EnsureTrailingSlash(single_slash));
 
@@ -212,7 +211,7 @@ TEST(FileTest, SetCurrentDirectory) {
 }
 
 TEST(FileTest, MakeAbsolutePath_Relative) {
-  static const string kFileName{test_info_->name()};
+  static const std::string kFileName{test_info_->name()};
   FileHelper helper;
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
@@ -221,7 +220,7 @@ TEST(FileTest, MakeAbsolutePath_Relative) {
 }
 
 TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute) {
-  static const string kFileName = test_info_->name();
+  static const std::string kFileName = test_info_->name();
   FileHelper helper;
   const auto expected = helper.CreateTempFile(kFileName, "Hello World");
 
@@ -230,7 +229,7 @@ TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute) {
 }
 
 TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute_Returning) {
-  static const string kFileName = test_info_->name();
+  static const std::string kFileName = test_info_->name();
   FileHelper helper;
   const auto expected = helper.CreateTempFile(kFileName, "Hello World");
 
@@ -239,7 +238,7 @@ TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute_Returning) {
 }
 
 TEST(FileTest, RealPath_Same) {
-  static const string kFileName = test_info_->name();
+  static const std::string kFileName = test_info_->name();
   FileHelper helper;
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
@@ -248,7 +247,7 @@ TEST(FileTest, RealPath_Same) {
 }
 
 TEST(FileTest, RealPath_Different) {
-  static const string kFileName{test_info_->name()};
+  static const std::string kFileName{test_info_->name()};
   FileHelper helper;
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
@@ -296,7 +295,7 @@ TEST(FileTest, Stream) {
 }
 
 TEST(FileTest, IsOpen_Open) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   const auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
@@ -315,7 +314,7 @@ TEST(FileTest, IsOpen_NotOpen) {
 }
 
 TEST(FileTest, Seek) {
-  static const string kContents = "0123456789";
+  static const std::string kContents = "0123456789";
   FileHelper helper;
   const auto path = helper.CreateTempFile(test_info_->name(), kContents);
   File file(path);
@@ -335,7 +334,7 @@ TEST(FileTest, Seek) {
 }
 
 TEST(FileTest, CurrentPosition) {
-  static const string kContents = "0123456789";
+  static const std::string kContents = "0123456789";
   FileHelper helper;
   const auto path = helper.CreateTempFile(test_info_->name(), kContents);
   File file(path);
@@ -406,7 +405,7 @@ TEST(FileTest, MoveFile) {
 }
 
 TEST(FileTest, Remove_String) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   ASSERT_TRUE(File::Exists(path));
@@ -415,7 +414,7 @@ TEST(FileTest, Remove_String) {
 }
 
 TEST(FileTest, Remove_Path) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   const auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   ASSERT_TRUE(File::Exists(path));
@@ -432,7 +431,7 @@ TEST(FileTest, Free) {
 }
 
 TEST(FileTest, Move_Ctor) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
 
@@ -450,7 +449,7 @@ TEST(FileTest, Move_Ctor) {
 }
 
 TEST(FileTest, Move_Operator) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
 

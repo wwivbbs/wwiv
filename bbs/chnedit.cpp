@@ -25,17 +25,17 @@
 #include "bbs/utility.h"
 #include "common/com.h"
 #include "common/input.h"
-#include "common/pause.h"
 #include "core/datafile.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/chains.h"
-#include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 
-using std::string;
+#include <string>
+#include <vector>
+
 using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -44,7 +44,7 @@ using namespace wwiv::strings;
 
 void delete_chain(size_t chain_num);
 
-static string chaindata(int chain_num) {
+static std::string chaindata(int chain_num) {
   const auto& c = a()->chains->at(chain_num);
   return fmt::sprintf("|#2%2d |#1%-32.32s  |#5%-35.35s", chain_num,
                       stripcolors(c.description), c.filename);
@@ -148,7 +148,7 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
 }
 
 static std::string chain_exec_mode_to_string(const chain_exec_mode_t& t) {
-  std::vector<string> names{"|#2DOOR32 (Socket)", "|#1Emulate DOS Interrupts", "|#5SyncFoss", "|#3STDIO", "|#5NetFoss"};
+  std::vector<std::string> names{"|#2DOOR32 (Socket)", "|#1Emulate DOS Interrupts", "|#5SyncFoss", "|#3STDIO", "|#5NetFoss"};
   try {
     return names.at(static_cast<size_t>(t));
   } catch (std::out_of_range&) {

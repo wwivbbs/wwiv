@@ -45,7 +45,6 @@
 #include <set>
 #include <string>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -217,7 +216,7 @@ void do_chains() {
 
   auto done  = false;
   auto start  = 0;
-  string ss;
+  std::string ss;
   do {
     show_chains(&mapp, map);
     a()->tleft(true);
@@ -233,8 +232,7 @@ void do_chains() {
     } else {
       ss = bin.input_upper(3);
     }
-    const auto chain_num = to_number<int>(ss);
-    if (chain_num > 0 && chain_num <= mapp) {
+    if (const auto chain_num = to_number<int>(ss); chain_num > 0 && chain_num <= mapp) {
       bout << "\r\n|#6Please wait...\r\n";
       run_chain(map[chain_num - 1]);
     } else if (ss == "Q") {

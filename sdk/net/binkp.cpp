@@ -21,16 +21,8 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include <map>
-#include <memory>
-#include <sstream>
 #include <string>
 
-using std::endl;
-using std::map;
-using std::string;
-using std::stringstream;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
@@ -39,23 +31,23 @@ namespace wwiv::sdk {
 
 // [[ VisibleForTesting ]]
 std::optional<std::tuple<std::string, binkp_session_config_t>>
-ParseBinkConfigLine(const string& line) {
+ParseBinkConfigLine(const std::string& line) {
   // A line will be of the format @node host:port
   if (line.empty() || line[0] != '@') {
     // skip empty lines and those not starting with @.
     return std::nullopt;
   }
   
-  stringstream stream(line);
-  string node_str;
+  std::stringstream stream(line);
+  std::string node_str;
   stream >> node_str;
   auto node = node_str.substr(1);
-  string host_port_str;
+  std::string host_port_str;
   stream >> host_port_str;
 
   auto host = host_port_str;
   uint16_t port = 24554;  // default port
-  if (host_port_str.find(':') != string::npos) {
+  if (host_port_str.find(':') != std::string::npos) {
     auto host_port = SplitString(host_port_str, ":");
     host = host_port[0];
     port = to_number<uint16_t>(host_port[1]);
@@ -72,7 +64,7 @@ static bool ParseAddressesFile(std::map<std::string, binkp_session_config_t>* no
   TextFile node_config_file(FilePath(network_dir, "binkp.net"), "rt");
   if (node_config_file.IsOpen()) {
     // Only load the configuration file if it exists.
-    string line;
+    std::string line;
     while (node_config_file.ReadLine(&line)) {
       StringTrim(&line);
       auto r = ParseBinkConfigLine(line);

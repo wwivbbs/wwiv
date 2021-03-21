@@ -27,9 +27,6 @@
 #include "sdk/net/net.h"
 #include <string>
 
-using std::endl;
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 

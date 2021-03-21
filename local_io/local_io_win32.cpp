@@ -29,15 +29,13 @@
 #include <conio.h>
 #include <memory>
 #include <string>
-#include <vector>
+
+namespace wwiv::local::io {
 
 // local functions
 bool HasKeyBeenPressed(HANDLE in);
 unsigned char GetKeyboardChar();
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using std::chrono::milliseconds;
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -276,18 +274,18 @@ void Win32ConsoleIO::Putch(unsigned char ch) {
 }
 
 // Outputs a string to the local screen.
-void Win32ConsoleIO::Puts(const string& text) {
+void Win32ConsoleIO::Puts(const std::string& text) {
   for (auto ch : text) {
     Putch(ch);
   }
 }
 
-void Win32ConsoleIO::PutsXY(int x, int y, const string& text) {
+void Win32ConsoleIO::PutsXY(int x, int y, const std::string& text) {
   GotoXY(x, y);
   FastPuts(text);
 }
 
-void Win32ConsoleIO::PutsXYA(int x, int y, int a, const string& text) {
+void Win32ConsoleIO::PutsXYA(int x, int y, int a, const std::string& text) {
   GotoXY(x, y);
 
   const auto old_color = curatr();
@@ -297,7 +295,7 @@ void Win32ConsoleIO::PutsXYA(int x, int y, int a, const string& text) {
   curatr(old_color);
 }
 
-void Win32ConsoleIO::FastPuts(const string& text) {
+void Win32ConsoleIO::FastPuts(const std::string& text) {
   // This RAPIDLY outputs ONE LINE to the screen only and is not exactly stable.
   DWORD cb = 0;
 
@@ -628,8 +626,7 @@ void Win32ConsoleIO::EditLine(char* in, int len, AllowedKeys allowed_keys,
   auto pos = 0;
   auto insert = false;
   do {
-    auto ch = GetChar();
-    if (ch == 0 || ch == 224) {
+    if (auto ch = GetChar(); ch == 0 || ch == 224) {
       ch = GetChar();
       switch (ch) {
       case F1:
@@ -791,4 +788,6 @@ void Win32ConsoleIO::UpdateNativeTitleBar(const std::string& system_name, int in
   // Set console title
   const auto s = StrCat("WWIV Node ", instance_number, " (", system_name, ")");
   SetConsoleTitle(s.c_str());
+}
+
 }

@@ -33,7 +33,6 @@
 #include "common/input.h"
 #include "common/message_editor_data.h"
 #include "common/output.h"
-#include "common/pause.h"
 #include "common/quote.h"
 #include "common/workspace.h"
 #include "core/strings.h"
@@ -47,7 +46,6 @@
 
 #include <string>
 
-using std::string;
 using namespace std::chrono;
 using namespace wwiv::bbs;
 using namespace wwiv::common;
@@ -66,7 +64,7 @@ using namespace wwiv::strings;
 void DisplayHorizontalBar(int width, int color) {
   const auto ch = (okansi()) ? '\xC4' : '-';
   bout.Color(color);
-  bout << string(width, ch);
+  bout << std::string(width, ch);
   bout.nl();
 }
 
@@ -275,7 +273,7 @@ void text_edit() {
   bout.nl();
   bout << "|#9Enter Filename: ";
   const auto filename = bin.input_filename(12);
-  if (filename.find(".log") != string::npos || !okfn(filename)) {
+  if (filename.find(".log") != std::string::npos || !okfn(filename)) {
     return;
   }
   sysoplog() << "@ Edited: " << filename;

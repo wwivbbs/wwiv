@@ -23,20 +23,11 @@
 #include "core/strings.h"
 #include "sdk/config430.h"
 
-#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -45,17 +36,17 @@ using namespace wwiv::strings;
 namespace wwiv::wwivutil {
 
 static int show_version(const Config& config) {
-  cout << "5.2 Versioned Config    : " << std::boolalpha << config.versioned_config_dat()
+  std::cout << "5.2 Versioned Config    : " << std::boolalpha << config.versioned_config_dat()
        << std::endl;
-  cout << "Written By WWIV Version : " << config.written_by_wwiv_num_version() << std::endl;
-  cout << "Config Revision #       : " << config.config_revision_number() << std::endl;
+  std::cout << "Written By WWIV Version : " << config.written_by_wwiv_num_version() << std::endl;
+  std::cout << "Config Revision #       : " << config.config_revision_number() << std::endl;
 
   return 0;
 }
 
 static bool set_version(Config& config, uint16_t wwiv_ver, uint32_t revision) {
   if (!config.versioned_config_dat()) {
-    cout << "Can only set the wwiv_version and config revision on a 5.1 or higher versioned "
+    std::cout << "Can only set the wwiv_version and config revision on a 5.1 or higher versioned "
             "config.dat"
          << std::endl;
     return false;
@@ -63,19 +54,19 @@ static bool set_version(Config& config, uint16_t wwiv_ver, uint32_t revision) {
 
   auto& h = config.header();
   if (wwiv_ver >= 500) {
-    cout << "setting wwiv_ver to " << wwiv_ver << std::endl;
+    std::cout << "setting wwiv_ver to " << wwiv_ver << std::endl;
     h.written_by_wwiv_num_version = wwiv_ver;
   }
   if (revision > 0) {
-    cout << "setting revision to " << revision << std::endl;
+    std::cout << "setting revision to " << revision << std::endl;
     h.config_revision_number = revision;
   }
 
   if (wwiv_ver >= 500 || revision > 0) {
-    cout << "Wrote Config.dat" << std::endl;
+    std::cout << "Wrote Config.dat" << std::endl;
     config.Save();
   }
-  cout << "Nothing changed; Nothing to do." << std::endl << std::endl;
+  std::cout << "Nothing changed; Nothing to do." << std::endl << std::endl;
   return false;
 }
 
@@ -92,7 +83,7 @@ public:
   }
   int Execute() override {
     if (remaining().empty()) {
-      std::cout << GetUsage() << GetHelp() << endl;
+      std::cout << GetUsage() << GetHelp() << std::endl;
       return 2;
     }
     const auto set_or_get = ToStringLowerCase(remaining().front());
@@ -103,7 +94,7 @@ public:
     if (set_or_get == "set") {
       if (!set_version(*this->config()->config(), static_cast<uint16_t>(iarg("wwiv_version")),
                        iarg("revision"))) {
-        std::cout << GetUsage() << GetHelp() << endl;
+        std::cout << GetUsage() << GetHelp() << std::endl;
         return 1;
       }
       return 0;
@@ -131,7 +122,7 @@ public:
   }
   int Execute() override {
     if (remaining().empty()) {
-      std::cout << GetUsage() << GetHelp() << endl;
+      std::cout << GetUsage() << GetHelp() << std::endl;
       return 2;
     }
     const auto out_format = ToStringLowerCase(remaining().front());
@@ -144,7 +135,7 @@ public:
     if (out_format == "json") {
       if (!set_version(*this->config()->config(), static_cast<uint16_t>(iarg("wwiv_version")),
                        iarg("revision"))) {
-        std::cout << GetUsage() << GetHelp() << endl;
+        std::cout << GetUsage() << GetHelp() << std::endl;
         return 1;
       }
       return 0;
@@ -160,8 +151,8 @@ public:
 };
 
 bool ConfigCommand::AddSubCommands() {
-  add(make_unique<ConfigVersionCommand>());
-  add(make_unique<ConfigConvertCommand>());
+  add(std::make_unique<ConfigVersionCommand>());
+  add(std::make_unique<ConfigConvertCommand>());
   return true;
 }
 

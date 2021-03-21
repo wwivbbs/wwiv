@@ -28,18 +28,16 @@
 #include "wwivconfig/toggles.h"
 #include "wwivconfig/utility.h"
 #include <cstdint>
-#include <memory>
 #include <string>
 
-using std::unique_ptr;
-using std::string;
+using namespace wwiv::local::ui;
 using namespace wwiv::strings;
 
-static string print_time(uint16_t t) {
+static std::string print_time(uint16_t t) {
   return fmt::sprintf("%02d:%02d", t / 60, t % 60);
 }
 
-static uint16_t get_time(const string& s) {
+static uint16_t get_time(const std::string& s) {
   if (s[2] != ':') {
     return std::numeric_limits<uint16_t>::max();
   }

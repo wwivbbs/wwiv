@@ -21,13 +21,9 @@
 #include "fsed/model.h"
 
 #include "gtest/gtest.h"
-#include <iostream>
 #include <memory>
 #include <string>
 
-using std::cout;
-using std::endl;
-using std::string;
 using namespace wwiv::stl;
 
 class FakeView : public wwiv::fsed::editor_viewport_t {
@@ -55,7 +51,7 @@ protected:
     ed.set_view(view);
   }
 
-  void add(string s) {
+  void add(const std::string& s) {
     for (const auto& c : s) {
       if (c == '\n') {
         ed.enter();

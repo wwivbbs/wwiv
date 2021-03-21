@@ -39,8 +39,6 @@
 #include <vector>
 
 using cereal::make_nvp;
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -69,7 +67,7 @@ bool Dirs::set_dirs(const std::vector<directory_t>& dirs) {
   return true;
 }
 
-vector<directoryrec_422_t> read_dirs(const std::filesystem::path& datadir) {
+std::vector<directoryrec_422_t> read_dirs(const std::filesystem::path& datadir) {
   DataFile<directoryrec_422_t> file(FilePath(datadir, DIRS_DAT));
   if (!file) {
     // LOG(ERROR) << file.file() << " NOT FOUND.";
@@ -82,7 +80,7 @@ vector<directoryrec_422_t> read_dirs(const std::filesystem::path& datadir) {
   return dirs;
 }
 
-bool write_dirs(const std::filesystem::path& datadir, const vector<directoryrec_422_t>& dirs) {
+bool write_dirs(const std::filesystem::path& datadir, const std::vector<directoryrec_422_t>& dirs) {
   DataFile<directoryrec_422_t> file(FilePath(datadir, DIRS_DAT),
                                         File::modeBinary | File::modeReadWrite |
                                             File::modeCreateFile | File::modeTruncate,

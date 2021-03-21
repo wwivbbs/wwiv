@@ -32,7 +32,6 @@
 #include "local_io/wconstants.h"
 #include "common/output.h"
 #include "bbs/xfer.h"
-#include "sdk/user.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -40,8 +39,6 @@
 #include "sdk/names.h"
 #include "sdk/filenames.h"
 
-using std::string;
-using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;

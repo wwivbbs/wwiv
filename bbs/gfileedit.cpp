@@ -38,13 +38,12 @@
 #include <string>
 #include <vector>
 
-using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static string gfiledata(const gfile_dir_t& r, int nSectionNum) {
+static std::string gfiledata(const gfile_dir_t& r, int nSectionNum) {
   return fmt::sprintf("|#2%2d |#1%-40s  |#2%-8s |#9%-3d |#5%-23s",
           nSectionNum, stripcolors(r.name), r.filename, r.maxfiles, r.acs);
 }

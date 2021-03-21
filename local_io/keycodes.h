@@ -19,6 +19,8 @@
 #ifndef INCLUDED_LOCAL_IO_KEYCODES_H
 #define INCLUDED_LOCAL_IO_KEYCODES_H
 
+namespace wwiv::local::io {
+
 constexpr int SPACE = 32;
 constexpr int RETURN = 13;
 constexpr int SOFTRETURN = 10;
@@ -252,5 +254,7 @@ constexpr int COMMAND_AW = (AW + 256);
 constexpr int COMMAND_AX = (AX + 256);
 constexpr int COMMAND_AY = (AY + 256);
 constexpr int COMMAND_AZ = (AZ + 256);
+
+}
 
 #endif

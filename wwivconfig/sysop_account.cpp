@@ -31,14 +31,11 @@
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
 #include "wwivconfig/utility.h"
-#include <memory>
 #include <string>
 #include <vector>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::local::ui;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -111,8 +108,7 @@ void create_sysop_account(Config& config) {
     names.Save();
   }
 
-  statusrec_t statusrec{};
-  if (read_status(config.datadir(), statusrec)) {
+  if (statusrec_t statusrec{}; read_status(config.datadir(), statusrec)) {
     statusrec.users++;
     save_status(config.datadir(), statusrec);
   }

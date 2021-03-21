@@ -20,13 +20,9 @@
 #include "core/strings.h"
 #include "localui/edit_items.h"
 #include "localui/input.h"
-#include <memory>
-#include <string>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::local::ui;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

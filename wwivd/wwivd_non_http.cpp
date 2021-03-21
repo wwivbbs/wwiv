@@ -42,8 +42,6 @@
 
 namespace wwiv::wwivd {
 
-using std::map;
-using std::string;
 using namespace std::chrono;
 using namespace std::chrono_literals;
 using namespace wwiv::core;
@@ -52,13 +50,13 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-string to_string(const wwivd_matrix_entry_t& e) {
+std::string to_string(const wwivd_matrix_entry_t& e) {
   std::ostringstream ss;
   ss << "[" << e.key << "] " << e.name << " (" << e.description << ")";
   return ss.str();
 }
 
-string to_string(const std::vector<wwivd_matrix_entry_t>& elements) {
+std::string to_string(const std::vector<wwivd_matrix_entry_t>& elements) {
   std::ostringstream ss;
   for (const auto& e : elements) {
     ss << "{" << to_string(e) << "}" << std::endl;
@@ -67,7 +65,7 @@ string to_string(const std::vector<wwivd_matrix_entry_t>& elements) {
 }
 
 std::string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
-  string out;
+  std::string out;
 
   for (auto it = tmpl.begin(); it != tmpl.end(); ++it) {
     if (*it == '@') {
@@ -99,11 +97,11 @@ std::filesystem::path node_file(const Config& config, ConnectionType ct, int nod
 static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
                        const std::string& working_dir, const std::shared_ptr<NodeManager>& nodes,
                        int node_number, int sock, ConnectionType connection_type,
-                       const string& remote_peer) {
+                       const std::string& remote_peer) {
   const auto pid = fmt::format("[{}] ", get_pid());
   nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
 
-  const map<char, string> params = {{'N', std::to_string(node_number)}, {'H', std::to_string(sock)}};
+  const std::map<char, std::string> params = {{'N', std::to_string(node_number)}, {'H', std::to_string(sock)}};
 
   // Reset the socket back to blocking mode
   VLOG(2) << "Setting blocking mode.";
@@ -122,7 +120,7 @@ static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
 static bool launch_node(const Config& config, const wwivd_config_t& wc, const std::string& raw_cmd,
                         const std::string& working_dir, const std::shared_ptr<NodeManager>& nodes,
                         int node_number, int sock, ConnectionType connection_type,
-                        const string& remote_peer) {
+                        const std::string& remote_peer) {
   ScopeExit at_exit([=] {
     closesocket(sock);
     VLOG(2) << "closed socket: " << sock;
@@ -253,7 +251,7 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const wwivd_config_t& c) {
 // ReSharper disable once CppMemberFunctionMayBeConst
 ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedConnection() {
   const auto sock = r.client_socket;
-  string remote_peer;
+  std::string remote_peer;
   const auto& b = data.c->blocking;
 
   // We fail open when we can't get the remote peer
@@ -354,8 +352,7 @@ ConnectionHandler::MailerModeResult ConnectionHandler::DoMailerMode() {
   auto num_escapes = 0;
   while (system_clock::now() < end && num_escapes < 2) {
     conn.send(".", 1s);
-    auto received = conn.receive_upto(1, 1s);
-    if (!received.empty() && received.front() == 27) {
+    if (auto received = conn.receive_upto(1, 1s); !received.empty() && received.front() == 27) {
       ++num_escapes;
     }
   }
@@ -386,8 +383,7 @@ void ConnectionHandler::HandleConnection() {
     const auto connection_type = connection_type_for(*data.c, r.port);
 
     if (data.c->blocking.mailer_mode && connection_type == ConnectionType::TELNET) {
-      const auto mailer_result = DoMailerMode();
-      if (mailer_result == MailerModeResult::DENY) {
+      if (const auto mailer_result = DoMailerMode(); mailer_result == MailerModeResult::DENY) {
         LOG(INFO) << "DENY (from MailerMode, didn't press ESC twice)";
         closesocket(sock);
         return;

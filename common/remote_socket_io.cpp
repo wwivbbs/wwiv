@@ -45,11 +45,6 @@ typedef int socklen_t;
 
 namespace wwiv::common {
 
-using std::lock_guard;
-using std::make_unique;
-using std::string;
-using std::thread;
-using std::unique_ptr;
 using std::chrono::milliseconds;
 using wwiv::core::ScopeExit;
 using wwiv::os::sleep_for;
@@ -59,7 +54,7 @@ using namespace wwiv::strings;
 // N.B. mutex and yield are defines in Solaris.
 
 struct socket_error final : std::runtime_error {
-  explicit socket_error(const string& message) : std::runtime_error(message) {}
+  explicit socket_error(const std::string& message) : std::runtime_error(message) {}
 };
 
 static bool socket_avail(SOCKET sock, int seconds) {
@@ -224,7 +219,7 @@ unsigned int RemoteSocketIO::write(const char* buffer, unsigned int count, bool 
     return 0;
   }
 
-  const auto tmp_buffer = make_unique<char[]>(count * 2 + 100);
+  const auto tmp_buffer = std::make_unique<char[]>(count * 2 + 100);
   memset(tmp_buffer.get(), 0, count * 2 + 100);
   int nCount = count;
 
@@ -268,13 +263,13 @@ bool RemoteSocketIO::incoming() {
     return false;
   }
 
-  lock_guard<std::mutex> lock(mu_);
+  std::lock_guard<std::mutex> lock(mu_);
   return !queue_.empty();
 }
 
 void RemoteSocketIO::StopThreads() {
   {
-    lock_guard<std::mutex> lock(threads_started_mu_);
+    std::lock_guard<std::mutex> lock(threads_started_mu_);
     if (!threads_started_) {
       return;
     }
@@ -298,7 +293,7 @@ void RemoteSocketIO::StopThreads() {
 
 void RemoteSocketIO::StartThreads() {
   {
-    lock_guard<std::mutex> lock(threads_started_mu_);
+    std::lock_guard<std::mutex> lock(threads_started_mu_);
     if (threads_started_) {
       return;
     }
@@ -306,7 +301,7 @@ void RemoteSocketIO::StartThreads() {
   }
 
   stop_.store(false);
-  read_thread_ = thread(&RemoteSocketIO::InboundTelnetProc, this);
+  read_thread_ = std::thread(&RemoteSocketIO::InboundTelnetProc, this);
 }
 
 RemoteSocketIO::~RemoteSocketIO() {
@@ -358,7 +353,7 @@ bool RemoteSocketIO::Initialize() {
 
 void RemoteSocketIO::InboundTelnetProc() {
   constexpr size_t size = 4 * 1024;
-  const auto data = make_unique<char[]>(size);
+  const auto data = std::make_unique<char[]>(size);
   try {
     while (true) {
       if (stop_.load()) {
@@ -443,7 +438,7 @@ void RemoteSocketIO::AddStringToInputBuffer(int start, int end, const char* buff
     sleep_for(milliseconds(100));
   }
 
-  lock_guard<std::mutex> lock(mu_);
+  std::lock_guard<std::mutex> lock(mu_);
 
   if (binary_mode()) {
     for (auto i = start; i < end; i++) {
