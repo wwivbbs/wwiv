@@ -169,6 +169,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
   bout << "|#9Enter message now, you can use |#2" << maxli << "|#9 lines.\r\n";
   bout << "|#9Colors: ^P-0\003""11\003""22\003""33\003""44\003""55\003""66\003""77\003""88\003""99\003""0";
   bout.nl();
+  bout << "|#9Enter |#2/S|#9 at the start of a blank line to save your email.\r\n";
   bout << "|#9Enter |#2/Q|#9 to quote previous message, |#2/HELP|#9 for other editor commands.\r\n";
 
   bout.Color(7);
