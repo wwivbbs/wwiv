@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_DEFAULTS_H__
-#define __INCLUDED_BBS_DEFAULTS_H__
+#ifndef INCLUDED_BBS_DEFAULTS_H
+#define INCLUDED_BBS_DEFAULTS_H
 
 #include <string>
 
@@ -28,4 +28,4 @@ void enter_regnum();
 void defaults(bool& need_menu_reload);
 void config_scan_plus(int type);
 
-#endif  // __INCLUDED_BBS_DEFAULTS_H__
+#endif

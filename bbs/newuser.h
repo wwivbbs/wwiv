@@ -31,11 +31,12 @@ void input_state();
 void input_country();
 void input_zipcode();
 void input_sex();
-void input_age(wwiv::sdk::User* spUser);
+void input_age(wwiv::sdk::User* u);
 void input_comptype();
 void input_screensize();
-void input_pw(wwiv::sdk::User* pUser);
+void input_pw(wwiv::sdk::User* u);
 void input_ansistat();
+void input_callsign();
 void newuser();
 
 

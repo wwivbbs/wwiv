@@ -23,7 +23,9 @@
 #include "bbs/bbslist.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/defaults.h"
 #include "bbs/hop.h"
+#include "bbs/newuser.h"
 #include "bbs/sublist.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
@@ -224,6 +226,9 @@ Runs a WWIVbasic Script
   Pauses the screen, like 'pausescr()' in C code
 )",
                               MENU_CAT_SYS, [](MenuContext&) { bout.pausescr(); }));
+  //
+  // User commands
+  //
   m.emplace("ConfigUserMenuSet", MenuItem(R"(
 
   Takes the user into the user menu config so they can select which menuset
@@ -234,6 +239,51 @@ Runs a WWIVbasic Script
                                             context.need_reload = true;
                                           }));
 
+  m.emplace("user:menus", MenuItem(R"(
+  Takes the user into the user menu config so they can select which menuset
+  they want to use, etc...
+)",
+                                   MENU_CAT_USER, [](MenuContext& context) {
+                                     ConfigUserMenuSet();
+                                     context.need_reload = true;
+                                   }));
+
+  m.emplace("user:realname", MenuItem(R"(Allows the user to change their real name)", MENU_CAT_USER,
+                                      [](MenuContext&) { input_realname(); }));
+
+  m.emplace("user:dataphone", MenuItem(R"(Allows the user to change their data phone number)",
+                                       MENU_CAT_USER, [](MenuContext&) { input_dataphone(); }));
+
+  m.emplace("user:address", MenuItem(R"(Allows the user to change their address)", MENU_CAT_USER,
+                                     [](MenuContext&) { input_street(); }));
+
+  m.emplace("user:city", MenuItem(R"(Allows the user to change their city)", MENU_CAT_USER,
+                                  [](MenuContext&) { input_city(); }));
+
+  m.emplace("user:state", MenuItem(R"(Allows the user to change their state)", MENU_CAT_USER,
+                                   [](MenuContext&) { input_state(); }));
+
+  m.emplace("user:zipcode", MenuItem(R"(Allows the user to change their zipcode)", MENU_CAT_USER,
+                                     [](MenuContext&) { input_zipcode(); }));
+  m.emplace("user:country", MenuItem(R"(Allows the user to change their country)", MENU_CAT_USER,
+                                     [](MenuContext&) { input_country(); }));
+  m.emplace("user:gender", MenuItem(R"(Allows the user to change their gender)", MENU_CAT_USER,
+                                    [](MenuContext&) { input_sex(); }));
+  m.emplace("user:comptype", MenuItem(R"(Allows the user to change their computer type)",
+                                      MENU_CAT_USER, [](MenuContext&) { input_comptype(); }));
+  m.emplace("user:screensize", MenuItem(R"(Allows the user to change their screen size)",
+                                        MENU_CAT_USER, [](MenuContext&) { input_screensize(); }));
+  m.emplace("user:ansistate", MenuItem(R"(Allows the user to change their ANSI state)",
+                                       MENU_CAT_USER, [](MenuContext&) { input_ansistat(); }));
+  m.emplace("user:callsign", MenuItem(R"(Allows the user to change their HAM callsign)",
+                                      MENU_CAT_USER, [](MenuContext&) { input_callsign(); }));
+  m.emplace("user:editor", MenuItem(R"(Allows the user to change their default editor)",
+                                    MENU_CAT_USER, [](MenuContext&) { select_editor(); }));
+  m.emplace("user:qscan", MenuItem(R"(Allows the user to change their subs that are newscanned)",
+                                   MENU_CAT_USER, [](MenuContext&) { config_qscan(); }));
+  m.emplace("user:regnum",
+            MenuItem(R"(Allows the user to change their WWIV 4.x registration number)",
+                     MENU_CAT_USER, [](MenuContext&) { enter_regnum(); }));
   // ========================================================================
   // Menu
 
@@ -801,14 +851,14 @@ This command does not attempt to display a .msg/.ans file.
   Download a QWK Message Packet
 )",
                                 MENU_CAT_QWK, [](MenuContext&) { qwk::qwk_download(); }));
-  m.emplace("qwk:config_user", MenuItem(R"(
-  Configures User Settings for QWK
-)",
-                                MENU_CAT_QWK, [](MenuContext&) { qwk::qwk_config_user(); }));
-  m.emplace("qwk:config_sysop", MenuItem(R"(
-  Configures SysOp Settings for QWK
-)",
-                                MENU_CAT_QWK, [](MenuContext&) { qwk::qwk_config_sysop(); }));
+  m.emplace("qwk:config_user",
+            MenuItem(R"(
+  Configures User Settings for QWK)",
+                     MENU_CAT_QWK, [](MenuContext&) { qwk::qwk_config_user(); }));
+  m.emplace("qwk:config_sysop",
+            MenuItem(R"(
+  Configures SysOp Settings for QWK)",
+                     MENU_CAT_QWK, [](MenuContext&) { qwk::qwk_config_sysop(); }));
   
   ///////////////////////////////////////////////////////////////////////////
   /// 

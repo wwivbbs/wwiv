@@ -186,7 +186,7 @@ void input_realname() {
   } 
 }
 
-static void input_callsign() {
+void input_callsign() {
   bout.nl();
   bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
   const auto s = bin.input_upper(a()->user()->callsign(), 6);

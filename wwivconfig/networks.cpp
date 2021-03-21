@@ -340,8 +340,7 @@ public:
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("DI");
       list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-      auto result = list.Run();
-      if (result.type == ListBoxResultType::HOTKEY) {
+      if (auto result = list.Run(); result.type == ListBoxResultType::HOTKEY) {
         switch (result.hotkey) {
         case 'D': {
           if (items.empty()) {
@@ -474,11 +473,9 @@ public:
         } break;
         }
       } else if (result.type == ListBoxResultType::SELECTION) {
-        const auto node_with_at = items[result.selected].text();
-        if (node_with_at.size() > 1) {
+        if (const auto node_with_at = items[result.selected].text(); node_with_at.size() > 1) {
           const auto node = to_number<uint16_t>(node_with_at.substr(1));
-          const auto* c1 = callout.net_call_out_for(node);
-          if (c1 != nullptr) {
+          if (const auto* c1 = callout.net_call_out_for(node); c1 != nullptr) {
             auto c = *c1;
             edit_wwivnet_node_config(t_, c);
             callout.insert(node, c);
