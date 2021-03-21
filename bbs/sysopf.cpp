@@ -66,6 +66,7 @@ using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

@@ -23,7 +23,7 @@
 #include "localui/edit_items.h"
 #include "localui/input.h"
 
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 using namespace wwiv::strings;
 
 void toggles(wwiv::sdk::Config&, wwiv::sdk::system_toggles_t& t, CursesWindow*) {

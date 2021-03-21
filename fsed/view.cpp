@@ -30,6 +30,7 @@
 #include "local_io/keycodes.h"
 
 using namespace wwiv::common;
+using namespace wwiv::local::io;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 

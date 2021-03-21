@@ -32,6 +32,7 @@
 namespace wwiv::fsed {
 
 using namespace wwiv::common;
+using namespace wwiv::local::io;
 using namespace wwiv::stl;
 
 

@@ -43,7 +43,7 @@
 constexpr ssize_t MAX_NETWORKS = 100;
 
 using namespace wwiv::core;
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;

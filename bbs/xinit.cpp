@@ -66,6 +66,7 @@ using std::chrono::duration_cast;
 using std::chrono::seconds;
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;

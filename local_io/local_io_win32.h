@@ -23,6 +23,8 @@
 #include "local_io/local_io.h"
 #include <string>
 
+namespace wwiv::local::io {
+
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
 
@@ -83,5 +85,7 @@ private:
   unsigned long /* DWORD */ saved_input_mode_{0};
   coord_t original_size_{};
 };
+
+}
 
 #endif

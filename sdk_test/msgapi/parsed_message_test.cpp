@@ -18,15 +18,16 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "local_io/keycodes.h"
 #include "bbs/msgbase1.h"
+#include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/datetime.h"
 #include "core/textfile.h"
+#include "local_io/keycodes.h"
 #include "sdk/msgapi/parsed_message.h"
 
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;

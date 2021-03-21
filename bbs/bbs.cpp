@@ -38,6 +38,7 @@
 
 static Application* app_;
 
+using namespace wwiv::local::io;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 

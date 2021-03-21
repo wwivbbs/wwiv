@@ -32,7 +32,7 @@
 #include <vector>
 
 using namespace wwiv::core;
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 using namespace wwiv::strings;
 
 static void edit_arc(int arc_number, arcrec* a) {

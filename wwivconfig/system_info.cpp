@@ -30,7 +30,7 @@
 #include <cstdint>
 #include <string>
 
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 using namespace wwiv::strings;
 
 static std::string print_time(uint16_t t) {

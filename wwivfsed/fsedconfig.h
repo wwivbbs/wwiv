@@ -41,7 +41,7 @@ public:
   [[nodiscard]] std::filesystem::path help_path() const;  
   [[nodiscard]] std::filesystem::path file_path() const;
 
-  [[nodiscard]] LocalIO* CreateLocalIO() const;
+  [[nodiscard]] local::io::LocalIO* CreateLocalIO() const;
   [[nodiscard]] common::RemoteIO* CreateRemoteIO() const;
 
 private:

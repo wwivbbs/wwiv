@@ -25,7 +25,7 @@
 #include <chrono>
 #include <string>
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 // Curses implementation of screen display routines for wwivconfig.
 class CursesWindow final : public UIWindow {

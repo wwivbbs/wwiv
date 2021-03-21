@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <string>
 
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 using namespace wwiv::strings;
 
 void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& nc, CursesWindow*) {

@@ -33,7 +33,7 @@ using namespace std::chrono;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols,
                            int begin_y, int begin_x)

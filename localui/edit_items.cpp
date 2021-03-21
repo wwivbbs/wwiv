@@ -32,7 +32,7 @@
 
 using namespace wwiv::stl;
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 
 void EditItems::Run(const std::string& title) {

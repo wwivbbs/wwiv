@@ -22,7 +22,7 @@
 #include "localui/colors.h"
 #include <string>
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 // Generic implementation of screen display routines for wwivconfig.
 class UIWindow {

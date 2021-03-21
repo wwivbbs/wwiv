@@ -35,7 +35,7 @@
 #include <vector>
 
 using namespace wwiv::core;
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

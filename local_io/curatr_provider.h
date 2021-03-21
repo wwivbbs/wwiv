@@ -21,7 +21,7 @@
 
 #include <cstdint>
 
-namespace wwiv::local_io {
+namespace wwiv::local::io {
 
 class curatr_provider {
 public:

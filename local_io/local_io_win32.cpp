@@ -30,6 +30,8 @@
 #include <memory>
 #include <string>
 
+namespace wwiv::local::io {
+
 // local functions
 bool HasKeyBeenPressed(HANDLE in);
 unsigned char GetKeyboardChar();
@@ -786,4 +788,6 @@ void Win32ConsoleIO::UpdateNativeTitleBar(const std::string& system_name, int in
   // Set console title
   const auto s = StrCat("WWIV Node ", instance_number, " (", system_name, ")");
   SetConsoleTitle(s.c_str());
+}
+
 }

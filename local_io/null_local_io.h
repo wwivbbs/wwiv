@@ -21,6 +21,8 @@
 
 #include <string>
 
+namespace wwiv::local::io {
+
 class NullLocalIO final : public LocalIO {
 public:
   NullLocalIO();
@@ -54,5 +56,6 @@ public:
 private:
   void FastPuts(const std::string&) override {}
 };
+}
 
 #endif

@@ -22,7 +22,7 @@
 #include <map>
 #include <memory>
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 
 // Color Scheme

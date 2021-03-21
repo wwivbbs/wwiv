@@ -22,7 +22,6 @@
 #include "common/macro_context.h"
 #include "common/message_editor_data.h"
 #include "common/remote_io.h"
-#include "core/command_line.h"
 #include "local_io/local_io.h"
 #include "wwivfsed/fsedconfig.h"
 #include <filesystem>
@@ -32,6 +31,11 @@ namespace wwiv::wwivfsed {
 
 class FakeMacroContext final : public common::MacroContext {
 public:
+  FakeMacroContext() = delete;
+  FakeMacroContext(const FakeMacroContext&) = delete;
+  FakeMacroContext(FakeMacroContext&&) = delete;
+  FakeMacroContext& operator=(const FakeMacroContext&) = delete;
+  FakeMacroContext& operator=(FakeMacroContext&&) = delete;
   explicit FakeMacroContext(common::Context* context) : MacroContext(context) {}
   ~FakeMacroContext() override = default;
 
@@ -47,12 +51,17 @@ public:
 
 class FsedContext final : public common::Context {
 public:
-  explicit FsedContext(LocalIO* local_io) : sess_(local_io), config_("", {}) {}
+  FsedContext() = delete;
+  FsedContext(const FsedContext&) = delete;
+  FsedContext(FsedContext&&) = delete;
+  FsedContext& operator=(const FsedContext&) = delete;
+  FsedContext& operator=(FsedContext&&) = delete;
+  explicit FsedContext(local::io::LocalIO* local_io) : sess_(local_io), config_("", {}) {}
   ~FsedContext() override = default;
   [[nodiscard]] sdk::Config& config() override { return config_; }
   [[nodiscard]] sdk::User& u() override { return user_; }
   [[nodiscard]] common::SessionContext& session_context() override { return sess_; }
-  [[nodiscard]] bool mci_enabled() const override { return false; };
+  [[nodiscard]] bool mci_enabled() const override { return false; }
 
   sdk::User user_;
   common::SessionContext sess_;
@@ -61,6 +70,11 @@ public:
 
 class FsedApplication final {
 public:
+  FsedApplication() = delete;
+  FsedApplication(const FsedApplication&) = delete;
+  FsedApplication(FsedApplication&&) = delete;
+  FsedApplication& operator=(const FsedApplication&) = delete;
+  FsedApplication& operator=(FsedApplication&&) = delete;
   explicit FsedApplication(std::unique_ptr<FsedConfig> config);
   ~FsedApplication();
   int Run();
@@ -79,7 +93,7 @@ private:
   [[nodiscard]] FsedConfig& config() const { return *config_; }
 
   const std::unique_ptr<FsedConfig> config_;
-  std::unique_ptr<LocalIO> local_io_;
+  std::unique_ptr<local::io::LocalIO> local_io_;
   std::unique_ptr<common::RemoteIO> remote_io_;
   FsedContext context_;
   FakeMacroContext fake_macro_context_;

@@ -56,15 +56,19 @@ Enter your VOICE phone no. in the form:
 :*/
 
 namespace wwiv {
-namespace sdk {
-class Config;
-struct newuser_config_t;
-}
-namespace localui {
+namespace local {
+namespace ui {
 class CursesWindow;
 }
 }
 
-void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& nc, wwiv::localui::CursesWindow*);
+namespace sdk {
+class Config;
+struct newuser_config_t;
+}
+}
+
+void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& nc,
+                      wwiv::local::ui::CursesWindow*);
 
 #endif // INCLUDED_WWIVCONFIG_NEW_USER_H

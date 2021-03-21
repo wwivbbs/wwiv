@@ -103,10 +103,10 @@
 #include <unistd.h>
 #endif // _WIN32
 
+using namespace std::chrono;
 using namespace wwiv::common;
 using namespace wwiv::core;
-using namespace std::chrono;
-using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -167,11 +167,11 @@ Application::~Application() {
     comm_.reset(nullptr);
   }
   if (local_io_) {
-    local_io_->SetCursor(LocalIO::cursorNormal);
+    local_io_->SetCursor(wwiv::local::io::LocalIO::cursorNormal);
   }
   // CursesIO.
-  delete wwiv::localui::curses_out;
-  wwiv::localui::curses_out = nullptr;
+  delete wwiv::local::ui::curses_out;
+  wwiv::local::ui::curses_out = nullptr;
 }
 
 SessionContext& Application::sess() { return *session_context_; }
@@ -189,7 +189,7 @@ const Context& Application::context() const {
   return *context_;
 }
 
-LocalIO* Application::localIO() const { return local_io_.get(); }
+wwiv::local::io::LocalIO* Application::localIO() const { return local_io_.get(); }
 
 bool Application::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);

@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 enum class cell_type_t { label, edit_item };
 /**

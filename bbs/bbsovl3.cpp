@@ -23,6 +23,7 @@
 #include "local_io/keycodes.h"
 
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 
 bool do_sysop_command(int nCommandID) {
   unsigned int nKeyStroke;

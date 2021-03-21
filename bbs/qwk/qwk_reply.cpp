@@ -65,6 +65,7 @@
 using std::chrono::milliseconds;
 
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::os;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

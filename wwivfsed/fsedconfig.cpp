@@ -34,12 +34,13 @@
 #include "core/version.h"
 #include "local_io/local_io_curses.h"
 #include "localui/curses_io.h"
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 #include <unistd.h>
 #endif
 
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 
 namespace wwiv::wwivfsed {
 

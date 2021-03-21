@@ -34,7 +34,7 @@ static constexpr int MINIMUM_LISTBOX_HEIGHT = 10;
 static constexpr double RATIO_LISTBOX_HEIGHT = 0.8;
 static constexpr double RATIO_LISTBOX_WIDTH = 0.9;
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 
 static std::vector<HelpItem> StandardHelpItems() { return {{"Esc", "Exit"}}; }

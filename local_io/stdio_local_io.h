@@ -22,6 +22,8 @@
 
 #include <string>
 
+namespace wwiv::local::io {
+
 class StdioLocalIO final : public LocalIO {
 public:
   StdioLocalIO();
@@ -58,6 +60,7 @@ private:
   void FastPuts(const std::string& text) override;
 };
 
+}
 
 
 #endif

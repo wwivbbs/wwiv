@@ -21,7 +21,7 @@
 
 #include <filesystem>
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
   class UIWindow;
 }
 namespace wwiv::sdk {
@@ -32,12 +32,12 @@ namespace wwiv::wwivconfig::convert {
 enum class ShouldContinue { CONTINUE, EXIT };
 
 enum class config_upgrade_state_t { already_latest, upgraded };
-bool ensure_offsets_are_updated(localui::UIWindow* window, const sdk::Config430&);
-bool convert_config_424_to_430(localui::UIWindow* window, const std::filesystem::path& config_filename);
-config_upgrade_state_t convert_config_to_52(localui::UIWindow* window, const std::filesystem::path& config_filename);
+bool ensure_offsets_are_updated(local::ui::UIWindow* window, const sdk::Config430&);
+bool convert_config_424_to_430(local::ui::UIWindow* window, const std::filesystem::path& config_filename);
+config_upgrade_state_t convert_config_to_52(local::ui::UIWindow* window, const std::filesystem::path& config_filename);
 int final_wwiv_config_dat_version();
 
-ShouldContinue do_wwiv_ugprades(localui::UIWindow* window, const std::string& bbsdir);
+ShouldContinue do_wwiv_ugprades(local::ui::UIWindow* window, const std::string& bbsdir);
 
 }
 

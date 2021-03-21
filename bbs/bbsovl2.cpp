@@ -32,6 +32,7 @@
 #include "core/log.h"
 
 using std::chrono::milliseconds;
+using namespace wwiv::local::io;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 

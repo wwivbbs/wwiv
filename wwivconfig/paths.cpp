@@ -24,7 +24,7 @@
 #include <string>
 
 using namespace wwiv::core;
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 using namespace wwiv::strings;
 
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir, scriptdir, logdir */

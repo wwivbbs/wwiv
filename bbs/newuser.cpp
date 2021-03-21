@@ -1171,7 +1171,7 @@ void NewUserDataEntry(const newuser_config_t& nc) {
 
   bout.newline = false;
   const auto saved_topdata = a()->localIO()->topdata();
-  a()->localIO()->topdata(LocalIO::topdata_t::none);
+  a()->localIO()->topdata(wwiv::local::io::LocalIO::topdata_t::none);
   a()->UpdateTopScreen();
   auto letter = 'A';
   std::map<char, NewUserItem> nu_items;

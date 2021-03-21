@@ -22,7 +22,7 @@
 #include <iostream>
 #include <string>
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 
 int StdioWindow::GetChar() const { return std::cin.get(); }

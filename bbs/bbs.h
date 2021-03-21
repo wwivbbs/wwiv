@@ -27,7 +27,7 @@
 #include "bbs/application.h"
 
 // Function Prototypes
-Application* CreateSession(LocalIO* localIO);
+Application* CreateSession(wwiv::local::io::LocalIO* localIO);
 Application* a();
 
 #endif

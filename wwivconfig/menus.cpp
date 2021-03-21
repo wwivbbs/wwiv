@@ -38,7 +38,7 @@
 #include <vector>
 
 using namespace wwiv::core;
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
@@ -387,7 +387,7 @@ public:
     window->GotoXY(x_, y_);
     const auto ch = window->GetChar();
     window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
+    if (ch == KEY_ENTER || ch == wwiv::local::io::TAB || ch == wwiv::local::io::ENTER) {
       curses_out->Cls();
       UserManager um(config_);
       User user{};
@@ -407,7 +407,7 @@ public:
       window->RedrawWin();
     } else if (ch == KEY_UP || ch == KEY_BTAB) {
       return EditlineResult::PREV;
-    } else if (ch == ESC) {
+    } else if (ch == wwiv::local::io::ESC) {
       return EditlineResult::DONE;
     }
     return EditlineResult::NEXT;

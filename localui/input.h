@@ -38,7 +38,7 @@
 #include <utility>
 #include <vector>
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 enum class EditLineMode { NUM_ONLY, UPPER_ONLY, LOWER, ALL, SET };
 
@@ -78,7 +78,7 @@ typedef std::function<void(std::string)> edline_validation_fn;
 EditlineResult editline(CursesWindow* window, std::string* s, int len, EditLineMode status,
                         const char* ss, edline_validation_fn);
 EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode status,
-                        const char* ss, edline_validation_fn);
+                        const char* ss, const edline_validation_fn&);
 
 EditlineResult editline(CursesWindow* window, std::string* s, int len, EditLineMode status,
                         const char* ss);
@@ -531,7 +531,8 @@ public:
     this->items_.push_back(off);
     this->items_.push_back(on);
   }
-  virtual ~FlagEditItem() = default;
+
+  ~FlagEditItem() override = default;
   FlagEditItem() = delete;
   FlagEditItem(FlagEditItem const&) = delete;
   FlagEditItem(FlagEditItem&&) = delete;
@@ -720,7 +721,7 @@ public:
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    const auto p = wwiv::core::File::FixPathSeparators(this->data_);
+    const auto p = core::File::FixPathSeparators(this->data_);
     strcpy(this->data_, p.c_str());
     const auto return_code =
         editline(window, this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
@@ -729,11 +730,11 @@ public:
     // Update what we display in case it changed.
     DefaultDisplay(window);
 
-    const auto dir = wwiv::core::File::absolute(this->base_, this->data_);
-    if (!wwiv::core::File::Exists(dir)) {
+    const auto dir = core::File::absolute(this->base_, this->data_);
+    if (!core::File::Exists(dir)) {
       const auto s1 = wwiv::strings::StrCat("The path '", this->data_, "' does not exist.");
       if (dialog_yn(window, {s1, "Would you like to create it?"})) {
-        if (!wwiv::core::File::mkdirs(dir)) {
+        if (!core::File::mkdirs(dir)) {
           messagebox(window, {"Unable to create directory: ", dir.string()});
         }
       }
@@ -778,10 +779,10 @@ public:
     DefaultDisplay(window);
 
     const auto dir = wwiv::core::File::absolute(this->base_, data);
-    if (!wwiv::core::File::Exists(dir)) {
+    if (!core::File::Exists(dir)) {
       const auto s1 = wwiv::strings::StrCat("The path '", dir, "' does not exist.");
       if (dialog_yn(window, {s1, "Would you like to create it?"})) {
-        if (!wwiv::core::File::mkdirs(dir)) {
+        if (!core::File::mkdirs(dir)) {
           messagebox(window, {"Unable to create directory: ", dir.string()});
         }
       }
@@ -902,12 +903,12 @@ public:
     window->GotoXY(x_, y_);
     const auto ch = window->GetChar();
     window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
+    if (ch == KEY_ENTER || ch == io::TAB || ch == io::ENTER) {
       RunSubDialog(window);
       window->RedrawWin();
     } else if (ch == KEY_UP || ch == KEY_BTAB) {
       return EditlineResult::PREV;
-    } else if (ch == ESC) {
+    } else if (ch == io::ESC) {
       return EditlineResult::DONE;
     }
     return EditlineResult::NEXT;
@@ -975,7 +976,7 @@ public:
     window->GotoXY(x_, y_);
     const auto ch = window->GetChar();
     window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
+    if (ch == KEY_ENTER || ch == io::TAB || ch == io::ENTER) {
       curses_out->DisableLocalIO();
       std::string exe;
 #ifdef _WIN32
@@ -987,7 +988,7 @@ public:
       window->RedrawWin();
     } else if (ch == KEY_UP || ch == KEY_BTAB) {
       return EditlineResult::PREV;
-    } else if (ch == ESC) {
+    } else if (ch == io::ESC) {
       return EditlineResult::DONE;
     }
     return EditlineResult::NEXT;

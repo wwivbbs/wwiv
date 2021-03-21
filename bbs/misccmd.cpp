@@ -46,6 +46,7 @@
 #include <string>
 
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

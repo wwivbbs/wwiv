@@ -24,7 +24,7 @@
 #include <memory>
 #include <vector>
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 
 // Indicator mode for the header bar while editing text.

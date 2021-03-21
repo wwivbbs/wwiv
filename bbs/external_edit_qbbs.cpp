@@ -34,6 +34,7 @@
 
 using wwiv::core::ScopeExit;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::strings;
 
 std::string ExternalQBBSMessageEditor::editor_filename() const { return MSGTMP; }

@@ -118,7 +118,7 @@ std::string TestIO::rcaptured() {
   return captured;
 }
 
-TestLocalIO::TestLocalIO(std::string* captured) : LocalIO(), captured_(captured) {}
+TestLocalIO::TestLocalIO(std::string* captured) : wwiv::local::io::LocalIO(), captured_(captured) {}
 
 void TestLocalIO::Putch(unsigned char ch) {
   captured_->push_back(ch);

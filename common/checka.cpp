@@ -25,6 +25,8 @@
 
 namespace wwiv::common {
 
+using namespace wwiv::local::io;
+
 /**
  * Checks to see if user aborted whatever he/she was doing.
  * Sets abort to true if control-C/X or Q was pressed.

@@ -48,7 +48,7 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 
 void Label::Display(CursesWindow* window) const {
@@ -94,7 +94,7 @@ EditlineResult ACSEditItem::Run(CursesWindow* window) {
     }
     last_expr = acs;
 
-    wwiv::sdk::User user{};
+    sdk::User user{};
     user.sl(255);
     user.dsl(255);
     user.ar_int(0xffff);
@@ -450,7 +450,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
 
 /* Edits a string, doing I/O to the screen only. */
 EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode status,
-                         const char* ss, edline_validation_fn fn) {
+                         const char* ss, const edline_validation_fn& fn) {
   uint32_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
@@ -506,7 +506,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
         window->GotoXY(cx + pos, cy);
       }
       break;
-    case CO:     // return
+    case io::CO:     // return
     case KEY_UP: // curses
       done = true;
       rc = EditlineResult::PREV;
@@ -534,7 +534,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
       }
       break;
     case KEY_DC: // curses
-    case CD:     // control-d
+    case io::CD: // control-d
       if (status != EditLineMode::SET) {
         for (int i = pos; i < len; i++) {
           s[i] = s[i + 1];
@@ -601,18 +601,18 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
 #ifdef PADENTER
     case PADENTER:
 #endif
-    case RETURN: // return
-    case TAB:
+    case io::ENTER: // return
+    case io::TAB:
       done = true;
       rc = EditlineResult::NEXT;
       break;
-    case ESC: // esc
+    case io::ESC: // esc
       done = true;
       rc = EditlineResult::DONE;
       break;
     case 0x7f:          // yet some other delete key
     case KEY_BACKSPACE: // curses
-    case BACKSPACE:     // backspace
+    case io::BACKSPACE: // backspace
       if (status != EditLineMode::SET) {
         if (pos > 0) {
           for (int i = pos - 1; i < len; i++) {
@@ -625,11 +625,11 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
         }
       }
       break;
-    case CA: // control-a
+    case io::CA: // control-a
       pos = 0;
       window->GotoXY(cx, cy);
       break;
-    case CE: // control-e
+    case io::CE: // control-e
       pos = editlinestrlen(s);
       window->GotoXY(cx + pos, cy);
       break;
@@ -678,12 +678,12 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
     const auto ch = window->GetChar();
     switch (ch) {
     case KEY_ENTER:
-    case RETURN:
-    case TAB:
+    case io::ENTER:
+    case io::TAB:
       done = true;
       *rc = EditlineResult::NEXT;
       break;
-    case ESC:
+    case io::ESC:
     case KEY_F(1): // F1
       done = true;
       *rc = EditlineResult::DONE;

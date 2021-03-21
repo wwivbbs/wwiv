@@ -26,6 +26,7 @@
 #include <string>
 
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {

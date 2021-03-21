@@ -212,7 +212,7 @@ std::optional<std::string> readfile(const messagerec* msg, const std::string& fi
     current_section = gat[current_section];
   }
   file->Close();
-  const auto last_cz = out.find_last_of(CZ);
+  const auto last_cz = out.find_last_of(wwiv::local::io::CZ);
   const auto last_block_start = out.size() - MSG_BLOCK_SIZE;
   if (last_cz != std::string::npos && last_block_start >= 0 && last_cz > last_block_start) {
     // last block has a Control-Z in it.  Make sure we add a 0 after it.
@@ -249,7 +249,7 @@ void lineadd(const messagerec* msg, const std::string& sx, std::string fileName)
     message_file->Seek(MSG_STARTING(gat_section) + static_cast<long>(i) * MSG_BLOCK_SIZE, File::Whence::begin);
     message_file->Read(b, MSG_BLOCK_SIZE);
     int j = 0;
-    while (j < MSG_BLOCK_SIZE && b[j] != CZ) {
+    while (j < MSG_BLOCK_SIZE && b[j] != wwiv::local::io::CZ) {
       ++j;
     }
     strcpy(&(b[j]), line.c_str());

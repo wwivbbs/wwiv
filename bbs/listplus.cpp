@@ -231,7 +231,7 @@ int listfiles_plus(int type) {
   ext_is_on = a()->user()->GetFullFileDescriptions();
   signal(SIGFPE, catch_divide_by_zero);
 
-  a()->localIO()->topdata(LocalIO::topdata_t::none);
+  a()->localIO()->topdata(wwiv::local::io::LocalIO::topdata_t::none);
   a()->UpdateTopScreen();
   bout.cls();
 
@@ -969,8 +969,7 @@ void config_file_list() {
   auto done = false;
   while (!done && !a()->sess().hangup()) {
     update_user_config_screen(&u, which);
-    const int key = onek("Q2346789H!@#$%^&*(");
-    switch (key) {
+    switch (const int key = onek("Q2346789H!@#$%^&*("); key) {
     case '2':
     case '3':
     case '4':

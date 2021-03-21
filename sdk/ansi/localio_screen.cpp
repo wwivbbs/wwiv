@@ -20,11 +20,12 @@
 #include "core/stl.h"
 #include "local_io/curatr_provider.h"
 
+using namespace wwiv::local::io;
 using namespace wwiv::stl;
 
 namespace wwiv::sdk::ansi {
 
-class LocalIOScreenCurAttrProvider : public wwiv::local_io::curatr_provider {
+class LocalIOScreenCurAttrProvider : public wwiv::local::io::curatr_provider {
 public:
   LocalIOScreenCurAttrProvider(LocalIO* lio) : lio_(lio) {}
   [[nodiscard]] uint8_t curatr() const noexcept override { return lio_->curatr(); }

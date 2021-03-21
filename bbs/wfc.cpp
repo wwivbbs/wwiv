@@ -69,6 +69,7 @@ using namespace std::chrono;
 using namespace std::chrono_literals;
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;

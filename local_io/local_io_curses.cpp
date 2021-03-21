@@ -37,6 +37,8 @@
 #include <unistd.h>
 #endif
 
+namespace wwiv::local::io {
+
 using namespace wwiv::strings;
 
 static const int default_screen_bottom = 20;
@@ -56,7 +58,7 @@ CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1) {}
 
 CursesLocalIO::CursesLocalIO(int num_lines) {
   InitPairs();
-  window_.reset(new wwiv::localui::CursesWindow(nullptr, wwiv::localui::curses_out->color_scheme(), num_lines, 80, 0, 0));
+  window_.reset(new wwiv::local::ui::CursesWindow(nullptr, wwiv::local::ui::curses_out->color_scheme(), num_lines, 80, 0, 0));
   auto* w = std::any_cast<WINDOW*>(window_->window());
   scrollok(w, true);
   window_->Clear();
@@ -573,3 +575,4 @@ void CursesLocalIO::ReenableLocalIO() {
   window_->Refresh();
 }
 
+}

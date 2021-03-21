@@ -63,7 +63,7 @@ public:
  *
  * These may be modified after being set, so RAII does not work.
  */
-class Output final : public local_io::curatr_provider, public IOBase {
+class Output final : public local::io::curatr_provider, public IOBase {
 public:
   typedef std::function<MacroContext&()> macro_context_provider_t;
   Output();
@@ -74,7 +74,7 @@ public:
   ~Output() override;
 
   /** Sets the LocalIO instance to use locally for output */
-  void SetLocalIO(LocalIO* local_io) override;
+  void SetLocalIO(local::io::LocalIO* local_io) override;
 
   /** Sets the provider for the session context */
   // ReSharper disable once CppMemberFunctionMayBeConst

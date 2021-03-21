@@ -35,6 +35,7 @@
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::local::io;
 using namespace wwiv::strings;
 
 namespace wwiv::common {

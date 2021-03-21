@@ -26,7 +26,7 @@
 #include "sdk/vardec.h"
 #include <memory>
 
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

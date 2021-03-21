@@ -29,7 +29,7 @@
 
 using namespace wwiv::strings;
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 static const char* copyrightString = "Copyright (c) 1998-2021, WWIV Software Services";
 

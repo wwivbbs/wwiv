@@ -21,7 +21,7 @@
 #include "core/strings.h"
 #include "localui/wwiv_curses.h"
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 SchemeDescription::SchemeDescription(SchemeId scheme, int f, int b, bool bold)
   : scheme_(scheme), f_(f), b_(b), bold_(bold) {}

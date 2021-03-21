@@ -82,17 +82,17 @@ public:
   void Clear() { captured_.clear(); rcaptured_.clear(); }
   std::string captured();
   std::string rcaptured();
-  [[nodiscard]] LocalIO* local_io() const { return local_io_; }
+  [[nodiscard]] wwiv::local::io::LocalIO* local_io() const { return local_io_; }
   [[nodiscard]] wwiv::common::RemoteIO* remote_io() const { return remote_io_; }
 
 private:
-  LocalIO* local_io_;
+  wwiv::local::io::LocalIO* local_io_;
   wwiv::common::RemoteIO* remote_io_;
   std::string captured_;
   std::string rcaptured_;
 };
 
-class TestLocalIO : public LocalIO {
+class TestLocalIO : public wwiv::local::io::LocalIO {
 public:
   explicit TestLocalIO(std::string* captured);
   void Putch(unsigned char ch) override;
@@ -118,7 +118,8 @@ public:
   void ClrEol() override {}
   void WriteScreenBuffer(const char *) override {}
   [[nodiscard]] int GetDefaultScreenBottom() const noexcept override { return 25; }
-  void EditLine(char *, int, AllowedKeys, EditlineResult *, const char *) override {}
+  void EditLine(char*, int, wwiv::local::io::AllowedKeys, wwiv::local::io::EditlineResult*,
+                const char*) override {}
   void UpdateNativeTitleBar(const std::string&, int) override {}
 
   std::string* captured_;

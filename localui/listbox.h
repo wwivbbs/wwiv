@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-namespace wwiv::localui {
+namespace wwiv::local::ui {
 
 class ColorScheme;
 

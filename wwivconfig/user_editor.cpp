@@ -45,7 +45,7 @@
 static constexpr int NONEDITABLE_DATA_POS = 50;
 
 using namespace wwiv::core;
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 using namespace wwiv::strings;
 
 static bool IsUserDeleted(userrec* user) { return user->inact & wwiv::sdk::User::userDeleted; }

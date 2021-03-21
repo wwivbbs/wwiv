@@ -172,10 +172,10 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
     // If this is an ANSI file, then don't pause
     // (since we may be moving around
     // on the screen, unless the caller tells us to pause anyway)
-    if (const auto has_ansi = contains(s, ESC); has_ansi && !force_pause) {
+    if (const auto has_ansi = contains(s, local::io::ESC); has_ansi && !force_pause) {
       bout.clear_lines_listed();
     }
-    if (contains(s, CZ)) {
+    if (contains(s, local::io::CZ)) {
       // We are done here on a control-Z since that's DOS EOF.  Also ANSI
       // files created with PabloDraw expect that anything after a Control-Z
       // is fair game for metadata and includes SAUCE metadata after it which

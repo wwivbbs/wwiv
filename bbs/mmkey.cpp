@@ -29,6 +29,7 @@
 #include <set>
 #include <string>
 
+using namespace wwiv::local::io;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 

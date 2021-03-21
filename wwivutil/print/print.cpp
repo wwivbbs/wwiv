@@ -36,7 +36,7 @@
 
 using wwiv::core::BooleanCommandLineArgument;
 using namespace std::chrono_literals;
-using namespace wwiv::localui;
+using namespace wwiv::local::ui;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::ansi;
@@ -122,12 +122,12 @@ int PrintCommand::Execute() {
   if (!barg("ansi")) {
     std::cout << s << std::endl;
   } else {
-    std::unique_ptr<LocalIO> io;
+    std::unique_ptr<local::io::LocalIO> io;
     const auto io_type = sarg("io");
     const auto bps = iarg("bps");
 #ifdef _WIN32
     if (io_type == "win32") {
-      io = std::make_unique<Win32ConsoleIO>();
+      io = std::make_unique<local::io::Win32ConsoleIO>();
     }
 #endif
     if (!io) {
@@ -136,7 +136,7 @@ int PrintCommand::Execute() {
       // Use 25 lines (80x25) by default.
       // TODO(rushfan): We should try to inspect the screen size if possible
       // and use that instead.  Don't know how to do that on *NIX though.
-      io = std::make_unique<CursesLocalIO>(25);
+      io = std::make_unique<local::io::CursesLocalIO>(25);
     }
     LocalIOScreen screen(io.get(), 80);
     AnsiCallbacks cb;
