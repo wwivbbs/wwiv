@@ -99,6 +99,7 @@
 #include <io.h>
 #else
 // ReSharper disable once CppUnusedIncludeDirective
+#include "local_io/local_io_curses.h"
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include <unistd.h>
 #endif // _WIN32
@@ -882,8 +883,8 @@ int Application::Run(int argc, char* argv[]) {
       // We only want the localIO if we ran this locally at a terminal
       // and also not passed in from the telnet handler, etc.  On Windows
       // We always have a local console, so this is *NIX specific.
-      CursesIO::Init(fmt::sprintf("WWIV BBS %s", full_version()));
-      reset_local_io(new CursesLocalIO(curses_out->GetMaxY()));
+      wwiv::local::ui::CursesIO::Init(fmt::sprintf("WWIV BBS %s", full_version()));
+      reset_local_io(new CursesLocalIO(wwiv::local::ui::curses_out->GetMaxY()));
     } else if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
       reset_local_io(new NullLocalIO());
     }

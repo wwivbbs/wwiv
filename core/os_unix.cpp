@@ -18,12 +18,12 @@
 /**************************************************************************/
 #include "core/os.h"
 
-#include <unistd.h>
-
 #include "core/strings.h"
 #include "core/file.h"
 #include "fmt/format.h"
 #include <string>
+
+#include <unistd.h>
 
 using namespace std::chrono;
 using namespace wwiv::core;
@@ -63,33 +63,33 @@ std::string os_version_string() {
 	    k_version.iteration);
     return fmt::format("Linux {}", osrelease);
   }
-  return std::string("Linux");
+  return "Linux";
 #elif defined ( __APPLE__ )
-  return string("MacOSX"); // fmt::format("{} {}", GetOSNameString(), GetMacVersionString());
+  return "MacOSX"; // fmt::format("{} {}", GetOSNameString(), GetMacVersionString());
 #elif defined(__OS2__)
-  return string("OS/2");
+  return "OS/2";
 #elif defined(__FreeBSD__)
-  return string("FreeBSD");
+  return "FreeBSD";
 #elif defined(__OpenBSD__)
-  return string("OpenBSD");
+  return "OpenBSD";
 #elif defined(__NetBSD__)
-  return string("NetBSD");
+  return "NetBSD";
 #elif defined(BSD)
-  return string("BSD");
+  return "BSD";
 #elif defined(__solaris__)
-  return string("Solaris");
+  return "Solaris";
 #elif defined(__sun__)
-  return string("SunOS");
+  return "SunOS";
 #elif defined(__gnu__)
-  return string("GNU/Hurd");
+  return "GNU/Hurd";
 #elif defined(__QNX__)
-  return string("QNX");
+  return "QNX";
 #elif defined(__unix__)
-  return string("UNIX");
+  return "UNIX";
 #elif defined(__HAIKU__)
-  return string("Haiku");
+  return "Haiku";
 #endif
-  return string("UNKNOWN OS");
+  return "UNKNOWN OS";
 }
 
 bool set_environment_variable(const std::string& variable_name, const std::string& value) {
@@ -97,14 +97,15 @@ bool set_environment_variable(const std::string& variable_name, const std::strin
 }
 
 std::string environment_variable(const std::string& variable_name) {
-  const char* s = getenv(variable_name.c_str());
-  if (s == nullptr) {
-    return "";
+  if (const auto* s = getenv(variable_name.c_str()); s != nullptr) {
+    return s;
   }
-  return string(s);
+  return {};
 }
 
-string stacktrace() { return string(); }
+std::string stacktrace() { 
+  return {};
+}
 
 pid_t get_pid() {
   return getpid();
