@@ -630,7 +630,7 @@ static void change_password() {
   }
 }
 
-static void modify_mailbox() {
+void modify_mailbox() {
   bout.nl();
   bout << "|#9Do you want to close your mailbox? ";
   if (bin.yesno()) {

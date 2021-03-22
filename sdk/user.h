@@ -703,6 +703,10 @@ class User final {
   void forward_netnum(int n) {
     data.net_num = static_cast<uint16_t>(n);
   }
+
+  /** Gets a text description of the mailbox state */
+  [[nodiscard]] std::string mailbox_state() const;
+
   [[nodiscard]] int messages_posted() const {
     return data.msgpost;
   }

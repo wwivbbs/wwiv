@@ -269,6 +269,25 @@ int User::age() const {
   return s;
 }
 
+std::string User::mailbox_state() const {
+  if (forward_systemnum() == 0 &&
+      forward_usernum() == 0) {
+    return "Normal";
+  }
+  if (forward_systemnum() != 0) {
+    if (IsMailboxForwarded()) {
+      return fmt::format("Forward to #{} @{}", forward_usernum(), forward_systemnum());
+    }
+    return StrCat("Forwarded to: ", email_address());
+  }
+
+  if (IsMailboxClosed()) {
+    return "Closed";
+  }
+
+  return StrCat("Forward to: User #", forward_usernum());
+}
+
 void ResetTodayUserStats(User* u) {
   u->data.ontoday = 0;
   u->data.timeontoday = 0;

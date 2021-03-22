@@ -27,5 +27,6 @@ void config_qscan();
 void enter_regnum();
 void defaults(bool& need_menu_reload);
 void config_scan_plus(int type);
+void modify_mailbox();
 
 #endif

@@ -284,6 +284,8 @@ Runs a WWIVbasic Script
   m.emplace("user:regnum",
             MenuItem(R"(Allows the user to change their WWIV 4.x registration number)",
                      MENU_CAT_USER, [](MenuContext&) { enter_regnum(); }));
+  m.emplace("user:mailbox", MenuItem(R"(Allows the user to change their email forward/mailbox settings)",
+                                   MENU_CAT_USER, [](MenuContext&) { modify_mailbox(); }));
   // ========================================================================
   // Menu
 

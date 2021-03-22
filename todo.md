@@ -4,6 +4,7 @@
 
 # TODO Cleanups
 * redo readmail(...) It's a friggin mess.
+* make nightly event or fix check for mail forwarded to a deleted user, and then fix that.
 
 # Things to add to fix.
 

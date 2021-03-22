@@ -36,11 +36,12 @@ public:
    * Constructs a new ValueProvider.  'user' must remain valid for 
    * the duration of this instance lifetime.
    */
-  UserValueProvider(const Config& config, const User& user, int effective_sl, slrec sl)
-  : ValueProvider("user"), config_(config), user_(user), effective_sl_(effective_sl), sl_(sl) {}
+  UserValueProvider(const Config& config, const User& user, int effective_sl, slrec sl);
   [[nodiscard]] std::optional<Value> value(const std::string& name) const override;
 
 private:
+  typedef std::function<std::optional<Value>()> makeval_fn;
+  std::map<const std::string, makeval_fn> fns_;
   const Config& config_;
   const User& user_;
   int effective_sl_;

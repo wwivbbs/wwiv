@@ -163,8 +163,7 @@ void ValidateUser() {
   bout.nl(2);
   bout << "|#9Enter user name or number:\r\n:";
   const auto user_name = bin.input_upper(30);
-  const auto user_number = finduser1(user_name);
-  if (user_number > 0) {
+  if (const auto user_number = finduser1(user_name); user_number > 0) {
     sysoplog() << "@ Validated user #" << user_number;
     valuser(user_number);
   } else {

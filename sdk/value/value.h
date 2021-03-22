@@ -64,6 +64,8 @@ public:
   Value() : value_type(ValueType::unknown) {}
   explicit Value(bool v) : value_type(ValueType::boolean), value_(std::make_any<bool>(v)) {}
   explicit Value(int v) : value_type(ValueType::number), value_(std::make_any<int>(v)) {}
+  explicit Value(unsigned v)
+      : value_type(ValueType::number), value_(std::make_any<int>(static_cast<int>(v))) {}
   explicit Value(const std::string& v) : value_type(ValueType::string), value_(std::make_any<std::string>(v)) {}
   explicit Value(const char* v) : Value(std::string(v)) {}
   explicit Value(Ar a) : value_type(ValueType::ar), value_(std::make_any<Ar>(a)) {}
