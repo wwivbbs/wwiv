@@ -328,6 +328,11 @@ public:
 // Base item of an editable value, this class does not use templates.
 class GeneratedMenuSubDialog : public SubDialog<menus::generated_menu_56_t> {
 public:
+  GeneratedMenuSubDialog() = delete;
+  GeneratedMenuSubDialog(const GeneratedMenuSubDialog&) = delete;
+  GeneratedMenuSubDialog(GeneratedMenuSubDialog&&) = delete;
+  GeneratedMenuSubDialog& operator=(const GeneratedMenuSubDialog&) = delete;
+  GeneratedMenuSubDialog& operator=(GeneratedMenuSubDialog&&) = delete;
   GeneratedMenuSubDialog(const Config& config, menus::generated_menu_56_t& d)
       : SubDialog(config, d) {}
   ~GeneratedMenuSubDialog() override = default;
@@ -579,8 +584,7 @@ static void select_menu(const wwiv::sdk::Config& config, const std::string& menu
           }
         } else if (result.hotkey == 'C') {
           const auto& old_menu_name = items[result.selected].text();
-          auto menu_name = dialog_input_string(window, "Enter New Menu Name: ", 8);
-          if (!menu_name.empty()) {
+          if (auto menu_name = dialog_input_string(window, "Enter New Menu Name: ", 8); !menu_name.empty()) {
             const auto old_name = FilePath(full_dir_path, StrCat(old_menu_name, ".mnu.json"));
             const auto new_name = FilePath(full_dir_path, StrCat(menu_name, ".mnu.json"));
             File::Copy(old_name, new_name);

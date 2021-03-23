@@ -302,7 +302,8 @@ bool File::set_length(size_type l) {
   std::error_code ec;
   resize_file(full_path_name_, l, ec);
   if (ec.value() != 0) {
-    LOG(WARNING) << "Errror on resize_file: " << ec.value() << "; " << ec.message();
+    LOG(WARNING) << "Errror on resize_file: '" << full_path_name_ << "': " << ec.value() << "; "
+                 << ec.message() << "; open: " << IsOpen();
     return false;
   }
   return true;
