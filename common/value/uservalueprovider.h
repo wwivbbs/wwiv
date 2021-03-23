@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_SDK_VALUE_BBSVALUEPROVIDER_H
-#define INCLUDED_SDK_VALUE_BBSVALUEPROVIDER_H
+#ifndef INCLUDED_SDK_VALUEPROVIDER_USERVALUEPROVIDER_H
+#define INCLUDED_SDK_VALUEPROVIDER_USERVALUEPROVIDER_H
 
 #include "sdk/config.h"
 #include "sdk/user.h"
@@ -25,29 +25,27 @@
 #include <optional>
 #include <string>
 
-namespace wwiv {
-namespace common {
-class SessionContext;
-}
-}
-
-namespace wwiv::sdk::value {
+namespace wwiv::common::value {
 
 /**
- * ValueProvider for "bbs" or system attributes.
+ * ValueProvider for "user" record attributes.
  */
-class BbsValueProvider final : public ValueProvider {
+class UserValueProvider final : public sdk::value::ValueProvider {
 public:
   /** 
    * Constructs a new ValueProvider.  'user' must remain valid for 
    * the duration of this instance lifetime.
    */
-  BbsValueProvider(const Config& config, const common::SessionContext& sess);
-  [[nodiscard]] std::optional<Value> value(const std::string& name) const override;
+  UserValueProvider(const sdk::Config& config, const sdk::User& user, int effective_sl, slrec sl);
+  [[nodiscard]] std::optional<sdk::value::Value> value(const std::string& name) const override;
 
 private:
-  const Config& config_;
-  const common::SessionContext& sess_;
+  typedef std::function<std::optional<sdk::value::Value>()> makeval_fn;
+  std::map<const std::string, makeval_fn> fns_;
+  const sdk::Config& config_;
+  const sdk::User& user_;
+  int effective_sl_;
+  slrec sl_;
 };
 
 }

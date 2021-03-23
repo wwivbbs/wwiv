@@ -17,6 +17,7 @@
 /**************************************************************************/
 #include "wwivutil/acs/acs.h"
 
+#include "common/value/uservalueprovider.h"
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
@@ -24,7 +25,6 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/acs/eval.h"
-#include "sdk/value/uservalueprovider.h"
 
 #include <iostream>
 #include <string>
@@ -64,7 +64,7 @@ int AcsCommand::Execute() {
   Eval eval(expr);
   const auto sl = user->sl();
   const auto& slr = config()->config()->sl(sl);
-  value::UserValueProvider u(*config()->config(), user.value(), sl, slr);
+  wwiv::common::value::UserValueProvider u(*config()->config(), user.value(), sl, slr);
   eval.add(&u);
 
   const auto result = eval.eval();

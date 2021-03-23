@@ -60,10 +60,8 @@ set(COMMON_SOURCES
   "net/packets.cpp"
   "net/networks.cpp"
   "net/subscribers.cpp"
-  "value/bbsvalueprovider.cpp"
   "value/value.cpp"
   "value/valueprovider.cpp"
-  "value/uservalueprovider.cpp"
    )
 
 set_max_warnings()

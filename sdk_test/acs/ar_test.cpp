@@ -20,7 +20,7 @@
 
 #include "core/parser/ast.h"
 #include "sdk/user.h"
-#include "sdk/value/uservalueprovider.h"
+#include "common/value/uservalueprovider.h"
 
 using namespace wwiv::core;
 using namespace wwiv::core::parser;

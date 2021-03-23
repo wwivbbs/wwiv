@@ -33,7 +33,7 @@
 #include "sdk/usermanager.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/menus/menu.h"
-#include "sdk/value/uservalueprovider.h"
+#include "common/value/uservalueprovider.h"
 #include "sdk/value/valueprovider.h"
 
 #include <filesystem>
@@ -41,6 +41,7 @@
 #include <utility>
 #include <vector>
 
+using namespace wwiv::common::value;
 using namespace wwiv::core;
 using namespace wwiv::local::ui;
 using namespace wwiv::sdk;
@@ -54,7 +55,7 @@ static auto create_providers(const Config& config) -> std::vector<const value::V
   user.dsl(255);
   user.ar_int(0xffff);
   user.dar_int(0xffff);
-  value::UserValueProvider up(config, user, 255, config.sl(255));
+  UserValueProvider up(config, user, 255, config.sl(255));
   std::vector<const value::ValueProvider*> providers{&up};
   return providers; 
 }

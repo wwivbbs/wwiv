@@ -21,7 +21,6 @@
 #include "core/parser/ast.h"
 #include "sdk/user.h"
 #include "sdk/acs/eval.h"
-#include "sdk/value/uservalueprovider.h"
 #include <string>
 
 using namespace wwiv::core;

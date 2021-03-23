@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/value/uservalueprovider.h"
+#include "common/value/uservalueprovider.h"
 
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -26,19 +26,21 @@
 #include <string>
 
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::sdk::acs;
+using namespace wwiv::sdk::value;
 using namespace parser;
 using namespace wwiv::strings;
 
-namespace wwiv::sdk::value {
+namespace wwiv::common::value {
 
 
 /** Shorthand to create an optional Value */
-template <typename T> static std::optional<Value> val(T&& v) {
+template <typename T> static std::optional<sdk::value::Value> val(T&& v) {
   return std::make_optional<Value>(std::forward<T>(v));
 }
 
-UserValueProvider::UserValueProvider(const Config& config, const User& user, int effective_sl,
+UserValueProvider::UserValueProvider(const sdk::Config& config, const sdk::User& user, int effective_sl,
                                      slrec sl)
   : ValueProvider("user"), config_(config), user_(user), effective_sl_(effective_sl), sl_(sl) {
   fns_.try_emplace("sl", [&]() { return val(user_.sl()); });

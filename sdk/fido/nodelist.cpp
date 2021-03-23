@@ -231,8 +231,9 @@ bool Nodelist::Load(const std::filesystem::path& path) {
 
 bool Nodelist::Load(const std::vector<std::string>& lines) {
   if (lines.empty()) return false;
+  // ReSharper disable once CppTooWideScope
+  uint16_t zone = 0, region = 0, net = 0, hub = 0;
   for (const auto& raw_line : lines) {
-    uint16_t zone = 0, region = 0, net = 0, hub = 0;
     auto line = StringTrim(raw_line);
     HandleLine(line, zone, region, net, hub);
   }

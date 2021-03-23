@@ -19,10 +19,10 @@
 #include "common/pipe_expr.h"
 
 #include "common/output.h"
+#include "common/value/bbsvalueprovider.h"
+#include "common/value/uservalueprovider.h"
 #include "sdk/acs/acs.h"
 #include "sdk/acs/eval.h"
-#include "sdk/value/bbsvalueprovider.h"
-#include "sdk/value/uservalueprovider.h"
 #include "sdk/value/valueprovider.h"
 
 using namespace wwiv::core;
@@ -141,11 +141,11 @@ std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
       eff_sl = context_.u().sl();
     }
     const auto& eslrec = context_.config().sl(eff_sl);
-    const UserValueProvider user(context_.config(), context_.u(), eff_sl, eslrec);
+    const value::UserValueProvider user(context_.config(), context_.u(), eff_sl, eslrec);
     return user.value(suffix)->as_string();
   }
   if (prefix == "bbs") {
-    const BbsValueProvider bbs_provider(context_.config(), context_.session_context());
+    const value::BbsValueProvider bbs_provider(context_.config(), context_.session_context());
     return bbs_provider.value(suffix)->as_string();
   }
 
@@ -256,8 +256,8 @@ std::string eval_fn_if(Context& context_, const std::vector<pipe_expr_token_t>& 
     eff_sl = context_.u().sl();
   }
   const auto& eslrec = context_.config().sl(eff_sl);
-  const BbsValueProvider bbs_provider(context_.config(), context_.session_context());
-  const UserValueProvider user_provider(context_.config(), context_.u(), eff_sl, eslrec);
+  const value::BbsValueProvider bbs_provider(context_.config(), context_.session_context());
+  const value::UserValueProvider user_provider(context_.config(), context_.u(), eff_sl, eslrec);
   const auto b = check_acs_pipe(expr, context_.value_providers(), &user_provider, &bbs_provider);
   return b ? yes : no;
 }

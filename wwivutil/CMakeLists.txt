@@ -44,4 +44,4 @@ set(COMMAND_SOURCES
 set_max_warnings()
 
 add_executable(wwivutil ${WWIVUTIL_MAIN} ${COMMAND_SOURCES})
-target_link_libraries(wwivutil core binkp_lib sdk)
+target_link_libraries(wwivutil common core binkp_lib sdk)

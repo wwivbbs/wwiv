@@ -16,18 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "common/value/uservalueprovider.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/parser/ast.h"
 #include "sdk/user.h"
 #include "sdk/acs/eval.h"
-#include "sdk/value/uservalueprovider.h"
 
 #include "gtest/gtest.h"
 #include <string>
 
+using namespace wwiv::common::value;
 using namespace wwiv::core;
-using namespace wwiv::core::parser;
 using namespace wwiv::sdk::acs;
 using namespace wwiv::sdk::value;
 

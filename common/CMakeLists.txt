@@ -25,6 +25,8 @@ set(COMMON_SOURCES
  "quote.cpp"
  "remote_io.cpp"
  "remote_socket_io.cpp"
+ "value/bbsvalueprovider.cpp"
+ "value/uservalueprovider.cpp"
  "workspace.cpp"
 )
 

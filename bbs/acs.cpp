@@ -18,15 +18,16 @@
 /**************************************************************************/
 #include "bbs/acs.h"
 
+#include "sdk/acs/acs.h"
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "common/input.h"
+#include "common/value/bbsvalueprovider.h"
+#include "common/value/uservalueprovider.h"
 #include "core/stl.h"
-#include "sdk/acs/acs.h"
-#include "sdk/value/bbsvalueprovider.h"
-#include "sdk/value/uservalueprovider.h"
 #include <string>
 
+using namespace wwiv::common::value;
 using namespace wwiv::stl;
 using namespace wwiv::sdk::acs;
 using namespace wwiv::sdk::value;

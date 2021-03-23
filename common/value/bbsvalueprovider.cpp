@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/value/bbsvalueprovider.h"
+#include "common/value/bbsvalueprovider.h"
 
 #include "core/strings.h"
 #include "common/context.h"
@@ -27,12 +27,15 @@
 #include <optional>
 #include <string>
 
+using namespace wwiv::common::value;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::sdk::acs;
+using namespace wwiv::sdk::value;
 using namespace parser;
 using namespace wwiv::strings;
 
-namespace wwiv::sdk::value {
+namespace wwiv::common::value {
 
 
 /** Shorthand to create an optional Value */
