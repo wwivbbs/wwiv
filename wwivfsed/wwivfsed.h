@@ -23,10 +23,14 @@
 #include "common/message_editor_data.h"
 #include "common/remote_io.h"
 #include "local_io/local_io.h"
+#include "sdk/chains.h"
 #include "wwivfsed/fsedconfig.h"
 #include <filesystem>
 #include <string>
 
+namespace wwiv::sdk {
+class Chains;
+}
 namespace wwiv::wwivfsed {
 
 class FakeMacroContext final : public common::MacroContext {
@@ -56,16 +60,20 @@ public:
   FsedContext(FsedContext&&) = delete;
   FsedContext& operator=(const FsedContext&) = delete;
   FsedContext& operator=(FsedContext&&) = delete;
-  explicit FsedContext(local::io::LocalIO* local_io) : sess_(local_io), config_("", {}) {}
+  explicit FsedContext(local::io::LocalIO* local_io);
   ~FsedContext() override = default;
   [[nodiscard]] sdk::Config& config() override { return config_; }
   [[nodiscard]] sdk::User& u() override { return user_; }
   [[nodiscard]] common::SessionContext& session_context() override { return sess_; }
   [[nodiscard]] bool mci_enabled() const override { return false; }
+  [[nodiscard]] const std::vector<editorrec>& editors() const override { return editors_; }
+  [[nodiscard]] const sdk::Chains& chains() const override { return chains_; }
 
   sdk::User user_;
   common::SessionContext sess_;
   sdk::Config config_;
+  std::vector<editorrec> editors_;
+  sdk::Chains chains_;
 };
 
 class FsedApplication final {

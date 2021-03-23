@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "wwivconfig/menus.h"
 
+#include "common/menus/menu_generator.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/log.h"
@@ -32,6 +33,9 @@
 #include "sdk/usermanager.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/menus/menu.h"
+#include "sdk/value/uservalueprovider.h"
+#include "sdk/value/valueprovider.h"
+
 #include <filesystem>
 #include <string>
 #include <utility>
@@ -43,6 +47,17 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
+
+static auto create_providers(const Config& config) -> std::vector<const value::ValueProvider*> {
+  User user{};
+  user.sl(255);
+  user.dsl(255);
+  user.ar_int(0xffff);
+  user.dar_int(0xffff);
+  value::UserValueProvider up(config, user, 255, config.sl(255));
+  std::vector<const value::ValueProvider*> providers{&up};
+  return providers; 
+}
 
 class ActionPickerSubDialog final : public SubDialog<std::string> {
 public:
@@ -104,7 +119,7 @@ static void edit_menu_action(const Config& config, menus::menu_action_56_t& a) {
   items.add(new Label("Data:"), new StringEditItem<std::string&>(70, a.data, EditLineMode::ALL),
             "Optional data to pass to the command", 1, y);
   y++;
-  items.add(new Label("ACS:"), new ACSEditItem(config, 70, a.acs),
+  items.add(new Label("ACS:"), new ACSEditItem(config,  create_providers(config), 70, a.acs),
             "WWIV ACS required to execute this command", 1, y);
 
   items.relayout_items_and_labels();
@@ -205,7 +220,7 @@ static void edit_menu_item(const Config& config, menus::menu_item_56_t& m) {
             new StringEditItem<std::string&>(60, m.instance_message, EditLineMode::ALL),
             "Instance message to send to all users", 1, y);
   y++;
-  items.add(new Label("ACS:"), new ACSEditItem(config, 60, m.acs),
+  items.add(new Label("ACS:"), new ACSEditItem(config, create_providers(config), 60, m.acs),
             "WWIV ACS required to access this menu item", 1, y);
   y++;
   items.add(new Label("Password:"),
@@ -395,7 +410,7 @@ public:
         user.sl(255);
         user.dsl(255);
       }
-      const auto lines = GenerateMenuLines(config_, 255, menu_, user, menus::menu_type_t::short_menu);
+      const auto lines = wwiv::common::menus::GenerateMenuLines(config_, 255, menu_, user, menus::menu_type_t::short_menu);
       auto y = 1;
       for (const auto& l : lines) {
         curses_out->window()->PutsWithPipeColors(0, y++, l);
@@ -424,6 +439,7 @@ protected:
   const Config& config_;
   const menus::menu_56_t& menu_;
 };
+
 
 static void edit_menu(const Config& config, const std::filesystem::path& menu_dir,
                       const std::string& menu_set, const std::string& menu_name) {
@@ -460,7 +476,7 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
             new StringEditItemWithPipeCodes(55, h.title, EditLineMode::ALL),
             "This is the title to display at the top of the menu", 1, y);
   y++;
-  items.add(new Label("ACS:"), new ACSEditItem(config, 55, h.acs),
+  items.add(new Label("ACS:"), new ACSEditItem(config, create_providers(config), 55, h.acs),
             "WWIV ACS required to access this menu", 1, y);
   y++;
   items.add(new Label("Number Keys:"),

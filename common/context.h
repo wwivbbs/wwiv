@@ -30,6 +30,12 @@
 #include <string>
 #include <utility>
 
+namespace wwiv {
+namespace sdk {
+class Chains;
+}
+}
+
 namespace wwiv::local::io {
 class LocalIO;
 }
@@ -351,6 +357,9 @@ public:
   [[nodiscard]] virtual sdk::User& u() = 0;
   [[nodiscard]] virtual SessionContext& session_context() = 0;
   [[nodiscard]] virtual bool mci_enabled() const = 0;
+  [[nodiscard]] virtual const std::vector<editorrec>& editors() const = 0;
+  [[nodiscard]] virtual const sdk::Chains& chains() const = 0;
+
 
   /**
    * Adds a set of context variables for use in pipe expressions.  An example for the current

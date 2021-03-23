@@ -18,11 +18,11 @@
 #include "common/input_range.h"
 
 #include "gtest/gtest.h"
-#include "gmock/gmock.h"
-#include "common/menu_data_util.h"
+#include "common/menus/menu_data_util.h"
 #include <string>
 
 using namespace wwiv::common;
+using namespace wwiv::common::menus;
 using namespace testing;
 
 TEST(MenuDataUtil, NoOpts) {

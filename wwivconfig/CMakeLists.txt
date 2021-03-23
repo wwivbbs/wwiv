@@ -28,4 +28,4 @@ set(COMMON_SOURCES
 set_max_warnings()
 
 add_executable(wwivconfig ${COMMON_SOURCES})
-target_link_libraries(wwivconfig localui core sdk ${CURSES_LIBRARIES})
+target_link_libraries(wwivconfig localui common core sdk ${CURSES_LIBRARIES})

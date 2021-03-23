@@ -20,7 +20,7 @@
 
 
 #include "common/input.h"
-#include "common/menu_data_util.h"
+#include "common/menus/menu_data_util.h"
 #include "core/file.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
@@ -85,7 +85,7 @@ class printfile_opts {
 public:
   printfile_opts(SessionContext& sc, Output& out, const std::string& raw, bool abtable, bool forcep)
     : sess(sc), out_(out), abortable(abtable), force_pause(forcep) {
-    menu_data_and_options_t t(raw);
+    menus::menu_data_and_options_t t(raw);
     data_ = t.data();
     saved_disable_pause = sess.disable_pause();
     saved_user_has_pause = out.user().pause();

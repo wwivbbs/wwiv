@@ -30,6 +30,8 @@
 #include "localui/wwiv_curses.h"
 #include "local_io/keycodes.h"
 #include "sdk/config.h"
+#include "sdk/value/valueprovider.h"
+
 #include <functional>
 #include <limits>
 #include <stdexcept>
@@ -52,6 +54,11 @@ enum class EditlineResult { PREV, NEXT, DONE, ABORTED };
 
 class NavigationKeyConfig final {
 public:
+  NavigationKeyConfig() = delete;
+  NavigationKeyConfig(const NavigationKeyConfig&) = delete;
+  NavigationKeyConfig(NavigationKeyConfig&&) = delete;
+  NavigationKeyConfig& operator=(const NavigationKeyConfig&) = delete;
+  NavigationKeyConfig& operator=(NavigationKeyConfig&&) = delete;
   explicit NavigationKeyConfig(std::string keys) : keys_(std::move(keys)) {}
   ~NavigationKeyConfig() = default;
 
@@ -118,6 +125,11 @@ static std::string to_restriction_string(T data, int size, const std::string& re
 
 class Item {
 public:
+  Item() = delete;
+  Item(const Item&) = delete;
+  Item(Item&&) = delete;
+  Item& operator=(const Item&) = delete;
+  Item& operator=(Item&&) = delete;
   explicit Item(int width) : x_(0), y_(0), width_(width) {}
   virtual ~Item() = default;
   typedef ssize_t size_type;
@@ -254,7 +266,8 @@ template <typename T> class StringEditItem : public EditItem<T> {
 public:
   StringEditItem(int maxsize, T data, EditLineMode edit_line_mode = EditLineMode::ALL)
     : EditItem<T>(maxsize, data), edit_line_mode_(edit_line_mode) {}
-  virtual ~StringEditItem() = default;
+
+  ~StringEditItem() override = default;
 
   StringEditItem() = delete;
   StringEditItem(StringEditItem const&) = delete;
@@ -279,7 +292,7 @@ private:
   EditLineMode edit_line_mode_;
 };
 
-template <> class StringEditItem<std::string&> : public EditItem<std::string&> {
+template <> class StringEditItem<std::string&> final : public EditItem<std::string&> {
 public:
   StringEditItem(int maxsize, std::string& data, EditLineMode mode)
       : EditItem<std::string&>(maxsize, data), edit_line_mode_(mode) {}
@@ -307,7 +320,7 @@ private:
 
 // String Editor for Strings with Pipe codes.  The UI will attempt to display
 // These with color in the UI when not editing.
-class StringEditItemWithPipeCodes : public EditItem<std::string&> {
+class StringEditItemWithPipeCodes final : public EditItem<std::string&> {
 public:
   StringEditItemWithPipeCodes(int maxsize, std::string& data, EditLineMode mode)
       : EditItem<std::string&>(maxsize, data), edit_line_mode_(mode) {}
@@ -328,9 +341,8 @@ public:
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
     auto s = data_;
-    const auto siz = wwiv::strings::size_without_colors(s);
-    if (siz > width()) {
-      s = wwiv::strings::trim_to_size_ignore_colors(s, width());
+    if (const auto siz = wwiv::strings::size_without_colors(s); siz > width()) {
+      s = strings::trim_to_size_ignore_colors(s, width());
     } else if (siz < width()) {
       const auto num_padding = width() - siz;
       s = s + std::string(num_padding, ' ');
@@ -343,10 +355,12 @@ private:
   EditLineMode edit_line_mode_;
 };
 
-class ACSEditItem : public EditItem<std::string&> {
+class ACSEditItem final : public EditItem<std::string&> {
 public:
-  ACSEditItem(const wwiv::sdk::Config& config, int maxsize, std::string& data)
-      : EditItem<std::string&>(maxsize, data), config_(config), edit_line_mode_(EditLineMode::ALL) {}
+  ACSEditItem(const sdk::Config&, std::vector<const sdk::value::ValueProvider*> p,
+              int maxsize, std::string& data)
+      : EditItem<std::string&>(maxsize, data), providers_(std::move(p)),
+        edit_line_mode_(EditLineMode::ALL) {}
   ~ACSEditItem() override = default;
   ACSEditItem() = delete;
   ACSEditItem(ACSEditItem const&) = delete;
@@ -360,7 +374,7 @@ protected:
   void DefaultDisplay(CursesWindow* window) const override;
 
 private:
-  const wwiv::sdk::Config& config_;
+  std::vector<const sdk::value::ValueProvider*> providers_;
   EditLineMode edit_line_mode_;
 };
 
@@ -390,7 +404,7 @@ template <typename T, int MAXLEN = std::numeric_limits<T>::digits10>
 class NumberEditItem final : public EditItem<T*> {
 public:
   explicit NumberEditItem(T* data) : EditItem<T*>(MAXLEN + 2, data) {}
-  virtual ~NumberEditItem() = default;
+  ~NumberEditItem() override = default;
   NumberEditItem() = delete;
   NumberEditItem(NumberEditItem const&) = delete;
   NumberEditItem(NumberEditItem&&) = delete;
@@ -444,7 +458,8 @@ public:
       this->width_ = std::max<int>(this->width_, wwiv::strings::ssize(item.second));
     }
   }
-  virtual ~ToggleEditItem() = default;
+
+  ~ToggleEditItem() override = default;
   ToggleEditItem() = delete;
   ToggleEditItem(ToggleEditItem const&) = delete;
   ToggleEditItem(ToggleEditItem&&) = delete;
@@ -694,6 +709,7 @@ public:
   CustomEditItem(CustomEditItem&&) = delete;
   CustomEditItem& operator=(CustomEditItem const&) = delete;
   CustomEditItem& operator=(CustomEditItem&&) = delete;
+  ~CustomEditItem() override = default;
 
   EditlineResult Run(CursesWindow* window) override;
   void Display(CursesWindow* window) const override;
@@ -710,7 +726,7 @@ class FilePathItem final : public EditItem<char*> {
 public:
   FilePathItem(int maxsize, const std::string& base, char* data)
       : EditItem<char*>(maxsize, data), base_(base) {
-    help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
+    help_text_ = strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
   }
   FilePathItem() = delete;
   FilePathItem(FilePathItem&) = delete;
@@ -758,7 +774,7 @@ public:
                          std::filesystem::path& data)
       : EditItem<std::filesystem::path&>(maxsize, data), base_(std::move(base)) {
     help_text_ =
-        wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base_.string(), "'");
+        strings::StrCat("Enter an absolute path or path relative to: '", base_.string(), "'");
   }
   ~FileSystemFilePathItem() override = default;
   FileSystemFilePathItem() = delete;
@@ -771,9 +787,9 @@ public:
     window->GotoXY(this->x_, this->y_);
     auto data = this->data_.string();
     const auto return_code = editline(window, &data, this->width_, EDITLINE_FILENAME_CASE, "");
-    wwiv::strings::StringTrimEnd(&data);
+    strings::StringTrimEnd(&data);
     if (!data.empty()) {
-      data = wwiv::core::File::EnsureTrailingSlash(data);
+      data = core::File::EnsureTrailingSlash(data);
     }
     // Update what we display in case it changed.
     DefaultDisplay(window);
@@ -807,7 +823,7 @@ public:
   StringFilePathItem(int maxsize, const std::filesystem::path& base,
                      std::string& data)
       : EditItem<std::string&>(maxsize, data), base_(base) {
-    help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
+    help_text_ = strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
   }
   ~StringFilePathItem() override = default;
 
@@ -821,9 +837,9 @@ public:
     window->GotoXY(this->x_, this->y_);
     const auto return_code =
         editline(window, &this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
-    wwiv::strings::StringTrimEnd(&this->data_);
+    strings::StringTrimEnd(&this->data_);
     if (!data_.empty()) {
-      data_ = wwiv::core::File::EnsureTrailingSlash(data_);
+      data_ = core::File::EnsureTrailingSlash(data_);
     }
     // Update what we display in case it changed.
     DefaultDisplay(window);
@@ -864,7 +880,7 @@ public:
     window->GotoXY(this->x_, this->y_);
     const auto return_code =
         editline(window, this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
-    wwiv::strings::StringTrimEnd(this->data_);
+    strings::StringTrimEnd(this->data_);
     return return_code;
   }
 
@@ -886,11 +902,16 @@ public:
   SubDialog(const wwiv::sdk::Config& c, T& t)
       : BaseEditItem(25), c_(c), t_(t) {}
   ~SubDialog() override = default;
+  SubDialog() = delete;
+  SubDialog(const SubDialog&) = delete;
+  SubDialog(SubDialog&&) = delete;
+  SubDialog& operator=(const SubDialog&) = delete;
+  SubDialog& operator=(SubDialog&&) = delete;
 
   virtual void RunSubDialog(CursesWindow* window) = 0;
 
   EditlineResult Run(CursesWindow* window) override {
-    wwiv::core::ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    core::ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
     curses_out->footer()->ShowHelpItems(
         0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
@@ -923,7 +944,7 @@ protected:
   [[nodiscard]] const wwiv::sdk::Config& config() const noexcept { return c_; }
   [[nodiscard]] virtual std::string menu_label() const { return "[Press Enter to Edit]"; }
 
-  const wwiv::sdk::Config& c_;
+  const sdk::Config& c_;
   T& t_;
 };
 
@@ -934,17 +955,22 @@ protected:
  */
 template <class T> class SubDialogFunction final : public SubDialog<T> {
 public:
-  SubDialogFunction(const wwiv::sdk::Config& c, T& t,
-                    std::function<void(const wwiv::sdk::Config&, T&, CursesWindow*)> fn)
-      : SubDialog<T>(c, t), c_(c), t__(t), fn_(std::move(fn)) {}
+  SubDialogFunction() = delete;
+  SubDialogFunction(const SubDialogFunction&) = delete;
+  SubDialogFunction(SubDialogFunction&&) = delete;
+  SubDialogFunction& operator=(const SubDialogFunction&) = delete;
+  SubDialogFunction& operator=(SubDialogFunction&&) = delete;
+  SubDialogFunction(const sdk::Config& c, T& t,
+                    std::function<void(const sdk::Config&, T&, CursesWindow*)> fn)
+      : SubDialog<T>(c, t), c_(c), typ_(t), fn_(std::move(fn)) {}
   ~SubDialogFunction() override = default;
 
-  void RunSubDialog(CursesWindow* window) override { fn_(c_, t__, window); }
+  void RunSubDialog(CursesWindow* window) override { fn_(c_, typ_, window); }
 
 private:
   // For some reason GCC couldn't find config() or t_ from SubDialog.
-  const wwiv::sdk::Config& c_;
-  T& t__;
+  const sdk::Config& c_;
+  T& typ_;
   std::function<void(const wwiv::sdk::Config&, T&, CursesWindow*)> fn_;
 };
 
@@ -953,7 +979,7 @@ private:
  * edit the items. It is intended that this function will invoke
  * a new EditItem dialog or ListBox for editing.
  */
-class EditExternalFileItem : public BaseEditItem {
+class EditExternalFileItem final : public BaseEditItem {
 public:
   explicit EditExternalFileItem(std::filesystem::path path);
   ~EditExternalFileItem() override = default;
@@ -964,7 +990,7 @@ public:
   EditExternalFileItem& operator=(EditExternalFileItem&&) = delete;
 
   EditlineResult Run(CursesWindow* window) override {
-    wwiv::core::ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    core::ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
     curses_out->footer()->ShowHelpItems(
         0, {{"Esc", "Exit"}, {"ENTER", "Edit File (opens editor)"}});
     window->GotoXY(x_, y_);
@@ -1000,7 +1026,7 @@ public:
   }
 
 protected:
-  [[nodiscard]] virtual std::string menu_label() const { return "[Edit]"; }
+  [[nodiscard]] std::string menu_label() const noexcept { return "[Edit]"; }
 
   const std::filesystem::path path_;
 };

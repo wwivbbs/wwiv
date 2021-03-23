@@ -16,14 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_COMMON_MENU_DATA_UTIL_H
-#define INCLUDED_COMMON_MENU_DATA_UTIL_H
+#ifndef INCLUDED_COMMON_MENUS_MENU_DATA_UTIL_H
+#define INCLUDED_COMMON_MENUS_MENU_DATA_UTIL_H
 
 #include <map>
 #include <set>
 #include <string>
 
-namespace wwiv::common {
+namespace wwiv::common::menus {
 
 class menu_data_and_options_t {
 public:
@@ -33,7 +33,7 @@ public:
   [[nodiscard]] const std::string& data() const;
   [[nodiscard]] auto size() const noexcept { return opts_.size(); }
   [[nodiscard]] bool opts_empty() const noexcept { return opts_.empty(); }
-  [[nodiscard]] const std::multimap<std::string, std::string>& opts() { return opts_; }
+  [[nodiscard]] const std::multimap<std::string, std::string>& opts() const { return opts_; }
 private:
   std::string data_;
   std::multimap<std::string, std::string> opts_;

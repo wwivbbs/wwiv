@@ -126,6 +126,12 @@ public:
   [[nodiscard]] User& u() override { return *app_->user(); }
   [[nodiscard]] SessionContext& session_context() override { return app_->sess(); }
   [[nodiscard]] bool mci_enabled() const override { return bout.mci_enabled(); }
+  [[nodiscard]] const std::vector<editorrec>& editors() const override {
+    return app_->editors;
+  }
+  [[nodiscard]] const Chains& chains() const override {
+    return *app_->chains;
+  }
 
 private:
   Application* app_;

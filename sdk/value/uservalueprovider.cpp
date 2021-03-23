@@ -95,28 +95,16 @@ UserValueProvider::UserValueProvider(const Config& config, const User& user, int
   fns_.try_emplace("messages_posted", [&]() { return val(user_.messages_posted()); });
   fns_.try_emplace("posts_today", [&]() { return val(user_.posts_today()); });
   fns_.try_emplace("posts_net", [&]() { return val(user_.posts_net()); });
-  fns_.try_emplace("messages_read", [&]()
-  {
-    return val(static_cast<int>(user_.messages_read()));
-  });
+  fns_.try_emplace("messages_read", [&]() { return val(user_.messages_read()); });
   fns_.try_emplace("email_today", [&]() { return val(user_.email_today()); });
   fns_.try_emplace("email_sent_local", [&]() { return val(user_.email_sent()); });
   fns_.try_emplace("feedback_sent", [&]() { return val(user_.feedback_sent()); });
-  fns_.try_emplace("email_sent_net", [&]()
-  {
-    return val(user_.email_net());
-  });
+  fns_.try_emplace("email_sent_net", [&]() { return val(user_.email_net()); });
   fns_.try_emplace("chains_run", [&]() { return val(user_.chains_run()); });
   fns_.try_emplace("uploaded", [&]() { return val(user_.uploaded()); });
-  fns_.try_emplace("uk", [&]()
-  {
-    return val(static_cast<int>(user_.uk()));
-  });
+  fns_.try_emplace("uk", [&]() { return val(user_.uk()); });
   fns_.try_emplace("downloaded", [&]() { return val(user_.downloaded()); });
-  fns_.try_emplace("dk", [&]()
-  {
-    return val(user_.dk());
-  });
+  fns_.try_emplace("dk", [&]() { return val(user_.dk()); });
 }
 
 std::optional<Value> UserValueProvider::value(const std::string& name) const {

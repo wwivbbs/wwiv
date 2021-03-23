@@ -263,9 +263,6 @@ bool SaveCommandHelpJSON(const std::string& datadir, const std::vector<menu_comm
 
 enum class menu_type_t { short_menu, long_menu };
 
-std::vector<std::string> GenerateMenuLines(const Config& config, int eff_sl, const menu_56_t& menu,
-                                           const sdk::User& user, menu_type_t typ);
-
 
 } 
 #endif

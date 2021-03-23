@@ -23,6 +23,7 @@
 #include "common/remote_io.h"
 #include "core_test/file_helper.h"
 #include "local_io/local_io.h"
+#include "sdk/chains.h"
 #include "sdk/config.h"
 #include "sdk/user.h"
 #include <memory>
@@ -148,15 +149,18 @@ private:
 
 class TestContext final : public wwiv::common::Context {
 public:
-  explicit TestContext(CommonHelper& helper)
-      : helper_(helper), sess_ctx_(helper_.io()->local_io()) {}
+  explicit TestContext(CommonHelper& helper);
   [[nodiscard]] wwiv::sdk::Config& config() override { return helper_.config(); }
   [[nodiscard]] wwiv::sdk::User& u() override { return *helper_.user(); }
   wwiv::common::SessionContext& session_context() override { return sess_ctx_; }
   [[nodiscard]] bool mci_enabled() const override { return true; }
+  [[nodiscard]] const std::vector<editorrec>& editors() const { return editors_; }
+  [[nodiscard]] const wwiv::sdk::Chains& chains() const { return chains_; }
 
   CommonHelper& helper_;
   wwiv::common::SessionContext sess_ctx_;
+  std::vector<editorrec> editors_;
+  wwiv::sdk::Chains chains_;
 };
 
 #endif

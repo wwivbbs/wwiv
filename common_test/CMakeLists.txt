@@ -3,6 +3,7 @@ include_directories(${GMOCK_INCLUDE_DIR})
 include(GoogleTest)
 
 set(test_sources
+  "acs_test.cpp"
   "input_range_test.cpp"
   "common_test_main.cpp"
   "menu_data_util_test.cpp"

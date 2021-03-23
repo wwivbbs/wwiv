@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "common/menu_data_util.h"
+#include "common/menus/menu_data_util.h"
 
 #include "core/strings.h"
 
-namespace wwiv::common {
+namespace wwiv::common::menus {
 
 
 menu_data_and_options_t::menu_data_and_options_t(const std::string& raw) {

@@ -65,7 +65,7 @@
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
-#include "common/menu_data_util.h"
+#include "common/menus/menu_data_util.h"
 #include "common/output.h"
 #include "common/pause.h"
 #include "common/quote.h"
@@ -390,7 +390,7 @@ void Vote() {
 }
 
 void ToggleExpert(const std::string& data) {
-  const menu_data_and_options_t opts(data);
+  const common::menus::menu_data_and_options_t opts(data);
   a()->user()->toggle_flag(User::flag_expert);
   auto o = opts.opts("quiet");
   if (const auto quiet = !o.empty() && *std::begin(o) == "off"; !quiet) {
@@ -640,12 +640,12 @@ void ChatRoom() {
 void ClearQScan() {
   bout.nl();
   bout << "|#5Mark messages as read on [C]urrent sub or [A]ll subs (A/C/Q)? ";
-  switch (char ch = onek("QAC\r"); ch) {
+  switch (const auto ch = onek("QAC\r"); ch) {
   case 'Q':
   case RETURN:
     break;
   case 'A': {
-    auto status = a()->status_manager()->get_status();
+    const auto status = a()->status_manager()->get_status();
     for (int i = 0; i < a()->config()->max_subs(); i++) {
       a()->sess().qsc_p[i] = status->qscanptr() - 1L;
     }

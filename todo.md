@@ -3,6 +3,8 @@
 ***
 
 # TODO Cleanups
+* Add editors, and such into Context (and then have ApplicationContext call Application
+  to provide it) -- Then we can use it from the UserValueProvier
 * redo readmail(...) It's a friggin mess.
 * make nightly event or fix check for mail forwarded to a deleted user, and then fix that.
 

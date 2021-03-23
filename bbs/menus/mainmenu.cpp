@@ -21,19 +21,20 @@
 #include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/instmsg.h"
-#include "bbs/menus/config_menus.h"
-#include "bbs/menus/menucommands.h"
 #include "bbs/mmkey.h"
 #include "bbs/sysoplog.h"
+#include "bbs/menus/config_menus.h"
+#include "bbs/menus/menucommands.h"
 #include "common/printfile.h"
+#include "common/menus/menu_generator.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 
 #include <string>
 
 using namespace wwiv::core;
+using namespace wwiv::common::menus;
 using namespace wwiv::strings;
-using namespace wwiv::core;
 using namespace wwiv::sdk::menus;
 
 namespace wwiv::bbs::menus {

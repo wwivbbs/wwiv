@@ -136,3 +136,6 @@ unsigned int TestRemoteIO::write(const char *buffer, unsigned int count, bool) {
   return count;
 }
 
+TestContext::TestContext(CommonHelper& helper)
+    : helper_(helper), sess_ctx_(helper_.io()->local_io()), chains_(helper.config()) {}
+

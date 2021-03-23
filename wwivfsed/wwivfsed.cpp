@@ -36,6 +36,7 @@
 #include "fsed/fsed.h"
 #include "fsed/model.h"
 #include "local_io/local_io.h"
+#include "sdk/chains.h"
 #include "sdk/filenames.h"
 #include "wwivfsed/fsedconfig.h"
 
@@ -57,6 +58,10 @@ using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
 namespace wwiv::wwivfsed {
+
+FsedContext::FsedContext(local::io::LocalIO* local_io)
+    : sess_(local_io), config_("", {}), chains_(config_) {}
+  
 
 FsedApplication::FsedApplication(std::unique_ptr<FsedConfig> config)
     : config_(std::move(config)), 

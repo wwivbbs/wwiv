@@ -23,7 +23,6 @@ set(test_sources
   "subxtr_test.cpp"
   "msgapi/type2_text_test.cpp"
   "user_test.cpp"
-  "acs/acs_test.cpp"
   "acs/ar_test.cpp"
   "acs/expr_test.cpp"
   "acs/value_test.cpp"
