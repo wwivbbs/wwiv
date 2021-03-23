@@ -27,6 +27,8 @@
 #include "bbs/menus/menucommands.h"
 #include "common/printfile.h"
 #include "common/menus/menu_generator.h"
+#include "common/value/bbsvalueprovider.h"
+#include "common/value/uservalueprovider.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 
@@ -348,7 +350,11 @@ void Menu::GenerateMenu(menu_type_t typ) {
 
 
 std::vector<std::string> Menu::GenerateMenuAsLines(menu_type_t typ) {
-  return GenerateMenuLines(*a()->config(), a()->sess().effective_sl(), menu(), *a()->user(), typ);
+  const common::value::UserValueProvider up(a()->context());
+  const common::value::BbsValueProvider bp(*a()->config(), a()->sess());
+  const std::vector<const wwiv::sdk::value::ValueProvider*> providers{&up, &bp};
+  return GenerateMenuLines(*a()->config(), menu(), *a()->user(),
+                           providers, typ);
 }
 
 

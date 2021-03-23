@@ -41,9 +41,7 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
     return true;
   }
 
-  const auto eff_sl = a()->sess().effective_sl();
-  const auto& eslrec = a()->config()->sl(eff_sl);
-  const UserValueProvider user_provider(*a()->config(), *a()->user(), eff_sl, eslrec);
+  const UserValueProvider user_provider(a()->context());
   const BbsValueProvider bbs_provider(*a()->config(), a()->sess());
 
   auto [result, debug_info] =
@@ -60,8 +58,7 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
 }
 
 bool validate_acs(const std::string& expression, acs_debug_t debug) {
-  const auto eff_sl = a()->sess().effective_sl();
-  const UserValueProvider up(*a()->config(), *a()->user(), eff_sl, a()->config()->sl(eff_sl));
+  const UserValueProvider up(a()->context());
   const BbsValueProvider bbsp(*a()->config(), a()->sess());
   auto [result, ex_what, debug_info] = 
     sdk::acs::validate_acs(expression, &up, &bbsp);

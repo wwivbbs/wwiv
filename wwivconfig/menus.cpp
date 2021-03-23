@@ -19,6 +19,7 @@
 #include "wwivconfig/menus.h"
 
 #include "common/menus/menu_generator.h"
+#include "common/value/bbsvalueprovider.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/log.h"
@@ -34,6 +35,7 @@
 #include "sdk/fido/fido_callout.h"
 #include "sdk/menus/menu.h"
 #include "common/value/uservalueprovider.h"
+#include "local_io/null_local_io.h"
 #include "sdk/value/valueprovider.h"
 
 #include <filesystem>
@@ -50,13 +52,20 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static auto create_providers(const Config& config) -> std::vector<const value::ValueProvider*> {
+  const UserManager um(config);
   User user{};
-  user.sl(255);
-  user.dsl(255);
-  user.ar_int(0xffff);
-  user.dar_int(0xffff);
+  if (!um.readuser(&user, 1)) {
+    user.set_name("SYSOP");
+    user.sl(255);
+    user.dsl(255);
+  }
   UserValueProvider up(config, user, 255, config.sl(255));
-  std::vector<const value::ValueProvider*> providers{&up};
+
+  wwiv::local::io::NullLocalIO null_io;
+  const wwiv::common::SessionContext sess(&null_io);
+  BbsValueProvider bbs_provider(config, sess);
+
+  std::vector<const value::ValueProvider*> providers{&up, &bbs_provider};
   return providers; 
 }
 
@@ -380,8 +389,9 @@ protected:
  */
 class ShowGeneratedMenuSubDialog : public BaseEditItem {
 public:
-  ShowGeneratedMenuSubDialog(const Config& config, const menus::menu_56_t& menu) : BaseEditItem(10)
-    ,config_(config), menu_(menu) {}
+  ShowGeneratedMenuSubDialog(const Config& config, std::vector<const value::ValueProvider*> p,
+                             const menus::menu_56_t& menu)
+      : BaseEditItem(10), config_(config), providers_(p), menu_(menu) {}
   ~ShowGeneratedMenuSubDialog() override = default;
   ShowGeneratedMenuSubDialog() = delete;
   ShowGeneratedMenuSubDialog(ShowGeneratedMenuSubDialog const&) = delete;
@@ -405,13 +415,13 @@ public:
     window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
     if (ch == KEY_ENTER || ch == wwiv::local::io::TAB || ch == wwiv::local::io::ENTER) {
       curses_out->Cls();
-      UserManager um(config_);
       User user{};
-      if (!um.readuser(&user, 1)) {
-        user.sl(255);
-        user.dsl(255);
-      }
-      const auto lines = wwiv::common::menus::GenerateMenuLines(config_, 255, menu_, user, menus::menu_type_t::short_menu);
+      user.SetScreenChars(80);
+      user.SetScreenLines(24);
+      user.sl(255);
+      user.dsl(255);
+      const auto lines = wwiv::common::menus::GenerateMenuLines(
+          config_, menu_, user, providers_, menus::menu_type_t::short_menu);
       auto y = 1;
       for (const auto& l : lines) {
         curses_out->window()->PutsWithPipeColors(0, y++, l);
@@ -438,6 +448,7 @@ protected:
   [[nodiscard]] virtual std::string menu_label() const { return "[View]"; }
 
   const Config& config_;
+  const std::vector<const value::ValueProvider*> providers_;
   const menus::menu_56_t& menu_;
 };
 
@@ -473,11 +484,12 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
   const auto title = StrCat("Menu: ", menu_name);
   auto y = 1;
   auto& h = m.menu;
+  auto providers = create_providers(config);
   items.add(new Label("Title:"),
             new StringEditItemWithPipeCodes(55, h.title, EditLineMode::ALL),
             "This is the title to display at the top of the menu", 1, y);
   y++;
-  items.add(new Label("ACS:"), new ACSEditItem(config, create_providers(config), 55, h.acs),
+  items.add(new Label("ACS:"), new ACSEditItem(config, providers, 55, h.acs),
             "WWIV ACS required to access this menu", 1, y);
   y++;
   items.add(new Label("Number Keys:"),
@@ -514,7 +526,7 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
   y++;
   items.add(new Label("Menu Items:"), new MenuItemsSubDialog(config, h.items), "", 1, y);
   y++;
-  items.add(new Label("View Menu:"), new ShowGeneratedMenuSubDialog(config, h), 
+  items.add(new Label("View Menu:"), new ShowGeneratedMenuSubDialog(config, providers, h), 
     "Display the generated menu for the sysop user.", 1, y);
   y++;
 

@@ -64,7 +64,7 @@ int AcsCommand::Execute() {
   Eval eval(expr);
   const auto sl = user->sl();
   const auto& slr = config()->config()->sl(sl);
-  wwiv::common::value::UserValueProvider u(*config()->config(), user.value(), sl, slr);
+  common::value::UserValueProvider u(*config()->config(), user.value(), sl, slr);
   eval.add(&u);
 
   const auto result = eval.eval();

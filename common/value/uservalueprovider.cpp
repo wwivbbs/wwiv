@@ -40,6 +40,20 @@ template <typename T> static std::optional<sdk::value::Value> val(T&& v) {
   return std::make_optional<Value>(std::forward<T>(v));
 }
 
+UserValueProvider::UserValueProvider(Context& c, int effective_sl)
+  : UserValueProvider(c.config(), c.u(), effective_sl, c.config().sl(effective_sl)) {
+  fns_.try_emplace("editorname", [&]() {
+    const auto editor_num = user_.GetDefaultEditor();
+    if (editor_num == 0xff) {
+      return val("Full Screen");
+    }
+    if (editor_num > 0 && editor_num <= stl::size_int(editors_)) {
+      return val(editors_[editor_num - 1].description);
+    }
+    return val("Line");
+  });
+}
+
 UserValueProvider::UserValueProvider(const sdk::Config& config, const sdk::User& user, int effective_sl,
                                      slrec sl)
   : ValueProvider("user"), config_(config), user_(user), effective_sl_(effective_sl), sl_(sl) {
@@ -60,7 +74,6 @@ UserValueProvider::UserValueProvider(const sdk::Config& config, const sdk::User&
   });
   fns_.try_emplace("guest", [&]() { return val(user_.guest_user()); });
   fns_.try_emplace("validated", [&]() { return val(effective_sl_ >= config_.validated_sl()); });
-  //fns_.try_emplace("***", [&]() { return val(user_.dsl()); });
   fns_.try_emplace("screenlines", [&]() { return val(user_.GetScreenLines()); });
   fns_.try_emplace("screenwidth", [&]() { return val(user_.GetScreenChars()); });
   fns_.try_emplace("ansi", [&]() { return val(user_.ansi()); });
@@ -70,7 +83,6 @@ UserValueProvider::UserValueProvider(const sdk::Config& config, const sdk::User&
   });
   fns_.try_emplace("pause", [&]() { return val(user_.pause()); });
   fns_.try_emplace("mailbox_state", [&]() { return val(user_.mailbox_state()); });
-  // TODO fns_.try_emplace("editorname", [&]() { return val(user_.name()); });
   fns_.try_emplace("extcolors", [&]() { return val(user_.extra_color()); });
   fns_.try_emplace("optional_lines", [&]() { return val(user_.GetOptionalVal()); });
   fns_.try_emplace("conferencing", [&]() { return val(user_.use_conference()); });
@@ -108,6 +120,12 @@ UserValueProvider::UserValueProvider(const sdk::Config& config, const sdk::User&
   fns_.try_emplace("downloaded", [&]() { return val(user_.downloaded()); });
   fns_.try_emplace("dk", [&]() { return val(user_.dk()); });
 }
+
+UserValueProvider::UserValueProvider(Context& c)
+    : UserValueProvider(c, c.session_context().effective_sl() != 0
+                               ? c.session_context().effective_sl()
+                               : c.u().sl()) {}
+
 
 std::optional<Value> UserValueProvider::value(const std::string& name) const {
   if (const auto it = fns_.find(name); it != std::end(fns_)) {

@@ -18,6 +18,8 @@
 #ifndef INCLUDED_SDK_VALUEPROVIDER_USERVALUEPROVIDER_H
 #define INCLUDED_SDK_VALUEPROVIDER_USERVALUEPROVIDER_H
 
+#include "common/context.h"
+#include "sdk/chains.h"
 #include "sdk/config.h"
 #include "sdk/user.h"
 #include "sdk/value/value.h"
@@ -37,6 +39,8 @@ public:
    * the duration of this instance lifetime.
    */
   UserValueProvider(const sdk::Config& config, const sdk::User& user, int effective_sl, slrec sl);
+  explicit UserValueProvider(Context& c);
+  UserValueProvider(Context& context, int effective_sl);
   [[nodiscard]] std::optional<sdk::value::Value> value(const std::string& name) const override;
 
 private:
@@ -46,6 +50,8 @@ private:
   const sdk::User& user_;
   int effective_sl_;
   slrec sl_;
+  std::vector<editorrec> editors_;
+  sdk::Chains chains_;
 };
 
 }

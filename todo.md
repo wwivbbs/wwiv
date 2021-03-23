@@ -3,8 +3,7 @@
 ***
 
 # TODO Cleanups
-* Add editors, and such into Context (and then have ApplicationContext call Application
-  to provide it) -- Then we can use it from the UserValueProvier
+* Make ShowGeneratedMenuSubDialog take the same vector of providers that ACSEditItem does
 * redo readmail(...) It's a friggin mess.
 * make nightly event or fix check for mail forwarded to a deleted user, and then fix that.
 

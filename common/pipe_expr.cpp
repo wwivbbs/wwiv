@@ -140,8 +140,7 @@ std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
     if (eff_sl == 0) {
       eff_sl = context_.u().sl();
     }
-    const auto& eslrec = context_.config().sl(eff_sl);
-    const value::UserValueProvider user(context_.config(), context_.u(), eff_sl, eslrec);
+    const value::UserValueProvider user(context_);
     return user.value(suffix)->as_string();
   }
   if (prefix == "bbs") {
@@ -251,13 +250,8 @@ std::string eval_fn_if(Context& context_, const std::vector<pipe_expr_token_t>& 
   const auto yes = args.at(1).lexeme;
   const auto no = args.at(2).lexeme;
 
-  auto eff_sl = context_.session_context().effective_sl();
-  if (eff_sl == 0) {
-    eff_sl = context_.u().sl();
-  }
-  const auto& eslrec = context_.config().sl(eff_sl);
   const value::BbsValueProvider bbs_provider(context_.config(), context_.session_context());
-  const value::UserValueProvider user_provider(context_.config(), context_.u(), eff_sl, eslrec);
+  const value::UserValueProvider user_provider(context_);
   const auto b = check_acs_pipe(expr, context_.value_providers(), &user_provider, &bbs_provider);
   return b ? yes : no;
 }
