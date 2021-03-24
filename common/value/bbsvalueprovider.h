@@ -27,6 +27,7 @@
 
 namespace wwiv {
 namespace common {
+class Context;
 class SessionContext;
 }
 }
@@ -42,7 +43,8 @@ public:
    * Constructs a new ValueProvider.  'user' must remain valid for 
    * the duration of this instance lifetime.
    */
-  BbsValueProvider(const sdk::Config& config, const common::SessionContext& sess);
+  BbsValueProvider(const sdk::Config& config, const SessionContext& sess);
+  explicit BbsValueProvider(Context& context);
   [[nodiscard]] std::optional<sdk::value::Value> value(const std::string& name) const override;
 
 private:

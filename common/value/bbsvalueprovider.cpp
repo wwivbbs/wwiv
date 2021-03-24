@@ -47,6 +47,10 @@ BbsValueProvider::BbsValueProvider(const Config& config,  const common::SessionC
   : ValueProvider("bbs"), config_(config), sess_(sess) {
 }
 
+BbsValueProvider::BbsValueProvider(common::Context& context)
+  : BbsValueProvider(context.config(), context.session_context()) {
+}
+
 std::optional<Value> BbsValueProvider::value(const std::string& name) const {
   if (iequals(name, "name")) {
     return val(config_.system_name());

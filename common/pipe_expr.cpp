@@ -136,10 +136,6 @@ std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
   const auto [prefix, suffix] = SplitOnceLast(t.lexeme, ".");
   if (prefix == "user") {
     // Only create user if we need it, also don't cache it since eff_sl can change
-    auto eff_sl = context_.session_context().effective_sl();
-    if (eff_sl == 0) {
-      eff_sl = context_.u().sl();
-    }
     const value::UserValueProvider user(context_);
     return user.value(suffix)->as_string();
   }
@@ -250,7 +246,7 @@ std::string eval_fn_if(Context& context_, const std::vector<pipe_expr_token_t>& 
   const auto yes = args.at(1).lexeme;
   const auto no = args.at(2).lexeme;
 
-  const value::BbsValueProvider bbs_provider(context_.config(), context_.session_context());
+  const value::BbsValueProvider bbs_provider(context_);
   const value::UserValueProvider user_provider(context_);
   const auto b = check_acs_pipe(expr, context_.value_providers(), &user_provider, &bbs_provider);
   return b ? yes : no;
