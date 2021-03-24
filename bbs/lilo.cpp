@@ -606,7 +606,7 @@ static std::string process_net_log_line(const std::string& line) {
   const auto node = StringTrim(line.substr(21, 5));
   const auto sent = StringTrim(line.substr(30, 5));
   const auto recd = StringTrim(line.substr(39, 5));
-  const auto net_name = StringTrim(line.substr(64, 8));
+  const auto net_name = StringTrim(line.substr(64));
 
   const auto& net = a()->nets().at(net_name);
   auto b = BbsListNet::ReadBbsDataNet(net.dir);
