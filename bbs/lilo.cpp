@@ -703,8 +703,7 @@ static void DisplayUserLoginInformation() {
   } else {
     bout << "None.\r\n";
   }
-  const auto la = a()->user()->last_address();
-  if (!la.empty()) {
+  if (const auto la = a()->user()->last_address(); !la.empty()) {
     bout << "|#9Last IP Address|#0... |#2" << la << wwiv::endl;
   }
 

@@ -21,6 +21,7 @@
 #include "common/output.h"
 #include "common/value/bbsvalueprovider.h"
 #include "common/value/uservalueprovider.h"
+#include "core/log.h"
 #include "sdk/acs/acs.h"
 #include "sdk/acs/eval.h"
 #include "sdk/value/valueprovider.h"
@@ -132,16 +133,90 @@ std::vector<pipe_expr_token_t> PipeEval::tokenize(std::string::const_iterator& i
   return r;
 }
 
-std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
-  const auto [prefix, suffix] = SplitOnceLast(t.lexeme, ".");
+// TODO(rushfan): We need a unit test for this.
+pipe_fmt_mask parse_mask(const std::string& mask) {
+  pipe_fmt_mask r{};
+
+  std::string l;
+  bool seen_alignment{false};
+  for (char c : mask) {
+    if (c == '<' && !seen_alignment) {
+      seen_alignment = true;
+      r.align = pipe_fmt_align_t::left;
+      if (!l.empty()) {
+        r.pad = l.front();
+        l.clear();
+      }
+      continue;
+    }
+    if (c == '>' && !seen_alignment) {
+      seen_alignment = true;
+      r.align = pipe_fmt_align_t::right;
+      if (!l.empty()) {
+        r.pad = l.front();
+        l.clear();
+      }
+      continue;
+    }
+    if (c == '^' && !seen_alignment) {
+      seen_alignment = true;
+      r.align = pipe_fmt_align_t::mid;
+      if (!l.empty()) {
+        r.pad = l.front();
+        l.clear();
+      }
+      continue;
+    }
+    l.push_back(c);
+  }
+  if (!seen_alignment) {
+    
+  }
+  if (!l.empty()) {
+    r.len = to_number<int>(l);
+  }
+  return r;
+}
+
+static std::string pipe_fmt(const std::string& var, const std::string& mask) {
+  if (mask.empty()) {
+    return var;
+  }
+  const auto m = parse_mask(mask);
+  auto s = var;
+  if (m.len != 0) {
+    if (const auto siz = stl::size_int(s); siz > m.len) {
+      s = s.substr(0, m.len);
+    } else if (siz < m.len) {
+      switch (m.align) {
+      case pipe_fmt_align_t::left:
+        StringJustify(&s, m.len, m.pad, JustificationType::LEFT);
+        break;
+      case pipe_fmt_align_t::mid: {
+        const auto rlen = (m.len - siz) / 2;
+        const auto llen = m.len - siz - rlen;
+        s = StrCat(std::string(llen, m.pad), s, std::string(rlen, m.pad));
+      } break;
+      case pipe_fmt_align_t::right:
+        StringJustify(&s, m.len, m.pad, JustificationType::RIGHT);
+        break;
+      }
+    }
+  }
+  return s;
+}
+
+std::string PipeEval::eval_variable(const std::string& var, const std::vector<pipe_expr_token_t>& remaining) {
+  const auto [prefix, suffix] = SplitOnceLast(var, ".");
+  const auto mask = !remaining.empty() ? remaining.front().lexeme : "";
   if (prefix == "user") {
     // Only create user if we need it, also don't cache it since eff_sl can change
     const value::UserValueProvider user(context_);
-    return user.value(suffix)->as_string();
+    return pipe_fmt(user.value(suffix)->as_string(), mask);
   }
   if (prefix == "bbs") {
     const value::BbsValueProvider bbs_provider(context_.config(), context_.session_context());
-    return bbs_provider.value(suffix)->as_string();
+    return pipe_fmt(bbs_provider.value(suffix)->as_string(), mask);
   }
 
   for (const auto& v : context_.value_providers()) {
@@ -152,7 +227,7 @@ std::string PipeEval::eval_variable(const pipe_expr_token_t& t) {
   }
 
   // Passthrough unknown variables.
-  return StrCat("{", t.lexeme, "}"); // HACK
+  return StrCat("{", var, "}"); // HACK
 }
 
 static bool is_truthy(const std::string& s) {
@@ -280,15 +355,11 @@ std::string PipeEval::eval(std::vector<pipe_expr_token_t>& tokens) {
   if  (f.type == pipe_expr_token_type_t::number_literal) {
     return f.lexeme;
   }
+  const std::vector<pipe_expr_token_t> remaining(std::begin(tokens)+1, std::end(tokens));
   if (f.type == pipe_expr_token_type_t::variable) {
-    return eval_variable(f);
+    return eval_variable(f.lexeme, remaining);
   }
   if (f.type == pipe_expr_token_type_t::fn) {
-    if (tokens.size() == 1) {
-      const std::vector<pipe_expr_token_t> empty;
-      return eval_fn(f.lexeme, empty);
-    }
-    const std::vector<pipe_expr_token_t> remaining(std::begin(tokens)+1, std::end(tokens));
     return eval_fn(f.lexeme, remaining);
   }
   return {};

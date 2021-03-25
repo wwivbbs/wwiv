@@ -42,3 +42,66 @@ TEST(PipeExprTest, If) {
   helper.sess().effective_sl(100);
   EXPECT_EQ("Junior Level", eval.eval(R"({if "user.sl >= 200", "Senior Level", "Junior Level"})"));
 }
+
+TEST(PipeExprTest, Fmt_LeftPad) {
+  CommonHelper helper;
+  helper.user()->set_name("rf");
+  PipeEval eval(helper.context());
+  EXPECT_EQ("rf  ", eval.eval(R"({user.name, "<4"})"));
+}
+
+TEST(PipeExprTest, Fmt_RightPad) {
+  CommonHelper helper;
+  helper.user()->set_name("rf");
+  PipeEval eval(helper.context());
+  EXPECT_EQ("  rf", eval.eval(R"({user.name, ">4"})"));
+}
+
+TEST(PipeExprTest, Fmt_MidPad) {
+  CommonHelper helper;
+  helper.user()->set_name("rf");
+  PipeEval eval(helper.context());
+  EXPECT_EQ("  rf ", eval.eval(R"({user.name, "^5"})"));
+}
+
+TEST(PipeExpr_ParseFmtMaskTest, Smoke) {
+  const auto m = parse_mask("<20");
+  EXPECT_EQ(m.align, pipe_fmt_align_t::left);
+  EXPECT_EQ(20, m.len);
+  EXPECT_EQ(' ', m.pad);
+}
+
+TEST(PipeExpr_ParseFmtMaskTest, PadChar) {
+  const auto m = parse_mask("X<10");
+  EXPECT_EQ(m.align, pipe_fmt_align_t::left);
+  EXPECT_EQ(10, m.len);
+  EXPECT_EQ('X', m.pad);
+}
+
+TEST(PipeExprTest, Fmt_LeftPadCustomChar) {
+  CommonHelper helper;
+  helper.user()->set_name("rf");
+  PipeEval eval(helper.context());
+  EXPECT_EQ("rf**", eval.eval(R"({user.name, "*<4"})"));
+}
+
+TEST(PipeExprTest, Fmt_MidPadCustomChar) {
+  CommonHelper helper;
+  helper.user()->set_name("rf");
+  PipeEval eval(helper.context());
+  EXPECT_EQ("***rf**", eval.eval(R"({user.name, "*^7"})"));
+}
+
+TEST(PipeExpr_ParseFmtMaskTest, Right) {
+  const auto m = parse_mask(">10");
+  EXPECT_EQ(m.align, pipe_fmt_align_t::right);
+  EXPECT_EQ(10, m.len);
+}
+
+TEST(PipeExpr_ParseFmtMaskTest, OnlyLength) {
+  const auto m = parse_mask("10");
+  EXPECT_EQ(m.align, pipe_fmt_align_t::left);
+  EXPECT_EQ(10, m.len);
+  EXPECT_EQ(' ', m.pad);
+}
+

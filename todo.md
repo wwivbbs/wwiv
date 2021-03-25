@@ -3,7 +3,6 @@
 ***
 
 # TODO Cleanups
-* Make ShowGeneratedMenuSubDialog take the same vector of providers that ACSEditItem does
 * redo readmail(...) It's a friggin mess.
 * make nightly event or fix check for mail forwarded to a deleted user, and then fix that.
 

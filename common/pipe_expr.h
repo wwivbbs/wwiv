@@ -29,11 +29,8 @@ public:
   std::string eval(std::string);
 
 private:
-  std::string eval_variable(const pipe_expr_token_t& t);
-  //std::string eval_fn_mpl(const std::vector<pipe_expr_token_t>& args);
-  //std::string eval_fn_set(const std::vector<pipe_expr_token_t>& args);
-  //std::string eval_fn_if(const std::vector<pipe_expr_token_t>& args);
-  //std::string eval_fn_random(const std::vector<pipe_expr_token_t>& args);
+  std::string eval_variable(const std::string& var,
+                            const std::vector<pipe_expr_token_t>& remaining);
 
   std::optional<pipe_expr_token_t> parse_variable(std::string::const_iterator& it,
                                                   const std::string::const_iterator& end);
@@ -49,6 +46,15 @@ private:
   std::map<std::string, fn_fn> fn_map_;
 };
 
+enum class pipe_fmt_align_t { left, mid, right };
+
+struct pipe_fmt_mask {
+  int len = 0;
+  pipe_fmt_align_t align{pipe_fmt_align_t::left};
+  char pad{' '};
+};
+
+pipe_fmt_mask parse_mask(const std::string& mask);
 
 }
 #endif
