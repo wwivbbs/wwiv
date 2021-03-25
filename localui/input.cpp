@@ -122,7 +122,7 @@ EditlineResult FidoAddressStringEditItem::Run(CursesWindow* window) {
     last_addr = addr;
 
     if (const auto o = wwiv::sdk::fido::try_parse_fidoaddr(last_addr)) {
-      if (!o->domain().empty()) {
+      if (o->has_domain()) {
         curses_out->footer()->ShowContextHelp(this->help_text());
       } else {
         curses_out->footer()->ShowContextHelp("Domain is missing. Address should be of the form:'Z:N/O@D'");

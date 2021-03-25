@@ -105,15 +105,15 @@ public:
 class Nodelist final {
 public:
   /** Parses address.  If it fails, throws bad_fidonet_address. */
-  explicit Nodelist(const std::filesystem::path& path);
-  explicit Nodelist(const std::vector<std::string>& lines);
+  Nodelist(const std::filesystem::path& path, const std::string& domain);
+  Nodelist(const std::vector<std::string>& lines, const std::string& domain);
   ~Nodelist() = default;
 
   [[nodiscard]] bool initialized() const { return initialized_; }
   explicit operator bool() const { return initialized_; }
 
-  [[nodiscard]] const NodelistEntry& entry(const FidoAddress& a) const { return entries_.at(a); }
-  [[nodiscard]] bool contains(const FidoAddress& a) const { return wwiv::stl::contains(entries_, a); }
+  [[nodiscard]] const NodelistEntry& entry(const FidoAddress& a) const;
+  [[nodiscard]] bool contains(const FidoAddress& a) const;
   [[nodiscard]] const std::map<FidoAddress, NodelistEntry>& entries() const { return entries_; }
   [[nodiscard]] std::vector<NodelistEntry> entries(uint16_t zone, uint16_t net) const;
   [[nodiscard]] std::vector<NodelistEntry> entries(uint16_t zone) const;
@@ -130,6 +130,7 @@ private:
 
   bool HandleLine(const std::string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub );
   std::map<FidoAddress, NodelistEntry> entries_;
+  std::string domain_;
   bool initialized_{false};
 };
 

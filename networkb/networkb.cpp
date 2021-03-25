@@ -196,7 +196,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
         bink_config.callouts()[domain] = std::move(c);
       } else if (n.type == network_type_t::ftn) {
         if (auto o = try_parse_fidoaddr(n.fido.fido_address)) {
-          if (!o->domain().empty()) {
+          if (o->has_domain()) {
             domain = o->domain();
           } else {
             LOG(ERROR) << "Domain is empty for FTN address. Please set it for: "

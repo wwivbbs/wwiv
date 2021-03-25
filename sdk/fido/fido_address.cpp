@@ -149,6 +149,19 @@ bool FidoAddress::approx_equals(const FidoAddress& o) const {
   return true;
 }
 
+FidoAddress FidoAddress::without_domain() const {
+  return FidoAddress(zone_, net_, node_, point_, "");
+}
+
+FidoAddress FidoAddress::with_domain(const std::string& domain) const {
+  return FidoAddress(zone_, net_, node_, point_, domain);
+}
+
+FidoAddress FidoAddress::with_default_domain(const std::string& default_domain) const {
+  const auto d = domain_.empty() ? default_domain : domain_;
+  return FidoAddress(zone_, net_, node_, point_, d);
+}
+
 std::optional<FidoAddress> try_parse_fidoaddr(const std::string& addr) {
   if (addr.empty()) {
     return std::nullopt;
@@ -159,6 +172,13 @@ std::optional<FidoAddress> try_parse_fidoaddr(const std::string& addr) {
   } catch (const bad_fidonet_address&) {
     return std::nullopt;
   }
+}
+
+std::string domain_from_address(const std::string& addr) {
+  if (auto o = try_parse_fidoaddr(addr)) {
+    return o->domain();
+  }
+  return {};
 }
 
 } // namespace wwiv

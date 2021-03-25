@@ -70,7 +70,7 @@ TEST(NodelistTest, Zone) {
 TEST(NodelistTest, Smoke) {
   const auto lines = SplitString(raw, "\n");
 
-  Nodelist nl(lines);
+  Nodelist nl(lines, "");
   ASSERT_TRUE(nl);
 
   const auto n1_261_1 = nl.entry(1, 261, 1);
@@ -87,7 +87,7 @@ TEST(NodelistTest, Smoke) {
 
 TEST(NodelistTest, ZoneNet) {
   const auto lines = SplitString(raw, "\n");
-  const Nodelist nl(lines);
+  const Nodelist nl(lines, "");
   ASSERT_TRUE(nl);
 
   auto n261 = nl.entries(1, 261);
@@ -96,7 +96,7 @@ TEST(NodelistTest, ZoneNet) {
 
 TEST(NodelistTest, Zones) {
   const auto lines = SplitString(raw, "\n");
-  const Nodelist nl(lines);
+  const Nodelist nl(lines, "");
   ASSERT_TRUE(nl);
 
   auto zones = nl.zones();
@@ -106,7 +106,7 @@ TEST(NodelistTest, Zones) {
 
 TEST(NodelistTest, Nets) {
   const auto lines = SplitString(raw, "\n");
-  const Nodelist nl(lines);
+  const Nodelist nl(lines, "");
   ASSERT_TRUE(nl);
 
   const auto nets = nl.nets(1);
@@ -116,7 +116,7 @@ TEST(NodelistTest, Nets) {
 
 TEST(NodelistTest, Nodes) {
   const auto lines = SplitString(raw, "\n");
-  const Nodelist nl(lines);
+  const Nodelist nl(lines, "");
   ASSERT_TRUE(nl);
 
   const auto nets = nl.nodes(1, 261);

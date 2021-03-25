@@ -38,7 +38,7 @@ namespace wwiv::wwivutil::fido {
 static int dump_file(const std::string& filename) {
 
   const auto start = std::chrono::steady_clock::now();
-  const Nodelist n(filename);
+  const Nodelist n(filename, "");
   const auto end = std::chrono::steady_clock::now();
   if (!n.initialized()) {
     LOG(ERROR) << "Unable to load nodelist: " << filename;
@@ -50,9 +50,10 @@ static int dump_file(const std::string& filename) {
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "Parsed " << entries.size() << " in " << elapsed.count() << " milliseconds. " << std::endl;
   std::cout << "Parsed " << entries.size() << " in " << elapsed.count()/1000 << " seconds. " << std::endl;
+  std::cout << std::endl;
 
   for (const auto& e : entries) {
-    std::cout << e.first << ":" << e.second.name_ << std::endl;
+    std::cout << e.first << ": " << e.second.name_ << std::endl;
   }
   return 0;
 }

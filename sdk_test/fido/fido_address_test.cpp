@@ -42,7 +42,7 @@ TEST(FidoAddressTest, ZoneNetNode) {
   EXPECT_EQ(10, f.net());
   EXPECT_EQ(211, f.node());
   EXPECT_EQ(0, f.point());
-  EXPECT_TRUE(f.domain().empty());
+  EXPECT_FALSE(f.has_domain());
 
   EXPECT_EQ("11:10/211", f.as_string(true));
 }
@@ -53,10 +53,31 @@ TEST(FidoAddressTest, DefaultZone) {
   EXPECT_EQ(10, f.net());
   EXPECT_EQ(211, f.node());
   EXPECT_EQ(0, f.point());
-  EXPECT_TRUE(f.domain().empty());
+  EXPECT_FALSE(f.has_domain());
 
   EXPECT_EQ("1:10/211", f.as_string(true));
 }
+
+TEST(FidoAddressTest, WithDomain) {
+  const FidoAddress f("1:10/211");
+  EXPECT_EQ(f.with_domain("foo").as_string(true, true), "1:10/211@foo");
+}
+
+TEST(FidoAddressTest, WithDefaultDomain_None) {
+  const FidoAddress f("1:10/211");
+  EXPECT_EQ(f.with_default_domain("foo").as_string(true, true), "1:10/211@foo");
+}
+
+TEST(FidoAddressTest, WithDefaultDomain_Existing) {
+  const FidoAddress f("1:10/211@bar");
+  EXPECT_EQ(f.with_default_domain("foo").as_string(true, true), "1:10/211@bar");
+}
+
+TEST(FidoAddressTest, WithoutDomain) {
+  const FidoAddress f("1:10/211@foo");
+  EXPECT_EQ(f.without_domain().as_string(true, true), "1:10/211");
+}
+
 
 TEST(FidoAddressTest, MissingNetOrNode) {
   try {

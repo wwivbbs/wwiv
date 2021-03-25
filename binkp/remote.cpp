@@ -76,7 +76,7 @@ ftn_addresses_from_address_list(const std::string& address_list,
           VLOG(2) << "       ftn_addresses_from_address_list: Adding address: "
                   << o.value().as_string(true, true);
           // Insert the one that has the domain on it.
-          if (!o->domain().empty()) {
+          if (o->has_domain()) {
             valid_addresses.insert(o.value());
           } else {
             valid_addresses.insert(a);
@@ -106,11 +106,11 @@ uint16_t wwivnet_node_number_from_ftn_address(const std::string& address) {
 
 std::string fixup_address(const std::string& addr, const net_networks_rec& net, const std::string& default_domain) {
   if (auto o = sdk::fido::try_parse_fidoaddr(addr)) {
-    if (!o->domain().empty()) {
+    if (o->has_domain()) {
       return o->as_string(true, true);
     }
     if (net.type == network_type_t::ftn) {
-      if (auto no = sdk::fido::try_parse_fidoaddr(net.fido.fido_address); !no->domain().empty()) {
+      if (auto no = sdk::fido::try_parse_fidoaddr(net.fido.fido_address); no->has_domain()) {
         return StrCat(o->as_string(false, true), "@", no->domain());
       }
     }
@@ -136,7 +136,7 @@ Remote::Remote(BinkConfig* config, bool remote_is_caller, const std::string& exp
     VLOG(3) << "*********** REMOTE IS NOT CALLER ****************: " << addr;
     if (auto o = sdk::fido::try_parse_fidoaddr(addr)) {
       ftn_addresses_.insert(o.value());
-      if (!o->domain().empty()) {
+      if (o->has_domain()) {
         set_domain(o->domain());
       }
     }
@@ -198,7 +198,7 @@ void Remote::set_ftn_addresses(const std::set<sdk::fido::FidoAddress>& a) {
   if (!a.empty()) {
     for (const auto& a1 : a) {
       VLOG(1) << "       Remote::set_ftn_addresses: " << a1;
-      if (!a1.domain().empty()) {
+      if (a1.has_domain()) {
         set_domain(a1.domain());
         VLOG(1) << "       Setting domain to: " << domain_;
         break;

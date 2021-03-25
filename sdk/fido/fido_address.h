@@ -77,7 +77,9 @@ namespace wwiv::sdk::fido {
  */
 class FidoAddress {
 public:
-  /** Parses address.  If it fails, throws bad_fidonet_address. */
+  /**
+   * Parses address.  If it fails, throws bad_fidonet_address.
+   */
   explicit FidoAddress(const ::std::string& address);
   FidoAddress() noexcept : FidoAddress(-1, -1, -1, -1, "") {}
   FidoAddress(int16_t zone, int16_t net, int16_t node, int16_t point, ::std::string domain)
@@ -120,6 +122,22 @@ public:
   bool operator== (const FidoAddress& o) const;
   /** Approximately equals, equals ignoring domain */
   [[nodiscard]] bool approx_equals(const FidoAddress& o) const;
+
+  /** Creates an address like this one without the domain. */
+  [[nodiscard]] FidoAddress without_domain() const;
+
+  /** Creates an address like this one replacing the domain. */
+  [[nodiscard]] FidoAddress with_domain(const std::string& domain) const;
+
+  /**
+   * Creates an address like this, but if the current address
+   * has no domain, use the specified default domain.
+   */
+  [[nodiscard]] FidoAddress with_default_domain(const std::string& default_domain) const;
+
+  /** Does this address have a domain? */
+  [[nodiscard]] bool has_domain() const { return !domain_.empty(); }
+
 private:
   int16_t zone_ = 0;
   int16_t net_ = 0;
@@ -137,6 +155,8 @@ public:
 
 std::optional<FidoAddress> try_parse_fidoaddr(const std::string& addr);
 
+std::string domain_from_address(const std::string& addr);
+
 }  // namespace
 
 namespace std {
@@ -148,7 +168,7 @@ struct hash<wwiv::sdk::fido::FidoAddress> {
     res = res * 31 + a.net();
     res = res * 31 + a.node();
     res = res * 31 + a.point();
-    if (!a.domain().empty()) {
+    if (a.has_domain()) {
       res = res * 31 + hash<std::string>()(a.domain());
     }
     return res;

@@ -157,11 +157,11 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
   return true;
 }
 
-Nodelist::Nodelist(const std::filesystem::path& path) 
-  : initialized_(Load(path)) {}
+Nodelist::Nodelist(const std::filesystem::path& path, const std::string& domain) 
+  : domain_(domain), initialized_(Load(path)) {}
 
-Nodelist::Nodelist(const std::vector<std::string>& lines) 
-  : initialized_(Load(lines)) {}
+Nodelist::Nodelist(const std::vector<std::string>& lines, const std::string& domain) 
+  : domain_(domain), initialized_(Load(lines)) {}
 
 bool Nodelist::HandleLine(const std::string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub) {
   if (line.empty()) return true;
@@ -221,8 +221,8 @@ bool Nodelist::Load(const std::filesystem::path& path) {
     return false;
   }
   std::string line;
+  uint16_t zone = 0, region = 0, net = 0, hub = 0;
   while (f.ReadLine(&line)) {
-    uint16_t zone = 0, region = 0, net = 0, hub = 0;
     StringTrim(&line);
     HandleLine(line, zone, region, net, hub);
   }
@@ -238,6 +238,22 @@ bool Nodelist::Load(const std::vector<std::string>& lines) {
     HandleLine(line, zone, region, net, hub);
   }
   return true;
+}
+
+const NodelistEntry& Nodelist::entry(const FidoAddress& a) const {
+  return entries_.at(a);
+}
+
+bool Nodelist::contains(const FidoAddress& a) const {
+  if (stl::contains(entries_, a)) {
+    return true;
+  }
+  if (a.has_domain()) {
+    if (stl::contains(entries_, a.without_domain())) {
+      return true;
+    }
+  }
+  return false;
 }
 
 std::vector<NodelistEntry> Nodelist::entries(uint16_t zone, uint16_t net) const {

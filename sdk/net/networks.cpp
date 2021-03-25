@@ -305,12 +305,13 @@ std::string to_string(const net_networks_rec& n) {
 }
 
 bool try_load_nodelist(net_networks_rec& net) {
-  if (net.nodelist && net.nodelist->initialized()) {
+  if (net.nodelist && net.nodelist->initialized() && !net.nodelist->entries().empty()) {
     return true;
   }
 
   const auto nl_path = fido::Nodelist::FindLatestNodelist(net.dir, net.fido.nodelist_base);
-  net.nodelist = std::make_shared<fido::Nodelist>(FilePath(net.dir, nl_path));
+  const auto domain = fido::domain_from_address(net.fido.fido_address);
+  net.nodelist = std::make_shared<fido::Nodelist>(FilePath(net.dir, nl_path), domain);
   return net.nodelist->initialized();
 }
 
