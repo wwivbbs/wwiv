@@ -9,6 +9,11 @@ Legend (starting with 5.3)
 - Feature removed
 * Change or cleanup
 
+*** Please make sure you get the new files out of the install archives
+    like gfiles.zip, menus.zip, etc.  We're adding new files and each
+    new wwiv update may contain new files.  I'd recommend using unzip -n
+    so that you don't overwrite any files (or use winmerge or meld
+    to compare new changes)
 
 What's New in WWIV 5.7.0 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
