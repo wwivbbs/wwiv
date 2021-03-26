@@ -179,9 +179,21 @@ std::size_t Networks::size() const noexcept { return networks_.size(); }
 
 bool Networks::empty() const noexcept { return networks_.empty(); }
 
-bool Networks::insert(int n, net_networks_rec r) { return insert_at(networks_, n, r); }
+bool Networks::insert(int n, net_networks_rec r) {
+  if (!insert_at(networks_, n, r)) {
+    return false;
+  }
+  SetNetworkNumbers();
+  return true;
+}
 
-bool Networks::erase(int n) { return erase_at(networks_, n); }
+bool Networks::erase(int n) {
+  if (!erase_at(networks_, n)) {
+    return false;
+  }
+  SetNetworkNumbers();
+  return true;
+}
 
 bool Networks::Load() {
   if (LoadFromJSON()) {
@@ -198,6 +210,7 @@ bool Networks::LoadFromJSON() {
   }
   EnsureNetworksHaveUUID();
   EnsureNetDirAbsolute();
+  SetNetworkNumbers();
   return true;
 }
 
@@ -225,6 +238,7 @@ bool Networks::LoadFromDat() {
     r.uuid = uuid_gen.generate();
     networks_.emplace_back(r);
   }
+  SetNetworkNumbers();
   return true;
 }
 
@@ -260,6 +274,14 @@ void Networks::EnsureNetDirAbsolute() {
       // make absolute
       n.dir = FilePath(root_directory_, n.dir);
     }
+  }
+}
+
+// Set network_number on each network.
+void Networks::SetNetworkNumbers() {
+  auto nn = 0;
+  for (auto& n : networks_) {
+    n.network_number = nn++;
   }
 }
 

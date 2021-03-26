@@ -265,6 +265,8 @@ struct net_networks_rec {
   wwiv::core::uuid_t uuid;
   // A parsed nodelist if available.
   std::shared_ptr<wwiv::sdk::fido::Nodelist> nodelist;
+  // The current network number, assigned when loaded
+  int network_number{-1};
 };
 
 

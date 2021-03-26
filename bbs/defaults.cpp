@@ -651,8 +651,8 @@ void modify_mailbox() {
     bout << "|#5Do you want to forward to your Internet address? ";
     if (bin.yesno()) {
       bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
-      const auto entered_address = bin.input_text(a()->user()->email_address(), 75);
-      if (check_inet_addr(entered_address)) {
+      if (const auto entered_address = bin.input_text(a()->user()->email_address(), 75);
+          check_inet_addr(entered_address)) {
         a()->user()->email_address(entered_address);
         a()->user()->forward_netnum(network_number);
         a()->user()->SetForwardToInternet();

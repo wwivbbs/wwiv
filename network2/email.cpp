@@ -135,7 +135,7 @@ bool handle_email(Context& context,
     LOG(ERROR) << "    ! ERROR creating email class; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
-  if (auto added = email->AddMessage(d); !added) {
+  if (const auto added = email->AddMessage(d); !added) {
     LOG(ERROR) << "    ! ERROR adding email message; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }

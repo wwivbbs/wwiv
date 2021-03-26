@@ -65,6 +65,7 @@ public:
 private:
   void EnsureNetworksHaveUUID();
   void EnsureNetDirAbsolute();
+  void SetNetworkNumbers();
   bool LoadFromJSON();
   bool LoadFromDat();
   bool SaveToJSON();
