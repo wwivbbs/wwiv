@@ -343,7 +343,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       // Net List
     case '`':
       if (a_->current_net().sysnum) {
-        print_net_listing(true);
+        query_print_net_listing(true);
       }
       break;
       // [ESC] Quit the BBS

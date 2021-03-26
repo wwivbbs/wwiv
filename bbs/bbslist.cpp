@@ -350,7 +350,7 @@ void BBSList() {
       delete_bbslist();
     } break;
     case 'N':
-      print_net_listing(false);
+      query_print_net_listing(false);
       break;
     case 'R': {
       read_bbslist();

@@ -43,6 +43,7 @@
 #include "common/output.h"
 #include "core/file.h"
 #include "core/inifile.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -80,7 +81,7 @@ void prstatus() {
   }
   bout << "|#9Board is        : " << (a()->config()->closed_system() ? "Closed" : "Open") << wwiv::endl;
 
-  auto status = a()->status_manager()->get_status();
+  const auto status = a()->status_manager()->get_status();
   const auto t = times();
   bout << "|#9Number Users    : |#2" << status->num_users() << wwiv::endl;
   bout << "|#9Number Calls    : |#2" << status->caller_num() << wwiv::endl;
@@ -290,57 +291,389 @@ void valuser(int user_number) {
   }
 }
 
-#define NET_SEARCH_SUBSTR     0x0001
-#define NET_SEARCH_AREACODE   0x0002
-#define NET_SEARCH_GROUP      0x0004
-#define NET_SEARCH_SC         0x0008
-#define NET_SEARCH_AC         0x0010
-#define NET_SEARCH_GC         0x0020
-#define NET_SEARCH_NC         0x0040
-#define NET_SEARCH_PHSUBSTR   0x0080
-#define NET_SEARCH_NOCONNECT  0x0100
-#define NET_SEARCH_NEXT       0x0200
-#define NET_SEARCH_HOPS       0x0400
-#define NET_SEARCH_ALL        0xFFFF
+enum class net_search_type_t {
+  UNKNOWN, NET_SEARCH_SUBSTR, NET_SEARCH_AREACODE, NET_SEARCH_GROUP, NET_SEARCH_SC,
+  NET_SEARCH_AC, NET_SEARCH_GC, NET_SEARCH_NC, NET_SEARCH_PHSUBSTR,
+  NET_SEARCH_NOCONNECT, NET_SEARCH_ALL };
 
-
-void print_net_listing(bool bForcePause) {
+bool print_wwivnet_net_listing(const net_networks_rec& net) {
   int gn = 0;
-  unsigned short slist, cmdbit = 0;
-  char substr[81], onx[20], acstr[4], phstr[13];
-  char s[255], s1[101], s2[101], bbstype;
-  bool bHadPause{false};
-  int current_net{0};
+  char s2[101], bbstype;
+
+  while (!a()->sess().hangup()) {
+    char s[255];
+    auto abort = false;
+    auto cmdbit = net_search_type_t::UNKNOWN;
+    uint16_t slist = 0;
+    char substr[81], acstr[4], phstr[13];
+    substr[0] = 0;
+    acstr[0] = 0;
+    phstr[0] = 0;
+
+    bout.cls();
+    bout.nl();
+    bout << "|#9Network|#2: |#1" << net.name << wwiv::endl;
+    bout.nl();
+
+    bout << "|#21|#9) List All\r\n";
+    bout << "|#22|#9) Area Code\r\n";
+    bout << "|#23|#9) Group\r\n";
+    bout << "|#24|#9) Subs Coordinators\r\n";
+    bout << "|#25|#9) Area Coordinators\r\n";
+    bout << "|#26|#9) Group Coordinators\r\n";
+    bout << "|#27|#9) Net Coordinator\r\n";
+    bout << "|#28|#9) BBS Name SubString\r\n";
+    bout << "|#29|#9) Phone SubString\r\n";
+    bout << "|#20|#9) Unconnected Systems\r\n";
+    bout << "|#2Q|#9) Quit NetList\r\n";
+    bout.nl();
+    bout << "|#9Select: |#2";
+    switch (auto cmd = onek("Q1234567890"); cmd) {
+    case 'Q':
+      return true;
+    case '1':
+      cmdbit = net_search_type_t::NET_SEARCH_ALL;
+      break;
+    case '2':
+      cmdbit = net_search_type_t::NET_SEARCH_AREACODE;
+      bout.nl();
+      bout << "|#1Enter Area Code|#2: |#0";
+      bin.input(acstr, 3);
+      if (strlen(acstr) != 3) {
+        abort = true;
+      }
+      if (!abort) {
+        for (int i = 0; i < 3; i++) {
+          if (acstr[i] < '0' || acstr[i] > '9') {
+            abort = true;
+          }
+        }
+      }
+      if (abort) {
+        bout << "|#6Area code must be a 3-digit number!\r\n";
+        bout.pausescr();
+        continue;
+      }
+      break;
+    case '3':
+      cmdbit = net_search_type_t::NET_SEARCH_GROUP;
+      bout.nl();
+      bout << "|#1Enter group number|#2: |#0";
+      bin.input(s, 2);
+      if (s[0] == 0 || to_number<int>(s) < 1) {
+        bout << "|#6Invalid group number!\r\n";
+        bout.pausescr();
+        continue;
+      }
+      gn = to_number<int>(s);
+      break;
+    case '4':
+      cmdbit = net_search_type_t::NET_SEARCH_SC;
+      break;
+    case '5':
+      cmdbit = net_search_type_t::NET_SEARCH_AC;
+      break;
+    case '6':
+      cmdbit = net_search_type_t::NET_SEARCH_GC;
+      break;
+    case '7':
+      cmdbit = net_search_type_t::NET_SEARCH_NC;
+      break;
+    case '8':
+      cmdbit = net_search_type_t::NET_SEARCH_SUBSTR;
+      bout.nl();
+      bout << "|#1Enter SubString|#2: |#0";
+      bin.input(substr, 40);
+      if (substr[0] == 0) {
+        bout << "|#6Enter a substring!\r\n";
+        bout.pausescr();
+        continue;
+      }
+      break;
+    case '9':
+      cmdbit = net_search_type_t::NET_SEARCH_PHSUBSTR;
+      bout.nl();
+      bout << "|#1Enter phone substring|#2: |#0";
+      bin.input(phstr, 12);
+      if (phstr[0] == 0) {
+        bout << "|#6Enter a phone substring!\r\n";
+        bout.pausescr();
+        continue;
+      }
+      break;
+    case '0':
+      cmdbit = net_search_type_t::NET_SEARCH_NOCONNECT;
+      break;
+    default: 
+      return true;
+    }
+
+    if (cmdbit == net_search_type_t::UNKNOWN) {
+      continue;
+    }
+
+    bout.nl();
+    bout << "|#1Print BBS region info? ";
+    bool useregion = bin.yesno();
+
+    auto bbslist = BbsListNet::ReadBbsDataNet(net.dir);
+    if (bbslist.empty()) {
+      bout << "|#6Error opening bbsdata.net in " << net.dir << wwiv::endl;
+      bout.pausescr();
+      continue;
+    }
+    to_char_array(s, "000-000-0000");
+    bout.nl(2);
+
+    for (const auto& b : bbslist.node_config()) {
+      char s1[101];
+      auto matched = false;
+      const auto& csne = b.second;
+      if (csne.forsys == WWIVNET_NO_NODE && cmdbit != net_search_type_t::NET_SEARCH_NOCONNECT) {
+        continue;
+      }
+      strcpy(s1, csne.phone);
+
+      if (csne.other & other_net_coord) {
+        bbstype = '&';
+      } else if (csne.other & other_group_coord) {
+        bbstype = '%';
+      } else if (csne.other & other_area_coord) {
+        bbstype = '^';
+      } else if (csne.other & other_subs_coord) {
+        bbstype = '~';
+      } else {
+        bbstype = ' ';
+      }
+
+      strcpy(s2, csne.name);
+      for (size_t i1 = 0; i1 < size(s2); i1++) {
+        s2[i1] = to_upper_case_char(s2[i1]);
+      }
+
+      switch (cmdbit) {
+      case net_search_type_t::NET_SEARCH_ALL:
+        matched = true;
+        break;
+      case net_search_type_t::NET_SEARCH_AREACODE:
+        if (strncmp(acstr, csne.phone, 3) == 0) {
+          matched = true;
+        }
+        break;
+      case net_search_type_t::NET_SEARCH_GROUP:
+        if (gn == csne.group) {
+          matched = true;
+        }
+        break;
+      case net_search_type_t::NET_SEARCH_SC:
+        if (csne.other & other_subs_coord) {
+          matched = true;
+        }
+        break;
+      case net_search_type_t::NET_SEARCH_AC:
+        if (csne.other & other_area_coord) {
+          matched = true;
+        }
+        break;
+      case net_search_type_t::NET_SEARCH_GC:
+        if (csne.other & other_group_coord) {
+          matched = true;
+        }
+        break;
+      case net_search_type_t::NET_SEARCH_NC:
+        if (csne.other & other_net_coord) {
+          matched = true;
+        }
+        break;
+      case net_search_type_t::NET_SEARCH_SUBSTR:
+        if (strstr(s2, substr) != nullptr) {
+          matched = true;
+        } else {
+          char s3[81];
+          sprintf(s3, "@%u", csne.sysnum);
+          if (strstr(s3, substr) != nullptr) {
+            matched = true;
+          }
+        }
+        break;
+      case net_search_type_t::NET_SEARCH_PHSUBSTR:
+        if (strstr(s1, phstr) != nullptr) {
+          matched = true;
+        }
+        break;
+      case net_search_type_t::NET_SEARCH_NOCONNECT:
+        if (csne.forsys == WWIVNET_NO_NODE) {
+          matched = true;
+        }
+        break;
+      case net_search_type_t::UNKNOWN:
+        continue;
+      }
+
+      bout.cls();
+      bout.litebar(fmt::format("Network list for: {}", net.name));
+      if (matched) {
+        slist++;
+        if (!useregion && slist == 1) {
+          bout.bpla("|#1 Node  Phone         BBS Name                                 Hop  Next Gr",
+                    &abort);
+          bout.bpla("|#7-----  ============  ---------------------------------------- === ----- --",
+                    &abort);
+        } else {
+          if (useregion && strncmp(s, csne.phone, 3) != 0) {
+            strcpy(s, csne.phone);
+            const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
+            const auto town_fn =
+                fmt::sprintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne.phone));
+            std::string areacode;
+            if (File::Exists(FilePath(regions_dir, town_fn))) {
+              auto town = fmt::sprintf("%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
+              areacode =
+                  describe_area_code_prefix(to_number<int>(csne.phone), to_number<int>(town));
+            } else {
+              areacode = describe_area_code(to_number<int>(csne.phone));
+            }
+            const auto line = fmt::sprintf("\r\n%s%s\r\n", "|#2Region|#0: |#2", areacode);
+            bout.bpla(line, &abort);
+            bout.bpla(
+                "|#1 Node  Phone         BBS Name                                 Hop  Next Gr",
+                &abort);
+            bout.bpla(
+                "|#7-----  ============  ---------------------------------------- === ----- --",
+                &abort);
+          }
+        }
+        std::string line;
+        if (cmdbit != net_search_type_t::NET_SEARCH_NOCONNECT) {
+          line = fmt::sprintf("%5u%c %12s  %-40s %3d %5u %2d", csne.sysnum, bbstype, csne.phone,
+                              csne.name, csne.numhops, csne.forsys, csne.group);
+        } else {
+          line = fmt::sprintf("%5u%c %12s  %-40s%s%2d", csne.sysnum, bbstype, csne.phone, csne.name,
+                              " |17|15--- ----- |#0", csne.group);
+        }
+        bout.bpla(line, &abort);
+      }
+    }
+    if (!abort && slist) {
+      bout.nl();
+      bout << "|#1Systems Listed |#7: |#2" << slist;
+    }
+    bout.nl(2);
+    bout.pausescr();
+  }
+  return false;
+}
+
+static bool print_ftn_net_listing(net_networks_rec& net) {
+  if (!try_load_nodelist(net)) {
+    return false;
+  }
+
+  bout.cls();
+  bout.nl();
+  bout << "|#9Network|#2: |#1" << net.name << wwiv::endl;
+  bout.nl();
+
+  bout << "|#21|#9) List All\r\n";
+  bout << "|#22|#9) Zone\r\n";
+  bout << "|#23|#9) BBS Name SubString\r\n";
+  bout << "|#2Q|#9) Quit NetList\r\n";
+  bout.nl();
+  bout << "|#9Select: |#2";
+  auto zone = 0;
+  std::string name_part;
+  switch (const auto cmd = onek("Q123"); cmd) {
+  case 'Q': {
+    return true;
+  }
+  case '2': {
+    bout.nl();
+    bout << "|#9Enter Zone Number|#7: |#0";
+    const auto r = bin.input_number_hotkey(zone, {'Q'}, 0, 37627);
+    if (r.key == 'Q') {
+      return false;
+    }
+    zone = r.num;
+  } break;
+  case '3': {
+    zone = 0;
+    bout.nl();
+    bout << "|#9Enter Name Substring|#7: |#0";
+    name_part = bin.input_upper(20);
+  } break;
+  }
+  bool abort = false;
+  bout.cls();
+  bout.litebar(fmt::format("Network list for: {}", net.name));
+  bout.nl(2);
+  bout.bpla("|#2 Address             BBS Name", &abort);
+  bout.bpla("|#9 ------------------  =============================================", &abort);
+
+  auto count = 0;
+  if (net.nodelist->initialized()) {
+    for (const auto& e : net.nodelist->entries()) {
+      if (zone != 0 && e.first.zone() != zone) {
+        continue;
+      }
+      if (!name_part.empty()) {
+        const auto bbs_name = ToStringUpperCase(e.second.name_);
+        const auto idx = bbs_name.find(name_part);
+        if (idx == std::string::npos) {
+          continue;
+        }
+      }
+      bout.format(" |#5{:<18.18}  |#1{}\r\n", e.first.as_string(false, false), e.second.name_);
+      if (bin.checka()) {
+        break;
+      }
+      ++count;
+    }
+  }
+  if (!abort) {
+    bout.nl();
+    bout << "|#9Systems Listed |#7: |#2" << count;
+  }
+  bout.nl(2);
+  bout.pausescr();
+  return false;
+}
+
+void query_print_net_listing(bool force_pause) {
+  bool had_pause{false};
 
   a()->status_manager()->reload_status();
 
-  if (!wwiv::stl::ssize(a()->nets())) {
+  if (a()->nets().empty()) {
     return;
   }
 
   write_inst(INST_LOC_NETLIST, 0, INST_FLAGS_NONE);
 
-  if (bForcePause) {
-    bHadPause  = a()->user()->pause();
-    if (bHadPause) {
+  if (force_pause) {
+    had_pause = a()->user()->pause();
+    if (had_pause) {
       a()->user()->toggle_flag(User::pauseOnPage);
     }
   }
-  auto done = false;
-  while (!done && !a()->sess().hangup()) {
+  ScopeExit at_exit([=] {
+  if (force_pause && had_pause) {
+    a()->user()->toggle_flag(User::pauseOnPage);
+  }
+    
+  });
+
+  while (!a()->sess().hangup()) {
+    auto current_net = 0;
     bout.cls();
     if (wwiv::stl::ssize(a()->nets()) > 1) {
       std::set<char> odc;
-      onx[0] = 'Q';
-      onx[1] = 0;
-      int onxi = 1;
+      std::string onx{'Q'};
       bout.nl();
       for (int i = 0; i < ssize(a()->nets()); i++) {
         if (i < 9) {
-          onx[onxi++] = static_cast<char>(i + '1');
-          onx[onxi] = 0;
+          onx.push_back(static_cast<char>(i + '1'));
         } else {
-          int odci = (i + 1) / 10;
+          const int odci = (i + 1) / 10;
           odc.insert(static_cast<char>(odci + '0'));
         }
         bout << "|#2" << i + 1 << "|#9)|#1 " << a()->nets()[i].name << wwiv::endl;
@@ -348,293 +681,36 @@ void print_net_listing(bool bForcePause) {
       bout << "|#2Q|#9)|#1 Quit\r\n\n";
       bout << "|#9Which network? |#2";
       if (wwiv::stl::ssize(a()->nets()) < 9) {
-        char ch = onek(onx);
-        if (ch == 'Q') {
-          done = true;
+        if (const char ch = onek(onx); ch == 'Q') {
+          return;
         } else {
           current_net = ch - '1';
         }
       } else {
-        auto mmk = mmkey(odc);
-        if (mmk == "Q") {
-          done = true;
+        if (auto mmk = mmkey(odc); mmk == "Q") {
+          return;
         } else {
           current_net = to_number<int>(mmk) - 1;
         }
       }
 
-      if (done) {
-        break;
-      }
-
       if (current_net < 0 || current_net > ssize(a()->nets())) {
         continue;
       }
-    } else {
-      // current_net is the current network number, if there is only 1, thens use it.
-      current_net = 0;
     }
-    const auto& net = a()->nets()[current_net];
-
-    bool done1 = false;
-    bool abort;
-
-    while (!done1) {
-      abort = false;
-      cmdbit = 0;
-      slist = 0;
-      substr[0] = 0;
-      acstr[0] = 0;
-      phstr[0] = 0;
-
-      bout.cls();
-      bout.nl();
-      bout << "|#9Network|#2: |#1" << net.name << wwiv::endl;
-      bout.nl();
-
-      bout << "|#21|#9) = |#1List All\r\n";
-      bout << "|#22|#9) = |#1Area Code\r\n";
-      bout << "|#23|#9) = |#1Group\r\n";
-      bout << "|#24|#9) = |#1Subs Coordinators\r\n";
-      bout << "|#25|#9) = |#1Area Coordinators\r\n";
-      bout << "|#26|#9) = |#1Group Coordinators\r\n";
-      bout << "|#27|#9) = |#1Net Coordinator\r\n";
-      bout << "|#28|#9) = |#1BBS Name SubString\r\n";
-      bout << "|#29|#9) = |#1Phone SubString\r\n";
-      bout << "|#20|#9) = |#1Unconnected Systems\r\n";
-      bout << "|#2Q|#9) = |#1Quit NetList\r\n";
-      bout.nl();
-      bout << "|#9Select: |#2";
-      switch (auto cmd = onek("Q1234567890"); cmd) {
-      case 'Q':
-        if (wwiv::stl::ssize(a()->nets()) < 2) {
-          done = true;
-        }
-        done1 = true;
-        break;
-      case '1':
-        cmdbit = NET_SEARCH_ALL;
-        break;
-      case '2':
-        cmdbit = NET_SEARCH_AREACODE;
-        bout.nl();
-        bout << "|#1Enter Area Code|#2: |#0";
-        bin.input(acstr, 3);
-        if (strlen(acstr) != 3) {
-          abort = true;
-        }
-        if (!abort) {
-          for (int i = 0; i < 3; i++) {
-            if ((acstr[i] < '0') || (acstr[i] > '9')) {
-              abort = true;
-            }
-          }
-        }
-        if (abort) {
-          bout << "|#6Area code must be a 3-digit number!\r\n";
-          bout.pausescr();
-          cmdbit = 0;
-        }
-        break;
-      case '3':
-        cmdbit = NET_SEARCH_GROUP;
-        bout.nl();
-        bout << "|#1Enter group number|#2: |#0";
-        bin.input(s, 2);
-        if ((s[0] == 0) || (to_number<int>(s) < 1)) {
-          bout << "|#6Invalid group number!\r\n";
-          bout.pausescr();
-          cmdbit = 0;
-          break;
-        }
-        gn = to_number<int>(s);
-        break;
-      case '4':
-        cmdbit = NET_SEARCH_SC;
-        break;
-      case '5':
-        cmdbit = NET_SEARCH_AC;
-        break;
-      case '6':
-        cmdbit = NET_SEARCH_GC;
-        break;
-      case '7':
-        cmdbit = NET_SEARCH_NC;
-        break;
-      case '8':
-        cmdbit = NET_SEARCH_SUBSTR;
-        bout.nl();
-        bout << "|#1Enter SubString|#2: |#0";
-        bin.input(substr, 40);
-        if (substr[0] == 0) {
-          bout << "|#6Enter a substring!\r\n";
-          bout.pausescr();
-          cmdbit = 0;
-        }
-        break;
-      case '9':
-        cmdbit = NET_SEARCH_PHSUBSTR;
-        bout.nl();
-        bout << "|#1Enter phone substring|#2: |#0";
-        bin.input(phstr, 12);
-        if (phstr[0] == 0) {
-          bout << "|#6Enter a phone substring!\r\n";
-          bout.pausescr();
-          cmdbit = 0;
-        }
-        break;
-      case '0':
-        cmdbit = NET_SEARCH_NOCONNECT;
-        break;
+    if (auto & net = a()->nets()[current_net]; net.type == network_type_t::wwivnet) {
+      if (print_wwivnet_net_listing(net)) {
+        return;
       }
-
-      if (!cmdbit) {
+    } else if (net.type == network_type_t::ftn) {
+      if (!try_load_nodelist(net)) {
         continue;
       }
-
-      if (done1) {
-        break;
+      if (print_ftn_net_listing(net)) {
+        return;
       }
-
-      bout.nl();
-      bout << "|#1Print BBS region info? ";
-      bool useregion = bin.yesno();
-
-      auto bbslist = BbsListNet::ReadBbsDataNet(net.dir);
-      if (bbslist.empty()) {
-        bout << "|#6Error opening bbsdata.net in " << net.dir << wwiv::endl;
-        bout.pausescr();
-        continue;
-      }
-      to_char_array(s, "000-000-0000");
-      bout.nl(2);
-
-      for (const auto& b : bbslist.node_config()) {
-        auto matched = false;
-        const auto& csne = b.second;
-        if ((csne.forsys == WWIVNET_NO_NODE) && (cmdbit != NET_SEARCH_NOCONNECT)) {
-          continue;
-        }
-        strcpy(s1, csne.phone);
-
-        if (csne.other & other_net_coord) {
-          bbstype = '&';
-        } else if (csne.other & other_group_coord) {
-          bbstype = '%';
-        } else if (csne.other & other_area_coord) {
-          bbstype = '^';
-        } else if (csne.other & other_subs_coord) {
-          bbstype = '~';
-        } else {
-          bbstype = ' ';
-        }
-
-        strcpy(s2, csne.name);
-        for (size_t i1 = 0; i1 < size(s2); i1++) {
-          s2[i1] = upcase(s2[i1]);
-        }
-
-        switch (cmdbit) {
-        case NET_SEARCH_ALL:
-          matched = true;
-          break;
-        case NET_SEARCH_AREACODE:
-          if (strncmp(acstr, csne.phone, 3) == 0) {
-            matched = true;
-          }
-          break;
-        case NET_SEARCH_GROUP:
-          if (gn == csne.group) {
-            matched = true;
-          }
-          break;
-        case NET_SEARCH_SC:
-          if (csne.other & other_subs_coord) {
-            matched = true;
-          }
-          break;
-        case NET_SEARCH_AC:
-          if (csne.other & other_area_coord) {
-            matched = true;
-          }
-          break;
-        case NET_SEARCH_GC:
-          if (csne.other & other_group_coord) {
-            matched = true;
-          }
-          break;
-        case NET_SEARCH_NC:
-          if (csne.other & other_net_coord) {
-            matched = true;
-          }
-          break;
-        case NET_SEARCH_SUBSTR:
-          if (strstr(s2, substr) != nullptr) {
-            matched = true;
-          } else {
-            char s3[81];
-            sprintf(s3, "@%u", csne.sysnum);
-            if (strstr(s3, substr) != nullptr) {
-              matched = true;
-            }
-          }
-          break;
-        case NET_SEARCH_PHSUBSTR:
-          if (strstr(s1, phstr) != nullptr) {
-            matched = true;
-          }
-          break;
-        case NET_SEARCH_NOCONNECT:
-          if (csne.forsys == WWIVNET_NO_NODE) {
-            matched = true;
-          }
-          break;
-        }
-
-        if (matched) {
-          slist++;
-          if (!useregion && slist == 1) {
-            bout.bpla("|#1 Node  Phone         BBS Name                                 Hop  Next Gr", &abort);
-            bout.bpla("|#7-----  ============  ---------------------------------------- === ----- --", &abort);
-          } else {
-            if (useregion && strncmp(s, csne.phone, 3) != 0) {
-              strcpy(s, csne.phone);
-              const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
-              const auto town_fn = fmt::sprintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne.phone));
-              std::string areacode;
-              if (File::Exists(FilePath(regions_dir, town_fn))) {
-                auto town = fmt::sprintf("%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
-                areacode = describe_area_code_prefix(to_number<int>(csne.phone), to_number<int>(town));
-              } else {
-                areacode = describe_area_code(to_number<int>(csne.phone));
-              }
-              const auto line = fmt::sprintf("\r\n%s%s\r\n", "|#2Region|#0: |#2", areacode);
-              bout.bpla(line, &abort);
-              bout.bpla("|#1 Node  Phone         BBS Name                                 Hop  Next Gr", &abort);
-              bout.bpla("|#7-----  ============  ---------------------------------------- === ----- --", &abort);
-            }
-          }
-          std::string line;
-          if (cmdbit != NET_SEARCH_NOCONNECT) {
-            line = fmt::sprintf("%5u%c %12s  %-40s %3d %5u %2d", csne.sysnum, bbstype, csne.phone,
-                                csne.name, csne.numhops, csne.forsys, csne.group);
-          } else {
-            line = fmt::sprintf("%5u%c %12s  %-40s%s%2d", csne.sysnum, bbstype, csne.phone,
-                                csne.name, " |17|15--- ----- |#0", csne.group);
-          }
-          bout.bpla(line, &abort);
-        }
-      }
-      if (!abort && slist) {
-        bout.nl();
-        bout << "|#1Systems Listed |#7: |#2" << slist;
-      }
-      bout.nl(2);
-      bout.pausescr();
     }
-  }
-  if (bForcePause && bHadPause) {
-    a()->user()->toggle_flag(User::pauseOnPage);
+    
   }
 }
 

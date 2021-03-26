@@ -15,12 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_SYSOPF_H__
-#define __INCLUDED_BBS_SYSOPF_H__
+#ifndef INCLUDED_BBS_SYSOPF_H
+#define INCLUDED_BBS_SYSOPF_H
+
+struct net_networks_rec;
 
 void prstatus();
 void valuser(int user_number);
-void print_net_listing(bool bForcePause);
+void query_print_net_listing(bool force_pause);
 void mailr();
 void chuser();
 void zlog();
@@ -28,4 +30,4 @@ void auto_purge();
 void beginday(bool displayStatus);
 
 
-#endif  // __INCLUDED_BBS_SYSOPF_H__
+#endif

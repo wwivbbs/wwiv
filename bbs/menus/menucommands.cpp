@@ -431,7 +431,7 @@ This command does not attempt to display a .msg/.ans file.
   m.emplace("bbslist:read", MenuItem(R"(Read the bbslist)", MENU_CAT_BBSLIST,
                                 [](MenuContext&) { wwiv::bbslist::read_bbslist(); }));
   m.emplace("bbslist:net", MenuItem(R"(Read the network bbs lists)", MENU_CAT_BBSLIST,
-                                [](MenuContext&) { print_net_listing(false); }));
+                                [](MenuContext&) { query_print_net_listing(false); }));
 
 
   // =========================================================================================
@@ -622,7 +622,7 @@ This command does not attempt to display a .msg/.ans file.
             MenuItem(R"(
   Show networks
 )",
-                     MENU_CAT_NET, [](MenuContext&) { print_net_listing(false); }));
+                     MENU_CAT_NET, [](MenuContext&) { query_print_net_listing(false); }));
   m.emplace("WHO", MenuItem(R"(
   Show who else is online
 )",
