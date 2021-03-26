@@ -109,7 +109,7 @@ char Input::getkey(bool allow_extended_input) {
     while (!bkbhit() && !sess().hangup()) {
       // Try to make hangups happen faster.
       if (sess().incom() && sess().ok_modem_stuff() && !remoteIO()->connected()) {
-        bus().invoke<HangupEvent>();
+        bus().invoke<HangupEvent>(HangupEvent{hangup_type_t::user_disconnected});
       }
       bus().invoke<CheckForHangupEvent>();
       bus().invoke<ProcessInstanceMessages>();

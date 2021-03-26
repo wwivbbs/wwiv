@@ -109,7 +109,7 @@ FsedApplication::FsedApplication(std::unique_ptr<FsedConfig> config)
       return;
     }
     if (!context_.sess_.hangup() && !remote_io_->connected()) {
-      bus().invoke<HangupEvent>();
+      bus().invoke<HangupEvent>(HangupEvent{hangup_type_t::user_disconnected});
     }
   });
   bus().add_handler<HangupEvent>([this]() { 
@@ -119,7 +119,7 @@ FsedApplication::FsedApplication(std::unique_ptr<FsedConfig> config)
     }
     VLOG(1) << "Invoked Hangup()";
     context_.sess_.hangup(true);
-    throw hangup_error(""); // username
+    throw hangup_error(hangup_type_t::user_logged_off, ""); // username
   });
 
   Dirs dirs(config_->root());

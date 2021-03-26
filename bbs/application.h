@@ -20,6 +20,8 @@
 #define INCLUDED_BBS_APPLICATION_H
 
 #include "bbs/runnable.h"
+#include "common/exceptions.h"
+
 #include <chrono>
 #include <filesystem>
 #include <map>
@@ -93,6 +95,7 @@ class WWIVMessageApi;
 } // namespace wwiv
 
 enum class get_caller_t { exit, fast_login, normal_login };
+
 /**
  * Application - Holds information and status data about the current user
  * session on the BBS. (i.e. user record, and all data/variables
@@ -309,7 +312,7 @@ public:
 
   void frequent_init();
   bool CheckForHangup();
-  void Hangup();
+  void Hangup(wwiv::common::hangup_type_t t = wwiv::common::hangup_type_t::user_logged_off);
 
   /*!
    * @function Run main bbs loop - Invoked from the application

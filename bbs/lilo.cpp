@@ -993,15 +993,14 @@ void logoff() {
   sysoplog(false) << "Read: " << a()->GetNumMessagesReadThisLogon() 
       << "   Time on: "  << min_used.count() << " minutes.";
   {
-    auto pFileEmail(OpenEmailFile(true));
-    if (pFileEmail->IsOpen()) {
+    if (auto file_email(OpenEmailFile(true)); file_email->IsOpen()) {
       a()->user()->email_waiting(0);
-      const auto num_records = static_cast<int>(pFileEmail->length() / sizeof(mailrec));
+      const auto num_records = static_cast<int>(file_email->length() / sizeof(mailrec));
       auto r = 0;
       auto w = 0;
       while (r < num_records) {
-        pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(r), File::Whence::begin);
-        pFileEmail->Read(&m, sizeof(mailrec));
+        file_email->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(r), File::Whence::begin);
+        file_email->Read(&m, sizeof(mailrec));
         if (m.tosys != 0 || m.touser != 0) {
           if (m.tosys == 0 && m.touser == a()->sess().user_num()) {
             if (a()->user()->email_waiting() != 255) {
@@ -1009,8 +1008,8 @@ void logoff() {
             }
           }
           if (r != w) {
-            pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w), File::Whence::begin);
-            pFileEmail->Write(&m, sizeof(mailrec));
+            file_email->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w), File::Whence::begin);
+            file_email->Write(&m, sizeof(mailrec));
           }
           ++w;
         }
@@ -1020,15 +1019,15 @@ void logoff() {
         m.tosys = 0;
         m.touser = 0;
         for (auto w1 = w; w1 < r; w1++) {
-          pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w1), File::Whence::begin);
-          pFileEmail->Write(&m, sizeof(mailrec));
+          file_email->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w1), File::Whence::begin);
+          file_email->Write(&m, sizeof(mailrec));
         }
       }
-      pFileEmail->set_length(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w));
+      file_email->Close();
+      file_email->set_length(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w));
       a()->status_manager()->Run([](Status& s) {
         s.increment_filechanged(Status::file_change_email);
       });
-      pFileEmail->Close();
     }
   }
   if (received_short_message()) {

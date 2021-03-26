@@ -18,6 +18,8 @@
 #ifndef INCLUDED_COMMON_EVENTS_H
 #define INCLUDED_COMMON_EVENTS_H
 
+#include "common/exceptions.h"
+
 #include <cstdint>
 #include <string>
 
@@ -36,7 +38,7 @@ struct PauseProcessingInstanceMessages {};
 struct CheckForHangupEvent {};
 
 // Notify the BBS that the user has hungup, forcefully if needed.
-struct HangupEvent {};
+struct HangupEvent { hangup_type_t t{hangup_type_t::user_logged_off}; };
 
 // Needs to update the topscreen on local IO.
 struct UpdateTopScreenEvent {};

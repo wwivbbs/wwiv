@@ -71,7 +71,9 @@ int bbsmain(int argc, char *argv[]) {
     const auto return_code = bbs->Run(argc, argv); 
     return bbs->ExitBBSImpl(return_code, true);
   } catch (const wwiv::common::hangup_error& e) {
-    LOG(ERROR) << "BBS User Hung Up: " << e.what();
+    if (e.hangup_type() == wwiv::common::hangup_type_t::user_disconnected) {
+      LOG(ERROR) << "BBS User Hung Up: " << e.what();
+    }
     if (bbs) {
       return bbs->ExitBBSImpl(Application::exitLevelOK, true);
     }

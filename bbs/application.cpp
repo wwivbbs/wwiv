@@ -400,7 +400,7 @@ void Application::handle_sysop_key(uint8_t key) {
         break;
       case F5: /* F5 */
         remoteIO()->disconnect();
-        a()->Hangup();
+        a()->Hangup(hangup_type_t::sysop_forced);
         break;
       case SF5: { /* Shift-F5 */
         std::random_device rd;
@@ -411,12 +411,12 @@ void Application::handle_sysop_key(uint8_t key) {
           bout.bputch(static_cast<char>(dist(e) & 0xff));
         }
         remoteIO()->disconnect();
-        a()->Hangup();
+        a()->Hangup(hangup_type_t::sysop_forced);
         } break;
       case CF5: /* Ctrl-F5 */
         bout << "\r\nCall back later when you are there.\r\n\n";
         remoteIO()->disconnect();
-        a()->Hangup();
+        a()->Hangup(hangup_type_t::sysop_forced);
         break;
       case F6: /* F6 - was Toggle Sysop Alert*/
         tleft(false);
@@ -1071,7 +1071,7 @@ int Application::Run(int argc, char* argv[]) {
         }
       }
     } catch (const hangup_error& h) {
-      if (sess().IsUserOnline()) {
+      if (sess().IsUserOnline() && h.hangup_type() == hangup_type_t::user_disconnected) {
         // Don't need to log this unless the user actually made it online.
         std::cerr << h.what() << "\r\n";
         sysoplog() << h.what();
@@ -1308,12 +1308,12 @@ bool Application::CheckForHangup() {
     if (sess().IsUserOnline()) {
       sysoplog() << "Hung Up.";
     }
-    a()->Hangup();
+    a()->Hangup(hangup_type_t::user_disconnected);
   }
   return sess().hangup();
 }
 
-void Application::Hangup() {
+void Application::Hangup(hangup_type_t t) {
   if (!cleanup_cmd.empty()) {
     bout.nl();
     const auto cmd = stuff_in(cleanup_cmd, "", "", "", "", "");
@@ -1325,5 +1325,5 @@ void Application::Hangup() {
   }
   sess().hangup(true);
   VLOG(1) << "Invoked Hangup()";
-  throw hangup_error(user()->name());
+  throw hangup_error(t, user()->name_and_number());
 }

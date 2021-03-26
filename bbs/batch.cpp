@@ -309,8 +309,7 @@ static void bihangup() {
     }
     a()->CheckForHangup();
   }
-  const auto ch = bin.getkey();
-  if (ch == 'h' || ch == 'H') {
+  if (const auto ch = bin.getkey(); ch == 'h' || ch == 'H') {
     a()->Hangup();
   }
 }

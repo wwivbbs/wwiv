@@ -23,9 +23,16 @@
 
 namespace wwiv::common {
 
-struct hangup_error : public std::runtime_error {
-  explicit hangup_error(const std::string& username)
-   : std::runtime_error(wwiv::strings::StrCat(username, " hung up.")) {}
+enum class hangup_type_t { user_logged_off, user_disconnected, sysop_forced };
+
+class hangup_error final : public std::runtime_error {
+public:
+  hangup_error(hangup_type_t t, const std::string& username)
+   : std::runtime_error(wwiv::strings::StrCat(username, " hung up.")), t_(t) {}
+
+  [[nodiscard]] hangup_type_t hangup_type() const noexcept { return t_; }
+
+  hangup_type_t t_;
 };
 
 }  // namespace wwiv::common
