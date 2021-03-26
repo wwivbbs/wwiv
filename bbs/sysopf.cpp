@@ -806,7 +806,7 @@ void mailr() {
           }
         }
         bout.nl(2);
-      } while ((c == 'R') && (!a()->sess().hangup()));
+      } while (c == 'R' && !a()->sess().hangup());
 
       pFileEmail = OpenEmailFile(false);
       if (!pFileEmail->IsOpen()) {
@@ -899,7 +899,7 @@ void auto_purge() {
     return;
   }
 
-  auto current_daten = daten_t_now();
+  const auto current_daten = daten_t_now();
   int user_number = 1;
   sysoplog(false) << "Auto-Purged Inactive Users (over " << days << " days, SL less than " << skipsl << ")";
 
@@ -920,7 +920,7 @@ void auto_purge() {
 }
 
 void beginday(bool displayStatus) {
-  if ((a()->GetBeginDayNodeNumber() > 0)
+  if (a()->GetBeginDayNodeNumber() > 0
       && (a()->sess().instance_number() != a()->GetBeginDayNodeNumber())) {
     // If BEGINDAYNODENUMBER is > 0 or defined in WWIV.INI only handle beginday events on that node number
     a()->status_manager()->reload_status();

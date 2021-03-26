@@ -429,7 +429,7 @@ static std::string to_difftime_string(daten_t now, daten_t then) {
 }
 
 static void print_call(uint16_t sn, const net_networks_rec& net) {
-  static int color, got_color = 0;
+  static int color;
   auto now = daten_t_now();
 
   Callout callout(net, a()->config()->max_backups());
@@ -445,8 +445,9 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
     return;
   }
 
+  static auto got_color = false;
   if (!got_color) {
-    got_color = 1;
+    got_color = true;
     IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
                 {StrCat("WWIV-", a()->sess().instance_number()), INI_TAG});
     if (ini.IsOpen()) {
@@ -645,7 +646,7 @@ static std::pair<int, int> ansicallout() {
         }
         break;
       case DNARROW: // down arrow
-        if ((y < 5) && (pos + 10 < ssize(entries))) {
+        if (y < 5 && pos + 10 < ssize(entries)) {
           a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos += 10;
           y++;
@@ -729,38 +730,35 @@ static std::pair<int, int> ansicallout() {
 }
 
 static int FindNetworkNumberForNode(int sn) {
-  for (auto nNetNumber = 0; nNetNumber < wwiv::stl::ssize(a()->nets()); nNetNumber++) {
-    const auto net = a()->nets()[nNetNumber];
-    Callout callout(net, a()->config()->max_backups());
-    if (callout.net_call_out_for(sn) != nullptr) {
-      return nNetNumber;
+  for (auto net_number = 0; net_number < wwiv::stl::ssize(a()->nets()); net_number++) {
+    const auto net = a()->nets()[net_number];
+    if (Callout callout(net, a()->config()->max_backups()); callout.net_call_out_for(sn) != nullptr) {
+      return net_number;
     }
   }
   return -1;
 }
 
 void force_callout() {
-  const auto sn = ansicallout();
-  if (sn.first <= 0) {
+  auto [system_number, network_number] = ansicallout();
+  if (system_number <= 0) {
     return;
   }
-
-  int network_number = sn.second;
   if (network_number < 0) {
-    network_number = FindNetworkNumberForNode(sn.first);
-    if (network_number < 0) {
-      return;
-    }
+    network_number = FindNetworkNumberForNode(system_number);
+  }
+  if (network_number < 0) {
+    return;
   }
   const auto& net = a()->nets()[network_number];
 
   set_net_num(network_number);
   const Callout callout(net, a()->config()->max_backups());
 
-  if (!allowed_to_call(*callout.net_call_out_for(sn.first), DateTime::now())) {
+  if (!allowed_to_call(*callout.net_call_out_for(system_number), DateTime::now())) {
     return;
   }
 
   a()->Cls();
-  do_callout(net, sn.first);
+  do_callout(net, system_number);
 }

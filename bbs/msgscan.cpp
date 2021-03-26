@@ -1098,6 +1098,7 @@ static bool query_post() {
 static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool title_scan) {
   auto done = false;
   auto val = 0;
+  auto skip_query_post = false;
   while (!done) {
     a()->CheckForHangup();
     ReadMessageResult result{};
@@ -1158,6 +1159,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
         break;
       case 'B':
         if (nextsub) {
+          skip_query_post = true;
           HandleRemoveFromNewScan();
         }
         nextsub = true;
@@ -1206,7 +1208,9 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
       if ((val & 2) && lcs()) {
         network_validate();
       }
-      done = query_post();
+      if (!skip_query_post) {
+        done = query_post();
+      }
       if (!done) {
         // back to list title.
         scan_option = MsgScanOption::SCAN_OPTION_LIST_TITLES;

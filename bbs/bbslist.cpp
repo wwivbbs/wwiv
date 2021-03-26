@@ -43,9 +43,10 @@
 
 #include "common/output.h"
 
-#include <cereal/archives/json.hpp>
-#include <cereal/types/memory.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
+#include <cereal/archives/json.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cereal/types/memory.hpp>
 
 using wwiv::common::InputMode;
 using namespace wwiv::core;
