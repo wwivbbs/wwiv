@@ -241,7 +241,17 @@ bool Nodelist::Load(const std::vector<std::string>& lines) {
 }
 
 const NodelistEntry& Nodelist::entry(const FidoAddress& a) const {
-  return entries_.at(a);
+  if (stl::contains(entries_, a)) {
+    return at(entries_, a);
+  }
+  if (a.has_domain()) {
+    if (stl::contains(entries_, a.without_domain())) {
+      return at(entries_, a);
+    }
+  }
+  const auto s = fmt::format("Nodelist::entry: key missing: {} ", a.as_string(true, true));
+  DLOG(FATAL) << s << ": at: \r\n" << os::stacktrace();
+  throw std::out_of_range(s);
 }
 
 bool Nodelist::contains(const FidoAddress& a) const {
