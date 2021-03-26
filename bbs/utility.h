@@ -16,23 +16,26 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_UTILITY_H__
-#define __INCLUDED_UTILITY_H__
+#ifndef INCLUDED_BBS_UTILITY_H
+#define INCLUDED_BBS_UTILITY_H
 
-#include "sdk/net/net.h"
+#include <filesystem>
 #include <string>
 #include <vector>
 
+struct net_header_rec;
 void remove_from_temp(const std::string& file_name, const std::filesystem::path& directory_name,
                       bool bPrintStatus);
 float post_ratio();
 void reset_disable_conf();
 bool okansi();
 long nsl();
-void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text, const std::string& byname);
+void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text,
+              const std::string& byname);
 std::string stripfn(const std::string& file_name);
 std::string get_wildlist(const std::string& file_mask);
-int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
+int side_menu(int* menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos,
+              int ypos, struct side_menu_colors* smc);
 /** True if an external fsed is defined and user has ansi */
 bool ok_external_fsed();
 /** True if an external or internal fsed is allowed */
@@ -41,5 +44,4 @@ bool okfsed();
 bool ok_internal_fsed();
 int ansir_to_flags(uint16_t ansir);
 
-#endif  // __INCLUDED_UT`ILITY_H__
-
+#endif

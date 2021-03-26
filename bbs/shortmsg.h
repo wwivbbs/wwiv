@@ -15,13 +15,18 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_SHORTMSG_H__
-#define __INCLUDED_BBS_SHORTMSG_H__
+#ifndef INCLUDED_BBS_SHORTMSG_H
+#define INCLUDED_BBS_SHORTMSG_H
 
 #include <sstream>
 
-#include "sdk/net/net.h"
-#include "sdk/user.h"
+namespace wwiv {
+namespace sdk {
+class User;
+}
+}
+
+struct net_networks_rec;
 
 class ssm {
 public:
@@ -49,4 +54,4 @@ bool received_short_message();
 // Set the state if a short message has been received this session.
 void received_short_message(bool b);
 
-#endif // __INCLUDED_BBS_SHORTMSG_H__
+#endif

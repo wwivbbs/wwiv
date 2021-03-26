@@ -15,20 +15,19 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_NETSUP_H__
-#define __INCLUDED_BBS_NETSUP_H__
+#ifndef INCLUDED_BBS_NETSUP_H
+#define INCLUDED_BBS_NETSUP_H
 
-#include <chrono>
 #include <cstdint>
 #include <string>
-#include "sdk/net/net.h"
+#include <vector>
+
+struct net_header_rec;
 
 void cleanup_net();
 void print_pending_list();
-void gate_msg(
-  net_header_rec* nh, char *messageText, int net_number,
-  const std::string& author_name, std::vector<uint16_t> list,
-  int nFromNetworkNumber);
+void gate_msg(net_header_rec* nh, char* messageText, int net_number, const std::string& author_name,
+              std::vector<uint16_t> list, int nFromNetworkNumber);
 void force_callout();
 
-#endif  // __INCLUDED_BBS_NETSUP_H__
+#endif

@@ -15,14 +15,17 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_CONNECT1_H__
-#define __INCLUDED_BBS_CONNECT1_H__
+#ifndef INCLUDED_BBS_CONNECT1_H
+#define INCLUDED_BBS_CONNECT1_H
 
-#include "sdk/net/net.h"
+#include <cstdint>
+#include <optional>
+
+struct net_system_list_rec;
 
 bool valid_system(int ts);
 std::optional<net_system_list_rec> next_system(int ts);
 void set_net_num(int network_number);
 int32_t next_system_reg(int16_t ts);
 
-#endif  // __INCLUDED_BBS_CONNECT1_H__
+#endif

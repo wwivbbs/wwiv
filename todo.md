@@ -25,7 +25,6 @@
 
 TODO Expression:
 |{uppercase user.name)}
-|{user.name, <35)} (left justified, 35 spaces)
 
 # Install
 curl https://build.wwivbbs.org/jenkins/job/wwiv/lastStableBuild/label=linux-debian10/api/json

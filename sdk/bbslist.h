@@ -18,12 +18,13 @@
 #ifndef INCLUDED_SDK_BBSLIST_H
 #define INCLUDED_SDK_BBSLIST_H
 
-#include "sdk/net/net.h"
 #include <filesystem>
 #include <initializer_list>
 #include <map>
 #include <optional>
 #include <string>
+
+struct net_system_list_rec;
 
 namespace wwiv::sdk {
   

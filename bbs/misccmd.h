@@ -19,8 +19,8 @@
 #define INCLUDED_BBS_MISCCMD_H
 
 #include <string>
-#include "sdk/net/net.h"
 
+enum class network_type_t : uint8_t;
 void kill_old_email();
 void list_users(int mode);
 void time_bank();
