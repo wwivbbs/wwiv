@@ -265,8 +265,8 @@ class AvailableProtocols {
 public:
   AvailableProtocols(xfertype t, const std::vector<newexternalrec>& e, wwiv::sdk::User& user)
       : xt(t), externs(e), u(user) {
-    if (ok_prot(u.GetDefaultProtocol(), xt)) {
-      default_protocol = u.GetDefaultProtocol();
+    if (ok_prot(u.default_protocol(), xt)) {
+      default_protocol = u.default_protocol();
     }
 
     const auto maxprot = WWIV_NUM_INTERNAL_PROTOCOLS - 1 + ssize(a()->externs);
@@ -311,8 +311,8 @@ public:
     }
     for (const auto& p : prots) {
       if (key == p.key) {
-        if (!u.GetDefaultProtocol()) {
-          u.SetDefaultProtocol(p.protocol_number);
+        if (!u.default_protocol()) {
+          u.default_protocol(p.protocol_number);
         }
         return {p.protocol_number};
       }

@@ -47,16 +47,16 @@ void show_files(const char *file_name, const char *directory_name) {
 #endif
   const auto stripped_fn = ToStringLowerCase(stripfn(file_name));
   const auto s = fmt::sprintf("|#7[|17|15 FileSpec: %s    Dir: %s%s |16|#7]", stripped_fn, drive, direc);
-  int i = (a()->user()->GetScreenChars() - 1) / 2 - size_without_colors(s) / 2;
+  int i = (a()->user()->screen_width() - 1) / 2 - size_without_colors(s) / 2;
   bout << "|#7" << std::string(i, c) << s;
-  i = a()->user()->GetScreenChars() - 1 - i - size_without_colors(s);
+  i = a()->user()->screen_width() - 1 - i - size_without_colors(s);
   bout << "|#7" << std::string(i, c);
 
   auto full_pathname = FilePath(directory_name, ToStringLowerCase(stripfn(file_name)));
   FindFiles ff(full_pathname, FindFiles::FindFilesType::files);
   for (const auto& f : ff) {
     full_pathname = StrCat("|#7[|#2", aligns(f.name), "|#7]|#1 ");
-    if (bout.wherex() > a()->user()->GetScreenChars() - 15) {
+    if (bout.wherex() > a()->user()->screen_width() - 15) {
       bout.nl();
     }
     bout << full_pathname;
@@ -64,6 +64,6 @@ void show_files(const char *file_name, const char *directory_name) {
 
   bout.nl();
   bout.Color(7);
-  bout << std::string(a()->user()->GetScreenChars() - 1, c);
+  bout << std::string(a()->user()->screen_width() - 1, c);
   bout.nl(2);
 }

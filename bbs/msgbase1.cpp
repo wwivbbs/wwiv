@@ -350,9 +350,9 @@ void add_ftn_msgid(const wwiv::sdk::Config& config, const FidoAddress& addr, con
   }
 }
 
-std::string grab_user_name(messagerec* msg, const std::string& file_name, int network_number) {
+std::string grab_user_name(messagerec* m, const std::string& file_name, int network_number) {
   a()->net_email_name.clear();
-  auto o = readfile(msg, file_name);
+  auto o = readfile(m, file_name);
   if (!o) {
     return {};
   }

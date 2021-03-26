@@ -43,7 +43,7 @@ template <typename T> static std::optional<sdk::value::Value> val(T&& v) {
 UserValueProvider::UserValueProvider(Context& c, int effective_sl)
   : UserValueProvider(c.config(), c.u(), effective_sl, c.config().sl(effective_sl)) {
   fns_.try_emplace("editorname", [&]() {
-    const auto editor_num = user_.GetDefaultEditor();
+    const auto editor_num = user_.default_editor();
     if (editor_num == 0xff) {
       return val("Full Screen");
     }
@@ -74,8 +74,8 @@ UserValueProvider::UserValueProvider(const sdk::Config& config, const sdk::User&
   });
   fns_.try_emplace("guest", [&]() { return val(user_.guest_user()); });
   fns_.try_emplace("validated", [&]() { return val(effective_sl_ >= config_.validated_sl()); });
-  fns_.try_emplace("screenlines", [&]() { return val(user_.GetScreenLines()); });
-  fns_.try_emplace("screenwidth", [&]() { return val(user_.GetScreenChars()); });
+  fns_.try_emplace("screenlines", [&]() { return val(user_.screen_lines()); });
+  fns_.try_emplace("screenwidth", [&]() { return val(user_.screen_width()); });
   fns_.try_emplace("ansi", [&]() { return val(user_.ansi()); });
   fns_.try_emplace("color", [&]() { return val(user_.color()); });
   fns_.try_emplace("ansistr", [&]() { return val(
@@ -84,14 +84,14 @@ UserValueProvider::UserValueProvider(const sdk::Config& config, const sdk::User&
   fns_.try_emplace("pause", [&]() { return val(user_.pause()); });
   fns_.try_emplace("mailbox_state", [&]() { return val(user_.mailbox_state()); });
   fns_.try_emplace("extcolors", [&]() { return val(user_.extra_color()); });
-  fns_.try_emplace("optional_lines", [&]() { return val(user_.GetOptionalVal()); });
+  fns_.try_emplace("optional_lines", [&]() { return val(user_.optional_val()); });
   fns_.try_emplace("conferencing", [&]() { return val(user_.use_conference()); });
   fns_.try_emplace("fs_reader", [&]() { return val(user_.has_flag(User::fullScreenReader)); });
   fns_.try_emplace("email", [&]() { return val(user_.email_address()); });
   fns_.try_emplace("ignore_msgs", [&]() { return val(user_.ignore_msgs()); });
   fns_.try_emplace("clear_screen", [&]() { return val(user_.clear_screen()); });
   fns_.try_emplace("auto_quote", [&]() { return val(user_.auto_quote()); });
-  fns_.try_emplace("protocol", [&]() { return val(user_.GetDefaultProtocol()); });
+  fns_.try_emplace("protocol", [&]() { return val(user_.default_protocol()); });
   fns_.try_emplace("callsign", [&]() { return val(user_.callsign()); });
   fns_.try_emplace("street", [&]() { return val(user_.street()); });
   fns_.try_emplace("city", [&]() { return val(user_.city()); });

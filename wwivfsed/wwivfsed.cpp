@@ -91,8 +91,8 @@ FsedApplication::FsedApplication(std::unique_ptr<FsedConfig> config)
   }
   // Make a dummy user record.
   auto& u = context().u();
-  u.SetScreenChars(80);
-  u.SetScreenLines(25);
+  u.screen_width(80);
+  u.screen_lines(25);
   u.set_flag(User::flag_ansi);
   u.set_flag(User::status_color);
   u.set_flag(User::extraColor);

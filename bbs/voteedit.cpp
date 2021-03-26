@@ -103,7 +103,7 @@ static void set_question(int ii) {
   const int num_users = a()->users()->num_user_records();
   for (int user_number = 1; user_number <= num_users; user_number++) {
     if (auto u = a()->users()->readuser(user_number)) {
-      u->SetVote(ii, 0);
+      u->votes(ii, 0);
       a()->users()->writeuser(u, user_number);
     }
   }
@@ -151,7 +151,7 @@ void voteprint() {
     User u;
     a()->users()->readuser(&u, i);
     for (int i1 = 0; i1 < 20; i1++) {
-      x[ i1 + i * 20 ] = static_cast<char>(u.GetVote(i1));
+      x[ i1 + i * 20 ] = static_cast<char>(u.votes(i1));
     }
   }
   File votingText(FilePath(a()->config()->gfilesdir(), VOTING_TXT));

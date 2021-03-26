@@ -43,8 +43,8 @@ using namespace wwiv::strings;
 namespace wwiv::fsed {
 
 static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file, const wwiv::sdk::User* user) {
-  const auto screen_width = (user != nullptr) ? user->GetScreenChars() : 80;
-  const auto screen_length = (user != nullptr) ? user->GetScreenLines() - 1 : 24;
+  const auto screen_width = (user != nullptr) ? user->screen_width() : 80;
+  const auto screen_length = (user != nullptr) ? user->screen_lines() - 1 : 24;
   const auto num_header_lines = 4;
   auto fs = FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
   auto view = std::make_shared<FsedView>(fs, data, file);

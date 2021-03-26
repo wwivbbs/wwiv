@@ -62,6 +62,8 @@ jq ".number" jenkins.json
 
 ## Infrastructure Cleanup
 ***
+* Make sure the net_networks_rec.network_number is accurate, then try
+  to get rid of the other network_numbers everywhere.
 * Try to remove a()->current_net() and a()->net_num(), pass in the net 
   as much as possible.
 * cleanup wfc since we aren't waiting for a call
@@ -83,7 +85,6 @@ jq ".number" jenkins.json
   to return an std::optional<T> as the return type.
 * Switch all BBS LocalIO subclasses to use curses KEY types not Win32 key code
   types for characters >0xff. (i.e. KEY_LEFT not LEFT)
-* simplify names in User
 * See if you can move user num and other transient user info into user class.
 * Finish making bbs only use UserManager that returns optional
 * Remove readuser_nocache, it's just readuser now.

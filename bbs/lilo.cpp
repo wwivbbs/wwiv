@@ -85,28 +85,28 @@ static char g_szLastLoginDate[9];
 
 static void CleanUserInfo() {
   if (okconf(a()->user()) && !a()->uconfsub.empty()) {
-    setuconf(ConferenceType::CONF_SUBS, a()->user()->GetLastSubConf(), 0);
-    a()->sess().set_current_user_sub_conf_num(a()->user()->GetLastSubConf());
+    setuconf(ConferenceType::CONF_SUBS, a()->user()->subconf(), 0);
+    a()->sess().set_current_user_sub_conf_num(a()->user()->subconf());
   } else {
     a()->sess().set_current_user_sub_conf_num(0);    
   }
   if (okconf(a()->user()) && !a()->uconfdir.empty()) {
-    setuconf(ConferenceType::CONF_DIRS, a()->user()->GetLastDirConf(), 0);
-    a()->sess().set_current_user_dir_conf_num(a()->user()->GetLastDirConf());
+    setuconf(ConferenceType::CONF_DIRS, a()->user()->dirconf(), 0);
+    a()->sess().set_current_user_dir_conf_num(a()->user()->dirconf());
   } else {
     a()->sess().set_current_user_dir_conf_num(0);    
   }
-  if (a()->user()->GetLastSubNum() > a()->config()->max_subs()) {
-    a()->user()->SetLastSubNum(0);
+  if (a()->user()->subnum() > a()->config()->max_subs()) {
+    a()->user()->subnum(0);
   }
-  if (a()->user()->GetLastDirNum() > a()->config()->max_dirs()) {
-    a()->user()->SetLastDirNum(0);
+  if (a()->user()->dirnum() > a()->config()->max_dirs()) {
+    a()->user()->dirnum(0);
   }
-  const auto last_subnum = a()->user()->GetLastSubNum();
+  const auto last_subnum = a()->user()->subnum();
   if (last_subnum < size_int(a()->usub)) {
     a()->set_current_user_sub_num(last_subnum);
   }
-  const auto last_dirnum = a()->user()->GetLastDirNum();
+  const auto last_dirnum = a()->user()->dirnum();
   if (last_subnum < size_int(a()->udir)) {
     a()->set_current_user_dir_num(last_dirnum);
   }
@@ -274,11 +274,11 @@ static void LeaveBadPasswordFeedback(int ans) {
   a()->user()->macro(1, "");
   a()->user()->macro(2, "");
   a()->user()->sl(a()->config()->newuser_sl());
-  a()->user()->SetScreenChars(80);
+  a()->user()->screen_width(80);
   if (ans > 0) {
     select_editor();
   } else {
-    a()->user()->SetDefaultEditor(0);
+    a()->user()->default_editor(0);
   }
   a()->user()->email_sent(0);
   const auto save_allow_cc = a()->IsCarbonCopyEnabled();
@@ -730,7 +730,7 @@ static void DisplayUserLoginInformation() {
 
   /////////////////////////////////////////////////////////////////////////
   a()->status_manager()->reload_status();
-  const auto screen_width = a()->user()->GetScreenChars() - 19;
+  const auto screen_width = a()->user()->screen_width() - 19;
   int width = 0;
   bout << "|#9Networks|#0.......... ";
   for (const auto& n : a()->nets().networks()) {
@@ -752,7 +752,7 @@ static void DisplayUserLoginInformation() {
     if (a()->user()->forward_systemnum() != 0) {
       set_net_num(a()->user()->forward_netnum());
       if (!valid_system(a()->user()->forward_systemnum())) {
-        a()->user()->ClearMailboxForward();
+        a()->user()->clear_mailbox_forward();
         bout << "Forwarded to unknown system; forwarding reset.\r\n";
       } else {
         bout << "Mail set to be forwarded to ";
@@ -768,7 +768,7 @@ static void DisplayUserLoginInformation() {
         }
       }
     } else {
-      if (a()->user()->IsMailboxClosed()) {
+      if (a()->user()->mailbox_closed()) {
         bout << "Your mailbox is closed.\r\n\n";
       } else {
         bout << "Mail set to be forwarded to #" 
@@ -826,7 +826,7 @@ static void CheckUserForVotingBooth() {
   auto questused = read_voting();
   if (!a()->user()->restrict_vote() && a()->sess().effective_sl() >= a()->config()->validated_sl()) {
     for (int i = 0; i < 20; i++) {
-      if (questused[i] && a()->user()->GetVote(i) == 0) {
+      if (questused[i] && a()->user()->votes(i) == 0) {
         bout.nl();
         bout << "|#9You haven't voted yet.\r\n";
         return;

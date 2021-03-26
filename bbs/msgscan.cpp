@@ -265,8 +265,8 @@ static FullScreenView CreateFullScreenListTitlesView() {
   }
 
   bout.clear_lines_listed();
-  const auto screen_width = a()->user()->GetScreenChars();
-  const auto screen_length = a()->user()->GetScreenLines() - 1;
+  const auto screen_width = a()->user()->screen_width();
+  const auto screen_length = a()->user()->screen_lines() - 1;
   return FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
 }
 
@@ -307,7 +307,7 @@ static std::string CreateLine(std::unique_ptr<Message>&& msg, const int msgnum) 
     line += trim_to_size_ignore_colors(StringTrim(h.title()), 60);
   }
 
-  if (a()->user()->GetScreenChars() >= 80) {
+  if (a()->user()->screen_width() >= 80) {
     if (size_without_colors(line) > 50) {
       line = trim_to_size_ignore_colors(line, 50);
     }
@@ -581,7 +581,7 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
   }
 
   bout << "|#7" << static_cast<unsigned char>(198)
-       << std::string(a()->user()->GetScreenChars() - 3, static_cast<unsigned char>(205))
+       << std::string(a()->user()->screen_width() - 3, static_cast<unsigned char>(205))
        << static_cast<unsigned char>(181) << "\r\n";
   const auto num_title_lines = std::max<int>(a()->sess().num_screen_lines() - 6, 1);
   auto i = 0;
@@ -594,7 +594,7 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
     }
   }
   bout << "|#7" << static_cast<unsigned char>(198)
-       << std::string(a()->user()->GetScreenChars() - 3, static_cast<unsigned char>(205))
+       << std::string(a()->user()->screen_width() - 3, static_cast<unsigned char>(205))
        << static_cast<unsigned char>(181) << "\r\n";
 }
 

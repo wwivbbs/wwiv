@@ -305,7 +305,7 @@ void CreateCallInfoBbsDropFile() {
     file.Write(fmt::sprintf("%s\n%s 00:01\nEXPERT\nN\n%s\n%d\n%d\n1\n%d\n%d\n%s\n%s\n%d\n",
                         u.voice_phone(), u.laston(),
                         u.laston(), u.logons(),
-                        u.GetScreenLines(), u.uploaded(),
+                        u.screen_lines(), u.uploaded(),
                         u.downloaded(), "8N1",
                         (a()->sess().incom()) ? "REMOTE" : "LOCAL",
                         (a()->sess().incom()) ? a()->primary_port() : 0));
@@ -403,7 +403,7 @@ void CreateDoorSysDropFile() {
     file.Write(line);
     const auto* const ansiStatus = okansi() ? "GR" : "NG";
     line = fmt::sprintf("%s\n%u\n%c\n%s\n%u\n%s\n%u\n%c\n%u\n%u\n%u\n%d\n", ansiStatus,
-            u.GetScreenLines(), u.IsExpert() ? 'Y' : 'N',
+            u.screen_lines(), u.IsExpert() ? 'Y' : 'N',
             "1,2,3",                     // conferences
             a()->current_user_sub_num(), // current 'conference'
             "12/31/99",                  // expiration date
@@ -505,7 +505,7 @@ std::string create_chain_file() {
         "%d\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%d\n", u.usernum(), u.name(),
         u.real_name(), u.callsign(), u.age(),
         u.gender(), u.gold(), u.laston(),
-        u.GetScreenChars(), u.GetScreenLines(), u.sl()));
+        u.screen_width(), u.screen_lines(), u.sl()));
     const auto temporary_log_filename = GetTemporaryInstanceLogFileName();
     const auto gfilesdir = a()->config()->gfilesdir();
     file.Write(fmt::sprintf("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n", cs(), so(), okansi(),

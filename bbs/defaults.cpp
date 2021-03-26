@@ -80,15 +80,15 @@ void select_editor() {
     bout << "A|#9, |#1";
   }
   bout << "1-" << a()->editors.size() << ", |#9(Q=No Change) ? ";
-  const auto cur_editor = a()->user()->GetDefaultEditor();
+  const auto cur_editor = a()->user()->default_editor();
   const auto k = bin.input_number_hotkey(cur_editor != 0xff ? cur_editor : 0, keys, 0,
                                          size_int(a()->editors), false);
   if (k.key == 'A') {
-    a()->user()->SetDefaultEditor(0xff);
+    a()->user()->default_editor(0xff);
   } else if (k.key == 'Q') {
-    a()->user()->SetDefaultEditor(cur_editor);
+    a()->user()->default_editor(cur_editor);
   } else {
-    a()->user()->SetDefaultEditor(k.num);
+    a()->user()->default_editor(k.num);
   }
 }
 
@@ -98,7 +98,7 @@ static std::string GetMailBoxStatus() {
     return std::string("Normal");
   }
   if (a()->user()->forward_systemnum() != 0) {
-    if (a()->user()->IsMailboxForwarded()) {
+    if (a()->user()->mailbox_forwarded()) {
       return fmt::format("Forward to #{} @{}.{}.",
               a()->user()->forward_usernum(),
               a()->user()->forward_systemnum(),
@@ -108,7 +108,7 @@ static std::string GetMailBoxStatus() {
     return StrCat("Forwarded to Internet ", fwd_username);
   }
 
-  if (a()->user()->IsMailboxClosed()) {
+  if (a()->user()->mailbox_closed()) {
     return "Closed";
   }
 
@@ -125,7 +125,7 @@ static void print_cur_stat() {
   bout.cls();
   bout.litebar("Your Preferences");
   const auto screen_size =
-      fmt::format("{} X {}", a()->user()->GetScreenChars(), a()->user()->GetScreenLines());
+      fmt::format("{} X {}", a()->user()->screen_width(), a()->user()->screen_lines());
   const std::string ansi_setting =
       a()->user()->ansi() ? (a()->user()->color() ? "Color" : "Monochrome") : "No ANSI";
   bout.format("|#11|#9) Screen size       : |#2{:<16} ", screen_size);
@@ -140,7 +140,7 @@ static void print_cur_stat() {
   if (okansi()) {
     bout.format("{:<45} {}\r\n", "|#17|#9) Update macros", "|#18|#9) Change colors");
 
-    const auto editor_num = a()->user()->GetDefaultEditor();
+    const auto editor_num = a()->user()->default_editor();
     std::string editor_name = "Line";
     if (a()->IsUseInternalFsed() && editor_num == 0xff) {
       editor_name = "Full Screen";
@@ -156,7 +156,7 @@ static void print_cur_stat() {
 
   const auto internet_email_address = 
       ((a()->user()->email_address().empty()) ? "None." : a()->user()->email_address());
-  bout.format("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->GetOptionalVal());
+  bout.format("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->optional_val());
   bout << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->use_conference()) << wwiv::endl;
   bout.format("|#1D|#9) Show Hidden Lines : |#2{:<16} ", YesNoString(a()->user()->has_flag(User::msg_show_controlcodes)));
   if (a()->fullscreen_read_prompt()) {
@@ -636,13 +636,13 @@ void modify_mailbox() {
   if (bin.yesno()) {
     bout << "|#5Are you sure? ";
     if (bin.yesno()) {
-      a()->user()->CloseMailbox();
+      a()->user()->close_mailbox();
       return;
     }
   }
   bout << "|#5Do you want to forward your mail? ";
   if (!bin.yesno()) {
-    a()->user()->ClearMailboxForward();
+    a()->user()->clear_mailbox_forward();
     return;
   }
   
@@ -655,7 +655,7 @@ void modify_mailbox() {
           check_inet_addr(entered_address)) {
         a()->user()->email_address(entered_address);
         a()->user()->forward_netnum(network_number);
-        a()->user()->SetForwardToInternet();
+        a()->user()->forward_systemnum(INTERNET_EMAIL_FAKE_OUTBOUND_NODE);
         bout << "\r\nSaved.\r\n\n";
       }
       return;
@@ -672,7 +672,7 @@ void modify_mailbox() {
   if (a()->user()->forward_systemnum() != 0) {
     a()->user()->forward_netnum(a()->net_num());
     if (a()->user()->forward_usernum() == 0) {
-      a()->user()->ClearMailboxForward();
+      a()->user()->clear_mailbox_forward();
       bout << "\r\nCan't forward to a user name, must use user number.\r\n\n";
     }
   } else if (a()->user()->forward_usernum() == a()->sess().user_num()) {
@@ -695,9 +695,9 @@ static void optional_lines() {
   bout << "|#9You may specify your optional lines value from 0-10,\r\n"
        << "|#20 |#9being all, |#210 |#9being none.\r\n"
        << "|#2What value? ";
-  const auto r = bin.input_number_hotkey(a()->user()->GetOptionalVal(), {'Q'}, 0, 10);
+  const auto r = bin.input_number_hotkey(a()->user()->optional_val(), {'Q'}, 0, 10);
   if (r.key != 'Q') {
-    a()->user()->SetOptionalVal(r.num);
+    a()->user()->optional_val(r.num);
   }
 }
 
@@ -830,10 +830,10 @@ void defaults(bool& need_menu_reload) {
 
 // private function used by list_config_scan_plus and drawscan
 static int GetMaxLinesToShowForScanPlus() {
-  return (a()->user()->GetScreenLines() - (4 + STOP_LIST) >
+  return (a()->user()->screen_lines() - (4 + STOP_LIST) >
           MAX_SCREEN_LINES_TO_SHOW - (4 + STOP_LIST) ?
           MAX_SCREEN_LINES_TO_SHOW - (4 + STOP_LIST) :
-          a()->user()->GetScreenLines() - (4 + STOP_LIST));
+          a()->user()->screen_lines() - (4 + STOP_LIST));
 }
 
 static void list_config_scan_plus(int first, int *amount, int type) {
@@ -1002,9 +1002,9 @@ void config_scan_plus(int type) {
     bool menu_done = false;
     while (!menu_done && !a()->sess().hangup() && !done) {
       command = side_menu(&side_pos, redraw, menu_items, 1,
-                          a()->user()->GetScreenLines() - STOP_LIST > MAX_SCREEN_LINES_TO_SHOW - STOP_LIST ?
+                          a()->user()->screen_lines() - STOP_LIST > MAX_SCREEN_LINES_TO_SHOW - STOP_LIST ?
                           MAX_SCREEN_LINES_TO_SHOW - STOP_LIST :
-                          a()->user()->GetScreenLines() - STOP_LIST, &smc);
+                          a()->user()->screen_lines() - STOP_LIST, &smc);
       bout.clear_lines_listed();
       redraw = true;
       bout.Color(0);
@@ -1083,8 +1083,8 @@ void config_scan_plus(int type) {
           amount = 0;
           break;
         case 1:
-          if (top > a()->user()->GetScreenLines() - 4) {
-            top -= a()->user()->GetScreenLines() - 4;
+          if (top > a()->user()->screen_lines() - 4) {
+            top -= a()->user()->screen_lines() - 4;
           } else {
             top = 0;
           }

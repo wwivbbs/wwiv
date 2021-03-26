@@ -404,7 +404,7 @@ void readmail(bool newmail_only) {
     curmail = 0;
   } else {
     bout << "\r\n\n|#2You have mail from:\r\n";
-    bout << "|#9" << std::string(a()->user()->GetScreenChars() - 1, '-') << wwiv::endl;
+    bout << "|#9" << std::string(a()->user()->screen_width() - 1, '-') << wwiv::endl;
     for (auto i = 0; i < mw && !abort; i++) {
       if (!read_same_email(mloc, mw, i, m, false, 0)) {
         continue;
@@ -421,7 +421,7 @@ void readmail(bool newmail_only) {
                       from_name(m, net, sl, nn), stripcolors(m.title));
       bout.bpla(current_line, &abort);
     }
-    bout << "|#9" << std::string(a()->user()->GetScreenChars() - 1, '-') << wwiv::endl;
+    bout << "|#9" << std::string(a()->user()->screen_width() - 1, '-') << wwiv::endl;
     bout.bputs("|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ");
     // TODO: use input numberor hotkey for number 1-mw, or Q
     auto res = bin.input_number_hotkey(1, {'Q'}, 1, mw);

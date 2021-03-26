@@ -339,11 +339,11 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const std::vector<std::string>& 
 bool okfsed() { return ok_internal_fsed() || ok_external_fsed(); }
 
 bool ok_external_fsed() {
-  const auto ed = a()->user()->GetDefaultEditor();
+  const auto ed = a()->user()->default_editor();
   return okansi() && ed > 0 && ed != 0xff && ed <= wwiv::stl::ssize(a()->editors);
 }
 
-bool ok_internal_fsed() { return okansi() && a()->user()->GetDefaultEditor() == 0xff; }
+bool ok_internal_fsed() { return okansi() && a()->user()->default_editor() == 0xff; }
 
 
 template <class _Ty>

@@ -234,8 +234,8 @@ WFC::WFC(Application* a) : a_(a) {
 
   a_->reset_effective_sl();
   if (a_->user()->deleted()) {
-    a_->user()->SetScreenChars(80);
-    a_->user()->SetScreenLines(25);
+    a_->user()->screen_width(80);
+    a_->user()->screen_lines(25);
   }
   a_->sess().num_screen_lines(a_->localIO()->GetDefaultScreenBottom() + 1);
 }

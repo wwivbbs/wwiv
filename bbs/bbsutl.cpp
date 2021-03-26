@@ -111,14 +111,14 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
         ch = RETURN;
     }
     if (ch >= SPACE) {
-      if (bout.wherex() < (a()->user()->GetScreenChars() - 1) && cp < nMaxLen) {
+      if (bout.wherex() < (a()->user()->screen_width() - 1) && cp < nMaxLen) {
         buffer[cp++] = ch;
         bout.bputch(ch);
-        if (bout.wherex() == (a()->user()->GetScreenChars() - 1)) {
+        if (bout.wherex() == (a()->user()->screen_width() - 1)) {
           done = true;
         }
       } else {
-        if (bout.wherex() >= (a()->user()->GetScreenChars() - 1)) {
+        if (bout.wherex() >= (a()->user()->screen_width() - 1)) {
           done = true;
         }
       }
@@ -207,7 +207,7 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
       case TAB: {                           // Tab
         int charsNeeded = 5 - (cp % 5);
         if ((cp + charsNeeded) < nMaxLen
-            && (bout.wherex() + charsNeeded) < a()->user()->GetScreenChars()) {
+            && (bout.wherex() + charsNeeded) < a()->user()->screen_width()) {
           charsNeeded = 5 - ((bout.wherex() + 1) % 5);
           for (auto j = 0; j < charsNeeded; j++) {
             buffer[cp++] = SPACE;

@@ -286,7 +286,7 @@ void GoodBye() {
     do {
       bout.cls();
       bout.printfile(filename.string());
-      switch (int ch = onek("QFTO", true); ch) {
+      switch (const auto ch = onek("QFTO", true); ch) {
       case 'Q':
         cycle = 1;
         break;
@@ -311,11 +311,11 @@ void GoodBye() {
           TempDisablePause disable_pause(bout);
           bout.printfile(LOGOFF_NOEXT);
         }
-        a()->user()->SetLastSubNum(a()->current_user_sub_num());
-        a()->user()->SetLastDirNum(a()->current_user_dir_num());
+        a()->user()->subnum(a()->current_user_sub_num());
+        a()->user()->dirnum(a()->current_user_dir_num());
         if (okconf(a()->user())) {
-          a()->user()->SetLastSubConf(a()->sess().current_user_sub_conf_num());
-          a()->user()->SetLastDirConf(a()->sess().current_user_dir_conf_num());
+          a()->user()->subconf(a()->sess().current_user_sub_conf_num());
+          a()->user()->dirconf(a()->sess().current_user_dir_conf_num());
         }
         LogOffCmd();
         a()->Hangup();
@@ -336,11 +336,11 @@ void GoodBye() {
         TempDisablePause disable_pause(bout);
         bout.printfile(LOGOFF_NOEXT);
       }
-      a()->user()->SetLastSubNum(a()->current_user_sub_num());
-      a()->user()->SetLastDirNum(a()->current_user_dir_num());
+      a()->user()->subnum(a()->current_user_sub_num());
+      a()->user()->dirnum(a()->current_user_dir_num());
       if (okconf(a()->user())) {
-        a()->user()->SetLastSubConf(a()->sess().current_user_sub_conf_num());
-        a()->user()->SetLastDirConf(a()->sess().current_user_dir_conf_num());
+        a()->user()->subconf(a()->sess().current_user_sub_conf_num());
+        a()->user()->dirconf(a()->sess().current_user_dir_conf_num());
       }
       LogOffCmd();
       a()->Hangup();
@@ -671,11 +671,11 @@ void FastGoodBye() {
       batchdl(1);
     }
   }
-  a()->user()->SetLastSubNum(a()->current_user_sub_num());
-  a()->user()->SetLastDirNum(a()->current_user_dir_num());
+  a()->user()->subnum(a()->current_user_sub_num());
+  a()->user()->dirnum(a()->current_user_dir_num());
   if (okconf(a()->user())) {
-    a()->user()->SetLastSubConf(a()->sess().current_user_sub_conf_num());
-    a()->user()->SetLastDirConf(a()->sess().current_user_dir_conf_num());
+    a()->user()->subconf(a()->sess().current_user_sub_conf_num());
+    a()->user()->dirconf(a()->sess().current_user_dir_conf_num());
   }
   LogOffCmd();
   a()->Hangup();

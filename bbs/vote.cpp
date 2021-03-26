@@ -50,7 +50,7 @@ static void print_quest(int mapp, int map[21]) {
     voteFile.Read(&v, sizeof(votingrec));
 
     auto buffer = fmt::sprintf("|#6%c |#2%2d|#7) |#1%s",
-             a()->user()->GetVote(map[i]) ? ' ' : '*', i, v.question);
+             a()->user()->votes(map[i]) ? ' ' : '*', i, v.question);
     bout.bpla(buffer, &abort);
   }
   voteFile.Close();
@@ -134,8 +134,8 @@ static void vote_question(int i, int ii) {
   }
 
   std::string message = "|#9Your vote: |#1";
-  if (a()->user()->GetVote(ii)) {
-    message.append(v.responses[ a()->user()->GetVote(ii) - 1 ].response);
+  if (a()->user()->votes(ii)) {
+    message.append(v.responses[ a()->user()->votes(ii) - 1 ].response);
   } else {
     message +=  "No Comment";
   }
@@ -168,12 +168,12 @@ static void vote_question(int i, int ii) {
     file.Close();
     return;
   }
-  if (a()->user()->GetVote(ii)) {
-    v.responses[ a()->user()->GetVote(ii) - 1 ].numresponses--;
+  if (a()->user()->votes(ii)) {
+    v.responses[ a()->user()->votes(ii) - 1 ].numresponses--;
   }
-  a()->user()->SetVote(ii, i1);
+  a()->user()->votes(ii, i1);
   if (i1) {
-    v.responses[ a()->user()->GetVote(ii) - 1 ].numresponses++;
+    v.responses[ a()->user()->votes(ii) - 1 ].numresponses++;
   }
   file.Seek(ii * sizeof(votingrec), File::Whence::begin);
   file.Write(&v, sizeof(votingrec));

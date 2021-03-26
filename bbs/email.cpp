@@ -77,7 +77,7 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
     return false;
   }
   if (userRecord.forward_systemnum() != 0) {
-    if (!userRecord.IsMailForwardedToInternet()) {
+    if (!userRecord.forwarded_to_internet()) {
       const int network_number = a()->net_num();
       set_net_num(userRecord.forward_netnum());
       if (!valid_system(userRecord.forward_systemnum())) {
@@ -128,7 +128,7 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
       return false;
     }
     ss[current_user] = true;
-    if (userRecord.IsMailboxClosed()) {
+    if (userRecord.mailbox_closed()) {
       bout << "Mailbox Closed.\r\n";
       if (so()) {
         bout << "(Forcing)\r\n";

@@ -158,8 +158,8 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   u->macro(1, "Guess you forgot to define this one....");
   u->macro(2, "User = Monkey + Keyboard");
 
-  u->SetScreenLines(25);
-  u->SetScreenChars(80);
+  u->screen_lines(25);
+  u->screen_width(80);
 
   u->sl(sl);
   u->dsl(dsl);
@@ -275,13 +275,13 @@ std::string User::mailbox_state() const {
     return "Normal";
   }
   if (forward_systemnum() != 0) {
-    if (IsMailboxForwarded()) {
+    if (mailbox_forwarded()) {
       return fmt::format("Forward to #{} @{}", forward_usernum(), forward_systemnum());
     }
     return StrCat("Forwarded to: ", email_address());
   }
 
-  if (IsMailboxClosed()) {
+  if (mailbox_closed()) {
     return "Closed";
   }
 

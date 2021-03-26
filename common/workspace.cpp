@@ -45,7 +45,7 @@ void LoadFileIntoWorkspace(Context& context, const std::filesystem::path& filena
   TextFile input_msg(FilePath(context.session_context().dirs().temp_directory(), INPUT_MSG), "wt");
   input_msg.Write(contents);
 
-  const auto ok_fsed = context.u().GetDefaultEditor() != 0;
+  const auto ok_fsed = context.u().default_editor() != 0;
   use_workspace = (no_edit_allowed || !ok_fsed);
 
   if (!silent_mode) {

@@ -268,7 +268,7 @@ bool Application::ReadCurrentUser(int user_number) {
   last_read_user_number_ = user_number;
   // Update all other session variables that are dependent.
   sess().current_menu_set(user()->menu_set());
-  sess().num_screen_lines(sess().using_modem() ? user()->GetScreenLines()
+  sess().num_screen_lines(sess().using_modem() ? user()->screen_lines()
                                           : localIO()->GetDefaultScreenBottom() + 1);
   sess().dirs().current_menu_directory(FilePath(config_->menudir(), user()->menu_set()));
   return true;
@@ -731,8 +731,8 @@ void Application::GotCaller(int ms) {
   reset_effective_sl();
   sess().user_num(1);
   if (user()->deleted()) {
-    user()->SetScreenChars(80);
-    user()->SetScreenLines(25);
+    user()->screen_width(80);
+    user()->screen_lines(25);
   }
   Cls();
   localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));

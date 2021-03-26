@@ -250,7 +250,7 @@ void printinfo(uploadsrec* u, bool *abort) {
       size = "N/A";
     }
   }
-  const auto desc = trim_to_size_ignore_colors(u->description, a()->user()->GetScreenChars() - 28);
+  const auto desc = trim_to_size_ignore_colors(u->description, a()->user()->screen_width() - 28);
   const auto s = fmt::format("|#2{:>5} {:>4} |#1{}", size, u->numdloads, desc);
   bout.bpla(s, abort);
 

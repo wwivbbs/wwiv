@@ -186,10 +186,10 @@ void display_message_text(const std::string& text, bool* next) {
         if (ch == '0') {
           ctrld = -1; // don't display
         } else {
-          if (a()->user()->GetOptionalVal() == 0) {
+          if (a()->user()->optional_val() == 0) {
             ctrld = 0; // display
           } else {
-            if (10 - a()->user()->GetOptionalVal() < static_cast<int>(ch - '0')) {
+            if (10 - a()->user()->optional_val() < static_cast<int>(ch - '0')) {
               ctrld = -1; // don't display
             } else {
               ctrld = 0; // display
@@ -220,18 +220,18 @@ void display_message_text(const std::string& text, bool* next) {
 
     if (printit || ansi || line_len_ptr >= 80) {
       if (centre && ctrld != -1) {
-        const auto spaces_to_center = (a()->user()->GetScreenChars() - bout.wherex() - line_len_ptr) / 2;
+        const auto spaces_to_center = (a()->user()->screen_width() - bout.wherex() - line_len_ptr) / 2;
         bout.bputs(std::string(spaces_to_center, ' '), &abort, next);
       }
       if (!s.empty()) {
         if (ctrld != -1) {
-          if (bout.wherex() + line_len_ptr >= static_cast<int>(a()->user()->GetScreenChars()) &&
+          if (bout.wherex() + line_len_ptr >= static_cast<int>(a()->user()->screen_width()) &&
               !centre && !ansi) {
             bout.nl();
           }
           bout.bputs(s, &abort, next);
           if (ctrla && !s.empty() && s.back() != SPACE && !ansi) {
-            if (bout.wherex() < static_cast<int>(a()->user()->GetScreenChars()) - 1) {
+            if (bout.wherex() < static_cast<int>(a()->user()->screen_width()) - 1) {
               bout.bputch(SPACE);
             } 
             bout.nl();
@@ -378,7 +378,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
   auto num_header_lines = 0;
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
     bout.format("|#9 Sub|#7: |#{}{:<35.35}", a()->GetMessageColor(), msg.message_area);
-    if (a()->user()->GetScreenChars() >= 78) {
+    if (a()->user()->screen_width() >= 78) {
       bout << " ";
     } else {
       bout.nl();
@@ -393,7 +393,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
   }
 
   bout.format("|#9From|#7: |#1{:<35.35}", msg.from_user_name);
-  if (a()->user()->GetScreenChars() >= 78) {
+  if (a()->user()->screen_width() >= 78) {
     bout << " ";
   } else {
     bout.nl();
@@ -410,7 +410,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
 
   if (!msg.from_sys_name.empty()) {
     bout.format("|#9 Sys|#7: |#1{:<35.35}", msg.from_sys_name);
-    if (a()->user()->GetScreenChars() >= 78) {
+    if (a()->user()->screen_width() >= 78) {
       bout << " ";
     } else {
       bout.nl();
@@ -543,8 +543,8 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg, bool a
     num_header_lines = legacy_display_header_text(msg);
   }
 
-  const auto screen_width = a()->user()->GetScreenChars();
-  const auto screen_length = a()->user()->GetScreenLines() - 1;
+  const auto screen_width = a()->user()->screen_width();
+  const auto screen_length = a()->user()->screen_lines() - 1;
 
   bout.SystemColor(oldcuratr);
   return FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
@@ -556,7 +556,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
   parsed_message_lines_style_t style{};
   style.ctrl_lines = control_lines_t::control_lines;
   style.add_wrapping_marker = false;
-  style.line_length = user.GetScreenChars() - 1;
+  style.line_length = user.screen_width() - 1;
   const auto orig_lines = pmt.to_lines(style);
 
   // Now handle control chars, and optional lines.
@@ -567,7 +567,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
       lines.emplace_back("");
       continue;
     }
-    const auto optional_lines = user.GetOptionalVal();
+    const auto optional_lines = user.optional_val();
     if (line.front() == CD) {
       const auto level = line.size() > 1 ? line.at(1) - '0' : 0;
       if (level == 0) {
@@ -839,7 +839,7 @@ ReadMessageResult display_type2_message(int& msgno, Type2MessageData& msg, bool*
 
   ReadMessageResult result{};
   result.lines_start = 1;
-  result.lines_end = a()->user()->GetScreenLines() - 1;
+  result.lines_end = a()->user()->screen_lines() - 1;
   result.option = ReadMessageOption::NONE;
   return result;
 }

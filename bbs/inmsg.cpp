@@ -172,8 +172,8 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
 
   bout.Color(7);
   std::string header = "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]";
-  if (a()->user()->GetScreenChars() < 80) {
-    header.resize(a()->user()->GetScreenChars());
+  if (a()->user()->screen_width() < 80) {
+    header.resize(a()->user()->screen_width());
   }
   bout << header;
   bout.nl();
@@ -192,8 +192,8 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
       if (curli >= 0) {
         // Don't keep retreating past line 0.
         rollover_line = lin.at(curli);
-        if (ssize(rollover_line) > a()->user()->GetScreenChars() - 1) {
-          rollover_line.resize(a()->user()->GetScreenChars() - 2);
+        if (ssize(rollover_line) > a()->user()->screen_width() - 1) {
+          rollover_line.resize(a()->user()->screen_width() - 2);
         }
       } else {
         curli = 0;
@@ -249,7 +249,7 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
                 ++i5;
               }
             }
-            for (auto i4 = 0; (i4 < (a()->user()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
+            for (auto i4 = 0; (i4 < (a()->user()->screen_width() - i5) / 2) && (!abort); i4++) {
               bout.bputs(" ", &abort, &next);
             }
           }

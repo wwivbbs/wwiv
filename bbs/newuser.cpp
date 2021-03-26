@@ -381,8 +381,8 @@ void input_screensize() {
   const auto x = bin.input_number(80, 32, 80, true);
   bout << "|#9How tall is your screen? (|#2<CR>|#9=|#124|#9): ";
   const auto y = bin.input_number(24, 8, 60, true);
-  a()->user()->SetScreenChars(x);
-  a()->user()->SetScreenLines(y);
+  a()->user()->screen_width(x);
+  a()->user()->screen_lines(y);
   a()->sess().num_screen_lines(y);
 }
 
@@ -1277,7 +1277,7 @@ void NewUserDataEntry(const newuser_config_t& nc) {
     u.set_flag(User::status_color);
     u.set_flag(User::extraColor);
     // Enable the internal FSED and full screen reader for the sysop.
-    u.SetDefaultEditor(0xff);
+    u.default_editor(0xff);
     u.set_flag(User::fullScreenReader);
   }
   a()->localIO()->topdata(saved_topdata);
@@ -1310,7 +1310,7 @@ void newuser() {
     a()->user()->set_flag(User::extraColor);
     a()->user()->set_flag(User::fullScreenReader);
     // 0xff is the internal FSED.
-    a()->user()->SetDefaultEditor(0xff);
+    a()->user()->default_editor(0xff);
   }
   bout.printfile(SYSTEM_NOEXT);
   bout.nl();
@@ -1387,8 +1387,8 @@ void new_mail() {
   if (!File::Exists(file)) {
     return;
   }
-  const auto save_ed = a()->user()->GetDefaultEditor();
-  a()->user()->SetDefaultEditor(0);
+  const auto save_ed = a()->user()->default_editor();
+  a()->user()->default_editor(0);
   LoadFileIntoWorkspace(a()->context(), file, true, true);
   use_workspace = true;
 
@@ -1420,5 +1420,5 @@ void new_mail() {
     sendout_email(email);
   }
   a()->user()->email_waiting(a()->user()->email_waiting() + 1);
-  a()->user()->SetDefaultEditor(save_ed);
+  a()->user()->default_editor(save_ed);
 }

@@ -191,12 +191,12 @@ static bool delete_votes(const std::string& datadir, User& user) {
   voteFile.ReadVector(votes);
   const auto num_vote_records = voteFile.number_of_records();
   for (auto cur_vote = 0; cur_vote < 20; cur_vote++) {
-    if (user.GetVote(cur_vote)) {
+    if (user.votes(cur_vote)) {
       if (cur_vote <= num_vote_records) {
         auto &v = wwiv::stl::at(votes, cur_vote);
-        v.responses[user.GetVote(cur_vote) - 1].numresponses--;
+        v.responses[user.votes(cur_vote) - 1].numresponses--;
       }
-      user.SetVote(cur_vote, 0);
+      user.votes(cur_vote, 0);
     }
   }
   voteFile.Seek(0);

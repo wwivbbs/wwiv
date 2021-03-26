@@ -64,7 +64,7 @@ static bool okansi(const wwiv::sdk::User& user) {
 }
 
 void Output::SetLocalIO(LocalIO* local_io) {
-  // We would use user().GetScreenChars() but I don't think we
+  // We would use user().screen_width() but I don't think we
   // have a live user when we create this.
   screen_ = std::make_unique<LocalIOScreen>(local_io, 80);
   AnsiCallbacks cb;
@@ -571,7 +571,7 @@ int Output::bputch(char c, bool use_buffer) {
       current_line_.emplace_back(c, static_cast<uint8_t>(curatr()));
     }
 
-    const auto screen_width = user().GetScreenChars();
+    const auto screen_width = user().screen_width();
     if (c == BACKSPACE) {
       --x_;  
       if (x_ < 0) {

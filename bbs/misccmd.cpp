@@ -359,7 +359,7 @@ void list_users(int mode) {
         numscn++;
       }
       ++p;
-      if (p == static_cast<int>(a()->user()->GetScreenLines()) - 6) {
+      if (p == static_cast<int>(a()->user()->screen_lines()) - 6) {
         //bout.backline();
         bout.clreol();
         bout.Color(FRAME_COLOR);

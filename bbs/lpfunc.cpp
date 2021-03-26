@@ -119,7 +119,7 @@ int listfiles_plus_function(int type) {
   std::vector<std::string> menu_items;
   prep_menu_items(&menu_items);
 
-  std::vector<uploadsrec> file_recs(a()->user()->GetScreenLines() + 20);
+  std::vector<uploadsrec> file_recs(a()->user()->screen_lines() + 20);
   if (!prep_search_rec(&search_rec, type)) {
     return 0;
   }
@@ -451,7 +451,7 @@ ADD_OR_REMOVE_BATCH:
                   case 8:
 TOGGLE_EXTENDED:
                     ext_is_on = !ext_is_on;
-                    a()->user()->SetFullFileDescriptions(!a()->user()->GetFullFileDescriptions());
+                    a()->user()->full_descriptions(!a()->user()->full_descriptions());
                     menu_done = true;
                     amount = lines = matches = 0;
                     file_pos = 0;

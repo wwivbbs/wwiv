@@ -72,9 +72,9 @@ static bool external_edit_internal(const std::string& edit_filename, const std::
   const auto tft_fn = FilePath(File::current_directory(), stripped_file_name);
   const auto orig_file_time = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
 
-  const auto num_screen_lines = a()->user()->GetScreenLines();
+  const auto num_screen_lines = a()->user()->screen_lines();
   const auto cmdLine = stuff_in(editorCommand, tft_fn.string(),
-                                std::to_string(a()->user()->GetScreenChars()),
+                                std::to_string(a()->user()->screen_width()),
                                 std::to_string(num_screen_lines), std::to_string(numlines), "");
 
   ExecuteExternalProgram(cmdLine, ansir_to_flags(editor.ansir) | EFLAG_NO_CHANGE_DIR);
@@ -105,7 +105,7 @@ bool ExternalMessageEditor::Run() {
 }
 
 bool DoExternalMessageEditor(MessageEditorData& data, int maxli, int* setanon) {
-  const size_t editor_number = a()->user()->GetDefaultEditor() - 1;
+  const size_t editor_number = a()->user()->default_editor() - 1;
   if (editor_number >= a()->editors.size() || !okansi()) {
     bout << "\r\nYou can't use that full screen editor (EME).\r\n\n";
     return false;
@@ -119,7 +119,7 @@ bool DoExternalMessageEditor(MessageEditorData& data, int maxli, int* setanon) {
 bool external_text_edit(const std::string& edit_filename, const std::filesystem::path& working_directory,
                         int numlines, int flags) {
   bout.nl();
-  const auto editor_number = a()->user()->GetDefaultEditor() - 1;
+  const auto editor_number = a()->user()->default_editor() - 1;
   if (editor_number >= wwiv::stl::ssize(a()->editors) || !okansi()) {
     bout << "You can't use that full screen editor. (ete1)" << wwiv::endl << wwiv::endl;
     bout.pausescr();

@@ -421,8 +421,8 @@ public:
     if (ch == KEY_ENTER || ch == wwiv::local::io::TAB || ch == wwiv::local::io::ENTER) {
       curses_out->Cls();
       User user{};
-      user.SetScreenChars(80);
-      user.SetScreenLines(24);
+      user.screen_width(80);
+      user.screen_lines(24);
       user.sl(255);
       user.dsl(255);
       const auto lines = wwiv::common::menus::GenerateMenuLines(

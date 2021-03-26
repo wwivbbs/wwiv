@@ -81,7 +81,7 @@ GenerateMenuLines(const Config& config, const menu_56_t& menu, const sdk::User& 
   const auto& g = menu.generated_menu;
   const auto& title = menu.title;
   const auto num_cols = typ == menu_type_t::short_menu ? g.num_cols : 1;
-  const auto screen_width = user.GetScreenChars() - num_cols + 1;
+  const auto screen_width = user.screen_width() - num_cols + 1;
   const auto col_width =
       typ == menu_type_t::short_menu ? screen_width / num_cols : screen_width - 1;
   if (!title.empty()) {

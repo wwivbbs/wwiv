@@ -228,7 +228,7 @@ int listfiles_plus(int type) {
   const auto save_dir = a()->current_user_dir_num();
   const long save_status = a()->user()->get_status();
 
-  ext_is_on = a()->user()->GetFullFileDescriptions();
+  ext_is_on = a()->user()->full_descriptions();
   signal(SIGFPE, catch_divide_by_zero);
 
   a()->localIO()->topdata(wwiv::local::io::LocalIO::topdata_t::none);
@@ -239,7 +239,7 @@ int listfiles_plus(int type) {
   // Stop trailing bits left on screen.
   bout.cls();
   bout.Color(0);
-  bout.GotoXY(1, a()->user()->GetScreenLines() - 3);
+  bout.GotoXY(1, a()->user()->screen_lines() - 3);
   bout.nl(3);
 
   bout.clear_lines_listed();
@@ -268,7 +268,7 @@ int lp_add_batch(const std::string& file_name, int dn, int fs) {
   }
 
   if (a()->batch().size() >= a()->max_batch) {
-    bout.GotoXY(1, a()->user()->GetScreenLines() - 1);
+    bout.GotoXY(1, a()->user()->screen_lines() - 1);
     bout << "No room left in batch queue.\r\n";
     bout.pausescr();
   } else if (!ratio_ok()) {
@@ -276,12 +276,12 @@ int lp_add_batch(const std::string& file_name, int dn, int fs) {
   } else {
     if (nsl() <= a()->batch().dl_time_in_secs() + time_to_transfer(a()->modem_speed_, fs).count() &&
         !so()) {
-      bout.GotoXY(1, a()->user()->GetScreenLines() - 1);
+      bout.GotoXY(1, a()->user()->screen_lines() - 1);
       bout << "Not enough time left in queue.\r\n";
       bout.pausescr();
     } else {
       if (dn == -1) {
-        bout.GotoXY(1, a()->user()->GetScreenLines() - 1);
+        bout.GotoXY(1, a()->user()->screen_lines() - 1);
         bout << "Can't add temporary file to batch queue.\r\n";
         bout.pausescr();
       } else {
@@ -560,10 +560,10 @@ int prep_search_rec(search_record* r, int type) {
 
 int calc_max_lines() {
   if (lp_config.max_screen_lines_to_show) {
-    return std::min<int>(a()->user()->GetScreenLines(), lp_config.max_screen_lines_to_show) -
+    return std::min<int>(a()->user()->screen_lines(), lp_config.max_screen_lines_to_show) -
            (first_file_pos() + 1 + STOP_LIST);
   }
-  return a()->user()->GetScreenLines() - (first_file_pos() + 1 + STOP_LIST);
+  return a()->user()->screen_lines() - (first_file_pos() + 1 + STOP_LIST);
 }
 
 static void check_lp_colors() {

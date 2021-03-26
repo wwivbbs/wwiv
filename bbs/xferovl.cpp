@@ -556,7 +556,7 @@ void relist() {
           fn.aligned_filename());
     bout.bputs(s, &abort, &next);
 
-    const auto width = a()->user()->GetScreenChars() - 28;
+    const auto width = a()->user()->screen_width() - 28;
     const auto bd = fmt::format(" |#2{:>5} |#2{:>5} |#1{}", 
       humanize(f.u.numbytes), f.u.numdloads, trim_to_size_ignore_colors(f.u.description, width));
     bout.bpla(bd, &abort);
@@ -754,7 +754,7 @@ void xfer_defaults() {
       bout << "|#9Enter your default protocol, |#20|#9 for none.\r\n\n";
       i = get_protocol(xfertype::xf_down);
       if (i >= 0) {
-        a()->user()->SetDefaultProtocol(i);
+        a()->user()->default_protocol(i);
       }
       break;
     case '3':

@@ -200,18 +200,18 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
     if (bin.IsLastKeyLocal()) {
       if (a()->localIO()->WhereY() == 11) {
         bout.GotoXY(1, 12);
-        for (auto screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
+        for (auto screencount = 0; screencount < a()->user()->screen_width(); screencount++) {
           s2[screencount] = '\xCD';
         }
         const auto unn = a()->user()->name_and_number();
         sprintf(temp1, "|17|#2 %s chatting with %s |16|#1", sysop_name.c_str(), unn.c_str());
-        const auto chars_to_move = (a()->user()->GetScreenChars() - ssize(stripcolors(temp1))) / 2;
+        const auto chars_to_move = (a()->user()->screen_width() - ssize(stripcolors(temp1))) / 2;
         if (chars_to_move) {
           strncpy(&s2[chars_to_move - 1], temp1, (strlen(temp1)));
         } else {
-          to_char_array(s2, std::string(a()->user()->GetScreenChars() - 1, '\xCD'));
+          to_char_array(s2, std::string(a()->user()->screen_width() - 1, '\xCD'));
         }
-        s2[a()->user()->GetScreenChars()] = '\0';
+        s2[a()->user()->screen_width()] = '\0';
         bout << s2;
         s2[0] = '\0';
         temp1[0] = '\0';
@@ -265,7 +265,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
     }
     if (ch >= SPACE) {
       if (side == 0) {
-        if (a()->localIO()->WhereX() < (a()->user()->GetScreenChars() - 1) && cp0 < max_length) {
+        if (a()->localIO()->WhereX() < (a()->user()->screen_width() - 1) && cp0 < max_length) {
           if (a()->localIO()->WhereY() < 11) {
             side0[a()->localIO()->WhereY()][cp0++] = ch;
             bout.bputch(ch);
@@ -288,16 +288,16 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
             bout << s2;
             s2[0] = 0;
           }
-          if (a()->localIO()->WhereX() == (a()->user()->GetScreenChars() - 1)) {
+          if (a()->localIO()->WhereX() == (a()->user()->screen_width() - 1)) {
             done = true;
           }
         } else {
-          if (a()->localIO()->WhereX() >= (a()->user()->GetScreenChars() - 1)) {
+          if (a()->localIO()->WhereX() >= (a()->user()->screen_width() - 1)) {
             done = true;
           }
         }
       } else {
-        if ((a()->localIO()->WhereX() < (a()->user()->GetScreenChars() - 1)) &&
+        if ((a()->localIO()->WhereX() < (a()->user()->screen_width() - 1)) &&
             (cp1 < max_length)) {
           if (a()->localIO()->WhereY() < 23) {
             side1[a()->localIO()->WhereY() - 13][cp1++] = ch;
@@ -321,11 +321,11 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
             bout << s2;
             s2[0] = '\0';
           }
-          if (a()->localIO()->WhereX() == (a()->user()->GetScreenChars() - 1)) {
+          if (a()->localIO()->WhereX() == (a()->user()->screen_width() - 1)) {
             done = true;
           }
         } else {
-          if (a()->localIO()->WhereX() >= (a()->user()->GetScreenChars() - 1)) {
+          if (a()->localIO()->WhereX() >= (a()->user()->screen_width() - 1)) {
             done = true;
           }
         }
@@ -456,7 +456,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
         if (side == 0) {
           i = 5 - (cp0 % 5);
           if (((cp0 + i) < max_length) &&
-              ((a()->localIO()->WhereX() + i) < a()->user()->GetScreenChars())) {
+              ((a()->localIO()->WhereX() + i) < a()->user()->screen_width())) {
             i = 5 - ((a()->localIO()->WhereX() + 1) % 5);
             for (i1 = 0; i1 < i; i1++) {
               side0[a()->localIO()->WhereY()][cp0++] = SPACE;
@@ -466,7 +466,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
         } else {
           i = 5 - (cp1 % 5);
           if (((cp1 + i) < max_length) &&
-              ((a()->localIO()->WhereX() + i) < a()->user()->GetScreenChars())) {
+              ((a()->localIO()->WhereX() + i) < a()->user()->screen_width())) {
             i = 5 - ((a()->localIO()->WhereX() + 1) % 5);
             for (i1 = 0; i1 < i; i1++) {
               side1[a()->localIO()->WhereY() - 13][cp1++] = SPACE;
@@ -582,13 +582,13 @@ void chat1(const char* chat_line, bool two_way) {
     wwiv_y1 = a()->localIO()->WhereY();
     bout.GotoXY(1, 12);
     bout.Color(7);
-    for (auto screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
+    for (auto screencount = 0; screencount < a()->user()->screen_width(); screencount++) {
       bout.bputch('\xCD', true);
     }
     bout.flush();
     const auto unn = a()->user()->name_and_number();
     const auto s = fmt::format("|#4 {} chatting with {} ", sysop_name, unn);
-    const auto x = a()->user()->GetScreenChars() - wwiv::stl::size_int(stripcolors(s)) / 2;
+    const auto x = a()->user()->screen_width() - wwiv::stl::size_int(stripcolors(s)) / 2;
     bout.GotoXY(std::max<int>(x, 0), 12);
     bout.bputs(s);
     bout.GotoXY(1, 1);

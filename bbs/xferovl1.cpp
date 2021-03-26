@@ -106,14 +106,14 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
         File::Remove(FilePath(a()->sess().dirs().temp_directory(), "extended.dsc"));
       }
 
-      const auto saved_screen_chars = a()->user()->GetScreenChars();
-      if (a()->user()->GetScreenChars() > (76 - INDENTION)) {
-        a()->user()->SetScreenChars(76 - INDENTION);
+      const auto saved_screen_chars = a()->user()->screen_width();
+      if (a()->user()->screen_width() > (76 - INDENTION)) {
+        a()->user()->screen_width(76 - INDENTION);
       }
 
       const auto edit_ok = fsed_text_edit("extended.dsc", a()->sess().dirs().temp_directory(),
                                               a()->max_extend_lines, MSGED_FLAG_NO_TAGLINE);
-      a()->user()->SetScreenChars(saved_screen_chars);
+      a()->user()->screen_width(saved_screen_chars);
       if (edit_ok) {
         TextFile file(FilePath(a()->sess().dirs().temp_directory(), "extended.dsc"), "r");
         *sss = file.ReadFileIntoString();
@@ -132,9 +132,9 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
           << 78 - INDENTION << " chars each.\r\n";
       bout.nl();
       s[0] = '\0';
-      const int nSavedScreenSize = a()->user()->GetScreenChars();
-      if (a()->user()->GetScreenChars() > (76 - INDENTION)) {
-        a()->user()->SetScreenChars(76 - INDENTION);
+      const int nSavedScreenSize = a()->user()->screen_width();
+      if (a()->user()->screen_width() > (76 - INDENTION)) {
+        a()->user()->screen_width(76 - INDENTION);
       }
       do {
         bout << "|#2" << i << ": |#0";
@@ -160,8 +160,8 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
           sss->resize(i4);
           s[i2] = 0;
           strrev(s);
-          if (strlen(s) > static_cast<unsigned int>(a()->user()->GetScreenChars() - 1)) {
-            s[a()->user()->GetScreenChars() - 2] = '\0';
+          if (strlen(s) > static_cast<unsigned int>(a()->user()->screen_width() - 1)) {
+            s[a()->user()->screen_width() - 2] = '\0';
           }
         }
         i2 = strlen(s1);
@@ -175,7 +175,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
         }
       }
       while (i++ < a()->max_extend_lines && s1[0]);
-      a()->user()->SetScreenChars(nSavedScreenSize);
+      a()->user()->screen_width(nSavedScreenSize);
     }
     bout << "|#5Is this what you want? ";
     i = !bin.yesno();

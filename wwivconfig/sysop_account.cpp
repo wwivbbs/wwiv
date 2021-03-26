@@ -97,7 +97,7 @@ void create_sysop_account(Config& config) {
   u.set_flag(User::status_color);
   u.set_flag(User::extraColor);
   // Enable the internal FSED and full screen reader for the sysop.
-  u.SetDefaultEditor(0xff);
+  u.default_editor(0xff);
   u.set_flag(User::fullScreenReader);
   usermanager.writeuser(&u, 1);
 
