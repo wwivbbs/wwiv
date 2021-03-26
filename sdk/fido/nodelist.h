@@ -105,8 +105,8 @@ public:
 class Nodelist final {
 public:
   /** Parses address.  If it fails, throws bad_fidonet_address. */
-  Nodelist(const std::filesystem::path& path, const std::string& domain);
-  Nodelist(const std::vector<std::string>& lines, const std::string& domain);
+  Nodelist(const std::filesystem::path& path, std::string domain);
+  Nodelist(const std::vector<std::string>& lines, std::string domain);
   ~Nodelist() = default;
 
   [[nodiscard]] bool initialized() const { return initialized_; }

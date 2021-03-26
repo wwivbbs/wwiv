@@ -26,6 +26,7 @@
 #include "fmt/printf.h"
 #include <set>
 #include <string>
+#include <utility>
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -133,8 +134,7 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
     if (bool_flag(f, "LO", e.lo_)) continue;
     if (bool_flag(f, "MN", e.mn_)) continue;
 
-    bool ignore;
-    if (bool_flag(f, "INA", ignore, e.hostname_)) continue;
+    if (bool ignore; bool_flag(f, "INA", ignore, e.hostname_)) continue;
     if (internet_flag(f, "IBN", e.binkp_, e.binkp_hostname_, e.binkp_port_)) continue;
     if (internet_flag(f, "ITN", e.telnet_, e.telnet_hostname_, e.telnet_port_)) continue;
     if (internet_flag(f, "IVN", e.vmodem_, e.vmodem_hostname_, e.vmodem_port_)) continue;
@@ -157,11 +157,11 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
   return true;
 }
 
-Nodelist::Nodelist(const std::filesystem::path& path, const std::string& domain) 
-  : domain_(domain), initialized_(Load(path)) {}
+Nodelist::Nodelist(const std::filesystem::path& path, std::string domain) 
+  : domain_(std::move(domain)), initialized_(Load(path)) {}
 
-Nodelist::Nodelist(const std::vector<std::string>& lines, const std::string& domain) 
-  : domain_(domain), initialized_(Load(lines)) {}
+Nodelist::Nodelist(const std::vector<std::string>& lines, std::string domain) 
+  : domain_(std::move(domain)), initialized_(Load(lines)) {}
 
 bool Nodelist::HandleLine(const std::string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub) {
   if (line.empty()) return true;
@@ -190,7 +190,7 @@ bool Nodelist::HandleLine(const std::string& line, uint16_t& zone, uint16_t& reg
   case NodelistKeyword::pvt:
   case NodelistKeyword::node:
   {
-    FidoAddress address(zone, net, e.number_, 0, "");
+    FidoAddress address(zone, net, e.number_, 0, domain_);
     e.address_ = address;
     if (zone != 0 && net != 0) {
       // skip malformed entries.
@@ -221,6 +221,7 @@ bool Nodelist::Load(const std::filesystem::path& path) {
     return false;
   }
   std::string line;
+  // ReSharper disable once CppTooWideScope
   uint16_t zone = 0, region = 0, net = 0, hub = 0;
   while (f.ReadLine(&line)) {
     StringTrim(&line);
@@ -246,7 +247,11 @@ const NodelistEntry& Nodelist::entry(const FidoAddress& a) const {
   }
   if (a.has_domain()) {
     if (stl::contains(entries_, a.without_domain())) {
-      return at(entries_, a);
+      return at(entries_, a.without_domain());
+    }
+  } else {
+    if (stl::contains(entries_, a.with_domain(domain_))) {
+      return at(entries_, a.with_domain(domain_));
     }
   }
   const auto s = fmt::format("Nodelist::entry: key missing: {} ", a.as_string(true, true));
@@ -260,6 +265,10 @@ bool Nodelist::contains(const FidoAddress& a) const {
   }
   if (a.has_domain()) {
     if (stl::contains(entries_, a.without_domain())) {
+      return true;
+    }
+  } else {
+    if (stl::contains(entries_, a.with_domain(domain_))) {
       return true;
     }
   }
