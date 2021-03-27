@@ -472,6 +472,15 @@ static std::tuple<bool, int> display_header_file(Type2MessageData& msg) {
   a()->context().add_context_variable("msg", m);
 
   std::map<std::string, std::string> flags;
+  // Set defaults.
+  flags["forced"] = "false";
+  flags["not_net_val"] = "false";
+  flags["not_val"] = "false";
+  flags["permanent"] = "false";
+  flags["local"] = "false";
+  flags["ftn"] = "false";
+  flags["private"] = "false";
+  flags["wwivnet"] = "false";
   for (const auto& f : msg.flags) {
     switch (f) {
     case MessageFlags::FORCED:
