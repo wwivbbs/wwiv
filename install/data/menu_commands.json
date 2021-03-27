@@ -753,6 +753,11 @@
         },
         {
             "cat": "User",
+            "cmd": "user:24",
+            "help": "Toggles If the time should be displayed using a 24-hour clock vs. 12-hour"
+        },
+        {
+            "cat": "User",
             "cmd": "user:address",
             "help": "Allows the user to change their address"
         },
@@ -760,6 +765,11 @@
             "cat": "User",
             "cmd": "user:ansistate",
             "help": "Allows the user to change their ANSI state"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:autoquote",
+            "help": "Toggles If new messages in external editors should contain the entire reply text"
         },
         {
             "cat": "User",
@@ -773,13 +783,28 @@
         },
         {
             "cat": "User",
+            "cmd": "user:cls",
+            "help": "Toggles If the screen should be cleared between messages in the non-full screen message reader"
+        },
+        {
+            "cat": "User",
             "cmd": "user:comptype",
             "help": "Allows the user to change their computer type"
         },
         {
             "cat": "User",
+            "cmd": "user:conference",
+            "help": "Toggles if conferences are enables"
+        },
+        {
+            "cat": "User",
             "cmd": "user:country",
             "help": "Allows the user to change their country"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:ctrlcodes",
+            "help": "Toggles if message lines with kludges or control codes are shown"
         },
         {
             "cat": "User",
@@ -793,8 +818,28 @@
         },
         {
             "cat": "User",
+            "cmd": "user:email",
+            "help": "Allows the user to change their email address"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:extra_color",
+            "help": "Toggles Extra Colors"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:fs_reader",
+            "help": "Toggles If the full screen message reader is used"
+        },
+        {
+            "cat": "User",
             "cmd": "user:gender",
             "help": "Allows the user to change their gender"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:macros",
+            "help": "Allows the user to change their macros"
         },
         {
             "cat": "User",
@@ -805,6 +850,31 @@
             "cat": "User",
             "cmd": "user:menus",
             "help": "Takes the user into the user menu config so they can select which menuset\n  they want to use, etc..."
+        },
+        {
+            "cat": "User",
+            "cmd": "user:nomsgs",
+            "help": "Toggles If the user doesn't want inter instance messages"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:optional_lines",
+            "help": "Allows the user to change the number of optional lines displayed"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:password",
+            "help": "Allows the user to change their password"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:pause",
+            "help": "Toggles pause on page"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:phone",
+            "help": "Allows the user to change their voice phone number"
         },
         {
             "cat": "User",

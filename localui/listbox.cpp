@@ -194,6 +194,7 @@ ListBoxResult ListBox::RunDialogInner() {
       selected_ += height_;
       window_top_ = std::min<int>(window_top_, size_int(items) - height_ + window_top_min_);
       selected_ = std::min<int>(selected_, size_int(items) - 1);
+      window_top_ = std::max<int>(1, window_top_);
 
       if (old_window_top == window_top_ && old_selected == selected_) {
         need_redraw = false;
