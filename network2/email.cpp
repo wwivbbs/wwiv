@@ -51,7 +51,7 @@ static int GetUserNumber(const std::string& name, UserManager& um) {
   const auto max = um.num_user_records();
   auto realname_pos = 0;
   for (auto i = 0; i <= max; i++) {
-    auto u = um.readuser_nocache(i);
+    auto u = um.readuser(i);
     if (!u) {
       continue;
     }

@@ -647,7 +647,6 @@ void load_lp_config() {
 
 void sysop_configure() {
   bool done = false;
-  char s[201];
 
   if (!so()) {
     return;
@@ -735,13 +734,11 @@ void sysop_configure() {
       } break;
     case 'J':
       bout << "Enter max amount of lines to show (0=disabled) ";
-      bin.input(s, 2, true);
-      lp_config.max_screen_lines_to_show = to_number<int16_t>(s);
+      lp_config.max_screen_lines_to_show = bin.input_number(lp_config.max_screen_lines_to_show, 0, 20, true);
       break;
     case 'K':
       bout << "Enter minimum extended description lines to show ";
-      bin.input(s, 2, true);
-      lp_config.show_at_least_extended = to_number<int16_t>(s);
+      lp_config.show_at_least_extended = bin.input_number(lp_config.show_at_least_extended, 0, 20, true);
       break;
     case 'L':
       lp_config.no_configuration = !lp_config.no_configuration;
@@ -1517,7 +1514,7 @@ LP_SEARCH_HELP:
 
     case 'B':
       bout << "Keyword(s) : ";
-      sr->search = bin.input(60, true);
+      sr->search = bin.input_upper(60);
       if (sr->search[0]) {
         sysoplog() << "Keyword: " << sr->search;
       }

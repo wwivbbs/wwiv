@@ -47,10 +47,6 @@ public:
     */
    [[nodiscard]] std::optional<User> readuser(int user_number, mask m = mask::any) const;
 
-   /**
-    * Optionally returns the user specified by user_number.
-    */
-   [[nodiscard]] std::optional<User> readuser_nocache(int user_number) const;
    bool writeuser(const User *pUser, int user_number);
    bool writeuser(const User &user, int user_number);
    bool writeuser(const std::optional<User>& user, int user_number);
@@ -71,9 +67,6 @@ public:
   }
 
 private:
-   bool writeuser_nocache(const User *pUser, int user_number);
-   bool readuser_nocache(User *u, int user_number) const;
-
   const Config config_;
   const std::string data_directory_;
   int userrec_length_;

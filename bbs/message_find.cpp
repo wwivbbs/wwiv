@@ -78,7 +78,7 @@ find_message_result_t FindNextMessageAgain(int msgno) {
 find_message_result_t FindNextMessage(int msgno) {
   bout.nl();
   bout << "|#7Find what? (CR=\"" << last_search_string << "\")|#1: ";
-  auto search_string = ToStringUpperCase(bin.input(20));
+  auto search_string = bin.input_upper(20);
   if (search_string.empty()) {
     search_string = last_search_string;
   }
@@ -102,7 +102,7 @@ find_message_result_t FindNextMessage(int msgno) {
 find_message_result_t FindNextMessageFS(common::FullScreenView& fs, int msgno) {
   fs.ClearCommandLine();
   fs.PutsCommandLine(fmt::format("|#7Find what? (CR=\"{}\")|#1: ", last_search_string));
-  auto search_string = fs.in().input(20);
+  auto search_string = fs.in().input_upper(20);
   if (search_string.empty()) {
     search_string = last_search_string;
   }

@@ -55,7 +55,7 @@ int AcsCommand::Execute() {
   const auto user_number = iarg("user");
 
   const UserManager um(*config()->config());
-  const auto user = um.readuser_nocache(user_number);
+  const auto user = um.readuser(user_number);
   if (!user) {
     LOG(ERROR) << "Failed to load user number " << user_number;
     return 1;

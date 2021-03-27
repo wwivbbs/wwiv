@@ -85,9 +85,7 @@ jq ".number" jenkins.json
   to return an std::optional<T> as the return type.
 * Switch all BBS LocalIO subclasses to use curses KEY types not Win32 key code
   types for characters >0xff. (i.e. KEY_LEFT not LEFT)
-* See if you can move user num and other transient user info into user class.
 * Finish making bbs only use UserManager that returns optional
-* Remove readuser_nocache, it's just readuser now.
 
 
 ## core::File Improvements

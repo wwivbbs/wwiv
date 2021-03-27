@@ -144,7 +144,7 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(40, 1, 3, StrCat("OS: ", wwiv::os::os_version_string()));
     a()->localIO()->PutsXYA(21, 6, 14, std::to_string(status->calls_today()));
     auto feedback_waiting = 0;
-    if (const auto sysop = a()->users()->readuser_nocache(sysop_usernum)) {
+    if (const auto sysop = a()->users()->readuser(sysop_usernum)) {
       feedback_waiting = sysop->email_waiting();
     }
     a()->localIO()->PutsXYA(21, 7, 14, std::to_string(feedback_waiting));
@@ -562,7 +562,7 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
     return std::make_tuple(local_logon_t::exit, -1);
   }
 
-  if (const auto tu = a_->users()->readuser_nocache(unx); tu->sl() != 255 || tu->deleted()) {
+  if (const auto tu = a_->users()->readuser(unx); tu->sl() != 255 || tu->deleted()) {
     return std::make_tuple(local_logon_t::exit, -1);
   }
 

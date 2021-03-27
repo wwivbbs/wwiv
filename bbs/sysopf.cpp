@@ -96,7 +96,7 @@ void prstatus() {
   bout << "|#9Uploads Today   : |#2" << status->uploads_today() << wwiv::endl;
 
   auto feedback_waiting = 0;
-  if (const auto sysop = a()->users()->readuser_nocache(1)) {
+  if (const auto sysop = a()->users()->readuser(1)) {
     feedback_waiting = sysop->email_waiting();
   }
   bout << "|#9Feedback Waiting: |#2" << feedback_waiting << wwiv::endl;

@@ -70,7 +70,7 @@ int  UserManager::num_user_records() const {
   return 0;
 }
 
-bool UserManager::readuser_nocache(User *u, int user_number) const {
+bool UserManager::readuser(User *u, int user_number) const {
   File file(FilePath(data_directory_, USER_LST));
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     u->data.inact = User::userDeleted; 
@@ -95,10 +95,6 @@ bool UserManager::readuser_nocache(User *u, int user_number) const {
   return true;
 }
 
-bool UserManager::readuser(User *pUser, int user_number) const {
-  return this->readuser_nocache(pUser, user_number);
-}
-
 std::optional<User> UserManager::readuser(int user_number, mask m) const {
   User u{};
   if (readuser(&u, user_number)) {
@@ -116,15 +112,11 @@ std::optional<User> UserManager::readuser(int user_number, mask m) const {
   return std::nullopt;
 }
 
-std::optional<User> UserManager::readuser_nocache(int user_number) const {
-  User u{};
-  if (readuser_nocache(&u, user_number)) {
-    return {u};
+bool UserManager::writeuser(const User *pUser, int user_number) {
+  if (user_number < 1 || user_number > max_number_users_ || !user_writes_allowed()) {
+    return true;
   }
-  return std::nullopt;
-}
 
-bool UserManager::writeuser_nocache(const User *pUser, int user_number) {
   if (File file(FilePath(data_directory_, USER_LST));
       file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     const auto pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
@@ -133,14 +125,6 @@ bool UserManager::writeuser_nocache(const User *pUser, int user_number) {
     return true;
   }
   return false;
-}
-
-bool UserManager::writeuser(const User *pUser, int user_number) {
-  if (user_number < 1 || user_number > max_number_users_ || !user_writes_allowed()) {
-    return true;
-  }
-
-  return this->writeuser_nocache(pUser, user_number);
 }
 
 bool UserManager::writeuser(const User& user, int user_number) {

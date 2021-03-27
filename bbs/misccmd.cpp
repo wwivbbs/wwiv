@@ -217,9 +217,9 @@ void kill_old_email() {
 
 void list_users(int mode) {
   subboard_t s = {};
-  wwiv::sdk::files::directory_t d{};
+  files::directory_t d{};
   User user;
-  char szFindText[21];
+  std::string find_text;
 
   if (a()->current_user_sub().subnum == -1 && mode == LIST_USERS_MESSAGE_AREA) {
     bout << "\r\n|#6No Message Sub Available!\r\n\n";
@@ -240,9 +240,7 @@ void list_users(int mode) {
   if (bin.yesno()) {
     bout.nl();
     bout << "|#5Enter text to find: ";
-    bin.input(szFindText, 10, true);
-  } else {
-    szFindText[0] = '\0';
+    find_text = bin.input_upper(10);
   }
 
   if (mode == LIST_USERS_MESSAGE_AREA) {
@@ -328,12 +326,12 @@ void list_users(int mode) {
     if (mode == LIST_USERS_FILE_AREA && !wwiv::bbs::check_acs(d.acs)) {
       ok = false;
     }
-    if (szFindText[0] != '\0') {
+    if (!find_text.empty()) {
       char s5[ 41 ];
       to_char_array(s5, user.city());
-      if (!strstr(user.GetName(), szFindText) &&
-          !strstr(strupr(s5), szFindText) &&
-          !strstr(user.state().c_str(), szFindText)) {
+      if (!strstr(user.GetName(), find_text.c_str()) &&
+          !strstr(strupr(s5), find_text.c_str()) &&
+          !strstr(user.state().c_str(), find_text.c_str())) {
         ok = false;
       }
     }
@@ -402,7 +400,6 @@ void list_users(int mode) {
 void time_bank() {
   char s[81], bc[81];
   int i;
-  long nsln;
 
   bout.nl();
   if (!wwiv::bbs::check_acs("user.validated == true")) {
@@ -440,7 +437,7 @@ void time_bank() {
       bin.input(s, 3, true);
       i = to_number<int>(s);
       if (i > 0) {
-        nsln = nsl();
+        long nsln = nsl();
         if ((i + a()->user()->banktime_minutes()) > a()->config()->sl(
               a()->sess().effective_sl()).time_per_logon) {
           i = a()->config()->sl(a()->sess().effective_sl()).time_per_logon - a()->user()->banktime_minutes();

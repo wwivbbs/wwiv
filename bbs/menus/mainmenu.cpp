@@ -175,7 +175,7 @@ void Menu::DisplayMenu() {
 
 std::string Menu::GetCommandFromUser() const {
   if (!a()->user()->hotkeys()) {
-    return bin.input(50);
+    return bin.input_upper(50);
   }
   const auto nums = menu().num_action;
   if (nums == menu_numflag_t::dirs) {

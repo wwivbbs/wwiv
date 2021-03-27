@@ -273,8 +273,8 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
       break;
     case COMMAND_RIGHT: // Right Arrow
     case CD:
-      if ((mode != InputMode::DATE) && (mode != InputMode::PHONE)) {
-        if ((pos != nLength) && (pos != max_length)) {
+      if (mode != InputMode::DATE && mode != InputMode::PHONE) {
+        if (pos != nLength && pos != max_length) {
           pos++;
         }
       }
@@ -332,8 +332,9 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
           bout.Right(pos - 1);
           bout << input_background_char;
           pos = --nLength;
-          if (((mode == InputMode::DATE) && ((pos == 2) || (pos == 5))) ||
-              ((mode == InputMode::PHONE) && ((pos == 3) || (pos == 7)))) {
+          // ReSharper disable once CppRedundantParentheses
+          if ((mode == InputMode::DATE && (pos == 2 || pos == 5)) ||
+              (mode == InputMode::PHONE && (pos == 3 || pos == 7))) {
             bout.RestorePosition();
             bout.SavePosition();
             bout.Right(pos - 1);
@@ -350,7 +351,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
     // All others < 256
     default:
       if (c < 255 && c > 31 &&
-          ((insert && nLength < max_length) || (!insert && pos < max_length))) {
+          (insert && nLength < max_length || !insert && pos < max_length)) {
         if (mode != InputMode::MIXED && mode != InputMode::FILENAME && mode != InputMode::CMDLINE &&
             mode != InputMode::FULL_PATH_NAME) {
           c = upcase(static_cast<unsigned char>(c));

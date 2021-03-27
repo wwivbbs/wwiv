@@ -664,7 +664,7 @@ void modify_mailbox() {
 
   bout.nl();
   bout << "|#2Forward to? ";
-  const auto entered_forward_to = bin.input(40);
+  const auto entered_forward_to = bin.input_upper(40);
 
   auto [tu, ts] = parse_email_info(entered_forward_to);
   a()->user()->forward_usernum(tu);

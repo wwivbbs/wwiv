@@ -583,7 +583,7 @@ void Application::UpdateTopScreen() {
                                    status->email_today()));
 
     auto feedback_waiting = 0;
-    if (const auto sysop = users()->readuser_nocache(1)) {
+    if (const auto sysop = users()->readuser(1)) {
       feedback_waiting = sysop->email_waiting();
     }
     localIO()->PutsXY(
@@ -649,7 +649,7 @@ void Application::UpdateTopScreen() {
                                    user()->exempt(), lo, user()->feedback_sent()));
 
     int feedback_waiting = 0;
-    if (const auto sysop = users()->readuser_nocache(1)) {
+    if (const auto sysop = users()->readuser(1)) {
       feedback_waiting = sysop->email_waiting();
     }
     localIO()->PutsXY(0, 3,

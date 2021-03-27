@@ -156,8 +156,6 @@ void delete_sec(int n) {
 
 
 void gfileedit() {
-  char s[81];
-
   if (!ValidateSysopPassword()) {
     return;
   }
@@ -189,7 +187,6 @@ void gfileedit() {
         bout << "|#2Insert before which section? ";
         std::set<char> q{'Q', 27, '\r'};
         const auto t = bin.input_number_hotkey(0, q, 0, size_int(a()->gfiles()), false);
-        bin.input(s, 2);
         if (!t.key) {
           insert_sec(t.num);
         }

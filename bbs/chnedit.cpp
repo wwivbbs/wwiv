@@ -132,13 +132,13 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
         bout.pausescr();
         break;
       }
-      auto nn = bin.input(30, true);
+      auto nn = bin.input_upper(30);
       if (const auto user_number = finduser1(nn); user_number > 0) {
         c.regby.insert(static_cast<int16_t>(user_number));
       }
     } break;
     case 'R': {
-      auto nn = bin.input(30, true);
+      auto nn = bin.input_upper(30);
       if (const auto user_number = finduser1(nn); user_number > 0) {
         c.regby.erase(static_cast<int16_t>(user_number));
       }
