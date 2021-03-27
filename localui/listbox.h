@@ -40,11 +40,14 @@ public:
   [[nodiscard]] const std::string& text() const noexcept { return text_; }
   [[nodiscard]] int hotkey() const noexcept { return hotkey_; }
   [[nodiscard]] int data() const noexcept { return data_; }
+  [[nodiscard]] int index() const noexcept { return index_; }
+  void index(int i) { index_ = i; }
 
  private:
   std::string text_;
   int hotkey_;
   int data_;
+  int index_{-1};
 };
 
 enum class ListBoxResultType { NO_SELECTION, SELECTION, HOTKEY };
@@ -52,6 +55,7 @@ struct ListBoxResult {
   ListBoxResultType type;
   int selected;
   int hotkey;
+  int data{0};
 };
 
 // Curses implementation of a list box.
@@ -87,8 +91,9 @@ public:
 private:
   ListBox(UIWindow* parent, const std::string& title, int max_x, int max_y,
           std::vector<ListBoxItem>& items, ColorScheme* scheme);
+  ListBoxResult RunDialogInner();
   ListBoxResult RunDialog();
-  void DrawAllItems();
+  void DrawAllItems(std::vector<ListBoxItem>& items);
   void DisplayFooter();
 
   int selected_ = -1;

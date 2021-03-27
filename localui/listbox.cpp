@@ -22,6 +22,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "localui/colors.h"
+#include "localui/input.h"
 #include "localui/wwiv_curses.h"
 #include <algorithm>
 #include <cmath>
@@ -45,7 +46,9 @@ ListBox::ListBox(UIWindow* parent, const std::string& title, int max_x, int max_
   height_ = std::min<int>(size_int(items), max_y);
   const auto window_height = 2 + height_ + window_top_min_ - 1;
   auto longest_line = std::max<int>(2, size_int(title) + 4);
-  for (const auto& item : items) {
+  int num{0};
+  for (auto& item : items_) {
+    item.index(num++);
     longest_line = std::max<int>(longest_line, size_int(item.text()));
     if (item.hotkey() > 0) {
       hotkeys_.push_back(static_cast<char>(item.hotkey()));
@@ -80,10 +83,10 @@ ListBox::ListBox(UIWindow* parent, const std::string& title,
                   static_cast<int>(floor(curses_out->window()->GetMaxY() * RATIO_LISTBOX_HEIGHT))),
               items, parent->color_scheme()) {}
 
-void ListBox::DrawAllItems() {
+void ListBox::DrawAllItems(std::vector<ListBoxItem>& items) {
   for (auto y = 0; y < height_; y++) {
     const auto current_item = window_top_ + y - window_top_min_;
-    auto line{items_[current_item].text()};
+    auto line = current_item < size_int(items) ? items[current_item].text() : "";
     if (size_int(line) > width_) {
       line = line.substr(0, width_);
     } else {
@@ -114,10 +117,16 @@ ListBoxResult ListBox::RunDialog() {
   window_top_ = std::min<int>(temp_top, size_int(items_) - height_ + window_top_min_);
   selected_ = std::min<int>(selected_, size_int(items_) - 1);
 
+  return RunDialogInner();
+}
+
+ListBoxResult ListBox::RunDialogInner() {
+  auto items{items_};
   bool need_redraw{true};
+  std::string mask;
   while (true) {
     if (need_redraw) {
-      DrawAllItems();
+      DrawAllItems(items);
       window_->Move(selected_ - (window_top_ - window_top_min_) + window_top_min_, 1);
       window_->Refresh();
     }
@@ -128,7 +137,7 @@ ListBoxResult ListBox::RunDialog() {
       window_top_ = window_top_min_;
       break;
     case KEY_END:
-      window_top_ = size_int(items_) - height_ + window_top_min_;
+      window_top_ = size_int(items) - height_ + window_top_min_;
       selected_ = window_top_ - window_top_min_;
       break;
     case KEY_PREVIOUS: // What is this key?
@@ -160,10 +169,17 @@ ListBoxResult ListBox::RunDialog() {
     } break;
     case KEY_NEXT: // What is this key?
     case KEY_DOWN: {
-      const auto window_bottom = window_top_ + height_ - window_top_min_ - 1;
-      if (selected_ < window_bottom) {
+      if (items.empty()) {
+        selected_ = 0;
+        break;
+      }
+      if (const auto window_bottom = window_top_ + height_ - window_top_min_ - 1;
+          selected_ < window_bottom && selected_ + 1 < size_int(items)) {
         selected_++;
-      } else if (window_top_ < size_int(items_) - height_ + window_top_min_) {
+      } else if (selected_ < window_bottom && selected_ + 1 >= size_int(items)) {
+        // Do nothing, we're at the bottom of what we can scroll to.
+        //selected_++;
+      } else if (window_top_ < size_int(items) - height_ + window_top_min_) {
         selected_++;
         window_top_++;
       } else {
@@ -176,8 +192,8 @@ ListBoxResult ListBox::RunDialog() {
 
       window_top_ += height_;
       selected_ += height_;
-      window_top_ = std::min<int>(window_top_, size_int(items_) - height_ + window_top_min_);
-      selected_ = std::min<int>(selected_, size_int(items_) - 1);
+      window_top_ = std::min<int>(window_top_, size_int(items) - height_ + window_top_min_);
+      selected_ = std::min<int>(selected_, size_int(items) - 1);
 
       if (old_window_top == window_top_ && old_selected == selected_) {
         need_redraw = false;
@@ -185,30 +201,57 @@ ListBoxResult ListBox::RunDialog() {
     } break;
     case KEY_ENTER:
     case 13: {
-      if (items_.empty()) {
+      if (items.empty()) {
         // Can not select an item when the list is empty.
         break;
       }
-      const auto hotkey = items_.at(selected_).hotkey();
+      auto& item = items.at(selected_);
+      const auto hotkey = item.hotkey();
+      const auto data = item.data();
+      const auto index = item.index();
       if (selection_returns_hotkey_ && hotkey > 0) {
-        return ListBoxResult{ListBoxResultType::HOTKEY, selected_, hotkey};
+        return ListBoxResult{ListBoxResultType::HOTKEY, index, hotkey, data};
       }
-      return ListBoxResult{ListBoxResultType::SELECTION, selected_, hotkey};
+      return ListBoxResult{ListBoxResultType::SELECTION, index, hotkey, data};
     }
     case 27: // ESCAPE_KEY
-      return ListBoxResult{ListBoxResultType::NO_SELECTION, 0, 0};
+      return ListBoxResult{ListBoxResultType::NO_SELECTION, 0, 0, 0};
+    case '/': {  // Filter
+      selected_ = 0;
+      window_top_ = window_top_min_;
+      window_->PutsXY(1, window_top_, "Enter Mask: ");
+      window_->GotoXY(13, window_top_);
+      editline(window_.get(), &mask, 20, EditLineMode::ALL, "");
+      StringTrim(&mask);
+      if (mask.empty()) {
+        items = items_;
+      } else {
+        StringUpperCase(&mask);
+        items.clear();
+        items.reserve(items_.size());
+        for (auto& item : items_) {
+          if (ToStringUpperCase(item.text()).find(mask) != std::string::npos) {
+            items.emplace_back(item);
+          }          
+        }
+        items.shrink_to_fit();
+      }
+    } break;
     default:
       ch = toupper(ch);
       if (hotkeys_.find(static_cast<char>(ch & 0xff)) != std::string::npos) {
         // Since a hotkey was pressed, update selected_ to match the index
         // of the item containing the hotkey.
-        for (auto i = 0; i < wwiv::stl::ssize(items_); i++) {
-          if (items_.at(i).hotkey() == ch) {
-            selected_ = i;
+        auto data = 0;
+        for (auto i = 0; i < stl::ssize(items); i++) {
+          auto& item = items.at(i);
+          if (item.hotkey() == ch) {
+            selected_ = item.index();
+            data = item.data();
             break;
           }
         }
-        return ListBoxResult{ListBoxResultType::HOTKEY, selected_, ch};
+        return ListBoxResult{ListBoxResultType::HOTKEY, selected_, ch, data};
       }
     }
   }

@@ -88,16 +88,16 @@ public:
         auto help = e.help;
         help.erase(std::remove(help.begin(), help.end(), 10), help.end());
         help.erase(std::remove(help.begin(), help.end(), 13), help.end());
-        items.emplace_back(fmt::format("{:20.20} {:13.13} {:44.44}", e.cmd, cat, help));
+        items.emplace_back(fmt::format("{:20.20} {:13.13} {:44.44}", e.cmd, cat, help), 0, count);
         if (iequals(e.cmd, t_)) {
           selected = count;
         }
-        count++;
+        ++count;
       }
       ListBox list(window, "Select Command", items);
       list.set_selected(selected);
       list.selection_returns_hotkey(true);
-      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Select"}});
+      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Select"}, {"/", "Filter"}});
       const auto result = list.Run();
       if (result.type == ListBoxResultType::SELECTION) {
         const auto selected_cmd = cmds_[result.selected].cmd;
@@ -641,7 +641,7 @@ void menus(const Config& config) {
       list.set_selected(selected);
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("I");
-      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"I", "Insert"}});
+      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"/", "Filter"}, {"I", "Insert"}});
       const auto result = list.Run();
       selected = list.selected();
 
