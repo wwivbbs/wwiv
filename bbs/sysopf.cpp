@@ -425,6 +425,8 @@ bool print_wwivnet_net_listing(const net_networks_rec& net) {
     to_char_array(s, "000-000-0000");
     bout.nl(2);
 
+    bout.cls();
+    bout.litebar(fmt::format("Network list for: {}", net.name));
     for (const auto& b : bbslist.node_config()) {
       char s1[101];
       auto matched = false;
@@ -510,8 +512,6 @@ bool print_wwivnet_net_listing(const net_networks_rec& net) {
         continue;
       }
 
-      bout.cls();
-      bout.litebar(fmt::format("Network list for: {}", net.name));
       if (matched) {
         slist++;
         if (!useregion && slist == 1) {
