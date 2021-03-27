@@ -46,6 +46,7 @@
 
 using wwiv::core::IniFile;
 
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
@@ -254,6 +255,9 @@ Runs a WWIVbasic Script
   m.emplace("user:dataphone", MenuItem(R"(Allows the user to change their data phone number)",
                                        MENU_CAT_USER, [](MenuContext&) { input_dataphone(); }));
 
+  m.emplace("user:phone", MenuItem(R"(Allows the user to change their voice phone number)",
+                                       MENU_CAT_USER, [](MenuContext&) { input_phone(); }));
+
   m.emplace("user:address", MenuItem(R"(Allows the user to change their address)", MENU_CAT_USER,
                                      [](MenuContext&) { input_street(); }));
 
@@ -286,6 +290,52 @@ Runs a WWIVbasic Script
                      MENU_CAT_USER, [](MenuContext&) { enter_regnum(); }));
   m.emplace("user:mailbox", MenuItem(R"(Allows the user to change their email forward/mailbox settings)",
                                    MENU_CAT_USER, [](MenuContext&) { modify_mailbox(); }));
+  m.emplace("user:password", MenuItem(R"(Allows the user to change their password)",
+                                   MENU_CAT_USER, [](MenuContext&) { modify_mailbox(); }));
+  m.emplace("user:macros", MenuItem(R"(Allows the user to change their macros)",
+                                   MENU_CAT_USER, [](MenuContext&) { change_macros(); }));
+  m.emplace("user:optional_lines", MenuItem(R"(Allows the user to change the number of optional lines displayed)",
+                                   MENU_CAT_USER, [](MenuContext&) { change_optional_lines(); }));
+  m.emplace("user:email", MenuItem(R"(Allows the user to change their email address)",
+                                   MENU_CAT_USER, [](MenuContext&) { change_email_address(); }));
+
+
+  m.emplace("user:pause", MenuItem(R"(Toggles pause on page)", MENU_CAT_USER, [](MenuContext&) {
+              a()->user()->toggle_flag(User::pauseOnPage);
+            }));
+
+  m.emplace("user:extra_color", MenuItem(R"(Toggles Extra Colors)", MENU_CAT_USER, [](MenuContext&) {
+              a()->user()->toggle_flag(User::extraColor);
+            }));
+
+  m.emplace("user:conference", MenuItem(R"(Toggles if conferences are enables)", MENU_CAT_USER, [](MenuContext&) {
+              a()->user()->toggle_flag(User::conference);
+            }));
+
+  m.emplace("user:ctrlcodes", MenuItem(R"(Toggles if message lines with kludges or control codes are shown)", MENU_CAT_USER, [](MenuContext&) {
+              a()->user()->toggle_flag(User::msg_show_controlcodes);
+            }));
+
+  m.emplace("user:fs_reader", MenuItem(R"(Toggles If the full screen message reader is used)", MENU_CAT_USER, [](MenuContext&) {
+              a()->user()->toggle_flag(User::fullScreenReader);
+            }));
+
+  m.emplace("user:nomsgs", MenuItem(R"(Toggles If the user doesn't want inter instance messages)", MENU_CAT_USER, [](MenuContext&) {
+              a()->user()->toggle_flag(User::noMsgs);
+            }));
+
+  m.emplace("user:cls", MenuItem(R"(Toggles If the screen should be cleared between messages in the non-full screen message reader)", MENU_CAT_USER, [](MenuContext&) {
+              a()->user()->toggle_flag(User::clearScreen);
+            }));
+
+  m.emplace("user:24", MenuItem(R"(Toggles If the time should be displayed using a 24-hour clock vs. 12-hour)", MENU_CAT_USER, [](MenuContext&) {
+              a()->user()->toggle_flag(User::twentyFourHourClock);
+            }));
+
+  m.emplace("user:autoquote", MenuItem(R"(Toggles If new messages in external editors should contain the entire reply text)", MENU_CAT_USER, [](MenuContext&) {
+              a()->user()->toggle_flag(User::autoQuote);
+            }));
+
   // ========================================================================
   // Menu
 

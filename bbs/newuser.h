@@ -18,9 +18,11 @@
 #ifndef INCLUDED_BBS_NEWUSER_H
 #define INCLUDED_BBS_NEWUSER_H
 
-#include <string>
 #include "sdk/user.h"
 
+#include <string>
+
+void input_phone();
 void input_dataphone();
 void input_name();
 void input_realname();

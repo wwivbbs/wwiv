@@ -555,7 +555,7 @@ static void macroedit(char *macro_text) {
   }
 }
 
-static void make_macros() {
+void change_macros() {
   char szMacro[255], ch;
   bool done = false;
 
@@ -599,7 +599,7 @@ static void make_macros() {
   } while (!done && !a()->sess().hangup());
 }
 
-static void change_password() {
+void change_password() {
   bout.nl();
   bout << "|#9Change password? ";
   if (!bin.yesno()) {
@@ -691,7 +691,7 @@ void modify_mailbox() {
   bout.nl(2);
 }
 
-static void optional_lines() {
+void change_optional_lines() {
   bout << "|#9You may specify your optional lines value from 0-10,\r\n"
        << "|#20 |#9being all, |#210 |#9being none.\r\n"
        << "|#2What value? ";
@@ -706,6 +706,24 @@ void enter_regnum() {
   const auto regnum = bin.input_number(a()->user()->wwiv_regnum());
   a()->user()->wwiv_regnum(regnum);
   changedsl();
+}
+
+void change_email_address() {
+  bout.nl();
+  bout << "|#9Enter your Internet mailing address.\r\n|#7:";
+  if (const auto address = bin.input_text(65); !address.empty()) {
+    if (check_inet_addr(address)) {
+      a()->user()->email_address(address);
+    } else {
+      bout << "\r\n|#6Invalid address format.\r\n\n";
+      bout.pausescr();
+    }
+  } else {
+    bout << "|#5Delete Internet address? ";
+    if (bin.yesno()) {
+      a()->user()->email_address("");
+    }
+  }
 }
 
 void defaults(bool& need_menu_reload) {
@@ -751,7 +769,7 @@ void defaults(bool& need_menu_reload) {
       change_password();
       break;
     case '7':
-      make_macros();
+      change_macros();
       break;
     case '8':
       change_colors();
@@ -763,7 +781,7 @@ void defaults(bool& need_menu_reload) {
       a()->user()->toggle_flag(User::extraColor);
       break;
     case 'B':
-      optional_lines();
+      change_optional_lines();
       break;
     case 'C':
       a()->user()->toggle_flag(User::conference);
@@ -776,22 +794,7 @@ void defaults(bool& need_menu_reload) {
       a()->user()->toggle_flag(User::fullScreenReader);
       break;
     case 'I': {
-      bout.nl();
-      bout << "|#9Enter your Internet mailing address.\r\n|#7:";
-      auto internetAddress = bin.input_text(65);
-      if (!internetAddress.empty()) {
-        if (check_inet_addr(internetAddress)) {
-          a()->user()->email_address(internetAddress);
-        } else {
-          bout << "\r\n|#6Invalid address format.\r\n\n";
-          bout.pausescr();
-        }
-      } else {
-        bout << "|#5Delete Internet address? ";
-        if (bin.yesno()) {
-          a()->user()->email_address("");
-        }
-      }
+      change_email_address();
     }
     break;
     case 'K':
@@ -799,14 +802,7 @@ void defaults(bool& need_menu_reload) {
       need_menu_reload = true;
       break;
     case 'M':
-      if (num_instances() > 1) {
-        a()->user()->clear_flag(User::noMsgs);
-        bout.nl();
-        bout << "|#5Allow messages sent between instances? ";
-        if (!bin.yesno()) {
-          a()->user()->set_flag(User::noMsgs);
-        }
-      }
+      a()->user()->toggle_flag(User::noMsgs);
       break;
     case 'N':
       wwiv::bbs::qwk::qwk_config_user();

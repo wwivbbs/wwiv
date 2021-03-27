@@ -752,6 +752,91 @@
             "help": "Takes the user into the user menu config so they can select which menuset\n  they want to use, etc..."
         },
         {
+            "cat": "User",
+            "cmd": "user:address",
+            "help": "Allows the user to change their address"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:ansistate",
+            "help": "Allows the user to change their ANSI state"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:callsign",
+            "help": "Allows the user to change their HAM callsign"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:city",
+            "help": "Allows the user to change their city"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:comptype",
+            "help": "Allows the user to change their computer type"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:country",
+            "help": "Allows the user to change their country"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:dataphone",
+            "help": "Allows the user to change their data phone number"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:editor",
+            "help": "Allows the user to change their default editor"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:gender",
+            "help": "Allows the user to change their gender"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:mailbox",
+            "help": "Allows the user to change their email forward/mailbox settings"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:menus",
+            "help": "Takes the user into the user menu config so they can select which menuset\n  they want to use, etc..."
+        },
+        {
+            "cat": "User",
+            "cmd": "user:qscan",
+            "help": "Allows the user to change their subs that are newscanned"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:realname",
+            "help": "Allows the user to change their real name"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:regnum",
+            "help": "Allows the user to change their WWIV 4.x registration number"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:screensize",
+            "help": "Allows the user to change their screen size"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:state",
+            "help": "Allows the user to change their state"
+        },
+        {
+            "cat": "User",
+            "cmd": "user:zipcode",
+            "help": "Allows the user to change their zipcode"
+        },
+        {
             "cat": "Vote",
             "cmd": "InitVotes",
             "help": ""

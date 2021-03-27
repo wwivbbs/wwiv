@@ -86,7 +86,7 @@ void ExecNewUserCommand();
 void new_mail();
 bool CheckPasswordComplexity(User* pUser, std::string& password);
 
-static void input_phone() {
+void input_phone() {
   bool ok = true;
   std::string phoneNumber;
   do {
