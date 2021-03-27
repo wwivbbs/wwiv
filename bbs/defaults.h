@@ -32,5 +32,6 @@ void change_macros();
 void modify_mailbox();
 void change_optional_lines();
 void change_email_address();
+void change_colors();
 
 #endif

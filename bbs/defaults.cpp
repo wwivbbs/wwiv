@@ -240,7 +240,7 @@ static void reset_user_colors_to_defaults() {
   }
 }
 
-static void change_colors() {
+void change_colors() {
   bool done = false;
   bout.nl();
   do {

@@ -788,6 +788,11 @@
         },
         {
             "cat": "User",
+            "cmd": "user:colors",
+            "help": "Allows the user to change their colors"
+        },
+        {
+            "cat": "User",
             "cmd": "user:comptype",
             "help": "Allows the user to change their computer type"
         },

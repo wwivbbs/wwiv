@@ -298,6 +298,8 @@ Runs a WWIVbasic Script
                                    MENU_CAT_USER, [](MenuContext&) { change_optional_lines(); }));
   m.emplace("user:email", MenuItem(R"(Allows the user to change their email address)",
                                    MENU_CAT_USER, [](MenuContext&) { change_email_address(); }));
+  m.emplace("user:colors", MenuItem(R"(Allows the user to change their colors)",
+                                   MENU_CAT_USER, [](MenuContext&) { change_colors(); }));
 
 
   m.emplace("user:pause", MenuItem(R"(Toggles pause on page)", MENU_CAT_USER, [](MenuContext&) {

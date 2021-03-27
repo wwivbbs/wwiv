@@ -1,0 +1,427 @@
+{
+    "version": 1,
+    "menu": {
+        "cls": false,
+        "num_action": "none",
+        "logging_action": "command",
+        "help_type": "always",
+        "generated_menu": {
+            "num_cols": 3,
+            "color_title": "|#4",
+            "color_item_key": "|#2",
+            "color_item_text": "|#0",
+            "color_item_braces": "|#1",
+            "show_empty_text": false,
+            "num_newlines_at_end": 1
+        },
+        "title": "|[2J|#4 Your Preferences|[K|#0",
+        "acs": "",
+        "password": "",
+        "enter_actions": [],
+        "exit_actions": [],
+        "items": [
+            {
+                "item_key": "",
+                "item_text": "",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": []
+            },
+            {
+                "item_key": "1",
+                "item_text": "Screen Size",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:screensize",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "2",
+                "item_text": "ANSI",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:ansistate",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "3",
+                "item_text": "Pause on screen",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:pause",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "4",
+                "item_text": "Mailbox",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:mailbox",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "5",
+                "item_text": "Configured Q-scan",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:qscan",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "6",
+                "item_text": "Change password",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:password",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "7",
+                "item_text": "Update macros",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:macros",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "8",
+                "item_text": "Change colors",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:colors",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "9",
+                "item_text": "Message editor",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:editor",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "A",
+                "item_text": "Extended colors",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:extra_color",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "B",
+                "item_text": "Optional lines",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:optional_lines",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "C",
+                "item_text": "Conferencing",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:conference",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "D",
+                "item_text": "Show Hidden Lines",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:ctrlcodes",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "G",
+                "item_text": "Message Reader",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:fs_reader",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "I",
+                "item_text": "Internet Address",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:email",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "K",
+                "item_text": "Configure Menus",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:menus",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "M",
+                "item_text": "Allow user msgs",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:nomsgs",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "N",
+                "item_text": "Configure QWK",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "qwk:config_user",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "S",
+                "item_text": "Cls Between Msgs?",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:cls",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "T",
+                "item_text": "12hr or 24hr clock",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:24",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "U",
+                "item_text": "Use Msg AutoQuote",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:autoquote",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "W",
+                "item_text": "WWIV reg num",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:regnum",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "Q",
+                "item_text": "Quit to main menu",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "ReturnFromMenu",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -123,7 +123,7 @@ class ActionSubDialog final : public SubDialog<std::vector<menus::menu_action_56
 public:
   ActionSubDialog(const Config& config, std::vector<menus::menu_action_56_t>& actions,
                   std::vector<const value::ValueProvider*> p)
-      : SubDialog(config, actions), providers_(p) {}
+      : SubDialog(config, actions), providers_(std::move(p)) {}
   ~ActionSubDialog() override = default;
 
   void RunSubDialog(CursesWindow* window) override {
@@ -203,6 +203,9 @@ static void edit_menu_item(const Config& config, menus::menu_item_56_t& m, std::
             new StringEditItemWithPipeCodes(60, m.item_text, EditLineMode::ALL),
             "What to show on generated menu", 1, y);
   y++;
+  items.add(new Label("Actions:"), new ActionSubDialog(config, m.actions, providers), 
+    "The actions to execute when this menu is selected", 1, y);
+  y++;
   items.add(new Label("Help Text:"),
             new StringEditItemWithPipeCodes(60, m.help_text, EditLineMode::ALL),
             "One line help for command", 1, y);
@@ -225,9 +228,6 @@ static void edit_menu_item(const Config& config, menus::menu_item_56_t& m, std::
   items.add(new Label("Visible:"),
             new BooleanEditItem(&m.visible),
             "Is this item included in the generated menus.", 1, y);
-  y++;
-  items.add(new Label("Actions:"), new ActionSubDialog(config, m.actions, providers), 
-    "The actions to execute when this menu is selected", 1, y);
 
   items.relayout_items_and_labels();
   items.Run(StrCat("Menu: ", m.item_key));
