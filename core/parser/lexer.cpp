@@ -134,7 +134,8 @@ Lexer::Lexer(std::string source)
       if (wwiv::stl::contains(WS, c)) {
         // skip WS
         break;
-      } else if (isalpha(*it_)) {
+      }
+      if (isalpha(*it_)) {
         identifier();
       } else if (isdigit(*it_)) {
         number();
@@ -205,7 +206,7 @@ void Lexer::identifier() {
   std::string tx;
   while (it_ != end) {
     const auto c = *it_;
-    if (!isalnum(c) && c != '.') {
+    if (!isalnum(c) && c != '.' && c != '_' && c != '-') {
       // end if identifier.
       if (it_ != start) {
         // put back token

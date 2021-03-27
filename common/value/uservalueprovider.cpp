@@ -86,7 +86,10 @@ UserValueProvider::UserValueProvider(const sdk::Config& config, const sdk::User&
   fns_.try_emplace("extcolors", [&]() { return val(user_.extra_color()); });
   fns_.try_emplace("optional_lines", [&]() { return val(user_.optional_val()); });
   fns_.try_emplace("conferencing", [&]() { return val(user_.use_conference()); });
-  fns_.try_emplace("fs_reader", [&]() { return val(user_.has_flag(User::fullScreenReader)); });
+  fns_.try_emplace("fs_reader", [&]()
+  {
+    return val(user_.has_flag(User::fullScreenReader));
+  });
   fns_.try_emplace("email", [&]() { return val(user_.email_address()); });
   fns_.try_emplace("ignore_msgs", [&]() { return val(user_.ignore_msgs()); });
   fns_.try_emplace("clear_screen", [&]() { return val(user_.clear_screen()); });
@@ -119,6 +122,9 @@ UserValueProvider::UserValueProvider(const sdk::Config& config, const sdk::User&
   fns_.try_emplace("uk", [&]() { return val(user_.uk()); });
   fns_.try_emplace("downloaded", [&]() { return val(user_.downloaded()); });
   fns_.try_emplace("dk", [&]() { return val(user_.dk()); });
+  fns_.try_emplace("show_controlcodes", [&]() { return val(user_.has_flag(User::msg_show_controlcodes)); });
+  fns_.try_emplace("twentyfour_clock", [&]() { return val(user_.twentyfour_clock()); });
+
 }
 
 UserValueProvider::UserValueProvider(Context& c)

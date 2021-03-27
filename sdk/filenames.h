@@ -68,7 +68,7 @@ constexpr auto CHAINS_JSON = "chains.json";
 #define CS_EMAIL_NOEXT "cs-email"
 
 #define DEAD_NET "dead.net"
-#define DEFAULTS_NOEXT "defaults"
+#define DEFAULTS_NOEXT "legacy_defaults"
 #define DESC_SDI "DESC.SDI"
 #define DESCRIPT_ION "descript.ion"
 #define DIRS_DAT "dirs.dat"

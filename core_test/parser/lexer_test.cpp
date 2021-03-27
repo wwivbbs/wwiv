@@ -145,3 +145,13 @@ TEST_F(LexerTest, Smoke_Error) {
   ASSERT_GE(t.size(), 2u) << l;
   EXPECT_EQ(t[1].type, TokenType::error) << l;
 }
+
+TEST_F(LexerTest, Underscore) { 
+  Lexer l("user.fs_reader"); 
+  ASSERT_TRUE(l.ok());
+
+  const auto& t = l.tokens();
+  EXPECT_EQ(1u, t.size());
+  EXPECT_TOKEN_EQ(t[0], TokenType::identifier, "user.fs_reader");
+}
+

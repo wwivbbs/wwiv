@@ -42,6 +42,8 @@ enum class pipe_expr_token_type_t {
 
 class pipe_expr_token_t {
 public:
+  pipe_expr_token_t() = default;
+  pipe_expr_token_t(pipe_expr_token_type_t t, std::string l) : type(t), lexeme(std::move(l)) {}
   pipe_expr_token_type_t type;
   std::string lexeme;
 };
@@ -303,12 +305,17 @@ static bool check_acs_pipe(const std::string& expression, const std::vector<std:
     eval.add(m.get());
   }
 
-  return eval.eval();
+  const auto res = eval.eval();
+  if (eval.error()) {
+    LOG(WARNING) << eval.error_text();
+  }
+  return res;
 }
 
-std::string eval_fn_if(Context& context_, const std::vector<pipe_expr_token_t>& args) {
+
+static std::string eval_fn_if(Context& context_, const std::vector<pipe_expr_token_t>& args) {
   // Set command only
-  if (args.size() != 3) {
+  if (args.size() < 3) {
     return "ERROR: Set expression requires three arguments.";
   }
   for (const auto& a : args) {
@@ -324,7 +331,29 @@ std::string eval_fn_if(Context& context_, const std::vector<pipe_expr_token_t>& 
   const value::BbsValueProvider bbs_provider(context_);
   const value::UserValueProvider user_provider(context_);
   const auto b = check_acs_pipe(expr, context_.value_providers(), &user_provider, &bbs_provider);
-  return b ? yes : no;
+  std::string res = b ? yes : no;
+  if (args.size() > 3) {
+    const auto mask = args.at(3).lexeme;
+    return pipe_fmt(res, mask);
+  }
+  return res;
+}
+
+static std::string eval_fn_yesno(Context& context, const std::vector<pipe_expr_token_t>& args) {
+  // Set command only
+  if (args.empty()) {
+    return "ERROR: YesNo expression requires at least one argument.";
+  }
+  const auto& a = args.front();
+
+  std::vector<pipe_expr_token_t> ifargs{a};
+  ifargs.emplace_back(pipe_expr_token_type_t::string_literal, bout.lang().value("FIXED_YES"));
+  ifargs.emplace_back(pipe_expr_token_type_t::string_literal, bout.lang().value("FIXED_NO"));
+  if (args.size() > 1) {
+    const auto mask = args.at(1).lexeme;
+    ifargs.emplace_back(pipe_expr_token_type_t::string_literal, mask);
+  }
+  return eval_fn_if(context, ifargs);
 }
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
@@ -380,6 +409,7 @@ PipeEval::PipeEval(Context& context) : context_(context) {
     return {};
   });
   fn_map_.try_emplace("random", eval_fn_random);
+  fn_map_.try_emplace("yesno", eval_fn_yesno);
   fn_map_.try_emplace("if", eval_fn_if);
   fn_map_.try_emplace("mpl", eval_fn_mpl);
   fn_map_.try_emplace("set", eval_fn_set);

@@ -695,8 +695,8 @@ static void optional_lines() {
   bout << "|#9You may specify your optional lines value from 0-10,\r\n"
        << "|#20 |#9being all, |#210 |#9being none.\r\n"
        << "|#2What value? ";
-  const auto r = bin.input_number_hotkey(a()->user()->optional_val(), {'Q'}, 0, 10);
-  if (r.key != 'Q') {
+  if (const auto r = bin.input_number_hotkey(a()->user()->optional_val(), {'Q'}, 0, 10);
+      r.key != 'Q') {
     a()->user()->optional_val(r.num);
   }
 }
