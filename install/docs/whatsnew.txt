@@ -134,6 +134,20 @@ What's New in WWIV 5.7.0 (2021)
 * Added help on how to save a message created in the internal editor (#1436)
 * Errror on resize_file: 32; (#1438)
 * Added ability to format pipe variables
+* Fix handling of addresses mixed with and without domain names
+* Problems emailng FTN networks from BBS (#1439)
+* Log says user "hung up" when user logs off (#1440)
++ Add FTN nodelist support into network bbs list viewer (i.e. (B)bsList then (N)etwork. (#1231)
++ After using (B) to bypass a sub (from the reading prompt), don't ask if we want to post (#1437)
++ |{if expr yes no fmt} can now take a format (like pipe variables now)
+! Added new strings FIXED_YES and FIXED_NO.
++ Added new pipe expression |{yesno "expression" "fmt"}
+* WWIVNet BBS list not working (#1441)
+* Fix crash in displaying a generated menu in wwivconfig
+! Defaults is now a menu, not a built-in command by default, please make sure
+  to update your wwiv menus with the new defaults menu and update main menu.
++ You can now filter text in wwivconfig listboxes by pressing / and then 
+  entering the text to filter by.
 
 What's New in WWIV 5.6.1 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
