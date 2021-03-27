@@ -51,24 +51,6 @@ using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static auto create_providers(const Config& config) -> std::vector<const value::ValueProvider*> {
-  const UserManager um(config);
-  User user{};
-  if (!um.readuser(&user, 1)) {
-    user.set_name("SYSOP");
-    user.sl(255);
-    user.dsl(255);
-  }
-  UserValueProvider up(config, user, 255, config.sl(255));
-
-  wwiv::local::io::NullLocalIO null_io;
-  const wwiv::common::SessionContext sess(&null_io);
-  BbsValueProvider bbs_provider(config, sess);
-
-  std::vector<const value::ValueProvider*> providers{&up, &bbs_provider};
-  return providers; 
-}
-
 class ActionPickerSubDialog final : public SubDialog<std::string> {
 public:
   ActionPickerSubDialog(const Config& config, std::vector<menus::menu_command_help_t> cmds,
@@ -118,7 +100,8 @@ private:
   const std::vector<menus::menu_command_help_t> cmds_;
 };
 
-static void edit_menu_action(const Config& config, menus::menu_action_56_t& a) {
+static void edit_menu_action(const Config& config, menus::menu_action_56_t& a,
+                             std::vector<const value::ValueProvider*> providers) {
   const auto cmds = menus::LoadCommandHelpJSON(config.datadir());
 
   EditItems items{};
@@ -129,7 +112,7 @@ static void edit_menu_action(const Config& config, menus::menu_action_56_t& a) {
   items.add(new Label("Data:"), new StringEditItem<std::string&>(70, a.data, EditLineMode::ALL),
             "Optional data to pass to the command", 1, y);
   y++;
-  items.add(new Label("ACS:"), new ACSEditItem(config,  create_providers(config), 70, a.acs),
+  items.add(new Label("ACS:"), new ACSEditItem(config,  providers, 70, a.acs),
             "WWIV ACS required to execute this command", 1, y);
 
   items.relayout_items_and_labels();
@@ -138,8 +121,9 @@ static void edit_menu_action(const Config& config, menus::menu_action_56_t& a) {
 
 class ActionSubDialog final : public SubDialog<std::vector<menus::menu_action_56_t>> {
 public:
-  ActionSubDialog(const Config& config, std::vector<menus::menu_action_56_t>& actions)
-      : SubDialog(config, actions) {}
+  ActionSubDialog(const Config& config, std::vector<menus::menu_action_56_t>& actions,
+                  std::vector<const value::ValueProvider*> p)
+      : SubDialog(config, actions), providers_(p) {}
   ~ActionSubDialog() override = default;
 
   void RunSubDialog(CursesWindow* window) override {
@@ -162,7 +146,7 @@ public:
       selected = list.selected();
 
       if (result.type == ListBoxResultType::SELECTION) {
-        edit_menu_action(config(), t_[items[result.selected].data()]);
+        edit_menu_action(config(), t_[items[result.selected].data()], providers_);
       } else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;
       } else if (result.type == ListBoxResultType::HOTKEY) {
@@ -205,9 +189,10 @@ public:
   [[nodiscard]] std::string menu_label() const override {
     return fmt::format("[Edit] {} actions.", t_.size());
   }
+  std::vector<const value::ValueProvider*> providers_;
 };
 
-static void edit_menu_item(const Config& config, menus::menu_item_56_t& m) {
+static void edit_menu_item(const Config& config, menus::menu_item_56_t& m, std::vector<const value::ValueProvider*> providers) {
   EditItems items{};
   auto y = 1;
   items.add(new Label("Menu Key:"),
@@ -230,7 +215,7 @@ static void edit_menu_item(const Config& config, menus::menu_item_56_t& m) {
             new StringEditItem<std::string&>(60, m.instance_message, EditLineMode::ALL),
             "Instance message to send to all users", 1, y);
   y++;
-  items.add(new Label("ACS:"), new ACSEditItem(config, create_providers(config), 60, m.acs),
+  items.add(new Label("ACS:"), new ACSEditItem(config, providers, 60, m.acs),
             "WWIV ACS required to access this menu item", 1, y);
   y++;
   items.add(new Label("Password:"),
@@ -241,7 +226,7 @@ static void edit_menu_item(const Config& config, menus::menu_item_56_t& m) {
             new BooleanEditItem(&m.visible),
             "Is this item included in the generated menus.", 1, y);
   y++;
-  items.add(new Label("Actions:"), new ActionSubDialog(config, m.actions), 
+  items.add(new Label("Actions:"), new ActionSubDialog(config, m.actions, providers), 
     "The actions to execute when this menu is selected", 1, y);
 
   items.relayout_items_and_labels();
@@ -250,8 +235,9 @@ static void edit_menu_item(const Config& config, menus::menu_item_56_t& m) {
 
 class MenuItemsSubDialog : public SubDialog<std::vector<menus::menu_item_56_t>> {
 public:
-  MenuItemsSubDialog(const Config& config, std::vector<menus::menu_item_56_t>& menu_items)
-      : SubDialog(config, menu_items) {}
+  MenuItemsSubDialog(const Config& config, std::vector<menus::menu_item_56_t>& menu_items,
+    std::vector<const value::ValueProvider*> providers)
+      : SubDialog(config, menu_items), providers_(providers) {}
   ~MenuItemsSubDialog() override = default;
 
   void RunSubDialog(CursesWindow* window) override {
@@ -280,7 +266,7 @@ public:
         selected = list.selected();
 
         if (result.type == ListBoxResultType::SELECTION) {
-          edit_menu_item(config(), t_[items[result.selected].data()]);
+          edit_menu_item(config(), t_[items[result.selected].data()], providers_);
         } else if (result.type == ListBoxResultType::NO_SELECTION) {
           done = true;
         } else if (result.type == ListBoxResultType::HOTKEY) {
@@ -322,6 +308,7 @@ public:
   }
 
   [[nodiscard]] std::string menu_label() const override { return "[Edit]"; }
+  std::vector<const value::ValueProvider*> providers_;
 };
 
 
@@ -489,7 +476,22 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
   const auto title = StrCat("Menu: ", menu_name);
   auto y = 1;
   auto& h = m.menu;
-  auto providers = create_providers(config);
+
+  const UserManager um(config);
+  User user{};
+  if (!um.readuser(&user, 1)) {
+    user.set_name("SYSOP");
+    user.sl(255);
+    user.dsl(255);
+  }
+  UserValueProvider up(config, user, 255, config.sl(255));
+
+  wwiv::local::io::NullLocalIO null_io;
+  const wwiv::common::SessionContext sess(&null_io);
+  BbsValueProvider bbs_provider(config, sess);
+
+  std::vector<const value::ValueProvider*> providers{&up, &bbs_provider};
+
   items.add(new Label("Title:"),
             new StringEditItemWithPipeCodes(55, h.title, EditLineMode::ALL),
             "This is the title to display at the top of the menu", 1, y);
@@ -509,10 +511,10 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
             new ToggleEditItem<menus::menu_help_display_t>(help_action, &h.help_type),
             "When is the help screen (menu MSG/ANS/or generated help) displayed", 1, y);
   y++;
-  items.add(new Label("Enter Actions:"), new ActionSubDialog(config, h.enter_actions),
+  items.add(new Label("Enter Actions:"), new ActionSubDialog(config, h.enter_actions, providers),
             "Menu actions to execute when entering this menu", 1, y);
   y++;
-  items.add(new Label("Exit Actions:"), new ActionSubDialog(config, h.exit_actions),
+  items.add(new Label("Exit Actions:"), new ActionSubDialog(config, h.exit_actions, providers),
             "Menu actions to execute when leaving this menu", 1, y);
   y++;
   items.add(new Label("Password:"),
@@ -529,7 +531,7 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
   const auto p = FilePath(menu_path, StrCat(menu_name, ".pro"));
   items.add(new Label("Edit Prompt:"), new EditExternalFileItem(p), 1, y);
   y++;
-  items.add(new Label("Menu Items:"), new MenuItemsSubDialog(config, h.items), "", 1, y);
+  items.add(new Label("Menu Items:"), new MenuItemsSubDialog(config, h.items, providers), "", 1, y);
   y++;
   items.add(new Label("View Menu:"), new ShowGeneratedMenuSubDialog(config, providers, h), 
     "Display the generated menu for the sysop user.", 1, y);
