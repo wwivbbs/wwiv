@@ -185,4 +185,4 @@ std::optional<directory_t> FindFileAreaForTic(const files::Dirs& dirs, const Tic
   return std::nullopt;
 }
 
-      } // namespace wwiv::sdk::files
+} // namespace wwiv::sdk::files

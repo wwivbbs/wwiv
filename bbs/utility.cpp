@@ -230,11 +230,10 @@ std::string get_wildlist(const std::string& orig_file_mask) {
 int side_menu(int* menu_pos, bool bNeedsRedraw, const std::vector<std::string>& menu_items, int xpos,
               int ypos, side_menu_colors* smc) {
   static int positions[20];
-
   a()->tleft(true);
 
   if (bNeedsRedraw) {
-    static int amount = 1;
+    int amount = 1;
     positions[0] = xpos;
     for (const auto& menu_item : menu_items) {
       positions[amount] = positions[amount - 1] + wwiv::stl::ssize(menu_item) + 2;
