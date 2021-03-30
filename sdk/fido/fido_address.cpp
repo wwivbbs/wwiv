@@ -162,7 +162,7 @@ FidoAddress FidoAddress::with_default_domain(const std::string& default_domain) 
   return FidoAddress(zone_, net_, node_, point_, d);
 }
 
-std::optional<FidoAddress> try_parse_fidoaddr(const std::string& addr) {
+std::optional<FidoAddress> try_parse_fidoaddr(const std::string& addr, fidoaddr_parse_t p) {
   if (addr.empty()) {
     return std::nullopt;
   }
@@ -170,8 +170,34 @@ std::optional<FidoAddress> try_parse_fidoaddr(const std::string& addr) {
     FidoAddress a(addr);
     return {a};
   } catch (const bad_fidonet_address&) {
+    if (p == fidoaddr_parse_t::strict) {
+      return std::nullopt;
+    }
+  }
+
+  // Try more lax route.
+  auto s = addr;
+  auto it = std::begin(s);
+  while (it != std::end(s) && !isdigit(*it)) {
+    ++it;
+  }
+  // This removes any non digits from the front
+  std::string a2(it, std::end(s));
+  StringTrim(&a2);
+
+  if (const auto idx = a2.find(' '); idx != std::string::npos) {
+    a2 = a2.substr(0, idx);
+    StringTrim(&a2);
+  }
+  if (a2.empty()) {
     return std::nullopt;
   }
+  try {
+    FidoAddress a(a2);
+    return {a};
+  } catch (const bad_fidonet_address&) {
+  }
+  return std::nullopt;
 }
 
 std::string domain_from_address(const std::string& addr) {

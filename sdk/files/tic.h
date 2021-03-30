@@ -34,7 +34,7 @@ class Tic {
 public:
   explicit Tic(std::filesystem::path path);
   Tic() = delete;
-  ~Tic();
+  ~Tic() = default;
 
   // True if everything is valid (file exists, PW correct, and CRC matches)
   [[nodiscard]] bool IsValid() const;

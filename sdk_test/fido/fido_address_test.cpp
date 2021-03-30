@@ -36,6 +36,19 @@ TEST(FidoAddressTest, Basic) {
   EXPECT_EQ("11:10/211.123@wwiv-ftn", f.as_string(true));
 }
 
+TEST(FidoAddressTest, Basic_TryParse) {
+  const auto o = try_parse_fidoaddr("11:10/211.123@wwiv-ftn");
+  ASSERT_TRUE(o);
+  const auto& f = o.value();
+  EXPECT_EQ(11, f.zone());
+  EXPECT_EQ(10, f.net());
+  EXPECT_EQ(211, f.node());
+  EXPECT_EQ(123, f.point());
+  EXPECT_EQ("wwiv-ftn", f.domain());
+
+  EXPECT_EQ("11:10/211.123@wwiv-ftn", f.as_string(true));
+}
+
 TEST(FidoAddressTest, ZoneNetNode) {
   const FidoAddress f("11:10/211");
   EXPECT_EQ(11, f.zone());
@@ -87,6 +100,11 @@ TEST(FidoAddressTest, MissingNetOrNode) {
   }
 }
 
+TEST(FidoAddressTest, MissingNetOrNode_TryParse) {
+  auto o = try_parse_fidoaddr("1");
+  EXPECT_FALSE(o);
+}
+
 TEST(FidoAddressTest, LT) {
   const FidoAddress f1("11:10/211");
   const FidoAddress f2("11:10/212");
@@ -121,4 +139,37 @@ TEST(FidoAddressTest, LTGT) {
 
   EXPECT_LT(f1, f2);
   EXPECT_FALSE(f2 < f1);
+}
+
+TEST(FidoAddressTest, TryParseFlex_Smoke) {
+  auto o = try_parse_fidoaddr("1:103/17", fidoaddr_parse_t::lax);
+  ASSERT_TRUE(o);
+  ASSERT_EQ(FidoAddress("1:103/17"), o.value());
+}
+
+TEST(FidoAddressTest, TryParseFlex_LeadingName) {
+  const FidoAddress expected("1:103/17");
+  auto o = try_parse_fidoaddr("SysopName, 1:103/17", fidoaddr_parse_t::lax);
+  ASSERT_TRUE(o);
+  ASSERT_EQ(expected, o.value());
+}
+
+TEST(FidoAddressTest, TryParseFlex_LeadingNameStrict) {
+  const FidoAddress expected("1:103/17");
+  const auto o = try_parse_fidoaddr("SysopName, 1:103/17", fidoaddr_parse_t::strict);
+  ASSERT_FALSE(o);
+}
+
+TEST(FidoAddressTest, TryParseFlex_LeadingNameAndTrailingSpace) {
+  const FidoAddress expected("1:103/17");
+  auto o = try_parse_fidoaddr("SysopName, 1:103/17    ", fidoaddr_parse_t::lax);
+  ASSERT_TRUE(o);
+  ASSERT_EQ(expected, o.value());
+}
+
+TEST(FidoAddressTest, TryParseFlex_LeadingNameAndTrailingChars) {
+  const FidoAddress expected("1:103/17");
+  auto o = try_parse_fidoaddr("SysopName, 1:103/17  Cool", fidoaddr_parse_t::lax);
+  ASSERT_TRUE(o);
+  ASSERT_EQ(expected, o.value());
 }

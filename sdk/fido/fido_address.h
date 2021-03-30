@@ -153,7 +153,19 @@ public:
   explicit bad_fidonet_address(const std::string& message): runtime_error(message) {}
 };
 
-std::optional<FidoAddress> try_parse_fidoaddr(const std::string& addr);
+enum class fidoaddr_parse_t { strict, lax };
+
+/**
+ * Try to parse a fidonet address, returning it if successful.
+ *
+ * if p is lax, try to parse an address and ignore as much other info
+ * as possible.
+ */
+std::optional<FidoAddress> try_parse_fidoaddr(const std::string& addr, fidoaddr_parse_t p = fidoaddr_parse_t::strict);
+
+/**
+ * Try to parse a fidonet address, returning it if successful.
+ */
 
 std::string domain_from_address(const std::string& addr);
 

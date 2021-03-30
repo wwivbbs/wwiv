@@ -39,8 +39,6 @@ Tic::Tic(std::filesystem::path path)
     : path_(std::move(path)), valid_(false) {
 }
 
-Tic::~Tic() = default;
-
 bool Tic::IsValid() const {
   return valid_ && exists() && crc_valid() && size_valid();
 }
@@ -127,11 +125,23 @@ std::optional<Tic> TicParser::parse(const std::string& filename, const std::vect
     } else if (keyword == "areadesc") {
       t.area_description = params;
     } else if (keyword == "origin") {
-      t.origin = fido::FidoAddress(params);
+      if (const auto o = fido::try_parse_fidoaddr(params, fido::fidoaddr_parse_t::lax)) {
+        t.origin = o.value();
+      } else {
+        LOG(WARNING) << "Unable to parse 'origin' from : '" << params << "'";
+      }
     } else if (keyword == "from") {
-      t.from = fido::FidoAddress(params);
+      if (const auto o = fido::try_parse_fidoaddr(params, fido::fidoaddr_parse_t::lax)) {
+        t.from = o.value();
+      } else {
+        LOG(WARNING) << "Unable to parse 'from' from : '" << params << "'";
+      }
     } else if (keyword == "to") {
-      t.to = fido::FidoAddress(params);
+      if (const auto o = fido::try_parse_fidoaddr(params, fido::fidoaddr_parse_t::lax)) {
+        t.to = o.value();
+      } else {
+        LOG(WARNING) << "Unable to parse 'to' from : '" << params << "'";
+      }
     } else if (keyword == "file") {
       t.file = params;
     } else if (keyword == "lfile" || keyword == "fullname") {
