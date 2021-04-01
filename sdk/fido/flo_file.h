@@ -37,13 +37,13 @@ enum class flo_directive : char {
  */
 class FloFile {
 public:
-  FloFile(const net_networks_rec& net, std::filesystem::path p);
+  FloFile(const net::net_networks_rec& net, std::filesystem::path p);
   virtual ~FloFile();
 
   [[nodiscard]] FidoAddress destination_address() const;
   [[nodiscard]] bool poll() const { return poll_; }
   void set_poll(bool p);
-  [[nodiscard]] fido_bundle_status_t status() const { return status_; }
+  [[nodiscard]] net::fido_bundle_status_t status() const { return status_; }
   [[nodiscard]] const std::vector<std::pair<std::string, flo_directive>>& flo_entries() const;
 
   [[nodiscard]] bool exists() const noexcept { return exists_; }
@@ -55,9 +55,9 @@ public:
   bool Save();
 
 private:
-  const net_networks_rec& net_;
+  const net::net_networks_rec& net_;
   const std::filesystem::path path_;
-  fido_bundle_status_t status_{fido_bundle_status_t::unknown};
+  net::fido_bundle_status_t status_{net::fido_bundle_status_t::unknown};
   std::unique_ptr<wwiv::sdk::fido::FidoAddress> dest_;
   bool exists_{false};
   bool poll_{false};

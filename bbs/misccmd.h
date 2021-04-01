@@ -18,13 +18,14 @@
 #ifndef INCLUDED_BBS_MISCCMD_H
 #define INCLUDED_BBS_MISCCMD_H
 
+#include "sdk/net/net.h"
+
 #include <string>
 
-enum class network_type_t : uint8_t;
 void kill_old_email();
 void list_users(int mode);
 void time_bank();
 int getnetnum(const std::string& network_name);
-int getnetnum_by_type(network_type_t type);
+int getnetnum_by_type(wwiv::sdk::net::network_type_t type);
 
 #endif

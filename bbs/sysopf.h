@@ -18,8 +18,6 @@
 #ifndef INCLUDED_BBS_SYSOPF_H
 #define INCLUDED_BBS_SYSOPF_H
 
-struct net_networks_rec;
-
 void prstatus();
 void valuser(int user_number);
 void query_print_net_listing(bool force_pause);

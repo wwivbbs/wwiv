@@ -33,6 +33,7 @@
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido;
+using namespace wwiv::sdk::net;
 
 namespace wwiv::net {
 

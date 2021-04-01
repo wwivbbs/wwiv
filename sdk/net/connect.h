@@ -31,18 +31,18 @@ class Connect {
  public:
   explicit Connect(const std::filesystem::path& network_dir);
   // VisibleForTesting
-  Connect(std::initializer_list<net_interconnect_rec> l);
+  Connect(std::initializer_list<net::net_interconnect_rec> l);
   virtual ~Connect();
-  const net_interconnect_rec* node_config_for(int node) const;
+  const net::net_interconnect_rec* node_config_for(int node) const;
   Connect& operator=(const Connect& rhs) { node_config_ = rhs.node_config_; return *this; }
   std::string ToString() const;
-  const std::map<uint16_t, net_interconnect_rec>& node_config() const { return node_config_; }
+  const std::map<uint16_t, net::net_interconnect_rec>& node_config() const { return node_config_; }
 
  private:
-  std::map<uint16_t, net_interconnect_rec> node_config_;
+  std::map<uint16_t, net::net_interconnect_rec> node_config_;
 };
 
-bool ParseConnectNetLine(const std::string& line, net_interconnect_rec* config);
+bool ParseConnectNetLine(const std::string& line, net::net_interconnect_rec* config);
 
 }  // namespace
 

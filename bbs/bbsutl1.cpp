@@ -44,6 +44,8 @@
 using std::chrono::milliseconds;
 using namespace wwiv::core;
 using namespace wwiv::os;
+using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 static const size_t MAX_CONF_LINE = 4096;

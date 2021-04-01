@@ -57,6 +57,7 @@ using namespace wwiv::local::io;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::ansi;
 using namespace wwiv::sdk::msgapi;
+using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 

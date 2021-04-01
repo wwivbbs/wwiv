@@ -46,6 +46,7 @@ using namespace wwiv::core;
 using namespace wwiv::local::ui;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 static bool del_net(const Config& config, Networks& networks, int nn) {

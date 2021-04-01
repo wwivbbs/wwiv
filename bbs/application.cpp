@@ -110,6 +110,7 @@ using namespace wwiv::core;
 using namespace wwiv::local::io;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 // Implementation of Context for the Application
@@ -1255,16 +1256,16 @@ const Instances& Application::instances() const {
   return *instances_;
 }
 
-const net_networks_rec& Application::current_net() const {
-  const static net_networks_rec empty_rec{};
+const wwiv::sdk::net::net_networks_rec& Application::current_net() const {
+  const static wwiv::sdk::net::net_networks_rec empty_rec{};
   if (nets_->empty()) {
     return empty_rec;
   }
   return nets_->at(net_num());
 }
 
-net_networks_rec& Application::mutable_current_net() {
-  static net_networks_rec empty_rec{};
+wwiv::sdk::net::net_networks_rec& Application::mutable_current_net() {
+  static wwiv::sdk::net::net_networks_rec empty_rec{};
   if (nets_->empty()) {
     return empty_rec;
   }

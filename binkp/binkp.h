@@ -153,7 +153,7 @@ bool ParseFileRequestLine(const std::string& request_line,
 
 // Returns just the expected password for a node (node) contained in the
 // callout.net file used by the wwiv::sdk::Callout class.
-std::string expected_password_for(const net_call_out_rec* con);
+std::string expected_password_for(const sdk::net::net_call_out_rec* con);
 
 template <typename N>
 std::string expected_password_for(const wwiv::sdk::Callout* callout, N node) {

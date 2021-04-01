@@ -30,6 +30,7 @@
 
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::sdk::fido;
 
 namespace wwiv::net {

@@ -60,15 +60,15 @@ private:
                                     std::string& bundlename);
 
   bool CreateFloFile(const wwiv::sdk::fido::FidoAddress& dest,
-                     const std::string& bundlename, const fido_packet_config_t& packet_config);
+                     const std::string& bundlename, const sdk::net::fido_packet_config_t& packet_config);
 
   bool CreateNetmailAttach(const sdk::fido::FidoAddress& dest,
                            const std::string& bundlename,
-                           const fido_packet_config_t& packet_config);
+                           const sdk::net::fido_packet_config_t& packet_config);
 
   bool CreateNetmailAttachOrFloFile(const sdk::fido::FidoAddress& dest,
                                     const std::string& bundlename,
-                                    const fido_packet_config_t& packet_config);
+                                    const sdk::net::fido_packet_config_t& packet_config);
 
   bool export_main_type_new_post(std::set<std::string>& bundles, sdk::net::Packet& p);
 
@@ -79,7 +79,7 @@ private:
   const NetworkCommandLine& net_cmdline_;
   const sdk::BbsListNet& bbslist_;
   core::Clock& clock_;
-  const net_networks_rec& net_;
+  const sdk::net::net_networks_rec& net_;
   sdk::fido::FidoCallout fido_callout_;
   NetDat netdat_;
 

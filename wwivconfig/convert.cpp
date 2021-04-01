@@ -55,6 +55,7 @@ using namespace wwiv::local::ui;
 using namespace wwiv::sdk::files;
 using namespace wwiv::sdk::menus;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 namespace wwiv::wwivconfig::convert {

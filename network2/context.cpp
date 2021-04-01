@@ -20,6 +20,7 @@
 
 namespace wwiv::net::network2 {
 
+using namespace wwiv::sdk::net;
 
 Context::Context(const sdk::Config& c, const net_networks_rec& n, sdk::UserManager& u,
                  const std::vector<net_networks_rec>& ns, NetDat& netdat)

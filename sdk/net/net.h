@@ -33,6 +33,7 @@
 #include "sdk/net/legacy_net.h"
 
 
+namespace wwiv::sdk::net {
 
 /*
  * This data is also read in from a text file.  It tells how much it costs for
@@ -269,5 +270,6 @@ struct net_networks_rec {
   int network_number{-1};
 };
 
+}
 
 #endif

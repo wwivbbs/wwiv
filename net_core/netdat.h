@@ -26,9 +26,13 @@
 #include <optional>
 #include <vector>
 
+
+namespace  wwiv::sdk::net {
 struct net_networks_rec;
+}
 
 namespace wwiv::net {
+
 
 class NetworkStat final {
 public:
@@ -51,8 +55,8 @@ public:
   
   static char NetDatMsgType(netdat_msgtype_t t);
 
-  NetDat(std::filesystem::path gfiles, std::filesystem::path logs, const net_networks_rec& net,
-         char net_cmd, core::Clock& clock);
+  NetDat(std::filesystem::path gfiles, std::filesystem::path logs,
+         const sdk::net::net_networks_rec& net, char net_cmd, core::Clock& clock);
 
   ~NetDat();
 
@@ -73,7 +77,7 @@ private:
 
   std::filesystem::path gfiles_;
   std::filesystem::path logs_;
-  const net_networks_rec& net_;
+  const sdk::net::net_networks_rec& net_;
   const char net_cmd_;
   core::Clock& clock_;
   std::unique_ptr<TextFile> file_;

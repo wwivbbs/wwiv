@@ -997,11 +997,11 @@ class User final {
   }
 
   [[nodiscard]] bool forwarded_to_internet() const {
-    return forward_usernum() == INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
+    return forward_usernum() == net::INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
   }
 
   [[nodiscard]] bool mailbox_forwarded() const {
-    return forward_usernum() > 0 && forward_usernum() < INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
+    return forward_usernum() > 0 && forward_usernum() < net::INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
   }
 
   void clear_mailbox_forward() {

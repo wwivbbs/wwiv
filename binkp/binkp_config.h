@@ -37,9 +37,9 @@ public:
   BinkConfig(int node_number, const wwiv::sdk::Config& config, const std::string& network_dir);
   ~BinkConfig();
   // Gets the binkp_session_config_t or nullptr if one can not be found.
-  [[nodiscard]] const binkp_session_config_t* binkp_session_config_for(const std::string& node) const;
+  [[nodiscard]] const sdk::net::binkp_session_config_t* binkp_session_config_for(const std::string& node) const;
   // Gets the binkp_session_config_t or nullptr if one can not be found.
-  [[nodiscard]] const binkp_session_config_t* binkp_session_config_for(uint16_t node) const;
+  [[nodiscard]] const sdk::net::binkp_session_config_t* binkp_session_config_for(uint16_t node) const;
 
   [[nodiscard]] int callout_node_number() const { return callout_wwivnet_node_; }
   [[nodiscard]] std::string callout_fido_address() const { return callout_fido_node_; }
@@ -52,8 +52,8 @@ public:
   /** Get the directory to receive files into for network named network_name */
   [[nodiscard]] std::string receive_dir(const std::string& network_name) const;
 
-  [[nodiscard]] const net_networks_rec& network(const std::string& network_name) const;
-  [[nodiscard]] const net_networks_rec& callout_network() const;
+  [[nodiscard]] const sdk::net::net_networks_rec& network(const std::string& network_name) const;
+  [[nodiscard]] const sdk::net::net_networks_rec& callout_network() const;
   [[nodiscard]] const wwiv::sdk::Networks& networks() { return networks_; }
   /*
    * Key/Value mapping of domain to callout class.
@@ -78,7 +78,7 @@ public:
   std::map<sdk::fido::FidoAddress, std::string> address_pw_map;
 
 private:
-           const sdk::Config& config_;
+  const sdk::Config& config_;
   std::string home_dir_;
 
   int callout_wwivnet_node_{0};

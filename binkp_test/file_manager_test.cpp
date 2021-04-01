@@ -26,6 +26,7 @@
 
 using namespace wwiv::core;
 using namespace wwiv::net;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 class FileManagerTest : public testing::Test {

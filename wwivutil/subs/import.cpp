@@ -26,6 +26,7 @@
 #include <sstream>
 
 using namespace wwiv::core;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 namespace wwiv::wwivutil {

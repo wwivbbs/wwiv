@@ -50,7 +50,7 @@ public:
     std::string root_directory,
     std::string subs_directory,
     std::string messages_directory,
-    std::vector<net_networks_rec> net_networks);
+    std::vector<net::net_networks_rec> net_networks);
 
   /** Checks to see if the files for a subboard exist. */
   [[nodiscard]] virtual bool Exist(const wwiv::sdk::subboard_t& sub) const = 0;
@@ -63,7 +63,7 @@ public:
   /** Deletes the message area identified by filename: name */
   [[nodiscard]] virtual bool Remove(const std::string& name) = 0;
 
-  [[nodiscard]] const std::vector<net_networks_rec>& network() const { return net_networks_; }
+  [[nodiscard]] const std::vector<net::net_networks_rec>& network() const { return net_networks_; }
   [[nodiscard]] std::string root_directory() const { return root_directory_; }
   [[nodiscard]] MessageApiOptions options() const { return options_; }
 
@@ -76,7 +76,7 @@ protected:
   std::string root_directory_;
   std::string subs_directory_;
   std::string messages_directory_;
-  std::vector<net_networks_rec> net_networks_;
+  std::vector<net::net_networks_rec> net_networks_;
 };
 
 }  // namespace

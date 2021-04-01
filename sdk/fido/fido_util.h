@@ -39,13 +39,13 @@ std::string packet_name(wwiv::core::DateTime& dt);
 std::string bundle_name(const FidoAddress& source, const FidoAddress& dest, int dow, int bundle_number);
 std::string bundle_name(const FidoAddress& source, const FidoAddress& dest, const std::string& extension);
 std::string net_node_name(const FidoAddress& dest, const std::string& extension);
-std::string flo_name(const FidoAddress& dest, fido_bundle_status_t status);
+std::string flo_name(const FidoAddress& dest, net::fido_bundle_status_t status);
 std::vector<std::string> dow_prefixes();
 std::string dow_extension(int dow, int bundle_number);
 bool is_bundle_file(const std::string& name);
 bool is_packet_file(const std::string& name);
-std::string control_file_name(const FidoAddress& dest, fido_bundle_status_t status);
-bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net);
+std::string control_file_name(const FidoAddress& dest, net::fido_bundle_status_t status);
+bool exists_bundle(const wwiv::sdk::Config& config, const net::net_networks_rec& net);
 bool exists_bundle(const std::filesystem::path& dir);
 
 // FTN DateTime
@@ -119,7 +119,7 @@ FidoAddress get_address_from_stored_message(const FidoStoredMessage& msg);
  *  Gets the number of bytes waiting across all packets listed in flo files for
  *  the 'dest' address on 'net' network.
  */
-int ftn_bytes_waiting(const net_networks_rec& net, const fido::FidoAddress& dest);
+int ftn_bytes_waiting(const net::net_networks_rec& net, const fido::FidoAddress& dest);
 
 }  // namespace
 

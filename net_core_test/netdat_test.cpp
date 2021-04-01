@@ -17,17 +17,17 @@
 /**************************************************************************/
 #include "core/fake_clock.h"
 #include "core/log.h"
-
-
-#include "gtest/gtest.h"
-
-#include "net_core/netdat.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
+#include "net_core/netdat.h"
 #include "sdk/net/net.h"
+
+#include "gtest/gtest.h"
 #include <string>
 
 using namespace wwiv::core;
+using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 

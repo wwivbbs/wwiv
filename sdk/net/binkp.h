@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_BINKP_H__
-#define __INCLUDED_SDK_BINKP_H__
+#ifndef INCLUDED_SDK_NET_BINKP_H
+#define INCLUDED_SDK_NET_BINKP_H
 
 #include "sdk/net/net.h"
 #include <cstdint>
@@ -32,15 +32,15 @@ class Binkp {
  public:
   Binkp(const std::filesystem::path& network_dir);
   virtual ~Binkp();
-  const binkp_session_config_t* binkp_session_config_for(const std::string& node) const;
-  const binkp_session_config_t* binkp_session_config_for(uint16_t node) const;
+  const net::binkp_session_config_t* binkp_session_config_for(const std::string& node) const;
+  const net::binkp_session_config_t* binkp_session_config_for(uint16_t node) const;
 
  private:
-  std::map<std::string, binkp_session_config_t> node_config_;
+  std::map<std::string, net::binkp_session_config_t> node_config_;
   std::string network_dir_;
 };
 
-std::optional<std::tuple<std::string, binkp_session_config_t>> ParseBinkConfigLine(const std::string& line);
+std::optional<std::tuple<std::string, net::binkp_session_config_t>> ParseBinkConfigLine(const std::string& line);
 
 }
 

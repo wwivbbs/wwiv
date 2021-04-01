@@ -21,6 +21,8 @@
 #include <string>
 #include <utility>
 
+using namespace wwiv::sdk::net;
+
 namespace wwiv::sdk::msgapi {
 
 MessageAreaLastRead::MessageAreaLastRead(MessageApi* api) : api_(api) {}

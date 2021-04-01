@@ -41,6 +41,8 @@
 #include "sdk/filenames.h"
 #include "sdk/status.h"
 #include "sdk/net/binkp.h"
+#include "sdk/net/net.h"
+#include "sdk/net/networks.h"
 #include "sdk/net/callout.h"
 #include "sdk/net/callouts.h"
 #include "sdk/net/contact.h"

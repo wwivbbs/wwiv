@@ -42,7 +42,6 @@ class Batch;
 class BbsMacroContext;
 struct arcrec;
 struct editorrec;
-struct net_networks_rec;
 struct newexternalrec;
 struct tagrec_t;
 struct usersubrec;
@@ -91,6 +90,11 @@ namespace msgapi {
 class MessageApi;
 class WWIVMessageApi;
 } // namespace msgapi
+
+namespace net {
+struct net_networks_rec;
+}
+
 } // namespace sdk
 } // namespace wwiv
 
@@ -227,8 +231,8 @@ public:
   [[nodiscard]] const wwiv::sdk::subboard_t& current_sub() const;
   [[nodiscard]] const wwiv::sdk::files::directory_t& current_dir() const;
 
-  [[nodiscard]] const net_networks_rec& current_net() const;
-  [[nodiscard]] net_networks_rec& mutable_current_net();
+  [[nodiscard]] const wwiv::sdk::net::net_networks_rec& current_net() const;
+  [[nodiscard]] wwiv::sdk::net::net_networks_rec& mutable_current_net();
 
   [[nodiscard]] bool IsUseInternalZmodem() const { return internal_zmodem_; }
   [[nodiscard]] bool IsUseInternalFsed() const; 

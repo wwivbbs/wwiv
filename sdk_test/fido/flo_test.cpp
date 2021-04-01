@@ -28,6 +28,7 @@
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido;
+using namespace wwiv::sdk::net;
 
 class FloTest : public testing::Test {
 public:

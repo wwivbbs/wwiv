@@ -32,6 +32,8 @@
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
+using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 
 namespace wwiv::sdk::files {
 

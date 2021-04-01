@@ -54,7 +54,7 @@ class NullLastReadImpl final : public WWIVLastReadImpl {
 class WWIVMessageApi final : public MessageApi {
 public:
   WWIVMessageApi(const MessageApiOptions& options, const Config& config,
-                 const std::vector<net_networks_rec>& net_networks, WWIVLastReadImpl* last_read);
+                 const std::vector<net::net_networks_rec>& net_networks, WWIVLastReadImpl* last_read);
 
   [[nodiscard]] bool Exist(const subboard_t& sub) const override;
   [[nodiscard]] bool Create(const std::string& name, const std::string& sub_ext,

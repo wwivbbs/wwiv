@@ -36,8 +36,8 @@ namespace wwiv::net::network2 {
 class Context {
 
 public:
-  Context(const sdk::Config& c, const net_networks_rec& n, sdk::UserManager& u,
-          const std::vector<net_networks_rec>& ns, NetDat& netdat);
+  Context(const sdk::Config& c, const sdk::net::net_networks_rec& n, sdk::UserManager& u,
+          const std::vector<sdk::net::net_networks_rec>& ns, NetDat& netdat);
 
   void set_api(int type, std::unique_ptr<sdk::msgapi::MessageApi>&& a);
 
@@ -46,11 +46,11 @@ public:
   [[nodiscard]] sdk::msgapi::MessageApi& api(int type);
   [[nodiscard]] sdk::msgapi::WWIVMessageApi& email_api() const;
 
-  [[nodiscard]] const std::vector<net_networks_rec>& networks() const noexcept { return networks_; }
+  [[nodiscard]] const std::vector<sdk::net::net_networks_rec>& networks() const noexcept { return networks_; }
   [[nodiscard]] NetDat& netdat() const { return netdat_; }
 
   const sdk::Config& config;
-  const net_networks_rec& net;
+  const sdk::net::net_networks_rec& net;
   sdk::UserManager& user_manager;
   std::map<int, std::unique_ptr<sdk::msgapi::MessageApi>> msgapis_;
   // This is the type-2 entry in msgapis_. It's owned there.
@@ -58,7 +58,7 @@ public:
   // network number like network 0 (.0) is the 1st network in WWIVconfig.
   int network_number{0};
   sdk::Subs subs;
-  const std::vector<net_networks_rec> networks_;
+  const std::vector<sdk::net::net_networks_rec> networks_;
   NetDat& netdat_;
   bool verbose{false};
   bool subs_initialized{false};

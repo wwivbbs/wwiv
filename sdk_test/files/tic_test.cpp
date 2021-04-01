@@ -25,6 +25,7 @@
 #include "sdk/files/tic.h"
 
 using namespace wwiv::core;
+using namespace wwiv::sdk::net;
 
 TEST(TicTest, Smoke) {
   FileHelper helper;

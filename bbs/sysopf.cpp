@@ -69,6 +69,7 @@ using wwiv::core::FilePath;
 using namespace wwiv::core;
 using namespace wwiv::local::io;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::msgapi;
@@ -431,7 +432,7 @@ bool print_wwivnet_net_listing(const net_networks_rec& net) {
       char s1[101];
       auto matched = false;
       const auto& csne = b.second;
-      if (csne.forsys == WWIVNET_NO_NODE && cmdbit != net_search_type_t::NET_SEARCH_NOCONNECT) {
+      if (csne.forsys == net::WWIVNET_NO_NODE && cmdbit != net_search_type_t::NET_SEARCH_NOCONNECT) {
         continue;
       }
       strcpy(s1, csne.phone);

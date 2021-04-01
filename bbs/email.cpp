@@ -45,6 +45,7 @@
 #include "sdk/usermanager.h"
 #include "sdk/fido/fido_util.h"
 #include "sdk/fido/nodelist.h"
+#include "sdk/net/net.h"
 #include "sdk/net/networks.h"
 
 #include <chrono>
@@ -59,6 +60,7 @@ using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 // returns true on success (i.e. the message gets forwarded)

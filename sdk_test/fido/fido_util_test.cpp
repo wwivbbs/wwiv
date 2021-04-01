@@ -31,6 +31,7 @@
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido;
+using namespace wwiv::sdk::net;
 
 class FidoUtilTest : public testing::Test {
 public:

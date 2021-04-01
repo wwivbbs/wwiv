@@ -23,6 +23,7 @@
 #include <string>
 
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 class CalloutTest : public testing::Test {};

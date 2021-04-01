@@ -27,6 +27,8 @@
 #include "sdk/net/net.h"
 
 using namespace wwiv::core;
+using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 
 namespace wwiv::net {
 

@@ -43,7 +43,7 @@ public:
   [[nodiscard]] const sdk::Networks& networks() const noexcept { return *networks_; }
   [[nodiscard]] std::string network_name() const noexcept { return network_name_; }
   [[nodiscard]] int network_number() const noexcept { return network_number_; }
-  [[nodiscard]] const net_networks_rec& network() const noexcept { return network_; }
+  [[nodiscard]] const sdk::net::net_networks_rec& network() const noexcept { return network_; }
   [[nodiscard]] const core::CommandLine& cmdline() const noexcept { return cmdline_; }
   [[nodiscard]] char net_cmd() const noexcept { return net_cmd_; }
   [[nodiscard]] std::filesystem::path semaphore_path() const noexcept;
@@ -63,7 +63,7 @@ private:
   std::string network_name_;
   int network_number_{0};
   bool initialized_{true};
-  net_networks_rec network_;
+  sdk::net::net_networks_rec network_;
   core::CommandLine& cmdline_;
   char net_cmd_;
 };

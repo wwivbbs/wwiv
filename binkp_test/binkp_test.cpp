@@ -33,6 +33,7 @@ using wwiv::sdk::Callout;
 using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::sdk::fido;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 static const std::string ANSWERING_ADDRESS = "20000/20000:1";

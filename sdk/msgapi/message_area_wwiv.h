@@ -78,7 +78,7 @@ public:
   WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub, 
                   std::filesystem::path sub_filename,
                   std::filesystem::path text_filename, int subnum,
-                  std::vector<net_networks_rec> net_networks);
+                  std::vector<net::net_networks_rec> net_networks);
   ~WWIVMessageArea() override;
 
   // Message Sub Specific Operations
@@ -126,7 +126,7 @@ private:
   const std::filesystem::path sub_filename_;
   bool open_{false};
   subfile_header_t header_;
-  const std::vector<net_networks_rec> net_networks_;
+  const std::vector<net::net_networks_rec> net_networks_;
   std::unique_ptr<MessageAreaLastRead> last_read_;
   int nonce_{0};
 };

@@ -15,22 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_NET_CALLOUTS_H__
-#define __INCLUDED_SDK_NET_CALLOUTS_H__
+#ifndef INCLUDED_SDK_NET_CALLOUTS_H
+#define INCLUDED_SDK_NET_CALLOUTS_H
 
 #include "core/datetime.h"
 #include "sdk/net/contact.h"
 #include "sdk/net/net.h"
-#include "sdk/net/networks.h"
-#include <functional>
-#include <memory>
-#include <set>
-#include <string>
-#include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace net {
+namespace wwiv::sdk::net {
 
 bool allowed_to_call(const network_callout_config_t& con);
 bool allowed_to_call(const net_call_out_rec& con, const wwiv::core::DateTime& dt);
@@ -39,8 +31,6 @@ bool should_call(const wwiv::sdk::NetworkContact& ncn, const network_callout_con
 bool should_call(const wwiv::sdk::NetworkContact& ncn, const net_call_out_rec& con,
                  const wwiv::core::DateTime& dt);
 
-} // namespace net
-} // namespace sdk
-} // namespace wwiv
+}
 
-#endif // __INCLUDED_SDK_NET_CALLOUTS_H__
+#endif
