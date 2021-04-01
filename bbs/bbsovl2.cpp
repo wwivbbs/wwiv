@@ -41,17 +41,17 @@ using namespace wwiv::strings;
 void OnlineUserEditor() {
   auto& u = *a()->user();
 
-  a()->localIO()->savescreen();
+  bout.localIO()->savescreen();
   a()->DisplaySysopWorkingIndicator(true);
   const auto wx = 5;
   const auto wy = 3;
-  a()->localIO()->MakeLocalWindow(wx, wy - 2, 70, 16 + 2);
+  bout.localIO()->MakeLocalWindow(wx, wy - 2, 70, 16 + 2);
   const auto bar = StrCat("\xC3", std::string(70 - wx + 3, '\xC4'), "\xB4");
-  a()->localIO()->PutsXY(wx, wy, bar);
-  a()->localIO()->PutsXY(wx, wy + 4, bar);
-  a()->localIO()->PutsXY(wx, wy + 7, bar);
-  a()->localIO()->PutsXY(wx, wy + 11, bar);
-  a()->localIO()->PutsXY(wx, wy + 13, bar);
+  bout.localIO()->PutsXY(wx, wy, bar);
+  bout.localIO()->PutsXY(wx, wy + 4, bar);
+  bout.localIO()->PutsXY(wx, wy + 7, bar);
+  bout.localIO()->PutsXY(wx, wy + 11, bar);
+  bout.localIO()->PutsXY(wx, wy + 13, bar);
   if (*a()->sess().qsc > 999) {
     *a()->sess().qsc = 999;
   }
@@ -62,28 +62,28 @@ void OnlineUserEditor() {
 
   // heading
   const auto s = StrCat("[", a()->user()->name_and_number(), "]");
-  a()->localIO()->PutsXYA(wx + 1, wy - 1, 31, fmt::format("{:<30}{:>37}"," WWIV User Editor", s));
+  bout.localIO()->PutsXYA(wx + 1, wy - 1, 31, fmt::format("{:<30}{:>37}"," WWIV User Editor", s));
 
-  a()->localIO()->PutsXYA(wx + 2, wy + 1, 3, StrCat("Security Level(SL): ", u.sl()));
+  bout.localIO()->PutsXYA(wx + 2, wy + 1, 3, StrCat("Security Level(SL): ", u.sl()));
   auto ar = word_to_arstr(u.ar_int(), "");
-  a()->localIO()->PutsXYA(wx + 36, wy + 1, 3, StrCat("  Message AR: ", ar));
-  a()->localIO()->PutsXYA(wx + 2, wy + 2, 3, StrCat("DL Sec. Level(DSL): ", u.dsl()));
+  bout.localIO()->PutsXYA(wx + 36, wy + 1, 3, StrCat("  Message AR: ", ar));
+  bout.localIO()->PutsXYA(wx + 2, wy + 2, 3, StrCat("DL Sec. Level(DSL): ", u.dsl()));
   auto dar = word_to_arstr(u.dar_int(), "");
-  a()->localIO()->PutsXYA(wx + 36, wy + 2, 3, StrCat(" Download AR: ", dar));
-  a()->localIO()->PutsXYA(wx + 2, wy + 3, 3, StrCat("   User Exemptions: ", u.exempt()));
-  a()->localIO()->PutsXYA(wx + 36, wy + 3, 3, StrCat("Restrictions: ", restrict));
-  a()->localIO()->PutsXYA(wx + 2, wy + 5, 3, StrCat("         Sysop Sub: ", *a()->sess().qsc));
-  a()->localIO()->PutsXYA(wx + 36, wy + 5, 3, StrCat("   Time Bank: ", u.banktime_minutes()));
-  a()->localIO()->PutsXYA(wx + 2, wy + 6, 3, StrCat("        Ass Points: ", u.ass_points()));
-  a()->localIO()->PutsXYA(wx + 36, wy + 6, 3, StrCat(" Gold Points: ", u.gold()));
-  a()->localIO()->PutsXYA(wx + 2, wy + 8, 3, StrCat("       KB Uploaded: ", u.uk()));
-  a()->localIO()->PutsXYA(wx + 35, wy + 8, 3, StrCat("KB Downloaded: ", u.dk()));
-  a()->localIO()->PutsXYA(wx + 2, wy + 9, 3, StrCat("    Files Uploaded: ", u.uploaded()));
-  a()->localIO()->PutsXYA(wx + 32, wy + 9, 3, StrCat("Files Downloaded: ", u.downloaded()));
-  a()->localIO()->PutsXYA(wx + 2, wy + 10, 3, StrCat("   Messages Posted: ", u.messages_posted()));
-  a()->localIO()->PutsXYA(wx + 32, wy + 10, 3, StrCat("Number of Logons: ", u.logons()));
-  a()->localIO()->PutsXYA(wx + 2, wy + 12, 3, StrCat("Note: ", u.note()));
-  a()->localIO()->PutsXYA(wx + 1, wy + 14, 31,
+  bout.localIO()->PutsXYA(wx + 36, wy + 2, 3, StrCat(" Download AR: ", dar));
+  bout.localIO()->PutsXYA(wx + 2, wy + 3, 3, StrCat("   User Exemptions: ", u.exempt()));
+  bout.localIO()->PutsXYA(wx + 36, wy + 3, 3, StrCat("Restrictions: ", restrict));
+  bout.localIO()->PutsXYA(wx + 2, wy + 5, 3, StrCat("         Sysop Sub: ", *a()->sess().qsc));
+  bout.localIO()->PutsXYA(wx + 36, wy + 5, 3, StrCat("   Time Bank: ", u.banktime_minutes()));
+  bout.localIO()->PutsXYA(wx + 2, wy + 6, 3, StrCat("        Ass Points: ", u.ass_points()));
+  bout.localIO()->PutsXYA(wx + 36, wy + 6, 3, StrCat(" Gold Points: ", u.gold()));
+  bout.localIO()->PutsXYA(wx + 2, wy + 8, 3, StrCat("       KB Uploaded: ", u.uk()));
+  bout.localIO()->PutsXYA(wx + 35, wy + 8, 3, StrCat("KB Downloaded: ", u.dk()));
+  bout.localIO()->PutsXYA(wx + 2, wy + 9, 3, StrCat("    Files Uploaded: ", u.uploaded()));
+  bout.localIO()->PutsXYA(wx + 32, wy + 9, 3, StrCat("Files Downloaded: ", u.downloaded()));
+  bout.localIO()->PutsXYA(wx + 2, wy + 10, 3, StrCat("   Messages Posted: ", u.messages_posted()));
+  bout.localIO()->PutsXYA(wx + 32, wy + 10, 3, StrCat("Number of Logons: ", u.logons()));
+  bout.localIO()->PutsXYA(wx + 2, wy + 12, 3, StrCat("Note: ", u.note()));
+  bout.localIO()->PutsXYA(wx + 1, wy + 14, 31,
                           "    (ENTER) Next Field   (UP-ARROW) Previous Field    (ESC) Exit    ");
   bout.curatr(3);
   bool done = false;
@@ -92,40 +92,40 @@ void OnlineUserEditor() {
     auto rc = EditlineResult::ABORTED;
     switch (cp) {
     case 0: {
-      a()->localIO()->GotoXY(wx + 22, wy + 1);
+      bout.localIO()->GotoXY(wx + 22, wy + 1);
       auto sl = std::to_string(u.sl());
-      rc = a()->localIO()->EditLine(sl, 3, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(sl, 3, AllowedKeys::NUM_ONLY);
       u.sl(to_number<unsigned int>(sl));
-      a()->localIO()->Format("{:3}", u.sl());
+      bout.localIO()->Format("{:3}", u.sl());
     } break;
     case 1: {
-      a()->localIO()->GotoXY(wx + 50, wy + 1);
-      rc = a()->localIO()->EditLine(ar, 16, AllowedKeys::SET, "ABCDEFGHIJKLMNOP ");
+      bout.localIO()->GotoXY(wx + 50, wy + 1);
+      rc = bout.localIO()->EditLine(ar, 16, AllowedKeys::SET, "ABCDEFGHIJKLMNOP ");
       u.ar_int(str_to_arword(ar));
     } break;
     case 2: {
-      a()->localIO()->GotoXY(wx + 22, wy + 2);
+      bout.localIO()->GotoXY(wx + 22, wy + 2);
       auto dsl = std::to_string(u.dsl());
-      rc = a()->localIO()->EditLine(dsl, 3, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(dsl, 3, AllowedKeys::NUM_ONLY);
       u.dsl(to_number<int>(dsl));
-      a()->localIO()->Format("{:3}", u.dsl());
+      bout.localIO()->Format("{:3}", u.dsl());
       } break;
     case 3: {
-      a()->localIO()->GotoXY(wx + 50, wy + 2);
+      bout.localIO()->GotoXY(wx + 50, wy + 2);
 
-      rc = a()->localIO()->EditLine(dar, 16, AllowedKeys::SET, "ABCDEFGHIJKLMNOP ");
+      rc = bout.localIO()->EditLine(dar, 16, AllowedKeys::SET, "ABCDEFGHIJKLMNOP ");
       u.dar_int(str_to_arword(dar));
     } break;
     case 4: {
-      a()->localIO()->GotoXY(wx + 22, wy + 3);
+      bout.localIO()->GotoXY(wx + 22, wy + 3);
       auto exempt = std::to_string(u.exempt());
-      rc = a()->localIO()->EditLine(exempt, 3, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(exempt, 3, AllowedKeys::NUM_ONLY);
       u.exempt(to_number<int>(exempt));
-      a()->localIO()->Format("{:3}", exempt);
+      bout.localIO()->Format("{:3}", exempt);
     } break;
     case 5: {
-      a()->localIO()->GotoXY(wx + 50, wy + 3);
-      rc = a()->localIO()->EditLine(restrict, 16, AllowedKeys::SET, restrict_string);
+      bout.localIO()->GotoXY(wx + 50, wy + 3);
+      rc = bout.localIO()->EditLine(restrict, 16, AllowedKeys::SET, restrict_string);
       u.restriction(0);
       for (int i = 0; i <= 15; i++) {
         if (restrict[i] != SPACE) {
@@ -134,79 +134,79 @@ void OnlineUserEditor() {
       }
     } break;
     case 6: {
-      a()->localIO()->GotoXY(wx + 22, wy + 5);
+      bout.localIO()->GotoXY(wx + 22, wy + 5);
       auto sysopsub = std::to_string(*a()->sess().qsc);
-      rc = a()->localIO()->EditLine(sysopsub, 3, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(sysopsub, 3, AllowedKeys::NUM_ONLY);
       *a()->sess().qsc = to_number<uint32_t>(sysopsub);
-      a()->localIO()->Format("{:3}", sysopsub);
+      bout.localIO()->Format("{:3}", sysopsub);
     } break;
     case 7: {
-      a()->localIO()->GotoXY(wx + 50, wy + 5);
+      bout.localIO()->GotoXY(wx + 50, wy + 5);
       auto banktime = std::to_string(u.banktime_minutes());
-      rc = a()->localIO()->EditLine(banktime, 5, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(banktime, 5, AllowedKeys::NUM_ONLY);
       u.banktime_minutes(to_number<uint16_t>(banktime));
-      a()->localIO()->Format("{:5}", banktime);
+      bout.localIO()->Format("{:5}", banktime);
     } break;
     case 8: {
-      a()->localIO()->GotoXY(wx + 22, wy + 6);
+      bout.localIO()->GotoXY(wx + 22, wy + 6);
       auto ass = std::to_string(u.ass_points());
-      rc = a()->localIO()->EditLine(ass, 5, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(ass, 5, AllowedKeys::NUM_ONLY);
       u.ass_points(to_number<int>(ass));
-      a()->localIO()->Format("{:5}", ass);
+      bout.localIO()->Format("{:5}", ass);
     } break;
     case 9: {
-      a()->localIO()->GotoXY(wx + 50, wy + 6);
+      bout.localIO()->GotoXY(wx + 50, wy + 6);
       auto gold = std::to_string(u.gold());
-      rc = a()->localIO()->EditLine(gold, 5, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(gold, 5, AllowedKeys::NUM_ONLY);
       u.gold(static_cast<float>(atof(gold.c_str())));
-      a()->localIO()->Format("{:5}", fmt::sprintf("%7.2f", u.gold()));
+      bout.localIO()->Format("{:5}", fmt::sprintf("%7.2f", u.gold()));
     } break;
     case 10: {
-      a()->localIO()->GotoXY(wx + 22, wy + 8);
+      bout.localIO()->GotoXY(wx + 22, wy + 8);
       auto uk = std::to_string(u.uk());
-      rc = a()->localIO()->EditLine(uk, 7, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(uk, 7, AllowedKeys::NUM_ONLY);
       u.set_uk(to_number<uint32_t>(uk));
-      a()->localIO()->Format("{:7}", uk);
+      bout.localIO()->Format("{:7}", uk);
     } break;
     case 11: {
-      a()->localIO()->GotoXY(wx + 50, wy + 8);
+      bout.localIO()->GotoXY(wx + 50, wy + 8);
       auto dk = std::to_string(u.dk());
-      rc = a()->localIO()->EditLine(dk, 7, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(dk, 7, AllowedKeys::NUM_ONLY);
       u.set_dk(to_number<uint32_t>(dk));
-      a()->localIO()->Format("{:7}", dk);
+      bout.localIO()->Format("{:7}", dk);
     } break;
     case 12: {
-      a()->localIO()->GotoXY(wx + 22, wy + 9);
+      bout.localIO()->GotoXY(wx + 22, wy + 9);
       auto up = std::to_string(u.uploaded());
-      rc = a()->localIO()->EditLine(up, 5, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(up, 5, AllowedKeys::NUM_ONLY);
       u.uploaded(to_number<int>(up));
-      a()->localIO()->Format("{:5}", up);
+      bout.localIO()->Format("{:5}", up);
     } break;
     case 13: {
-      a()->localIO()->GotoXY(wx + 50, wy + 9);
+      bout.localIO()->GotoXY(wx + 50, wy + 9);
       auto down = std::to_string(u.downloaded());
-      rc = a()->localIO()->EditLine(down, 5, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(down, 5, AllowedKeys::NUM_ONLY);
       u.downloaded(to_number<int>(down));
-      a()->localIO()->Format("{:5}", down);
+      bout.localIO()->Format("{:5}", down);
     } break;
     case 14: {
-      a()->localIO()->GotoXY(wx + 22, wy + 10);
+      bout.localIO()->GotoXY(wx + 22, wy + 10);
       auto posts = std::to_string(u.messages_posted());
-      rc = a()->localIO()->EditLine(posts, 5, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(posts, 5, AllowedKeys::NUM_ONLY);
       u.messages_posted(to_number<int>(posts));
-      a()->localIO()->Format("{:5}", posts);
+      bout.localIO()->Format("{:5}", posts);
     } break;
     case 15: {
-      a()->localIO()->GotoXY(wx + 50, wy + 10);
+      bout.localIO()->GotoXY(wx + 50, wy + 10);
       auto logons = std::to_string(u.logons());
-      rc = a()->localIO()->EditLine(logons, 5, AllowedKeys::NUM_ONLY);
+      rc = bout.localIO()->EditLine(logons, 5, AllowedKeys::NUM_ONLY);
       u.logons(to_number<int>(logons));
-      a()->localIO()->Format("{:5}",u.logons());
+      bout.localIO()->Format("{:5}",u.logons());
     } break;
     case 16: {
-      a()->localIO()->GotoXY(wx + 8, wy + 12);
+      bout.localIO()->GotoXY(wx + 8, wy + 12);
       auto note = u.note();
-      rc = a()->localIO()->EditLine(note, 60, AllowedKeys::ALL);
+      rc = bout.localIO()->EditLine(note, 60, AllowedKeys::ALL);
       StringTrimEnd(&note);
       u.note(note);
     } break;
@@ -235,7 +235,7 @@ void OnlineUserEditor() {
       done = true;
     }
   }
-  a()->localIO()->restorescreen();
+  bout.localIO()->restorescreen();
   a()->reset_effective_sl();
   changedsl();
   a()->DisplaySysopWorkingIndicator(false);

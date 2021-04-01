@@ -136,7 +136,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
   auto counter = 0;
   for (;;) {
     counter++;
-    if (a()->sess().using_modem() && (!a()->remoteIO()->connected())) {
+    if (a()->sess().using_modem() && (!bout.remoteIO()->connected())) {
       SetEvent(hSyncHangupEvent);
       LogToSync("Setting Hangup Event and Sleeping\r\n");
       wwiv::os::sleep_for(1s);
@@ -154,10 +154,10 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       }
     }
 
-    if (a()->remoteIO()->incoming()) {
+    if (bout.remoteIO()->incoming()) {
       counter = 0;
       // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-      const auto nNumReadFromComm = a()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
+      const auto nNumReadFromComm = bout.remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
 
       if (a()->IsExecLogSyncFoss()) {
         // LogToSync(StrCat("Read [", nNumReadFromComm, "] from comm\r\n"));
@@ -252,9 +252,9 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
           bout << szReadBuffer;
 
           // ExpandWWIVHeartCodes( szReadBuffer );
-          // int nNumWritten = a()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
+          // int nNumWritten = bout.remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
         } else {
-          const auto num_written = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
+          const auto num_written = bout.remoteIO()->write(szReadBuffer, nBufferPtr);
           if (a()->IsExecLogSyncFoss()) {
             // Too verbose.
             LogToSync(StrCat("Wrote [", num_written, "] bytes to comm.\r\n"));
@@ -332,7 +332,7 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
   ZeroMemory(&pi, sizeof(pi));
   std::string working_cmdline;
 
-  const auto saved_binary_mode = a()->remoteIO()->binary_mode();
+  const auto saved_binary_mode = bout.remoteIO()->binary_mode();
 
   auto should_use_sync = false;
   auto using_sync = false;
@@ -358,7 +358,7 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
     }
 
     // Set the socket to be std{in,out}
-    const auto sock = a()->remoteIO()->GetDoorHandle();
+    const auto sock = bout.remoteIO()->GetDoorHandle();
     si.hStdInput = reinterpret_cast<HANDLE>(sock);
     si.hStdOutput = reinterpret_cast<HANDLE>(sock);
     si.hStdError = reinterpret_cast<HANDLE>(sock);
@@ -407,7 +407,7 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
 
   if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
     VLOG(1) <<"Closing remote IO";
-    a()->remoteIO()->close(true);
+    bout.remoteIO()->close(true);
   }
 
   auto hSyncHangupEvent = INVALID_HANDLE_VALUE;  // NOLINT(readability-qualified-auto)
@@ -437,10 +437,10 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
     // If we return here, we may have to reopen the communications port.
     if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
       VLOG(1) << "Reopening comm (on createprocess error)";
-      a()->remoteIO()->open();
+      bout.remoteIO()->open();
     }
     // Restore old binary mode.
-    a()->remoteIO()->set_binary_mode(saved_binary_mode);
+    bout.remoteIO()->set_binary_mode(saved_binary_mode);
     return -1;
   }
 
@@ -455,7 +455,7 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
   CloseHandle(pi.hThread);
 
   if (using_sync) {
-    a()->remoteIO()->set_binary_mode(true);
+    bout.remoteIO()->set_binary_mode(true);
     const auto sync_loop_status = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
     LogToSync(StrCat("DoSyncFosLoopNT: Returned ", sync_loop_status, "\r\n", std::string(78, '='), "\r\n\r\n\r\n"));
 
@@ -483,12 +483,12 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
   CloseHandle(pi.hProcess);
 
   // Restore old binary mode.
-  a()->remoteIO()->set_binary_mode(saved_binary_mode);
+  bout.remoteIO()->set_binary_mode(saved_binary_mode);
 
   // reengage comm stuff
   if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
     VLOG(1) << "Reopening comm";
-    a()->remoteIO()->open();
+    bout.remoteIO()->open();
   }
 
   return static_cast<int>(dwExitCode);

@@ -79,9 +79,9 @@ char gettimeout(long ds, bool *abort) {
   const seconds d(ds);
   const auto d1 = steady_clock::now();
   while (steady_clock::now() - d1 < d && !bin.bkbhitraw() && !a()->sess().hangup() && !*abort) {
-    if (a()->localIO()->KeyPressed()) {
-      if (const auto ch = a()->localIO()->GetChar(); ch == 0) {
-        a()->localIO()->GetChar();
+    if (bout.localIO()->KeyPressed()) {
+      if (const auto ch = bout.localIO()->GetChar(); ch == 0) {
+        bout.localIO()->GetChar();
       } else if (ch == ESC) {
         *abort = true;
       }
@@ -119,10 +119,10 @@ int extern_prot(int num, const std::filesystem::path& path, bool bSending) {
       !command.empty()) {
     a()->ClearTopScreenProtection();
     ScopeExit at_exit([]{ a()->UpdateTopScreen(); });
-    a()->localIO()->Puts(fmt::format("{} is currently online at {} bps\r\n\r\n",
+    bout.localIO()->Puts(fmt::format("{} is currently online at {} bps\r\n\r\n",
                                      a()->user()->name_and_number(), a()->modem_speed_));
-    a()->localIO()->Puts(command);
-    a()->localIO()->Puts("\r\n");
+    bout.localIO()->Puts(command);
+    bout.localIO()->Puts("\r\n");
     if (a()->sess().incom()) {
       return ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_PROT_SINGLE));
     }

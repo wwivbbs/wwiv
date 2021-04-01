@@ -277,7 +277,7 @@ int read_idz_all() {
   tmp_disable_conf(true);
   TempDisablePause disable_pause(bout);
   a()->ClearTopScreenProtection();
-  for (auto i = 0; i < a()->dirs().size() && !a()->localIO()->KeyPressed(); i++) {
+  for (auto i = 0; i < a()->dirs().size() && !bout.localIO()->KeyPressed(); i++) {
     count += read_idz(false, i);
   }
   tmp_disable_conf(false);
@@ -977,7 +977,7 @@ void removenotthere() {
   bout.nl();
   bout << "|#5Remove N/A files in all directories? ";
   if (bin.yesno()) {
-    for (auto i = 0; i < size_int(a()->udir) && !a()->localIO()->KeyPressed(); i++) {
+    for (auto i = 0; i < size_int(a()->udir) && !bout.localIO()->KeyPressed(); i++) {
       bout.nl();
       bout << "|#1Removing N/A|#0 in " << a()->dirs()[a()->udir[i].subnum].name;
       bout.nl(2);

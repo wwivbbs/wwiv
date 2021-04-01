@@ -182,7 +182,7 @@ static int ShowLoginAndGetUserNumber(const std::string& remote_username) {
 
   Trashcan trashcan(*a()->config());
   if (trashcan.IsTrashName(user_name)) {
-    LOG(INFO) << "Trashcan name entered from IP: " << a()->remoteIO()->remote_info().address
+    LOG(INFO) << "Trashcan name entered from IP: " << bout.remoteIO()->remote_info().address
               << "; name: " << user_name;
     hang_it_up();
     a()->Hangup();
@@ -346,8 +346,8 @@ void getuser() {
   a()->sess().effective_sl(a()->config()->newuser_sl());
   a()->user()->SetStatus(0);
 
-  const auto& ip = a()->remoteIO()->remote_info().address;
-  const auto& hostname = a()->remoteIO()->remote_info().address_name;
+  const auto& ip = bout.remoteIO()->remote_info().address;
+  const auto& hostname = bout.remoteIO()->remote_info().address_name;
   if (!ip.empty()) {
     bout << "Client Address: " << hostname << " (" << ip << ")" << wwiv::endl;
     bout.nl();
@@ -363,8 +363,8 @@ void getuser() {
     std::string remote_username;
     std::string remote_password;
     if (first_time) {
-      remote_username = ToStringUpperCase(a()->remoteIO()->remote_info().username);
-      remote_password = ToStringUpperCase(a()->remoteIO()->remote_info().password);
+      remote_username = ToStringUpperCase(bout.remoteIO()->remote_info().username);
+      remote_password = ToStringUpperCase(bout.remoteIO()->remote_info().password);
       first_time = false;
     }
     const auto usernum = ShowLoginAndGetUserNumber(remote_username);
@@ -573,7 +573,7 @@ static void UpdateLastOnFile() {
     sysoplog(false) << "";
   }
   if (a()->sess().incom()) {
-    const auto& remote_address = a()->remoteIO()->remote_info().address;
+    const auto& remote_address = bout.remoteIO()->remote_info().address;
     if (!remote_address.empty()) {
       sysoplog() << "Remote IP: " << remote_address;
     }
@@ -841,7 +841,7 @@ static void UpdateLastAddress() {
   if (!a()->sess().incom()) {
     return;
   }
-  const auto remote_address = a()->remoteIO()->remote_info().address;
+  const auto remote_address = bout.remoteIO()->remote_info().address;
   if (remote_address.empty()) {
     return;
   }
@@ -953,7 +953,7 @@ void logoff() {
     }
   }
   setiia(std::chrono::seconds(5));
-  a()->remoteIO()->disconnect();
+  bout.remoteIO()->disconnect();
   // Don't need hangup here, but *do* want to ensure that a()->sess().hangup() is true.
   a()->sess().hangup(true);
   VLOG(1) << "Setting a()->sess().hangup()=true in logoff";

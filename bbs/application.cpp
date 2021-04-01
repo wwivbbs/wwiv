@@ -196,7 +196,7 @@ const Context& Application::context() const {
   return *context_;
 }
 
-wwiv::local::io::LocalIO* Application::localIO() const { return local_io_.get(); }
+//LocalIO* Application::localIO() const { return local_io_.get(); }
 
 bool Application::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
@@ -204,8 +204,8 @@ bool Application::reset_local_io(LocalIO* wlocal_io) {
   ::bin.SetLocalIO(wlocal_io);
   sess().reset_local_io(wlocal_io);
 
-  const auto screen_bottom = localIO()->GetDefaultScreenBottom();
-  localIO()->SetScreenBottom(screen_bottom);
+  const auto screen_bottom = bout.localIO()->GetDefaultScreenBottom();
+  bout.localIO()->SetScreenBottom(screen_bottom);
   sess().num_screen_lines(screen_bottom + 1);
 
   ClearTopScreenProtection();
@@ -253,6 +253,7 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
 void Application::SetCommForTest(RemoteIO* remote_io) {
   comm_.reset(remote_io);
   bout.SetComm(remote_io);
+  bin.SetComm(remote_io);
 }
 
 bool Application::ReadCurrentUser() { 
@@ -269,7 +270,7 @@ bool Application::ReadCurrentUser(int user_number) {
   // Update all other session variables that are dependent.
   sess().current_menu_set(user()->menu_set());
   sess().num_screen_lines(sess().using_modem() ? user()->screen_lines()
-                                          : localIO()->GetDefaultScreenBottom() + 1);
+                                          : bout.localIO()->GetDefaultScreenBottom() + 1);
   sess().dirs().current_menu_directory(FilePath(config_->menudir(), user()->menu_set()));
   return true;
 }
@@ -310,57 +311,57 @@ void Application::tleft(bool check_for_timeout) {
 
   // If we're not displaying the time left or password on the
   // topdata display, leave now.
-  if (localIO()->topdata() == LocalIO::topdata_t::none) {
+  if (bout.localIO()->topdata() == LocalIO::topdata_t::none) {
     return;
   }
 
   const auto temp_sysop = user()->sl() != 255 && sess().effective_sl() == 255;
   const auto sysop_available = wwiv::common::sysop1();
 
-  const auto cx = localIO()->WhereX();
-  const auto cy = localIO()->WhereY();
-  const auto ctl = localIO()->GetTopLine();
+  const auto cx = bout.localIO()->WhereX();
+  const auto cy = bout.localIO()->WhereY();
+  const auto ctl = bout.localIO()->GetTopLine();
   const auto cc = bout.curatr();
-  bout.curatr(localIO()->GetTopScreenColor());
-  localIO()->SetTopLine(0);
+  bout.curatr(bout.localIO()->GetTopScreenColor());
+  bout.localIO()->SetTopLine(0);
   const auto line_number =
-      (sess().chatcall() && (localIO()->topdata() == LocalIO::topdata_t::user)) ? 5 : 4;
+      (sess().chatcall() && (bout.localIO()->topdata() == LocalIO::topdata_t::user)) ? 5 : 4;
 
-  localIO()->PutsXY(1, line_number, GetCurrentSpeed());
-  for (auto i = localIO()->WhereX(); i < 23; i++) {
-    localIO()->Putch(static_cast<unsigned char>('\xCD'));
+  bout.localIO()->PutsXY(1, line_number, GetCurrentSpeed());
+  for (auto i = bout.localIO()->WhereX(); i < 23; i++) {
+    bout.localIO()->Putch(static_cast<unsigned char>('\xCD'));
   }
 
   if (temp_sysop) {
-    localIO()->PutsXY(23, line_number, "Temp Sysop");
+    bout.localIO()->PutsXY(23, line_number, "Temp Sysop");
   }
 
   if (sysop_available) {
-    localIO()->PutsXY(64, line_number, "Available");
+    bout.localIO()->PutsXY(64, line_number, "Available");
   }
 
   const auto min_left = nsln / SECONDS_PER_MINUTE;
   const auto secs_left = nsln % SECONDS_PER_MINUTE;
   const auto tleft_display = fmt::sprintf("T-%4ldm %2lds", min_left, secs_left);
-  switch (localIO()->topdata()) {
+  switch (bout.localIO()->topdata()) {
   case LocalIO::topdata_t::system: {
     if (sess().IsUserOnline()) {
-      localIO()->PutsXY(18, 3, tleft_display);
+      bout.localIO()->PutsXY(18, 3, tleft_display);
     }
   } break;
   case LocalIO::topdata_t::user: {
     if (sess().IsUserOnline()) {
-      localIO()->PutsXY(18, 3, tleft_display);
+      bout.localIO()->PutsXY(18, 3, tleft_display);
     } else {
-      localIO()->PutsXY(18, 3, user()->password());
+      bout.localIO()->PutsXY(18, 3, user()->password());
     }
   } break;
   case LocalIO::topdata_t::none:
     break;
   }
-  localIO()->SetTopLine(ctl);
+  bout.localIO()->SetTopLine(ctl);
   bout.curatr(cc);
-  localIO()->GotoXY(cx, cy);
+  bout.localIO()->GotoXY(cx, cy);
 }
 
 void Application::handle_sysop_key(uint8_t key) {
@@ -384,7 +385,7 @@ void Application::handle_sysop_key(uint8_t key) {
         // Used to be shutdown bbs in 3 minutes.
         break;
       case F2: /* F2 */
-        localIO()->increment_topdata();
+        bout.localIO()->increment_topdata();
         UpdateTopScreen();
         break;
       case F3: /* F3 */
@@ -399,7 +400,7 @@ void Application::handle_sysop_key(uint8_t key) {
         UpdateTopScreen();
         break;
       case F5: /* F5 */
-        remoteIO()->disconnect();
+        bout.remoteIO()->disconnect();
         a()->Hangup(hangup_type_t::sysop_forced);
         break;
       case SF5: { /* Shift-F5 */
@@ -410,12 +411,12 @@ void Application::handle_sysop_key(uint8_t key) {
         for (auto i = 0; i < dist_len(e); i++) {
           bout.bputch(static_cast<char>(dist(e) & 0xff));
         }
-        remoteIO()->disconnect();
+        bout.remoteIO()->disconnect();
         a()->Hangup(hangup_type_t::sysop_forced);
         } break;
       case CF5: /* Ctrl-F5 */
         bout << "\r\nCall back later when you are there.\r\n\n";
-        remoteIO()->disconnect();
+        bout.remoteIO()->disconnect();
         a()->Hangup(hangup_type_t::sysop_forced);
         break;
       case F6: /* F6 - was Toggle Sysop Alert*/
@@ -513,7 +514,7 @@ void Application::UpdateTopScreen() {
   auto lll = bout.lines_listed();
 
   if (so() && !sess().incom()) {
-    localIO()->topdata(LocalIO::topdata_t::none);
+    bout.localIO()->topdata(LocalIO::topdata_t::none);
   }
 
 #ifdef _WIN32
@@ -525,50 +526,50 @@ void Application::UpdateTopScreen() {
   }
 #endif // _WIN32
 
-  switch (localIO()->topdata()) {
+  switch (bout.localIO()->topdata()) {
   case LocalIO::topdata_t::none:
-    localIO()->set_protect(0);
+    bout.localIO()->set_protect(0);
     break;
   case LocalIO::topdata_t::system:
-    localIO()->set_protect(5);
+    bout.localIO()->set_protect(5);
     break;
   case LocalIO::topdata_t::user:
     if (sess().chatcall()) {
-      localIO()->set_protect(6);
+      bout.localIO()->set_protect(6);
     } else {
-      if (localIO()->GetTopLine() == 6) {
-        localIO()->set_protect(0);
+      if (bout.localIO()->GetTopLine() == 6) {
+        bout.localIO()->set_protect(0);
       }
-      localIO()->set_protect(5);
+      bout.localIO()->set_protect(5);
     }
     break;
   }
   // This used to be inside of localIO::set_protect but that
   // made absolutely no sense, so pulled it out here
   if (!sess().using_modem()) {
-    sess().num_screen_lines(localIO()->GetDefaultScreenBottom() + 1 - localIO()->GetTopLine());
+    sess().num_screen_lines(bout.localIO()->GetDefaultScreenBottom() + 1 - bout.localIO()->GetTopLine());
   }
 
-  auto cx = localIO()->WhereX();
-  auto cy = localIO()->WhereY();
-  auto nOldTopLine = localIO()->GetTopLine();
+  auto cx = bout.localIO()->WhereX();
+  auto cy = bout.localIO()->WhereY();
+  auto nOldTopLine = bout.localIO()->GetTopLine();
   auto cc = bout.curatr();
-  bout.curatr(localIO()->GetTopScreenColor());
-  localIO()->SetTopLine(0);
+  bout.curatr(bout.localIO()->GetTopScreenColor());
+  bout.localIO()->SetTopLine(0);
   for (i = 0; i < 80; i++) {
     sl[i] = '\xCD';
   }
   sl[80] = '\0';
 
-  switch (localIO()->topdata()) {
+  switch (bout.localIO()->topdata()) {
   case LocalIO::topdata_t::none:
     break;
   case LocalIO::topdata_t::system: {
-    localIO()->PutsXY(0, 0,
+    bout.localIO()->PutsXY(0, 0,
                       fmt::format("{:>50}  Activity for {:>8}:      ", config()->system_name(),
                                   status->last_date()));
 
-    localIO()->PutsXY(
+    bout.localIO()->PutsXY(
         0, 1,
         fmt::sprintf(
             "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
@@ -576,7 +577,7 @@ void Application::UpdateTopScreen() {
             status->localposts()));
 
     const auto username_num = user()->name_and_number();
-    localIO()->PutsXY(0, 2,
+    bout.localIO()->PutsXY(0, 2,
                       fmt::sprintf("%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
                                    username_num, status->active_today_minutes(),
                                    static_cast<int>(10 * status->active_today_minutes() / 144),
@@ -586,7 +587,7 @@ void Application::UpdateTopScreen() {
     if (const auto sysop = users()->readuser(1)) {
       feedback_waiting = sysop->email_waiting();
     }
-    localIO()->PutsXY(
+    bout.localIO()->PutsXY(
         0, 3,
         fmt::sprintf(
             "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
@@ -627,7 +628,7 @@ void Application::UpdateTopScreen() {
         fmt::sprintf("%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num,
                      user()->email_waiting(), user()->uploaded(), user()->uk(),
                      user()->sl(), user()->logons(), user()->messages_posted());
-    localIO()->PutsXYA(0, 0, bout.curatr(), line);
+    bout.localIO()->PutsXYA(0, 0, bout.curatr(), line);
 
     std::string callsign_or_regnum = user()->callsign();
     if (user()->wwiv_regnum()) {
@@ -637,14 +638,14 @@ void Application::UpdateTopScreen() {
     auto used_total = used_this_session + user()->timeon();
     auto minutes_used = duration_cast<minutes>(used_total);
 
-    localIO()->PutsXY(0, 1,
+    bout.localIO()->PutsXY(0, 1,
                       fmt::sprintf("%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
                                    user()->real_name(), user()->voice_phone(),
                                    callsign_or_regnum, user()->downloaded(),
                                    user()->dk(), user()->dsl(), minutes_used.count(),
                                    user()->email_sent() + user()->email_net()));
 
-    localIO()->PutsXY(0, 2,
+    bout.localIO()->PutsXY(0, 2,
                       fmt::sprintf("ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict,
                                    user()->exempt(), lo, user()->feedback_sent()));
 
@@ -652,21 +653,21 @@ void Application::UpdateTopScreen() {
     if (const auto sysop = users()->readuser(1)) {
       feedback_waiting = sysop->email_waiting();
     }
-    localIO()->PutsXY(0, 3,
+    bout.localIO()->PutsXY(0, 3,
                       fmt::sprintf("%-40.40s %c %2u %-16.16s           FW= %3u",
                                    user()->note(), user()->gender(), user()->age(),
                                    ctypes(user()->computer_type()), feedback_waiting));
 
     if (sess() .chatcall()) {
-      localIO()->PutsXY(0, 4, fmt::format("{:<80}", sess().chat_reason()));
+      bout.localIO()->PutsXY(0, 4, fmt::format("{:<80}", sess().chat_reason()));
     }
   } break;
   }
   if (nOldTopLine != 0) {
-    localIO()->PutsXY(0, nOldTopLine - 1, sl);
+    bout.localIO()->PutsXY(0, nOldTopLine - 1, sl);
   }
-  localIO()->SetTopLine(nOldTopLine);
-  localIO()->GotoXY(cx, cy);
+  bout.localIO()->SetTopLine(nOldTopLine);
+  bout.localIO()->GotoXY(cx, cy);
   bout.curatr(cc);
   tleft(false);
 
@@ -674,15 +675,15 @@ void Application::UpdateTopScreen() {
 }
 
 void Application::ClearTopScreenProtection() {
-  localIO()->set_protect(0);
+  bout.localIO()->set_protect(0);
   if (!sess().using_modem()) {
-    sess().num_screen_lines(localIO()->GetDefaultScreenBottom() + 1 - localIO()->GetTopLine());
+    sess().num_screen_lines(bout.localIO()->GetDefaultScreenBottom() + 1 - bout.localIO()->GetTopLine());
   }
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 void Application::Cls() {
-  localIO()->Cls();
+  bout.localIO()->Cls();
   bout.clear_lines_listed();
 }
 
@@ -715,14 +716,14 @@ get_caller_t Application::GetCaller() {
   modem_speed_ = 38400;
   bin.okskey(true);
   Cls();
-  localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
+  bout.localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
 
   return lokb == wwiv::bbs::wfc_events_t::login_fast ? get_caller_t::fast_login
                                                      : get_caller_t::normal_login;
 }
 
 void Application::GotCaller(int ms) {
-  localIO()->SetTopLine(0);
+  bout.localIO()->SetTopLine(0);
   frequent_init();
   wfc_cls(a());
   modem_speed_ = ms;
@@ -735,7 +736,7 @@ void Application::GotCaller(int ms) {
     user()->screen_lines(25);
   }
   Cls();
-  localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
+  bout.localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
   const auto remote_conneted = modem_speed_ != 0;
   sess().incom(remote_conneted);
   sess().outcom(remote_conneted);
@@ -922,13 +923,13 @@ int Application::Run(int argc, char* argv[]) {
   if (!InitializeBBS(!user_already_on_ && sysop_cmd.empty() && fsed.empty() && run_basic.empty())) {
     return exitLevelNotOK;
   }
-  localIO()->UpdateNativeTitleBar(config()->system_name(), sess().instance_number());
+  bout.localIO()->UpdateNativeTitleBar(config()->system_name(), sess().instance_number());
 
   auto remote_opened = true;
   // If we are telnet...
   if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
     sess().ok_modem_stuff(true);
-    remote_opened = remoteIO()->open();
+    remote_opened = bout.remoteIO()->open();
   }
 
   if (!remote_opened) {
@@ -950,7 +951,7 @@ int Application::Run(int argc, char* argv[]) {
     return oklevel_;
   }
   if (mini_cmd) {
-    remoteIO()->remote_info().clear();
+    bout.remoteIO()->remote_info().clear();
     frequent_init();
     ReadCurrentUser(1);
     reset_effective_sl();
@@ -1006,8 +1007,8 @@ int Application::Run(int argc, char* argv[]) {
   }
 
 #if 0
-  a()->localIO()->Puts("Debug: Press any key...");
-  a()->localIO()->GetChar();
+  localIO()->Puts("Debug: Press any key...");
+  localIO()->GetChar();
 #endif // 0
   do {
     if (this_usernum_from_commandline) {
@@ -1102,7 +1103,7 @@ int Application::Run(int argc, char* argv[]) {
     cleanup_net();
 
     if (!no_hangup_ && sess().ok_modem_stuff()) {
-      remoteIO()->disconnect();
+      bout.remoteIO()->disconnect();
     }
     user_already_on_ = false;
   } while (!ooneuser);
@@ -1304,7 +1305,7 @@ void Application::frequent_init() {
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
 // returns the value of sess().hangup()
 bool Application::CheckForHangup() {
-  if (!sess().hangup() && sess().using_modem() && !remoteIO()->connected()) {
+  if (!sess().hangup() && sess().using_modem() && !bout.remoteIO()->connected()) {
     if (sess().IsUserOnline()) {
       sysoplog() << "Hung Up.";
     }

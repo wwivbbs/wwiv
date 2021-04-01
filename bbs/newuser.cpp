@@ -135,7 +135,7 @@ static bool check_name(const std::string& user_name) {
 
   Trashcan trashcan(*a()->config());
   if (trashcan.IsTrashName(user_name)) {
-    LOG(INFO) << "Trashcan name entered from IP: " << a()->remoteIO()->remote_info().address
+    LOG(INFO) << "Trashcan name entered from IP: " << bout.remoteIO()->remote_info().address
               << "; name: " << user_name;
     hang_it_up();
     a()->Hangup();
@@ -1170,8 +1170,8 @@ void NewUserDataEntry(const newuser_config_t& nc) {
   auto& u = *a()->user();
 
   bout.newline = false;
-  const auto saved_topdata = a()->localIO()->topdata();
-  a()->localIO()->topdata(wwiv::local::io::LocalIO::topdata_t::none);
+  const auto saved_topdata = bout.localIO()->topdata();
+  bout.localIO()->topdata(wwiv::local::io::LocalIO::topdata_t::none);
   a()->UpdateTopScreen();
   auto letter = 'A';
   std::map<char, NewUserItem> nu_items;
@@ -1280,7 +1280,7 @@ void NewUserDataEntry(const newuser_config_t& nc) {
     u.default_editor(0xff);
     u.set_flag(User::fullScreenReader);
   }
-  a()->localIO()->topdata(saved_topdata);
+  bout.localIO()->topdata(saved_topdata);
   a()->UpdateTopScreen();
   bout.newline = true;
 }
@@ -1292,7 +1292,7 @@ void newuser() {
   sysoplog(false) << fmt::sprintf("*** NEW USER %s   %s    %s (%ld)", f, t, a()->GetCurrentSpeed(),
                                   a()->sess().instance_number());
 
-  LOG(INFO) << "New User Attempt from IP Address: " << a()->remoteIO()->remote_info().address;
+  LOG(INFO) << "New User Attempt from IP Address: " << bout.remoteIO()->remote_info().address;
   a()->sess().num_screen_lines(25);
 
   if (!CreateNewUserRecord()) {
@@ -1368,7 +1368,7 @@ void newuser() {
   ssm(1) << "You have a new user: " << a()->user()->name() << " #" << a()->sess().user_num();
 
   LOG(INFO) << "New User Created: '" << a()->user()->name() << "' "
-            << "IP Address: " << a()->remoteIO()->remote_info().address;
+            << "IP Address: " << bout.remoteIO()->remote_info().address;
 
   a()->UpdateTopScreen();
   VerifyNewUserPassword();

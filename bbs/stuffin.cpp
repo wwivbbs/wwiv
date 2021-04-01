@@ -23,6 +23,7 @@
 #include "bbs/dropfile.h"
 #include "bbs/utility.h"
 #include "common/context.h"
+#include "common/output.h"
 #include "common/remote_io.h"
 #include "core/file.h"
 #include "core/strings.h"
@@ -119,7 +120,7 @@ std::string stuff_in(const std::string& commandline, const std::string& arg1, co
         os << create_dropfile_filename(drop_file_t::DOOR32_SYS);
         break;
       case 'H':
-        os << a()->remoteIO()->GetDoorHandle();
+        os << bout.remoteIO()->GetDoorHandle();
         break;
       case 'I':
         os << a()->sess().dirs().temp_directory().string();

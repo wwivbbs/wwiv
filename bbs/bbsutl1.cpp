@@ -327,7 +327,7 @@ void hang_it_up() {
   if (!a()->sess().ok_modem_stuff()) {
     return;
   }
-  a()->remoteIO()->disconnect();
+  bout.remoteIO()->disconnect();
   a()->Hangup();
 }
 

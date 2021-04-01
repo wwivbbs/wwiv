@@ -67,11 +67,11 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
 
   // Some LocalIO implementations (Curses) needs to disable itself before
   // we fork some other process.
-  a()->localIO()->DisableLocalIO();
+  bout.localIO()->DisableLocalIO();
   const auto return_code = exec_cmdline(commandLine, nFlags);
 
   // Re-engage the local IO engine if needed.
-  a()->localIO()->ReenableLocalIO();
+  bout.localIO()->ReenableLocalIO();
   File::set_current_directory(a()->bbspath());
 
   // Reread the user record.

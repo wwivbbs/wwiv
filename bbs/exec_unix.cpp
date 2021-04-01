@@ -39,6 +39,7 @@
 
 #include "bbs/bbs.h"
 #include "common/context.h"
+#include "common/output.h"
 #include "common/remote_io.h"
 #include "core/log.h"
 #include "core/os.h"
@@ -232,14 +233,14 @@ int exec_cmdline(const std::string& cmdline, int flags) {
 
   if (a()->sess().ok_modem_stuff()) {
     VLOG(2) << "Temporarily pausing comm for spawn";
-    a()->remoteIO()->close(true);
+    bout.remoteIO()->close(true);
   }
 
-  auto i = UnixSpawn(cmdline, flags, a()->remoteIO()->GetDoorHandle());
+  auto i = UnixSpawn(cmdline, flags, bout.remoteIO()->GetDoorHandle());
 
   // reengage comm stuff
   if (a()->sess().ok_modem_stuff()) {
-    a()->remoteIO()->open();
+    bout.remoteIO()->open();
   }
   return i;
 }

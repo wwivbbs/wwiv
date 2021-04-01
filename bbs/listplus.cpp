@@ -224,14 +224,14 @@ static void catch_divide_by_zero(int signum) {
 }
 
 int listfiles_plus(int type) {
-  const auto save_topdata = a()->localIO()->topdata();
+  const auto save_topdata = bout.localIO()->topdata();
   const auto save_dir = a()->current_user_dir_num();
   const long save_status = a()->user()->get_status();
 
   ext_is_on = a()->user()->full_descriptions();
   signal(SIGFPE, catch_divide_by_zero);
 
-  a()->localIO()->topdata(wwiv::local::io::LocalIO::topdata_t::none);
+  bout.localIO()->topdata(wwiv::local::io::LocalIO::topdata_t::none);
   a()->UpdateTopScreen();
   bout.cls();
 
@@ -256,7 +256,7 @@ int listfiles_plus(int type) {
   }
   dliscan();
 
-  a()->localIO()->topdata(save_topdata);
+  bout.localIO()->topdata(save_topdata);
   a()->UpdateTopScreen();
 
   return r;

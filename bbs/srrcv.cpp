@@ -183,18 +183,18 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
   unsigned int bn = 1;
   bool done = false;
   bout << "\r\n-=> Ready to receive, Ctrl+X to abort.\r\n";
-  int nOldXPos = a()->localIO()->WhereX();
-  int nOldYPos = a()->localIO()->WhereY();
-  a()->localIO()->PutsXY(52, 0, "\xB3 Filename :               ");
-  a()->localIO()->PutsXY(52, 1, "\xB3 Xfer Time:               ");
-  a()->localIO()->PutsXY(52, 2, "\xB3 File Size:               ");
-  a()->localIO()->PutsXY(52, 3, "\xB3 Cur Block: 1 - 1k        ");
-  a()->localIO()->PutsXY(52, 4, "\xB3 Consec Errors: 0         ");
-  a()->localIO()->PutsXY(52, 5, "\xB3 Total Errors : 0         ");
-  a()->localIO()->PutsXY(52, 6,
+  int nOldXPos = bout.localIO()->WhereX();
+  int nOldYPos = bout.localIO()->WhereY();
+  bout.localIO()->PutsXY(52, 0, "\xB3 Filename :               ");
+  bout.localIO()->PutsXY(52, 1, "\xB3 Xfer Time:               ");
+  bout.localIO()->PutsXY(52, 2, "\xB3 File Size:               ");
+  bout.localIO()->PutsXY(52, 3, "\xB3 Cur Block: 1 - 1k        ");
+  bout.localIO()->PutsXY(52, 4, "\xB3 Consec Errors: 0         ");
+  bout.localIO()->PutsXY(52, 5, "\xB3 Total Errors : 0         ");
+  bout.localIO()->PutsXY(52, 6,
                          "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4"
                          "\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
-  a()->localIO()->PutsXY(65, 0, stripfn(file_name));
+  bout.localIO()->PutsXY(65, 0, stripfn(file_name));
   int nNumStartTries = 0;
   do {
     if (nNumStartTries++ > 9) {
@@ -212,10 +212,10 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
     auto d1 = steady_clock::now();
     while (steady_clock::now() - d1 < seconds(10) && !bin.bkbhitraw() && !a()->sess().hangup()) {
       a()->CheckForHangup();
-      if (a()->localIO()->KeyPressed()) {
-        ch = a()->localIO()->GetChar();
+      if (bout.localIO()->KeyPressed()) {
+        ch = bout.localIO()->GetChar();
         if (ch == 0) {
-          a()->localIO()->GetChar();
+          bout.localIO()->GetChar();
         } else if (ch == ESC) {
           done = true;
           ok = false;
@@ -227,13 +227,13 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
   int i = 0;
   do {
     bln = 255;
-    a()->localIO()->PutsXY(69, 4, fmt::sprintf("%d  ", nConsecErrors));
-    a()->localIO()->PutsXY(69, 5, std::to_string(nTotalErrors));
-    a()->localIO()->PutsXY(65, 3, fmt::sprintf("%ld - %ldk", pos / 128 + 1, pos / 1024 + 1));
+    bout.localIO()->PutsXY(69, 4, fmt::sprintf("%d  ", nConsecErrors));
+    bout.localIO()->PutsXY(69, 5, std::to_string(nTotalErrors));
+    bout.localIO()->PutsXY(65, 3, fmt::sprintf("%ld - %ldk", pos / 128 + 1, pos / 1024 + 1));
     const auto tpb = time_to_transfer(reallen-pos, a()->modem_speed_);
     const auto t = ctim(tpb);
     if (reallen) {
-      a()->localIO()->PutsXY(65, 1, t);
+      bout.localIO()->PutsXY(65, 1, t);
     }
     i = receive_block(b, &bln, use_crc);
     if (i == 0 || i == 1) {
@@ -246,7 +246,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
         }
         x[i3 - i1] = '\0';
         reallen = to_number<long>(x);
-        a()->localIO()->PutsXY(
+        bout.localIO()->PutsXY(
             65, 2, fmt::sprintf("%ld - %ldk", (reallen + 127) / 128, bytes_to_k(reallen)));
         while ((b[i1] != SPACE) && (i1 < 64)) {
           ++i1;
@@ -328,7 +328,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
       lasteot = false;
     }
   } while (!a()->sess().hangup() && !done);
-  a()->localIO()->GotoXY(nOldXPos, nOldYPos);
+  bout.localIO()->GotoXY(nOldXPos, nOldYPos);
   if (ok) {
     file.Close();
     if (filedatetime) {
@@ -344,9 +344,9 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
 
 bool zmodem_receive(const std::filesystem::path& path) {
 
-  const auto saved_mode = a()->remoteIO()->binary_mode();
-  a()->remoteIO()->set_binary_mode(true);
-  ScopeExit at_exit([=]{a()->remoteIO()->set_binary_mode(saved_mode);});
+  const auto saved_mode = bout.remoteIO()->binary_mode();
+  bout.remoteIO()->set_binary_mode(true);
+  ScopeExit at_exit([=]{bout.remoteIO()->set_binary_mode(saved_mode);});
 
   auto newpath = path;
   const auto local_filename(wwiv::sdk::files::unalign(path.filename().string()));

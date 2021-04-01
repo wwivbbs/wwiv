@@ -206,7 +206,7 @@ void display_message_text(const std::string& text, bool* next) {
       if (bout.ansi_movement_occurred()) {
         bout.clear_ansi_movement_occurred();
         bout.clear_lines_listed();
-        if (a()->localIO()->GetTopLine() && a()->localIO()->GetScreenBottom() == 24) {
+        if (bout.localIO()->GetTopLine() && bout.localIO()->GetScreenBottom() == 24) {
           a()->ClearTopScreenProtection();
         }
       }
@@ -269,7 +269,7 @@ void display_message_text(const std::string& text, bool* next) {
   }
   bout.Color(0);
   bout.nl();
-  if (ansi && a()->localIO()->topdata() != LocalIO::topdata_t::none &&
+  if (ansi && bout.localIO()->topdata() != LocalIO::topdata_t::none &&
       a()->sess().IsUserOnline()) {
     a()->UpdateTopScreen();
   }

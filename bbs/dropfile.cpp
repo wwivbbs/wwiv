@@ -24,6 +24,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
+#include "common/output.h"
 #include "core/textfile.h"
 #include "core/version.h"
 #include "fmt/printf.h"
@@ -93,7 +94,7 @@ static int GetDoor32CommType() {
     return 0;
   }
 #ifdef _WIN32
-  return (a()->remoteIO()->GetHandle() == NULL_HANDLE) ? 1 : 2;
+  return bout.remoteIO()->GetHandle() == NULL_HANDLE ? 1 : 2;
 #else
   return 0;
 #endif
@@ -316,8 +317,8 @@ void CreateCallInfoBbsDropFile() {
 }
 
 static unsigned int GetDoorHandle() {
-  if (a()->remoteIO()) {
-    return a()->remoteIO()->GetDoorHandle();
+  if (bout.remoteIO()) {
+    return bout.remoteIO()->GetDoorHandle();
   }
   return 0;
 }

@@ -20,6 +20,7 @@
 
 #include "bbs/bbs.h"
 #include "common/message_editor_data.h"
+#include "common/output.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -91,7 +92,7 @@ static void WriteWWIVEditorControlFiles(const std::string& title, const std::str
     f.WriteLine(a()->user()->real_name());
     f.WriteLine(a()->user()->sl());
     f.WriteLine(flags);
-    f.WriteLine(a()->localIO()->GetTopLine());
+    f.WriteLine(bout.localIO()->GetTopLine());
     f.WriteLine("0"); // Was user.language
   }
   if (flags & MSGED_FLAG_NO_TAGLINE) {

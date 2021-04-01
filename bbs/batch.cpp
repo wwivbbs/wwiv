@@ -303,7 +303,7 @@ static void bihangup() {
       bout.nl();
       bout << "Thank you for calling.";
       bout.nl();
-      a()->remoteIO()->disconnect();
+      bout.remoteIO()->disconnect();
       a()->Hangup();
       return;
     }
@@ -353,7 +353,7 @@ void zmbatchdl(bool bHangupAfterDl) {
       if (record_number <= 0) {
         a()->batch().delbatch(cur);
       } else {
-        a()->localIO()->Puts(StrCat("Files left - ", a()->batch().size(), ", Time left - ",
+        bout.localIO()->Puts(StrCat("Files left - ", a()->batch().size(), ", Time left - ",
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(record_number);
@@ -421,8 +421,8 @@ char end_ymodem_batch1() {
 
 static void end_ymodem_batch() {
   bool abort = false;
-  int oldx = a()->localIO()->WhereX();
-  int oldy = a()->localIO()->WhereY();
+  int oldx = bout.localIO()->WhereX();
+  int oldy = bout.localIO()->WhereY();
   bool ucrc = false;
   if (!okstart(&ucrc, &abort)) {
     abort = true;
@@ -443,7 +443,7 @@ static void end_ymodem_batch() {
       File::Remove(fn);
     }
   }
-  a()->localIO()->GotoXY(oldx, oldy);
+  bout.localIO()->GotoXY(oldx, oldy);
 }
 
 void ymbatchdl(bool bHangupAfterDl) {
@@ -484,7 +484,7 @@ void ymbatchdl(bool bHangupAfterDl) {
           record_number <= 0) {
         a()->batch().delbatch(cur);
       } else {
-        a()->localIO()->Puts(StrCat("Files left - ", a()->batch().size(), ", Time left - ",
+        bout.localIO()->Puts(StrCat("Files left - ", a()->batch().size(), ", Time left - ",
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(record_number);
@@ -609,7 +609,7 @@ static void run_cmd(const std::string& orig_commandline, const std::string& down
     const auto user_name_number = a()->user()->name_and_number();
     const auto message = fmt::sprintf("%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
                                       user_name_number, a()->modem_speed_, dl, commandLine);
-    a()->localIO()->Puts(message);
+    bout.localIO()->Puts(message);
     if (a()->sess().incom()) {
       File::Remove(a()->dsz_logfile_name_, true);
       ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_PROT_BATCH) | EFLAG_BATCH_DIR);

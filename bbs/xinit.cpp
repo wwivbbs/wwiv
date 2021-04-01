@@ -252,9 +252,9 @@ void Application::ReadINIFile(IniFile& ini) {
   SetCarbonCopyEnabled(ini.value<bool>("ALLOW_CC_BCC"));
 
   // pull out sysop-side colors
-  localIO()->SetTopScreenColor(ini.value<uint8_t>(INI_STR_TOPCOLOR, localIO()->GetTopScreenColor()));
-  localIO()->SetUserEditorColor(ini.value<uint8_t>(INI_STR_F1COLOR, localIO()->GetUserEditorColor()));
-  localIO()->SetEditLineColor(ini.value<uint8_t>(INI_STR_EDITLINECOLOR, localIO()->GetEditLineColor()));
+  bout.localIO()->SetTopScreenColor(ini.value<uint8_t>(INI_STR_TOPCOLOR, bout.localIO()->GetTopScreenColor()));
+  bout.localIO()->SetUserEditorColor(ini.value<uint8_t>(INI_STR_F1COLOR, bout.localIO()->GetUserEditorColor()));
+  bout.localIO()->SetEditLineColor(ini.value<uint8_t>(INI_STR_EDITLINECOLOR, bout.localIO()->GetEditLineColor()));
   chatname_color_ = ini.value<int>(INI_STR_CHATSELCOLOR, GetChatNameSelectionColor());
 
   // pull out sizing options
@@ -610,7 +610,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
   ReadCurrentUser(1);
 
   statusMgr->reload_status();
-  localIO()->topdata(LocalIO::topdata_t::user);
+  bout.localIO()->topdata(LocalIO::topdata_t::user);
 
   // Set DSZLOG
   dsz_logfile_name_ = FilePath(sess().dirs().temp_directory(), "dsz.log").string();

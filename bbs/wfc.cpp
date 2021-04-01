@@ -82,7 +82,7 @@ static constexpr int sysop_usernum = 1;
 void wfc_cls(Application* a) {
   bout.ResetColors();
   a->Cls();
-  a->localIO()->SetCursor(LocalIO::cursorNormal);
+  bout.localIO()->SetCursor(LocalIO::cursorNormal);
   // Every time we clear the WFC, reset the lines listed.
   bout.clear_lines_listed();
 }
@@ -93,16 +93,16 @@ static void wfc_update() {
   // Every time we update the WFC, reset the lines listed.
   bout.clear_lines_listed();
 
-  a()->localIO()->PutsXYA(57, 18, 15, fmt::format("{:<3}", inst_num));
+  bout.localIO()->PutsXYA(57, 18, 15, fmt::format("{:<3}", inst_num));
   if (const auto ir = a()->instances().at(inst_num); ir.online()) {
     const auto unn = a()->names()->UserName(ir.user_number());
-    a()->localIO()->PutsXYA(42, 19, 14, fmt::format("{:<25}", unn));
+    bout.localIO()->PutsXYA(42, 19, 14, fmt::format("{:<25}", unn));
   } else {
-    a()->localIO()->PutsXYA(42, 19, 14, fmt::format("{:<25}", "Nobody"));
+    bout.localIO()->PutsXYA(42, 19, 14, fmt::format("{:<25}", "Nobody"));
   }
 
   auto activity_string = make_inst_str(inst_num, INST_FORMAT_WFC);
-  a()->localIO()->PutsXYA(42, 20, 14, fmt::format("{:<25}", activity_string));
+  bout.localIO()->PutsXYA(42, 20, 14, fmt::format("{:<25}", activity_string));
   if (num_instances() > 1) {
     do {
       ++inst_num;
@@ -125,7 +125,7 @@ void WFC::DrawScreen() {
   auto nNumNewMessages = check_new_mail(sysop_usernum);
   auto status = a()->status_manager()->get_status();
   if (status_ == 0) {
-    a()->localIO()->SetCursor(LocalIO::cursorNone);
+    bout.localIO()->SetCursor(LocalIO::cursorNone);
     a()->Cls();
     if (!screen_buffer) {
       screen_buffer = std::make_unique<char[]>(80 * 25 * sizeof(uint16_t));
@@ -136,50 +136,50 @@ void WFC::DrawScreen() {
       }
       wfcFile.Read(screen_buffer.get(), 80 * 25 * sizeof(uint16_t));
     }
-    a()->localIO()->WriteScreenBuffer(screen_buffer.get());
+    bout.localIO()->WriteScreenBuffer(screen_buffer.get());
     const auto title = fmt::format("Activity and Statistics of {} Node {}",
                                    a()->config()->system_name(), a()->sess().instance_number());
-    a()->localIO()->PutsXYA(1 + (76 - wwiv::strings::ssize(title)) / 2, 4, 15, title);
-    a()->localIO()->PutsXYA(8, 1, 14, fulldate());
-    a()->localIO()->PutsXYA(40, 1, 3, StrCat("OS: ", wwiv::os::os_version_string()));
-    a()->localIO()->PutsXYA(21, 6, 14, std::to_string(status->calls_today()));
+    bout.localIO()->PutsXYA(1 + (76 - wwiv::strings::ssize(title)) / 2, 4, 15, title);
+    bout.localIO()->PutsXYA(8, 1, 14, fulldate());
+    bout.localIO()->PutsXYA(40, 1, 3, StrCat("OS: ", wwiv::os::os_version_string()));
+    bout.localIO()->PutsXYA(21, 6, 14, std::to_string(status->calls_today()));
     auto feedback_waiting = 0;
     if (const auto sysop = a()->users()->readuser(sysop_usernum)) {
       feedback_waiting = sysop->email_waiting();
     }
-    a()->localIO()->PutsXYA(21, 7, 14, std::to_string(feedback_waiting));
+    bout.localIO()->PutsXYA(21, 7, 14, std::to_string(feedback_waiting));
     if (nNumNewMessages) {
-      a()->localIO()->PutsXYA(29, 7, 3, "New:");
-      a()->localIO()->PutsXYA(34, 7, 12, std::to_string(nNumNewMessages));
+      bout.localIO()->PutsXYA(29, 7, 3, "New:");
+      bout.localIO()->PutsXYA(34, 7, 12, std::to_string(nNumNewMessages));
     }
-    a()->localIO()->PutsXYA(21, 8, 14, std::to_string(status->uploads_today()));
-    a()->localIO()->PutsXYA(21, 9, 14, std::to_string(status->msgs_today()));
-    a()->localIO()->PutsXYA(21, 10, 14, std::to_string(status->localposts()));
-    a()->localIO()->PutsXYA(21, 11, 14, std::to_string(status->email_today()));
-    a()->localIO()->PutsXYA(21, 12, 14, std::to_string(status->feedback_today()));
+    bout.localIO()->PutsXYA(21, 8, 14, std::to_string(status->uploads_today()));
+    bout.localIO()->PutsXYA(21, 9, 14, std::to_string(status->msgs_today()));
+    bout.localIO()->PutsXYA(21, 10, 14, std::to_string(status->localposts()));
+    bout.localIO()->PutsXYA(21, 11, 14, std::to_string(status->email_today()));
+    bout.localIO()->PutsXYA(21, 12, 14, std::to_string(status->feedback_today()));
     const auto percent = static_cast<double>(status->active_today_minutes()) / 1440.0;
-    a()->localIO()->PutsXYA(
+    bout.localIO()->PutsXYA(
         21, 13, 14,
         fmt::format("{} Mins ({:.2}%)", status->active_today_minutes(), 100.0 * percent));
-    a()->localIO()->PutsXYA(58, 6, 14, full_version());
+    bout.localIO()->PutsXYA(58, 6, 14, full_version());
 
-    a()->localIO()->PutsXYA(58, 7, 14, std::to_string(status->status_net_version()));
-    a()->localIO()->PutsXYA(58, 8, 14, std::to_string(status->num_users()));
-    a()->localIO()->PutsXYA(58, 9, 14, std::to_string(status->caller_num()));
+    bout.localIO()->PutsXYA(58, 7, 14, std::to_string(status->status_net_version()));
+    bout.localIO()->PutsXYA(58, 8, 14, std::to_string(status->num_users()));
+    bout.localIO()->PutsXYA(58, 9, 14, std::to_string(status->caller_num()));
     const auto percent_active =
         status->days_active() == 0
             ? "N/A"
             : fmt::sprintf("%.2f", static_cast<float>(status->caller_num()) /
                                        static_cast<float>(status->days_active()));
-    a()->localIO()->PutsXYA(58, 10, 14, percent_active);
-    a()->localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
+    bout.localIO()->PutsXYA(58, 10, 14, percent_active);
+    bout.localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
 
     auto ir = a()->instances().at(a()->sess().instance_number());
     if (ir.user_number() < a()->config()->max_users() && ir.user_number() > 0) {
       const auto unn = a()->names()->UserName(ir.user_number());
-      a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", unn));
+      bout.localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", unn));
     } else {
-      a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", "Nobody"));
+      bout.localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", "Nobody"));
     }
 
     status_ = 1;
@@ -189,8 +189,8 @@ void WFC::DrawScreen() {
     auto screen_saver_time = seconds(a()->screen_saver_time);
     if (a()->screen_saver_time == 0 || steady_clock::now() - wfc_time < screen_saver_time) {
       auto t = times();
-      a()->localIO()->PutsXYA(28, 1, 14, t);
-      a()->localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
+      bout.localIO()->PutsXYA(28, 1, 14, t);
+      bout.localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
       if (steady_clock::now() - poll_time > seconds(10)) {
         wfc_update();
         poll_time = steady_clock::now();
@@ -199,7 +199,7 @@ void WFC::DrawScreen() {
       if ((steady_clock::now() - poll_time > seconds(10)) || status_ == 1) {
         status_ = 2;
         a_->Cls();
-        a()->localIO()->PutsXYA(random_number(38), random_number(24), random_number(14) + 1,
+        bout.localIO()->PutsXYA(random_number(38), random_number(24), random_number(14) + 1,
                                 "WWIV Screen Saver - Press Any Key For WWIV");
         wfc_time = steady_clock::now() - seconds(a()->screen_saver_time) - seconds(1);
         poll_time = steady_clock::now();
@@ -209,12 +209,12 @@ void WFC::DrawScreen() {
 }
 
 WFC::WFC(Application* a) : a_(a) {
-  a_->localIO()->SetCursor(LocalIO::cursorNormal);
+  bout.localIO()->SetCursor(LocalIO::cursorNormal);
   status_ = 0;
   inst_num = 1;
   Clear();
 
-  a_->remoteIO()->remote_info().clear();
+  bout.remoteIO()->remote_info().clear();
   a_->frequent_init();
   a_->sess().user_num(0);
   // Since hang_it_up sets hangup_ = true, let's ensure we're always
@@ -237,7 +237,7 @@ WFC::WFC(Application* a) : a_(a) {
     a_->user()->screen_width(80);
     a_->user()->screen_lines(25);
   }
-  a_->sess().num_screen_lines(a_->localIO()->GetDefaultScreenBottom() + 1);
+  a_->sess().num_screen_lines(bout.localIO()->GetDefaultScreenBottom() + 1);
 }
 
 WFC::~WFC() {
@@ -246,7 +246,7 @@ WFC::~WFC() {
 };
 
 std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
-  auto* io = a_->localIO();
+  auto* io = bout.localIO();
 
   auto last_date_status = a()->status_manager()->get_status();
   for (;;) {
@@ -510,31 +510,31 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
 }
 
 std::tuple<local_logon_t, int> WFC::LocalLogon() {
-  a_->localIO()->GotoXY(2, 23);
+  bout.localIO()->GotoXY(2, 23);
   bout << "|#9Log on to the BBS?";
   auto d = steady_clock::now();
   // TODO(rushfan): use wwiv::os::wait_for
-  while (!a_->localIO()->KeyPressed() && (steady_clock::now() - d < minutes(1))) {
+  while (!bout.localIO()->KeyPressed() && (steady_clock::now() - d < minutes(1))) {
     sleep_for(10ms);
   }
 
-  if (!a_->localIO()->KeyPressed()) {
+  if (!bout.localIO()->KeyPressed()) {
     a_->Cls();
     return std::make_tuple(local_logon_t::exit, -1);
   }
 
   auto unx = -1;
-  const auto ch = to_upper_case<char>(a_->localIO()->GetChar());
+  const auto ch = to_upper_case<char>(bout.localIO()->GetChar());
   switch (ch) {
   case 'Y': {
-    a_->localIO()->Puts(YesNoString(true));
+    bout.localIO()->Puts(YesNoString(true));
     bout << wwiv::endl;
     return std::make_tuple(local_logon_t::prompt, -1);
   }
   case 0:
   case 224: {
     // The ch == 224 is a Win32'ism
-    a_->localIO()->GetChar();
+    bout.localIO()->GetChar();
     return std::make_tuple(local_logon_t::exit, -1);
   }
   case 'F': // 'F' for Fast
@@ -573,7 +573,7 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
   read_qscn(a_->sess().user_num(), a()->sess().qsc, false);
   a_->set_at_wfc(saved_at_wfc);
   bout.bputch(ch);
-  a_->localIO()->Puts("\r\n\r\n\r\n\r\n\r\n\r\n");
+  bout.localIO()->Puts("\r\n\r\n\r\n\r\n\r\n\r\n");
   a_->reset_effective_sl();
   changedsl();
   return std::make_tuple(local_logon_t::fast, unx);

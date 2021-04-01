@@ -179,7 +179,7 @@ void sortdir(int directory_num, int type) {
 
 void sort_all(int type) {
   tmp_disable_conf(true);
-  for (auto i = 0; i < wwiv::stl::size_int(a()->udir) && !a()->localIO()->KeyPressed(); i++) {
+  for (auto i = 0; i < wwiv::stl::size_int(a()->udir) && !bout.localIO()->KeyPressed(); i++) {
     bout << "\r\n|#1Sorting " << a()->dirs()[a()->udir[i].subnum].name << wwiv::endl;
     sortdir(i, type);
   }

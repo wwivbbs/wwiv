@@ -147,8 +147,7 @@ public:
   void handle_sysop_key(uint8_t key);
   void tleft(bool check_for_timeout);
   void DisplaySysopWorkingIndicator(bool displayWait);
-  [[nodiscard]] wwiv::common::RemoteIO* remoteIO() const { return comm_.get(); }
-  [[nodiscard]] wwiv::local::io::LocalIO* localIO() const;
+  //[[nodiscard]] wwiv::local::io::LocalIO* localIO() const;
   bool reset_local_io(wwiv::local::io::LocalIO* wlocal_io);
   [[nodiscard]] const std::string& GetAttachmentDirectory() const { return attach_dir_; }
   [[nodiscard]] const std::filesystem::path& netfoss_dir() const { return netfoss_dir_; }

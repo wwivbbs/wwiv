@@ -3,6 +3,7 @@
 ***
 
 # TODO Cleanups
+* Use bout.remoteIO vs. a()->remoteIO, since that's a better place
 * make a SideMenu class so we don't need statics in side_menu method.
 * redo readmail(...) It's a friggin mess.
 * make nightly event or fix check for mail forwarded to a deleted user, and then fix that.

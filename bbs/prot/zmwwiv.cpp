@@ -49,12 +49,12 @@ int doIO(ZModem* info);
 
 static void ZModemWindowStatusImpl(fmt::string_view format, fmt::format_args args) {
   const auto s = fmt::vformat(format, args);
-  const auto oldX = a()->localIO()->WhereX();
-  const auto oldY = a()->localIO()->WhereY();
-  a()->localIO()->PutsXYA(0, 2, 12, s);
-  a()->localIO()->ClrEol();
-  a()->localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
-  a()->localIO()->GotoXY(oldX, oldY);
+  const auto oldX = bout.localIO()->WhereX();
+  const auto oldY = bout.localIO()->WhereY();
+  bout.localIO()->PutsXYA(0, 2, 12, s);
+  bout.localIO()->ClrEol();
+  bout.localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
+  bout.localIO()->GotoXY(oldX, oldY);
 
   zmodemlog("ZModemWindowStatus: [{}]\r\n", s);
 }
@@ -69,13 +69,13 @@ static void ZModemWindowStatus(const S& format, Args&&... args) {
  */
 static void ZModemWindowXferStatusImpl(fmt::string_view format, fmt::format_args args) {
   const auto s = fmt::vformat(format, args);
-  const auto oldX = a()->localIO()->WhereX();
-  const auto oldY = a()->localIO()->WhereY();
-  a()->localIO()->PutsXYA(0, 0, 3, "ZModem Transfer Status: ");
-  a()->localIO()->PutsXYA(0, 1, 14, s);
-  a()->localIO()->ClrEol();
-  a()->localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
-  a()->localIO()->GotoXY(oldX, oldY);
+  const auto oldX = bout.localIO()->WhereX();
+  const auto oldY = bout.localIO()->WhereY();
+  bout.localIO()->PutsXYA(0, 0, 3, "ZModem Transfer Status: ");
+  bout.localIO()->PutsXYA(0, 1, 14, s);
+  bout.localIO()->ClrEol();
+  bout.localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
+  bout.localIO()->GotoXY(oldX, oldY);
 }
 
 template <typename S, typename... Args>
@@ -84,13 +84,13 @@ static void ZModemWindowXferStatus(const S& format, Args&&... args) {
 }
 
 static void ProcessLocalKeyDuringZmodem() {
-  if (!a()->localIO()->KeyPressed()) {
+  if (!bout.localIO()->KeyPressed()) {
     return;
   }
-  const auto c = a()->localIO()->GetChar();
+  const auto c = bout.localIO()->GetChar();
   bin.SetLastKeyLocal(true);
   if (!c) {
-    a()->handle_sysop_key(a()->localIO()->GetChar());
+    a()->handle_sysop_key(bout.localIO()->GetChar());
   }
 }
 
@@ -204,7 +204,7 @@ int doIO(ZModem* info) {
     }
     // Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
     // performance < 1k/second vs. 8-9k/second locally
-    while (info->timeout > 0 && !a()->remoteIO()->incoming() && !a()->sess().hangup()) {
+    while (info->timeout > 0 && !bout.remoteIO()->incoming() && !a()->sess().hangup()) {
       sleep_for(milliseconds(100));
       const auto tNow = time(nullptr);
       if ((tNow - tThen) > info->timeout) {
@@ -219,7 +219,7 @@ int doIO(ZModem* info) {
     if (a()->sess().hangup()) {
       return ZmErrCancel;
     }
-    if (!a()->remoteIO()->connected()) {
+    if (!bout.remoteIO()->connected()) {
       LOG(INFO) << "Lost connection during ZModem transfer.";
       return ZmErrCancel;
     }
@@ -232,11 +232,11 @@ int doIO(ZModem* info) {
       //%%TODO: signal parent we aborted.
       return 1;
     }
-    if (const auto incomming = a()->remoteIO()->incoming(); !incomming) {
+    if (const auto incomming = bout.remoteIO()->incoming(); !incomming) {
       done = ZmodemTimeout(info);
       // zmodemlog("ZmodemTimeout State [{}] [done:{}]\n", sname(info), done);
     } else {
-      const int len = a()->remoteIO()->read(reinterpret_cast<char*>(buffer), ZMODEM_RECEIVE_BUFFER_SIZE);
+      const int len = bout.remoteIO()->read(reinterpret_cast<char*>(buffer), ZMODEM_RECEIVE_BUFFER_SIZE);
       zmodemlog("ZmodemRcv Before [{}:{}] [{} chars] [done: {}]\n", sname(info), info->state, len, done);
       done = ZmodemRcv(buffer, len, info);
       //zmodemlog("ZmodemRcv After [{}] [{} chars] [done: {}]\n", sname(info), len, done);
@@ -247,13 +247,13 @@ int doIO(ZModem* info) {
 }
 
 int ZXmitStr(const u_char* str, int len, ZModem* info) {
-  a()->remoteIO()->write(reinterpret_cast<const char*>(str), len);
+  bout.remoteIO()->write(reinterpret_cast<const char*>(str), len);
   return 0;
 }
 
 void ZIFlush(ZModem* info) {
   zmodemlog("ZIFlush\n");
-  a()->remoteIO()->purgeIn();
+  bout.remoteIO()->purgeIn();
   //sleep_for(milliseconds(100));
   // puts( "ZIFlush" );
   // if( connectionType == ConnectionSerial )

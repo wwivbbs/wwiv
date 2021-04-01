@@ -455,26 +455,26 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
     }
   }
   auto s1 = humanize(ncn->bytes_waiting());
-  a()->localIO()->PutsXYA(58, 17, color, s1);
+  bout.localIO()->PutsXYA(58, 17, color, s1);
 
   s1 = humanize(ncn->bytes_received());
-  a()->localIO()->PutsXYA(23, 17, color, s1);
+  bout.localIO()->PutsXYA(23, 17, color, s1);
 
   s1 = humanize(ncn->bytes_sent());
-  a()->localIO()->PutsXYA(23, 18, color, s1);
+  bout.localIO()->PutsXYA(23, 18, color, s1);
 
   s1 = to_difftime_string(now, ncn->firstcontact());
-  a()->localIO()->PutsXYA(23, 16, color, s1);
+  bout.localIO()->PutsXYA(23, 16, color, s1);
 
   s1 = to_difftime_string(now, ncn->lastcontactsent());
-  a()->localIO()->PutsXYA(58, 16, color, s1);
+  bout.localIO()->PutsXYA(58, 16, color, s1);
 
   s1 = to_difftime_string(now, ncn->lasttry());
-  a()->localIO()->PutsXYA(58, 15, color, s1);
+  bout.localIO()->PutsXYA(58, 15, color, s1);
 
   const auto ncns = fmt::format("{:<16}", ncn->numcontacts());
-  a()->localIO()->PutsXYA(23, 15, color,  ncns);
-  a()->localIO()->PutsXYA(41, 3, color, fmt::format("{:<30}", csne->name, 30));
+  bout.localIO()->PutsXYA(23, 15, color,  ncns);
+  bout.localIO()->PutsXYA(41, 3, color, fmt::format("{:<30}", csne->name, 30));
   auto* binkp_node = binkp.binkp_session_config_for(csne->sysnum);
   std::string hostname = csne->phone;
   auto speed = StrCat(std::to_string(csne->speed), " BPS");
@@ -483,9 +483,9 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
     hostname = StrCat(binkp_node->host, ":", binkp_node->port);
     speed = "BinkP";
   }
-  a()->localIO()->PutsXYA(23, 19, color, fmt::format("{:<30}", hostname));
-  a()->localIO()->PutsXYA(58, 18, color, fmt::format("{:<10}", speed));
-  a()->localIO()->PutsXYA(14, 3, color, fmt::format("{:<16}", a()->network_name()));
+  bout.localIO()->PutsXYA(23, 19, color, fmt::format("{:<30}", hostname));
+  bout.localIO()->PutsXYA(58, 18, color, fmt::format("{:<10}", speed));
+  bout.localIO()->PutsXYA(14, 3, color, fmt::format("{:<16}", a()->network_name()));
 }
 
 static void fill_call(int color, int row, const std::vector<CalloutEntry>& entries) {
@@ -503,7 +503,7 @@ static void fill_call(int color, int row, const std::vector<CalloutEntry>& entri
       strcpy(s1, "     ");
     }
     bout.curatr(color);
-    a()->localIO()->PutsXY(6 + x, 5 + y, s1);
+    bout.localIO()->PutsXY(6 + x, 5 + y, s1);
     x += 7;
   }
 }
@@ -513,7 +513,7 @@ static std::pair<int, int> ansicallout() {
   static int color1, color2, color3, color4;
   static auto got_info = false;
   auto rownum = 0;
-  a()->localIO()->SetCursor(LocalIO::cursorNone);
+  bout.localIO()->SetCursor(LocalIO::cursorNone);
   if (!got_info) {
     got_info = true;
     color1 = 9;
@@ -536,7 +536,7 @@ static std::pair<int, int> ansicallout() {
     bout.nl();
     bout << "|#2Which system: ";
     auto sn = bin.input_number<uint16_t>(0, 0, 32767);
-    a()->localIO()->SetCursor(LocalIO::cursorNormal);
+    bout.localIO()->SetCursor(LocalIO::cursorNormal);
     return std::make_pair(sn, -1);
   }
   int pos = 0, sn = 0, snn = 0;
@@ -568,31 +568,31 @@ static std::pair<int, int> ansicallout() {
 
   a()->Cls();
   bout.curatr(color1);
-  a()->localIO()->MakeLocalWindow(3, 2, 73, 10);
+  bout.localIO()->MakeLocalWindow(3, 2, 73, 10);
   const auto header = StrCat("\xC3", std::string(71, '\xC4'), "\xB4");
-  a()->localIO()->PutsXYA(3, 4, color1, header);
-  a()->localIO()->MakeLocalWindow(3, 14, 73, 7);
-  a()->localIO()->PutsXYA(5, 3, color3, "Network:");
-  a()->localIO()->PutsXYA(31, 3, color3, "BBS Name:");
-  a()->localIO()->PutsXYA(5, 15, color3, "# Connections   :");
-  a()->localIO()->PutsXYA(5, 16, color3, "First Contact   :");
-  a()->localIO()->PutsXYA(5, 17, color3, "KB Received     :");
-  a()->localIO()->PutsXYA(5, 18, color3, "KB Sent         :");
-  a()->localIO()->PutsXYA(5, 19, color3, "Address         :");
-  a()->localIO()->PutsXYA(40, 15, color3, "Last Attempt    :");
-  a()->localIO()->PutsXYA(40, 16, color3, "Last Contact    :");
-  a()->localIO()->PutsXYA(40, 17, color3, "KB Waiting      :");
-  a()->localIO()->PutsXYA(40, 18, color3, "Max Speed       :");
+  bout.localIO()->PutsXYA(3, 4, color1, header);
+  bout.localIO()->MakeLocalWindow(3, 14, 73, 7);
+  bout.localIO()->PutsXYA(5, 3, color3, "Network:");
+  bout.localIO()->PutsXYA(31, 3, color3, "BBS Name:");
+  bout.localIO()->PutsXYA(5, 15, color3, "# Connections   :");
+  bout.localIO()->PutsXYA(5, 16, color3, "First Contact   :");
+  bout.localIO()->PutsXYA(5, 17, color3, "KB Received     :");
+  bout.localIO()->PutsXYA(5, 18, color3, "KB Sent         :");
+  bout.localIO()->PutsXYA(5, 19, color3, "Address         :");
+  bout.localIO()->PutsXYA(40, 15, color3, "Last Attempt    :");
+  bout.localIO()->PutsXYA(40, 16, color3, "Last Contact    :");
+  bout.localIO()->PutsXYA(40, 17, color3, "KB Waiting      :");
+  bout.localIO()->PutsXYA(40, 18, color3, "Max Speed       :");
 
   fill_call(color4, rownum, entries);
   int x = 0;
   int y = 0;
-  a()->localIO()->PutsXYA(6, 5, color2, fmt::sprintf("%-5u", entries[pos].node));
+  bout.localIO()->PutsXYA(6, 5, color2, fmt::sprintf("%-5u", entries[pos].node));
   print_call(entries[pos].node, a()->nets()[entries[pos].net]);
 
   auto done = false;
   do {
-    char ch = to_upper_case_char(a()->localIO()->GetChar());
+    char ch = to_upper_case_char(bout.localIO()->GetChar());
     switch (ch) {
     case ' ':
     case RETURN:
@@ -610,44 +610,44 @@ static std::pair<int, int> ansicallout() {
       // Ignore warning of duplicate case
     case 224: // (224) I don't know MS's CRT returns this on arrow keys....
     case 0:
-      ch = to_upper_case_char(a()->localIO()->GetChar());
+      ch = to_upper_case_char(bout.localIO()->GetChar());
       switch (ch) {
       case RARROW: // right arrow
         if (pos < ssize(entries) - 1 && x < 63) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos++;
           x += 7;
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->nets()[entries[pos].net]);
         }
         break;
       case LARROW: // left arrow
         if (x > 0) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos--;
           x -= 7;
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->nets()[entries[pos].net]);
         }
         break;
       case UPARROW: // up arrow
         if (y > 0) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos -= 10;
           y--;
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->nets()[entries[pos].net]);
         } else if (rownum > 0) {
           pos -= 10;
           rownum--;
           fill_call(color4, rownum, entries);
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->nets()[entries[pos].net]);
         }
         break;
       case DNARROW: // down arrow
         if (y < 5 && pos + 10 < ssize(entries)) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos += 10;
           y++;
         } else if ((rownum + 6) * 10 < ssize(entries)) {
@@ -659,7 +659,7 @@ static std::pair<int, int> ansicallout() {
             --y;
           }
         }
-        a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
+        bout.localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
         print_call(entries[pos].node, a()->nets()[entries[pos].net]);
         break;
       case HOME: // home
@@ -669,15 +669,15 @@ static std::pair<int, int> ansicallout() {
           pos = 0;
           rownum = 0;
           fill_call(color4, rownum, entries);
-          a()->localIO()->PutsXYA(6, 5, color2, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6, 5, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->nets()[entries[pos].net]);
         } break;
       case PAGEUP: // page up
         if (y > 0) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos -= 10 * y;
           y = 0;
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->nets()[entries[pos].net]);
         } else {
           if (rownum > 5) {
@@ -688,20 +688,20 @@ static std::pair<int, int> ansicallout() {
             rownum = 0;
           }
           fill_call(color4, rownum, entries);
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->nets()[entries[pos].net]);
         }
         break;
       case PAGEDN: // page down
         if (y < 5) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos += 10 * (5 - y);
           y = 5;
           while (pos >= ssize(entries)) {
             pos -= 10;
             --y;
           }
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->nets()[entries[pos].net]);
         } else if ((rownum + 6) * 10 < ssize(entries)) {
           for (int i1 = 0; i1 < 6; i1++) {
@@ -715,7 +715,7 @@ static std::pair<int, int> ansicallout() {
             pos -= 10;
             --y;
           }
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
+          bout.localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->nets()[entries[pos].net]);
         }
         break;
@@ -725,7 +725,7 @@ static std::pair<int, int> ansicallout() {
 
   bout.curatr(color3);
   a()->Cls();
-  a()->localIO()->SetCursor(LocalIO::cursorNormal);
+  bout.localIO()->SetCursor(LocalIO::cursorNormal);
   return std::make_pair(sn, snn);
 }
 
