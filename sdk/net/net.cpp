@@ -20,6 +20,7 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include <string>
 
 using namespace wwiv::core;
@@ -42,5 +43,20 @@ bool Network::try_load_nodelist() {
   return nodelist->initialized();
 }
 
+std::string to_string(const Network& n) {
+  switch (n.type) {
+  case network_type_t::ftn:
+    return fmt::format("|#9(|#2{}|#9@|#1{}|#9) ", n.fido.fido_address, n.name);
+  case network_type_t::internet:
+    return fmt::format("|#9(|#2{}|#9@|#1Internet|#9) ", n.name);
+  case network_type_t::news:
+    return fmt::format("|#9(|#2{}|#9@|#1News|#9) ", n.name);
+  case network_type_t::wwivnet:
+    return fmt::format("|#9(|#2@{}|#9.|#1{}|#9) ", n.sysnum, n.name);
+  case network_type_t::unknown:
+    return "|#9(|#6unknown|#9) ";
+  }
+  return fmt::format("|#9(|#2@{}|#9.|#1{}|#9) ", n.sysnum, n.name);
+}
 
 } // namespace wwiv::sdk

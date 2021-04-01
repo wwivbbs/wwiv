@@ -339,6 +339,11 @@ const NodelistEntry* Nodelist::entry(uint16_t zone, uint16_t net, uint16_t node)
   return &entries_.at(a);
 }
 
+bool Nodelist::has_zone(int zone) const noexcept {
+  return std::any_of(std::begin(entries_), std::end(entries_), 
+    [zone](const FidoAddress& address) { return address.zone() == zone; });
+}
+
 static int year_of(time_t t) {
   const auto dt = DateTime::from_time_t(t);
   return dt.year();

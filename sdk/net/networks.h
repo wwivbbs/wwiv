@@ -77,8 +77,6 @@ private:
   std::vector<net::Network> networks_;
 };
 
-std::string to_string(const net::Network& n);
-bool try_load_nodelist(net::Network& net);
 
 }
 

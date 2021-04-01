@@ -18,7 +18,6 @@
 #ifndef INCLUDED_SDK_FIDO_NODELIST_H
 #define INCLUDED_SDK_FIDO_NODELIST_H
 
-#include "core/stl.h"
 #include "sdk/fido/fido_address.h"
 #include <cstdint>
 #include <filesystem>
@@ -43,10 +42,10 @@ enum class NodelistKeyword {
 /**
  * Represents one data line in the nodelist.
  */
-class NodelistEntry {
+class NodelistEntry final {
 public:
-  NodelistEntry() {}
-  virtual ~NodelistEntry() {}
+  NodelistEntry() = default;
+  ~NodelistEntry() = default;
 
   static bool ParseDataLine(const std::string& data_line, NodelistEntry& e);
 
@@ -121,6 +120,7 @@ public:
   [[nodiscard]] std::vector<uint16_t> nets(uint16_t zone) const;
   [[nodiscard]] std::vector<uint16_t> nodes(uint16_t zone, uint16_t net) const;
   [[nodiscard]] const NodelistEntry* entry(uint16_t zone, uint16_t net, uint16_t node);
+  [[nodiscard]] bool has_zone(int zone) const noexcept;
 
   static std::string FindLatestNodelist(const std::filesystem::path& dir, const std::string& base);
 

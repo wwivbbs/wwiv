@@ -566,7 +566,7 @@ bool print_wwivnet_net_listing(const Network& net) {
 }
 
 static bool print_ftn_net_listing(Network& net) {
-  if (!try_load_nodelist(net)) {
+  if (!net.try_load_nodelist()) {
     return false;
   }
 
@@ -704,7 +704,7 @@ void query_print_net_listing(bool force_pause) {
         return;
       }
     } else if (net.type == network_type_t::ftn) {
-      if (!try_load_nodelist(net)) {
+      if (!net.try_load_nodelist()) {
         continue;
       }
       if (print_ftn_net_listing(net)) {

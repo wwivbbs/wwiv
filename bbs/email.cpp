@@ -464,7 +464,7 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
           bout << "Bad FTN Address: " << destination;
           return;
         }
-        if (auto & net = a()->mutable_current_net(); try_load_nodelist(net)) {
+        if (auto & net = a()->mutable_current_net(); net.try_load_nodelist()) {
           if (auto & nl = *net.nodelist; nl.contains(addr)) {
             const auto& e = nl.entry(addr);
             destination_bbs_name = e.name_;

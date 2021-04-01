@@ -83,7 +83,7 @@ static void UpdateMessageOriginInfo(int system_number, int user_number, Type2Mes
 
   if (net.type == network_type_t::ftn) {
     // TODO(rushfan): here's where we should try to get it from the bbslist.
-    if (try_load_nodelist(net)) {
+    if (net.try_load_nodelist()) {
       auto& nl = *net.nodelist;
       auto addr =
           system_number == 0

@@ -300,6 +300,9 @@ public:
   int network_number_{-1};
 };
 
+std::string to_string(const net::Network& n);
+
+
 }
 
 #endif
