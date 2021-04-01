@@ -64,19 +64,17 @@ Host,123,Elons_BBS,Mars_Station,Sysop_Name123,-Unpublished-,300,CM,MO,INA:elonsb
 )";
 
 TEST(NodelistTest, Basic) {
-  NodelistEntry e{};
-  const auto ok = NodelistEntry::ParseDataLine(
-      ",1,system_name,location,sysop_name,phone_number,baud_rate,CM,INA:host:port", e);
-  ASSERT_TRUE(ok);
-  EXPECT_EQ(e.name_, "system name");
+  const auto e = NodelistEntry::ParseDataLine(
+      ",1,system_name,location,sysop_name,phone_number,baud_rate,CM,INA:host:port");
+  ASSERT_TRUE(e);
+  EXPECT_EQ(e->name(), "system name");
 }
 
 TEST(NodelistTest, Zone) {
-  NodelistEntry e{};
-  const auto ok = NodelistEntry::ParseDataLine(
-      "Zone,1,system_name,location,sysop_name,phone_number,baud_rate,CM,INA:host:port", e);
-  ASSERT_TRUE(ok);
-  EXPECT_EQ(e.keyword_, NodelistKeyword::zone);
+  const auto e = NodelistEntry::ParseDataLine(
+      "Zone,1,system_name,location,sysop_name,phone_number,baud_rate,CM,INA:host:port");
+  ASSERT_TRUE(e);
+  EXPECT_EQ(e->keyword(), NodelistKeyword::zone);
 }
 
 TEST(NodelistTest, Smoke) {
@@ -87,14 +85,14 @@ TEST(NodelistTest, Smoke) {
 
   const auto n1_261_1 = nl.entry(1, 261, 1);
   ASSERT_TRUE(n1_261_1 != nullptr);
-  EXPECT_EQ("Weather Station Hub", n1_261_1->name_);
-  EXPECT_EQ("Sysop Name261 1", n1_261_1->sysop_name_);
-  EXPECT_EQ("Bel Air MD", n1_261_1->location_);
-  EXPECT_TRUE(n1_261_1->binkp_);
-  EXPECT_EQ("bbs.weather-station.org", n1_261_1->hostname_);
-  EXPECT_EQ("bbs.weather-station.org", n1_261_1->binkp_hostname_);
-  EXPECT_EQ(24555, n1_261_1->binkp_port_);
-  EXPECT_FALSE(n1_261_1->vmodem_);
+  EXPECT_EQ("Weather Station Hub", n1_261_1->name());
+  EXPECT_EQ("Sysop Name261 1", n1_261_1->sysop_name());
+  EXPECT_EQ("Bel Air MD", n1_261_1->location());
+  EXPECT_TRUE(n1_261_1->binkp());
+  EXPECT_EQ("bbs.weather-station.org", n1_261_1->hostname());
+  EXPECT_EQ("bbs.weather-station.org", n1_261_1->binkp_hostname());
+  EXPECT_EQ(24555u, n1_261_1->binkp_port());
+  EXPECT_FALSE(n1_261_1->vmodem());
 }
 
 TEST(NodelistTest, ZoneNet) {
@@ -103,7 +101,7 @@ TEST(NodelistTest, ZoneNet) {
   ASSERT_TRUE(nl);
 
   auto n261 = nl.entries(1, 261);
-  EXPECT_EQ(FidoAddress("1:261/1"), n261.front().address_);
+  EXPECT_EQ(FidoAddress("1:261/1"), n261.front().address());
 }
 
 TEST(NodelistTest, Zones) {

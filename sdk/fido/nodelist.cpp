@@ -100,16 +100,17 @@ static std::string ToSpaces(const std::string& orig) {
 }
 
 //static 
-bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e) {
+std::optional<NodelistEntry> NodelistEntry::ParseDataLine(const std::string& data_line) {
   if (data_line.front() == ';') {
-    return false;
+    return std::nullopt;
   }
 
   auto parts = SplitString(data_line, ",");
   if (parts.size() < 6) {
-    return false;
+    return std::nullopt;
   }
 
+  NodelistEntry e{};
   auto it = parts.cbegin();
   if (data_line.front() == ',') {
     // We have no 1st field, default the keyword and skip the iterator.
@@ -143,18 +144,18 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
   }
   if (e.binkp_) {
     if (e.binkp_port_ == 0) e.binkp_port_ = 24554;
-    if (e.binkp_hostname_.empty()) e.binkp_hostname_ = e.hostname_;
+    if (e.binkp_hostname_.empty()) e.binkp_hostname_ = e.hostname();
   }
   if (e.telnet_) {
     if (e.telnet_port_ == 0) e.telnet_port_ = 24554;
-    if (e.telnet_hostname_.empty()) e.telnet_hostname_ = e.hostname_;
+    if (e.telnet_hostname_.empty()) e.telnet_hostname_ = e.hostname();
   }
   if (e.vmodem_) {
     if (e.vmodem_port_ == 0) e.vmodem_port_ = 24554;
-    if (e.vmodem_hostname_.empty()) e.vmodem_hostname_ = e.hostname_;
+    if (e.vmodem_hostname_.empty()) e.vmodem_hostname_ = e.hostname();
   }
 
-  return true;
+  return {e};
 }
 
 Nodelist::Nodelist(const std::filesystem::path& path, std::string domain) 
@@ -169,50 +170,48 @@ bool Nodelist::HandleLine(const std::string& line, uint16_t& zone, uint16_t& reg
     // TODO(rushfan): Do we care to do anything with this?
     return true;
   }
-  NodelistEntry e{};
-  if (!NodelistEntry::ParseDataLine(line, e)) {
-    return false;
-  }
-  switch (e.keyword_) {
-  case NodelistKeyword::down:
-    // let's skip these for now
-  break;
-  case NodelistKeyword::host:
-  {
-    net = e.number_;
-  } break;
-  case NodelistKeyword::hub:
-  {
-    hub = e.number_;
-  } break;
-  // Let's include pvt nodes since you can still route
-  // to them.
-  case NodelistKeyword::pvt:
-  case NodelistKeyword::node:
-  {
-    FidoAddress address(zone, net, e.number_, 0, domain_);
-    e.address_ = address;
-    if (zone != 0 && net != 0) {
-      // skip malformed entries.
-      entries_.emplace(address, e);
+  if (auto e = NodelistEntry::ParseDataLine(line)) {
+    switch (e->keyword()) {
+    case NodelistKeyword::down:
+      // let's skip these for now
+    break;
+    case NodelistKeyword::host:
+    {
+      net = e->number();
+    } break;
+    case NodelistKeyword::hub:
+    {
+      hub = e->number();
+    } break;
+    // Let's include pvt nodes since you can still route
+    // to them.
+    case NodelistKeyword::pvt:
+    case NodelistKeyword::node:
+    {
+      FidoAddress address(zone, net, e->number(), 0, domain_);
+      e->address(address);
+      if (zone != 0 && net != 0) {
+        // skip malformed entries.
+        entries_.emplace(address, e.value());
+      }
+    } break;
+    case NodelistKeyword::region:
+    {
+      region = e->number();
+      // also use region for the net since we're addressable
+      // as zone:region/node
+      net = e->number();
+      hub = 0;
+    } break;
+    case NodelistKeyword::zone:
+    {
+      zone = e->number();
+      region = hub = net = 0;
+    } break;
     }
-  } break;
-  case NodelistKeyword::region:
-  {
-    region = e.number_;
-    // also use region for the net since we're addressable
-    // as zone:region/node.
-    net = e.number_;
-    hub = 0;
-  } break;
-  case NodelistKeyword::zone:
-  {
-    zone = e.number_;
-    region = hub = net = 0;
-  } break;
+    return true;
   }
-
-  return true;
+  return false;
 }
 
 bool Nodelist::Load(const std::filesystem::path& path) {
@@ -220,20 +219,15 @@ bool Nodelist::Load(const std::filesystem::path& path) {
   if (!f) {
     return false;
   }
-  std::string line;
-  // ReSharper disable once CppTooWideScope
-  uint16_t zone = 0, region = 0, net = 0, hub = 0;
-  while (f.ReadLine(&line)) {
-    StringTrim(&line);
-    HandleLine(line, zone, region, net, hub);
-  }
-  return true;
+  const auto lines = f.ReadFileIntoVector();
+  return Load(lines);
 }
 
 bool Nodelist::Load(const std::vector<std::string>& lines) {
   if (lines.empty()) return false;
-  // ReSharper disable once CppTooWideScope
+  // ReSharper disable CppTooWideScope
   uint16_t zone = 0, region = 0, net = 0, hub = 0;
+  // ReSharper restore CppTooWideScope
   for (const auto& raw_line : lines) {
     auto line = StringTrim(raw_line);
     HandleLine(line, zone, region, net, hub);

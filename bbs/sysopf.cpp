@@ -617,13 +617,13 @@ static bool print_ftn_net_listing(Network& net) {
         continue;
       }
       if (!name_part.empty()) {
-        const auto bbs_name = ToStringUpperCase(e.second.name_);
+        const auto bbs_name = ToStringUpperCase(e.second.name());
         const auto idx = bbs_name.find(name_part);
         if (idx == std::string::npos) {
           continue;
         }
       }
-      bout.format(" |#5{:<18.18}  |#1{}\r\n", e.first.as_string(false, false), e.second.name_);
+      bout.format(" |#5{:<18.18}  |#1{}\r\n", e.first.as_string(false, false), e.second.name());
       if (bin.checka()) {
         break;
       }

@@ -53,7 +53,7 @@ static int dump_file(const std::string& filename) {
   std::cout << std::endl;
 
   for (const auto& e : entries) {
-    std::cout << e.first << ": " << e.second.name_ << std::endl;
+    std::cout << e.first << ": " << e.second.name() << std::endl;
   }
   return 0;
 }

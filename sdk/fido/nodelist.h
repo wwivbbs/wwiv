@@ -47,10 +47,41 @@ public:
   NodelistEntry() = default;
   ~NodelistEntry() = default;
 
-  static bool ParseDataLine(const std::string& data_line, NodelistEntry& e);
+  static std::optional<NodelistEntry> ParseDataLine(const std::string& data_line);
 
-  // TODO(rushfan): private
-public:
+  [[nodiscard]] FidoAddress address() const { return address_; }
+  void address(const FidoAddress& a) { address_ = a; }
+  [[nodiscard]] NodelistKeyword keyword() const { return keyword_; }
+  [[nodiscard]] uint16_t number() const { return number_; }
+  [[nodiscard]] std::string name() const { return name_; }
+  [[nodiscard]] std::string location() const { return location_; }
+  [[nodiscard]] std::string sysop_name() const { return sysop_name_; }
+  [[nodiscard]] std::string phone_number() const { return phone_number_; }
+  [[nodiscard]] uint32_t baud_rate() const { return baud_rate_; }
+  [[nodiscard]] bool  cm() const { return cm_; }
+  [[nodiscard]] bool  icm() const { return icm_; }
+  [[nodiscard]] bool  mo() const { return mo_; }
+  [[nodiscard]] bool  lo() const { return lo_; }
+  [[nodiscard]] bool  mn() const { return mn_; }
+  [[nodiscard]] bool  bark_file() const { return bark_file_; }
+  [[nodiscard]] bool  bark_update() const { return bark_update_; }
+  [[nodiscard]] bool  wazoo_file() const { return wazoo_file_; }
+  [[nodiscard]] bool  wazoo_update() const { return wazoo_update_; }
+  [[nodiscard]] std::string hostname() const { return hostname_; }
+
+  [[nodiscard]] bool  binkp() const { return binkp_; }
+  [[nodiscard]] uint32_t binkp_port() const { return binkp_port_; }
+  [[nodiscard]] std::string binkp_hostname() const { return binkp_hostname_; }
+
+  [[nodiscard]] bool  telnet() const { return telnet_; }
+  [[nodiscard]] uint32_t telnet_port() const { return telnet_port_; }
+  [[nodiscard]] std::string telnet_hostname() const { return telnet_hostname_; }
+
+  [[nodiscard]] bool  vmodem() const { return vmodem_; }
+  [[nodiscard]] uint32_t vmodem_port() const { return vmodem_port_; }
+  [[nodiscard]] std::string vmodem_hostname() const { return vmodem_hostname_; }
+
+private:
   FidoAddress address_;
   NodelistKeyword keyword_ = NodelistKeyword::node;
   uint16_t number_ = 0;

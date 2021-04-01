@@ -103,8 +103,8 @@ static void UpdateMessageOriginInfo(int system_number, int user_number, Type2Mes
       }
       if (nl.contains(addr)) {
         const auto& e = nl.entry(addr);
-        data.from_sys_name = e.name_;
-        data.from_sys_loc = e.location_;
+        data.from_sys_name = e.name();
+        data.from_sys_loc = e.location();
         return;
       }
     }

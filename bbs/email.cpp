@@ -467,7 +467,7 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
         if (auto & net = a()->mutable_current_net(); net.try_load_nodelist()) {
           if (auto & nl = *net.nodelist; nl.contains(addr)) {
             const auto& e = nl.entry(addr);
-            destination_bbs_name = e.name_;
+            destination_bbs_name = e.name();
           } else {
             bout.format("|#6Address '|#2{}|#6' does not existing in the nodelist.\r\n", addr);
             bout.nl(2);
