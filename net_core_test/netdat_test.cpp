@@ -55,7 +55,7 @@ protected:
   std::filesystem::path gfiles_;
   std::filesystem::path logs_;
   tm t_{};
-  net_networks_rec net{};
+  Network net{};
 };
 
 TEST_F(NetDatTest, Smoke) {

@@ -222,7 +222,7 @@ bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m,
   return mloc[rec].index != -1;
 }
 
-static void add_netsubscriber(const net_networks_rec& net, int network_number, int system_number) {
+static void add_netsubscriber(const Network& net, int network_number, int system_number) {
   if (!valid_system(system_number)) {
     system_number = 0;
   }
@@ -307,7 +307,7 @@ void delete_attachment(unsigned long daten, int forceit) {
   }
 }
 
-static std::string from_name(const mailrec& m, const net_networks_rec& net, const slrec& sl, int nn) {
+static std::string from_name(const mailrec& m, const Network& net, const slrec& sl, int nn) {
   if (m.anony & anony_sender && (sl.ability & ability_read_email_anony) == 0) {
     return ">UNKNOWN<";
   }
@@ -343,14 +343,14 @@ static std::string from_name(const mailrec& m, const net_networks_rec& net, cons
   return fmt::format("#{} @{} ({})", m.fromuser, m.fromsys, system_name);
 }
 
-static std::tuple<net_networks_rec, int> network_and_num(const mailrec& m) {
-  net_networks_rec net{};
+static std::tuple<Network, int> network_and_num(const mailrec& m) {
+  Network net{};
   auto nn = network_number_from(&m);
   if (nn <= a()->nets().size()) {
     net = a()->nets()[nn];
   } else {
     net.sysnum = static_cast<uint16_t>(-1);
-    net.type = network_type_t::wwivnet;
+    net.type = network_type_t::unknown;
     net.name = fmt::format("<deleted network #{}>", nn);
     nn = 255;
   }

@@ -197,7 +197,12 @@ struct fido_node_config_t {
   network_callout_config_t callout_config;
 };
 
-// Remember to update the serialize function in networks_cereal.h when updating these.
+// ***************************************************************************************
+// ****
+// **** Remember to update the serialize function in networks_cereal.h when updating these.
+// ****
+// ***************************************************************************************
+
 /**
  * Fido specific per-network settings.
  */
@@ -244,30 +249,55 @@ struct fido_network_config_t {
   bool allow_any_pipe_codes{true};
 };
 
-enum class network_type_t : uint8_t { wwivnet = 0, ftn, internet, news };
+/**
+ * The types of networks currently or optimistically one day supported by WWIV.
+ */
+enum class network_type_t : uint8_t { wwivnet = 0, ftn, internet, news, unknown = 255 };
 
 /**
- * Internal structure for networks.dat or networks.json used by WWIV.
- * On disk it's persisted as net_networks_rec_disk.
+ * Internal class for network defined in networks.json.
+ *
+ * This class used to be known as net_neworks_rec and is persisted
+ * in legacy wwiv format as net_networks_rec_disk.
  */
-struct net_networks_rec {
+class Network {
+public:
+  Network() = default;
+  Network(network_type_t t, std::string n) : type(t), name(std::move(n)) {}
+  Network(network_type_t t, std::string n, std::filesystem::path d, uint16_t s)
+      : type(t), name(std::move(n)), dir(std::move(d)), sysnum(s) {}
+
+  /**
+   * Tries to load the Nodelist for this network
+   * returns true if the nodelist is found, and parsed successfully.
+   */
+  [[nodiscard]] bool try_load_nodelist();
+
+  /*
+   * The current network number, assigned when loaded.
+   */
+  [[nodiscard]] int network_number() const noexcept { return network_number_; };
+
   /* type of network */
-  network_type_t type;
+  network_type_t type{network_type_t::unknown};
   /* network name. Up to 16 chars*/
   std::string name;
   /* directory for net data */
   std::filesystem::path dir;
   /* system number */
-  uint16_t sysnum;
+  uint16_t sysnum{0};
 
   // Used by FTN type nodes.
-  fido_network_config_t fido;
+  fido_network_config_t fido{};
   // uuid_t to identify the network locally.
-  wwiv::core::uuid_t uuid;
+  core::uuid_t uuid;
   // A parsed nodelist if available.
-  std::shared_ptr<wwiv::sdk::fido::Nodelist> nodelist;
-  // The current network number, assigned when loaded
-  int network_number{-1};
+  std::shared_ptr<fido::Nodelist> nodelist;
+
+// private: TODO make Networks a friend class
+  // The current network number, assigned when loaded.
+  // ** This is a transient field.
+  int network_number_{-1};
 };
 
 }

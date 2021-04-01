@@ -180,7 +180,7 @@ std::optional<Tic> TicParser::parse(const std::string& filename, const std::vect
 }
 
 std::optional<directory_t> FindFileAreaForTic(const files::Dirs& dirs, const Tic& tic,
-                                              const net_networks_rec& net) {
+                                              const Network& net) {
   const auto area_tag = tic.area;
   for (const auto& d : dirs.dirs()) {
     for (const auto& dt : d.area_tags) {

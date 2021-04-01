@@ -45,8 +45,8 @@ public:
   Packet();
   ~Packet() = default;
 
-  bool UpdateRouting(const net_networks_rec& net);
-  static std::string wwivnet_packet_name(const net_networks_rec& net, uint16_t node);
+  bool UpdateRouting(const Network& net);
+  static std::string wwivnet_packet_name(const Network& net, uint16_t node);
 
   [[nodiscard]] const std::string& text() const noexcept;
   void set_text(const std::string& text);
@@ -156,13 +156,13 @@ uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node);
 
 std::tuple<Packet, ReadPacketResponse> read_packet(wwiv::core::File& file, bool process_de);
 
-bool write_wwivnet_packet(const std::string& filename, const net_networks_rec& net,
+bool write_wwivnet_packet(const std::string& filename, const Network& net,
                           const Packet& packet);
 
-bool send_local_email(const net_networks_rec& network, net_header_rec& nh, const std::string& text,
+bool send_local_email(const Network& network, net_header_rec& nh, const std::string& text,
                       const std::string& byname, const std::string& title);
 
-bool send_network_email(const std::string& filename, const net_networks_rec& network,
+bool send_network_email(const std::string& filename, const Network& network,
                         net_header_rec& nh, const std::vector<uint16_t>& list, const std::string& text,
                         const std::string& byname, const std::string& title);
 
@@ -193,10 +193,10 @@ Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
 
 // Writes out a WWIVnet packet to the pending file and logs success and failure to the 
 // system Logger.
-bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_id, const Packet& p);
+bool write_wwivnet_packet_or_log(const Network& net, char network_app_id, const Packet& p);
 
 enum class subscribers_send_to_t { hosted_and_gated_only, all_subscribers };
-bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int original_net_num,
+bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net_num,
                               const std::string& original_subtype, const subboard_t& sub,
                               Packet& template_packet, const std::set<uint16_t>& subscribers_to_skip,
                               const subscribers_send_to_t& send_to);

@@ -33,7 +33,7 @@ using namespace wwiv::strings;
 namespace wwiv::sdk::fido {
 
   
-FtnDirectories::FtnDirectories(const std::filesystem::path& bbsdir, const net_networks_rec& net)
+FtnDirectories::FtnDirectories(const std::filesystem::path& bbsdir, const Network& net)
   : FtnDirectories(bbsdir, net, net.dir) {}
 
 static void md(const std::vector<std::filesystem::path>& paths) {
@@ -44,7 +44,7 @@ static void md(const std::vector<std::filesystem::path>& paths) {
   }
 }
 // Receive dirs is relative to BBS home.
-FtnDirectories::FtnDirectories(std::filesystem::path bbsdir, const net_networks_rec& net,
+FtnDirectories::FtnDirectories(std::filesystem::path bbsdir, const Network& net,
                                std::filesystem::path receive_dir)
     : bbsdir_(std::move(bbsdir)), net_(net), net_dir_(net.dir),
       inbound_dir_(File::absolute(net_dir_, net_.fido.inbound_dir)),

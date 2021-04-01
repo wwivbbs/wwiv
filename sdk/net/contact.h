@@ -83,10 +83,10 @@ static_assert(sizeof(network_contact_record) == sizeof(NetworkContact),
 class Contact {
 
  public:
-  explicit Contact(const net::net_networks_rec& net);
-  Contact(net::net_networks_rec net, bool save_on_destructor);
+  explicit Contact(const net::Network& net);
+  Contact(net::Network net, bool save_on_destructor);
    // VisibleForTesting
-  Contact(net::net_networks_rec net, std::initializer_list<NetworkContact> l);
+  Contact(net::Network net, std::initializer_list<NetworkContact> l);
   virtual ~Contact();
 
   // Was this list initialized properly.
@@ -119,7 +119,7 @@ class Contact {
    /** add a contact. called by connect or failure. */
    void add_contact(NetworkContact* c, const wwiv::core::DateTime& time);
 
-   const net::net_networks_rec net_;
+   const net::Network net_;
    bool save_on_destructor_{false};
    std::map<std::string, NetworkContact> contacts_;
    bool initialized_{false};

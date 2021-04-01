@@ -317,7 +317,7 @@ public:
 };
 
 TEST_F(FidoUtilConfigTest, ExistsBundle) {
-  net_networks_rec net;
+  Network net;
   net.name = "testnet";
   ASSERT_TRUE(files_.Mkdir("bbs/net"));
   net.dir = files_.DirName("bbs/net");
@@ -379,7 +379,7 @@ TEST_F(FidoUtilTest, IsPacketFile) {
 }
 
 TEST_F(FidoUtilTest, FtnBytesWaiting) {
-  net_networks_rec net{};
+  Network net{};
 
   net.dir = helper_.TempDir().string();
   net.fido.fido_address = "11:1/211";
@@ -392,7 +392,7 @@ TEST_F(FidoUtilTest, FtnBytesWaiting) {
 }
 
 TEST_F(FidoUtilTest, FtnBytesWaiting_NonExistant) {
-  net_networks_rec net{};
+  Network net{};
 
   net.dir = helper_.TempDir().string();
   net.fido.fido_address = "11:1/211";

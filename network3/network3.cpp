@@ -119,7 +119,7 @@ static bool check_wwivnet_host_networks(
 static bool check_fido_host_networks(
   const Config& config,
   const Networks& network,
-  const net_networks_rec& net,
+  const Network& net,
   int network_number,
   std::ostringstream& text) {
 
@@ -156,7 +156,7 @@ static bool check_fido_host_networks(
 }
 
 static bool check_connect_net(const BbsListNet& b,
-                              const net_networks_rec& net,
+                              const Network& net,
                               std::ostringstream& text) {
 
   const Connect connect(net.dir);
@@ -181,7 +181,7 @@ static bool check_binkp_net(const BbsListNet& b,
   return true;
 }
 
-static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
+static bool send_feedback_email(const Network& net, const std::string& text) {
   net_header_rec nh = {};
 
   const auto now_mmddyy = DateTime::now().to_string("%m/%d/%y");
@@ -220,7 +220,7 @@ static uint16_t get_network_cordinator(const BbsListNet& b) {
 
 static bool add_feedback_general_info(
     const Callout& callout, 
-    const net_networks_rec& net,
+    const Network& net,
     const std::vector<net_system_list_rec>& bbsdata_data,
     std::ostringstream& text) {
 
@@ -394,7 +394,7 @@ static void rename_pending_files(const std::filesystem::path& dir) {
   }
 }
 
-static void ensure_contact_net_entries(const Callout& callout, const net_networks_rec& net) {
+static void ensure_contact_net_entries(const Callout& callout, const Network& net) {
   Contact contact(net, true);
   for (const auto& [node, _] : callout.callout_config()) {
     // Ensure we have a contact entry for each node in callout.net

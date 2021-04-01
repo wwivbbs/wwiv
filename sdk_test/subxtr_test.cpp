@@ -36,8 +36,8 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk {
 
-bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs);
-bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs, int);
+bool read_subs_xtr(const std::string& datadir, const std::vector<Network>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs);
+bool write_subs_xtr(const std::string& datadir, const std::vector<Network>& net_networks, const std::vector<xtrasubsrec>& xsubs, int);
 
 std::vector<subboardrec_422_t> read_subs(const std::string &datadir);
 bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards);
@@ -48,7 +48,7 @@ class SubXtrTest: public testing::Test {
 protected:
   void SetUp() override { 
     helper.SetUp(); 
-    net_networks_.emplace_back(net_networks_rec{network_type_t::wwivnet, "testnet", "testnet/", 2});
+    net_networks_.emplace_back(Network{network_type_t::wwivnet, "testnet", "testnet/", 2});
     subs_.emplace_back(subboardrec_422_t{"Sub1", "S1", '1', 10, 10, 0, 0, 500, 0, 2, 0});
     subs_.emplace_back(subboardrec_422_t{"Sub2", "S2", '2', 10, 10, 0, 0, 500, 0, 2, 0});
   }
@@ -58,7 +58,7 @@ protected:
     helper.files().CreateTempFile(name, contents);
   }
   SdkHelper helper;
-  std::vector<net_networks_rec> net_networks_;
+  std::vector<Network> net_networks_;
   std::vector<subboardrec_422_t> subs_;
 };
 

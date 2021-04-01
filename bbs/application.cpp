@@ -1256,16 +1256,16 @@ const Instances& Application::instances() const {
   return *instances_;
 }
 
-const wwiv::sdk::net::net_networks_rec& Application::current_net() const {
-  const static wwiv::sdk::net::net_networks_rec empty_rec{};
+const Network& Application::current_net() const {
+  const static Network empty_rec(network_type_t::unknown, "(Unknown)");
   if (nets_->empty()) {
     return empty_rec;
   }
   return nets_->at(net_num());
 }
 
-wwiv::sdk::net::net_networks_rec& Application::mutable_current_net() {
-  static wwiv::sdk::net::net_networks_rec empty_rec{};
+wwiv::sdk::net::Network& Application::mutable_current_net() {
+  static wwiv::sdk::net::Network empty_rec{};
   if (nets_->empty()) {
     return empty_rec;
   }

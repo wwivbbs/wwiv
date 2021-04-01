@@ -181,10 +181,10 @@ void save(Archive & ar, const fido_network_config_t& n) {
   SERIALIZE(n, allow_any_pipe_codes);
 }
 
-// This has to be in the cereal or default to match net_networks_rec which
+// This has to be in the cereal or default to match Network which
 // is in the default namespace.
 template <class Archive>
-void serialize(Archive & ar, net_networks_rec& n) {
+void serialize(Archive & ar, Network& n) {
   SERIALIZE(n, type);
   SERIALIZE(n, name);
   SERIALIZE(n, dir);

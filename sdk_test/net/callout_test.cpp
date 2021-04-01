@@ -111,7 +111,7 @@ TEST_F(CalloutTest, NodeConfig) {
   EXPECT_TRUE(files.Mkdir("network"));
   const std::string line("@1 \"foo\"");
   files.CreateTempFile("network/callout.net", line);
-  net_networks_rec net{};
+  Network net{};
   net.name = "Dummy Network";
   net.dir = files.DirName("network");
   const Callout callout(net, 0);

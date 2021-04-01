@@ -92,7 +92,7 @@ class WWIVMessageApi;
 } // namespace msgapi
 
 namespace net {
-struct net_networks_rec;
+class Network;
 }
 
 } // namespace sdk
@@ -231,8 +231,8 @@ public:
   [[nodiscard]] const wwiv::sdk::subboard_t& current_sub() const;
   [[nodiscard]] const wwiv::sdk::files::directory_t& current_dir() const;
 
-  [[nodiscard]] const wwiv::sdk::net::net_networks_rec& current_net() const;
-  [[nodiscard]] wwiv::sdk::net::net_networks_rec& mutable_current_net();
+  [[nodiscard]] const wwiv::sdk::net::Network& current_net() const;
+  [[nodiscard]] wwiv::sdk::net::Network& mutable_current_net();
 
   [[nodiscard]] bool IsUseInternalZmodem() const { return internal_zmodem_; }
   [[nodiscard]] bool IsUseInternalFsed() const; 

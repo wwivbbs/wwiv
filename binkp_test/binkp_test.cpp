@@ -53,11 +53,8 @@ protected:
     wwiv_config_.sysopname = "Test Sysop";
     wwiv::sdk::Config config(File::current_directory(), wwiv_config_);
     config.gfilesdir(gfiles_dir);
-    net_networks_rec net{};
+    Network net(network_type_t::wwivnet, "Dummy Network");
     net.dir = network_dir;
-    net.name = "Dummy Network";
-    net.type = network_type_t::wwivnet;
-    net.sysnum = 0;
     binkp_config_ = std::make_unique<BinkConfig>(ORIGINATING_ADDRESS, config, network_dir);
     auto dummy_callout = std::make_unique<Callout>(net, 0);
     BinkP::received_transfer_file_factory_t null_factory = [](const std::string&, const std::string& filename) { 

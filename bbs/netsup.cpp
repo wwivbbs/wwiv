@@ -129,7 +129,7 @@ void cleanup_net() {
   a()->Cls();
 }
 
-static void do_callout(const net_networks_rec& net, int sn) {
+static void do_callout(const Network& net, int sn) {
   const Callout callout(net, a()->config()->max_backups());
   Contact contact(net, false);
   Binkp binkp(net.dir);
@@ -430,7 +430,7 @@ static std::string to_difftime_string(daten_t now, daten_t then) {
   return fmt::format("{:<16}", s);
 }
 
-static void print_call(uint16_t sn, const net_networks_rec& net) {
+static void print_call(uint16_t sn, const Network& net) {
   static int color;
   auto now = daten_t_now();
 

@@ -22,8 +22,8 @@ namespace wwiv::net::network2 {
 
 using namespace wwiv::sdk::net;
 
-Context::Context(const sdk::Config& c, const net_networks_rec& n, sdk::UserManager& u,
-                 const std::vector<net_networks_rec>& ns, NetDat& netdat)
+Context::Context(const sdk::Config& c, const Network& n, sdk::UserManager& u,
+                 const std::vector<Network>& ns, NetDat& netdat)
   : config(c), net(n), user_manager(u), subs(c.datadir(), ns), networks_(ns), netdat_(netdat), ssm(c, u) {
   subs_initialized = subs.Load();
 }

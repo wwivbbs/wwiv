@@ -34,12 +34,12 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::net {
 
-bool send_local_email(const net_networks_rec& network, net_header_rec& nh, const std::string& text,
+bool send_local_email(const Network& network, net_header_rec& nh, const std::string& text,
                       const std::string& byname, const std::string& title) {
   return send_network_email(LOCAL_NET, network, nh, {}, text, byname, title);
 }
 
-bool send_network_email(const std::string& filename, const net_networks_rec& network,
+bool send_network_email(const std::string& filename, const Network& network,
                         net_header_rec& nh, const std::vector<uint16_t>& list, const std::string& text,
                         const std::string& byname, const std::string& title) {
 
@@ -105,7 +105,7 @@ std::tuple<Packet, ReadPacketResponse>  read_packet(File& f, bool process_de) {
   return std::make_tuple(packet, ReadPacketResponse::OK);
 }
 
-bool write_wwivnet_packet(const std::string& filename, const net_networks_rec& net, const Packet& p) {
+bool write_wwivnet_packet(const std::string& filename, const Network& net, const Packet& p) {
   VLOG(2) << "write_wwivnet_packet: " << filename;
   LOG(INFO) << "write_wwivnet_packet: Writing type " << p.nh.main_type << "/" << p.nh.minor_type
             << " message to packet: " << filename;
@@ -266,7 +266,7 @@ Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const Pa
 
 Packet::Packet() = default;
 
-bool Packet::UpdateRouting(const net_networks_rec& net) {
+bool Packet::UpdateRouting(const Network& net) {
   if (!need_to_update_routing(nh.main_type)) {
     return false;
   }
@@ -338,7 +338,7 @@ uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node) {
 }
 
 // static
-std::string Packet::wwivnet_packet_name(const net_networks_rec& net, uint16_t node) {
+std::string Packet::wwivnet_packet_name(const Network& net, uint16_t node) {
   if (node == net.sysnum || node == 0) {
     // Messages to us to into local.net.
     return LOCAL_NET;
@@ -588,7 +588,7 @@ static std::string change_subtype_to(const std::string& org_text, const std::str
   return result;
 }
 
-bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_id,
+bool write_wwivnet_packet_or_log(const Network& net, char network_app_id,
                                  const Packet& p) {
   const auto fn = create_pend(net.dir, false, network_app_id);
   if (!write_wwivnet_packet(fn, net, p)) {
@@ -604,7 +604,7 @@ bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_i
  *
  * N.B. If this post originates on this system, use -1 for the original_net_num.
  */
-bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int original_net_num,
+bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net_num,
                               const std::string& original_subtype, const subboard_t& sub,
                               Packet& template_packet, const std::set<uint16_t>& subscribers_to_skip,
                               const subscribers_send_to_t& send_to) {

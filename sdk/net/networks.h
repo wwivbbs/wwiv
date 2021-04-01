@@ -30,34 +30,34 @@ namespace wwiv::sdk {
 class Networks final {
 public:
   typedef int size_type;
-  typedef net::net_networks_rec& reference;
-  typedef const net::net_networks_rec& const_reference;
+  typedef net::Network& reference;
+  typedef const net::Network& const_reference;
   static const size_type npos = -1;
   explicit Networks(const Config& config);
   // [[ VisibleForTesting ]]
-  explicit Networks(std::initializer_list<net::net_networks_rec> l) : networks_(l) {}
+  explicit Networks(std::initializer_list<net::Network> l) : networks_(l) {}
   ~Networks();
 
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
-  [[nodiscard]] const std::vector<net::net_networks_rec>& networks() const { return networks_; }
-  [[nodiscard]] const net::net_networks_rec& at(size_type num) const;
-  [[nodiscard]] const net::net_networks_rec& at(const std::string& name) const;
-  net::net_networks_rec& at(size_type num);
-  net::net_networks_rec& at(const std::string& name);
-  std::optional<const net::net_networks_rec> by_uuid(const wwiv::core::uuid_t& uuid);
-  std::optional<const net::net_networks_rec> by_uuid(const std::string& uuid_text);
+  [[nodiscard]] const std::vector<net::Network>& networks() const { return networks_; }
+  [[nodiscard]] const net::Network& at(size_type num) const;
+  [[nodiscard]] const net::Network& at(const std::string& name) const;
+  net::Network& at(size_type num);
+  net::Network& at(const std::string& name);
+  std::optional<const net::Network> by_uuid(const wwiv::core::uuid_t& uuid);
+  std::optional<const net::Network> by_uuid(const std::string& uuid_text);
 
-  net::net_networks_rec& operator[](size_type num) { return at(num); }
-  net::net_networks_rec& operator[](const std::string& name) { return at(name); }
-  const net::net_networks_rec& operator[](int num) const { return at(num); }
-  const net::net_networks_rec& operator[](const std::string& name) const { return at(name); }
+  net::Network& operator[](size_type num) { return at(num); }
+  net::Network& operator[](const std::string& name) { return at(name); }
+  const net::Network& operator[](int num) const { return at(num); }
+  const net::Network& operator[](const std::string& name) const { return at(name); }
 
   [[nodiscard]] size_type network_number(const std::string& network_name) const;
   [[nodiscard]] bool contains(const std::string& network_name) const;
   [[nodiscard]] std::size_t size() const noexcept;
   [[nodiscard]] bool empty() const noexcept;
 
-  bool insert(int n, net::net_networks_rec r);
+  bool insert(int n, net::Network r);
   bool erase(int n);
   bool Load();
   bool Save();
@@ -74,11 +74,11 @@ private:
   bool initialized_{false};
   std::filesystem::path root_directory_;
   std::filesystem::path datadir_;
-  std::vector<net::net_networks_rec> networks_;
+  std::vector<net::Network> networks_;
 };
 
-std::string to_string(const net::net_networks_rec& n);
-bool try_load_nodelist(net::net_networks_rec& net);
+std::string to_string(const net::Network& n);
+bool try_load_nodelist(net::Network& net);
 
 }
 

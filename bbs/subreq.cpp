@@ -57,7 +57,7 @@ static void maybe_netmail(subboard_network_data_t* ni, bool bAdd) {
   }
 }
 
-static bool display_sub_categories(const net_networks_rec& net) {
+static bool display_sub_categories(const Network& net) {
   if (!net.sysnum) {
     return false;
   }
@@ -79,7 +79,7 @@ static bool display_sub_categories(const net_networks_rec& net) {
 }
 
 static void sub_req(uint16_t main_type, int tosys, const std::string& stype,
-                    const net_networks_rec& net) {
+                    const Network& net) {
   net_header_rec nh{};
 
   nh.tosys = static_cast<uint16_t>(tosys);
@@ -113,7 +113,7 @@ static constexpr short OPTION_GATED = 0x0004;
 static constexpr short OPTION_NETVAL = 0x0008;
 static constexpr short OPTION_ANSI = 0x0010;
 
-static int find_hostfor(const net_networks_rec& net, const std::string& type, short* ui,
+static int find_hostfor(const Network& net, const std::string& type, short* ui,
                         char* description, short* opt) {
   int rc = 0;
 

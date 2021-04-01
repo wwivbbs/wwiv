@@ -52,8 +52,8 @@ public:
   /** Get the directory to receive files into for network named network_name */
   [[nodiscard]] std::string receive_dir(const std::string& network_name) const;
 
-  [[nodiscard]] const sdk::net::net_networks_rec& network(const std::string& network_name) const;
-  [[nodiscard]] const sdk::net::net_networks_rec& callout_network() const;
+  [[nodiscard]] const sdk::net::Network& network(const std::string& network_name) const;
+  [[nodiscard]] const sdk::net::Network& callout_network() const;
   [[nodiscard]] const wwiv::sdk::Networks& networks() { return networks_; }
   /*
    * Key/Value mapping of domain to callout class.

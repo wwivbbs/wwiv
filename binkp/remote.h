@@ -38,7 +38,7 @@ public:
   [[nodiscard]] std::string network_name() const;
   [[nodiscard]] std::string domain() const;
   void set_domain(const std::string& d);
-  [[nodiscard]] const sdk::net::net_networks_rec& network() const;
+  [[nodiscard]] const sdk::net::Network& network() const;
 
   [[nodiscard]] int wwivnet_node() const { return wwivnet_node_; }
   void set_wwivnet_node(int n, const std::string& domain) { wwivnet_node_ = static_cast<uint16_t>(n); domain_ = domain; }

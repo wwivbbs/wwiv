@@ -38,7 +38,7 @@ namespace wwiv::sdk::msgapi {
 
 WWIVMessageApi::WWIVMessageApi(const MessageApiOptions& options,
                                const Config& config,
-                               const std::vector<net_networks_rec>& net_networks,
+                               const std::vector<Network>& net_networks,
                                WWIVLastReadImpl* last_read)
     : MessageApi(options, config.root_directory(), config.datadir(), config.msgsdir(),
                  net_networks),

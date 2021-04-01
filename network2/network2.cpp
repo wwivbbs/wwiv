@@ -93,7 +93,7 @@ static bool handle_ssm(Context& context, Packet& p) {
   return true;
 }
 
-static bool write_net_received_file(Context& context, const net_networks_rec& net, Packet& p, NetInfoFileInfo info) {
+static bool write_net_received_file(Context& context, const Network& net, Packet& p, NetInfoFileInfo info) {
   if (!info.valid) {
     LOG(ERROR) << "    ! ERROR NetInfoFileInfo is not valid; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
@@ -124,7 +124,7 @@ static bool write_net_received_file(Context& context, const net_networks_rec& ne
   return true;
 }
 
-static bool handle_net_info_file(Context& context, const net_networks_rec& net, Packet& p) {
+static bool handle_net_info_file(Context& context, const Network& net, Packet& p) {
   const auto info = GetNetInfoFileInfo(p);
   return write_net_received_file(context, net, p, info);
 }

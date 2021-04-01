@@ -40,7 +40,7 @@ public:
 
 protected:
   FileHelper helper_;
-  net_networks_rec net{};
+  Network net{};
 
   std::filesystem::path p{};
 };

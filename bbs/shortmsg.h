@@ -25,7 +25,7 @@ namespace sdk {
 class User;
 
 namespace net {
-struct net_networks_rec;
+class Network;
 }
 }
 }
@@ -34,7 +34,7 @@ struct net_networks_rec;
 class ssm {
 public:
   explicit ssm(int un) : ssm(un, 0, nullptr) {}
-  ssm(int un, int sn, const wwiv::sdk::net::net_networks_rec* net) : un_(un), sn_(sn), net_(net) {}
+  ssm(int un, int sn, const wwiv::sdk::net::Network* net) : un_(un), sn_(sn), net_(net) {}
   ~ssm();
 
   template <typename T> ssm& operator<<(T const& value) {
@@ -46,7 +46,7 @@ private:
   std::ostringstream stream_;
   const int un_;
   const int sn_{0};
-  const wwiv::sdk::net::net_networks_rec* net_;
+  const wwiv::sdk::net::Network* net_;
 };
 
 void rsm(int nUserNum, wwiv::sdk::User* pUser, bool bAskToSaveMsgs);

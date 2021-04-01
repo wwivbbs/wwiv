@@ -65,7 +65,7 @@ static NetworkContact network_contact_from_last_time(const fido::FidoAddress& ad
   return NetworkContact{ncr};
 }
 
-static void one_net_ftn_callout(const Config& config, const net_networks_rec& net,
+static void one_net_ftn_callout(const Config& config, const Network& net,
                                 const wwivd_config_t& c, int network_number) {
   const fido::FidoCallout callout(config, net);
 
@@ -106,7 +106,7 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
   }
 }
 
-static void one_net_wwivnet_callout(const net_networks_rec& net, const wwivd_config_t& c,
+static void one_net_wwivnet_callout(const Network& net, const wwivd_config_t& c,
                                     int network_number) {
   VLOG(2) << "one_net_wwivnet_callout: @" << net.sysnum << "; name: " << net.name;
   Contact contact(net);

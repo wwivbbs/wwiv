@@ -113,7 +113,7 @@ static bool checkup2(const time_t tFileTime, const std::filesystem::path& dir, c
   return true;
 }
 
-static bool need_network3(const net_networks_rec& net, int network_version) {
+static bool need_network3(const Network& net, int network_version) {
   const auto dir = net.dir;
 
   if (!File::Exists(FilePath(dir, BBSDATA_NET))) {

@@ -121,7 +121,7 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(int ver, uint32_t num_messages)
 WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub,
                                  std::filesystem::path sub_filename,
                                  std::filesystem::path text_filename, int subnum,
-                                 std::vector<net_networks_rec> net_networks)
+                                 std::vector<Network> net_networks)
     : MessageArea(api), Type2Text(std::move(text_filename)), wwiv_api_(api), sub_(sub),
       sub_filename_(std::move(sub_filename)), header_{}, net_networks_(std::move(net_networks)) {
   DataFile<postrec> subfile(sub_filename_, File::modeBinary | File::modeReadOnly);
@@ -384,7 +384,7 @@ int WWIVMessageArea::DeleteExcess() {
 }
 
 static bool has_ftn_network(const std::vector<subboard_network_data_t>& sub_nets,
-                            const std::vector<net_networks_rec>& nets) {
+                            const std::vector<Network>& nets) {
   for (const auto& x : sub_nets) {
     if (x.net_num >= 0 && x.net_num < stl::ssize(nets)) {
       if (at(nets, x.net_num).type == network_type_t::ftn) {

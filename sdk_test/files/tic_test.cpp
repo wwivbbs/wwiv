@@ -144,7 +144,7 @@ File sample.zip
   wwiv::core::uuid_generator generator(rd);
   auto uuid = generator.generate();
 
-  net_networks_rec net{};
+  Network net{};
   net.name = "foo";
   net.uuid = uuid;
 
@@ -192,7 +192,7 @@ File sample.zip
   wwiv::core::uuid_generator generator(rd);
   auto uuid = generator.generate();
 
-  net_networks_rec net{};
+  Network net{};
   net.name = "foo";
   net.uuid = uuid;
 

@@ -56,7 +56,7 @@ static void ShowHelp(const NetworkCommandLine& cmdline) {
   exit(1);
 }
 
-bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool save_tic_files, bool skip_delete) {
+bool process_ftn_tic(const Config& config, const Network& net, bool save_tic_files, bool skip_delete) {
   if (!net.fido.process_tic) {
     LOG(WARNING) << "TIC processing disabled for network: " << net.name;
     return false;

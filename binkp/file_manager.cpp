@@ -95,7 +95,7 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const std::str
   return result;
 }
 
-FileManager::FileManager(const wwiv::sdk::Config& config, const net_networks_rec& net,
+FileManager::FileManager(const wwiv::sdk::Config& config, const Network& net,
                          const std::string& receive_dir)
   : config_(config), net_(net), dirs_(config.root_directory(), net, receive_dir) {
   const auto dir = dirs_.receive_dir();

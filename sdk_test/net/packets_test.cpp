@@ -94,7 +94,7 @@ TEST_F(PacketsTest, UpdateRouting_Smoke) {
   nh.list_len = 0;
   Packet packet(nh, {}, packet_text);
 
-  net_networks_rec net{};
+  Network net{};
   net.dir = "Z:\\";
   net.name = "My Network";
   net.sysnum = 2;

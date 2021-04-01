@@ -33,4 +33,4 @@ sizeof (filestatusrec) = 23
 sizeof (phonerec) = 15
 sizeof (ext_desc_rec) = 17
 sizeof (instancerec) = 100
-sizeof (net_networks_rec) = 100
+sizeof (Network) = 100

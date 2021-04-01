@@ -19,6 +19,7 @@
 #include "wwivutil/net/net.h"
 
 #include "core/command_line.h"
+#include "core/file.h"
 #include "wwivutil/net/dump_bbsdata.h"
 #include "wwivutil/net/dump_callout.h"
 #include "wwivutil/net/dump_connect.h"

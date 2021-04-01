@@ -47,7 +47,7 @@ private:
   const wwiv::net::NetworkCommandLine& net_cmdline_;
   const wwiv::sdk::BbsListNet& bbslist_;
   wwiv::core::Clock& clock_;
-  const wwiv::sdk::net::net_networks_rec& net_;
+  const wwiv::sdk::net::Network& net_;
   wwiv::net::NetDat netdat_;
 };
 

@@ -15,43 +15,32 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_SDK_CALLOUT_H
-#define INCLUDED_SDK_CALLOUT_H
+#include "sdk/net/networks.h"
 
-#include "sdk/net/net.h"
-#include <initializer_list>
-#include <map>
+#include "core/file.h"
+#include "core/stl.h"
+#include "core/strings.h"
 #include <string>
 
-namespace wwiv::sdk {
-  
-class Callout {
- public:
-  Callout(const net::Network& net, int max_backups);
-  // VisibleForTesting
-  Callout(std::initializer_list<net::net_call_out_rec> l);
-  virtual ~Callout();
-  [[nodiscard]] virtual const net::net_call_out_rec* net_call_out_for(int node) const;
-  [[nodiscard]] virtual const net::net_call_out_rec* net_call_out_for(const std::string& node) const;
-  Callout& operator=(const Callout& rhs) { node_config_ = rhs.node_config_; return *this; }
+using namespace wwiv::core;
+using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
-  bool insert(uint16_t node, const net::net_call_out_rec& c);
-  bool erase(uint16_t node);
-  virtual bool Save();
 
-  [[nodiscard]] const std::map<uint16_t, net::net_call_out_rec>& callout_config() const { return node_config_; }
-  [[nodiscard]] std::string ToString() const;
+namespace wwiv::sdk::net {
 
- private:
-  net::Network net_;
-  const int max_backups_;
-  std::map<uint16_t, net::net_call_out_rec> node_config_;
-};
+bool Network::try_load_nodelist() {
+  if (nodelist && nodelist->initialized() && !nodelist->entries().empty()) {
+    return true;
+  }
 
-[[nodiscard]] bool ParseCalloutNetLine(const std::string& line, net::net_call_out_rec* config);
-std::string WriteCalloutNetLine(const net::net_call_out_rec& con);
-std::string CalloutOptionsToString(uint16_t options);
+  const auto nl_path = fido::Nodelist::FindLatestNodelist(dir, fido.nodelist_base);
+  const auto domain = fido::domain_from_address(fido.fido_address);
+  nodelist = std::make_shared<fido::Nodelist>(core::FilePath(dir, nl_path), domain);
+  return nodelist->initialized();
+}
 
-}  // namespace wwiv::net
 
-#endif  // INCLUDED_SDK_CALLOUT_H
+} // namespace wwiv::sdk

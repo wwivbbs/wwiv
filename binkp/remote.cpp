@@ -105,7 +105,7 @@ uint16_t wwivnet_node_number_from_ftn_address(const std::string& address) {
   return WWIVNET_NO_NODE;
 }
 
-std::string fixup_address(const std::string& addr, const net_networks_rec& net, const std::string& default_domain) {
+std::string fixup_address(const std::string& addr, const Network& net, const std::string& default_domain) {
   if (auto o = sdk::fido::try_parse_fidoaddr(addr)) {
     if (o->has_domain()) {
       return o->as_string(true, true);
@@ -182,7 +182,7 @@ void Remote::set_domain(const std::string& d) {
   }
 }
 
-const net_networks_rec& Remote::network() const {
+const Network& Remote::network() const {
   return config_->network(network_name());
 }
 

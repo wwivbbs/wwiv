@@ -63,7 +63,7 @@ Networks::Networks(const Config& config)
   initialized_ = true;
 }
 
-const net_networks_rec& Networks::at(const std::string& name) const {
+const Network& Networks::at(const std::string& name) const {
   for (const auto& n : networks_) {
     if (iequals(name, n.name)) {
       return n;
@@ -74,8 +74,8 @@ const net_networks_rec& Networks::at(const std::string& name) const {
   throw std::out_of_range(msg);
 }
 
-static std::unique_ptr<net_networks_rec> create_255_network() {
-  auto net = std::make_unique<net_networks_rec>();
+static std::unique_ptr<Network> create_255_network() {
+  auto net = std::make_unique<Network>();
   net->sysnum = static_cast<uint16_t>(-1);
   net->type = network_type_t::wwivnet;
   net->name = "<deleted network #255>";
@@ -85,7 +85,7 @@ static std::unique_ptr<net_networks_rec> create_255_network() {
 
 static auto network_255 = create_255_network();
 
-const net_networks_rec& Networks::at(size_type num) const {
+const Network& Networks::at(size_type num) const {
   if (networks_.empty()) {
     return *network_255;
   }
@@ -104,7 +104,7 @@ const net_networks_rec& Networks::at(size_type num) const {
   return stl::at(networks_, num);
 }
 
-net_networks_rec& Networks::at(size_type num) {
+Network& Networks::at(size_type num) {
   if (networks_.empty()) {
     return *network_255;
   }
@@ -123,7 +123,7 @@ net_networks_rec& Networks::at(size_type num) {
   return stl::at(networks_, num);
 }
 
-net_networks_rec& Networks::at(const std::string& name) {
+Network& Networks::at(const std::string& name) {
   for (auto& n : networks_) {
     if (iequals(name, n.name)) {
       return n;
@@ -134,7 +134,7 @@ net_networks_rec& Networks::at(const std::string& name) {
   throw std::out_of_range(msg);
 }
 
-std::optional<const net_networks_rec> Networks::by_uuid(const wwiv::core::uuid_t& uuid) {
+std::optional<const Network> Networks::by_uuid(const wwiv::core::uuid_t& uuid) {
   if (uuid.empty()) {
     return std::nullopt;
   }
@@ -147,7 +147,7 @@ std::optional<const net_networks_rec> Networks::by_uuid(const wwiv::core::uuid_t
   return std::nullopt;
 }
 
-std::optional<const net_networks_rec> Networks::by_uuid(const std::string& uuid_text) {
+std::optional<const Network> Networks::by_uuid(const std::string& uuid_text) {
   auto o = uuid_t::from_string(uuid_text);
   if (!o) {
     return std::nullopt;
@@ -181,7 +181,7 @@ std::size_t Networks::size() const noexcept { return networks_.size(); }
 
 bool Networks::empty() const noexcept { return networks_.empty(); }
 
-bool Networks::insert(int n, net_networks_rec r) {
+bool Networks::insert(int n, Network r) {
   if (!insert_at(networks_, n, r)) {
     return false;
   }
@@ -232,7 +232,7 @@ bool Networks::LoadFromDat() {
   std::random_device rd;
   uuid_generator uuid_gen(rd);
   for (const auto& n : networks_disk) {
-    net_networks_rec r = {};
+    Network r = {};
     r.type = static_cast<network_type_t>(n.type);
     r.name = n.name;
     r.dir = n.dir;
@@ -283,7 +283,7 @@ void Networks::EnsureNetDirAbsolute() {
 void Networks::SetNetworkNumbers() {
   auto nn = 0;
   for (auto& n : networks_) {
-    n.network_number = nn++;
+    n.network_number_ = nn++;
   }
 }
 
@@ -314,7 +314,7 @@ bool Networks::SaveToDat() {
   return file.WriteVector(disk);
 }
 
-std::string to_string(const net_networks_rec& n) {
+std::string to_string(const Network& n) {
   switch (n.type) {
   case network_type_t::ftn:
     return fmt::format("|#9(|#2{}|#9@|#1{}|#9) ", n.fido.fido_address, n.name);
@@ -328,15 +328,8 @@ std::string to_string(const net_networks_rec& n) {
   return fmt::format("|#9(|#2@{}|#9.|#1{}|#9) ", n.sysnum, n.name);
 }
 
-bool try_load_nodelist(net_networks_rec& net) {
-  if (net.nodelist && net.nodelist->initialized() && !net.nodelist->entries().empty()) {
-    return true;
-  }
-
-  const auto nl_path = fido::Nodelist::FindLatestNodelist(net.dir, net.fido.nodelist_base);
-  const auto domain = fido::domain_from_address(net.fido.fido_address);
-  net.nodelist = std::make_shared<fido::Nodelist>(FilePath(net.dir, nl_path), domain);
-  return net.nodelist->initialized();
+bool try_load_nodelist(Network& net) {
+  return net.try_load_nodelist();
 }
 
 } // namespace wwiv::sdk

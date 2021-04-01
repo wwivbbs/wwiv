@@ -37,7 +37,7 @@ enum class flo_directive : char {
  */
 class FloFile {
 public:
-  FloFile(const net::net_networks_rec& net, std::filesystem::path p);
+  FloFile(const net::Network& net, std::filesystem::path p);
   virtual ~FloFile();
 
   [[nodiscard]] FidoAddress destination_address() const;
@@ -55,7 +55,7 @@ public:
   bool Save();
 
 private:
-  const net::net_networks_rec& net_;
+  const net::Network& net_;
   const std::filesystem::path path_;
   net::fido_bundle_status_t status_{net::fido_bundle_status_t::unknown};
   std::unique_ptr<wwiv::sdk::fido::FidoAddress> dest_;

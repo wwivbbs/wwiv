@@ -79,7 +79,7 @@ private:
   const NetworkCommandLine& net_cmdline_;
   const sdk::BbsListNet& bbslist_;
   core::Clock& clock_;
-  const sdk::net::net_networks_rec& net_;
+  const sdk::net::Network& net_;
   sdk::fido::FidoCallout fido_callout_;
   NetDat netdat_;
 

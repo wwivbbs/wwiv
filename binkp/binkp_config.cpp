@@ -51,7 +51,7 @@ BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& co
   gfiles_directory_ = config.gfilesdir();
 
   if (networks.contains(callout_network_name)) {
-    const net_networks_rec& net = networks[callout_network_name];
+    const Network& net = networks[callout_network_name];
     if (net.type == network_type_t::wwivnet) {
       callout_wwivnet_node_ = net.sysnum;
       if (callout_wwivnet_node_ == 0) {
@@ -74,11 +74,11 @@ BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& co
   }
 }
 
-const net_networks_rec& BinkConfig::network(const std::string& network_name) const {
+const Network& BinkConfig::network(const std::string& network_name) const {
   return networks_[network_name];
 }
 
-const net_networks_rec& BinkConfig::callout_network() const {
+const Network& BinkConfig::callout_network() const {
   return network(callout_network_name_);
 }
 
@@ -96,11 +96,9 @@ std::string BinkConfig::receive_dir(const std::string& network_name) const {
   return dir;
 }
 
-static net_networks_rec test_net(const std::string& network_dir) {
-  net_networks_rec net{};
+static Network test_net(const std::string& network_dir) {
+  Network net(network_type_t::wwivnet, "WWIVnet");
   net.sysnum = 1;
-  net.name = "wwivnet";
-  net.type = network_type_t::wwivnet;
   net.dir = network_dir;
   return net;
 }

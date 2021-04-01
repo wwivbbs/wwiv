@@ -29,7 +29,7 @@ namespace wwiv::net {
   
 class FileManager final {
 public:
-  FileManager(const wwiv::sdk::Config& config, const sdk::net::net_networks_rec& net,
+  FileManager(const wwiv::sdk::Config& config, const sdk::net::Network& net,
                        const std::string& receive_dir);
   ~FileManager() = default;
 
@@ -47,7 +47,7 @@ private:
   [[nodiscard]] std::vector<TransferFile*> CreateFtnTransferFileList(const std::string& address) const;
 
   const wwiv::sdk::Config& config_;
-  const sdk::net::net_networks_rec net_;
+  const sdk::net::Network net_;
   const wwiv::sdk::fido::FtnDirectories dirs_;
   const std::string network_directory_;
   std::vector<std::string> received_files_;

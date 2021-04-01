@@ -141,10 +141,10 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
 }
 
 // Base item of an editable value, this class does not use templates.
-class FidoNetworkConfigSubDialog : public SubDialog<net_networks_rec> {
+class FidoNetworkConfigSubDialog : public SubDialog<Network> {
 public:
   FidoNetworkConfigSubDialog(const Config& config, std::filesystem::path bbsdir,
-                             net_networks_rec& d)
+                             Network& d)
       : SubDialog(config, d), netdir_(std::move(bbsdir)) {}
   ~FidoNetworkConfigSubDialog() override = default;
 
@@ -317,9 +317,9 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
 }
 
 // Base item of an editable value, this class does not use templates.
-class FidoPacketConfigSubDialog : public SubDialog<net_networks_rec> {
+class FidoPacketConfigSubDialog : public SubDialog<Network> {
 public:
-  FidoPacketConfigSubDialog(const Config& config, std::filesystem::path bbsdir, net_networks_rec& t)
+  FidoPacketConfigSubDialog(const Config& config, std::filesystem::path bbsdir, Network& t)
       : SubDialog(config, t), netdir_(std::move(bbsdir)) {}
   ~FidoPacketConfigSubDialog() override = default;
 
@@ -385,7 +385,7 @@ private:
   const std::string title_;
 };
 
-static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_rec& c) {
+static void edit_wwivnet_node_config(const Network& net, net_call_out_rec& c) {
   int y = 1;
 
   EditItems items{};
@@ -422,9 +422,9 @@ static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_r
 }
 
 // Base item of an editable value, this class does not use templates.
-class CalloutNetSubDialog final : public SubDialog<net_networks_rec> {
+class CalloutNetSubDialog final : public SubDialog<Network> {
 public:
-  CalloutNetSubDialog(const Config& config, std::filesystem::path bbsdir, net_networks_rec& d)
+  CalloutNetSubDialog(const Config& config, std::filesystem::path bbsdir, Network& d)
       : SubDialog(config, d), netdir_(std::move(bbsdir)) {}
   ~CalloutNetSubDialog() override = default;
 
@@ -630,7 +630,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn, network
   }
 
   {
-    net_networks_rec n{};
+    Network n{};
     n.type = type;
     if (type == network_type_t::ftn) {
       n.sysnum = 1;

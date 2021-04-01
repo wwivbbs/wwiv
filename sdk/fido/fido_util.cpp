@@ -540,7 +540,7 @@ FidoAddress FindRouteToAddress(const FidoAddress& a, const FidoCallout& callout)
   return FindRouteToAddress(a, callout.node_configs_map());
 }
 
-bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net) {
+bool exists_bundle(const wwiv::sdk::Config& config, const Network& net) {
   const FtnDirectories dirs(config.root_directory(), net);
   return exists_bundle(dirs.inbound_dir());
 }
@@ -588,7 +588,7 @@ std::vector<fido_bundle_status_t> statuses{
     fido_bundle_status_t::crash, fido_bundle_status_t::normal, fido_bundle_status_t::direct,
     fido_bundle_status_t::immediate};
 
-int ftn_bytes_waiting(const net_networks_rec& net, const FidoAddress& dest) {
+int ftn_bytes_waiting(const Network& net, const FidoAddress& dest) {
   const auto outbound_dir = FilePath(net.dir, net.fido.outbound_dir);
   auto size = 0;
   for (const auto& st : statuses) {

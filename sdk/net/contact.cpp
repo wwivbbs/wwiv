@@ -51,9 +51,9 @@ std::string NetworkContact::CreateFakeFtnAddress(int node) {
   return wwiv::strings::StrCat("20000:20000/", node);
 }
 
-Contact::Contact(const net_networks_rec& net) : Contact(net, false) {}
+Contact::Contact(const Network& net) : Contact(net, false) {}
 
-Contact::Contact(net_networks_rec net, bool save_on_destructor)
+Contact::Contact(Network net, bool save_on_destructor)
     : net_(std::move(net)), save_on_destructor_(save_on_destructor) {
   DataFile<net_contact_rec> file(FilePath(net_.dir, CONTACT_NET),
                                  File::modeBinary | File::modeReadOnly, File::shareDenyNone);
@@ -87,7 +87,7 @@ Contact::Contact(net_networks_rec net, bool save_on_destructor)
   initialized_ = true;
 }
 
-Contact::Contact(net_networks_rec net, std::initializer_list<NetworkContact> l)
+Contact::Contact(Network net, std::initializer_list<NetworkContact> l)
     : net_(std::move(net)), save_on_destructor_(false), initialized_(true) {
   for (const auto& r : l) {
     contacts_.emplace(r.address(), r);

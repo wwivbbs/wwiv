@@ -297,7 +297,7 @@ enum class net_search_type_t {
   NET_SEARCH_AC, NET_SEARCH_GC, NET_SEARCH_NC, NET_SEARCH_PHSUBSTR,
   NET_SEARCH_NOCONNECT, NET_SEARCH_ALL };
 
-bool print_wwivnet_net_listing(const net_networks_rec& net) {
+bool print_wwivnet_net_listing(const Network& net) {
   int gn = 0;
   char s2[101], bbstype;
 
@@ -565,7 +565,7 @@ bool print_wwivnet_net_listing(const net_networks_rec& net) {
   return false;
 }
 
-static bool print_ftn_net_listing(net_networks_rec& net) {
+static bool print_ftn_net_listing(Network& net) {
   if (!try_load_nodelist(net)) {
     return false;
   }

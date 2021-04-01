@@ -41,7 +41,7 @@ SSM::SSM(const wwiv::sdk::Config& config, wwiv::sdk::UserManager& user_manager)
 
 SSM::~SSM() = default;
 
-bool SSM::send_remote(const net_networks_rec& net, uint16_t system_number, uint32_t from_user_number, uint32_t user_number, const std::string& t) {
+bool SSM::send_remote(const Network& net, uint16_t system_number, uint32_t from_user_number, uint32_t user_number, const std::string& t) {
   net_header_rec nh{};
   nh.tosys = system_number;
   nh.touser = static_cast<uint16_t>(user_number);

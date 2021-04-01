@@ -40,7 +40,7 @@ int MessageArea::max_messages() const {
 
 MessageApi::MessageApi(const MessageApiOptions& options, std::string root_directory,
                        std::string subs_directory, std::string messages_directory,
-                       std::vector<net_networks_rec> net_networks)
+                       std::vector<Network> net_networks)
     : options_(options), root_directory_(std::move(root_directory)),
       subs_directory_(std::move(subs_directory)),
       messages_directory_(std::move(messages_directory)), net_networks_(std::move(net_networks)) {}

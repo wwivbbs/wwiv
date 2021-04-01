@@ -31,7 +31,7 @@ class FidoCallout final : public Callout {
 public:
   typedef int size_type;
   static const size_type npos = -1;
-  FidoCallout(const wwiv::sdk::Config& config, const net::net_networks_rec& net);
+  FidoCallout(const wwiv::sdk::Config& config, const net::Network& net);
   // [[ VisibleForTesting ]]
   ~FidoCallout() override;
 
@@ -67,7 +67,7 @@ public:
 private:
   bool initialized_{false};
   const std::string root_dir_;
-  net::net_networks_rec net_;
+  net::Network net_;
   std::map<FidoAddress, net::fido_node_config_t> node_configs_;
 };
 

@@ -57,6 +57,7 @@ set(COMMON_SOURCES
   "net/contact.cpp"
   "net/ftn_msgdupe.cpp"
   "net/callouts.cpp"
+  "net/net.cpp"
   "net/packets.cpp"
   "net/networks.cpp"
   "net/subscribers.cpp"
