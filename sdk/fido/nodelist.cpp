@@ -341,7 +341,7 @@ const NodelistEntry* Nodelist::entry(uint16_t zone, uint16_t net, uint16_t node)
 
 bool Nodelist::has_zone(int zone) const noexcept {
   return std::any_of(std::begin(entries_), std::end(entries_), 
-    [zone](const FidoAddress& address) { return address.zone() == zone; });
+    [zone](const auto& p) { return p.first.zone() == zone; });
 }
 
 static int year_of(time_t t) {

@@ -1,4 +1,5 @@
 include_directories(${GTEST_INCLUDE_DIRS})
+include_directories(${GMOCK_INCLUDE_DIR})
 include_directories(../deps/cereal/include)
 include(GoogleTest)
 
