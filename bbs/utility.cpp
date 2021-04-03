@@ -103,15 +103,17 @@ long nsl() {
 
   const auto tpl = minutes(a()->config()->sl(a()->sess().effective_sl()).time_per_logon);
   const auto tpd = minutes(a()->config()->sl(a()->sess().effective_sl()).time_per_day);
-  const auto extra_time =
+  const auto extra_time_call =
       duration_cast<seconds>(a()->user()->extra_time() + a()->extratimecall());
-  const auto tlc = std::chrono::duration_cast<seconds>(tpl - tot + extra_time);
+  const auto tlc = std::chrono::duration_cast<seconds>(tpl - tot + extra_time_call);
   // time left today
-  const auto tld = std::chrono::duration_cast<seconds>(tpd - tot - a()->user()->timeontoday() +
-                                                       a()->user()->extra_time());
+  const auto timeontoday = a()->user()->timeontoday();
+  const auto extra_time = a()->user()->extra_time();
+  const auto tld = std::chrono::duration_cast<seconds>(tpd - tot - timeontoday + extra_time);
   const auto tlt = std::min<seconds>(tlc, tld);
   a()->sess().SetTimeOnlineLimited(false);
-  return static_cast<long>(in_range<int64_t>(0, 32767, duration_cast<seconds>(tlt).count()));
+  const auto v = static_cast<int>(duration_cast<seconds>(tlt).count());
+  return static_cast<long>(in_range<int64_t>(0, 32767, v));
 }
 
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text,
@@ -347,7 +349,8 @@ bool ok_internal_fsed() { return okansi() && a()->user()->default_editor() == 0x
 
 template <class _Ty>
 const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value) {
-  return std::max(std::min(maxValue, value), minValue);
+  auto v = std::min(maxValue, value);
+  return std::max(v, minValue);
 }
 
 int ansir_to_flags(uint16_t ansir) {

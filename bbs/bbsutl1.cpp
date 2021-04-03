@@ -39,6 +39,7 @@
 #include <string>
 
 // ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/fido/fido_util.h"
 #include "sdk/net/networks.h"
 
 using std::chrono::milliseconds;
@@ -71,15 +72,15 @@ static int wordcount(const std::string& instr, const char* delimstr) {
  * a specified set of characters as delimiters.
  */
 static std::string extractword(int ww, const std::string& instr, const char* delimstr) {
-  char szTempBuffer[MAX_CONF_LINE];
+  char buffer[MAX_CONF_LINE];
   auto i = 0;
 
   if (!ww) {
     return {};
   }
 
-  to_char_array(szTempBuffer, instr);
-  for (auto* s = strtok(szTempBuffer, delimstr); s && i++ < ww; s = strtok(nullptr, delimstr)) {
+  to_char_array(buffer, instr);
+  for (auto* s = strtok(buffer, delimstr); s && i++ < ww; s = strtok(nullptr, delimstr)) {
     if (i == ww) {
       return std::string(s);
     }
@@ -87,6 +88,161 @@ static std::string extractword(int ww, const std::string& instr, const char* del
   return {};
 }
 
+struct NetworkAndName {
+  NetworkAndName(Network n, std::string s) : net(std::move(n)), system_name(std::move(s)), n_(n) {}
+  Network net;
+  std::string system_name;
+  const Network& n_;
+};
+
+static std::optional<int> query_network(std::vector<Network>& nets, const std::string& email,
+                                        int system_num) {
+  if (nets.empty()) {
+    return std::nullopt;
+  }
+  if (nets.size() == 1) {
+    return nets.front().network_number();
+  }
+
+  std::string onx{'Q'};
+  std::set<char> odc;
+  bout.nl();
+  std::vector<NetworkAndName> viable;
+  const auto ftnadr = fido::get_address_from_single_line(email);
+  for (auto& net : nets) {
+    set_net_num(net.network_number());
+    if (const auto csne = next_system(system_num)) {
+      if (net.type == network_type_t::ftn) {
+        if (ftnadr.zone() != -1 && net.try_load_nodelist()) {
+          if (!net.nodelist->has_zone(ftnadr.zone())) {
+            VLOG(1) << "Skipping net known to not have zone: " << net.name << "; zone: " << ftnadr.zone();
+            // This nodelist is loaded and doesn't have the zone, skip it.
+            continue;
+          }
+          viable.emplace_back(net, csne->name);
+        }
+      }
+    }
+  }
+
+  if (viable.empty()) {
+    return std::nullopt;
+  }
+  if (viable.size() == 1) {
+    return { viable.front().net.network_number() };
+  }
+  auto nn = 1;
+  for (const auto& v : viable) {
+    set_net_num(v.net.network_number());
+    if (nn < 9) {
+      onx.push_back(static_cast<char>(nn + '0'));
+    } else {
+      odc.insert(static_cast<char>(nn / 10));
+    }
+    bout << "|#2" << nn << "|#9) " << v.net.name << " (|#1" << v.system_name << "|#9)\r\n";
+    ++nn;
+  }
+  bout << "Q. Quit\r\n\n";
+  bout << "|#2Which network (number): ";
+  if (nets.size() < 9) {
+    const char ch = onek(onx);
+    if (ch == 'Q') {
+      return std::nullopt;
+    }
+    const int n = ch - '1';
+    return { viable.at(n).net.network_number() };
+  }
+  if (const auto mmk = mmkey(odc); mmk == "Q") {
+    return std::nullopt;
+  } else {
+    const auto selected =  to_number<int>(mmk) - 1;
+    if (selected < 0 || selected >= wwiv::stl::size_int(nets)) {
+      return std::nullopt;
+    }
+    return { viable.at(selected).net.network_number() };
+  }
+}
+
+static std::tuple<uint16_t, uint16_t> parse_internet_email_info(const std::string& email) {
+  for (auto i = 0; i < wwiv::stl::size_int(a()->nets()); i++) {
+    set_net_num(i);
+    if (a()->current_net().type == network_type_t::internet) {
+      a()->net_email_name = ToStringLowerCase(email);
+      // 0 for the user, and we'll use the network.
+      return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(INTERNET_EMAIL_FAKE_OUTBOUND_NODE));
+    }
+  }
+  bout << "Unknown user.\r\n";
+  return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
+}
+
+std::tuple<uint16_t, uint16_t> parse_ftn_email_info(const std::string& email) {
+  a()->net_email_name = ToStringLowerCase(email);
+  // We don't have a network name, so need to loop through them all.
+  std::vector<Network> nets;
+  for (const auto& net : a()->nets().networks()) {
+    if (net.type == network_type_t::ftn) {
+      nets.push_back(net);
+    }
+  }
+  if (auto o = query_network(nets, email, FTN_FAKE_OUTBOUND_NODE)) {
+    set_net_num(o.value());
+    return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(FTN_FAKE_OUTBOUND_NODE));
+  }
+  return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
+  
+}
+
+std::tuple<uint16_t, uint16_t> parse_local_email_info(const std::string& email) {
+  if (const auto user_number = finduser1(email); user_number > 0) {
+    return std::make_tuple(static_cast<uint16_t>(user_number), static_cast<uint16_t>(0));
+  }
+  if (iequals(email, "SYSOP")) {
+    return std::make_tuple(static_cast<uint16_t>(1), static_cast<uint16_t>(0));
+  }
+  bout << "Unknown user.\r\n";
+  return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
+}
+
+
+std::tuple<unsigned short, unsigned short>
+parse_wwivnet_email_info(const std::string& email, int system_number,
+                         const std::string& network_name) {
+
+  auto user_number = to_number<int>(email);
+  if (user_number == 0 && email.front() == '#') {
+    user_number = to_number<int>(email.substr(1));
+  }
+
+  a()->net_email_name = ToStringLowerCase(email);
+  if (!network_name.empty()) {
+    for (auto i = 0; i < wwiv::stl::size_int(a()->nets()); i++) {
+      set_net_num(i);
+      if (iequals(network_name, a()->network_name())) {
+        if (valid_system(system_number)) {
+          if (system_number == a()->current_net().sysnum) {
+            return parse_local_email_info(email);
+          }
+          // return 0,0 since we set the net_email_name already.
+          return std::make_tuple(static_cast<uint16_t>(user_number), static_cast<uint16_t>(system_number));
+        }
+      }
+    }
+    return std::make_tuple(static_cast<uint16_t>(user_number), static_cast<uint16_t>(system_number));
+  }
+  // We don't have a network name, so need to loop through them all.
+  std::vector<Network> nets;
+  for (const auto& net : a()->nets().networks()) {
+    if (net.type == network_type_t::wwivnet) {
+      nets.push_back(net);
+    }
+  }
+  if (auto o = query_network(nets, email, system_number)) {
+    set_net_num(o.value());
+    return std::make_tuple(static_cast<uint16_t>(user_number), static_cast<uint16_t>(system_number));
+  }
+  return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
+}
 
 /**
  * Finds user_num and system number from emailAddress and sets the
@@ -96,192 +252,43 @@ static std::string extractword(int ww, const std::string& instr, const char* del
  * @return tuple of {un User Number, System Number}
  */
 std::tuple<uint16_t, uint16_t> parse_email_info(const std::string& email_address) {
-  char *ss1, onx[20];
-  unsigned user_number;
-  std::set<char> odc;
-
-  char szEmailAddress[255];
-  to_char_array(szEmailAddress, email_address);
-
-  uint16_t un = 0;
-  uint16_t sy = 0;
-  a()->net_email_name.clear();
-  auto* ss = strrchr(szEmailAddress, '@');
-  if (ss == nullptr) {
-    user_number = finduser1(szEmailAddress);
-    if (user_number > 0) {
-      un = static_cast<uint16_t>(user_number);
-    } else if (wwiv::strings::IsEquals(szEmailAddress, "SYSOP")) { // Add 4.31 Build3
-      un = 1;
-    } else {
-      bout << "Unknown user.\r\n";
-    }
-  } else if (to_number<int>(ss + 1) == 0) {
-    int i;
-    for (i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
-      set_net_num(i);
-      if (a()->current_net().type == network_type_t::internet) {
-        for (ss1 = szEmailAddress; *ss1; ss1++) {
-          if ((*ss1 >= 'A') && (*ss1 <= 'Z')) {
-            *ss1 += 'a' - 'A';
-          }
-          a()->net_email_name = szEmailAddress;
-        }
-        sy = 1;
-        break;
-      }
-    }
-    if (i >= wwiv::stl::ssize(a()->nets())) {
-      bout << "Unknown user.\r\n";
-    }
-  } else {
-    ss[0] = '\0';
-    ss = &ss[1];
-    StringTrimEnd(szEmailAddress);
-    user_number = to_number<unsigned int>(szEmailAddress);
-    if (user_number == 0 && szEmailAddress[0] == '#') {
-      user_number = to_number<unsigned int>(szEmailAddress + 1);
-    }
-    if (strchr(szEmailAddress, '@')) {
-      user_number = 0;
-    }
-    const auto system_number = to_number<unsigned int>(ss);
-    ss1 = strchr(ss, '.');
-    if (ss1) {
-      ss1++;
-    }
-    if (user_number == 0) {
-      a()->net_email_name = szEmailAddress;
-      StringTrimEnd(&a()->net_email_name);
-      if (!a()->net_email_name.empty()) {
-        sy = static_cast<uint16_t>(system_number);
-      } else {
-        bout << "Unknown user.\r\n";
-      }
-    } else {
-      un = static_cast<uint16_t>(user_number);
-      sy = static_cast<uint16_t>(system_number);
-    }
-    if (sy && ss1) {
-      auto i = 0;
-      for (i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
-        set_net_num(i);
-        if (iequals(ss1, a()->network_name())) {
-          if (!valid_system(sy)) {
-            bout.nl();
-            bout << "There is no " << ss1 << " @" << sy << ".\r\n\n";
-            sy = un = 0;
-          } else {
-            if (sy == a()->current_net().sysnum) {
-              sy = 0;
-              if (un == 0) {
-                un = static_cast<uint16_t>(finduser(a()->net_email_name));
-              }
-              if (un == 0 || un > 32767) {
-                un = 0;
-                bout << "Unknown user.\r\n";
-              }
-            }
-          }
-          break;
-        }
-      }
-      if (i >= wwiv::stl::ssize(a()->nets())) {
-        bout.nl();
-        bout << "This system isn't connected to " << ss1 << "\r\n";
-        sy = un = 0;
-      }
-    } else if (sy && wwiv::stl::ssize(a()->nets()) > 1) {
-      bout << "|#5Select Network\r\n\n";
-
-      onx[0] = 'Q';
-      onx[1] = '\0';
-      auto onxi = 1;
-      auto nv = 0;
-      const auto on = a()->net_num();
-      ss = static_cast<char*>(calloc(wwiv::stl::ssize(a()->nets()) + 1, 1));
-      CHECK_NOTNULL(ss);
-      int xx = -1;
-      for (auto i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
-        set_net_num(i);
-        if (a()->current_net().sysnum == sy) {
-          xx = i;
-        } else if (valid_system(sy)) {
-          ss[nv++] = static_cast<char>(i);
-        }
-      }
-      set_net_num(on);
-      if (nv == 0) {
-        if (xx != -1) {
-          set_net_num(xx);
-          sy = 0;
-          if (un == 0) {
-            un = static_cast<uint16_t>(finduser(a()->net_email_name));
-            if (un == 0 || un > 32767) {
-              un = 0;
-              bout << "Unknown user.\r\n";
-            }
-          }
-        } else {
-          bout.nl();
-          bout << "Unknown system\r\n";
-          sy = un = 0;
-        }
-      } else if (nv == 1) {
-        set_net_num(ss[0]);
-      } else {
-        bout.nl();
-        for (int i = 0; i < nv; i++) {
-          set_net_num(ss[i]);
-          if (const auto csne = next_system(sy)) {
-            if (i < 9) {
-              onx[onxi++] = static_cast<char>(i + '1');
-              onx[onxi] = 0;
-            } else {
-              odc.insert(static_cast<char>((i + 1) / 10));
-            }
-            bout << i + 1 << ". " << a()->network_name() << " (" << csne->name << ")\r\n";
-          }
-        }
-        bout << "Q. Quit\r\n\n";
-        bout << "|#2Which network (number): ";
-        int i;
-        if (nv < 9) {
-          const char ch = onek(onx);
-          i = ch == 'Q' ? -1 : ch - '1';
-        } else {
-          const auto mmk = mmkey(odc);
-          if (mmk == "Q") {
-            i = -1;
-          } else {
-            i = to_number<decltype(i)>(mmk) - 1;
-          }
-        }
-        if (i >= 0 && i < nv) {
-          set_net_num(ss[i]);
-        } else {
-          bout << "\r\n|#6Aborted.\r\n\n";
-          un = sy = 0;
-        }
-      }
-      free(ss);
-    } else {
-      if (sy == a()->current_net().sysnum) {
-        sy = 0;
-        if (un == 0) {
-          un = static_cast<uint16_t>(finduser(a()->net_email_name));
-        }
-        if (un == 0 || un > 32767) {
-          un = 0;
-          bout << "Unknown user.\r\n";
-        }
-      } else if (!valid_system(sy)) {
-        bout << "\r\nUnknown user.\r\n";
-        sy = un = 0;
-      }
-    }
+  if (email_address.empty()) {
+    return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
   }
-  return std::make_tuple(un, sy);
+  
+  if (const auto atidx = email_address.rfind('@');
+    atidx != std::string::npos) {
+    if (atidx == email_address.size() - 1) {
+      // malformed email address of 1@
+      return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
+    }
+    const auto email = email_address.substr(0, atidx);
+    if (isdigit(email_address.at(atidx + 1))) {
+      // We have something like "xx @N" where N is a digit.
+      const auto suffix = email_address.substr(atidx + 1);
+      auto system_number = to_number<int>(suffix);
+      std::string network_name;
+      if (const auto dotidx = suffix.find('.'); dotidx != std::string::npos) {
+        network_name = suffix.substr(dotidx + 1);
+        system_number = to_number<int>(suffix.substr(0, dotidx));
+      }
+
+      if (system_number == FTN_FAKE_OUTBOUND_NODE) {
+        return parse_ftn_email_info(email);
+      }
+      if (system_number == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
+        return parse_internet_email_info(email);
+      }
+      if (system_number == INTERNET_NEWS_FAKE_OUTBOUND_NODE) {
+        bout << "|#6NNTP is not supported yet." << wwiv::endl;
+        return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
+      }
+      return parse_wwivnet_email_info(email, system_number, network_name);
+    }
+    return parse_internet_email_info(email);
+  }
+  // No @, so just a local address.
+  return parse_local_email_info(email_address);
 }
 
 std::string username_system_net_as_string(uint16_t un, const std::string& user_name, uint16_t sn,

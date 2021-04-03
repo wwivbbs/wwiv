@@ -170,7 +170,7 @@ static void init_files(UIWindow* window, const std::string& bbsdir, bool unzip_f
     }
     if (i == 255) {
       sl.time_per_logon = 255;
-      sl.time_per_day = 255;
+      sl.time_per_day = 1440;
       sl.posts = 255;
       sl.emails = 255;
     }
