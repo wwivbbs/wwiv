@@ -88,25 +88,23 @@ static std::string extractword(int ww, const std::string& instr, const char* del
   return {};
 }
 
-struct NetworkAndName {
-  NetworkAndName(Network n, std::string s) : net(std::move(n)), system_name(std::move(s)), n_(n) {}
-  Network net;
-  std::string system_name;
-  const Network& n_;
-};
-
-static std::optional<int> query_network(std::vector<Network>& nets, const std::string& email,
-                                        int system_num) {
+/**
+ * Filters networks by viability.
+ *
+ * A viable network is:
+ *   (1) has system_num reachable.
+ *   (2) If the network is FTN, then tries to match zone from the network.
+ *
+ * Returns a vector of networks and the system names identified by the email address
+ * either from system_num for WWIVnet networks, or from parsing the FidoNet Address
+ * out of the email address for FTN networks.
+ */
+std::vector<NetworkAndName> filter_networks(std::vector<Network>& nets,
+                                            const std::string& email, int system_num) {
   if (nets.empty()) {
-    return std::nullopt;
-  }
-  if (nets.size() == 1) {
-    return nets.front().network_number();
+    return {};
   }
 
-  std::string onx{'Q'};
-  std::set<char> odc;
-  bout.nl();
   std::vector<NetworkAndName> viable;
   const auto ftnadr = fido::get_address_from_single_line(email);
   for (auto& net : nets) {
@@ -119,20 +117,26 @@ static std::optional<int> query_network(std::vector<Network>& nets, const std::s
             // This nodelist is loaded and doesn't have the zone, skip it.
             continue;
           }
-          viable.emplace_back(net, csne->name);
         }
       }
+      viable.emplace_back(net, csne->name);
     }
   }
+  return viable;
+}
 
-  if (viable.empty()) {
-    return std::nullopt;
+static std::optional<int> query_network(const std::vector<NetworkAndName>& nets) {
+  if (nets.empty()) {
+    return std::nullopt;    
   }
-  if (viable.size() == 1) {
-    return { viable.front().net.network_number() };
+  if (nets.size() == 1) {
+    return { nets.front().net.network_number() };
   }
+  std::string onx{'Q'};
+  std::set<char> odc;
+  bout.nl();
   auto nn = 1;
-  for (const auto& v : viable) {
+  for (const auto& v : nets) {
     set_net_num(v.net.network_number());
     if (nn < 9) {
       onx.push_back(static_cast<char>(nn + '0'));
@@ -142,25 +146,25 @@ static std::optional<int> query_network(std::vector<Network>& nets, const std::s
     bout << "|#2" << nn << "|#9) " << v.net.name << " (|#1" << v.system_name << "|#9)\r\n";
     ++nn;
   }
-  bout << "Q. Quit\r\n\n";
-  bout << "|#2Which network (number): ";
+  bout << "|#2Q|#9) Quit\r\n\n";
+  bout << "|#5(|#2Q|#5=|#1Quit|#5) Which network (number): ";
   if (nets.size() < 9) {
     const char ch = onek(onx);
     if (ch == 'Q') {
       return std::nullopt;
     }
     const int n = ch - '1';
-    return { viable.at(n).net.network_number() };
+    return { nets.at(n).net.network_number() };
   }
-  if (const auto mmk = mmkey(odc); mmk == "Q") {
+  const auto mmk = mmkey(odc); 
+  if (mmk == "Q") {
     return std::nullopt;
-  } else {
-    const auto selected =  to_number<int>(mmk) - 1;
-    if (selected < 0 || selected >= wwiv::stl::size_int(nets)) {
-      return std::nullopt;
-    }
-    return { viable.at(selected).net.network_number() };
   }
+  const auto selected =  to_number<int>(mmk) - 1;
+  if (selected < 0 || selected >= wwiv::stl::size_int(nets)) {
+    return std::nullopt;
+  }
+  return { nets.at(selected).net.network_number() };
 }
 
 static std::tuple<uint16_t, uint16_t> parse_internet_email_info(const std::string& email) {
@@ -185,12 +189,12 @@ std::tuple<uint16_t, uint16_t> parse_ftn_email_info(const std::string& email) {
       nets.push_back(net);
     }
   }
-  if (auto o = query_network(nets, email, FTN_FAKE_OUTBOUND_NODE)) {
+
+  if (const auto o = query_network(filter_networks(nets, email, FTN_FAKE_OUTBOUND_NODE))) {
     set_net_num(o.value());
     return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(FTN_FAKE_OUTBOUND_NODE));
   }
   return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
-  
 }
 
 std::tuple<uint16_t, uint16_t> parse_local_email_info(const std::string& email) {
@@ -237,20 +241,15 @@ parse_wwivnet_email_info(const std::string& email, int system_number,
       nets.push_back(net);
     }
   }
-  if (auto o = query_network(nets, email, system_number)) {
+
+  if (const auto o = query_network(filter_networks(nets, email, system_number))) {
     set_net_num(o.value());
-    return std::make_tuple(static_cast<uint16_t>(user_number), static_cast<uint16_t>(system_number));
+    return std::make_tuple(static_cast<uint16_t>(user_number),
+                           static_cast<uint16_t>(system_number));
   }
   return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
 }
 
-/**
- * Finds user_num and system number from emailAddress and sets the
- * network number as appropriate.
- *
- * @param email_address The text of the email address.
- * @return tuple of {un User Number, System Number}
- */
 std::tuple<uint16_t, uint16_t> parse_email_info(const std::string& email_address) {
   if (email_address.empty()) {
     return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
@@ -329,8 +328,7 @@ bool ValidateSysopPassword() {
 }
 
 /**
- * Hangs up the modem if user online. Whether using modem or not, sets
- * a()->sess().hangup() to 1.
+ * Hangs up the modem if user online. Whether using modem or not.
  */
 void hang_it_up() {
   if (!a()->sess().ok_modem_stuff()) {
