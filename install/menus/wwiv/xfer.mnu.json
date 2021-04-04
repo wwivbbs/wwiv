@@ -242,23 +242,6 @@
                 ]
             },
             {
-                "item_key": "/S",
-                "item_text": "Download File List",
-                "visible": true,
-                "help_text": "Download ASCII File Listing",
-                "log_text": "/S",
-                "instance_message": "Downloading File List",
-                "acs": "",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "downloadfilelist",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
                 "item_key": "F",
                 "item_text": "Search Files by Description",
                 "visible": true,

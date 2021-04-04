@@ -33,23 +33,6 @@
         ],
         "items": [
             {
-                "item_key": "R",
-                "item_text": "Read Messages",
-                "visible": true,
-                "help_text": "",
-                "log_text": "R",
-                "instance_message": "",
-                "acs": "",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "readmessages",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
                 "item_key": "Q",
                 "item_text": "Quit back to Main",
                 "visible": true,
@@ -111,7 +94,17 @@
                 "password": "",
                 "actions": [
                     {
-                        "cmd": "dirlist~selectdir~listfiles",
+                        "cmd": "dirlist",
+                        "data": "",
+                        "acs": ""
+                    },
+                    {
+                        "cmd": "selectdir",
+                        "data": "",
+                        "acs": ""
+                    },
+                    {
+                        "cmd": "listfiles",
                         "data": "",
                         "acs": ""
                     }
@@ -130,23 +123,6 @@
                     {
                         "cmd": "newfilescan",
                         "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
-                "item_key": "1",
-                "item_text": "Download Asylum.ZIP",
-                "visible": true,
-                "help_text": "Download ASYLUM.ZIP - Free download",
-                "log_text": "",
-                "instance_message": "",
-                "acs": "",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "dlfreefile",
-                        "data": "ASYLUMMO ASYLUM.ZIP",
                         "acs": ""
                     }
                 ]

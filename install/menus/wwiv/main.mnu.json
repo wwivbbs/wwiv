@@ -621,23 +621,6 @@
                 ]
             },
             {
-                "item_key": "/Z",
-                "item_text": "DownLoad Posts",
-                "visible": true,
-                "help_text": "DownLoad Posts in ASCII Format",
-                "log_text": "/Z",
-                "instance_message": "Downloading Posts",
-                "acs": "",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "downloadposts",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
                 "item_key": "+",
                 "item_text": "Up One Sub (+, ], >)",
                 "visible": false,
