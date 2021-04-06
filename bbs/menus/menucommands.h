@@ -35,7 +35,7 @@ struct MenuItem {
   MenuItem(std::string desc, std::function<void(MenuContext&)> f)
       : description_(std::move(desc)), f_(std::move(f)) {}
 
-  explicit MenuItem(std::function<void(MenuContext&)> f) : description_(""), f_(std::move(f)) {}
+  explicit MenuItem(std::function<void(MenuContext&)> f) : f_(std::move(f)) {}
 
   std::string description_;
   std::string category_;
@@ -50,7 +50,7 @@ std::map<std::string, MenuItem, wwiv::stl::ci_less> CreateCommandMap();
  * Executes a menu command ```script``` using the menu data for the context of
  * the MENU, or nullptr if not invoked from an actual menu.
  */
-std::optional<MenuContext> InterpretCommand(Menu* menu, const std::string& cmd, const std::string& data);
+std::optional<MenuContext> interpret_command(Menu* menu, const std::string& cmd, const std::string& data);
 
 }  // namespace
 

@@ -21,8 +21,6 @@
 
 #include "core/stl.h"
 #include <filesystem>
-#include <map>
-#include <optional>
 #include <string>
 
 namespace wwiv::bbs::menus {

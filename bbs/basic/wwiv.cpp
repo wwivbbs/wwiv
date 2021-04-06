@@ -62,7 +62,7 @@ bool RegisterNamespaceWWIV(mb_interpreter_t* basi) {
     }
     mb_check(mb_attempt_close_bracket(bas, l));
 
-    menus::InterpretCommand(nullptr, cmd.value(), data);
+    menus::interpret_command(nullptr, cmd.value(), data);
     return MB_FUNC_OK;
   });
 

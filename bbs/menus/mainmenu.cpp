@@ -228,7 +228,7 @@ std::optional<menu_item_56_t> Menu::GetMenuItemForCommand(const std::string& cmd
 }
 
 std::tuple<menu_command_action_t, std::string> Menu::ExecuteAction(const menu_action_56_t& a) {
-  if (auto o = InterpretCommand(this, a.cmd, a.data)) {
+  if (auto o = interpret_command(this, a.cmd, a.data)) {
     auto& ctx = o.value();
     if (ctx.menu_action == menu_command_action_t::return_from_menu) {
       return std::make_tuple(menu_command_action_t::return_from_menu, "");

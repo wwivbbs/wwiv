@@ -69,7 +69,7 @@ static const std::string MENU_CAT_SYS = "System";
 static const std::string MENU_CAT_CONF = "Conference";
 static const std::string MENU_CAT_USER = "User";
 
-std::optional<MenuContext> InterpretCommand(Menu* menu, const std::string& cmd,
+std::optional<MenuContext> interpret_command(Menu* menu, const std::string& cmd,
                                             const std::string& data) {
   if (cmd.empty()) {
     return std::nullopt;

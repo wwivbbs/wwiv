@@ -46,6 +46,11 @@ enum class menu_run_result_t {
 
 class Menu {
 public:
+  Menu() = delete;
+  Menu(const Menu&) = delete;
+  Menu(Menu&&) = delete;
+  Menu& operator=(const Menu&) = delete;
+  Menu& operator=(Menu&&) = delete;
   Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
                const std::string& menu_name);
   ~Menu() = default;
