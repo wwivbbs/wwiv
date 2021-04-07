@@ -47,10 +47,10 @@ enum class menu_run_result_t {
 class Menu {
 public:
   Menu() = delete;
-  Menu(const Menu&) = delete;
-  Menu(Menu&&) = delete;
-  Menu& operator=(const Menu&) = delete;
-  Menu& operator=(Menu&&) = delete;
+  Menu(const Menu&) = default;
+  Menu(Menu&&) = default;
+  Menu& operator=(const Menu&) = default;
+  Menu& operator=(Menu&&) = default;
   Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
                const std::string& menu_name);
   ~Menu() = default;
@@ -61,15 +61,15 @@ public:
   GetMenuItemForCommand(const std::string& cmd) const;
   void DisplayMenu();
   // Generates the short form (multi-column) or long form (single col, help text) menu.
-  std::vector<std::string> GenerateMenuAsLines(sdk::menus::menu_type_t typ);
+  [[nodiscard]] std::vector<std::string> GenerateMenuAsLines(sdk::menus::menu_type_t typ);
   // Generates the short form (multi-column) or long form (single col, help text) menu.
   void GenerateMenu(sdk::menus::menu_type_t typ);
   [[nodiscard]] const sdk::menus::menu_56_t& menu() const noexcept { return menu_.menu; }
-  std::tuple<menu_command_action_t, std::string>
+  [[nodiscard]] std::tuple<menu_command_action_t, std::string>
   ExecuteAction(const sdk::menus::menu_action_56_t& a);
-  std::tuple<menu_command_action_t, std::string>
+  [[nodiscard]] std::tuple<menu_command_action_t, std::string>
   ExecuteActions(const std::vector<wwiv::sdk::menus::menu_action_56_t>& actions);
-  std::tuple<menu_run_result_t, std::string> Run();
+  [[nodiscard]] std::tuple<menu_run_result_t, std::string> Run();
 
   bool reload{false}; /* true if we are going to reload the menus */
   bool menu_displayed_{false};

@@ -16,22 +16,42 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_BBS_MENUS_CONFIG_MENUS_H
-#define INCLUDED_BBS_MENUS_CONFIG_MENUS_H
+#ifndef INCLUDED_SDK_MENUS_MENU_SET_H
+#define INCLUDED_SDK_MENUS_MENU_SET_H
 
 #include "core/stl.h"
-#include "core/textfile.h"
+#include "sdk/menus/menu.h"
 #include <map>
 #include <string>
 
-namespace wwiv::bbs::menus {
+namespace wwiv::sdk::menus {
 
-// Functions used bbs.cpp and defaults.cpp
-void ConfigUserMenuSet();
 
-// Functions used by menu-edit and menu
-void MenuSysopLog(const std::string& pszMsg);
+class MenuDescriptions {
+public:
+  explicit MenuDescriptions(const std::filesystem::path& menupath);
+  ~MenuDescriptions();
+  [[nodiscard]] std::string description(const std::string& name) const;
 
+private:
+  const std::filesystem::path menupath_;
+  std::map<std::string, std::string, wwiv::stl::ci_less> descriptions_;
+};
+
+class MenuSet56 {
+public:
+  MenuSet56(std::filesystem::path menu_dir);
+  [[nodiscard]] bool Load();
+  [[nodiscard]] bool Save();
+  [[nodiscard]] bool initialized() const noexcept { return initialized_; }
+  void set_initialized(bool i) { initialized_ = i; }
+
+  menu_set_t menu_set{};
+
+private:
+  const std::filesystem::path menuset_dir_;
+  bool initialized_{false};
+};
 }  // namespace
 
 #endif

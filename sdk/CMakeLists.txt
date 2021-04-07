@@ -44,6 +44,7 @@ set(COMMON_SOURCES
   "files/files_ext.cpp"
   "files/tic.cpp"
   "menus/menu.cpp"
+  "menus/menu_set.cpp"
   "msgapi/email_wwiv.cpp"
   "msgapi/message_api.cpp"
   "msgapi/message_api_wwiv.cpp"

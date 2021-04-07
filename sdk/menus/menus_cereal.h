@@ -116,6 +116,12 @@ void serialize (Archive& ar, menu_command_help_t& d) {
 }
 
 
+template <class Archive> void serialize(Archive& ar, menu_set_t& m) {
+  SERIALIZE(m, name);
+  SERIALIZE(m, description);
+  SERIALIZE(m, items);
+}
+
 }
 
 
