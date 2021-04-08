@@ -23,6 +23,7 @@
 #include <cereal/types/memory.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/menus/menus_cereal.h"
+#include "sdk/menus/menu_set.h"
 
 #include "core/datafile.h"
 #include "core/file.h"
@@ -94,8 +95,8 @@ menu_action_56_t CreateActionFrom43Execute(const std::string& exec) {
   return a;
 }
 
-Menu56::Menu56(std::filesystem::path menu_dir, std::string menu_set, std::string menu_name)
-    : menu_dir_(std::move(menu_dir)), menu_set_(std::move(menu_set)),
+Menu56::Menu56(std::filesystem::path menu_dir, const MenuSet56& menu_set, std::string menu_name)
+    : menu_dir_(std::move(menu_dir)), menu_set_(menu_set.menu_set.name),
       menu_name_(std::move(menu_name)) {
   initialized_ = Load();
 }
@@ -121,7 +122,9 @@ std::optional<Menu56> Create56MenuFrom43(const Menu430& m4, int max_backups) {
   if (backup_file(path, max_backups)) {
     File::Remove(path);
   }
-  Menu56 m5(m4.menu_dir_, m4.menu_set_, m4.menu_name_);
+  MenuSet56 menuset;
+  menuset.menu_set.name = m4.menu_set_;
+  Menu56 m5(m4.menu_dir_, menuset, m4.menu_name_);
 
   auto& h = m5.menu;
   const auto& oh = m4.header;

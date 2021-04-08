@@ -25,18 +25,15 @@
 #include <set>
 #include <string>
 
-namespace wwiv {
-namespace sdk {
-namespace value {
+namespace wwiv::sdk::value {
 class ValueProvider;
-}
-}
 }
 
 namespace wwiv::common::menus {
 
 std::vector<std::string>
-GenerateMenuLines(const sdk::Config& config, const sdk::menus::menu_56_t& menu,
+GenerateMenuLines(const sdk::Config& config,
+                  const wwiv::sdk::menus::MenuSet56& menu_set, const sdk::menus::menu_56_t& menu,
                   const sdk::User& user, const std::vector<const sdk::value::ValueProvider*>& providers,
                   sdk::menus::menu_type_t typ);
 

@@ -31,6 +31,7 @@
 #include "common/value/uservalueprovider.h"
 #include "core/strings.h"
 #include "sdk/config.h"
+#include "sdk/menus/menu_set.h"
 
 #include <string>
 
@@ -78,12 +79,12 @@ static void log_command(menu_logtype_t logging, const menu_item_56_t& mi) {
 MainMenu::MainMenu(const sdk::Config& config) : config_(config) {}
 
 void MainMenu::Run() {
-  menu_set_ = a()->user()->menu_set();
-  auto main = std::make_unique<Menu>(config_.menudir(), menu_set_, "main");
+  menu_set_name_ = a()->sess().current_menu_set();
+  auto main = std::make_unique<Menu>(config_.menudir(), menu_set_name_, "main");
   while (!main->initalized()) {
     ConfigUserMenuSet();
     // TODO(rushfan): Update menu_set_ and reload main
-    main = std::make_unique<Menu>(config_.menudir(), menu_set_, "main");
+    main = std::make_unique<Menu>(config_.menudir(), menu_set_name_, "main");
   }
   if (!check_acs(main->menu().acs)) {
     sysoplog() << "Insufficient ACS for main menu";
@@ -107,7 +108,7 @@ void MainMenu::Run() {
       stack_.pop_back();
       break;
     case menu_run_result_t::push_menu: {
-      Menu m(config_.menudir(), menu_set_, s);
+      Menu m(config_.menudir(), menu_set_name_, s);
       if (!m.initalized()) {
         LOG(ERROR) << "Menu never loaded";
         continue;
@@ -119,8 +120,8 @@ void MainMenu::Run() {
       break;
     case menu_run_result_t::change_menu_set:
       stack_.clear();
-      menu_set_ = a()->user()->menu_set();
-      main = std::make_unique<Menu>(config_.menudir(), menu_set_, "main");
+      menu_set_name_ = a()->sess().current_menu_set();
+      main = std::make_unique<Menu>(config_.menudir(), menu_set_name_, "main");
       break;
     case menu_run_result_t::none:
       // Do nothing.
@@ -134,11 +135,12 @@ void mainmenu() {
   m.Run();
 }
 
-Menu::Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
+Menu::Menu(const std::filesystem::path& menu_path, const wwiv::sdk::menus::MenuSet56& menu_set,
            const std::string& menu_name)
-    : menu_set_(menu_set), menu_name_(menu_name), menu_(menu_path, menu_set, menu_name) {
+    : menu_set_name_(menu_set.menu_set.name), menu_name_(menu_name),
+      menu_set_(menu_set),  menu_(menu_path, menu_set, menu_name) {
 
-  menu_set_path_ = FilePath(menu_path, menu_set_);
+  menu_set_path_ = menu_set_.menuset_dir();
   prompt_ = "|09Command? ";
 
   // Load Prompt;
@@ -224,6 +226,14 @@ std::optional<menu_item_56_t> Menu::GetMenuItemForCommand(const std::string& cmd
       return {mi};
     }
   }
+
+  // Check global items.
+  for (const auto& mi : menu_set_.menu_set.items) {
+    if (cmd == mi.item_key) {
+      return {mi};
+    }
+  }
+
   return std::nullopt;
 }
 
@@ -315,12 +325,12 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
       auto [action, d] = ExecuteActions(mi.actions);
       if (action == menu_command_action_t::push_menu) {
         // No push or pop allowed in exit actions
-        ExecuteActions(menu().exit_actions);
+        (void) ExecuteActions(menu().exit_actions);
         return std::make_tuple(menu_run_result_t::push_menu, d);
       }
       if (action == menu_command_action_t::return_from_menu) {
         // No push or pop allowed in exit actions
-        ExecuteActions(menu().exit_actions);
+        (void) ExecuteActions(menu().exit_actions);
         return std::make_tuple(menu_run_result_t::return_from_menu, "");
       }
       if (reload || !iequals(menu_set, a()->user()->menu_set())) {
@@ -353,7 +363,7 @@ std::vector<std::string> Menu::GenerateMenuAsLines(menu_type_t typ) {
   const common::value::UserValueProvider up(a()->context());
   const common::value::BbsValueProvider bp(*a()->config(), a()->sess());
   const std::vector<const wwiv::sdk::value::ValueProvider*> providers{&up, &bp};
-  return GenerateMenuLines(*a()->config(), menu(), *a()->user(),
+  return GenerateMenuLines(*a()->config(), menu_set_, menu(), *a()->user(),
                            providers, typ);
 }
 

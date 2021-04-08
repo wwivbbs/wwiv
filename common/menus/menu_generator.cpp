@@ -22,6 +22,7 @@
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "sdk/acs/acs.h"
+#include "sdk/menus/menu_set.h"
 
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::menus;
@@ -69,9 +70,36 @@ static std::string generate_menu_item_line(generated_menu_56_t g, const std::str
   return fmt::format("{}{}", line, std::string(max_width - len, ' '));
 }
 
+static bool GenerateMenuLine(const Config& config, const menu_item_56_t& mi,
+                             const generated_menu_56_t& g, bool& just_nled,
+                             const std::vector<const wwiv::sdk::value::ValueProvider*>& providers,
+                             menu_type_t typ, int num_cols, int screen_width,
+                             std::ostringstream& ss) {
+  if (mi.item_key.empty()) {
+    return false;
+  }
+  if (auto [result, debug_lines] = acs::check_acs(config, mi.acs, providers); !result) {
+    return false;
+  }
+  if (!g.show_empty_text && StringTrim(mi.item_text).empty()) {
+    return false;
+  }
+  if (!mi.visible) {
+    return false;
+  }
+  just_nled = false;
+  const auto col_width =
+      typ == menu_type_t::short_menu ? screen_width / num_cols : screen_width - 1;
+  const auto key = display_key(mi.item_key);
+  const auto& text = typ == menu_type_t::short_menu ? mi.item_text : mi.help_text;
+  ss << generate_menu_item_line(g, key, text, col_width);
+  return true;
+}
 
-std::vector<std::string>
-GenerateMenuLines(const Config& config, const menu_56_t& menu, const sdk::User& user,
+
+std::vector<std::string> GenerateMenuLines(
+                  const Config& config, const wwiv::sdk::menus::MenuSet56& menu_set,
+                  const menu_56_t& menu, const sdk::User& user,
                   const std::vector<const wwiv::sdk::value::ValueProvider*>& providers,
                   menu_type_t typ) {
   std::vector<std::string> out;
@@ -96,33 +124,37 @@ GenerateMenuLines(const Config& config, const menu_56_t& menu, const sdk::User& 
   }
   auto just_nled = false;
   for (const auto& mi : menu.items) {
-    if (mi.item_key.empty()) {
+    if (!GenerateMenuLine(config, mi, g, just_nled, providers, typ, num_cols, screen_width, ss)) {
       continue;
     }
-    if (auto [result, debug_lines] = acs::check_acs(config, mi.acs, providers); !result) {
-      continue;
-    }
-    if (!g.show_empty_text && StringTrim(mi.item_text).empty()) {
-      continue;
-    }
-    if (!mi.visible) {
-      continue;
-    }
-    just_nled = false;
-    const auto key = display_key(mi.item_key);
-    const auto& text = typ == menu_type_t::short_menu ? mi.item_text : mi.help_text;
-    ss << generate_menu_item_line(g, key, text, col_width);
     if (++lines_displayed % num_cols == 0) {
       out.emplace_back(ss.str());
-      ss.str("");
-      ss.clear();
+      ss.str({});
       just_nled = true;
     }
   }
+
+  std::set<std::string> keys;
+  for (const auto& m : menu.items) {
+    keys.insert(m.item_key);
+  }
+  for (const auto& mi : menu_set.menu_set.items) {
+    if (wwiv::stl::contains(keys, mi.item_key)) {
+      continue;
+    }
+    if (!GenerateMenuLine(config, mi, g, just_nled, providers, typ, num_cols, screen_width, ss)) {
+      continue;
+    }
+    if (++lines_displayed % num_cols == 0) {
+      out.emplace_back(ss.str());
+      ss.str({});
+      just_nled = true;
+    }
+  }
+
   if (!just_nled) {
     out.emplace_back(ss.str());
-    ss.str("");
-    ss.clear();
+    ss.str({});
   }
   for (auto i = 0; i < g.num_newlines_at_end; i++) {
     out.emplace_back("");

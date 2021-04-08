@@ -117,6 +117,8 @@ struct menu_rec_430_t {
 
 namespace wwiv::sdk::menus {
 
+class MenuSet56;
+
 class Menu430 {
 public:
   Menu430(std::filesystem::path menu_dir, std::string menu_set,
@@ -227,7 +229,7 @@ struct menu_set_t {
 
 class Menu56 {
 public:
-  Menu56(std::filesystem::path menu_dir, std::string menu_set,
+  Menu56(std::filesystem::path menu_dir, const MenuSet56& menu_set,
           std::string menu_name);
   [[nodiscard]] bool Load();
   [[nodiscard]] bool Save();

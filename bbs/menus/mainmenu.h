@@ -21,6 +21,7 @@
 
 #include "menucommands.h"
 #include "sdk/menus/menu.h"
+#include "sdk/menus/menu_set.h"
 #include <filesystem>
 #include <map>
 #include <string>
@@ -48,10 +49,10 @@ class Menu {
 public:
   Menu() = delete;
   Menu(const Menu&) = default;
-  Menu(Menu&&) = default;
+  Menu(Menu&&) noexcept = default;
   Menu& operator=(const Menu&) = default;
   Menu& operator=(Menu&&) = default;
-  Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
+  Menu(const std::filesystem::path& menu_path, const wwiv::sdk::menus::MenuSet56& menu_set,
                const std::string& menu_name);
   ~Menu() = default;
   [[nodiscard]] bool initalized() const { return menu_.initialized(); }
@@ -75,8 +76,9 @@ public:
   bool menu_displayed_{false};
 
 private:
-  const std::string menu_set_;
+  const std::string menu_set_name_;
   const std::string menu_name_;
+  const wwiv::sdk::menus::MenuSet56 menu_set_;
   sdk::menus::Menu56 menu_;
   std::filesystem::path menu_set_path_;
   std::string prompt_;
@@ -87,7 +89,7 @@ public:
   explicit MainMenu(const sdk::Config& config);
   void Run();
 
-  std::string menu_set_;
+  wwiv::sdk::menus::MenuSet56 menu_set_name_;
   const sdk::Config& config_;
 
 private:

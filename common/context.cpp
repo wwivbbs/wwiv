@@ -51,9 +51,7 @@ std::filesystem::path Dirs::current_menu_script_directory() const noexcept {
 }
 
 SessionContext::SessionContext(LocalIO* io)
-    : irt_{}, io_(io),
-      dirs_(File::current_directory()), current_menu_set_(std::make_unique<MenuSet56>())
-{}
+    : SessionContext(io, File::current_directory()) {}
 
 SessionContext::SessionContext(LocalIO* io, const std::filesystem::path& root_directory)
     : irt_{}, io_(io), dirs_(root_directory),

@@ -29,9 +29,11 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "sdk/menus/menu_set.h"
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::menus;
 using namespace wwiv::strings;
 
 constexpr char CD = 4;
@@ -79,8 +81,9 @@ public:
       return 2;
     }
     const auto& menu_name = remaining().front();
+    MenuSet56 menuset(FilePath(config()->config()->menudir(), menu_set));
 
-    const menus::Menu56 m5(config()->config()->menudir(), menu_set, menu_name);
+    const menus::Menu56 m5(config()->config()->menudir(), menuset, menu_name);
     if (!m5.initialized()) {
       std::cout << "Unable to parse menu." << std::endl;
       return 1;

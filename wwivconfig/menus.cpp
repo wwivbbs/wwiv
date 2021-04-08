@@ -383,8 +383,9 @@ protected:
 class ShowGeneratedMenuSubDialog : public BaseEditItem {
 public:
   ShowGeneratedMenuSubDialog(const Config& config, std::vector<const value::ValueProvider*> p,
+                             const wwiv::sdk::menus::MenuSet56& menu_set,
                              const menus::menu_56_t& menu)
-      : BaseEditItem(10), config_(config), providers_(p), menu_(menu) {}
+      : BaseEditItem(10), config_(config), providers_(p), menu_set_(menu_set), menu_(menu) {}
   ~ShowGeneratedMenuSubDialog() override = default;
   ShowGeneratedMenuSubDialog() = delete;
   ShowGeneratedMenuSubDialog(ShowGeneratedMenuSubDialog const&) = delete;
@@ -394,8 +395,7 @@ public:
 
   EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
-    curses_out->footer()->ShowHelpItems(
-        0, {});
+    curses_out->footer()->ShowHelpItems(0, {});
     curses_out->footer()->ShowContextHelp("Viewing Menu: Press any key to continue.");
     window->GotoXY(x_, y_);
     uint32_t old_attr;
@@ -414,7 +414,7 @@ public:
       user.sl(255);
       user.dsl(255);
       const auto lines = wwiv::common::menus::GenerateMenuLines(
-          config_, menu_, user, providers_, menus::menu_type_t::short_menu);
+          config_, menu_set_, menu_, user, providers_, menus::menu_type_t::short_menu);
       auto y = 1;
       for (const auto& l : lines) {
         curses_out->window()->PutsWithPipeColors(0, y++, l);
@@ -442,14 +442,51 @@ protected:
 
   const Config& config_;
   const std::vector<const value::ValueProvider*> providers_;
+  const wwiv::sdk::menus::MenuSet56& menu_set_;
   const menus::menu_56_t& menu_;
 };
 
+static void edit_settings(const Config& config, wwiv::sdk::menus::MenuSet56& menu_set) {
+  const auto menu_path = menu_set.menuset_dir();
+
+  const UserManager um(config);
+  User user{};
+  if (!um.readuser(&user, 1)) {
+    user.set_name("SYSOP");
+    user.sl(255);
+    user.dsl(255);
+  }
+  UserValueProvider up(config, user, 255, config.sl(255));
+
+  wwiv::local::io::NullLocalIO null_io;
+  const wwiv::common::SessionContext sess(&null_io);
+  BbsValueProvider bbs_provider(config, sess);
+
+  std::vector<const value::ValueProvider*> providers{&up, &bbs_provider};
+
+  EditItems items{};
+  auto& h = menu_set.menu_set;
+  const auto title = fmt::format("Edit Menu Set: {}", h.name);
+
+  auto y = 1;
+  items.add(new Label("Description:"),
+            new StringEditItem<std::string&>(40, h.description, EditLineMode::ALL),
+            "Enter the description of this menuset", 1, y);
+  ++y;
+  items.add(new Label("Global Menu Items:"), new MenuItemsSubDialog(config, h.items, providers),
+            "Menu items to add to every menu globally", 1, y);
+  items.relayout_items_and_labels();
+  items.Run(title);
+
+  if (!menu_set.Save()) {
+    messagebox(curses_out->window(), "Error saving menuset.");
+  }
+}
 
 static void edit_menu(const Config& config, const std::filesystem::path& menu_dir,
-                      const std::string& menu_set, const std::string& menu_name) {
+                      const wwiv::sdk::menus::MenuSet56& menu_set, const std::string& menu_name) {
   menus::Menu56 m(menu_dir, menu_set, menu_name);
-  const auto menu_path = FilePath(menu_dir, menu_set);
+  const auto menu_path = menu_set.menuset_dir();
 
   if (!m.initialized()) {
     m.set_initialized(true);
@@ -534,7 +571,7 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
   y++;
   items.add(new Label("Menu Items:"), new MenuItemsSubDialog(config, h.items, providers), "", 1, y);
   y++;
-  items.add(new Label("View Menu:"), new ShowGeneratedMenuSubDialog(config, providers, h), 
+  items.add(new Label("View Menu:"), new ShowGeneratedMenuSubDialog(config, providers, menu_set, h), 
     "Display the generated menu for the sysop user.", 1, y);
   y++;
 
@@ -549,6 +586,8 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
 static void select_menu(const wwiv::sdk::Config& config, const std::string& menu_dir,
                         const std::string& dir) {
   const auto full_dir_path = FilePath(menu_dir, dir);
+  wwiv::sdk::menus::MenuSet56 menu_set(full_dir_path);
+  
   auto selected = -1;
   try {
     auto done{false};
@@ -568,22 +607,26 @@ static void select_menu(const wwiv::sdk::Config& config, const std::string& menu
       auto title = StrCat("Select Menu from [", dir, "]");
       ListBox list(window, title, items);
       list.set_selected(selected);
-      list.set_additional_hotkeys("CDI");
-      list.set_help_items(
-          {{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}, {"C", "Copy"}});
+      list.set_additional_hotkeys("CDIS");
+      list.set_help_items({{"Esc", "Exit"},
+                           {"Enter", "Edit"},
+                           {"D", "Delete"},
+                           {"I", "Insert"},
+                           {"C", "Copy"},
+                           {"S", "Settings"}});
       auto result = list.Run();
       selected = list.selected();
 
       if (result.type == ListBoxResultType::SELECTION) {
         const auto& menu_name = items[result.selected].text();
-        edit_menu(config, menu_dir, dir, menu_name);
+        edit_menu(config, menu_dir, menu_set, menu_name);
       } else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;
       } else if (result.type == ListBoxResultType::HOTKEY) {
         if (result.hotkey == 'I') {
           auto menu_name = dialog_input_string(window, "Enter Menu Name: ", 8);
           if (!menu_name.empty()) {
-            edit_menu(config, menu_dir, dir, menu_name);
+            edit_menu(config, menu_dir, menu_set, menu_name);
           }
         } else if (result.hotkey == 'C') {
           const auto& old_menu_name = items[result.selected].text();
@@ -591,7 +634,7 @@ static void select_menu(const wwiv::sdk::Config& config, const std::string& menu
             const auto old_name = FilePath(full_dir_path, StrCat(old_menu_name, ".mnu.json"));
             const auto new_name = FilePath(full_dir_path, StrCat(menu_name, ".mnu.json"));
             File::Copy(old_name, new_name);
-            edit_menu(config, menu_dir, dir, menu_name);
+            edit_menu(config, menu_dir, menu_set, menu_name);
           }
         } else if (result.hotkey == 'D') {
           const auto& menu_name = items[result.selected].text();
@@ -600,6 +643,8 @@ static void select_menu(const wwiv::sdk::Config& config, const std::string& menu
             const auto ofn = StrCat(fn, ".deleted");
             File::Move(FilePath(full_dir_path, fn), FilePath(full_dir_path, ofn));
           }
+        } else if (result.hotkey == 'S') {
+          edit_settings(config, menu_set);
         }
       }
     } while (!done);

@@ -49,12 +49,21 @@ MenuSet56::MenuSet56(std::filesystem::path dir)
     const auto name = menuset_dir_.filename().string();
     menu_set.name = name;
     menu_set.description = descr.description(name);
-    Save();
+    if (!Save()) {
+      LOG(WARNING) << "Failed to save newly created MenuSet: " << menuset_dir_;
+    }
   }
 }
 
 MenuSet56::MenuSet56() { 
   menu_set.name = "UNKNOWN";
+}
+
+MenuSet56& MenuSet56::operator=(const MenuSet56& o) {
+  initialized_ = o.initialized();
+  menuset_dir_ = o.menuset_dir_;
+  menu_set = o.menu_set;
+  return *this;
 }
 
 MenuSet56::~MenuSet56() = default;

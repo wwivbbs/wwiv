@@ -21,6 +21,9 @@
 
 #include "sdk/config.h"
 
+static void select_menu(const wwiv::sdk::Config& config, const std::string& menu_dir,
+                        const std::string& dir);
+
 void menus(const wwiv::sdk::Config& config);
 
 #endif

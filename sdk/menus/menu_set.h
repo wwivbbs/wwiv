@@ -41,6 +41,7 @@ private:
 class MenuSet56 final {
 public:
   explicit MenuSet56(std::filesystem::path dir);
+  MenuSet56& operator=(const MenuSet56&);
   /** Creates a dummy menuset */
   MenuSet56();
   ~MenuSet56();
@@ -53,7 +54,7 @@ public:
   const std::filesystem::path& menuset_dir() const noexcept { return menuset_dir_;  }
 
 private:
-  const std::filesystem::path menuset_dir_;
+  std::filesystem::path menuset_dir_;
   bool initialized_{false};
 };
 }  // namespace
