@@ -20,6 +20,7 @@
 
 #include "bbs_test/bbs_helper.h"
 #include "common/output.h"
+#include "sdk/menus/menu_set.h"
 #include <string>
 
 class BPutchTest : public ::testing::Test {

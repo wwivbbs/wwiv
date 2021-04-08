@@ -20,6 +20,7 @@
 
 #include "common/menus/menu_generator.h"
 #include "common/value/bbsvalueprovider.h"
+#include "common/value/uservalueprovider.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/log.h"
@@ -27,15 +28,15 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+#include "local_io/null_local_io.h"
 #include "localui/curses_win.h"
 #include "localui/edit_items.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
-#include "sdk/usermanager.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/menus/menu.h"
-#include "common/value/uservalueprovider.h"
-#include "local_io/null_local_io.h"
+#include "sdk/menus/menu_set.h"
+#include "sdk/usermanager.h"
 #include "sdk/value/valueprovider.h"
 
 #include <filesystem>

@@ -80,6 +80,7 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/files/files.h"
+#include "sdk/menus/menu_set.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/net/networks.h"
 #include <algorithm>
@@ -269,10 +270,9 @@ bool Application::ReadCurrentUser(int user_number) {
   }
   last_read_user_number_ = user_number;
   // Update all other session variables that are dependent.
-  sess().current_menu_set(user()->menu_set());
+  sess().load_menu_set(config_->menudir(), user()->menu_set());
   sess().num_screen_lines(sess().using_modem() ? user()->screen_lines()
                                           : bout.localIO()->GetDefaultScreenBottom() + 1);
-  sess().dirs().current_menu_directory(FilePath(config_->menudir(), user()->menu_set()));
   return true;
 }
 
@@ -293,8 +293,7 @@ bool Application::WriteCurrentUser(int user_number) {
                << "; last_read_user_number_: " << last_read_user_number_;
   }
   // Update any possibly changed session variables.
-  sess().current_menu_set(user()->menu_set());
-  sess().dirs().current_menu_directory(FilePath(config_->menudir(), user()->menu_set()));
+  sess().load_menu_set(config_->menudir(), user()->menu_set());
   return users()->writeuser(user(), user_number);
 }
 

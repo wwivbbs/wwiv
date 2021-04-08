@@ -33,6 +33,10 @@
 namespace wwiv {
 namespace sdk {
 class Chains;
+
+namespace menus {
+class MenuSet56;
+}
 }
 }
 
@@ -102,7 +106,7 @@ class SessionContext final {
 public:
   explicit SessionContext(wwiv::local::io::LocalIO* io);
   SessionContext(wwiv::local::io::LocalIO* io, const std::filesystem::path& root_directory);
-  ~SessionContext() = default;
+  ~SessionContext();
 
   /**
    * Initializes an empty context, called after Config.dat
@@ -273,9 +277,9 @@ public:
   /**
    * The current user's menus set
    */
-  [[nodiscard]] std::string current_menu_set() const noexcept;
+  [[nodiscard]] const wwiv::sdk::menus::MenuSet56& current_menu_set() const noexcept;
 
-  void current_menu_set(const std::string& menuset);
+  void load_menu_set(const std::filesystem::path& menusdir, const std::string& menuset);
 
 
   // TODO(rushfan): Move this to private later
@@ -318,7 +322,7 @@ private:
 
   int file_bps_{0};
   int system_bps_{0};
-  std::string current_menu_set_;
+  std::unique_ptr<wwiv::sdk::menus::MenuSet56> current_menu_set_;
 };
 
 class MapValueProvider : public sdk::value::ValueProvider {

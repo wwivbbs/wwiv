@@ -38,15 +38,19 @@ private:
   std::map<std::string, std::string, wwiv::stl::ci_less> descriptions_;
 };
 
-class MenuSet56 {
+class MenuSet56 final {
 public:
-  MenuSet56(std::filesystem::path menu_dir);
+  explicit MenuSet56(std::filesystem::path dir);
+  /** Creates a dummy menuset */
+  MenuSet56();
+  ~MenuSet56();
   [[nodiscard]] bool Load();
   [[nodiscard]] bool Save();
   [[nodiscard]] bool initialized() const noexcept { return initialized_; }
   void set_initialized(bool i) { initialized_ = i; }
 
   menu_set_t menu_set{};
+  const std::filesystem::path& menuset_dir() const noexcept { return menuset_dir_;  }
 
 private:
   const std::filesystem::path menuset_dir_;

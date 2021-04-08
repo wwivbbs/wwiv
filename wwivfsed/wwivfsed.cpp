@@ -38,6 +38,7 @@
 #include "local_io/local_io.h"
 #include "sdk/chains.h"
 #include "sdk/filenames.h"
+#include "sdk/menus/menu_set.h"
 #include "wwivfsed/fsedconfig.h"
 
 #include <cstdlib>

@@ -44,21 +44,29 @@ namespace wwiv::sdk::menus {
 MenuSet56::MenuSet56(std::filesystem::path dir)
     : menuset_dir_(std::move(dir)), initialized_(true) {
   if (!Load()) {
+    // Create default empty Menuset from DESCRIPTION.ION
     MenuDescriptions descr(menuset_dir_.parent_path());
     const auto name = menuset_dir_.filename().string();
     menu_set.name = name;
     menu_set.description = descr.description(name);
+    Save();
   }
 }
 
+MenuSet56::MenuSet56() { 
+  menu_set.name = "UNKNOWN";
+}
+
+MenuSet56::~MenuSet56() = default;
+
 bool MenuSet56::Load() {
-  const auto dir = FilePath(menuset_dir_, "menu.json");
+  const auto dir = FilePath(menuset_dir_, "menuset.json");
   JsonFile f(dir, "menuset", menu_set, 1);
   return f.Load();
 }
 
 bool MenuSet56::Save() {
-  const auto dir = FilePath(menuset_dir_, "menu.json");
+  const auto dir = FilePath(menuset_dir_, "menuset.json");
   JsonFile f(dir, "menuset", menu_set, 1);
   return f.Save();
 }

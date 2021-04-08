@@ -20,6 +20,7 @@
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
+#include "sdk/menus/menu_set.h"
 
 #include <memory>
 

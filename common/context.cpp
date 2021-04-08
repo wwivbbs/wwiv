@@ -24,6 +24,7 @@
 #include "core/strings.h"
 #include "local_io/local_io.h"
 #include "sdk/config.h"
+#include "sdk/menus/menu_set.h"
 #include <chrono>
 #include <filesystem>
 #include <string>
@@ -32,6 +33,7 @@ namespace wwiv::common {
 
 using namespace wwiv::core;
 using namespace wwiv::local::io;
+using namespace wwiv::sdk::menus;
 using namespace wwiv::strings;
 using namespace std::chrono;
 
@@ -49,12 +51,16 @@ std::filesystem::path Dirs::current_menu_script_directory() const noexcept {
 }
 
 SessionContext::SessionContext(LocalIO* io)
-    : irt_{}, io_(io), dirs_(File::current_directory()) {
-}
+    : irt_{}, io_(io),
+      dirs_(File::current_directory()), current_menu_set_(std::make_unique<MenuSet56>())
+{}
 
 SessionContext::SessionContext(LocalIO* io, const std::filesystem::path& root_directory)
-    : irt_{}, io_(io), dirs_(root_directory) {
-}
+    : irt_{}, io_(io), dirs_(root_directory),
+      current_menu_set_(std::make_unique<MenuSet56>()) {}
+
+// This has to be here since ~MenuSet56 can be found here.
+SessionContext::~SessionContext() = default;
 
 void SessionContext::InitalizeContext(const wwiv::sdk::Config& c) {
   const auto qscan_length = c.qscn_len() / sizeof(uint32_t);
@@ -111,20 +117,23 @@ int SessionContext::bps() const noexcept {
   return f > 0 ? f : system_bps();
 }
 
-std::string SessionContext::current_menu_set() const noexcept {
+const MenuSet56& SessionContext::current_menu_set() const noexcept {
   /* To listen to this use code like
   bus().add_handler<UpdateMenuSet>(
       [this](const UpdateMenuSet& u) {
         current_menu_set(u.name);
       });
    */
-  return current_menu_set_;
+  DCHECK(current_menu_set_.get());
+  return *current_menu_set_;
 }
 
-void SessionContext::current_menu_set(const std::string& menuset) {
-  if (current_menu_set_ != menuset) {
-    current_menu_set_ = menuset;
-    bus().invoke<UpdateMenuSet>(UpdateMenuSet{current_menu_set_});
+void SessionContext::load_menu_set(const std::filesystem::path& menusdir,
+                                   const std::string& menuset) {
+  if (current_menu_set_->menu_set.name != menuset) {
+    current_menu_set_ = std::make_unique<MenuSet56>(FilePath(menusdir, menuset));
+    bus().invoke<UpdateMenuSet>(UpdateMenuSet{menuset});
+    dirs().current_menu_directory(current_menu_set_->menuset_dir());
   }
 }
 
