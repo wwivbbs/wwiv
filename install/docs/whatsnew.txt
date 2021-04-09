@@ -148,6 +148,14 @@ What's New in WWIV 5.7.0 (2021)
   to update your wwiv menus with the new defaults menu and update main menu.
 + You can now filter text in wwivconfig listboxes by pressing / and then 
   entering the text to filter by.
+* add ways to see and change personal info in defaults (#1390)
+* Fix crash in listplus after ~130 files
+* Support interestingly formed Tic line with addresses (#1445)
+* reset the color to |#0 at the end of each kludge line (#1446)
++ When sending FTN emails, try to match by zone and not ask which network to use.
+* delete /Z and /S from default menus, they don't exist anymore
++ Need global menu (#1415)
+
 
 What's New in WWIV 5.6.1 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
