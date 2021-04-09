@@ -195,7 +195,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
           }
         }
         bink_config.callouts()[domain] = std::move(c);
-      } else if (n.type == network_type_t::ftn) {
+      } else if (n.type == network_type_t::ftn && net_cmdline.config().is_5xx_or_later()) {
         if (auto o = try_parse_fidoaddr(n.fido.fido_address)) {
           if (o->has_domain()) {
             domain = o->domain();
