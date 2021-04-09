@@ -82,7 +82,9 @@ void MainMenu::Run() {
   menu_set_name_ = a()->sess().current_menu_set();
   auto main = std::make_unique<Menu>(config_.menudir(), menu_set_name_, "main");
   while (!main->initalized()) {
-    ConfigUserMenuSet();
+    ConfigUserMenuSet("");
+    // This should get updated when the user record gets written.
+    menu_set_name_ = a()->sess().current_menu_set();
     // TODO(rushfan): Update menu_set_ and reload main
     main = std::make_unique<Menu>(config_.menudir(), menu_set_name_, "main");
   }

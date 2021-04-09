@@ -230,22 +230,19 @@ Runs a WWIVbasic Script
   //
   // User commands
   //
-  m.emplace("ConfigUserMenuSet", MenuItem(R"(
-
-  Takes the user into the user menu config so they can select which menuset
-  they want to use, etc...
-)",
+  m.emplace("ConfigUserMenuSet", MenuItem(R"(Use user:menus instead.
+  Sets the user's menuset to the value specified by data
+  or takes the user into the user menu config so they can select which menuset to use.)",
                                           MENU_CAT_USER, [](MenuContext& context) {
-                                            ConfigUserMenuSet();
+                                            ConfigUserMenuSet(context.data);
                                             context.need_reload = true;
                                           }));
 
-  m.emplace("user:menus", MenuItem(R"(
-  Takes the user into the user menu config so they can select which menuset
-  they want to use, etc...
+  m.emplace("user:menus", MenuItem(R"(Sets the user's menuset to the value specified by data
+  or takes the user into the user menu config so they can select which menuset to use.
 )",
                                    MENU_CAT_USER, [](MenuContext& context) {
-                                     ConfigUserMenuSet();
+                                     ConfigUserMenuSet(context.data);
                                      context.need_reload = true;
                                    }));
 

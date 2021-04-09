@@ -799,7 +799,7 @@ void defaults(bool& need_menu_reload) {
     }
     break;
     case 'K':
-      wwiv::bbs::menus::ConfigUserMenuSet();
+      wwiv::bbs::menus::ConfigUserMenuSet("");
       need_menu_reload = true;
       break;
     case 'M':

@@ -27,7 +27,7 @@
 namespace wwiv::bbs::menus {
 
 // Functions used bbs.cpp and defaults.cpp
-void ConfigUserMenuSet();
+void ConfigUserMenuSet(const std::string& data);
 
 // Functions used by menu-edit and menu
 void MenuSysopLog(const std::string& pszMsg);

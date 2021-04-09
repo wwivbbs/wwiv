@@ -76,7 +76,30 @@ void MenuSysopLog(const std::string& msg) {
   bout << log_message << wwiv::endl;
 }
 
-void ConfigUserMenuSet() {
+/**
+ * Sets a menuset to one specified by 'name', returning true on success and
+ * false otherwise.
+ */
+static bool SetMenuSet(const std::string& name) {
+  if (!ValidateMenuSet(name)) {
+    return false;
+  }
+
+  a()->user()->set_menu_set(name);
+  MenuSysopLog(fmt::format("Menu in use : {} - {}", a()->user()->menu_set(),
+                           a()->user()->hotkeys() ? "Hot" : "Off"));
+  // Save current menu setup.
+  return a()->WriteCurrentUser();
+}
+
+void ConfigUserMenuSet(const std::string& data) {
+  if (!data.empty()) {
+    // Try to set the menu based on data first.
+    if (SetMenuSet(data)) {
+      // Success at setting the menuset, no need to query the caller.
+      return;
+    }
+  }
   bout.cls();
   bout.litebar("Configure Menus");
   bout.printfile(MENUWEL_NOEXT);
@@ -103,7 +126,7 @@ void ConfigUserMenuSet() {
         bout.format("|#9Menu Set : |#2{:<8.8} :  |#1{}|#0\r\n", m.name, m.description);
         bout << "|#5Use this menu set? ";
         if (bin.noyes()) {
-          a()->user()->set_menu_set(m.name);
+          SetMenuSet(m.name);
           break;
         }
       }
@@ -111,7 +134,7 @@ void ConfigUserMenuSet() {
       bout << "|#6That menu set does not exists. Resetting to the default menu set." << wwiv::endl;
       bout.pausescr();
       if (a()->user()->menu_set().empty()) {
-        a()->user()->set_menu_set("wwiv");
+        SetMenuSet("wwiv");
       }
     } break;
     case '2':
@@ -124,11 +147,6 @@ void ConfigUserMenuSet() {
     bout.cls();
   }
 
-  // Save current menu setup.
-  a()->WriteCurrentUser();
-
-  MenuSysopLog(fmt::format("Menu in use : {} - {}", a()->user()->menu_set(),
-                            a()->user()->hotkeys() ? "Hot" : "Off"));
   bout.nl(2);
 }
 
