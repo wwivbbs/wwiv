@@ -324,6 +324,13 @@ int check_ansi() {
     return 1;
   }
 
+  auto ss = bin.screen_size();
+  if (ss.x != 0 && ss.y != 0) {
+    VLOG(1) << "Screen size: x: " << ss.x << "; y: " << ss.y;
+  } else {
+    LOG(WARNING) << "Unable to get screen size from terminal.";
+  }
+
   auto pos = bin.remoteIO()->screen_position();
   return (pos.x != 0 && pos.y != 0) ? 1 : 0;
 }

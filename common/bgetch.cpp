@@ -430,5 +430,4 @@ int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<dou
   }
 }
 
-
 } // namespace wwiv::common

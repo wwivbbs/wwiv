@@ -229,6 +229,13 @@ public:
     return r;
   }
 
+  /**
+   * Returns the screen size as a coordnate (x, y) denoting the position
+   * of the lower right corner.
+   */
+  ScreenPos screen_size();
+
+
   //
   // Check for Abort
   //
@@ -255,6 +262,7 @@ private:
   int bgetch_handle_key_translation(int key, numlock_status_t numlock_mode);
   // used by bgetch_event
   int bgetch_handle_escape(int key);
+
 
 private:
   local::io::LocalIO* local_io_{nullptr};
