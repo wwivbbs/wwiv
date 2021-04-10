@@ -87,6 +87,7 @@ class RemoteSocketIO final : public RemoteIO {
   std::queue<char>& queue() { return queue_; }
 
   void set_binary_mode(bool b) override;
+  ScreenPos screen_position() override;
 
 private:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);

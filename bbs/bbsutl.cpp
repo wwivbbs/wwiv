@@ -319,41 +319,13 @@ bool sysop2() {
 
 // Returns 1 if ANSI detected, or if local user, else returns 0. Uses the
 // cursor position interrogation ANSI sequence for remote detection.
-// If the user is asked and choose NO, then -1 is returned.
 int check_ansi() {
   if (!a()->sess().incom()) {
     return 1;
   }
 
-  while (bin.bkbhitraw()) {
-    bin.bgetchraw();
-  }
-
-  bout.rputs("\x1b[6n");
-  const auto now = steady_clock::now();
-  auto l = now + seconds(3);
-
-  while (steady_clock::now() < l) {
-    a()->CheckForHangup();
-    auto ch = bin.bgetchraw();
-    if (ch == '\x1b') {
-      l = steady_clock::now() + seconds(1);
-      while (steady_clock::now() < l) {
-        a()->CheckForHangup();
-        ch = bin.bgetchraw();
-        if (ch) {
-          if ((ch < '0' || ch > '9') && ch != ';' && ch != '[') {
-            return 1;
-          }
-        }
-      }
-      return 1;
-    }
-    if (ch == 'N') {
-      return -1;
-    }
-  }
-  return 0;
+  auto pos = bin.remoteIO()->screen_position();
+  return (pos.x != 0 && pos.y != 0) ? 1 : 0;
 }
 
 std::string YesNoString(bool bYesNo) {

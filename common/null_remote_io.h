@@ -22,13 +22,19 @@
 
 #include "common/remote_io.h"
 
+namespace wwiv::local::io {
+class LocalIO;
+}
+
+namespace wwiv::common {
+
 /** Null remote session. */
 /**
  * Base Communication Class.
  */
-class NullRemoteIO final : public wwiv::common::RemoteIO {
- public:
-  NullRemoteIO() : RemoteIO() {}
+class NullRemoteIO final : public RemoteIO {
+public:
+  NullRemoteIO(wwiv::local::io::LocalIO* local_io) : RemoteIO(), local_io_(local_io) {}
   virtual ~NullRemoteIO() {}
 
   // Nothing is always able to be open.
@@ -38,12 +44,18 @@ class NullRemoteIO final : public wwiv::common::RemoteIO {
   bool disconnect() override { return true; }
   void purgeIn() override {}
   unsigned int put(unsigned char) override { return 0; }
-  unsigned int read(char *, unsigned int) override { return 0; }
-  unsigned int write(const char *, unsigned int, bool) override { return 0; }
+  unsigned int read(char*, unsigned int) override { return 0; }
+  unsigned int write(const char*, unsigned int, bool) override { return 0; }
   bool connected() override { return false; }
   bool incoming() override { return false; }
 
   unsigned int GetHandle() const override { return 0; }
+  ScreenPos screen_position() override;
+
+private:
+  wwiv::local::io::LocalIO* local_io_;
 };
+
+} // namespace wwiv::comon 
 
 #endif

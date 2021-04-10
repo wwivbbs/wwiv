@@ -94,9 +94,9 @@ LocalIO* FsedConfig::CreateLocalIO() const {
   return new NullLocalIO();
 }
 
-RemoteIO* FsedConfig::CreateRemoteIO() const {
+RemoteIO* FsedConfig::CreateRemoteIO(local::io::LocalIO* local_io) const {
   if (local_) {
-    return new NullRemoteIO();
+    return new NullRemoteIO(local_io);
   }
   return new RemoteSocketIO(socket_handle_, false);
 }

@@ -242,10 +242,10 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
     comm_ = std::make_unique<RemoteSocketIO>(nHandle, true);
   } break;
   case CommunicationType::NONE: {
-    comm_ = std::make_unique<NullRemoteIO>();
+    comm_ = std::make_unique<wwiv::common::NullRemoteIO>(local_io_.get());
   } break;
   case CommunicationType::STDIO:
-    comm_ = std::make_unique<NullRemoteIO>();
+    comm_ = std::make_unique<wwiv::common::NullRemoteIO>(local_io_.get());
     break;
   }
   bout.SetComm(comm_.get());

@@ -18,6 +18,7 @@ set(COMMON_SOURCES
  "menus/menu_data_util.cpp"
  "menus/menu_generator.cpp"
  "message_editor_data.cpp"
+ "null_remote_io.cpp"
  "output.cpp"
  "pause.cpp"
  "pipe_expr.cpp"

@@ -42,7 +42,7 @@ public:
   [[nodiscard]] std::filesystem::path file_path() const;
 
   [[nodiscard]] local::io::LocalIO* CreateLocalIO() const;
-  [[nodiscard]] common::RemoteIO* CreateRemoteIO() const;
+  [[nodiscard]] common::RemoteIO* CreateRemoteIO(local::io::LocalIO*) const;
 
 private:
   const std::filesystem::path root_;
