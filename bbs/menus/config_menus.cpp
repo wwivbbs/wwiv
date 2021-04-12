@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/menus/config_menus.h"
 
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/mmkey.h"
 #include "bbs/sysoplog.h"
@@ -61,7 +62,11 @@ static std::map<int, menu_set_t> ListMenuDirs() {
 
   for (const auto& d : menus) {
     MenuSet56 m(FilePath(menu_directory, d.name));
-    bout.bprintf("|#2#%d |#1%-8.8s |#9%-60.60s\r\n", num, m.menu_set.name, m.menu_set.description);
+    if (!check_acs(m.menu_set.acs)) {
+      VLOG(1) << "check acs failed for: " << d.name;
+      continue;
+    }
+    bout.format("|#2#{} |#1{:<8.8} |#9{:<60.60}\r\n", num, m.menu_set.name, m.menu_set.description);
     result.emplace(num, m.menu_set);
     ++num;
   }
@@ -80,12 +85,16 @@ void MenuSysopLog(const std::string& msg) {
  * Sets a menuset to one specified by 'name', returning true on success and
  * false otherwise.
  */
-static bool SetMenuSet(const std::string& name) {
-  if (!ValidateMenuSet(name)) {
+static bool SetMenuSet(const menu_set_t& m) {
+  if (!ValidateMenuSet(m.name)) {
     return false;
   }
 
-  a()->user()->set_menu_set(name);
+  if (!check_acs(m.acs)) {
+    return false;
+  }
+
+  a()->user()->set_menu_set(m.name);
   MenuSysopLog(fmt::format("Menu in use : {} - {}", a()->user()->menu_set(),
                            a()->user()->hotkeys() ? "Hot" : "Off"));
   // Save current menu setup.
@@ -93,9 +102,10 @@ static bool SetMenuSet(const std::string& name) {
 }
 
 void ConfigUserMenuSet(const std::string& data) {
-  if (!data.empty()) {
+  if (!data.empty() && ValidateMenuSet(data)) {
     // Try to set the menu based on data first.
-    if (SetMenuSet(data)) {
+    MenuSet56 m(FilePath(a()->config()->menudir(), data));
+    if (SetMenuSet(m.menu_set)) {
       // Success at setting the menuset, no need to query the caller.
       return;
     }
@@ -126,7 +136,7 @@ void ConfigUserMenuSet(const std::string& data) {
         bout.format("|#9Menu Set : |#2{:<8.8} :  |#1{}|#0\r\n", m.name, m.description);
         bout << "|#5Use this menu set? ";
         if (bin.noyes()) {
-          SetMenuSet(m.name);
+          SetMenuSet(m);
           break;
         }
       }
@@ -134,7 +144,8 @@ void ConfigUserMenuSet(const std::string& data) {
       bout << "|#6That menu set does not exists. Resetting to the default menu set." << wwiv::endl;
       bout.pausescr();
       if (a()->user()->menu_set().empty()) {
-        SetMenuSet("wwiv");
+        MenuSet56 wwiv_menu(FilePath(a()->config()->menudir(), "wwiv"));
+        SetMenuSet(wwiv_menu.menu_set);
       }
     } break;
     case '2':

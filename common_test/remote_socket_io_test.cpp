@@ -86,6 +86,6 @@ TEST(RemoteSocketIOTest, TwoFFAtEnd) {
 // 
 //   Need some way to wait until we receive the write before calling screen_position().
 //  auto pos = io.screen_position();
-//  EXPECT_EQ(21, pos.x);
-//  EXPECT_EQ(12, pos.y);
+//  EXPECT_EQ(21, pos.value().x);
+//  EXPECT_EQ(12, pos.value().y);
 //}

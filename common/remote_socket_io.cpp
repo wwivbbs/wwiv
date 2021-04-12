@@ -389,7 +389,7 @@ void RemoteSocketIO::set_binary_mode(bool b) {
   skip_next_ = false;
 }
 
-ScreenPos RemoteSocketIO::screen_position() { 
+std::optional<ScreenPos> RemoteSocketIO::screen_position() { 
   // Clear inbound
   while (incoming()) {
     getW();
@@ -416,16 +416,16 @@ ScreenPos RemoteSocketIO::screen_position() {
             if (auto idx = dsr_response.find(';'); idx != std::string::npos) {
               auto x = to_number<int>(dsr_response.substr(0, idx));
               auto y = to_number<int>(dsr_response.substr(idx+1));
-              return {x, y};
+              return {ScreenPos{x, y}};
             }
-            return {0, 0};
+            return std::nullopt;
           }
         }
       }
-      return {0, 0};
+      return std::nullopt;
     }
   }
-  return {0, 0};
+  return std::nullopt;
 }
 
 void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {

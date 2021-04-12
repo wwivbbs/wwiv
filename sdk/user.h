@@ -1024,10 +1024,17 @@ class User final {
   [[nodiscard]] bool hotkeys() const;
   void set_hotkeys(bool enabled);
 
-  /** The current menu set for the user */
+  /** Returns the name of the current menu set for the user. */
   [[nodiscard]] std::string menu_set() const;
   
-  /** Sets the current menu set */
+  /** 
+   * Sets the current menu set on the user record.
+   * 
+   * Note: This does not validate the menuset or perform any checking. Callers
+   * should use ConfigUserMenuSet(...) to set the menuset, as that will
+   * validate the menuset and optionally query the user for an appropriate
+   * menuset should the selected one not exist or is not available.
+   */
   void set_menu_set(const std::string& menu_set);
 
   bool asv(const validation_config_t& v);

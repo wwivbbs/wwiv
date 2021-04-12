@@ -20,6 +20,7 @@
 #ifndef INCLUDED_COMMON_REMOTE_IO_H
 #define INCLUDED_COMMON_REMOTE_IO_H
 
+#include <optional>
 #include <string>
 
 namespace wwiv::common {
@@ -79,7 +80,7 @@ class RemoteIO {
 
   virtual RemoteInfo& remote_info() { return remote_info_; }
 
-  virtual ScreenPos screen_position() { return ScreenPos{0, 0}; }
+  virtual std::optional<ScreenPos> screen_position();
 
 protected:
   bool binary_mode_{false};

@@ -223,6 +223,8 @@ struct menu_set_t {
   std::string name;
   // Description of this menuset.
   std::string description;
+  // ACS needed to use this menuset.
+  std::string acs;
   // Global menu items. These will be available in every menu in this menuset.
   std::vector<menu_item_56_t> items;
 };

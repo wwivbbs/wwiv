@@ -324,15 +324,18 @@ int check_ansi() {
     return 1;
   }
 
-  auto ss = bin.screen_size();
-  if (ss.x != 0 && ss.y != 0) {
+  if (const auto o = bin.screen_size()) {
+    const auto& ss = o.value();
     VLOG(1) << "Screen size: x: " << ss.x << "; y: " << ss.y;
   } else {
     LOG(WARNING) << "Unable to get screen size from terminal.";
   }
 
-  auto pos = bin.remoteIO()->screen_position();
-  return (pos.x != 0 && pos.y != 0) ? 1 : 0;
+  if (const auto pos = bin.remoteIO()->screen_position()) {
+    return 1;
+  }
+
+  return 0;
 }
 
 std::string YesNoString(bool bYesNo) {

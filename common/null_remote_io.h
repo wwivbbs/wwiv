@@ -50,7 +50,7 @@ public:
   bool incoming() override { return false; }
 
   unsigned int GetHandle() const override { return 0; }
-  ScreenPos screen_position() override;
+  std::optional<ScreenPos> screen_position() override;
 
 private:
   wwiv::local::io::LocalIO* local_io_;

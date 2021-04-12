@@ -233,7 +233,7 @@ public:
    * Returns the screen size as a coordnate (x, y) denoting the position
    * of the lower right corner.
    */
-  ScreenPos screen_size();
+  std::optional<ScreenPos> screen_size();
 
 
   //

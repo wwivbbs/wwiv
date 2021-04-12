@@ -434,6 +434,18 @@ static void FixUserLinesAndColors() {
     a()->user()->color(8, a()->newuser_colors[8]);
     a()->user()->color(9, a()->newuser_colors[9]);
   }
+
+  // Query screen size if mismatch.
+  if (const auto sso = bin.screen_size()) {
+    const auto& ss = sso.value();
+    if (ss.x != a()->user()->screen_width() || ss.y != a()->user()->screen_lines()) {
+      bout.format("|#9Screen size of |#2{}|#9x|#2{} |#9detected.  Use it?", ss.x, ss.y);
+      if (bin.noyes()) {
+        a()->user()->screen_width(ss.x);
+        a()->user()->screen_lines(ss.y);
+      }
+    }
+  }
 }
 
 static void UpdateUserStatsForLogin() {
@@ -859,7 +871,6 @@ void logon() {
   a()->sess().SetUserOnline(true);
   write_inst(INST_LOC_LOGON, 0, INST_FLAGS_NONE);
   bout.ResetColors();
-  bout.cls();
 
   FixUserLinesAndColors();
   UpdateUserStatsForLogin();

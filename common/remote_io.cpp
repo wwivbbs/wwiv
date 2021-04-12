@@ -56,4 +56,8 @@ std::string RemoteIO::GetLastErrorText() {
   return error_text_;
 }
 
+std::optional<ScreenPos> RemoteIO::screen_position() { 
+  return ScreenPos{0, 0};
+}
+
 } // namespace wwiv::common

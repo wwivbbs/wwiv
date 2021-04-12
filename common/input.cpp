@@ -814,12 +814,16 @@ int Input::nsp() const noexcept { return nsp_; }
 
 void Input::nsp(int n) { nsp_ = n; }
 
-ScreenPos Input::screen_size() {
+std::optional<ScreenPos> Input::screen_size() {
   bout.SavePosition();
-  bout.rputs("\x1b[999;999H");
+  // Use bputs so the local ansi interpretation will work.
+  bout.bputs("\x1b[999;999H");
   auto pos = remoteIO()->screen_position();
   bout.RestorePosition();
-  return pos;
+  if (!pos) {
+    return std::nullopt;
+  }
+  return {ScreenPos{pos->x + 1, pos->y + 1}};
 }
 
 }

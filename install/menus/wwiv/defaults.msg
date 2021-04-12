@@ -1,6 +1,6 @@
 |[2J|#4 Your Preferences|[K|#0
 
-|#11|#9) Screen size       : |#2|{user.screenwidth, "0>2"} |#9X |#2|{user.screenlines, "0>2"}          |#12|#9) ANSI              : |#2|{user.ansistr}
+|#11|#9) Screen size       : |#2|{user.screenwidth, ">3"} |#9X |#2|{user.screenlines, ">3"}        |#12|#9) ANSI              : |#2|{user.ansistr}
 |#13|#9) Pause on screen   : |#2|{if "user.pause == true", "On", "Off"}
 |#14|#9) Mailbox           : |#2|{user.mailbox_state}
 |#15|#9) Configured Q-scan                    |#16|#9) Change password

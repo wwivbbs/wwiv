@@ -378,9 +378,9 @@ void input_comptype() {
 void input_screensize() {
   bout.nl();
   bout << "|#9How wide is your screen? (|#2<CR>|#9=|#180|#9): ";
-  const auto x = bin.input_number(80, 32, 80, true);
+  const auto x = bin.input_number(a()->user()->screen_width(), 40, 160, true);
   bout << "|#9How tall is your screen? (|#2<CR>|#9=|#124|#9): ";
-  const auto y = bin.input_number(24, 8, 60, true);
+  const auto y = bin.input_number(a()->user()->screen_lines(), 20, 100, true);
   a()->user()->screen_width(x);
   a()->user()->screen_lines(y);
   a()->sess().num_screen_lines(y);
