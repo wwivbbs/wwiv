@@ -75,8 +75,7 @@ Win32ConsoleIO::Win32ConsoleIO() {
   COORD bufSize;
   bufSize.X = static_cast<SHORT>(rect.Right - rect.Left + 1);
   bufSize.Y = static_cast<SHORT>(rect.Bottom - rect.Top + 1);
-  bufSize.X = static_cast<SHORT>(std::min<SHORT>(bufSize.X, 80));
-  bufSize.Y = static_cast<SHORT>(std::min<SHORT>(bufSize.Y, 25));
+  // Let's not constrain it to 80x25.
   SetConsoleWindowInfo(out_, TRUE, &rect);
   SetConsoleScreenBufferSize(out_, bufSize);
 
@@ -100,8 +99,12 @@ Win32ConsoleIO::~Win32ConsoleIO() {
 // the protected display at the top of the screen.  Note: this function
 // is 0 based, so (0,0) is the upper left hand corner.
 void Win32ConsoleIO::GotoXY(int x, int y) {
+  CONSOLE_SCREEN_BUFFER_INFO csbi{};
+  GetConsoleScreenBufferInfo(out_, &csbi);
+  // maybe just use original_size_.X ?
+
   x = std::max<int>(x, 0);
-  x = std::min<int>(x, 79);
+  x = std::min<int>(x, csbi.dwSize.X - 1);
   y = std::max<int>(y, 0);
   y += GetTopLine();
   y = std::min<int>(y, GetScreenBottom());
@@ -144,6 +147,9 @@ void Win32ConsoleIO::Lf() {
    * either moving the cursor down one line, or scrolling the logical screen
    * up one line.
    */
+  CONSOLE_SCREEN_BUFFER_INFO csbi{};
+  GetConsoleScreenBufferInfo(out_, &csbi);
+
   SMALL_RECT scrollRect;
   COORD dest;
   CHAR_INFO fill;
@@ -154,7 +160,7 @@ void Win32ConsoleIO::Lf() {
     scrollRect.Top = static_cast<int16_t>(GetTopLine() + 1);
     scrollRect.Bottom = static_cast<int16_t>(GetScreenBottom());
     scrollRect.Left = 0;
-    scrollRect.Right = 79;
+    scrollRect.Right = csbi.dwSize.X - 1;
     fill.Attributes = static_cast<int16_t>(curatr());
     fill.Char.UnicodeChar = cp437_to_utf8(' ');
 
@@ -191,6 +197,8 @@ void Win32ConsoleIO::Cls() {
 }
 
 void Win32ConsoleIO::Backspace() {
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  GetConsoleScreenBufferInfo(out_, &csbi);
   /* This function moves the cursor one position to the left, or if the cursor
    * is currently at its left-most position, the cursor is moved to the end of
    * the previous line, except if it is on the top line, in which case nothing
@@ -200,13 +208,15 @@ void Win32ConsoleIO::Backspace() {
     cursor_pos_.X--;
   } else if (cursor_pos_.Y != GetTopLine()) {
     cursor_pos_.Y--;
-    cursor_pos_.X = 79;
+    cursor_pos_.X = csbi.dwSize.X - 1;
   }
   COORD c{cursor_pos_.X, cursor_pos_.Y};
   SetConsoleCursorPosition(out_, c);
 }
 
 void Win32ConsoleIO::PutchRaw(unsigned char ch) {
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  GetConsoleScreenBufferInfo(out_, &csbi);
   /* This function outputs one character to the screen, then updates the
    * cursor position accordingly, scrolling the screen if necessary.  Not that
    * this function performs no commands such as a C/R or L/F.  If a value of
@@ -220,7 +230,7 @@ void Win32ConsoleIO::PutchRaw(unsigned char ch) {
   auto wch = cp437_to_utf8(ch);
   WriteConsoleW(out_, &wch, 1, &cb, nullptr);
 
-  if (cursor_pos_.X <= 79) {
+  if (cursor_pos_.X < csbi.dwSize.X) {
     cursor_pos_.X++;
     return;
   }
@@ -236,7 +246,7 @@ void Win32ConsoleIO::PutchRaw(unsigned char ch) {
     MoveRect.Top = static_cast<int16_t>(GetTopLine() + 1);
     MoveRect.Bottom = static_cast<int16_t>(GetScreenBottom());
     MoveRect.Left = 0;
-    MoveRect.Right = 79;
+    MoveRect.Right = csbi.dwSize.X - 1;
 
     fill.Attributes = static_cast<int16_t>(curatr());
     fill.Char.UnicodeChar = cp437_to_utf8(' ');
@@ -539,6 +549,7 @@ void Win32ConsoleIO::ClrEol() {
   FillConsoleOutputAttribute(out_, static_cast<WORD>(curatr()), len, csbi.dwCursorPosition, &cb);
 }
 
+// NOTE: This only works for 80x25 WFC
 void Win32ConsoleIO::WriteScreenBuffer(const char* buffer) {
   CHAR_INFO ci[2000] {};
   const auto* p = buffer;
