@@ -414,8 +414,8 @@ std::optional<ScreenPos> RemoteSocketIO::screen_position() {
           if (ch == 'R') {
             VLOG(1) << "RemoteSocketIO::screen_position(): DSR: " << dsr_response;
             if (auto idx = dsr_response.find(';'); idx != std::string::npos) {
-              auto x = to_number<int>(dsr_response.substr(0, idx));
-              auto y = to_number<int>(dsr_response.substr(idx+1));
+              auto y = to_number<int>(dsr_response.substr(0, idx));
+              auto x = to_number<int>(dsr_response.substr(idx+1));
               return {ScreenPos{x, y}};
             }
             return std::nullopt;
