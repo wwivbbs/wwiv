@@ -376,10 +376,22 @@ void input_comptype() {
 }
 
 void input_screensize() {
+  if (const auto sso = bin.screen_size()) {
+    const auto& ss = sso.value();
+    if (ss.x != a()->user()->screen_width() || ss.y != a()->user()->screen_lines()) {
+      bout.format("|#9Screen size of |#2{}|#9x|#2{} |#9detected.  Use it?", ss.x, ss.y);
+      if (bin.noyes()) {
+        a()->user()->screen_width(ss.x);
+        a()->user()->screen_lines(ss.y);
+        return;
+      }
+    }
+  }
+
   bout.nl();
-  bout << "|#9How wide is your screen? (|#2<CR>|#9=|#180|#9): ";
+  bout << "|#9How wide is your screen : ";
   const auto x = bin.input_number(a()->user()->screen_width(), 40, 160, true);
-  bout << "|#9How tall is your screen? (|#2<CR>|#9=|#124|#9): ";
+  bout << "|#9How tall is your screen : ";
   const auto y = bin.input_number(a()->user()->screen_lines(), 20, 100, true);
   a()->user()->screen_width(x);
   a()->user()->screen_lines(y);

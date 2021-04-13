@@ -817,13 +817,14 @@ void Input::nsp(int n) { nsp_ = n; }
 std::optional<ScreenPos> Input::screen_size() {
   bout.SavePosition();
   // Use bputs so the local ansi interpretation will work.
+  // This should position it one past the end.
   bout.bputs("\x1b[999;999H");
   auto pos = remoteIO()->screen_position();
   bout.RestorePosition();
   if (!pos) {
     return std::nullopt;
   }
-  return {ScreenPos{pos->x + 1, pos->y + 1}};
+  return {ScreenPos{pos->x, pos->y}};
 }
 
 }

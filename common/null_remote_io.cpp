@@ -26,8 +26,8 @@ std::optional<ScreenPos> NullRemoteIO::screen_position() {
   if (!local_io_) {
     return std::nullopt;  
   }
-  auto x = local_io_->WhereX();
-  auto y = local_io_->WhereY();
+  auto x = local_io_->WhereX() + 1;
+  auto y = local_io_->WhereY() + 1;
   return {ScreenPos{x, y}};
 }
 
