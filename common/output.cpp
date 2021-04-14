@@ -232,11 +232,12 @@ std::string Output::MakeSystemColor(sdk::Color color) const {
 }
 
 void Output::litebar(const std::string& msg) {
+  const auto len = user().screen_width();
   if (okansi(user())) {
-    bputs(fmt::sprintf("|17|15 %-78s|#0\r\n\n", msg));
+    bputs(fmt::format("|17|15 {:<{}}|#0\r\n\n", msg, len));
   }
   else {
-    format("|#5{}|#0\r\n\n", msg);
+    format("|#5 {}|#0\r\n\n", msg);
   }
 }
 
