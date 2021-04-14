@@ -198,7 +198,7 @@ bool NetworkF::import_packet_file(const std::string& dir, const std::string& nam
       return true;
     }
     if (response == ReadPacketResponse::ERROR) {
-      return false;
+      return true;
     }
 
     const auto is_email = (msg.nh.attribute & MSGPRIVATE) != 0;
