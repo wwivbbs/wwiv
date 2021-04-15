@@ -440,7 +440,7 @@ static void FixUserLinesAndColors() {
     const auto& ss = sso.value();
     if (ss.x != a()->user()->screen_width() || ss.y != a()->user()->screen_lines()) {
       bout.format("|#9Screen size of |#2{}|#9x|#2{} |#9detected.  Use it?", ss.x, ss.y);
-      if (bin.noyes()) {
+      if (bin.yesno()) {
         a()->user()->screen_width(ss.x);
         a()->user()->screen_lines(ss.y);
         a()->WriteCurrentUser();
