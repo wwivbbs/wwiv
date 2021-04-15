@@ -436,16 +436,8 @@ static void FixUserLinesAndColors() {
   }
 
   // Query screen size if mismatch.
-  if (const auto sso = bin.screen_size()) {
-    const auto& ss = sso.value();
-    if (ss.x != a()->user()->screen_width() || ss.y != a()->user()->screen_lines()) {
-      bout.format("|#9Screen size of |#2{}|#9x|#2{} |#9detected.  Use it?", ss.x, ss.y);
-      if (bin.yesno()) {
-        a()->user()->screen_width(ss.x);
-        a()->user()->screen_lines(ss.y);
-        a()->WriteCurrentUser();
-      }
-    }
+  if (detect_screensize()) {
+    a()->WriteCurrentUser();
   }
 }
 

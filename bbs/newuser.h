@@ -35,6 +35,12 @@ void input_zipcode();
 void input_sex();
 void input_age(wwiv::sdk::User* u);
 void input_comptype();
+/**
+ * detects the screensize and returns true if the caller accepted the 
+ * new size.  The userrecord will be updated by the function.
+ * 
+ */
+bool detect_screensize();
 void input_screensize();
 void input_pw(wwiv::sdk::User* u);
 void input_ansistat();

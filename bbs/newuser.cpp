@@ -375,7 +375,7 @@ void input_comptype() {
   }
 }
 
-void input_screensize() {
+bool detect_screensize() { 
   if (const auto sso = bin.screen_size()) {
     const auto& ss = sso.value();
     if (ss.x != a()->user()->screen_width() || ss.y != a()->user()->screen_lines()) {
@@ -383,9 +383,17 @@ void input_screensize() {
       if (bin.noyes()) {
         a()->user()->screen_width(ss.x);
         a()->user()->screen_lines(ss.y);
-        return;
+        a()->sess().num_screen_lines(ss.y);
+        return true;
       }
     }
+  }
+  return false;
+}
+
+void input_screensize() {
+  if (detect_screensize()) {
+    return;
   }
 
   bout.nl();

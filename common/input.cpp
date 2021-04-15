@@ -824,6 +824,11 @@ std::optional<ScreenPos> Input::screen_size() {
   if (!pos) {
     return std::nullopt;
   }
+  if (pos->x < 20 || pos->y < 10) {
+    // If the screensize is less than 20 wide or 10 tall, this seems sus,
+    // so fail to detect it by returning a nullopt.
+    return std::nullopt;
+  }
   return {ScreenPos{pos->x, pos->y}};
 }
 
