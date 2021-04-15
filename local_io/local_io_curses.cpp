@@ -54,11 +54,11 @@ static void InitPairs() {
   }
 }
 
-CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1) {}
+CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1, 80) {}
 
-CursesLocalIO::CursesLocalIO(int num_lines) {
+CursesLocalIO::CursesLocalIO(int num_lines, int num_cols) {
   InitPairs();
-  window_.reset(new wwiv::local::ui::CursesWindow(nullptr, wwiv::local::ui::curses_out->color_scheme(), num_lines, 80, 0, 0));
+  window_.reset(new wwiv::local::ui::CursesWindow(nullptr, wwiv::local::ui::curses_out->color_scheme(), num_lines, num_cols, 0, 0));
   auto* w = std::any_cast<WINDOW*>(window_->window());
   scrollok(w, true);
   window_->Clear();

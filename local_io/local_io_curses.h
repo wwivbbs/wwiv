@@ -29,7 +29,7 @@ class CursesLocalIO final : public LocalIO {
 public:
   // Constructor/Destructor
   CursesLocalIO();
-  explicit CursesLocalIO(int num_lines);
+  explicit CursesLocalIO(int num_lines, int num_cols);
   explicit CursesLocalIO(const CursesLocalIO& copy) = delete;
   explicit CursesLocalIO(CursesLocalIO&&) = delete;
   CursesLocalIO& operator=(const CursesLocalIO&) = delete;
