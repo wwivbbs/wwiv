@@ -61,13 +61,6 @@ using namespace wwiv::strings;
 /* ie, functions to help emulate other BBS's.                             */
 /* ---------------------------------------------------------------------- */
 
-// ToDO(rushfan): Move this to some place like menu_utils.cpp/h
-static void MenuSysopLog(const std::string& msg) {
-  const std::string log_message = StrCat("*MENU* : ", msg);
-  sysoplog() << log_message;
-  bout << log_message << wwiv::endl;
-}
-
 
 static int FindDN(const std::string& dl_fn) {
   for (auto i = 0; i < a()->dirs().size(); i++) {
@@ -94,7 +87,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_
   int dn = FindDN(dir_fn);
 
   if (dn == -1) {
-    MenuSysopLog("DLDNF");                  /* DL - DIR NOT FOUND */
+    sysoplog() << "Download: Dir Not Found";                  /* DL - DIR NOT FOUND */
     return 0;
   }
   const auto& dir = a()->dirs()[dn];
@@ -106,7 +99,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_
     if (abort) {
       return -1;
     }
-    MenuSysopLog("DLFNF"); /* DL - FILE NOT FOUND */
+    sysoplog() << "Download: File Not Found"; /* DL - FILE NOT FOUND */
     return 0;
   }
   bool ok = true;

@@ -75,12 +75,6 @@ static std::map<int, menu_set_t> ListMenuDirs() {
   return result;
 }
 
-void MenuSysopLog(const std::string& msg) {
-  const std::string log_message = StrCat("*MENU* : ", msg);
-  sysoplog() << log_message;
-  bout << log_message << wwiv::endl;
-}
-
 /**
  * Sets a menuset to one specified by 'name', returning true on success and
  * false otherwise.
@@ -95,8 +89,8 @@ static bool SetMenuSet(const menu_set_t& m) {
   }
 
   a()->user()->set_menu_set(m.name);
-  MenuSysopLog(fmt::format("Menu in use : {} - {}", a()->user()->menu_set(),
-                           a()->user()->hotkeys() ? "Hot" : "Off"));
+  sysoplog() << fmt::format("Menu in use : {} - {}", a()->user()->menu_set(),
+                           a()->user()->hotkeys() ? "Hot" : "Off");
   // Save current menu setup.
   return a()->WriteCurrentUser();
 }
@@ -110,10 +104,22 @@ void ConfigUserMenuSet(const std::string& data) {
       return;
     }
   }
+
   bout.cls();
   bout.litebar("Configure Menus");
   bout.printfile(MENUWEL_NOEXT);
   bool done = false;
+
+  const auto r = ListMenuDirs();
+  if (r.size() == 1) {
+    if (const auto m = std::begin(r)->second; ValidateMenuSet(m.name)) {
+      bout << "|#5You are currently using the only available menuset." << wwiv::endl << wwiv::endl;
+      SetMenuSet(m);
+      bout.pausescr();
+      return;
+    }
+  }
+
   while (!done) {
     bout.nl();
     bout << "|#11|#9) Menuset      :|#2 " << a()->user()->menu_set() << wwiv::endl;
@@ -127,7 +133,6 @@ void ConfigUserMenuSet(const std::string& data) {
       done = true;
       break;
     case '1': {
-      auto r = ListMenuDirs();
       bout.nl(2);
       bout << "|#9Enter the menu set to use : ";
       auto sel = bin.input_number<int>(1, 1, r.size(), false);

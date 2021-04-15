@@ -443,6 +443,7 @@ static void FixUserLinesAndColors() {
       if (bin.noyes()) {
         a()->user()->screen_width(ss.x);
         a()->user()->screen_lines(ss.y);
+        a()->WriteCurrentUser();
       }
     }
   }

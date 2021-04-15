@@ -235,6 +235,7 @@ Runs a WWIVbasic Script
   or takes the user into the user menu config so they can select which menuset to use.)",
                                           MENU_CAT_USER, [](MenuContext& context) {
                                             ConfigUserMenuSet(context.data);
+                                            a()->WriteCurrentUser();
                                             context.need_reload = true;
                                           }));
 
@@ -243,96 +244,164 @@ Runs a WWIVbasic Script
 )",
                                    MENU_CAT_USER, [](MenuContext& context) {
                                      ConfigUserMenuSet(context.data);
+                                     a()->WriteCurrentUser();
                                      context.need_reload = true;
                                    }));
 
   m.emplace("user:realname", MenuItem(R"(Allows the user to change their real name)", MENU_CAT_USER,
-                                      [](MenuContext&) { input_realname(); }));
+                                      [](MenuContext&) {
+                                        input_realname();
+                                        a()->WriteCurrentUser();
+                                      }));
 
   m.emplace("user:dataphone", MenuItem(R"(Allows the user to change their data phone number)",
-                                       MENU_CAT_USER, [](MenuContext&) { input_dataphone(); }));
+                                       MENU_CAT_USER, [](MenuContext&) {
+                                         input_dataphone();
+                                         a()->WriteCurrentUser();
+                                       }));
 
   m.emplace("user:phone", MenuItem(R"(Allows the user to change their voice phone number)",
-                                       MENU_CAT_USER, [](MenuContext&) { input_phone(); }));
+                                   MENU_CAT_USER, [](MenuContext&) {
+                                     input_phone();
+                                     a()->WriteCurrentUser();
+                                   }));
 
-  m.emplace("user:address", MenuItem(R"(Allows the user to change their address)", MENU_CAT_USER,
-                                     [](MenuContext&) { input_street(); }));
+  m.emplace("user:address", MenuItem(R"(Allows the user to change their address)", MENU_CAT_USER, [](MenuContext&) {
+              input_street();
+              a()->WriteCurrentUser();
+            }));
 
-  m.emplace("user:city", MenuItem(R"(Allows the user to change their city)", MENU_CAT_USER,
-                                  [](MenuContext&) { input_city(); }));
+  m.emplace("user:city", MenuItem(R"(Allows the user to change their city)", MENU_CAT_USER, [](MenuContext&) {
+              input_city();
+              a()->WriteCurrentUser();
+            }));
 
-  m.emplace("user:state", MenuItem(R"(Allows the user to change their state)", MENU_CAT_USER,
-                                   [](MenuContext&) { input_state(); }));
+  m.emplace("user:state", MenuItem(R"(Allows the user to change their state)", MENU_CAT_USER, [](MenuContext&) {
+              input_state();
+              a()->WriteCurrentUser();
+            }));
 
-  m.emplace("user:zipcode", MenuItem(R"(Allows the user to change their zipcode)", MENU_CAT_USER,
-                                     [](MenuContext&) { input_zipcode(); }));
-  m.emplace("user:country", MenuItem(R"(Allows the user to change their country)", MENU_CAT_USER,
-                                     [](MenuContext&) { input_country(); }));
-  m.emplace("user:gender", MenuItem(R"(Allows the user to change their gender)", MENU_CAT_USER,
-                                    [](MenuContext&) { input_sex(); }));
+  m.emplace("user:zipcode", MenuItem(R"(Allows the user to change their zipcode)", MENU_CAT_USER, [](MenuContext&) {
+              input_zipcode();
+              a()->WriteCurrentUser();
+            }));
+  m.emplace("user:country", MenuItem(R"(Allows the user to change their country)", MENU_CAT_USER, [](MenuContext&) {
+              input_country();
+              a()->WriteCurrentUser();
+            }));
+  m.emplace("user:gender", MenuItem(R"(Allows the user to change their gender)", MENU_CAT_USER, [](MenuContext&) {
+              input_sex();
+              a()->WriteCurrentUser();
+            }));
   m.emplace("user:comptype", MenuItem(R"(Allows the user to change their computer type)",
-                                      MENU_CAT_USER, [](MenuContext&) { input_comptype(); }));
+                                      MENU_CAT_USER, [](MenuContext&) {
+                                        input_comptype();
+                                        a()->WriteCurrentUser();
+                                      }));
   m.emplace("user:screensize", MenuItem(R"(Allows the user to change their screen size)",
-                                        MENU_CAT_USER, [](MenuContext&) { input_screensize(); }));
+                                        MENU_CAT_USER, [](MenuContext&) {
+                                          input_screensize();
+                                          a()->WriteCurrentUser();
+                                        }));
   m.emplace("user:ansistate", MenuItem(R"(Allows the user to change their ANSI state)",
-                                       MENU_CAT_USER, [](MenuContext&) { input_ansistat(); }));
+                                       MENU_CAT_USER, [](MenuContext&) {
+                                         input_ansistat();
+                                         a()->WriteCurrentUser();
+                                       }));
   m.emplace("user:callsign", MenuItem(R"(Allows the user to change their HAM callsign)",
-                                      MENU_CAT_USER, [](MenuContext&) { input_callsign(); }));
+                                      MENU_CAT_USER, [](MenuContext&) {
+                                        input_callsign();
+                                        a()->WriteCurrentUser();
+                                      }));
   m.emplace("user:editor", MenuItem(R"(Allows the user to change their default editor)",
-                                    MENU_CAT_USER, [](MenuContext&) { select_editor(); }));
+                                    MENU_CAT_USER, [](MenuContext&) {
+                                      select_editor();
+                                      a()->WriteCurrentUser();
+                                    }));
   m.emplace("user:qscan", MenuItem(R"(Allows the user to change their subs that are newscanned)",
-                                   MENU_CAT_USER, [](MenuContext&) { config_qscan(); }));
+                                   MENU_CAT_USER, [](MenuContext&) {
+                                     config_qscan();
+                                     a()->WriteCurrentUser();
+                                   }));
   m.emplace("user:regnum",
             MenuItem(R"(Allows the user to change their WWIV 4.x registration number)",
-                     MENU_CAT_USER, [](MenuContext&) { enter_regnum(); }));
+                     MENU_CAT_USER, [](MenuContext&) {
+                       enter_regnum();
+                       a()->WriteCurrentUser();
+                     }));
   m.emplace("user:mailbox", MenuItem(R"(Allows the user to change their email forward/mailbox settings)",
-                                   MENU_CAT_USER, [](MenuContext&) { modify_mailbox(); }));
-  m.emplace("user:password", MenuItem(R"(Allows the user to change their password)",
-                                   MENU_CAT_USER, [](MenuContext&) { modify_mailbox(); }));
-  m.emplace("user:macros", MenuItem(R"(Allows the user to change their macros)",
-                                   MENU_CAT_USER, [](MenuContext&) { change_macros(); }));
+                     MENU_CAT_USER, [](MenuContext&) {
+                       modify_mailbox();
+                       a()->WriteCurrentUser();
+                     }));
+  m.emplace("user:password", MenuItem(R"(Allows the user to change their password)", MENU_CAT_USER,
+                                      [](MenuContext&) {
+                                        modify_mailbox();
+                                        a()->WriteCurrentUser();
+                                      }));
+  m.emplace("user:macros", MenuItem(R"(Allows the user to change their macros)", MENU_CAT_USER, [](MenuContext&) {
+              change_macros();
+              a()->WriteCurrentUser();
+            }));
   m.emplace("user:optional_lines", MenuItem(R"(Allows the user to change the number of optional lines displayed)",
-                                   MENU_CAT_USER, [](MenuContext&) { change_optional_lines(); }));
+                     MENU_CAT_USER, [](MenuContext&) {
+                       change_optional_lines();
+                       a()->WriteCurrentUser();
+                     }));
   m.emplace("user:email", MenuItem(R"(Allows the user to change their email address)",
-                                   MENU_CAT_USER, [](MenuContext&) { change_email_address(); }));
-  m.emplace("user:colors", MenuItem(R"(Allows the user to change their colors)",
-                                   MENU_CAT_USER, [](MenuContext&) { change_colors(); }));
+                                   MENU_CAT_USER, [](MenuContext&) {
+                                     change_email_address();
+                                     a()->WriteCurrentUser();
+                                   }));
+  m.emplace("user:colors", MenuItem(R"(Allows the user to change their colors)", MENU_CAT_USER, [](MenuContext&) {
+              change_colors();
+              a()->WriteCurrentUser();
+            }));
 
 
   m.emplace("user:pause", MenuItem(R"(Toggles pause on page)", MENU_CAT_USER, [](MenuContext&) {
               a()->user()->toggle_flag(User::pauseOnPage);
+              a()->WriteCurrentUser();
             }));
 
   m.emplace("user:extra_color", MenuItem(R"(Toggles Extra Colors)", MENU_CAT_USER, [](MenuContext&) {
               a()->user()->toggle_flag(User::extraColor);
+              a()->WriteCurrentUser();
             }));
 
   m.emplace("user:conference", MenuItem(R"(Toggles if conferences are enables)", MENU_CAT_USER, [](MenuContext&) {
               a()->user()->toggle_flag(User::conference);
+              a()->WriteCurrentUser();
             }));
 
   m.emplace("user:ctrlcodes", MenuItem(R"(Toggles if message lines with kludges or control codes are shown)", MENU_CAT_USER, [](MenuContext&) {
-              a()->user()->toggle_flag(User::msg_show_controlcodes);
+                       a()->user()->toggle_flag(User::msg_show_controlcodes);
+                       a()->WriteCurrentUser();
             }));
 
   m.emplace("user:fs_reader", MenuItem(R"(Toggles If the full screen message reader is used)", MENU_CAT_USER, [](MenuContext&) {
-              a()->user()->toggle_flag(User::fullScreenReader);
+                                         a()->user()->toggle_flag(User::fullScreenReader);
+                                         a()->WriteCurrentUser();
             }));
 
   m.emplace("user:nomsgs", MenuItem(R"(Toggles If the user doesn't want inter instance messages)", MENU_CAT_USER, [](MenuContext&) {
-              a()->user()->toggle_flag(User::noMsgs);
+                                      a()->user()->toggle_flag(User::noMsgs);
+                                      a()->WriteCurrentUser();
             }));
 
   m.emplace("user:cls", MenuItem(R"(Toggles If the screen should be cleared between messages in the non-full screen message reader)", MENU_CAT_USER, [](MenuContext&) {
-              a()->user()->toggle_flag(User::clearScreen);
+            a()->user()->toggle_flag(User::clearScreen);
+            a()->WriteCurrentUser();
             }));
 
   m.emplace("user:24", MenuItem(R"(Toggles If the time should be displayed using a 24-hour clock vs. 12-hour)", MENU_CAT_USER, [](MenuContext&) {
-              a()->user()->toggle_flag(User::twentyFourHourClock);
+                       a()->user()->toggle_flag(User::twentyFourHourClock);
+                       a()->WriteCurrentUser();
             }));
 
   m.emplace("user:autoquote", MenuItem(R"(Toggles If new messages in external editors should contain the entire reply text)", MENU_CAT_USER, [](MenuContext&) {
-              a()->user()->toggle_flag(User::autoQuote);
+            a()->user()->toggle_flag(User::autoQuote);
+            a()->WriteCurrentUser();
             }));
 
   // ========================================================================

@@ -232,7 +232,7 @@ std::string Output::MakeSystemColor(sdk::Color color) const {
 }
 
 void Output::litebar(const std::string& msg) {
-  const auto len = user().screen_width();
+  const auto len = user().screen_width() - 2;
   if (okansi(user())) {
     bputs(fmt::format("|17|15 {:<{}}|#0\r\n\n", msg, len));
   }
