@@ -86,7 +86,7 @@ void FullScreenView::DrawTopBar() {
   bout_.GotoXY(1, num_header_lines_ + 1);
   std::ostringstream ss;
   ss << "|#7" << static_cast<unsigned char>(198)
-     << std::string(screen_width_ - 2, static_cast<unsigned char>(205))
+     << std::string(std::max<int>(40, screen_width_) - 2, static_cast<unsigned char>(205))
      << static_cast<unsigned char>(181);
   bout_.bputs(ss.str());
 }
