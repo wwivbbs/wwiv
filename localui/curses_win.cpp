@@ -209,9 +209,9 @@ int CursesWindow::GetChar() const {
 
 void CursesWindow::GotoXY(int x, int y) {
   x = std::max<int>(x, 0);
-  x = std::min<int>(x, GetMaxX());
+  x = std::min<int>(x, GetMaxX() - 1);
   y = std::max<int>(y, 0);
-  y = std::min<int>(y, GetMaxY());
+  y = std::min<int>(y, GetMaxY() - 1);
 
   Move(y, x);
   Refresh();

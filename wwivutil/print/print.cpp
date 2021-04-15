@@ -136,7 +136,7 @@ int PrintCommand::Execute() {
       // Use 25 lines (80x25) by default.
       // TODO(rushfan): We should try to inspect the screen size if possible
       // and use that instead.  Don't know how to do that on *NIX though.
-      io = std::make_unique<local::io::CursesLocalIO>(25);
+      io = std::make_unique<local::io::CursesLocalIO>(25, 80);
     }
     LocalIOScreen screen(io.get(), 80);
     AnsiCallbacks cb;

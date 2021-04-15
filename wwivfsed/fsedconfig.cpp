@@ -87,7 +87,7 @@ LocalIO* FsedConfig::CreateLocalIO() const {
 #else
     if (local_) {
       CursesIO::Init(fmt::sprintf("WWIVfsed %s", full_version()));
-      return new CursesLocalIO(curses_out->GetMaxY());
+      return new CursesLocalIO(curses_out->GetMaxY(), curses_out->GetMaxX());
     }
 #endif
   }
