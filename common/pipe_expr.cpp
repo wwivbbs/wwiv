@@ -224,7 +224,7 @@ std::string PipeEval::eval_variable(const std::string& var, const std::vector<pi
   for (const auto& v : context_.value_providers()) {
     // O(N) is on for small values of n
     if (iequals(prefix, v->prefix())) {
-      return v->value(suffix)->as_string();
+      return pipe_fmt(v->value(suffix)->as_string(), mask);
     }
   }
 

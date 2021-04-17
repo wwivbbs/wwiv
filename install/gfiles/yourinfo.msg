@@ -1,7 +1,7 @@
 |#4Your User Information|[K|#0
 
 
-|#9Your name      : |#2|@N |#9#|#2|@#
+|#9Your name      : |#5|{user.name} |#9#|#2|@#
 |#9Phone number   : |#2|@p
 |#9Mail Waiting   : |#2|@M
 |#9Security Level : |#2|@S

@@ -89,7 +89,7 @@ public:
   explicit MainMenu(const sdk::Config& config);
   void Run();
 
-  wwiv::sdk::menus::MenuSet56 menu_set_name_;
+  wwiv::sdk::menus::MenuSet56 menu_set_;
   const sdk::Config& config_;
 
 private:

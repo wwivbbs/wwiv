@@ -247,7 +247,7 @@ public:
       auto selected = -1;
       do {
         std::vector<ListBoxItem> items;
-        for (auto i = 1; i < wwiv::stl::ssize(t_); i++) {
+        for (auto i = 0; i < wwiv::stl::ssize(t_); i++) {
           const auto& m = t_.at(i);
           auto key = fmt::format("({})", m.item_key);
           auto s = fmt::format("#{} {:<12} '{}'", i, key, m.item_text);
@@ -294,7 +294,7 @@ public:
             auto prompt = fmt::format("Move to before which (1-{}) : ", maxnum);
             auto new_pos = dialog_input_number(window, prompt, 1, maxnum);
             if (new_pos >= 1) {
-              auto& saved = t_.at(num);
+              auto saved = t_.at(num);
               if (erase_at(t_, num)) {
                 insert_at(t_, new_pos, saved);
               }
@@ -472,6 +472,9 @@ static void edit_settings(const Config& config, wwiv::sdk::menus::MenuSet56& men
   items.add(new Label("Description:"),
             new StringEditItem<std::string&>(40, h.description, EditLineMode::ALL),
             "Enter the description of this menuset", 1, y);
+  ++y;
+  items.add(new Label("ACS:"), new ACSEditItem(config, providers, 70, h.acs),
+            "WWIV ACS required to use this menuset", 1, y);
   ++y;
   items.add(new Label("Global Menu Items:"), new MenuItemsSubDialog(config, h.items, providers),
             "Menu items to add to every menu globally", 1, y);

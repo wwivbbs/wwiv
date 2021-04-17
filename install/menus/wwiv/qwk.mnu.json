@@ -1,13 +1,19 @@
 {
     "version": 1,
     "menu": {
+        "cls": false,
         "num_action": "none",
         "logging_action": "none",
         "help_type": "always",
-        "color_title": 5,
-        "color_item_key": 2,
-        "color_item_text": 1,
-        "color_item_braces": 9,
+        "generated_menu": {
+            "num_cols": 3,
+            "color_title": "|#4",
+            "color_item_key": "|#2",
+            "color_item_text": "|#0",
+            "color_item_braces": "|#1",
+            "show_empty_text": false,
+            "num_newlines_at_end": 1
+        },
         "title": "QWK Menu",
         "acs": "user.sl >= 10",
         "password": "",
@@ -17,6 +23,7 @@
             {
                 "item_key": "",
                 "item_text": "",
+                "visible": true,
                 "help_text": "",
                 "log_text": "",
                 "instance_message": "",
@@ -27,6 +34,7 @@
             {
                 "item_key": "D",
                 "item_text": "Download",
+                "visible": true,
                 "help_text": "Download QWK Packet",
                 "log_text": "",
                 "instance_message": "",
@@ -43,6 +51,7 @@
             {
                 "item_key": "U",
                 "item_text": "Upload Reply",
+                "visible": true,
                 "help_text": "",
                 "log_text": "",
                 "instance_message": "",
@@ -59,6 +68,7 @@
             {
                 "item_key": "Q",
                 "item_text": "Quit",
+                "visible": true,
                 "help_text": "",
                 "log_text": "",
                 "instance_message": "",
@@ -75,6 +85,7 @@
             {
                 "item_key": "C",
                 "item_text": "Configure Settings",
+                "visible": true,
                 "help_text": "",
                 "log_text": "",
                 "instance_message": "",
@@ -91,6 +102,7 @@
             {
                 "item_key": "*",
                 "item_text": "Sysop Menu",
+                "visible": true,
                 "help_text": "",
                 "log_text": "",
                 "instance_message": "",
@@ -107,6 +119,7 @@
             {
                 "item_key": "?",
                 "item_text": "Help",
+                "visible": true,
                 "help_text": "",
                 "log_text": "",
                 "instance_message": "",

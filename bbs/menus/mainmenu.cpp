@@ -22,6 +22,7 @@
 #include "bbs/bbs.h"
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
+#include "bbs/shortmsg.h"
 #include "bbs/sysoplog.h"
 #include "bbs/menus/config_menus.h"
 #include "bbs/menus/menucommands.h"
@@ -79,23 +80,27 @@ static void log_command(menu_logtype_t logging, const menu_item_56_t& mi) {
 MainMenu::MainMenu(const sdk::Config& config) : config_(config) {}
 
 void MainMenu::Run() {
-  menu_set_name_ = a()->sess().current_menu_set();
-  auto main = std::make_unique<Menu>(config_.menudir(), menu_set_name_, "main");
-  while (!main->initalized()) {
+  menu_set_ = a()->sess().current_menu_set();
+  auto main = std::make_unique<Menu>(config_.menudir(), menu_set_, "main");
+  auto loop_count = 0;
+  while (!main->initalized() || !check_acs(menu_set_.menu_set.acs) || !check_acs(main->menu().acs)) {
     ConfigUserMenuSet("");
     // This should get updated when the user record gets written.
-    menu_set_name_ = a()->sess().current_menu_set();
+    menu_set_ = a()->sess().current_menu_set();
     // TODO(rushfan): Update menu_set_ and reload main
-    main = std::make_unique<Menu>(config_.menudir(), menu_set_name_, "main");
-  }
-  if (!check_acs(main->menu().acs)) {
-    sysoplog() << "Insufficient ACS for main menu";
-    bout << "|#6Insufficient ACS for main menu! " << endl;
-    LOG(ERROR) << "ACS check failed for main menu!";
-    return;
+    main = std::make_unique<Menu>(config_.menudir(), menu_set_, "main");
+    ++loop_count;
+    if (loop_count >= 3) {
+      auto errm = "Caller unable to select a menu after 3 tries, please check for misconfiguration";
+      LOG(ERROR) << errm;
+      sysoplog() << errm;
+      ssm(1) << errm;
+    }
   }
 
   // N.B. Main menu can not have a password.
+  // Also should we skip the ACS on the main menu and just use the MENUSET
+  // ACS?
 
   while (true) {
     if (stack_.empty()) {
@@ -110,7 +115,7 @@ void MainMenu::Run() {
       stack_.pop_back();
       break;
     case menu_run_result_t::push_menu: {
-      Menu m(config_.menudir(), menu_set_name_, s);
+      Menu m(config_.menudir(), menu_set_, s);
       if (!m.initalized()) {
         LOG(ERROR) << "Menu never loaded";
         continue;
@@ -122,8 +127,8 @@ void MainMenu::Run() {
       break;
     case menu_run_result_t::change_menu_set:
       stack_.clear();
-      menu_set_name_ = a()->sess().current_menu_set();
-      main = std::make_unique<Menu>(config_.menudir(), menu_set_name_, "main");
+      menu_set_ = a()->sess().current_menu_set();
+      main = std::make_unique<Menu>(config_.menudir(), menu_set_, "main");
       break;
     case menu_run_result_t::none:
       // Do nothing.

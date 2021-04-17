@@ -21,23 +21,6 @@
         "exit_actions": [],
         "items": [
             {
-                "item_key": "RI",
-                "item_text": "",
-                "visible": true,
-                "help_text": "Read current WWIV.INI values into memory",
-                "log_text": "RI",
-                "instance_message": "",
-                "acs": "user.sl >= 255 && user.sysop == true",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "readini",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
                 "item_key": "IE",
                 "item_text": "InstanceEdit",
                 "visible": true,
@@ -384,7 +367,7 @@
                 "help_text": "Upload Text File to Post in next Email or Message",
                 "log_text": "UPLOAD",
                 "instance_message": "",
-                "acs": "",
+                "acs": "user.validated == true",
                 "password": "",
                 "actions": [
                     {
@@ -797,7 +780,7 @@
                 "help_text": "Enter Time Bank",
                 "log_text": "$",
                 "instance_message": "Time Bank",
-                "acs": "",
+                "acs": "user.validated == true",
                 "password": "",
                 "actions": [
                     {
@@ -862,15 +845,15 @@
                 "item_key": "D",
                 "item_text": "Defaults",
                 "visible": true,
-                "help_text": "Set User Defaults",
-                "log_text": "D",
-                "instance_message": "Defaults",
+                "help_text": "Edit user settings",
+                "log_text": "RAN Defaults",
+                "instance_message": "",
                 "acs": "",
                 "password": "",
                 "actions": [
                     {
-                        "cmd": "defaults",
-                        "data": "",
+                        "cmd": "MENU",
+                        "data": "defaults",
                         "acs": ""
                     }
                 ]
