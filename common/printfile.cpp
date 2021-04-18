@@ -83,19 +83,19 @@ std::filesystem::path CreateFullPathToPrint(const std::vector<std::filesystem::p
         // ANSI and color
         candidate.replace_extension(".ans");
         if (File::Exists(candidate)) {
-          return candidate;
+          return CreateFullPathToPrintWithCols(candidate, user.screen_width());
         }
       }
       // ANSI.
       candidate.replace_extension(".b&w");
       if (File::Exists(candidate)) {
-        return candidate;
+        return CreateFullPathToPrintWithCols(candidate, user.screen_width());
       }
     }
     // ANSI/Color optional
     candidate.replace_extension(".msg");
     if (File::Exists(candidate)) {
-      return candidate;
+      return CreateFullPathToPrintWithCols(candidate, user.screen_width());
     }
   }
   // Nothing matched, return the input.

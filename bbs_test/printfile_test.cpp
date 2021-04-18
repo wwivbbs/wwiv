@@ -36,6 +36,7 @@ class PrintFileTest : public ::testing::Test {
 protected:
   void SetUp() override { 
     helper.SetUp(); 
+    helper.user()->screen_width(80);
     const auto lang = FilePath(helper.files().TempDir(), "en/gfiles");
     const auto gfiles = FilePath(helper.files().TempDir(), "gfiles");
     dirs.push_back(lang);
@@ -112,16 +113,6 @@ TEST_F(PrintFileTest, FullyQualified) {
   EXPECT_EQ(expected, actual);
 }
 
-TEST_F(PrintFileTest, RegexTest) {
-  const std::regex pieces_regex("[a-zA-Z._]+\\.(\\d+)\\.msg");
-  std::smatch pieces_match;
-
-  std::string fname("foo.bar.120.msg");
-  ASSERT_TRUE(std::regex_match(fname, pieces_match, pieces_regex));
-  EXPECT_EQ(2u, pieces_match.size());
-  EXPECT_EQ(120, to_number<int>(pieces_match[1].str()));
-}
-
 TEST_F(PrintFileTest, WithCols) {
   const auto base_ans = CreateTempFile("gfiles/one.msg");
   const auto expected_msg = CreateTempFile("gfiles/one.80.msg");
@@ -141,4 +132,17 @@ TEST_F(PrintFileTest, WithCols_None) {
 
   const auto actual_msg = CreateFullPathToPrintWithCols(expected_msg, 80);
   EXPECT_EQ(expected_msg, actual_msg);
+}
+
+TEST_F(PrintFileTest, GFilesOnly_WithCols) {
+  const auto msg132 = CreateTempFile("gfiles/one.132.msg");
+  const auto base_msg = CreateTempFile("gfiles/one.msg");
+
+  helper.user()->screen_width(132);
+  const auto actual_msg = CreateFullPathToPrint("one");
+  EXPECT_EQ(msg132, actual_msg);
+
+  helper.user()->screen_width(80);
+  const auto actual_bw = CreateFullPathToPrint("one");
+  EXPECT_EQ(base_msg, actual_bw);
 }
