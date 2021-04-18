@@ -43,6 +43,13 @@ using namespace wwiv::strings;
 
 std::filesystem::path CreateFullPathToPrintWithCols(const std::filesystem::path& filename,
                                                     int screen_length) {
+  // this shouldn't happen but let's warn about it
+  if (filename.empty() || !File::Exists(filename)) {
+    LOG(WARNING) << "CreateFullPathToPrintWithCols: filename does not exist: "
+                 << filename.u8string();
+    return filename;
+  }
+
   const auto base = filename.stem();
   const auto ext = filename.extension();
   const auto dir = filename.parent_path();
@@ -55,6 +62,11 @@ std::filesystem::path CreateFullPathToPrintWithCols(const std::filesystem::path&
     if (std::regex_match(fname, pieces_match, pieces_regex)) {
       col_fn_map[wwiv::strings::to_number<int>(pieces_match[1].str())] = f.path();
     }
+  }
+
+  // be explicit that we need this to be non-empty.
+  if (col_fn_map.empty()) {
+    return filename;
   }
 
   for (auto it = std::rbegin(col_fn_map); it != std::rend(col_fn_map); it++) {

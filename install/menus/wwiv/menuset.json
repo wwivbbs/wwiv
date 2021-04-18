@@ -1,0 +1,27 @@
+{
+    "version": 1,
+    "menuset": {
+        "name": "wwiv",
+        "description": "wwiv v5.00 stock menus",
+        "acs": "",
+        "items": [
+            {
+                "item_key": "/O",
+                "item_text": "Fast Logoff",
+                "visible": true,
+                "help_text": "Log off immediately",
+                "log_text": "Logged off using '/O'",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "FastGoodBye",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            }
+        ]
+    }
+}
