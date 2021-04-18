@@ -155,7 +155,8 @@ What's New in WWIV 5.7.0 (2021)
 + When sending FTN emails, try to match by zone and not ask which network to use.
 * delete /Z and /S from default menus, they don't exist anymore
 + Need global menu (#1415)
-
++ Filenames can now be of the form: basename.MIN_NUM_COLS_NEEDED.extension for dispay.
+  example: logon.132.ans or fs_msgread.132.msg
 
 What's New in WWIV 5.6.1 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
