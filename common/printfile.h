@@ -26,6 +26,16 @@
 
 namespace wwiv::common {
 
+/**
+ * Creates the best fully qualified filename to display including support for embedding
+ * column number into the path as basename.COLUMNS.extension.
+ */
+std::filesystem::path CreateFullPathToPrintWithCols(const std::filesystem::path& filename,
+                                                    int screen_length);
+
+ /**
+  * Creates the fully qualified filename to display adding extensions and directories as needed.
+  */
 std::filesystem::path CreateFullPathToPrint(const std::vector<std::filesystem::path>& dirs,
                                             const sdk::User& user,
                                             const std::string& basename);

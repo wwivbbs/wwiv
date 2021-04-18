@@ -22,12 +22,15 @@
 #include "common/output.h"
 #include "common/printfile.h"
 #include "core/file.h"
+#include "core/strings.h"
 #include "core_test/file_helper.h"
+#include <regex>
 #include <string>
 
 using wwiv::sdk::User;
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::strings;
 
 class PrintFileTest : public ::testing::Test {
 protected:
@@ -107,4 +110,35 @@ TEST_F(PrintFileTest, FullyQualified) {
   const auto expected = CreateTempFile("gfiles/one.ans");
   const auto actual = CreateFullPathToPrint(expected.string());
   EXPECT_EQ(expected, actual);
+}
+
+TEST_F(PrintFileTest, RegexTest) {
+  const std::regex pieces_regex("[a-zA-Z._]+\\.(\\d+)\\.msg");
+  std::smatch pieces_match;
+
+  std::string fname("foo.bar.120.msg");
+  ASSERT_TRUE(std::regex_match(fname, pieces_match, pieces_regex));
+  EXPECT_EQ(2u, pieces_match.size());
+  EXPECT_EQ(120, to_number<int>(pieces_match[1].str()));
+}
+
+TEST_F(PrintFileTest, WithCols) {
+  const auto base_ans = CreateTempFile("gfiles/one.msg");
+  const auto expected_msg = CreateTempFile("gfiles/one.80.msg");
+  const auto msg120 = CreateTempFile("gfiles/one.120.msg");
+  const auto msg132 = CreateTempFile("gfiles/one.132.msg");
+  const auto msg40 = CreateTempFile("gfiles/one.40.msg");
+
+  const auto actual_msg = CreateFullPathToPrintWithCols(base_ans, 80);
+  EXPECT_EQ(expected_msg, actual_msg);
+}
+
+TEST_F(PrintFileTest, WithCols_None) {
+  const auto expected_msg = CreateTempFile("gfiles/one.msg");
+  const auto msg100 = CreateTempFile("gfiles/one.100.msg");
+  const auto msg120 = CreateTempFile("gfiles/one.120.msg");
+  const auto msg132 = CreateTempFile("gfiles/one.132.msg");
+
+  const auto actual_msg = CreateFullPathToPrintWithCols(expected_msg, 80);
+  EXPECT_EQ(expected_msg, actual_msg);
 }
