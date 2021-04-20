@@ -620,15 +620,18 @@ void boardedit() {
         break;
       }
       bout.nl();
-      bout << "|#2Insert before which sub ('$' for end) : ";
-      auto s = bin.input(4);
-      subconf_t subnum;
-      if (s[0] == '$') {
+      bout << "|#2Insert before which sub ('Q' to quit, '$' for end) : ";
+      auto r = bin.input_number_hotkey(-1, {'Q', '$'}, 0, ssize(a()->subs().subs()), false);
+      int subnum;
+      if (r.key == 'Q') {
+        break;
+      }
+      if (r.key == '$') {
         subnum = static_cast<subconf_t>(ssize(a()->subs().subs()));
       } else {
-        subnum = to_number<uint16_t>(s);
+        subnum = r.num;
       }
-      if (!s.empty() && subnum <= ssize(a()->subs().subs())) {
+      if (subnum <= ssize(a()->subs().subs())) {
         insert_sub(subnum);
         modify_sub(subnum);
         const auto confs_size = a()->all_confs().subs_conf().size();
@@ -645,7 +648,7 @@ void boardedit() {
     case 'D': {
       bout.nl();
       bout << "|#2Delete which sub? ";
-      const int subnum = bin.input_number(-1, 1, size_int(a()->subs().subs()) - 1, false);
+      const int subnum = bin.input_number(-1, 0, ssize(a()->subs().subs()) - 1, false);
       if (subnum >= 0) {
         bout.nl();
         bout << "|#5Delete " << a()->subs().sub(subnum).name << "? ";
