@@ -313,22 +313,13 @@ static void init_files(UIWindow* window, const std::string& bbsdir, bool unzip_f
     unzip_file(window, "scripts.zip", "scripts");
     unzip_file(window, "data.zip", "data");
     unzip_file(window, "menus.zip", "menus");
+    unzip_file(window, "regions.zip", StrCat("data", File::pathSeparatorChar, "regions"));
+    unzip_file(window, "zip-city.zip", StrCat("data", File::pathSeparatorChar, "zip-city"));
 
 #ifdef WIN32
     // Unzip netfoss to "${WWIV_DIR}/netfoss"
     unzip_file(window, "netf124.zip", "netfoss");
 #endif
-
-    auto cwd = File::current_directory();
-    auto data = FilePath(cwd, "data");
-    File::set_current_directory(data);
-
-    unzip_file(window, "regions.zip", "regions");
-    unzip_file(window, "zip-city.zip", "zip-city");
-
-    File::set_current_directory(cwd);
-    // There's nothing to unzip to logs, so let's just create it.
-    File::mkdirs(FilePath(cwd, "logs"));
   }
 
   window->SetColor(SchemeId::NORMAL);
@@ -338,7 +329,8 @@ bool new_init(UIWindow* window, const std::string& bbsdir, bool unzip_files) {
   const std::vector<std::string> dirnames = {
       "attach", "data",        "data/regions", "data/zip-city", "gfiles",  "menus", "msgs",
       "dloads", "dloads/misc", "dloads/sysop", "temp",          "temp/1",  "temp/2",       "temp/3",
-      "temp/4", "batch",       "batch/1",      "batch/2",       "batch/3", "batch/4"};
+      "temp/4", "batch",       "batch/1",      "batch/2",       "batch/3", "batch/4",
+      "logs"};
   window->SetColor(SchemeId::PROMPT);
   window->Puts("\n\nNow performing installation.  Please wait...\n\n");
   window->Puts("Creating Directories\n");
