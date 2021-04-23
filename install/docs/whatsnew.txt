@@ -32,7 +32,7 @@ What's New in WWIV 5.7.0 (2021)
 + Added new setting in wwivconfig for fine grained newuser info.
 ! Add granular control over which profile information must be provided by new users (#845)
   By default wwivconfig should match what you had in wwiv.ini, but please take a look
-  also please remove teh following from wwiv.ini since they are confusing and 
+  also please remove the following from wwiv.ini since they are confusing and 
   these values are now controlled by wwivconfig:
   * EXTENDED_USERINFO
   * NEWUSER_MIN

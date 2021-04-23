@@ -43,14 +43,16 @@ using namespace wwiv::sdk::ansi;
 // static global "bout"
 Output bout;
 
+static constexpr char BBS_STR_INI[] = "bbs.str.ini";
+
 Output::Output() = default;
 
 Language& Output::lang() {
   if (!lang_) {
     auto mi = wwiv::core::FilePath(context().session_context().dirs().current_menu_directory(),
-                                   "bbs.str.ini");
+                                   BBS_STR_INI);
     auto gi =
-        wwiv::core::FilePath(context().session_context().dirs().gfiles_directory(), "bbs.str.ini");
+        wwiv::core::FilePath(context().session_context().dirs().gfiles_directory(), BBS_STR_INI);
     lang_ = std::make_unique<Language>(mi, gi);
   }
   DCHECK(lang_);
@@ -85,9 +87,9 @@ void Output::SetLocalIO(LocalIO* local_io) {
       current_menu_set_ = u.name;
       // Reload language support.
       auto mi = core::FilePath(context().session_context().dirs().current_menu_directory(),
-                               "bbs.str.ini");
+                               BBS_STR_INI);
       auto gi = core::FilePath(context().session_context().dirs().gfiles_directory(),
-                               "bbs.str.ini");
+                               BBS_STR_INI);
       lang_ = std::make_unique<Language>(mi, gi);
     }
   });

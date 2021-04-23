@@ -1,0 +1,2522 @@
+
+Specific additions for upgrading to WWIV 5.7.0
+(from 5.6.0 or a pre-release 5.7.0)
+===============================================
+
+
+After upgrading to 5.6.0, please move your $WWIV_HOME/gfiles/menu tree 
+to $WWIV_HOME/menus.  This is how the canonical structure is going forward,
+now that menusets will have child directories under it for gfiles/ and 
+scripts/.
+
+If you haven't customized your menus, I'd suggest replacing and overwriting
+them with the ones included in the release archive's menus.zip file
+
+For the gfiles.zip, using "unzip -n gfiles.zip -d gfiles" is likely
+to get you most of the way there, just manually also copy sbmain.msg
+from the gfiles.zip archive.
+
+In addition to the standard upgrade steps on http://docs.wwivbbs.org, 
+please note that here is a changelog of all of the files in menus, data,
+ini files, and gfiles that has happened since 5.6.0. 
+
+Legend:
+=======
+M - Modified
+R - Moved and modified
+A - Added
+D - Deleted
+
+Please make sure that 
+
+M	install/data/menu_commands.json
+M	install/docs/menu.txt
+M	install/docs/whatsnew.txt
+A	install/gfiles/bbs.str.ini
+A	install/gfiles/fs_msgread.120.msg
+A	install/gfiles/fs_msgread.msg
+A	install/gfiles/fs_msgscan.msg
+D	install/gfiles/menus/wwiv/automsg.pro
+D	install/gfiles/menuwel.ans
+M	install/gfiles/menuwel.msg
+M	install/gfiles/smbmain.msg
+A	install/gfiles/yourinfo.msg
+M	install/inifiles/wwiv.ini
+R100	install/gfiles/menus/descript.ion	install/menus/descript.ion
+R073	install/gfiles/menus/wwiv/automsg.mnu.json	install/menus/wwiv/automsg.mnu.json
+A	install/menus/wwiv/automsg.pro
+R100	install/gfiles/menus/wwiv/bbslist.mnu.json	install/menus/wwiv/bbslist.mnu.json
+R100	install/gfiles/menus/wwiv/bbslist.pro	install/menus/wwiv/bbslist.pro
+A	install/menus/wwiv/defaults.mnu.json
+A	install/menus/wwiv/defaults.msg
+A	install/menus/wwiv/defaults.pro
+R095	install/gfiles/menus/wwiv/main.mnu.json	install/menus/wwiv/main.mnu.json
+R100	install/gfiles/menus/wwiv/main.msg	install/menus/wwiv/main.msg
+R100	install/gfiles/menus/wwiv/main.pro	install/menus/wwiv/main.pro
+A	install/menus/wwiv/menuset.json
+R086	install/gfiles/menus/wwiv/qwk.mnu.json	install/menus/wwiv/qwk.mnu.json
+R100	install/gfiles/menus/wwiv/qwk.msg	install/menus/wwiv/qwk.msg
+R100	install/gfiles/menus/wwiv/qwk.pro	install/menus/wwiv/qwk.pro
+R088	install/gfiles/menus/wwiv/sysop.mnu.json	install/menus/wwiv/sysop.mn.0u.json
+R100	install/gfiles/menus/wwiv/sysop.pro	install/menus/wwiv/sysop.pro
+R077	install/gfiles/menus/wwiv/vissys.mnu.json	install/menus/wwiv/vissys.mnu.json
+R100	install/gfiles/menus/wwiv/vissys.msg	install/menus/wwiv/vissys.msg
+R100	install/gfiles/menus/wwiv/vissys.pro	install/menus/wwiv/vissys.pro
+R093	install/gfiles/menus/wwiv/xfer.mnu.json	install/menus/wwiv/xfer.mnu.json
+R100	install/gfiles/menus/wwiv/xfer.msg	install/menus/wwiv/xfer.msg
+R100	install/gfiles/menus/wwiv/xfer.pro	install/menus/wwiv/xfer.pro
+diff --git a/install/data/menu_commands.json b/install/data/menu_commands.json
+
+
+Here's a full diff of all of the changes to the install files since 5.6.0 for reference
+=======================================================================================
+
+index ded179fad..776668d1a 100644
+--- a/install/data/menu_commands.json
++++ b/install/data/menu_commands.json
+@@ -4,16 +4,71 @@
+         {
+             "cat": "AutoMessage",
+             "cmd": "AutoMessage",
+-            "help": "Read the auto message"
++            "help": "Displays the legacy automessage menu"
+         },
+         {
+             "cat": "AutoMessage",
+             "cmd": "ReadAutoMessage",
+             "help": "Read the auto message"
+         },
++        {
++            "cat": "AutoMessage",
++            "cmd": "amsg:delete",
++            "help": "Deletes the auto message (cosysop required)"
++        },
++        {
++            "cat": "AutoMessage",
++            "cmd": "amsg:email",
++            "help": "E-mail the author of the automessage"
++        },
++        {
++            "cat": "AutoMessage",
++            "cmd": "amsg:lock",
++            "help": "Locks the automessage (cosysop required)"
++        },
++        {
++            "cat": "AutoMessage",
++            "cmd": "amsg:read",
++            "help": "Read the auto message \n[use automessage:read instead]"
++        },
++        {
++            "cat": "AutoMessage",
++            "cmd": "amsg:unlock",
++            "help": "Unlocks the automessage (cosysop required)"
++        },
++        {
++            "cat": "AutoMessage",
++            "cmd": "amsg:write",
++            "help": "Writes a new auto message"
++        },
++        {
++            "cat": "BBSList",
++            "cmd": "bbslist",
++            "help": "Legacy BBSList Menu"
++        },
++        {
++            "cat": "BBSList",
++            "cmd": "bbslist:add",
++            "help": "Adds a new BBS to the BBSList"
++        },
++        {
++            "cat": "BBSList",
++            "cmd": "bbslist:bbslist",
++            "help": "Legacy BBSList Menu"
++        },
+         {
+             "cat": "BBSList",
+-            "cmd": "BBSList",
++            "cmd": "bbslist:delete",
++            "help": "Deletes a new BBS from the BBSList"
++        },
++        {
++            "cat": "BBSList",
++            "cmd": "bbslist:net",
++            "help": "Read the network bbs lists"
++        },
++        {
++            "cat": "BBSList",
++            "cmd": "bbslist:read",
+             "help": "Read the bbslist"
+         },
+         {
+@@ -304,12 +359,12 @@
+         {
+             "cat": "Menu",
+             "cmd": "DisplayHelp",
+-            "help": "<filename>\n\n  An alias for DisplayMenu. \n  This alias is deprecated, please use DisplayMenu."
++            "help": "An alias for DisplayMenu. \n  This alias is deprecated, please use menu:display."
+         },
+         {
+             "cat": "Menu",
+             "cmd": "DisplayMenu",
+-            "help": "<filename>\n\n  Prints the 'novice menus' for the current menu set, or if one doesn't exist,\n  it will generate one using the menu definitions."
++            "help": "Prints the 'novice menus' for the current menu set, or if one doesn't exist,\n  it will generate one using command \"menu:generate_short\""
+         },
+         {
+             "cat": "Menu",
+@@ -321,6 +376,21 @@
+             "cmd": "ReturnFromMenu",
+             "help": ""
+         },
++        {
++            "cat": "Menu",
++            "cmd": "menu:display",
++            "help": "Prints the 'novice menus' for the current menu set, or if one doesn't exist,\n  it will generate one using command \"menu:generate_short\""
++        },
++        {
++            "cat": "Menu",
++            "cmd": "menu:generate_long",
++            "help": "Generates the long form (one cmd per line) help text/menu for the current menu set.\nThis command does not attempt to display a .msg/.ans file."
++        },
++        {
++            "cat": "Menu",
++            "cmd": "menu:generate_short",
++            "help": "Generates the short form 'novice menus' for the current menu set.\nThis command does not attempt to display a .msg/.ans file."
++        },
+         {
+             "cat": "Message",
+             "cmd": "ClearQScan",
+@@ -496,11 +566,6 @@
+             "cmd": "MemStat",
+             "help": ""
+         },
+-        {
+-            "cat": "SYSOP",
+-            "cmd": "ReloadMenus",
+-            "help": "This is probably obsolete."
+-        },
+         {
+             "cat": "SYSOP",
+             "cmd": "Status",
+@@ -634,7 +699,7 @@
+         {
+             "cat": "System",
+             "cmd": "ToggleExpert",
+-            "help": "Turn 'X'pert mode on or off (toggle)"
++            "help": "Turn 'X'pert mode on or off (toggle)\n  Can optionally pass \"quiet=on\" as the command data to suppress displaying the expert mode state."
+         },
+         {
+             "cat": "System",
+@@ -686,6 +751,166 @@
+             "cmd": "ConfigUserMenuSet",
+             "help": "Takes the user into the user menu config so they can select which menuset\n  they want to use, etc..."
+         },
++        {
++            "cat": "User",
++            "cmd": "user:24",
++            "help": "Toggles If the time should be displayed using a 24-hour clock vs. 12-hour"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:address",
++            "help": "Allows the user to change their address"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:ansistate",
++            "help": "Allows the user to change their ANSI state"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:autoquote",
++            "help": "Toggles If new messages in external editors should contain the entire reply text"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:callsign",
++            "help": "Allows the user to change their HAM callsign"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:city",
++            "help": "Allows the user to change their city"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:cls",
++            "help": "Toggles If the screen should be cleared between messages in the non-full screen message reader"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:colors",
++            "help": "Allows the user to change their colors"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:comptype",
++            "help": "Allows the user to change their computer type"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:conference",
++            "help": "Toggles if conferences are enables"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:country",
++            "help": "Allows the user to change their country"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:ctrlcodes",
++            "help": "Toggles if message lines with kludges or control codes are shown"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:dataphone",
++            "help": "Allows the user to change their data phone number"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:editor",
++            "help": "Allows the user to change their default editor"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:email",
++            "help": "Allows the user to change their email address"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:extra_color",
++            "help": "Toggles Extra Colors"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:fs_reader",
++            "help": "Toggles If the full screen message reader is used"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:gender",
++            "help": "Allows the user to change their gender"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:macros",
++            "help": "Allows the user to change their macros"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:mailbox",
++            "help": "Allows the user to change their email forward/mailbox settings"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:menus",
++            "help": "Takes the user into the user menu config so they can select which menuset\n  they want to use, etc..."
++        },
++        {
++            "cat": "User",
++            "cmd": "user:nomsgs",
++            "help": "Toggles If the user doesn't want inter instance messages"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:optional_lines",
++            "help": "Allows the user to change the number of optional lines displayed"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:password",
++            "help": "Allows the user to change their password"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:pause",
++            "help": "Toggles pause on page"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:phone",
++            "help": "Allows the user to change their voice phone number"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:qscan",
++            "help": "Allows the user to change their subs that are newscanned"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:realname",
++            "help": "Allows the user to change their real name"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:regnum",
++            "help": "Allows the user to change their WWIV 4.x registration number"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:screensize",
++            "help": "Allows the user to change their screen size"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:state",
++            "help": "Allows the user to change their state"
++        },
++        {
++            "cat": "User",
++            "cmd": "user:zipcode",
++            "help": "Allows the user to change their zipcode"
++        },
+         {
+             "cat": "Vote",
+             "cmd": "InitVotes",
+diff --git a/install/docs/menu.txt b/install/docs/menu.txt
+index 9b5d93522..3197540aa 100644
+--- a/install/docs/menu.txt
++++ b/install/docs/menu.txt
+@@ -327,10 +327,6 @@ ReadIDZ
+     Sysop command to read the file_id.diz and add it to the extended description
+ 
+ 
+-ReloadMenus
+-    This is probably obsolete.
+-
+-
+ RemoveFiles
+     Remove a file you uploaded
+ 
+diff --git a/install/docs/whatsnew.txt b/install/docs/whatsnew.txt
+index 84e0252d6..47976fb18 100644
+--- a/install/docs/whatsnew.txt
++++ b/install/docs/whatsnew.txt
+@@ -9,6 +9,166 @@ Legend (starting with 5.3)
+ - Feature removed
+ * Change or cleanup
+ 
++*** Please make sure you get the new files out of the install archives
++    like gfiles.zip, menus.zip, etc.  We're adding new files and each
++    new wwiv update may contain new files.  I'd recommend using unzip -n
++    so that you don't overwrite any files (or use winmerge or meld
++    to compare new changes)
++
++What's New in WWIV 5.7.0 (2021)
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+++ Improve autoblocker in wwivd (#1359)
++  WWIV's autoblocker now gives variable automatic blocking for fixed
++  time periods 4 times before adding a permanent ban to badips.txt.
++  The way you trigger the blocking is to have more than X connections within
++  Y seconds, where X and Y are defined in wwivconfig's wwivd blocking page.
++  ** You may want to delete badip.txt or rename it to something else, it likely
++     has more systems in it than you intended to block **
++* Removed the following from wwiv.ini:
++  CHECK_DUP_PHONES       = N 
++  HANGUP_DUP_PHONES      = N 
++  The first never worked, therefore neither did the second and also isn't really
++  need anymore.
+++ Added new setting in wwivconfig for fine grained newuser info.
++! Add granular control over which profile information must be provided by new users (#845)
++  By default wwivconfig should match what you had in wwiv.ini, but please take a look
++  also please remove the following from wwiv.ini since they are confusing and 
++  these values are now controlled by wwivconfig:
++  * EXTENDED_USERINFO
++  * NEWUSER_MIN
++  * TEMP_DIRECTORY
++  * BATCH_DIRECTORY
++  * NUM_INSTANCES  
++  * WFC_SCREEN
+++ Add new page in wwivconfig for setting which fields are required, optional, and unused.
+++ Set newuser to internal fsed not first external editor
+++ Added chain pause functionality (#1379) - thanks to DMXrob
++* Fix IsPhoneRequired for login. We don't have NEWUSER_MIN anymore.
+++ Added yourinfo.msg to the list of gfiles/ wwiv uses.
++  This will replace the internal YourInfo hardcoded info that is displayed
++   if this file exists, otherwise we'll fall back to the hardcoded one.
+++ Added @z macro to display the upload/download ratio for the user.
+++ When toggling expert mode, WWIV will now display the status of expert
++  mode or not unless "quiet=on" is passed to the menu command as data.
++* Still allow HandleControlKey to work with bgetch_event. (#1382)
++* Added ACS user.guest, and cleaned up menu and newuser routines a bit.
++* Let KEY_SSAVE behave like control-Z (#1360)
+++ Added user.validated to acs. (#1387)
+++ better asv from valuser command (#1388)
++* Fix automessage menu: (A)uto reply not working in default menus (#1389)
++* Don't add RE: line to email messages.
+++ Fix changing user settings for online user gets overwritten (#960)
++* Improve display of 'I' information and FTN networks (#1392)
++* Fix node instance messages should use new scratch dir not data dir (#1391)
++* Don't check for dupes on FTN emails. (#1395)
++* Full screen reader not displaying color right when previous line ends in ^A (#1399)
++* System crash when setting Transfer QSCAN (#1394)
++* Fix PAUSE prompt from loosing current attribute. (#1398)
+++ Add FTN network data in net.log for FTN using Fake Network node # (#1393)
++* Fix control-a,d,f key handling in fsed.
++* Run network3 automatically after editing a network
++! --title must be specified for wwivutil email add
++* Modem speed in last callers list (#1381)
++* Having no networks to load is not an error anymore. (#1400)
+++ Added new wwivconfig page (under (G)) for configuring system toggles
++    * Remove FAST_TAG_RELIST from wwiv.ini, it was not useful.
++    * Removed CLOSE_XFER from wwiv.ini, it was no longer useful
++    * Removed SETLDATE from wwiv.ini, it's always true.
++    * Removed FORCE_NEWUSER from wwiv.ini. It was never used and the variable
++      for it was removed in 5.0 build 14 (around 2001)
++    * Removed CHAIN_REG, now that all of the data is in chains.json, there's
++      no need to have this variable (which just kept chain.reg from being used)
++    * Added system toggle for showing last network connections at logon.
++    * Removed EXTENDED_USERINFO from wwiv.ini, it's always true.
++    * Removed NEWUSER_MINfrom wwiv.ini, it's not used anymore.
++    * Removed OFF_HOOK from wwiv.ini, it wasn't used anymore.
++* Don't store intermediate reference to pass to WWIVMessageApi constructor. (#1402)
+++ new files fs_msgread.msg and fs_msgscan.msg control the headers for the full
++  screen message reader and title list.  Lots of new pipe expression variables
++  are available and documented under "Displaying Text" in WWIV's online 
++  documentation.
++*  Last nework connections no longer displaying (#1403)
++! Removed inetaddr.dat.  The data is already in user.lst
++* Fix readmail when you have a message header template
++* Removed MAIL_WHO_LEN from wwiv.ini, it didn't work well.
++* Fixed qscan display error on expert mode (#1405)
++* Fixed issue where setting a date < 1970 can crash the bbs
++* Add new setting to allow outbound pipe codes for ftn messages. (#1407)
++* Work around large filesystems failing the File::freespace_for_path call (#1408)
++* HeartCodeFilter needs to handle pipe codes too (#1410)
+++ Let ini files support multi-line strings like TOML does (#1411)
++    * Add support for a multi-line ini value. Example
++    FOO="""This
++    is a multline
++    value
++    """
++    * If value is quoted using ", then strip the surrounding quote characters.
++* Progress on merge language + menusets together #1414.  Languages and menus are
++  now 1-1 vs. 1 language to N menus.  This simplifies many things in the BBS and 
++  better matches how folks expect to change these together.
++! move menus to top level - Menus are now peers to gfiles/ in the bbs directory
++  layout.  Please consider moving yours (mv gfiles/menus menus) and then updating
++  the path using wwivconfig.
+++ Added strings for yes, no, quit, NN: and PW:
+++ Support system location and name display for FTN networks too when the
++  nodelist is available and the nodelist base set for the network in wwivconfig.
++* System name and location not showing up for your own system (#1419)
++* logs dir isn't created automatically on new install (#1417)
++* menus.zip is not unzipped during new install (#1416)
++* provide a location/sysname on local posts to wwivnet subs
++* use 5d address when presenting M_ADR in binkp
+++ Broke out State entry from city state to make it clearer and easier. (#1430)
++* Use unique cram challenge (#1429)
++* Add validation text for FTN address
+++ binkp can't answer with mutliple AKAs presented (#1426)
++! |{pause} is now |{pausescr}
++* Fix Last callers not displaying correct information (#1428)
++* name_and_number() should be proper case not upper cas
++* Move to next sub? The default is No and should be yes. (#1431)
++* Unable to validate new users while they are online (#1432)
++* increase default dir and sub size to 500/5000
+++ need "bbs" pipe expressions (#1413)
+++ Added new pipe expressions, sleep, backprint, and spin
+++ Added rainow pipe expression (#1427)
++* Added many more {user.xxx} variables. Please see docs.
++* Added help on how to save a message created in the internal editor (#1436)
++* Errror on resize_file: 32; (#1438)
++* Added ability to format pipe variables
++* Fix handling of addresses mixed with and without domain names
++* Problems emailng FTN networks from BBS (#1439)
++* Log says user "hung up" when user logs off (#1440)
+++ Add FTN nodelist support into network bbs list viewer (i.e. (B)bsList then (N)etwork. (#1231)
+++ After using (B) to bypass a sub (from the reading prompt), don't ask if we want to post (#1437)
+++ |{if expr yes no fmt} can now take a format (like pipe variables now)
++! Added new strings FIXED_YES and FIXED_NO.
+++ Added new pipe expression |{yesno "expression" "fmt"}
++* WWIVNet BBS list not working (#1441)
++* Fix crash in displaying a generated menu in wwivconfig
++! Defaults is now a menu, not a built-in command by default, please make sure
++  to update your wwiv menus with the new defaults menu and update main menu.
+++ You can now filter text in wwivconfig listboxes by pressing / and then 
++  entering the text to filter by.
++* add ways to see and change personal info in defaults (#1390)
++* Fix crash in listplus after ~130 files
++* Support interestingly formed Tic line with addresses (#1445)
++* reset the color to |#0 at the end of each kludge line (#1446)
+++ When sending FTN emails, try to match by zone and not ask which network to use.
++* delete /Z and /S from default menus, they don't exist anymore
+++ Need global menu (#1415)
++* Don't try to parse FTN addresses in 4.x
+++ Check ACS on menusets, and only show ones that are available
+++ Initial cut at support for getting the screen size from the remote terminal.
++* FTN: just stop on short read error, don't keep retrying bad packets
++* litebar width should be full screen not capped at 80 (#1450)
+++ user:menus should select the menuset for the caller if only one matches (#1451)
++* throwing exception while scanning new messages (#1453)
++* screen size detection broken at local console on linux (#1454)
++* fullscreen view, bottom bar gets drawn on same line as command line (#1449)
++* Fixed wwivconfig not showing 1st menu item.
+++ Filenames can now be of the form: basename.MIN_NUM_COLS_NEEDED.extension for dispay.
++  example: logon.132.ans or fs_msgread.132.msg (#1456)
++
++
+ What's New in WWIV 5.6.1 (2021)
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ + Added wwivutil users asv command.  This can increase user attributes to match
+diff --git a/install/gfiles/bbs.str.ini b/install/gfiles/bbs.str.ini
+new file mode 100644
+index 000000000..46fd8744f
+--- /dev/null
++++ b/install/gfiles/bbs.str.ini
+@@ -0,0 +1,32 @@
++; WWIV BBS "Strings" file for custome language support.
++; THis is the common language file for all menusets.  Ideally any customizations
++; should be made by placing a copy of the strings into a bbs.str.ini file
++; location in the menuset directory.
++;
++[lang]
++
++;
++; Common words: Yes/No/Quit/Pause/etc
++;
++
++; Keys to use for YNQ
++KEY_NO    = N
++KEY_QUIT  = Q
++KEY_YES   = Y
++
++NO        = |{random "No", "Nah"}
++PAUSE     = "|#3More? [Y/n/c]"
++QUIT      = Quit
++YES       = |{random "Yes", "Yep", "Sure"}
++
++; Fixed string values, do not use any random or colorized text.
++FIXED_NO  = No
++FIXED_YES = Yes
++
++;
++; Logon Area. note that the three double quotes are a multi-line string
++;
++NN_PROMPT = """
++Enter number or name or 'NEW'
++NN: """
++PW_PROMPT = "PW: "
+\ No newline at end of file
+diff --git a/install/gfiles/fs_msgread.120.msg b/install/gfiles/fs_msgread.120.msg
+new file mode 100644
+index 000000000..375f3cd7d
+--- /dev/null
++++ b/install/gfiles/fs_msgread.120.msg
+@@ -0,0 +1,5 @@
++|#9 Sub: |#2|{msg.message_area, "<45"} |#9Msg#: |[59;1H|#9[|#2|{msg.message_number, ">5"}|#9 of |#2|{msg.total_messages, ">5"}|#9]         Info: |#1|{if "msg.flags.local == true", "|#9[|#5LOC|#9] ", ""}|{if "msg.flags.wwivnet == true", "|#9[|#5WWIVNET|#9] ", ""}|{if "msg.flags.ftn == true", "|#9[|#5FTN|#9] ", ""}
++|#9From: |#1|{msg.from, "<45"} |#9Date: |#1|{msg.date}
++|#9  To: |#1|{msg.to, "<45"} |#9Subj: |#2|{msg.title}
++|#9 Sys: |#1|{msg.sys, "<45"} |#9Loc: |[59;4H|{msg.loc}
++|#0|{set num_header_lines 4}
+\ No newline at end of file
+diff --git a/install/gfiles/fs_msgread.msg b/install/gfiles/fs_msgread.msg
+new file mode 100644
+index 000000000..1c3e187be
+--- /dev/null
++++ b/install/gfiles/fs_msgread.msg
+@@ -0,0 +1,13 @@
++|#9 Sub:                                     Msg#:
++|#9From:                                     Date:
++|#9  To:
++|#9Subj:
++|#9 Sys:                                      Loc:
++|#9Info:
++|[7;1H|#2|{msg.message_area}|[49;1H|#9[|#2|{msg.message_number}|#9 of |#2|{msg.total_messages}|#9]
++|[7;2H|#1|{msg.from}|[49;2H|#1|{msg.date}
++|[7;3H|#1|{msg.to}
++|[7;4H|#2|{msg.title}
++|[7;5H|#1|{msg.sys}|[49;5H|{msg.loc}
++|[7;6H|#1|{if "msg.flags.local == true", "|#9[|#5LOC|#9] ", ""}|{if "msg.flags.wwivnet == true", "|#9[|#5WWIVNET|#9] ", ""}|{if "msg.flags.ftn == true", "|#9[|#5FTN|#9] ", ""}
++|#0|{set num_header_lines 6}
+\ No newline at end of file
+diff --git a/install/gfiles/fs_msgscan.msg b/install/gfiles/fs_msgscan.msg
+new file mode 100644
+index 000000000..0eee4f5b5
+--- /dev/null
++++ b/install/gfiles/fs_msgscan.msg
+@@ -0,0 +1,2 @@
++|[2J|#4Sub #|{cursub.subnum} - |{cursub.name}  (|{cursub.num_msgs} messages.)|[K|#0
++|14      Num Title                                      From|#0|{set num_header_lines 2}
+\ No newline at end of file
+diff --git a/install/gfiles/menus/wwiv/automsg.pro b/install/gfiles/menus/wwiv/automsg.pro
+deleted file mode 100644
+index 05ab5c87b..000000000
+--- a/install/gfiles/menus/wwiv/automsg.pro
++++ /dev/null
+@@ -1 +0,0 @@
+-|#7[|#1AutoMessage|#7]|#6:|#0 .end.
+\ No newline at end of file
+diff --git a/install/gfiles/menuwel.ans b/install/gfiles/menuwel.ans
+deleted file mode 100644
+index 9c9bd5b03..000000000
+--- a/install/gfiles/menuwel.ans
++++ /dev/null
+@@ -1,11 +0,0 @@
+-[40m[2J[0;1;36mWWIV v5 uses a new menu system that allows you to select from a variety
+-of menu types, providing you with a new level of individual configuration.
+-Each menu set provides an option for both standard and pulldown styles, as
+-well as a "hot-key" support toggle.
+-
+-[0;1;35mAfter selecting your default menu set, you can change them by typing [0;1;31m//CM
+-[0;1;35m('Change Menus') from the main menu. Remember, if hotkey support is turned
+-off, you do not need the '//' before multi-letter commands.
+-
+-[0;1;32mPlease select a menu set from the menus listed below:
+-[0m[255D
+diff --git a/install/gfiles/menuwel.msg b/install/gfiles/menuwel.msg
+index bb31e3cc4..2e80c0942 100644
+--- a/install/gfiles/menuwel.msg
++++ b/install/gfiles/menuwel.msg
+@@ -1,10 +1,5 @@
+-WWIV v5.00 uses a new menu system that allows you to select from a variety
+-of menu types, providing you with a new level of individual configuration.
+-Each menu set provides an option for both standard and pulldown styles, as
+-well as a "hot-key" support toggle.
++|#9WWIV allows customizable menus. These menus can be changed in the stock 
++|#9WWIV menuset using either the (K) change menus command in (D)efaults, 
++|#9or from the "//CM" (Change Menu) command in the main menu.
+ 
+-After selecting your default menu set, you can change them by typing //CM
+-('Change Menus') from the main menu. Remember, if hotkey support is turned
+-off, you do not need the '//' before multi-letter commands.
+-
+-Please select a menu set from the menus listed below:
++|#5Please select a menu set from the menus listed below:
+diff --git a/install/gfiles/smbmain.msg b/install/gfiles/smbmain.msg
+index a75025597..b4eeb25cb 100644
+--- a/install/gfiles/smbmain.msg
++++ b/install/gfiles/smbmain.msg
+@@ -20,3 +20,4 @@
+ |#2W      |#9Reply with "Regards" to Last Message
+ |#2X      |#9Toggle Net Pending Status           
+ |#2Y      |#9Download Last Message               
++|#2@      |#9Reply to Different Address          
+diff --git a/install/gfiles/yourinfo.msg b/install/gfiles/yourinfo.msg
+new file mode 100644
+index 000000000..d6b35ca79
+--- /dev/null
++++ b/install/gfiles/yourinfo.msg
+@@ -0,0 +1,20 @@
++|#4Your User Information|[K|#0
++
++
++|#9Your name      : |#5|{user.name} |#9#|#2|@#
++|#9Phone number   : |#2|@p
++|#9Mail Waiting   : |#2|@M
++|#9Security Level : |#2|@S
++|#9Transfer SL    : |#2|@d
++
++|#9Date Last On   : |#2|@L
++|#9Times on       : |#2|@l
++|#9On today       : |#2|@O
++|#9Messages posted: |#2|@m
++|#9E-mail sent    : |#2|@E
++|#9Time spent on  : |#2|@o |#9Minutes
++|#9Uploads        : |#2|@K|#9k in |#2|@U |#9files
++|#9Downloads      : |#2|@k|#9k in |#2|@D |#9files
++|#9Transfer Ratio : |#2|@z
++
++|{pausescr}
+diff --git a/install/inifiles/wwiv.ini b/install/inifiles/wwiv.ini
+index 1aeb7898c..bc3989fbf 100644
+--- a/install/inifiles/wwiv.ini
++++ b/install/inifiles/wwiv.ini
+@@ -149,32 +149,22 @@ BEGINDAYNODENUMBER     = 0            ;
+ ; various settings to tailor your system to your needs.
+ ;
+ FORCE_FBACK            = N            ; force newusers to send fback
+-FORCE_NEWUSER          = N            ; force newusers to read NEWUSER.MSG
+ FORCE_SCAN             = N            ; force user to scan sysop sub
+-FORCE_SCAN_SUBNUM      = 1            ; sub to force scan on
+-CHECK_DUP_PHONES       = N            ; check newuser dupe phones
+-HANGUP_DUP_PHONES      = N            ; hangup on newuser dupe phone
++FORCE_SCAN_SUBNUM      = 1            ; sub to force scan on (as defined in boardedit)
+ POSTTIME_COMPENS       = N            ; compensate for time posting
+ IDZ_DESC               = Y            ; 1st line of file_id.diz as descrip
+-SETLDATE               = N            ; set file date on nscan
+ READ_CD_IDZ            = N            ; read file_id.diz from cdroms
+ FSED_EXT_DESC          = Y            ; allow fsed for extended descriptions
+-FAST_TAG_RELIST        = Y            ; don't show xfer dirs on tag relist
+ MAIL_PROMPT            = Y            ; fancy mail prompt
+ SHOW_CITY_ST           = Y            ; show city/state in laston info
+ 2WAY_CHAT              = Y            ; 2-way local sysop chat
+-OFF_HOOK               = Y            ; phone offhook when sysop on
+ LOG_DOWNLOADS          = N            ; send SSM to uploader on file DL
+-CLOSE_XFER             = N            ; disable transfer section
+ ALL_UL_TO_SYSOP        = Y            ; all uploads go to sysop dir
+ MSG_TAG                = Y            ; sysop post/email taglines
+-CHAIN_REG              = Y            ; user sponsoring of chains
+ CAN_SAVE_SSM           = Y            ; allow saving of SSMs
+ ALLOW_ALIASES          = Y            ; allow users to use aliases
+ FREE_PHONE             = N            ; allow any format phone #
+ LOGON_PHONE            = N            ; check phone # at logon?
+-EXTENDED_USERINFO      = N            ; enable addr, etc info in userrec
+-NEWUSER_MIN            = Y            ; ask minimal new user information
+ ALLOW_CC_BCC           = Y            ; allow CC: and BCC: for email?
+ TITLEBAR               = Y            ; show user in console titlebar
+ ;
+@@ -182,9 +172,6 @@ TITLEBAR               = Y            ; show user in console titlebar
+ ;                           SYSTEM TUNING PARAMETERS
+ ;=============================================================================
+ ;
+-MAIL_WHO_LEN           = 45           ; max length of user name when
+-;                                     ; reading mail
+-;
+ ATTACH_DIR             = attach       ; dir for email attachments
+ NETFOSS_DIR            = netfoss      ; directory for netfoss install (Win32)
+ ;
+@@ -204,7 +191,6 @@ MAX_GFILESEC           = 32           ; max gfile sections allowed
+ ;
+ ; ANSI Callout and WFC Options
+ ;
+-WFC_SCREEN             = Y            ; Use ANSI WFC screen?
+ ;                                     ; List sequentialy i.e. CDXYZ
+ SCREEN_SAVER_TIME      = 120          ; Screen saver invoke time (min.)
+ INTERNALZMODEM         = Y            ; Set to N to disable internal Zmodem
+@@ -225,14 +211,6 @@ SYSTEM_BPS             = 0            ; BPS to emulate when displaying
+                                       ; would use "SYSTEM_BPS = 9600"
+ ;
+ ;=============================================================================
+-;                        TEMPORARY DIRECTORY SETTING
+-;=============================================================================
+-NUM_INSTANCES        = 4
+-TEMP_DIRECTORY       = e/%n/temp
+-BATCH_DIRECTORY      = e/%n/batch
+-;
+-;
+-;=============================================================================
+ ;                           ASV OPTIONS
+ ;=============================================================================
+ ; Auto Sysop Validation (ASV) Settings allow you
+@@ -252,21 +230,6 @@ USE_SIMPLE_ASV                  = N         ; Use Simple ASV?
+ ;SIMPLE_ASV[DAR]                =           ; DAR to assign
+ ;SIMPLE_ASV[RESTRICT]           =           ; Restriction to assign
+ ;
+-;
+-;=============================================================================
+-;                        INSTANCE SPECIFIC OPTIONS
+-;=============================================================================
+-; There are only a very few settings that would or should be used for
+-; individual instances.  You may have an instance that does all network
+-; callouts or one that does all processing of Fido or other network mail.
+-; To define these instance specific settings, use an ID block 
+-: [WWIV-<instance>] as follows:
+-;
+-; Instance #2
+-;[WWIV-2]
+-;SCREEN_SAVER_TIME      = 120         ; Screen saver invoke time
+-;
+-;
+ ;=============================================================================
+ ;                         AVAILABLE COMPUTER TYPES
+ ;=============================================================================
+diff --git a/install/gfiles/menus/descript.ion b/install/menus/descript.ion
+similarity index 100%
+rename from install/gfiles/menus/descript.ion
+rename to install/menus/descript.ion
+diff --git a/install/gfiles/menus/wwiv/automsg.mnu.json b/install/menus/wwiv/automsg.mnu.json
+similarity index 73%
+rename from install/gfiles/menus/wwiv/automsg.mnu.json
+rename to install/menus/wwiv/automsg.mnu.json
+index 186857570..af6330af4 100644
+--- a/install/gfiles/menus/wwiv/automsg.mnu.json
++++ b/install/menus/wwiv/automsg.mnu.json
+@@ -1,14 +1,20 @@
+ {
+     "version": 1,
+     "menu": {
++        "cls": false,
+         "num_action": "none",
+         "logging_action": "key",
+         "help_type": "always",
+-        "color_title": 5,
+-        "color_item_key": 2,
+-        "color_item_text": 1,
+-        "color_item_braces": 9,
+-        "title": "AutoMessage Menu",
++        "generated_menu": {
++            "num_cols": 6,
++            "color_title": "|#4",
++            "color_item_key": "|#2",
++            "color_item_text": "|#0",
++            "color_item_braces": "|#7",
++            "show_empty_text": false,
++            "num_newlines_at_end": 0
++        },
++        "title": "",
+         "acs": "",
+         "password": "",
+         "enter_actions": [
+@@ -23,6 +29,7 @@
+             {
+                 "item_key": "",
+                 "item_text": "",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -33,6 +40,7 @@
+             {
+                 "item_key": "A",
+                 "item_text": "Auto-reply",
++                "visible": false,
+                 "help_text": "Replies via email to the AutoMessage author",
+                 "log_text": "AutoReply",
+                 "instance_message": "",
+@@ -40,7 +48,24 @@
+                 "password": "",
+                 "actions": [
+                     {
+-                        "cmd": "amsg:email_author",
++                        "cmd": "amsg:email",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "D",
++                "item_text": "Delete",
++                "visible": true,
++                "help_text": "Delete current automessage",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "user.sysop == true",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "amsg:delete",
+                         "data": "",
+                         "acs": ""
+                     }
+@@ -48,7 +73,8 @@
+             },
+             {
+                 "item_key": "R",
+-                "item_text": "Read AutoMessage",
++                "item_text": "Read",
++                "visible": false,
+                 "help_text": "Reads the current auto message",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -64,7 +90,8 @@
+             },
+             {
+                 "item_key": "L",
+-                "item_text": "Lock AutoMessage",
++                "item_text": "Lock",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -80,7 +107,8 @@
+             },
+             {
+                 "item_key": "U",
+-                "item_text": "Unlock AutoMesssage",
++                "item_text": "Unlock",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -96,7 +124,8 @@
+             },
+             {
+                 "item_key": "W",
+-                "item_text": "Write AutoMessage",
++                "item_text": "Write",
++                "visible": false,
+                 "help_text": "",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -113,6 +142,7 @@
+             {
+                 "item_key": "Q",
+                 "item_text": "Quit",
++                "visible": false,
+                 "help_text": "Returns to the previous menu",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -128,7 +158,8 @@
+             },
+             {
+                 "item_key": "?",
+-                "item_text": "Display help",
++                "item_text": "Display Help",
++                "visible": false,
+                 "help_text": "",
+                 "log_text": "",
+                 "instance_message": "",
+diff --git a/install/menus/wwiv/automsg.pro b/install/menus/wwiv/automsg.pro
+new file mode 100644
+index 000000000..eba42264b
+--- /dev/null
++++ b/install/menus/wwiv/automsg.pro
+@@ -0,0 +1 @@
++|#7[|#1AutoMessage|#7]|#6: |#7(|#2Q|#7)|#0uit, |#7(|#2A|#7)|#0uto-Reply, |#7(|#2R|#7)|#0ead, |#7(|#2W|#7)|#0rite|#6:|#0 .end.
+diff --git a/install/gfiles/menus/wwiv/bbslist.mnu.json b/install/menus/wwiv/bbslist.mnu.json
+similarity index 100%
+rename from install/gfiles/menus/wwiv/bbslist.mnu.json
+rename to install/menus/wwiv/bbslist.mnu.json
+diff --git a/install/gfiles/menus/wwiv/bbslist.pro b/install/menus/wwiv/bbslist.pro
+similarity index 100%
+rename from install/gfiles/menus/wwiv/bbslist.pro
+rename to install/menus/wwiv/bbslist.pro
+diff --git a/install/menus/wwiv/defaults.mnu.json b/install/menus/wwiv/defaults.mnu.json
+new file mode 100644
+index 000000000..3ff3fee13
+--- /dev/null
++++ b/install/menus/wwiv/defaults.mnu.json
+@@ -0,0 +1,427 @@
++{
++    "version": 1,
++    "menu": {
++        "cls": false,
++        "num_action": "none",
++        "logging_action": "command",
++        "help_type": "always",
++        "generated_menu": {
++            "num_cols": 3,
++            "color_title": "|#4",
++            "color_item_key": "|#2",
++            "color_item_text": "|#0",
++            "color_item_braces": "|#1",
++            "show_empty_text": false,
++            "num_newlines_at_end": 1
++        },
++        "title": "|[2J|#4 Your Preferences|[K|#0",
++        "acs": "",
++        "password": "",
++        "enter_actions": [],
++        "exit_actions": [],
++        "items": [
++            {
++                "item_key": "",
++                "item_text": "",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": []
++            },
++            {
++                "item_key": "1",
++                "item_text": "Screen Size",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:screensize",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "2",
++                "item_text": "ANSI",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:ansistate",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "3",
++                "item_text": "Pause on screen",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:pause",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "4",
++                "item_text": "Mailbox",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:mailbox",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "5",
++                "item_text": "Configured Q-scan",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:qscan",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "6",
++                "item_text": "Change password",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:password",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "7",
++                "item_text": "Update macros",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:macros",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "8",
++                "item_text": "Change colors",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:colors",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "9",
++                "item_text": "Message editor",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:editor",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "A",
++                "item_text": "Extended colors",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:extra_color",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "B",
++                "item_text": "Optional lines",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:optional_lines",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "C",
++                "item_text": "Conferencing",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:conference",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "D",
++                "item_text": "Show Hidden Lines",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:ctrlcodes",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "G",
++                "item_text": "Message Reader",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:fs_reader",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "I",
++                "item_text": "Internet Address",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:email",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "K",
++                "item_text": "Configure Menus",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:menus",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "M",
++                "item_text": "Allow user msgs",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:nomsgs",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "N",
++                "item_text": "Configure QWK",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "qwk:config_user",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "S",
++                "item_text": "Cls Between Msgs?",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:cls",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "T",
++                "item_text": "12hr or 24hr clock",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:24",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "U",
++                "item_text": "Use Msg AutoQuote",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:autoquote",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "W",
++                "item_text": "WWIV reg num",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "user:regnum",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            },
++            {
++                "item_key": "Q",
++                "item_text": "Quit to main menu",
++                "visible": true,
++                "help_text": "",
++                "log_text": "",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "ReturnFromMenu",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            }
++        ]
++    }
++}
+\ No newline at end of file
+diff --git a/install/menus/wwiv/defaults.msg b/install/menus/wwiv/defaults.msg
+new file mode 100644
+index 000000000..361d07268
+--- /dev/null
++++ b/install/menus/wwiv/defaults.msg
+@@ -0,0 +1,17 @@
++|[2J|#4 Your Preferences|[K|#0
++
++|#11|#9) Screen size       : |#2|{user.screenwidth, ">3"} |#9X |#2|{user.screenlines, ">3"}        |#12|#9) ANSI              : |#2|{user.ansistr}
++|#13|#9) Pause on screen   : |#2|{if "user.pause == true", "On", "Off"}
++|#14|#9) Mailbox           : |#2|{user.mailbox_state}
++|#15|#9) Configured Q-scan                    |#16|#9) Change password
++|#17|#9) Update macros                        |#18|#9) Change colors
++|#19|#9) Message editor    : |#2|{user.editorname, "<16"} |#1A|#9) Extended colors   : |#2|{yesno "user.extcolors == true"}
++|#1B|#9) Optional lines    : |#2|{user.optional_lines}                |#1C|#9) Conferencing      : |#2|{yesno "user.conferencing == true"}
++|#1D|#9) Show Hidden Lines : |#2|{yesno "user.show_controlcodes == true", "<16"} |#1G|#9) Message Reader    : |#2|{if "user.fs_reader == true", "Full-Screen", "Traditional"}
++|#1I|#9) Internet Address  : |#2|{user.email}
++|#1K|#9) Configure Menus
++|#1M|#9) Allow user msgs   : |#2|{yesno "user.ignore_msgs == false", "<16"} |#1N|#9) Configure QWK
++|#1S|#9) Cls Between Msgs? : |#2|{yesno "user.clear_screen == true", "<16"} |#1T|#9) 12hr or 24hr clock: |#2|{if "user.twentyfour_clock == true", "24hr", "12hr"}
++|#1U|#9) Use Msg AutoQuote : |#2|{yesno "user.auto_quote == true", "<16"} |#W|#9) WWIV reg num      : |#2|{user.regnum}
++|#1Q|#9) Quit to main menu
++
+diff --git a/install/menus/wwiv/defaults.pro b/install/menus/wwiv/defaults.pro
+new file mode 100644
+index 000000000..dd1551288
+--- /dev/null
++++ b/install/menus/wwiv/defaults.pro
+@@ -0,0 +1,2 @@
++
++|#9Defaults: .end.
+diff --git a/install/gfiles/menus/wwiv/main.mnu.json b/install/menus/wwiv/main.mnu.json
+similarity index 95%
+rename from install/gfiles/menus/wwiv/main.mnu.json
+rename to install/menus/wwiv/main.mnu.json
+index e518654e8..647e5624d 100644
+--- a/install/gfiles/menus/wwiv/main.mnu.json
++++ b/install/menus/wwiv/main.mnu.json
+@@ -20,23 +20,6 @@
+         "enter_actions": [],
+         "exit_actions": [],
+         "items": [
+-            {
+-                "item_key": "RI",
+-                "item_text": "",
+-                "visible": true,
+-                "help_text": "Read current WWIV.INI values into memory",
+-                "log_text": "RI",
+-                "instance_message": "",
+-                "acs": "user.sl >= 255 && user.sysop == true",
+-                "password": "",
+-                "actions": [
+-                    {
+-                        "cmd": "readini",
+-                        "data": "",
+-                        "acs": ""
+-                    }
+-                ]
+-            },
+             {
+                 "item_key": "IE",
+                 "item_text": "InstanceEdit",
+@@ -224,23 +207,6 @@
+                     }
+                 ]
+             },
+-            {
+-                "item_key": "RELOAD",
+-                "item_text": "ReloadMenus",
+-                "visible": false,
+-                "help_text": "Reload Current Menu Set",
+-                "log_text": "RELOAD",
+-                "instance_message": "",
+-                "acs": "user.sysop == true",
+-                "password": "",
+-                "actions": [
+-                    {
+-                        "cmd": "reloadmenus",
+-                        "data": "",
+-                        "acs": ""
+-                    }
+-                ]
+-            },
+             {
+                 "item_key": "RESETQSCAN",
+                 "item_text": "",
+@@ -401,7 +367,7 @@
+                 "help_text": "Upload Text File to Post in next Email or Message",
+                 "log_text": "UPLOAD",
+                 "instance_message": "",
+-                "acs": "",
++                "acs": "user.validated == true",
+                 "password": "",
+                 "actions": [
+                     {
+@@ -637,23 +603,6 @@
+                     }
+                 ]
+             },
+-            {
+-                "item_key": "/Z",
+-                "item_text": "DownLoad Posts",
+-                "visible": true,
+-                "help_text": "DownLoad Posts in ASCII Format",
+-                "log_text": "/Z",
+-                "instance_message": "Downloading Posts",
+-                "acs": "",
+-                "password": "",
+-                "actions": [
+-                    {
+-                        "cmd": "downloadposts",
+-                        "data": "",
+-                        "acs": ""
+-                    }
+-                ]
+-            },
+             {
+                 "item_key": "+",
+                 "item_text": "Up One Sub (+, ], >)",
+@@ -831,7 +780,7 @@
+                 "help_text": "Enter Time Bank",
+                 "log_text": "$",
+                 "instance_message": "Time Bank",
+-                "acs": "",
++                "acs": "user.validated == true",
+                 "password": "",
+                 "actions": [
+                     {
+@@ -896,15 +845,15 @@
+                 "item_key": "D",
+                 "item_text": "Defaults",
+                 "visible": true,
+-                "help_text": "Set User Defaults",
+-                "log_text": "D",
+-                "instance_message": "Defaults",
++                "help_text": "Edit user settings",
++                "log_text": "RAN Defaults",
++                "instance_message": "",
+                 "acs": "",
+                 "password": "",
+                 "actions": [
+                     {
+-                        "cmd": "defaults",
+-                        "data": "",
++                        "cmd": "MENU",
++                        "data": "defaults",
+                         "acs": ""
+                     }
+                 ]
+@@ -1341,7 +1290,7 @@
+                 "help_text": "Allows GUEST to Apply for an Account",
+                 "log_text": "APPLY",
+                 "instance_message": "New User Logon",
+-                "acs": "",
++                "acs": "user.guest == true",
+                 "password": "",
+                 "actions": [
+                     {
+@@ -1409,7 +1358,7 @@
+                 "help_text": "Slash Menu",
+                 "log_text": "W",
+                 "instance_message": "",
+-                "acs": "",
++                "acs": "user.sysop == true",
+                 "password": "",
+                 "actions": [
+                     {
+@@ -1431,7 +1380,7 @@
+                 "help_text": "Display Sysop Menu",
+                 "log_text": "SYSOP",
+                 "instance_message": "",
+-                "acs": "",
++                "acs": "user.sysop == true",
+                 "password": "",
+                 "actions": [
+                     {
+@@ -1465,7 +1414,7 @@
+                 "help_text": "Configure Colors",
+                 "log_text": "COLORS",
+                 "instance_message": "",
+-                "acs": "",
++                "acs": "user.sysop == true",
+                 "password": "",
+                 "actions": [
+                     {
+@@ -1482,7 +1431,7 @@
+                 "help_text": "Edit Conferences",
+                 "log_text": "CONFEDIT",
+                 "instance_message": "",
+-                "acs": "",
++                "acs": "user.sysop == true",
+                 "password": "",
+                 "actions": [
+                     {
+diff --git a/install/gfiles/menus/wwiv/main.msg b/install/menus/wwiv/main.msg
+similarity index 100%
+rename from install/gfiles/menus/wwiv/main.msg
+rename to install/menus/wwiv/main.msg
+diff --git a/install/gfiles/menus/wwiv/main.pro b/install/menus/wwiv/main.pro
+similarity index 100%
+rename from install/gfiles/menus/wwiv/main.pro
+rename to install/menus/wwiv/main.pro
+diff --git a/install/menus/wwiv/menuset.json b/install/menus/wwiv/menuset.json
+new file mode 100644
+index 000000000..dc188d2da
+--- /dev/null
++++ b/install/menus/wwiv/menuset.json
+@@ -0,0 +1,27 @@
++{
++    "version": 1,
++    "menuset": {
++        "name": "wwiv",
++        "description": "wwiv v5.00 stock menus",
++        "acs": "",
++        "items": [
++            {
++                "item_key": "/O",
++                "item_text": "Fast Logoff",
++                "visible": true,
++                "help_text": "Log off immediately",
++                "log_text": "Logged off using '/O'",
++                "instance_message": "",
++                "acs": "",
++                "password": "",
++                "actions": [
++                    {
++                        "cmd": "FastGoodBye",
++                        "data": "",
++                        "acs": ""
++                    }
++                ]
++            }
++        ]
++    }
++}
+\ No newline at end of file
+diff --git a/install/gfiles/menus/wwiv/qwk.mnu.json b/install/menus/wwiv/qwk.mnu.json
+similarity index 86%
+rename from install/gfiles/menus/wwiv/qwk.mnu.json
+rename to install/menus/wwiv/qwk.mnu.json
+index f5af2e1fa..e09487c5b 100644
+--- a/install/gfiles/menus/wwiv/qwk.mnu.json
++++ b/install/menus/wwiv/qwk.mnu.json
+@@ -1,13 +1,19 @@
+ {
+     "version": 1,
+     "menu": {
++        "cls": false,
+         "num_action": "none",
+         "logging_action": "none",
+         "help_type": "always",
+-        "color_title": 5,
+-        "color_item_key": 2,
+-        "color_item_text": 1,
+-        "color_item_braces": 9,
++        "generated_menu": {
++            "num_cols": 3,
++            "color_title": "|#4",
++            "color_item_key": "|#2",
++            "color_item_text": "|#0",
++            "color_item_braces": "|#1",
++            "show_empty_text": false,
++            "num_newlines_at_end": 1
++        },
+         "title": "QWK Menu",
+         "acs": "user.sl >= 10",
+         "password": "",
+@@ -17,6 +23,7 @@
+             {
+                 "item_key": "",
+                 "item_text": "",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -27,6 +34,7 @@
+             {
+                 "item_key": "D",
+                 "item_text": "Download",
++                "visible": true,
+                 "help_text": "Download QWK Packet",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -43,6 +51,7 @@
+             {
+                 "item_key": "U",
+                 "item_text": "Upload Reply",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -59,6 +68,7 @@
+             {
+                 "item_key": "Q",
+                 "item_text": "Quit",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -75,6 +85,7 @@
+             {
+                 "item_key": "C",
+                 "item_text": "Configure Settings",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -91,6 +102,7 @@
+             {
+                 "item_key": "*",
+                 "item_text": "Sysop Menu",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "",
+                 "instance_message": "",
+@@ -107,6 +119,7 @@
+             {
+                 "item_key": "?",
+                 "item_text": "Help",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "",
+                 "instance_message": "",
+diff --git a/install/gfiles/menus/wwiv/qwk.msg b/install/menus/wwiv/qwk.msg
+similarity index 100%
+rename from install/gfiles/menus/wwiv/qwk.msg
+rename to install/menus/wwiv/qwk.msg
+diff --git a/install/gfiles/menus/wwiv/qwk.pro b/install/menus/wwiv/qwk.pro
+similarity index 100%
+rename from install/gfiles/menus/wwiv/qwk.pro
+rename to install/menus/wwiv/qwk.pro
+diff --git a/install/gfiles/menus/wwiv/sysop.mnu.json b/install/menus/wwiv/sysop.mnu.json
+similarity index 88%
+rename from install/gfiles/menus/wwiv/sysop.mnu.json
+rename to install/menus/wwiv/sysop.mnu.json
+index b049e5d26..4d9907005 100644
+--- a/install/gfiles/menus/wwiv/sysop.mnu.json
++++ b/install/menus/wwiv/sysop.mnu.json
+@@ -1,14 +1,20 @@
+ {
+     "version": 1,
+     "menu": {
++        "cls": true,
+         "num_action": "none",
+         "logging_action": "command",
+-        "help_type": "always",
+-        "color_title": 0,
+-        "color_item_key": 0,
+-        "color_item_text": 0,
+-        "color_item_braces": 0,
+-        "title": "",
++        "help_type": "user_choice",
++        "generated_menu": {
++            "num_cols": 2,
++            "color_title": "|#4",
++            "color_item_key": "|#2",
++            "color_item_text": "|#0",
++            "color_item_braces": "|#1",
++            "show_empty_text": false,
++            "num_newlines_at_end": 1
++        },
++        "title": "|#5Sysop Menu",
+         "acs": "user.sysop == true",
+         "password": "",
+         "enter_actions": [],
+@@ -17,6 +23,7 @@
+             {
+                 "item_key": "A",
+                 "item_text": "Allow Editor",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "AE",
+                 "instance_message": "",
+@@ -33,6 +40,7 @@
+             {
+                 "item_key": "B",
+                 "item_text": "Sub Editor",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "BE",
+                 "instance_message": "",
+@@ -49,6 +57,7 @@
+             {
+                 "item_key": "C",
+                 "item_text": "Chain Editor",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "CE",
+                 "instance_message": "",
+@@ -65,6 +74,7 @@
+             {
+                 "item_key": "D",
+                 "item_text": "Dir Editor",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "DE",
+                 "instance_message": "",
+@@ -81,6 +91,7 @@
+             {
+                 "item_key": "G",
+                 "item_text": "Bulletin Editor",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "GE",
+                 "instance_message": "",
+@@ -97,6 +108,7 @@
+             {
+                 "item_key": "I",
+                 "item_text": "Instance Editor",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "IE",
+                 "instance_message": "",
+@@ -113,6 +125,7 @@
+             {
+                 "item_key": "J",
+                 "item_text": "Conference Editor",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "JE",
+                 "instance_message": "",
+@@ -129,6 +142,7 @@
+             {
+                 "item_key": "T",
+                 "item_text": "Text Editor",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "TE",
+                 "instance_message": "",
+@@ -145,6 +159,7 @@
+             {
+                 "item_key": "V",
+                 "item_text": "Voting Editor",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "VE",
+                 "instance_message": "",
+@@ -161,6 +176,7 @@
+             {
+                 "item_key": "K",
+                 "item_text": "Print Votes",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "VP",
+                 "instance_message": "",
+@@ -177,6 +193,7 @@
+             {
+                 "item_key": "Q",
+                 "item_text": "Quit",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "Q",
+                 "instance_message": "",
+@@ -193,6 +210,7 @@
+             {
+                 "item_key": "?",
+                 "item_text": "Display Help",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "?",
+                 "instance_message": "",
+diff --git a/install/gfiles/menus/wwiv/sysop.pro b/install/menus/wwiv/sysop.pro
+similarity index 100%
+rename from install/gfiles/menus/wwiv/sysop.pro
+rename to install/menus/wwiv/sysop.pro
+diff --git a/install/gfiles/menus/wwiv/vissys.mnu.json b/install/menus/wwiv/vissys.mnu.json
+similarity index 77%
+rename from install/gfiles/menus/wwiv/vissys.mnu.json
+rename to install/menus/wwiv/vissys.mnu.json
+index 396e8f5a1..5aa3fac1f 100644
+--- a/install/gfiles/menus/wwiv/vissys.mnu.json
++++ b/install/menus/wwiv/vissys.mnu.json
+@@ -1,13 +1,19 @@
+ {
+     "version": 1,
+     "menu": {
++        "cls": false,
+         "num_action": "none",
+         "logging_action": "key",
+         "help_type": "on_entrance",
+-        "color_title": 0,
+-        "color_item_key": 0,
+-        "color_item_text": 0,
+-        "color_item_braces": 0,
++        "generated_menu": {
++            "num_cols": 3,
++            "color_title": "|#4",
++            "color_item_key": "|#2",
++            "color_item_text": "|#0",
++            "color_item_braces": "|#1",
++            "show_empty_text": false,
++            "num_newlines_at_end": 1
++        },
+         "title": "Visting Sysops",
+         "acs": "",
+         "password": "",
+@@ -26,25 +32,10 @@
+             }
+         ],
+         "items": [
+-            {
+-                "item_key": "R",
+-                "item_text": "Read Messages",
+-                "help_text": "",
+-                "log_text": "R",
+-                "instance_message": "",
+-                "acs": "",
+-                "password": "",
+-                "actions": [
+-                    {
+-                        "cmd": "readmessages",
+-                        "data": "",
+-                        "acs": ""
+-                    }
+-                ]
+-            },
+             {
+                 "item_key": "Q",
+                 "item_text": "Quit back to Main",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "Q",
+                 "instance_message": "",
+@@ -61,6 +52,7 @@
+             {
+                 "item_key": "?",
+                 "item_text": "Help",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "?",
+                 "instance_message": "",
+@@ -77,6 +69,7 @@
+             {
+                 "item_key": "X",
+                 "item_text": "Toggle Expert",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "X",
+                 "instance_message": "",
+@@ -93,6 +86,7 @@
+             {
+                 "item_key": "L",
+                 "item_text": "List Files",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "L",
+                 "instance_message": "",
+@@ -100,7 +94,17 @@
+                 "password": "",
+                 "actions": [
+                     {
+-                        "cmd": "dirlist~selectdir~listfiles",
++                        "cmd": "dirlist",
++                        "data": "",
++                        "acs": ""
++                    },
++                    {
++                        "cmd": "selectdir",
++                        "data": "",
++                        "acs": ""
++                    },
++                    {
++                        "cmd": "listfiles",
+                         "data": "",
+                         "acs": ""
+                     }
+@@ -109,6 +113,7 @@
+             {
+                 "item_key": "N",
+                 "item_text": "List New Files",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "N",
+                 "instance_message": "",
+@@ -122,25 +127,10 @@
+                     }
+                 ]
+             },
+-            {
+-                "item_key": "1",
+-                "item_text": "Download Asylum.ZIP",
+-                "help_text": "Download ASYLUM.ZIP - Free download",
+-                "log_text": "",
+-                "instance_message": "",
+-                "acs": "",
+-                "password": "",
+-                "actions": [
+-                    {
+-                        "cmd": "dlfreefile",
+-                        "data": "ASYLUMMO ASYLUM.ZIP",
+-                        "acs": ""
+-                    }
+-                ]
+-            },
+             {
+                 "item_key": "F",
+                 "item_text": "Feedback to the Sysop",
++                "visible": true,
+                 "help_text": "Leave the sysop a note",
+                 "log_text": "F",
+                 "instance_message": "",
+diff --git a/install/gfiles/menus/wwiv/vissys.msg b/install/menus/wwiv/vissys.msg
+similarity index 100%
+rename from install/gfiles/menus/wwiv/vissys.msg
+rename to install/menus/wwiv/vissys.msg
+diff --git a/install/gfiles/menus/wwiv/vissys.pro b/install/menus/wwiv/vissys.pro
+similarity index 100%
+rename from install/gfiles/menus/wwiv/vissys.pro
+rename to install/menus/wwiv/vissys.pro
+diff --git a/install/gfiles/menus/wwiv/xfer.mnu.json b/install/menus/wwiv/xfer.mnu.json
+similarity index 93%
+rename from install/gfiles/menus/wwiv/xfer.mnu.json
+rename to install/menus/wwiv/xfer.mnu.json
+index b939b5734..84a54e60c 100644
+--- a/install/gfiles/menus/wwiv/xfer.mnu.json
++++ b/install/menus/wwiv/xfer.mnu.json
+@@ -1,13 +1,19 @@
+ {
+     "version": 1,
+     "menu": {
++        "cls": false,
+         "num_action": "dirs",
+         "logging_action": "key",
+         "help_type": "always",
+-        "color_title": 0,
+-        "color_item_key": 0,
+-        "color_item_text": 0,
+-        "color_item_braces": 0,
++        "generated_menu": {
++            "num_cols": 3,
++            "color_title": "|#4",
++            "color_item_key": "|#2",
++            "color_item_text": "|#0",
++            "color_item_braces": "|#1",
++            "show_empty_text": false,
++            "num_newlines_at_end": 1
++        },
+         "title": "Transfer Menu",
+         "acs": "",
+         "password": "",
+@@ -17,6 +23,7 @@
+             {
+                 "item_key": ">",
+                 "item_text": "Up One Dir (+, ], >)",
++                "visible": true,
+                 "help_text": "Up One Directory",
+                 "log_text": ">",
+                 "instance_message": "",
+@@ -33,6 +40,7 @@
+             {
+                 "item_key": "Q",
+                 "item_text": "Quit to Main Menu",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "Q",
+                 "instance_message": "",
+@@ -49,6 +57,7 @@
+             {
+                 "item_key": "<",
+                 "item_text": "Down One Dir (-, [, <)",
++                "visible": true,
+                 "help_text": "Down One Directory",
+                 "log_text": "<",
+                 "instance_message": "",
+@@ -65,6 +74,7 @@
+             {
+                 "item_key": "-",
+                 "item_text": "",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "-",
+                 "instance_message": "",
+@@ -81,6 +91,7 @@
+             {
+                 "item_key": "[",
+                 "item_text": "",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "[",
+                 "instance_message": "",
+@@ -97,6 +108,7 @@
+             {
+                 "item_key": "+",
+                 "item_text": "",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "+",
+                 "instance_message": "",
+@@ -113,6 +125,7 @@
+             {
+                 "item_key": "]",
+                 "item_text": "",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "]",
+                 "instance_message": "",
+@@ -129,6 +142,7 @@
+             {
+                 "item_key": "*",
+                 "item_text": "List Dirs",
++                "visible": true,
+                 "help_text": "List Directories",
+                 "log_text": "*",
+                 "instance_message": "",
+@@ -145,6 +159,7 @@
+             {
+                 "item_key": "H",
+                 "item_text": "Hop to New Dir",
++                "visible": true,
+                 "help_text": "Enter partial directory name to hop to",
+                 "log_text": "H",
+                 "instance_message": "",
+@@ -161,6 +176,7 @@
+             {
+                 "item_key": "}",
+                 "item_text": "Up One Conference",
++                "visible": true,
+                 "help_text": "Up One Conference",
+                 "log_text": "}",
+                 "instance_message": "",
+@@ -177,6 +193,7 @@
+             {
+                 "item_key": "{",
+                 "item_text": "Down One Conference",
++                "visible": true,
+                 "help_text": "Down One Conference",
+                 "log_text": "{",
+                 "instance_message": "",
+@@ -193,6 +210,7 @@
+             {
+                 "item_key": "J",
+                 "item_text": "Select Conference",
++                "visible": true,
+                 "help_text": "Manually Select Conference",
+                 "log_text": "J",
+                 "instance_message": "",
+@@ -209,6 +227,7 @@
+             {
+                 "item_key": "CHANGEDIR",
+                 "item_text": "Change Dir",
++                "visible": true,
+                 "help_text": "Change Directory Select",
+                 "log_text": "CHANGEDIR",
+                 "instance_message": "",
+@@ -222,25 +241,10 @@
+                     }
+                 ]
+             },
+-            {
+-                "item_key": "/S",
+-                "item_text": "Download File List",
+-                "help_text": "Download ASCII File Listing",
+-                "log_text": "/S",
+-                "instance_message": "Downloading File List",
+-                "acs": "",
+-                "password": "",
+-                "actions": [
+-                    {
+-                        "cmd": "downloadfilelist",
+-                        "data": "",
+-                        "acs": ""
+-                    }
+-                ]
+-            },
+             {
+                 "item_key": "F",
+                 "item_text": "Search Files by Description",
++                "visible": true,
+                 "help_text": "Search Files by Description",
+                 "log_text": "F",
+                 "instance_message": "File Search",
+@@ -257,6 +261,7 @@
+             {
+                 "item_key": "L",
+                 "item_text": "List Files",
++                "visible": true,
+                 "help_text": "Display Available Files in Current Dir",
+                 "log_text": "L",
+                 "instance_message": "",
+@@ -273,6 +278,7 @@
+             {
+                 "item_key": "N",
+                 "item_text": "New File Scan",
++                "visible": true,
+                 "help_text": "Scan for New Files",
+                 "log_text": "N",
+                 "instance_message": "Scanning Files",
+@@ -289,6 +295,7 @@
+             {
+                 "item_key": "/A",
+                 "item_text": "New Files (All Confs)",
++                "visible": true,
+                 "help_text": "List new files in all conferences",
+                 "log_text": "/A",
+                 "instance_message": "Scanning Files",
+@@ -305,6 +312,7 @@
+             {
+                 "item_key": "S",
+                 "item_text": "Search by FileName",
++                "visible": true,
+                 "help_text": "Seach for files by wildcard filenames",
+                 "log_text": "S",
+                 "instance_message": "Scanning Files",
+@@ -321,6 +329,7 @@
+             {
+                 "item_key": "B",
+                 "item_text": "Batch Commands",
++                "visible": true,
+                 "help_text": "Batch Menu",
+                 "log_text": "B",
+                 "instance_message": "",
+@@ -337,6 +346,7 @@
+             {
+                 "item_key": "D",
+                 "item_text": "Download Files",
++                "visible": true,
+                 "help_text": "Download Files",
+                 "log_text": "D",
+                 "instance_message": "Downloading Files",
+@@ -353,6 +363,7 @@
+             {
+                 "item_key": "U",
+                 "item_text": "Upload Files",
++                "visible": true,
+                 "help_text": "You send the BBS a file",
+                 "log_text": "U",
+                 "instance_message": "Uploading Files",
+@@ -369,6 +380,7 @@
+             {
+                 "item_key": "Z",
+                 "item_text": "Upload to Sysop",
++                "visible": true,
+                 "help_text": "Upload a file that no one but the sysop can see",
+                 "log_text": "Z",
+                 "instance_message": "Uploading Files",
+@@ -385,6 +397,7 @@
+             {
+                 "item_key": "K",
+                 "item_text": "Configure File List",
++                "visible": true,
+                 "help_text": "Config your listplus menus to show what you want",
+                 "log_text": "K",
+                 "instance_message": "Configuring File List",
+@@ -401,6 +414,7 @@
+             {
+                 "item_key": "~",
+                 "item_text": "List Users",
++                "visible": true,
+                 "help_text": "Lists users with access to the dir you are currently in",
+                 "log_text": "~",
+                 "instance_message": "",
+@@ -417,6 +431,7 @@
+             {
+                 "item_key": "P",
+                 "item_text": "Set 'New Files' Date",
++                "visible": true,
+                 "help_text": "Sets the date the computer will use to determin new files",
+                 "log_text": "P",
+                 "instance_message": "",
+@@ -433,6 +448,7 @@
+             {
+                 "item_key": "Y",
+                 "item_text": "Your DL Info",
++                "visible": true,
+                 "help_text": "Display Your Download Info",
+                 "log_text": "Y",
+                 "instance_message": "",
+@@ -449,6 +465,7 @@
+             {
+                 "item_key": "A",
+                 "item_text": "Archive Commands",
++                "visible": true,
+                 "help_text": "Enters the temporary archive menu",
+                 "log_text": "A",
+                 "instance_message": "",
+@@ -465,6 +482,7 @@
+             {
+                 "item_key": "E",
+                 "item_text": "Extract Commands",
++                "visible": true,
+                 "help_text": "Extracts a file to the archive menu",
+                 "log_text": "E",
+                 "instance_message": "",
+@@ -481,6 +499,7 @@
+             {
+                 "item_key": "V",
+                 "item_text": "View Archive",
++                "visible": true,
+                 "help_text": "View an archived file",
+                 "log_text": "V",
+                 "instance_message": "",
+@@ -497,6 +516,7 @@
+             {
+                 "item_key": "T",
+                 "item_text": "Xfer Defaults",
++                "visible": true,
+                 "help_text": "Set the defaults for the XFER section",
+                 "log_text": "T",
+                 "instance_message": "Xfer Defaults",
+@@ -513,6 +533,7 @@
+             {
+                 "item_key": "M",
+                 "item_text": "Move Files",
++                "visible": true,
+                 "help_text": "",
+                 "log_text": "M",
+                 "instance_message": "",
+@@ -529,6 +550,7 @@
+             {
+                 "item_key": ".",
+                 "item_text": "Print DSZ.LOG",
++                "visible": true,
+                 "help_text": "Displays Current DSZ.LOG File",
+                 "log_text": ".",
+                 "instance_message": "",
+@@ -545,6 +567,7 @@
+             {
+                 "item_key": "R",
+                 "item_text": "Remove Files",
++                "visible": true,
+                 "help_text": "Remove Files from Database",
+                 "log_text": "R",
+                 "instance_message": "",
+@@ -561,6 +584,7 @@
+             {
+                 "item_key": "X",
+                 "item_text": "Toggle Expert",
++                "visible": true,
+                 "help_text": "Turn novice menus on and off",
+                 "log_text": "X",
+                 "instance_message": "",
+@@ -577,6 +601,7 @@
+             {
+                 "item_key": "?",
+                 "item_text": "Help",
++                "visible": true,
+                 "help_text": "Display Menu",
+                 "log_text": "?",
+                 "instance_message": "",
+@@ -593,6 +618,7 @@
+             {
+                 "item_key": "/O",
+                 "item_text": "Fast LogOff",
++                "visible": true,
+                 "help_text": "Logoff without showing logoff ansi or other good stuff",
+                 "log_text": "/O",
+                 "instance_message": "Logging Off",
+@@ -609,6 +635,7 @@
+             {
+                 "item_key": "O",
+                 "item_text": "Normal LogOff",
++                "visible": true,
+                 "help_text": "Normal termination from the BBS",
+                 "log_text": "O",
+                 "instance_message": "Logging Off",
+@@ -625,6 +652,7 @@
+             {
+                 "item_key": "UPLOAD",
+                 "item_text": "UL Files Current Dir",
++                "visible": true,
+                 "help_text": "Upload Local File in Current Dir",
+                 "log_text": "//UPLOAD",
+                 "instance_message": "Uploading ",
+@@ -641,6 +669,7 @@
+             {
+                 "item_key": "UPLOADALL",
+                 "item_text": "UL All Dirs",
++                "visible": true,
+                 "help_text": "Upload Local Files in ALL Dirs",
+                 "log_text": "//UPLOADALL",
+                 "instance_message": "Uploading",
+@@ -657,6 +686,7 @@
+             {
+                 "item_key": "/T",
+                 "item_text": "Test Archive",
++                "visible": true,
+                 "help_text": "Tests integrity of any archive",
+                 "log_text": "/T",
+                 "instance_message": "Testing Archive",
+@@ -673,6 +703,7 @@
+             {
+                 "item_key": "/D",
+                 "item_text": "Delete BBS Ads",
++                "visible": true,
+                 "help_text": "Deletes BBS Ads from archive",
+                 "log_text": "/D",
+                 "instance_message": "",
+@@ -689,6 +720,7 @@
+             {
+                 "item_key": "/K",
+                 "item_text": "Comment Archive",
++                "visible": true,
+                 "help_text": "Adds COMMENT.TXT to archive",
+                 "log_text": "/K",
+                 "instance_message": "",
+@@ -705,6 +737,7 @@
+             {
+                 "item_key": "/?",
+                 "item_text": "Slash Commands",
++                "visible": true,
+                 "help_text": "Display Extended Command Menu",
+                 "log_text": "/?",
+                 "instance_message": "",
+@@ -721,6 +754,7 @@
+             {
+                 "item_key": "W",
+                 "item_text": "Slash Menu",
++                "visible": true,
+                 "help_text": "Slash Menu",
+                 "log_text": "W",
+                 "instance_message": "Display Extended Command Menu",
+@@ -737,6 +771,7 @@
+             {
+                 "item_key": "DE",
+                 "item_text": "DirEdit",
++                "visible": true,
+                 "help_text": "Dir Editor",
+                 "log_text": "DE",
+                 "instance_message": "",
+@@ -753,6 +788,7 @@
+             {
+                 "item_key": "JE",
+                 "item_text": "Conf Edit",
++                "visible": true,
+                 "help_text": "Edit SUBS/XFER Conferences",
+                 "log_text": "JE",
+                 "instance_message": "",
+@@ -769,6 +805,7 @@
+             {
+                 "item_key": "SYSOP",
+                 "item_text": "Sysop Menu",
++                "visible": true,
+                 "help_text": "Sysop Functions",
+                 "log_text": "SYSOP",
+                 "instance_message": "",
+@@ -785,6 +822,7 @@
+             {
+                 "item_key": "CONFEDIT",
+                 "item_text": "Conf Edit",
++                "visible": true,
+                 "help_text": "Edit SUBS/XFER Conferences",
+                 "log_text": "CONFEDIT",
+                 "instance_message": "",
+@@ -801,6 +839,7 @@
+             {
+                 "item_key": "SORT",
+                 "item_text": "Sort Dirs",
++                "visible": true,
+                 "help_text": "Sort Xfer Dirs",
+                 "log_text": "SORT",
+                 "instance_message": "",
+@@ -817,6 +856,7 @@
+             {
+                 "item_key": "RSORT",
+                 "item_text": "RSort Dirs",
++                "visible": true,
+                 "help_text": "Sort Xfer Dirs In Reverse Order",
+                 "log_text": "RSORT",
+                 "instance_message": "",
+@@ -833,6 +873,7 @@
+             {
+                 "item_key": "READIDZ",
+                 "item_text": "ReadIDZ",
++                "visible": true,
+                 "help_text": "Read in File_id.diz as description",
+                 "log_text": "READIDZ",
+                 "instance_message": "",
+@@ -849,6 +890,7 @@
+             {
+                 "item_key": "MOVE",
+                 "item_text": "MoveFiles",
++                "visible": true,
+                 "help_text": "Move File(s) to other areas",
+                 "log_text": "MOVE",
+                 "instance_message": "",
+@@ -865,6 +907,7 @@
+             {
+                 "item_key": "AE",
+                 "item_text": "AllowEdit",
++                "visible": true,
+                 "help_text": "Run AllowEdit",
+                 "log_text": "AE",
+                 "instance_message": "",
+@@ -881,6 +924,7 @@
+             {
+                 "item_key": "UPLOADFILE",
+                 "item_text": "UploadFilesBBS",
++                "visible": true,
+                 "help_text": "Upload from FILES.BBS",
+                 "log_text": "UPLOADFILE",
+                 "instance_message": "",
+@@ -897,6 +941,7 @@
+             {
+                 "item_key": "REN",
+                 "item_text": "RenameFiles",
++                "visible": true,
+                 "help_text": "Change File Info",
+                 "log_text": "REN",
+                 "instance_message": "",
+@@ -913,6 +958,7 @@
+             {
+                 "item_key": "RN",
+                 "item_text": "RemoveNotThere",
++                "visible": true,
+                 "help_text": "Remove N/A Files From List",
+                 "log_text": "RN",
+                 "instance_message": "",
+@@ -929,6 +975,7 @@
+             {
+                 "item_key": "C",
+                 "item_text": "RequestChat",
++                "visible": true,
+                 "help_text": "Call SysOp to Chat",
+                 "log_text": "C",
+                 "instance_message": "Requesting Chat",
+diff --git a/install/gfiles/menus/wwiv/xfer.msg b/install/menus/wwiv/xfer.msg
+similarity index 100%
+rename from install/gfiles/menus/wwiv/xfer.msg
+rename to install/menus/wwiv/xfer.msg
+diff --git a/install/gfiles/menus/wwiv/xfer.pro b/install/menus/wwiv/xfer.pro
+similarity index 100%
+rename from install/gfiles/menus/wwiv/xfer.pro
+rename to install/menus/wwiv/xfer.pro
