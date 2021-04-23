@@ -3,7 +3,8 @@ readme-wwiv.txt
 WWIV 5.x Getting Started
 ~~~~~~~~~~~~~~~~~~~~~~~~
 If you already have WWIV 4.3 or 5.x installed, Please see the instructions at
-http://docs.wwivbbs.org for upgrading from 4.x.
+http://docs.wwivbbs.org for upgrading from a previous version, with the latest
+instructions available here as upgrade.txt.
 
 init.exe was renamed to WWIVconfig earlier in 5.x, so please delete the
 older init.exe if you have it still.
