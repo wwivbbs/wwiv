@@ -371,7 +371,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
       // Don't add RE: line if we have a "^D0FidoAddr" line.
       ss << "RE: " << title << crlf;
     }
-    if (!to_name.empty()) {
+    if (!to_name.empty() && !iequals(to_name, "All")) {
       ss << "BY: " << to_name << crlf;
     }
     ss << crlf;
