@@ -26,7 +26,6 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "deps/fmt/test/gmock/gmock.h"
 #include "deps/my_basic/core/my_basic.h"
 #include "fmt/format.h"
 #include <iostream>
