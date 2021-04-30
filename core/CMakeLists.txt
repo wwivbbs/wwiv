@@ -1,6 +1,6 @@
 # CMake for WWIV
 
-set(COMMON_SOURCES
+add_library(core
   clock.cpp
   cp437.cpp
   crc32.cpp
@@ -35,28 +35,27 @@ set(COMMON_SOURCES
   )
 
 if(UNIX) 
-  set(PLATFORM_SOURCES 
+  target_sources(core PRIVATE
     file_unix.cpp
     os_unix.cpp
     wfndfile_unix.cpp
-    )
+  )
 endif()
 
 if(WIN32)
   include(FindWWIVCurses)
 
-  set(PLATFORM_SOURCES 
+  target_sources(core PRIVATE
     file_win32.cpp
     os_win.cpp
     wfndfile_win32.cpp
-    )
+  )
 endif()
 
 set_max_warnings()
 
 configure_file(version_internal.h.in version_internal.h @ONLY)
 
-add_library(core ${COMMON_SOURCES} ${PLATFORM_SOURCES})
 #target_compile_options(core PRIVATE  /fsanitize=address)
 target_link_libraries(core fmt::fmt-header-only)
 target_include_directories(core PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
