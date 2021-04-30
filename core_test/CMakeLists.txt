@@ -40,3 +40,8 @@ target_link_libraries(core_fixtures core)
 add_executable(core_tests ${test_sources})
 target_link_libraries(core_tests core_fixtures core gtest)
 gtest_discover_tests(core_tests)
+
+if(OS2)
+  target_link_libraries(core_tests libc libcx)
+endif()
+
