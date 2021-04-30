@@ -217,6 +217,7 @@ bool Application::reset_local_io(LocalIO* wlocal_io) {
 void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
   switch (type) {
   case CommunicationType::SSH: {
+#ifdef WWIV_HAS_SSH_CRYPTLIB
     const auto key_fn = FilePath(config_->datadir(), "wwiv.key");
     const File key_file(key_fn);
     const auto system_password = config()->system_password();
@@ -237,6 +238,11 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
       break;
     }
     comm_ = std::make_unique<wwiv::bbs::IOSSH>(nHandle, key);
+#else
+  LOG(ERROR) << "Attempting to use SSH when SSH support is not enabled.";
+  LOG(ERROR) << "SSH will be disabled!";
+  comm_ = std::make_unique<RemoteSocketIO>(nHandle, true);
+#endif
   } break;
   case CommunicationType::TELNET: {
     comm_ = std::make_unique<RemoteSocketIO>(nHandle, true);

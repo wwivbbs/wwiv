@@ -66,7 +66,6 @@ set(COMMON_SOURCES
  sr.cpp
  srrcv.cpp
  srsend.cpp
- ssh.cpp
  stuffin.cpp
  subacc.cpp
  subedit.cpp
@@ -126,6 +125,10 @@ set(ZMODEM_SOURCES
   prot/zmwwiv.cpp
 )
 
+if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
+  list(APPEND COMMON_SOURCES "ssh.cpp")
+endif()
+
 if(UNIX) 
   set(PLATFORM_SOURCES 
     	exec_unix.cpp 
@@ -165,6 +168,10 @@ add_library(
   ${ZMODEM_SOURCES} 
   ${PLATFORM_SOURCES}
 ) 
+
+if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
+  target_compile_definitions(bbs_lib PRIVATE WWIV_HAS_SSH_CRYPTLIB)
+endif()
 
 target_link_libraries(
   bbs_lib 

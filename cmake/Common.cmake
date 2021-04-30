@@ -9,6 +9,7 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(WWIV_BUILD_TESTS "Build WWIV test programs" ON)
+option(WWIV_SSH_CRYPTLIB "Include support for SSH using Cryptlib" ON)
 option(WWIV_ZIP_INSTALL_FILES "Create the zip files for data, gfiles, etc" ON)
 option(WWIV_INSTALL "Create install packages for both zip files and binaries." ON)
 
