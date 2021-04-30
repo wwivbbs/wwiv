@@ -19,6 +19,7 @@
 #include "core/file.h"
 
 #include <share.h>
+#include <sys/stat.h>
 
 namespace wwiv::core {
 
@@ -27,7 +28,7 @@ const int File::shareDenyWrite = SH_DENYWR;
 const int File::shareDenyRead = SH_DENYRD;
 const int File::shareDenyNone = SH_DENYNO;
 
-const int File::permReadWrite = (_S_IREAD | _S_IWRITE);
+const int File::permReadWrite = (S_IREAD | S_IWRITE);
 
 const char File::pathSeparatorChar = '\\';
 

@@ -61,6 +61,10 @@ protected:
   typedef void* HANDLE;
   std::any ffdata_;
   HANDLE hFind{nullptr};
+#elif defined ( __OS2__ )
+  struct dirent **entries = nullptr;
+  int nMatches = 0;
+  int nCurrentEntry = 0;
 #elif defined ( __unix__ )
   struct dirent **entries = nullptr;
   int nMatches = 0;

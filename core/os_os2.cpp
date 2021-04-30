@@ -26,7 +26,9 @@
 #include <sstream>
 
 // OS/2 headers
+#define INCL_DOSPROCESS
 #include <os2.h>
+#include <sys/process.h>
 
 using namespace std::chrono;
 using namespace wwiv::strings;
@@ -38,7 +40,7 @@ void sleep_for(duration<double> d) {
   if (count > std::numeric_limits<uint32_t>::max()) {
     count = std::numeric_limits<uint32_t>::max();
   }
-  DosSleep(static_cast<uint32_t>(count));
+  ::DosSleep(static_cast<ULONG>(count));
 }
 
 void sound(uint32_t frequency, duration<double> d) {
@@ -51,7 +53,7 @@ std::string os_version_string() {
 }
 
 bool set_environment_variable(const std::string& variable_name, const std::string& value) {
-  reutrn setenv(variable_name.c_str(), value.c_str(), 1) == 0;
+  return setenv(variable_name.c_str(), value.c_str(), 1) == 0;
 }
 
 std::string environment_variable(const std::string& variable_name) {

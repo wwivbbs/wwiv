@@ -43,7 +43,7 @@ using namespace wwiv::strings;
 // Local functions
 //
 
-static int fname_ok(const struct dirent* ent) {
+static int fname_ok(struct dirent* ent) {
   if (IsEquals(ent->d_name, ".") || IsEquals(ent->d_name, "..")) {
     return 0;
   }
@@ -78,6 +78,22 @@ static int fname_ok(const struct dirent* ent) {
   }
   return 0;
 }
+
+int
+#ifndef __KLIBC__
+alphasort (const struct dirent **a, const struct dirent **b)
+{
+  return strcoll ((*a)->d_name, (*b)->d_name);
+}
+#else
+/* On OS/2 kLIBC, the compare function declaration of scandir() is different
+   from POSIX. See <https://trac.netlabs.org/libc/browser/branches/libc-0.6/src/emx/include/dirent.h#L141>.  */
+alphasort (const void *a, const void *b)
+{
+  return strcoll ((*(const struct dirent **)a)->d_name,
+                  (*(const struct dirent **)b)->d_name);
+}
+#endif
 
 bool WFindFile::open(const std::string& filespec, WFindFileTypeMask nTypeMask) {
   __open(filespec, nTypeMask);
