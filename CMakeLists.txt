@@ -38,7 +38,7 @@ add_subdirectory(deps/cl345)
 # FMT
 add_subdirectory(deps/fmt EXCLUDE_FROM_ALL)
 
-if(WIN32)
+if(WIN32 OR OS2)
   # We only use pdcurses on Win32
   add_definitions(-DPDC_WIDE)
   add_subdirectory(deps/pdcurses EXCLUDE_FROM_ALL)

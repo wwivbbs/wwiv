@@ -29,6 +29,9 @@
 #pragma comment(lib, "Ws2_32.lib")
 #include "WS2tcpip.h"
 #include <ws2def.h>
+#elif defined (__OS2__)
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #else
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -59,7 +62,12 @@ ip_address::ip_address(char* data) {
 
 std::string ip_address::to_string() const {
   char buf[255];
-  std::string s = inet_ntop(AF_INET6, &data_, buf, sizeof(buf));
+#ifdef __OS2__
+  auto af = AF_INET; 
+#else
+  auto af = AF_INET6; 
+#endif
+  std::string s = inet_ntop(af, &data_, buf, sizeof(buf));
   if (starts_with(s, "::ffff:") && s.find('.') != std::string::npos) {
     // Even though we store it IPv6 internally, display as IPv4
     return s.substr(7);
@@ -86,7 +94,13 @@ std::optional<ip_address> ip_address::from_string(const std::string& s) {
     //make this into a ipv6 address for an ipv4 address
     addr = wwiv::strings::StrCat("0:0:0:0:0:FFFF:", s);
   }
+#ifdef __OS2__
+  memset(&d, 0x00, 10);
+  memset(&d[10], 0x01, 2);
+  const auto ret = inet_pton(AF_INET, addr.c_str(), &d[12]);
+#else
   const auto ret = inet_pton(AF_INET6, addr.c_str(), &d);
+#endif
   if (ret != 1) {
     LOG(INFO) << "result code: " << ret;
     return std::nullopt;

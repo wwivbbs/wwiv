@@ -37,6 +37,10 @@
 #include <unistd.h>
 #endif // _WIN32
 
+#ifdef __OS2__
+#include <libcx/net.h>
+#endif  // __OS2__
+
 #include "scope_exit.h"
 #include "stl.h"
 #include "core/log.h"

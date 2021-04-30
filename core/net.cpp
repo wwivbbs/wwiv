@@ -34,6 +34,10 @@
 
 #endif // _WIN32
 
+#ifdef __OS2__
+#include <libcx/net.h>
+#endif  // __OS2__
+
 #include "core/log.h"
 #include "core/scope_exit.h"
 #include "core/socket_exceptions.h"
