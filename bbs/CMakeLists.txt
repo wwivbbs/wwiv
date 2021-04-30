@@ -1,5 +1,9 @@
 # CMake for WWIV
-include_directories(../deps/cl345)
+
+if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
+  include_directories(../deps/cl345)
+endif()
+
 include_directories(../deps/cereal/include)
 
 set(COMMON_SOURCES 
@@ -171,6 +175,7 @@ add_library(
 
 if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
   target_compile_definitions(bbs_lib PRIVATE WWIV_HAS_SSH_CRYPTLIB)
+  target_link_libraries( bbs_lib CL345_LIB )
 endif()
 
 target_link_libraries(
@@ -181,7 +186,6 @@ target_link_libraries(
   core 
   fsed
   sdk 
-  CL345_LIB 
   ${CMAKE_THREAD_LIBS_INIT} 
   ${FORKPTY_LIB}
   ${PLATFORM_LIBS}

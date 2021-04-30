@@ -33,7 +33,9 @@ if (WWIV_BUILD_TESTS)
 endif (WWIV_BUILD_TESTS)
 
 # Cryptlib
+if (WWIV_SSH_CRYPTLIB AND NOT OS2)
 add_subdirectory(deps/cl345)
+endif()
 
 # FMT
 add_subdirectory(deps/fmt EXCLUDE_FROM_ALL)

@@ -5,5 +5,5 @@ set EMXOMFLD_LINKER=wl.exe
 set EMXOMFLD_TYPE=WLINK
 
 echo: Runing cmake on "%1"
-cmake --debug-output --debug-trycompile -v %1
-pause
+cmake -DCMAKE_BUILD_TYPE=Release -DWWIV_ARCH=x86 -DWWIV_DISTRO=os2 %1
+
