@@ -74,10 +74,7 @@ CommandLine::CommandLine(const std::vector<std::string>& args, const std::string
 
 int CommandLineValue::as_int() const noexcept {
     try {
-      LOG(INFO) << "as_int(" << value_ << ")";
       return std::stoi(value_);
-    } catch (std::invalid_argument&) {
-      return 0;
     } catch (const std::logic_error&) {
       return 0;
     }
