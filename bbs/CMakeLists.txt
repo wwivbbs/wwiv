@@ -154,6 +154,12 @@ if(WIN32)
   SET_MSVC_WARNING_LEVEL_4()
 endif()
 
+if(OS2)
+  target_sources(bbs_lib PRIVATE
+		exec_os2.cpp 
+		make_abs_cmd_os2.cpp 
+  )
+endif()
 
 if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
   target_compile_definitions(bbs_lib PRIVATE WWIV_HAS_SSH_CRYPTLIB)

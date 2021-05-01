@@ -72,6 +72,18 @@ CommandLine::CommandLine(const std::vector<std::string>& args, const std::string
   set_dot_argument(dot_argument);
 }
 
+int CommandLineValue::as_int() const noexcept {
+    try {
+      LOG(INFO) << "as_int(" << value_ << ")";
+      return std::stoi(value_);
+    } catch (std::invalid_argument&) {
+      return 0;
+    } catch (const std::logic_error&) {
+      return 0;
+    }
+  }
+
+
 static std::vector<std::string> make_args(int argc, char** argv) {
   std::vector<std::string> v;
   for (auto i = 0; i < argc; i++) {

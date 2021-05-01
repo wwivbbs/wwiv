@@ -20,6 +20,7 @@
 #define INCLUDED_WWIV_CORE_COMMAND_LINE_H
 
 #include "core/inifile.h"
+#include "core/log.h"
 #include <functional>
 #include <filesystem>
 #include <map>
@@ -78,13 +79,7 @@ public:
 
   [[nodiscard]] std::string as_string() const noexcept { return value_; }
 
-  [[nodiscard]] int as_int() const noexcept {
-    try {
-      return std::stoi(value_);
-    } catch (std::logic_error&) {
-      return 0;
-    }
-  }
+  [[nodiscard]] int as_int() const noexcept;
 
   [[nodiscard]] bool as_bool() const noexcept { return value_ == "true"; }
 
