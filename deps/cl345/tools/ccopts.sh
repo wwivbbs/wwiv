@@ -509,7 +509,7 @@ fi
 # the checks that follow work.
 
 GCC_VER="$($CC -dumpversion | tr -d  '.' | cut -c 1-2)"
-if [ "$GCC_VER" -lt 10 ] ; then
+if [ "$GCC_VER" -le 10 ] ; then
 	GCC_VER="${GCC_VER}0" ;
 fi
 
