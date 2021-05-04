@@ -118,8 +118,12 @@ void CursesLocalIO::Backspace() {
 
 void CursesLocalIO::PutchRaw(unsigned char ch) {
   SetColor(curatr());
+#ifndef __OS2__
   const auto wch = wwiv::core::cp437_to_utf8(static_cast<uint8_t>(ch));
   window_->PutchW(wch);
+#else
+  window_->Putch(ch);
+#endif
 }
 
 void CursesLocalIO::Putch(unsigned char ch) {
@@ -161,8 +165,12 @@ void CursesLocalIO::PutsXYA(int x, int y, int a, const std::string& text) {
 
 void CursesLocalIO::FastPuts(const std::string& text) {
   SetColor(curatr());
+#ifndef __OS2__
   const auto w = wwiv::core::cp437_to_utf8w(text);
   window_->PutsW(w);
+#else
+  window_->Puts(text);
+#endif
 }
 
 void CursesLocalIO::set_protect(int l) { SetTopLine(l); }
@@ -312,13 +320,12 @@ void CursesLocalIO::WriteScreenBuffer(const char* buffer) {
   auto* w = std::any_cast<WINDOW*>(window_->window());
   scrollok(w, false);
 
-  char s[2];
-  s[1] = 0;
   for (auto y = 0; y < 25; y++) {
     for (auto x = 0; x < 80; x++) {
-      s[0] = *p++;
+      const auto c = *p++;
+      GotoXY(x, y);
       curatr(*p++);
-      PutsXY(x, y, s);
+      PutchRaw(c);
     }
   }
   scrollok(w, true);
