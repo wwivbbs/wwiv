@@ -103,7 +103,7 @@ path FilePath(const path& directory_name, const path& file_name) {
   if (directory_name.empty()) {
     return file_name;
   }
-  if (file_name.is_absolute()) {
+  if (File::is_absolute(file_name)) {
     LOG(INFO) << "Passed absolute filename to FilePath: " << file_name;
     // TODO(rushfan): here once we are sure this won't break things.
     // return file_name; 
@@ -425,8 +425,41 @@ std::string File::FixPathSeparators(const std::string& path) {
 }
 
 // static
+bool File::is_absolute(const std::filesystem::path& p) {
+#ifdef __OS2__
+  if (!p.empty()) {
+    const auto s = p.string();
+    if (s.length() >= 3) {
+      // Maybe X:\\ or X://
+      const auto s1 = s.at(1);
+      const auto s2 = s.at(2);
+      if (s1 == ':' && (s2 == '/' || s2 == '\\')) {
+	return true;
+      }
+    }
+    const auto s0 = s.front();
+    if (s0 == '/' || s0 == '\\') {
+      return true;
+    }
+  }
+#endif
+
+  return p.is_absolute();
+}
+
+// static
+std::filesystem::path File::absolute(const std::filesystem::path& p) {
+#ifdef __OS2__
+  if (is_absolute(p)) {
+    return p;
+  }
+#endif
+  return std::filesystem::absolute(p);
+}
+
+// static
 path File::absolute(const std::filesystem::path& base, const std::filesystem::path& relative) {
-  if (relative.is_absolute()) {
+  if (is_absolute(relative)) {
     return relative;
   }
   return FilePath(base, relative);

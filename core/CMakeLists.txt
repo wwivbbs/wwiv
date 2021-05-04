@@ -53,7 +53,7 @@ if(WIN32)
 endif()
 
 if(OS2) 
-  target_link_libraries(core libc libcx)
+  target_link_libraries(core libcx)
   target_sources(core PRIVATE
     file_os2.cpp
     os_os2.cpp

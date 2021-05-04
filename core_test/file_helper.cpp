@@ -64,7 +64,7 @@ void FileHelper::set_wwiv_test_tempdir(const std::string& d) noexcept {
   // or other things (like subst drives), you can use that to shorten
   // the path -- making it less likely wwiv 4.x data structures will
   // blow up on path length.
-  basedir_ = std::filesystem::absolute(d);
+  basedir_ = File::absolute(d);
 }
 
 void FileHelper::set_wwiv_test_tempdir_from_commandline(int argc, char* argv[]) noexcept {
@@ -96,7 +96,10 @@ std::filesystem::path FileHelper::GetTestTempDir() {
   if (!basedir_.empty()) {
     return basedir_;
   }
-  const auto temp_path = canonical(std::filesystem::temp_directory_path());
+  const auto raw_temp_path = std::filesystem::temp_directory_path();
+  LOG(INFO) << "raw_temp_path: " << raw_temp_path;
+  const auto temp_path = File::absolute(raw_temp_path);
+  LOG(INFO) << "temp_path: " << temp_path;
   auto path = temp_path / "wwiv_test_out";
   if (!exists(path)) {
     create_directories(path);

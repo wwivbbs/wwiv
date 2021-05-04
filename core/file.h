@@ -168,6 +168,20 @@ public:
   [[nodiscard]] static std::filesystem::path current_directory();
   static bool set_current_directory(const std::filesystem::path& dir);
   [[nodiscard]] static std::string FixPathSeparators(const std::string& path);
+
+  /**
+   * Returns true if the path p is in absolute form.
+   */
+  [[nodiscard]] static bool is_absolute(const std::filesystem::path& p);
+
+  /**
+   * Returns a new path referencing the same path as p.
+   */
+  [[nodiscard]] static std::filesystem::path absolute(const std::filesystem::path& p);
+
+  /**
+   * Returns a new path referencing the same path as base / relative.
+   */
   [[nodiscard]] static std::filesystem::path absolute(const std::filesystem::path& base,
                                                       const std::filesystem::path& relative);
 

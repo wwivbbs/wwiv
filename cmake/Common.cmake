@@ -26,6 +26,7 @@ set(CPACK_PACKAGE_FILE_NAME "wwiv-${WWIV_DISTRO}-${WWIV_FULL_RELEASE}")
 
 set(WWIV_INSTALL_SRC "${CMAKE_SOURCE_DIR}/install" CACHE STRING "By default this is: ${CMAKE_SOURCE_DIR}/install")
 set(WWIV_RELEASE_DIR "${CMAKE_BINARY_DIR}/release" CACHE STRING "By default this is: ${CMAKE_BINARY_DIR}/release")
+file(MAKE_DIRECTORY ${WWIV_RELEASE_DIR})
 #set(MY_CACHE_VARIABLE "VALUE" CACHE STRING "Description")
 
 # Packaging support
@@ -80,6 +81,10 @@ if (UNIX)
   if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(LINUX TRUE)
   endif()
+
+elseif (OS2)
+  message("OS/2 in the house!")
+  set(CMAKE_CXX_EXTENSIONS OFF)
 
 elseif (WIN32)
 
@@ -178,4 +183,10 @@ IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 ENDIF()
 
 SET_MSVC_WARNING_LEVEL_4()
+
+
+
+
+
+
 
