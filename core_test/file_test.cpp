@@ -242,7 +242,7 @@ TEST(FileTest, RealPath_Same) {
   FileHelper helper;
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
-  const auto c = std::filesystem::canonical(path);
+  const auto c = File::canonical(path);
   EXPECT_EQ(path, c);
 }
 
@@ -255,7 +255,7 @@ TEST(FileTest, RealPath_Different) {
   const auto suffix = FilePath(".", kFileName).string();
   const auto full = FilePath(helper.TempDir(), suffix).string();
   const auto canonical = File::canonical(full);
-  EXPECT_EQ(path, canonical);
+  EXPECT_EQ(path, canonical) << "Canonical: " << canonical;
 }
 
 TEST(FileTest, mkdir) {

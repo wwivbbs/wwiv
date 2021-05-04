@@ -199,6 +199,19 @@ bool File::Open(int file_mode, int share_mode) {
 
   VLOG(5) << "File::Open (before _sopen) " << full_path_name_ << ", access=" << file_mode;
 
+#if defined(__OS2__)
+  if (file_mode & O_CREAT) {
+    // See https://lists.mysql.com/internals/312
+    VLOG(4) << "Using OS/2 O_CREAT path";
+    handle_ = open(full_path_name_.string().c_str(), file_mode, S_IREAD | S_IWRITE);
+    if (handle_ == invalid_handle) {
+      this->error_text_ = strerror(errno);
+    }
+    
+    return IsFileHandleValid(handle_);
+  }
+#endif  // __OS2__
+
   handle_ = _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
   if (handle_ < 0) {
     VLOG(4) << "1st _sopen: handle: " << handle_ << "; error: " << strerror(errno);
@@ -547,9 +560,24 @@ bool File::Move(const std::filesystem::path& from, const std::filesystem::path& 
 
 // static
 std::string File::canonical(const std::string& path) {
+#if defined(__OS2__) 
+  //TODO(rushfan): Hack until std::filesystem is fixed on OS/2
+  {
+    char buf[4000];
+    char* p = _realrealpath(path.c_str(), buf, sizeof(buf));
+    if (p != nullptr) {
+      return FixPathSeparators(p);
+    }
+  }
+#endif 
   const std::filesystem::path p{path};
   std::error_code ec;
-  return std::filesystem::canonical(p, ec).string();
+  auto res = std::filesystem::canonical(p, ec).string();
+  if (ec.value() == 0) {
+    return res;
+  }
+  // We can't make this canonical, so try to make it absolute instead.
+  return absolute(path);
 }
 
 long File::freespace_for_path(const std::filesystem::path& p) {

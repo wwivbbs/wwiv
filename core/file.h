@@ -31,14 +31,14 @@
 #define MAX_PATH 260
 #endif
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__OS2__)
 #if !defined(O_BINARY)
 #define O_BINARY 0
 #endif
 #if !defined(O_TEXT)
 #define O_TEXT 0
 #endif
-#endif // _WIN32
+#endif // !_WIN32 && !__OS2__
 
 namespace wwiv::core {
 

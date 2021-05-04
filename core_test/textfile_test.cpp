@@ -189,7 +189,7 @@ TEST_F(TextFileTest, GetPosition) {
   std::string s;
   EXPECT_TRUE(file.ReadLine(&s));
   EXPECT_EQ("a", s);
-#ifdef _WIN32
+#if defined (_WIN32) || defined (__OS2__)
   EXPECT_EQ(3, file.position());
 #else  // _WIN32
   EXPECT_EQ(2, file.position());

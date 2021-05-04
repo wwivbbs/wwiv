@@ -26,7 +26,9 @@ namespace wwiv::core {
 const int File::shareDenyReadWrite = SH_DENYRW;
 const int File::shareDenyWrite = SH_DENYWR;
 const int File::shareDenyRead = SH_DENYRD;
-const int File::shareDenyNone = SH_DENYNO;
+  const int File::shareDenyNone = SH_DENYRD; 
+  // SH_DENYNO was causing a permission denied error for some strange reason
+// SH_DENYNO;
 
 const int File::permReadWrite = (S_IREAD | S_IWRITE);
 

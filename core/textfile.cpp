@@ -153,7 +153,7 @@ ssize_t TextFile::WriteLine(const std::string& text) noexcept {
   }
   auto num_written = Write(text);
   // fopen in text mode will force \n -> \r\n on win32
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__OS2__)
   fputs("\n", file_);
 #else
   if (dos_mode_) {

@@ -51,7 +51,13 @@ using namespace wwiv::strings;
 extern const unsigned char* translate_letters[];
 
 template <class _Ty>
-const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value);
+_Ty in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value) {
+  auto v = std::min(maxValue, value);
+  VLOG(4) << "in_range: v: " << v;
+  auto r = std::max(v, minValue);
+  VLOG(4) << "in_range: r: " << v;
+  return r;
+}
 
 /**
  * Deletes files from a directory.  This is meant to be used only in the temp
@@ -99,21 +105,29 @@ long nsl() {
   if (!a()->sess().IsUserOnline()) {
     return 1;
   }
+
   const auto tot = duration_cast<seconds>(dd - a()->sess().system_logon_time());
+  VLOG(3) << "TOT: " << tot.count();
 
   const auto tpl = minutes(a()->config()->sl(a()->sess().effective_sl()).time_per_logon);
+  VLOG(3) << "TPL: " << tpl.count();
   const auto tpd = minutes(a()->config()->sl(a()->sess().effective_sl()).time_per_day);
+  VLOG(3) << "TPD: " << tpd.count();
   const auto extra_time_call =
       duration_cast<seconds>(a()->user()->extra_time() + a()->extratimecall());
   const auto tlc = std::chrono::duration_cast<seconds>(tpl - tot + extra_time_call);
+  VLOG(3) << "TLC: " << tlc.count();
   // time left today
   const auto timeontoday = a()->user()->timeontoday();
+  //  VLOG(1) << "timeontodayL: " << timeontoday;
   const auto extra_time = a()->user()->extra_time();
+  // VLOG(1) << "extra_time: " << extra_time;
   const auto tld = std::chrono::duration_cast<seconds>(tpd - tot - timeontoday + extra_time);
+  VLOG(3) << "TLD: " << tld.count();
   const auto tlt = std::min<seconds>(tlc, tld);
   a()->sess().SetTimeOnlineLimited(false);
   const auto v = static_cast<int>(duration_cast<seconds>(tlt).count());
-  return static_cast<long>(in_range<int64_t>(0, 32767, v));
+  return in_range<long>(0, 32767, v);
 }
 
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text,
@@ -347,11 +361,6 @@ bool ok_external_fsed() {
 bool ok_internal_fsed() { return okansi() && a()->user()->default_editor() == 0xff; }
 
 
-template <class _Ty>
-const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value) {
-  auto v = std::min(maxValue, value);
-  return std::max(v, minValue);
-}
 
 int ansir_to_flags(uint16_t ansir) {
   auto flags = 0;

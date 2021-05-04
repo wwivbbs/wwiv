@@ -96,7 +96,7 @@ std::filesystem::path FileHelper::GetTestTempDir() {
   if (!basedir_.empty()) {
     return basedir_;
   }
-  const auto raw_temp_path = std::filesystem::temp_directory_path();
+  const auto raw_temp_path = File::canonical(std::filesystem::temp_directory_path());
   LOG(INFO) << "raw_temp_path: " << raw_temp_path;
   const auto temp_path = File::absolute(raw_temp_path);
   LOG(INFO) << "temp_path: " << temp_path;
@@ -111,7 +111,7 @@ std::filesystem::path FileHelper::GetTestTempDir() {
 std::filesystem::path FileHelper::CreateTempDir(const std::string& base) {
   const auto temp_path = GetTestTempDir();
   // TODO(rushfan): This may be good enough for linux too.
-#ifdef _WIN32
+#if defined (_WIN32) || defined (__OS2__)
   auto dir = FilePath(temp_path, StrCat(base, ".", time_t_now()));
   if (std::error_code ec; create_directories(dir, ec)) {
     return dir;
