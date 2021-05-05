@@ -194,7 +194,7 @@ public:
    * portion of the path.  On POSIX systems, this is congruent with how
    * realpath behaves.
    */
-  [[nodiscard]] static std::string canonical(const std::string& path);
+  [[nodiscard]] static std::filesystem::path canonical(const std::filesystem::path& path);
 
   /**
    * Creates the directory {path} by creating the leaf most directory.
@@ -229,7 +229,7 @@ public:
 
   /** Returns the number of free space in kilobytes. i.e. 1 = 1024 free bytes. */
   [[nodiscard]] static long freespace_for_path(const std::filesystem::path& p);
-  [[nodiscard]] static bool is_directory(const std::string& path) noexcept;
+  [[nodiscard]] static bool is_directory(const std::filesystem::path& path) noexcept;
 
   /** For debugging and testing only */
   [[nodiscard]] int handle() const noexcept { return handle_; }

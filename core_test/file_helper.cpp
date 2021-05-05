@@ -97,9 +97,9 @@ std::filesystem::path FileHelper::GetTestTempDir() {
     return basedir_;
   }
   const auto raw_temp_path = File::canonical(std::filesystem::temp_directory_path());
-  LOG(INFO) << "raw_temp_path: " << raw_temp_path;
+  VLOG(2) << "raw_temp_path: " << raw_temp_path;
   const auto temp_path = File::absolute(raw_temp_path);
-  LOG(INFO) << "temp_path: " << temp_path;
+  VLOG(1) << "temp_path: " << temp_path;
   auto path = temp_path / "wwiv_test_out";
   if (!exists(path)) {
     create_directories(path);

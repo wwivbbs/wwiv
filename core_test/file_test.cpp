@@ -243,7 +243,7 @@ TEST(FileTest, RealPath_Same) {
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
   const auto c = File::canonical(path);
-  EXPECT_EQ(path, c);
+  EXPECT_EQ(path, c.string());
 }
 
 TEST(FileTest, RealPath_Different) {
@@ -253,7 +253,7 @@ TEST(FileTest, RealPath_Different) {
 
   // Add an extra ./ into the path.
   const auto suffix = FilePath(".", kFileName).string();
-  const auto full = FilePath(helper.TempDir(), suffix).string();
+  const auto full = FilePath(helper.TempDir(), suffix);
   const auto canonical = File::canonical(full);
   EXPECT_EQ(path, canonical) << "Canonical: " << canonical;
 }

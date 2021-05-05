@@ -53,11 +53,7 @@ FsedConfig::FsedConfig(const CommandLine& cmdline)
     auto bt = ini.value<std::string>("bbs_type", "wwiv");
     bbs_type_ = strings::iequals(bt, "wwiv") ? bbs_type_t::wwiv : bbs_type_t::qbbs;
     std::filesystem::path p = ini.value<std::string>("help_path", "gfiles");
-    if (p.is_absolute()) {
-      help_path_ = p;
-    } else {
-      help_path_ = FilePath(root_, p);
-    }
+    help_path_ = File::absolute(root_, p);
   }
 
   if (!File::Exists(help_path_)) {

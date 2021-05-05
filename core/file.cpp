@@ -323,9 +323,9 @@ bool File::set_length(size_type l) {
 }
 
 // static
-bool File::is_directory(const std::string& path) noexcept {
+bool File::is_directory(const std::filesystem::path& path) noexcept {
   std::error_code ec;
-  return std::filesystem::is_directory(std::filesystem::path{path}, ec);
+  return std::filesystem::is_directory(path, ec);
 }
 
 File::size_type File::length() const noexcept {
@@ -559,21 +559,19 @@ bool File::Move(const std::filesystem::path& from, const std::filesystem::path& 
 }
 
 // static
-std::string File::canonical(const std::string& path) {
+std::filesystem::path File::canonical(const std::filesystem::path& path) {
 #if defined(__OS2__) 
   //TODO(rushfan): Hack until std::filesystem is fixed on OS/2
   {
     char buf[4000];
     char* p = _realrealpath(path.c_str(), buf, sizeof(buf));
     if (p != nullptr) {
-      return FixPathSeparators(p);
+      return std::filesystem::path(FixPathSeparators(p));
     }
   }
 #endif 
-  const std::filesystem::path p{path};
   std::error_code ec;
-  auto res = std::filesystem::canonical(p, ec).string();
-  if (ec.value() == 0) {
+  if (auto res = std::filesystem::canonical(path, ec).string(); ec.value() == 0) {
     return res;
   }
   // We can't make this canonical, so try to make it absolute instead.
