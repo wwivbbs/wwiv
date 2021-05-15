@@ -99,6 +99,8 @@ bool GetRemotePeerHostname(SOCKET socket, std::string& hostname) {
 
 SOCKET CreateListenSocket(int port) {
   struct sockaddr_in my_addr{};
+  memset(&my_addr, 0, sizeof(sockaddr_in));
+
   const auto sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == INVALID_SOCKET) {
     throw socket_error("Unable to create socket [socket]");
@@ -240,7 +242,8 @@ bool SocketSet::RunOnce() {
     return false;
   }
 
-  VLOG(3) << "About to call select. (" << max_fd << ")";
+  VLOG(3) << "About to call select. (" << max_fd << "); timeout: "
+	  << timeout_seconds_;
   int status;
   if (timeout_seconds_ > 0) {
     timeval timeout{};
@@ -250,14 +253,15 @@ bool SocketSet::RunOnce() {
   } else {
     status = select(max_fd + 1, &fds, nullptr, nullptr, nullptr);
   }
-  VLOG(3) << "After select.";
+
+  VLOG(3) << "After select; status: " << status << "; errno: " << errno;
   if (status < 0 && errno == EINTR) {
     LOG(ERROR) << "Caught signal calling select";
     // return true so we can check for exit signal.
     return true;
   }
   if (status < 0) {
-    LOG(ERROR) << "Error calling select; errno: " << errno;
+    LOG(ERROR) << "Error calling select; errno: [" << errno << "]";
     // return false here since we know this wasn't a signal.
     return false;
   }
@@ -266,18 +270,22 @@ bool SocketSet::RunOnce() {
     VLOG(4) << "timeout expired on select";
     return true;
   }
+  VLOG(4) << "After status checks for: " << status;
 
   for (const auto& e : socket_fn_map_) {
+    VLOG(4) << "Checking Socket map for: " << e.first;
     if (FD_ISSET(e.first, &fds)) {
+      VLOG(4) << "FD Set: " << e.first;
       socklen_t addr_size = sizeof(sockaddr_in);
       struct sockaddr_in saddr{};
       const auto client_sock = accept(e.first, reinterpret_cast<sockaddr*>(&saddr), &addr_size);
 
 #ifdef _WIN32
-      auto newvalue = SO_SYNCHRONOUS_NONALERT;
+      auto newvalue = SO_SYNCHRONOUS_NONLERT;
       setsockopt(client_sock, SOL_SOCKET, SO_OPENTYPE, reinterpret_cast<char*>(&newvalue),
                  sizeof(newvalue));
 #endif
+      VLOG(4) << "Calling e.second";
       e.second({client_sock, socket_port_map_.at(e.first)});
     }
   }

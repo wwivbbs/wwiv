@@ -28,6 +28,7 @@
 #include <iostream>
 #include <csignal>
 #include <string>
+#include <process.h>
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -73,12 +74,27 @@ void BeforeStartServer() {
 void SwitchToNonRootUser(const std::string&) {
 }
 
+
 bool ExecCommandAndWait(const wwivd_config_t& wc, const std::string& cmd, const std::string& pid,
                         int node_number, SOCKET sock) {
 
   LOG(INFO) << pid << "Invoking Command Line (Win32):" << cmd;
 
-  const auto code = system(cmd.c_str());
+  std::string exe = cmd;
+  auto ss = wwiv::strings::SplitString(cmd, " ");
+  char * argv[30];
+
+  for (int i=0; i < ss.size(); i++) {
+    auto& s = ss[i];
+    argv[i] = &s[0];
+  }
+  argv[ss.size()] = NULL;
+
+  int mode = P_WAIT;//  |  P_WINDOWED; //  | P_SESSION; // | P_WINDOWED;
+  int code = spawnvp(mode, argv[0], argv);
+  VLOG(3) << "spawnvp result: " << code;
+
+  //const auto code = system(cmd.c_str());
   if (sock != INVALID_SOCKET) {
     // We're done with this socket and the child has another reference count
     // to it.

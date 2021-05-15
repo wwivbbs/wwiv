@@ -154,7 +154,7 @@ int Main(CommandLine& cmdline) {
     client.detach();
   };
 
-  SocketSet sockets;
+  SocketSet sockets(10);
   if (c.telnet_port > 0) {
     sockets.add(c.telnet_port, telnet_or_ssh_fn, "TELNET");
   }

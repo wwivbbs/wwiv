@@ -251,15 +251,18 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const wwivd_config_t& c) {
 // ReSharper disable once CppMemberFunctionMayBeConst
 ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedConnection() {
   const auto sock = r.client_socket;
+  VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (1): " << sock;
   std::string remote_peer;
   const auto& b = data.c->blocking;
 
+  VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (2): " << sock;
   // We fail open when we can't get the remote peer
   if (!GetRemotePeerAddress(sock, remote_peer)) {
     LOG(ERROR) << "Allowing connections we can't determine the remote peer.";
     return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
   }
 
+  VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (3): " << sock;
   // Check for always allowed addresses
   if (b.use_goodip_txt && data.good_ips_) {
     if (data.good_ips_->IsAlwaysAllowed(remote_peer)) {
@@ -268,6 +271,7 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
     }
   }
 
+  VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (4): " << sock;
   // Check for always blocked addresses
   if (b.use_badip_txt && data.bad_ips_) {
     if (data.bad_ips_->IsBlocked(remote_peer)) {
@@ -277,6 +281,7 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
     }
   }
 
+  VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (5): " << sock;
   // Check for country blocking if we have a DNS cc server defined.
   if (b.use_dns_cc && !b.dns_cc_server.empty()) {
     const auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
@@ -289,6 +294,7 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
     }
   }
 
+  VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (6): " << sock;
   // Not blocked address nor blocked country. See if it's a new
   // connection, and if so, should we block it now.
   if (b.auto_blocklist && data.auto_blocker_) {
@@ -364,25 +370,32 @@ ConnectionHandler::MailerModeResult ConnectionHandler::DoMailerMode() {
 
 void ConnectionHandler::HandleConnection() {
   const auto sock = r.client_socket;
+  VLOG(4) << "ConnectionHandler::HandleConnection; sock: " << sock;
   try {
-    SocketConnection conn(r.client_socket);
+    VLOG(4) << "ConnectionHandler::HandleConnection; (1): " << sock;
+    SocketConnection conn(sock);
+    VLOG(4) << "ConnectionHandler::HandleConnection; (2): " << sock;
     const auto result = CheckForBlockedConnection();
+    VLOG(4) << "ConnectionHandler::HandleConnection; (3): " << sock;
     if (result.action == BlockedConnectionAction::DENY) {
       VLOG(1) << "HandleConnection: BUSY (Blocked): " << result.remote_peer;
       conn.send_line("BUSY (Blocked)\r\n", 10s);
       closesocket(sock);
       return;
     }
+    VLOG(4) << "After block check";
     if (!data.concurrent_connections_->aquire(result.remote_peer)) {
       LOG(INFO) << " BUSY (Concurrent Limit Reached): " << result.remote_peer;
       conn.send_line("BUSY (Concurrent Limit Reached)\r\n", 10s);
       closesocket(sock);
       return;
     }
+    VLOG(4) << "After concurrent check";
     ScopeExit at_exit([&] { data.concurrent_connections_->release(result.remote_peer); });
     const auto connection_type = connection_type_for(*data.c, r.port);
 
     if (data.c->blocking.mailer_mode && connection_type == ConnectionType::TELNET) {
+      VLOG(4) << "doing mailer mode check";
       if (const auto mailer_result = DoMailerMode(); mailer_result == MailerModeResult::DENY) {
         LOG(INFO) << "DENY (from MailerMode, didn't press ESC twice)";
         closesocket(sock);
@@ -401,8 +414,10 @@ void ConnectionHandler::HandleConnection() {
 
     wwivd_matrix_entry_t bbs;
     if (connection_type == ConnectionType::TELNET) {
+      VLOG(4) << "connection_type: ConnectionType::TELNET";
       bbs = DoMatrixLogon(*data.c);
     } else if (connection_type == ConnectionType::SSH) {
+      VLOG(4) << "connection_type: ConnectionType::SSH";
       bbs = data.c->bbses.front();
     }
 
@@ -433,6 +448,8 @@ void ConnectionHandler::HandleConnection() {
     }
   } catch (const std::exception& e) {
     LOG(ERROR) << "Handled Uncaught Exception: " << e.what();
+  } catch (...) {
+    LOG(ERROR) << "Handled Uncaught Exception: !!!";
   }
 }
 

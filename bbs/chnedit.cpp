@@ -148,7 +148,13 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
 }
 
 static std::string chain_exec_mode_to_string(const chain_exec_mode_t& t) {
-  std::vector<std::string> names{"|#2DOOR32 (Socket)", "|#1Emulate DOS Interrupts", "|#5SyncFoss", "|#3STDIO", "|#5NetFoss"};
+#ifdef __OS2__
+  std::vector<std::string> names{"|#2DOOR32 (Socket)", "|#1Emulate DOS Interrupts", 
+				   "|#5WWIVFoss OS/2", "|#3STDIO", "|#5NetFoss"};
+#else
+  std::vector<std::string> names{"|#2DOOR32 (Socket)", "|#1Emulate DOS Interrupts", 
+				   "|#5SyncFoss", "|#3STDIO", "|#5NetFoss"};
+#endif
   try {
     return names.at(static_cast<size_t>(t));
   } catch (std::out_of_range&) {
@@ -236,6 +242,16 @@ static void modify_chain(ssize_t chain_num) {
 #ifdef _WIN32
       if (c.exec_mode == chain_exec_mode_t::stdio) {
         ++c.exec_mode;
+      }
+#elif defined (__OS2__)
+      if (c.exec_mode == chain_exec_mode_t::stdio) {
+        ++c.exec_mode;
+      }
+      if (c.exec_mode == chain_exec_mode_t::dos) {
+        c.exec_mode++;
+      }
+      if (c.exec_mode == chain_exec_mode_t::netfoss) {
+        c.exec_mode++;
       }
 #else
       if (c.exec_mode == chain_exec_mode_t::dos) {
