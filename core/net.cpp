@@ -281,7 +281,7 @@ bool SocketSet::RunOnce() {
       const auto client_sock = accept(e.first, reinterpret_cast<sockaddr*>(&saddr), &addr_size);
 
 #ifdef _WIN32
-      auto newvalue = SO_SYNCHRONOUS_NONLERT;
+      auto newvalue = SO_SYNCHRONOUS_NONALERT;
       setsockopt(client_sock, SOL_SOCKET, SO_OPENTYPE, reinterpret_cast<char*>(&newvalue),
                  sizeof(newvalue));
 #endif

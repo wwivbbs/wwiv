@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_CORE_VERSION_INTERNAL_H__
-#define __INCLUDED_CORE_VERSION_INTERNAL_H__
+#ifndef INCLUDED_CORE_VERSION_INTERNAL_H
+#define INCLUDED_CORE_VERSION_INTERNAL_H
 
 # cmakedefine WWIV_RELEASE "@WWIV_RELEASE@"
 # cmakedefine WWIV_BUILD_NUMBER "@WWIV_BUILD_NUMBER@"
@@ -25,4 +25,4 @@
 #define INTERNAL_BUILD_DATE __DATE__ ", " __TIME__;
 
 
-#endif  // __INCLUDED_CORE_VERSION_H__
+#endif  // INCLUDED_CORE_VERSION_INTERNAL_H
