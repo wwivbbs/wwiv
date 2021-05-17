@@ -18,6 +18,11 @@
 /**************************************************************************/
 #include "wwivd/wwivd.h"
 
+#define INCL_DOSPROCESS
+#define INCL_DOSSESMGR
+#include <os2.h>
+#include <emx/umalloc.h> // for _lmalloc()
+
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
@@ -29,6 +34,7 @@
 #include <csignal>
 #include <string>
 #include <process.h>
+#include <libcx/spawn2.h>
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -82,29 +88,72 @@ bool ExecCommandAndWait(const wwivd_config_t& wc, const std::string& cmd, const 
 
   std::string exe = cmd;
   auto ss = wwiv::strings::SplitString(cmd, " ");
-  char * argv[30];
+  char* argv = (char*) _lmalloc(1024);
+  memset(argv, 0, 1024);
+  const auto len = cmd.size();
+  strcpy(argv, cmd.c_str());
+  char* args = strchr(argv, ' ');
+  if (args) { ++args; }
 
-  for (int i=0; i < ss.size(); i++) {
-    auto& s = ss[i];
-    argv[i] = &s[0];
+  std::ostringstream sso;
+  for (int i=0; i<=cmd.size() + 1; i++) {
+    if (argv[i] < 32) {
+      sso << "[\\" << (int)argv[i] << "]";
+    } else {
+      sso << argv[i];
+    }
   }
-  argv[ss.size()] = NULL;
+  VLOG(3) << "OS2 style args: " << sso.str();
 
-  int mode = P_WAIT;//  |  P_WINDOWED; //  | P_SESSION; // | P_WINDOWED;
-  int code = spawnvp(mode, argv[0], argv);
-  VLOG(3) << "spawnvp result: " << code;
 
-  //const auto code = system(cmd.c_str());
+  STARTDATA data;
+  memset(&data, sizeof(data), 0);
+  data.Length = sizeof(data);
+  data.Related = SSF_RELATED_INDEPENDENT;
+  data.FgBg = SSF_FGBG_FORE;
+  data.TraceOpt = SSF_TRACEOPT_NONE;
+  data.PgmTitle = (PSZ) "WWIV BBS";
+  data.PgmName = (PSZ) "C:\\WWIV\\BBS.EXE"; // &argv[0];
+  data.PgmInputs = (PSZ) args;
+  data.TermQ = NULL;
+  data.Environment = NULL;
+  data.InheritOpt = SSF_INHERTOPT_PARENT;
+  data.IconFile = NULL;
+  data.PgmHandle = NULLHANDLE;
+  data.InitXPos = data.InitYPos = data.InitXSize = data.InitYSize = 0;
+  data.Reserved = 0;
+  data.ObjectBuffer = NULL;
+  data.ObjectBuffLen = 0;
+  data.SessionType = SSF_TYPE_WINDOWABLEVIO;
+
+  ULONG ulSid = 0, ulPid = 0;
+  APIRET arc = DosStartSession(&data, &ulSid, &ulPid);
+  LOG(INFO) << "DosStartSession ret: " << arc << "; child pid: " << ulPid;
+  int child_pid = ulPid;
+
+
+  //int mode = P_SESSION | P_UNRELATED | P_WINDOWED;
+  //VLOG(2) << "spawn2: " << argv[0] << " ... ";
+  //int child_pid = spawn2(mode, argv[0], argv, NULL, NULL, NULL);
+  //VLOG(3) << "spawn result: " << child_pid;
+
+
+  RESULTCODES code;  /* Result code for the child process   */
+  PID pidOut = child_pid;
+
+  if(APIRET rc = DosWaitChild(DCWA_PROCESS, DCWW_WAIT, &code, &pidOut, child_pid); rc != NO_ERROR) {
+    LOG(ERROR) << "DosWaitChild failed: Error: " << rc;
+  }
+
   if (sock != INVALID_SOCKET) {
-    // We're done with this socket and the child has another reference count
-    // to it.
+    // We're done with this socket.
     closesocket(sock);
   }
 
   if (node_number > 0) {
-    LOG(INFO) << "Node #" << node_number << " exited with error code: " << code;
+    LOG(INFO) << "Node #" << node_number << " exited with error code: " << code.codeResult;
   } else {
-    LOG(INFO) << "Command: '" << cmd << "' exited with error code: " << code;
+    LOG(INFO) << "Command: '" << cmd << "' exited with error code: " << code.codeResult;
   }
   return true;
 }

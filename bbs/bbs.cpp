@@ -33,6 +33,7 @@
 #include <unistd.h>
 #endif // !_WIN32
 
+
 // Uncomment this line to use curses on Win32
 #define WWIV_WIN32_CURSES_IO
 
@@ -55,6 +56,7 @@ using wwiv::sdk::LogDirFromConfig;
 
 int bbsmain(int argc, char *argv[]) {
   LoggerConfig config(LogDirFromConfig);
+  //config.log_startup = true;
   Logger::Init(argc, argv, config);
 
   std::unique_ptr<Application> bbs;
@@ -63,11 +65,13 @@ int bbsmain(int argc, char *argv[]) {
     std::cout << "pause";
     getchar();
 #endif
-    set_wwiv_codepage(wwiv::core::wwiv_codepage_t::utf8);
+    //set_wwiv_codepage(wwiv::core::wwiv_codepage_t::utf8);
 
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
+    VLOG(4) << "Before CreateSession";
     bbs.reset(CreateSession(new StdioLocalIO()));
+    VLOG(4) << "After CreateSession";
     const auto return_code = bbs->Run(argc, argv); 
     return bbs->ExitBBSImpl(return_code, true);
   } catch (const wwiv::common::hangup_error& e) {

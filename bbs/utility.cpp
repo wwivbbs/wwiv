@@ -53,10 +53,7 @@ extern const unsigned char* translate_letters[];
 template <class _Ty>
 _Ty in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value) {
   auto v = std::min(maxValue, value);
-  VLOG(4) << "in_range: v: " << v;
-  auto r = std::max(v, minValue);
-  VLOG(4) << "in_range: r: " << v;
-  return r;
+  return std::max(v, minValue);
 }
 
 /**
@@ -107,23 +104,17 @@ long nsl() {
   }
 
   const auto tot = duration_cast<seconds>(dd - a()->sess().system_logon_time());
-  VLOG(3) << "TOT: " << tot.count();
 
   const auto tpl = minutes(a()->config()->sl(a()->sess().effective_sl()).time_per_logon);
-  VLOG(3) << "TPL: " << tpl.count();
   const auto tpd = minutes(a()->config()->sl(a()->sess().effective_sl()).time_per_day);
-  VLOG(3) << "TPD: " << tpd.count();
   const auto extra_time_call =
       duration_cast<seconds>(a()->user()->extra_time() + a()->extratimecall());
   const auto tlc = std::chrono::duration_cast<seconds>(tpl - tot + extra_time_call);
-  VLOG(3) << "TLC: " << tlc.count();
   // time left today
   const auto timeontoday = a()->user()->timeontoday();
-  //  VLOG(1) << "timeontodayL: " << timeontoday;
   const auto extra_time = a()->user()->extra_time();
-  // VLOG(1) << "extra_time: " << extra_time;
   const auto tld = std::chrono::duration_cast<seconds>(tpd - tot - timeontoday + extra_time);
-  VLOG(3) << "TLD: " << tld.count();
+  //VLOG(3) << "TLD: " << tld.count();
   const auto tlt = std::min<seconds>(tlc, tld);
   a()->sess().SetTimeOnlineLimited(false);
   const auto v = static_cast<int>(duration_cast<seconds>(tlt).count());

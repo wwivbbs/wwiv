@@ -70,7 +70,7 @@ Eval::Eval(std::string expression) : expression_(std::move(expression)) {
 
 
 void Eval::visit(Expression* n) { 
-  VLOG(2) << "Evaluating: " << n->ToString(false);  
+  //VLOG(2) << "Evaluating: " << n->ToString(false);  
   std::optional<Value> left;
   if (auto* factor = dynamic_cast<Factor*>(n->left())) {
     left = to_value(factor);
@@ -88,7 +88,7 @@ void Eval::visit(Expression* n) {
 
   auto eval_expr = fmt::format("{}(id:{}) {} {}(id:{})", left.value(), n->left()->id(),
                                to_symbol(n->op()), right.value(), n->right()->id());
-  VLOG(1) << "EVAL: " << eval_expr;
+  //VLOG(1) << "EVAL: " << eval_expr;
 
   // cache value
   auto result = Value::eval(left.value(), n->op(), right.value());
@@ -113,7 +113,7 @@ void Eval::visit(Factor* n) {
 }
 
 bool Eval::eval_throws() {
-  VLOG(1) << "Eval:eval: " << expression_;
+  //VLOG(1) << "Eval::eval_throws: " << expression_;
 
   Lexer l(expression_);
   if (!l.ok()) {
@@ -134,7 +134,7 @@ bool Eval::eval_throws() {
   if (!root) {
     throw eval_error(fmt::format("Failed to parse expression: '{}'.", expression_));
   }
-  VLOG(1) << "Root: " << root->ToString();
+  //VLOG(1) << "Root: " << root->ToString();
   if (root->ast_type() == AstType::AST_ERROR) {
     const auto* error_node = dynamic_cast<ErrorNode*>(root);
     throw eval_error(error_node->message);
@@ -158,7 +158,7 @@ bool Eval::eval() {
     return eval_throws();
   } catch (const eval_error& error) {
     error_text_ = error.what();
-    VLOG(1) << "Eval Error: " << error_text_;
+    //VLOG(1) << "Eval Error: " << error_text_;
     debug_info_.emplace_back(error_text_);
   }
   return false;

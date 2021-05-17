@@ -70,7 +70,6 @@ static void os_yield() {
 static HFILE create_pipe(const char *name) {
   char pipe_name[200];
   sprintf(pipe_name, "\\PIPE\\WWIV%s", name);
-  //log("Dos Create Pipe name : %s", pipe_name);
   HFILE hPipe;
   auto rc = DosCreateNPipe((const unsigned char*) pipe_name,
 			   &hPipe,
@@ -79,16 +78,17 @@ static HFILE create_pipe(const char *name) {
 			   PIPE_BUFFER_SIZE,
 			   PIPE_BUFFER_SIZE,
 			   0); // 0 == No Wait.
-  //log("Dos Create Pipe [name: %s][handle: %d][res: %d]", pipe_name, hPipe, rc);
+  VLOG(2) << "create_pipe(" <<  pipe_name << "); handle: " << hPipe;
   return hPipe;
 }
 
 static bool connect_pipe(HFILE h) {
-  ///log("Waiting for pipe to connect: [handle: %d]", h);
+  VLOG(2) << "Waiting for pipe to connect: [handle: " << h;
   int i = 0;
   auto rc = NO_ERROR;
   do {
     if (i++ > 1000) {
+      LOG(ERROR) << "Failed to connect to pipe: " << h;
       // Failed to connect to pipe.
       return false;
     }
@@ -99,16 +99,18 @@ static bool connect_pipe(HFILE h) {
       os_yield();
     }
   } while (rc != NO_ERROR);
-  //log("Pipe connected", rc);
+  VLOG(1) << "connected to pipe: " << h;
   DosSleep(100);
   return true;
 }
 
 static int close_pipe(HFILE h) {
+  VLOG(2) << "close_pipe(" << h << ")";
   return DosDisConnectNPipe(h);
 }
 
 void _System dos_pipe_loop(long unsigned int) {
+  VLOG(2) << "dos_pipe_loop()";
   int node_num = a()->sess().instance_number();
   char pipe_name[81];
   sprintf(pipe_name, "%d", node_num);
@@ -128,21 +130,16 @@ void _System dos_pipe_loop(long unsigned int) {
   unsigned long num_written;
   char buffer[200];
   do {
+    VLOG(2) << "LOOP: dos_pipe_loop()";
     if (bout.remoteIO()->incoming()) {
       // This isn't likely super performant.
       const auto num_read = bout.remoteIO()->read(buffer, sizeof(buffer));
       unsigned long num_written;
       auto rc = DosWrite(h, buffer, num_read, &num_written);
+      VLOG(4) << "Wrote bytes to pipe: " << num_written;
       if (rc != NO_ERROR) {
 	os_yield();
 	//log("Error Writing to the pipe: %d", rc);
-/*
-      } else if (ch == 27) {
-	// ESCAPE to exit
-	char ch = 'D';
-	rc = DosWrite(hc, &ch, 1, &num_written);
-	// break; 
-*/
       }
     }
 
@@ -150,14 +147,16 @@ void _System dos_pipe_loop(long unsigned int) {
     ULONG num_read;
 
     // Read Data
-    if (auto rc = DosRead(h, &ch, 1, &num_read); rc == NO_ERROR && num_read > 0) {
+    if (auto rc = DosRead(h, &ch, 1, &num_read); 
+	rc == NO_ERROR && num_read > 0) {
+      VLOG(4) << "Read bytes from pipe: " << num_read;
       const auto num_written = bout.remoteIO()->write(&ch, 1);
       continue;
-    } else if (rc != 232) {
+    } else if (rc != 232 && rc != 0) {
       // Only yield if we didn't do anything.
-      //log("DosRead error [%d], numread: [%d]", rc, num_read);
+      LOG(ERROR) << "Error on DosRead: " << rc;
       os_yield();
-      break;
+      stop = true;
     } else {
       os_yield();
     }
@@ -165,18 +164,20 @@ void _System dos_pipe_loop(long unsigned int) {
     // Read Control
     
     if (auto rc = DosRead(hc, &ch, 1, &num_read); rc == NO_ERROR && num_read > 0) {
+      VLOG(1) << "Read from control: " << ch;
       switch (ch) {
       case 'D': 
 	// Froced disconnect.
 	stop = true;
+	VLOG(1) << "Force Disconnect came from control.";
 	break;
       case 'H': {
 	// Heartbeat
       } break;
       }
-    } else if (rc != 232) {
+    } else if (rc != 232 && rc != 0) {
+      LOG(ERROR) << "Error on control DosRead: " << rc;
       stop = true;
-      break;
     } else {
       os_yield();
     }
@@ -188,6 +189,7 @@ void _System dos_pipe_loop(long unsigned int) {
     crc = DosEnterCritSec();
 
     if (stop) {
+      VLOG(1) << "Stopping Pipes";
       break;
     }
 
@@ -195,48 +197,50 @@ void _System dos_pipe_loop(long unsigned int) {
 
   close_pipe(h);
   close_pipe(hc);
+  VLOG(1) << "dos_pipe_loop: exited";
 }
 
 
 static void StartFOSSILPipe() {
+  VLOG(2) << "StartFOSSILPipe";
   TID tid = 0;
   DosCreateThread( &tid, dos_pipe_loop, 0, CREATE_READY | STACK_SPARSE, 8196 );
   DosSleep(100);
 }
 
 static void StopFOSSILPipe() {
+  VLOG(2) << "StopFOSSILPipe";
   auto crc = DosEnterCritSec();
   shutdown_pipes = true;
   crc = DosEnterCritSec();
-
 }
 
-int exec_cmdline(const std::string& user_command_line, int flags) {
-  // HACK: make this legit
-  char s[1024];
-  wwiv::strings::to_char_array(s, user_command_line);
-  int len = wwiv::stl::size_int(user_command_line);
-  char* argv[25];
-  int arg = 0;
-  for (int i=0; i < len; i++) {
-    if (s[i] == ' ') s[i] = '\0';
-    *argv[arg++] = s[i+1];
-  }
-  s[len] = 0;
-  *argv[arg++] = s[len++];
-  s[len] = 0;
-  *argv[arg++] = s[len++];
-
-
+int exec_cmdline(const std::string& cmd, int flags) {
   // Now just reuse SYNC_FOSSIl
   if (flags & EFLAG_SYNC_FOSSIL) {
     StartFOSSILPipe();
   }
+ 
+  // HACK: make this legit
+  std::string exe = cmd;
+  auto ss = wwiv::strings::SplitString(cmd, " ");
+  char * argv[30];
 
-  _execv(s, argv);
+  for (int i=0; i < ss.size(); i++) {
+    auto& s = ss[i];
+    argv[i] = &s[0];
+  }
+  argv[ss.size()] = NULL;
+
+  int mode = P_WAIT;//  |  P_WINDOWED; //  | P_SESSION; // | P_WINDOWED;
+  VLOG(1) << "before spawnvp ";
+  int code = spawnvp(mode, argv[0], argv);
+  VLOG(1) << "after spawnvp; result: " << code;
+
 
   if (flags & EFLAG_SYNC_FOSSIL) {
     StopFOSSILPipe();
   }
+  VLOG(1) << "Exiting exec_cmdline";
   return 1;
 }

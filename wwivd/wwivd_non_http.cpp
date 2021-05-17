@@ -101,7 +101,11 @@ static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
   const auto pid = fmt::format("[{}] ", get_pid());
   nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
 
-  const std::map<char, std::string> params = {{'N', std::to_string(node_number)}, {'H', std::to_string(sock)}};
+  const std::map<char, std::string> params = {
+    {'N', std::to_string(node_number)}, 
+    {'H', std::to_string(sock)},
+    {'P', std::to_string(get_pid())},
+};
 
   // Reset the socket back to blocking mode
   VLOG(2) << "Setting blocking mode.";

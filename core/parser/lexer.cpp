@@ -259,13 +259,13 @@ bool Lexer::ok() {
 const std::vector<Token>& Lexer::tokens() const { return tokens_; }
 
 void Lexer::emit(TokenType t) { 
-  VLOG(1) << "Emitting TokenType: " << static_cast<int>(t);
+  //VLOG(1) << "Emitting TokenType: " << static_cast<int>(t);
   const auto pos = static_cast<int>(std::distance(start, it_));
   tokens_.emplace_back(t, pos);
 }
 
 void Lexer::emit(TokenType t, std::string l) { 
-  VLOG(1) << "Emitting TokenType: " << static_cast<int>(t) << "; l: '" << l << "'";
+  //VLOG(1) << "Emitting TokenType: " << static_cast<int>(t) << "; l: '" << l << "'";
   const auto pos = std::distance(start, it_);
   tokens_.emplace_back(t, std::move(l), pos);
 }

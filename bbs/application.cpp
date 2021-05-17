@@ -105,6 +105,11 @@
 #include <unistd.h>
 #endif // _WIN32
 
+#if defined(__OS2__)
+// && defined (_WWIV_USE_TAKE_HANDLES)
+#include "libcx/handles.h"
+#endif
+
 using namespace std::chrono;
 using namespace wwiv::common;
 using namespace wwiv::core;
@@ -147,27 +152,38 @@ Application::Application(LocalIO* localIO)
       pipe_eval_(std::make_unique<PipeEval>(*context_)),
       bbs_macro_context_(std::make_unique<BbsMacroContext>(context_.get(), *pipe_eval_)),
       batch_(std::make_unique<Batch>()) {
+  VLOG(4) << "Application::Application()";
   ::bout.SetLocalIO(localIO);
   bout.set_context_provider([this]() -> Context& { return *this->context_; });
   bout.set_macro_context_provider(
       [this]() -> MacroContext& { return *bbs_macro_context_; });
 
+  VLOG(4) << "Application::Application(): 2";
   ::bin.SetLocalIO(localIO);
   bin.set_context_provider([this]() -> Context& { return *this->context_; });
 
+  VLOG(4) << "Application::Application(): 3";
   sess().SetCurrentReadMessageArea(-1);
   thisuser_ = std::make_unique<User>();
 
+  VLOG(4) << "Application::Application(): 4";
+#ifndef __OS2__
   tzset();
+#endif 
+  VLOG(4) << "Application::Application(): 5";
 
   memset(&asv, 0, sizeof(asv_rec));
+  VLOG(4) << "Application::Application(): 5a";
   newuser_colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
   newuser_bwcolors = {7, 15, 15, 15, 112, 15, 15, 7, 7, 7};
+  VLOG(4) << "Application::Application(): 5d";
   User::CreateNewUserRecord(user(), 50, 20, 0, 0.1234f, newuser_colors, newuser_bwcolors);
 
+  VLOG(4) << "Application::Application(): 6";
   // Set the home directory
   bbs_dir_ = File::current_directory();
   chains = std::make_unique<Chains>();
+  VLOG(4) << "Application::Application(): EXIT";
 }
 
 Application::~Application() {
@@ -183,8 +199,14 @@ Application::~Application() {
   wwiv::local::ui::curses_out = nullptr;
 }
 
-SessionContext& Application::sess() { return *session_context_; }
-const SessionContext& Application::sess() const { return *session_context_; }
+SessionContext& Application::sess() { 
+  CHECK(session_context_);
+  return *session_context_; 
+}
+const SessionContext& Application::sess() const { 
+  CHECK(session_context_);
+  return *session_context_; 
+}
 
 void Application::set_user_for_test(User& u) { *thisuser_ = u; }
 
@@ -204,17 +226,17 @@ bool Application::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
   ::bout.SetLocalIO(wlocal_io);
   ::bin.SetLocalIO(wlocal_io);
-  sess().reset_local_io(wlocal_io);
+  session_context_->reset_local_io(wlocal_io);
 
   const auto screen_bottom = bout.localIO()->GetDefaultScreenBottom();
   bout.localIO()->SetScreenBottom(screen_bottom);
-  sess().num_screen_lines(screen_bottom + 1);
+  session_context_->num_screen_lines(screen_bottom + 1);
 
   ClearTopScreenProtection();
   return true;
 }
 
-void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
+void Application::CreateComm(unsigned int nHandle, unsigned int parent_pid, CommunicationType type) {
   switch (type) {
   case CommunicationType::SSH: {
 #ifdef WWIV_HAS_SSH_CRYPTLIB
@@ -245,6 +267,18 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
 #endif
   } break;
   case CommunicationType::TELNET: {
+    LOG(ERROR) << "Wh00ps";
+#if defined(__OS2__) 
+    //&& defined (_WWIV_USE_TAKE_HANDLES)
+    LIBCX_HANDLE handles[] = {{ LIBCX_HANDLE_FD, 0, nHandle }};
+    wwiv::os::yield();
+    wwiv::os::yield();
+    wwiv::os::yield();
+    if (libcx_take_handles(handles, 1, parent_pid, 0) == -1) {
+      LOG(ERROR) << "Unable to take file handles: error" << errno;
+    }
+    wwiv::os::yield();
+#endif
     comm_ = std::make_unique<RemoteSocketIO>(nHandle, true);
   } break;
   case CommunicationType::NONE: {
@@ -780,6 +814,7 @@ int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
 }
 
 int Application::Run(int argc, char* argv[]) {
+  VLOG(4) << "Application::Run(): ";
   auto bps = 0;
   auto ooneuser = false;
   auto type = CommunicationType::NONE;
@@ -789,8 +824,10 @@ int Application::Run(int argc, char* argv[]) {
   // We'd rather leave them padded with 0x0 as default.
   _CrtSetDebugFillThreshold(0);
 #endif
+  VLOG(4) << "Application::Run(): 1";
   CommandLine cmdline(argc, argv, "");
   cmdline.AddStandardArgs();
+  VLOG(4) << "Application::Run(): 2";
   cmdline.set_no_args_allowed(true);
   cmdline.add_argument({"error_exit", 'a', "Specify the Error Exit Level", "1"});
   cmdline.add_argument({"fsed", 'f', "Opens file in the FSED", ""});
@@ -799,6 +836,7 @@ int Application::Run(int argc, char* argv[]) {
   cmdline.add_argument(
       BooleanCommandLineArgument{"beginday", 'e', "Load for beginday event only", false});
   cmdline.add_argument({"handle", 'h', "Socket handle", "0"});
+  //cmdline.add_argument({"parent_pid", 'p', "WWIVd's PID", "0"});
   cmdline.add_argument(BooleanCommandLineArgument{"no_modem", 'm',
                                                   "Don't access the modem at all", false});
   cmdline.add_argument({"instance", 'n', "Designate instance number <inst>", "1"});
@@ -811,7 +849,8 @@ int Application::Run(int argc, char* argv[]) {
   cmdline.add_argument({"x", 'x', "Someone is logged in with t for telnet or s for ssh.", ""});
   cmdline.add_argument(BooleanCommandLineArgument{"no_hangup", 'z',
                                                   "Do not hang up on user when at log off", false});
-
+  VLOG(4) << "Application::Run(): 3";
+  VLOG(1) << "Before Parse";
   if (!cmdline.Parse()) {
     std::cout << "WWIV Bulletin Board System [" << full_version() << "]\r\n\n";
     std::cout << cmdline.GetHelp() << std::endl;
@@ -846,6 +885,7 @@ int Application::Run(int argc, char* argv[]) {
   oklevel_ = cmdline.iarg("ok_exit");
   errorlevel_ = cmdline.iarg("error_exit");
   const unsigned int hSockOrComm = cmdline.iarg("handle");
+  const unsigned int parent_pid = 0; //cmdline.iarg("parent_pid");
   no_hangup_ = cmdline.barg("no_hangup");
   sess().ok_modem_stuff(!cmdline.barg("no_modem"));
   sess().instance_number(cmdline.iarg("instance"));
@@ -926,7 +966,7 @@ int Application::Run(int argc, char* argv[]) {
     // HACK for now, pass arg into InitializeBBS
     user_already_on_ = true;
   }
-  CreateComm(hSockOrComm, type);
+  CreateComm(hSockOrComm, parent_pid, type);
   if (!InitializeBBS(!user_already_on_ && sysop_cmd.empty() && fsed.empty() && run_basic.empty())) {
     return exitLevelNotOK;
   }

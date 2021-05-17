@@ -3,5 +3,5 @@ set CXX=C:\usr\bin\g++
 set CC=C:\usr\bin\gcc
 
 echo: Runing cmake on "%1"
-cmake -DCMAKE_BUILD_TYPE=Release -DWWIV_ARCH=x86 -DWWIV_DISTRO=os2 %1
+cmake -DCMAKE_BUILD_TYPE=Debug -DWWIV_ARCH=x86 -DWWIV_DISTRO=os2 %1
 

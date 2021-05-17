@@ -163,7 +163,7 @@ public:
   void Cls();
 
   /*! @function CreateComm Creates up the communications subsystem */
-  void CreateComm(unsigned int nHandle, wwiv::common::CommunicationType type);
+  void CreateComm(unsigned int nHandle, unsigned int parent_pid, wwiv::common::CommunicationType type);
   /**
    * Sets the RemoteIO handle for testing.
    * NOTE: This should only be used in unit tests.
