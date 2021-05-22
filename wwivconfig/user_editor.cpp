@@ -149,6 +149,10 @@ static void write_semaphore_if_user_online(const wwiv::sdk::Config& config, int 
 }
 
 void user_editor(const wwiv::sdk::Config& config) {
+  if (config.userrec_length() != sizeof(userrec)) {
+    messagebox(curses_out->window(), "Userrec size doesn't match. User Editor not allowed");
+    return;
+  }
   auto number_users = number_userrecs(config.datadir());
   curses_out->Cls(ACS_CKBOARD);
   auto need_names_list_rebuilt{false};
