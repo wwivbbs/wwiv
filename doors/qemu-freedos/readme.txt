@@ -5,7 +5,7 @@ Simple instructions for QEMU/FreeDOS Doors under WWIV.
    sudo apt-get install qemu-kvm qemu
 
 2) Make a Disk Image for FreeDos:
-   qemu-img create -f raw freedos.img 100M
+   qemu-img create -f raw freedos.img 20M
 
 3) Download FreeDOS ISO.
    I grabbed the latest 1.3RC4 Live CD ISO from:
@@ -22,13 +22,19 @@ Simple instructions for QEMU/FreeDOS Doors under WWIV.
 6) Download BNU FOSSIL driver and put it in a place where you can
    get it to as drive D: (i.e. put it in wwiv/doors), run QEMU
    and copy it to C:\BNU.  Also replace FDAUTO.BAT and FDCONFIG.SYS
-   with the ones here.
+   with the ones here under the FDOS directory.
 
 If you want to look at the disk image read only from linux, you can
 use the following command:
 
 sudo mount -o loop,offset=32256 /wwiv/freedos.img /mnt
 
+I prefer to boot into freedos and let drive D: or E: be the directory
+where I'll stage files to copy into FreeDOS from inside of FreeDOS
+under QEMU.
+
+i.e from inside freeDOS run:
+UNZIP -D E:\BNU170.ZIP -d C:\BNU
 
 Use:
 
