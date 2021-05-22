@@ -15,6 +15,31 @@ Legend (starting with 5.3)
     so that you don't overwrite any files (or use winmerge or meld
     to compare new changes)
 
+What's New in WWIV 5.7.1 (2021)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ Telnet support from wwivd.  Use @telnet:HOST:PORT for the telnet command
+  in the wwivd matrix setting for that BBS entry.
+    ┌─────────────────────────────────────────────── Matrix Config: mystic ┐
+    │            Key: m                                                    │
+    │           Name: mystic                                               │
+    │    Description: Mystic BBS (MIS)                                     │
+    │    Working Dir:                                                      │
+    │ Telnet Command: @telnet:localhost:2300                               │
+    │    SSH Command:                                                      │
+    │   Require Ansi: No                                                   │
+    │     Start Node: 1                                                    │
+    │       End Node: 10                                                   │
+    │     Local Node: 0                                                    │
+    └──────────────────────────────────────────────────────────────────────┘
++ Added scripts for using QEMU online.  Tested DOS doors under QEMU/FreeDos
+  on Linux.
++ WWIV builds on OS/2 under GCC 9.2, but doors won't run.
+* Incorrect BY: line when posting to a Fido sub (#1460)
+* Don't let a sub go to position 0 (#1457)
+* regions and zip-city not unzipped with default install on linux (#1455)
+
+
+
 What's New in WWIV 5.7.0 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 + Improve autoblocker in wwivd (#1359)
