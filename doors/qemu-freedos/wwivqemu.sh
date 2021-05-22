@@ -32,7 +32,11 @@ qemu-system-x86_64 \
     -drive format=raw,file=fat:rw:${INST} \
     -chardev stdio,id=char0,signal=off \
     -serial chardev:char0 \
-    -display none \
-    -monitor none \
-    -nographic
+    -monitor none 
+
+# If you have a headless setup, uncomment and add this line
+# before -monitor none, otherwise leave it out so you can
+# see the DOOR console window in QEMU.
+#    -display none \
+
 

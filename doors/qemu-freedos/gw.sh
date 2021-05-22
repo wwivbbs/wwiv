@@ -23,12 +23,13 @@ INST_NUM=$1
 INST_DIR=$2
 
 DOORFILE=$(realpath ${INST_DIR}/DOOR.BAT)
-echo C:\BNU\BNU.COM >${DOORFILE}
-echo E: >${DOORFILE}
-echo cd GW >>${DOORFILE}
+echo C:\\BNU\\BNU.COM >${DOORFILE}
+echo D: >>${DOORFILE}
+echo cd \\GW >>${DOORFILE}
 echo "WAR.EXE /W E:\CHAIN.TXT" >>${DOORFILE}
 
 unix2dos ${DOORFILE}
+unix2dos ${INST_DIR}/chain.txt
 
 echo "num: ${INST_NUM} doors: ${INST_DIR}; DOORFILE: ${DOORFILE}"
 ./wwivqemu.sh ${INST_NUM} /wwiv/doors

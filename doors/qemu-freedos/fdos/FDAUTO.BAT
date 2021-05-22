@@ -15,7 +15,7 @@ alias halt=fdapm pureoff
 LH FDAPM APMDOS
 LH SHARE
 
-if exist D:\DOOR.BAT goto DOOR
+if exist E:\DOOR.BAT goto DOOR
 goto END
 
 :DOOR
