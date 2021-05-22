@@ -94,6 +94,96 @@ std::filesystem::path node_file(const Config& config, ConnectionType ct, int nod
   return FilePath(config.datadir(), StrCat("nodeinuse.", node_number));
 }
 
+// HACK: Copied out of SocketConnection class
+// TODO(rushfan): Make this available in core::net
+bool SetNoDelayMode(SOCKET sock, bool no_delay) {
+#ifdef _WIN32
+  int one = no_delay ? 1 : 0;
+  return setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&one), sizeof(one)) !=
+         SOCKET_ERROR;
+
+#else // _WIN32
+  // TODO(rushfan): set TCP_NODELAY
+  return true;
+#endif // _WIN32
+}
+
+static bool telnet_to(const std::string& host_port, int /*node_number*/, int sock) { 
+  LOG(INFO) << "telnet_to: " << host_port;
+  auto idx = host_port.find(':');
+  std::string host = host_port;
+  int port = 23;
+  if (idx != std::string::npos) {
+    host = host_port.substr(0, idx);
+    port = to_number<int>(host_port.substr(idx + 1));
+  }
+  auto out = Connect(host, port);
+  if (!out || !out->is_open()) {
+    LOG(ERROR) << "Unable to connect to: host: " << host << "; port: " << port;
+    return false;
+  }
+  SetBlockingMode(out->socket());
+  SetNoDelayMode(out->socket(), false);
+  SocketConnection in(sock);
+  const auto max_fd = std::max<int>(sock, out->socket());
+  struct timeval ts {};
+  VLOG(4) << "telnet_to: outside loop";
+  char data[1025];
+  while (out->is_open() && in.is_open()) {
+    VLOG(4) << "telnet_to: loop";
+    // If we had more than 2 here, should move this out of the loop.
+    fd_set sock_set;
+    FD_ZERO(&sock_set);
+    FD_SET(sock, &sock_set);
+    FD_SET(out->socket(), &sock_set);
+    // Some OSes change this to be the time remaining per call, so reset it
+    // each time. ick
+    ts.tv_sec = 5;
+    ts.tv_usec = 0;
+    VLOG(3) << "  ** max_fd: " << max_fd << "; out: " << out->socket() << "; in: " << sock;
+    auto rc = select(max_fd + 1, &sock_set, nullptr, nullptr, &ts);
+    if (rc < 0) {
+      LOG(ERROR) << "select failed";
+      break;
+    } else if (rc == 0) {
+      // loop.
+      VLOG(3) << "telnet_to: select timed out";
+      continue;
+    } 
+
+    // We got one!
+    if (FD_ISSET(out->socket(), &sock_set)) {
+      VLOG(4) << "FD_ISSET: out";
+      if (auto num_read = recv(out->socket(), data, 1024, 0); num_read > 0) {
+        if (send(in.socket(), data, num_read, 0) < 0) {
+          VLOG(1) << "telnet_to: write to in failed";
+          // TODO(rushfan): Care to check ENOWOULDBLOCK?
+          break;
+        }
+      } else if (num_read == 0) {
+        LOG(INFO) << "Remote session closed; read returned 0";
+        out->close();
+      }
+    }
+
+    if (FD_ISSET(sock, &sock_set)) {
+      VLOG(4) << "FD_ISSET: in";
+      if (auto num_read = recv(sock, data, 1024, 0); num_read > 0) {
+        if (send(out->socket(), data, num_read, 0) < 0) {
+          // TODO(rushfan): Care to check ENOWOULDBLOCK?
+          VLOG(1) << "telnet_to: write to out failed";
+          break;
+        }
+      } else {
+        LOG(INFO) << "Remote session closed; read returned 0";
+        in.close();
+      }
+    }
+  }
+  VLOG(1) << "TELNET Loop done;";
+  return true;
+}
+
 static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
                        const std::string& working_dir, const std::shared_ptr<NodeManager>& nodes,
                        int node_number, int sock, ConnectionType connection_type,
@@ -113,12 +203,14 @@ static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
     LOG(ERROR) << "Failed to reset the socket to blocking mode.";
   }
 
+  VLOG(2) << "raw_cmd: " << raw_cmd;
+  ScopeExit at_exit([=] { nodes->ReleaseNode(node_number); });
+  if (starts_with(raw_cmd, "@telnet:")) {
+    return telnet_to(raw_cmd.substr(8), node_number, sock);
+  }
   const auto cmd = CreateCommandLine(raw_cmd, params);
   File::set_current_directory(working_dir);
-  const auto result = ExecCommandAndWait(wc, cmd, pid, node_number, sock);
-  nodes->ReleaseNode(node_number);
-
-  return result;
+  return ExecCommandAndWait(wc, cmd, pid, node_number, sock);
 }
 
 static bool launch_node(const Config& config, const wwivd_config_t& wc, const std::string& raw_cmd,

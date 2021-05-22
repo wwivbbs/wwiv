@@ -223,13 +223,15 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bo
   auto* p = reinterpret_cast<char*>(data);
   auto total_read = 0;
   auto remaining = static_cast<int>(size);
+  bool first = true;
   while (true) {
-    if (system_clock::now() > end) {
+    if (!first && system_clock::now() > end) {
       if (throw_on_timeout) {
         throw timeout_error("timeout error reading from socket.");
       }
       return total_read;
     }
+    first = false;
     const auto result = recv(sock, p, remaining, 0);
     if (result == SOCKET_ERROR) {
       const auto saved_errno = errno;

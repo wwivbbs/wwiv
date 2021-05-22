@@ -68,6 +68,8 @@ public:
 
   bool is_open() const override { return open_; }
   bool close() override;
+  /** returns the raw socket handle */
+  SOCKET socket() const { return sock_; }
 
 private:
   SOCKET sock_;
