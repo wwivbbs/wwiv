@@ -1,44 +1,46 @@
 # CMake for WWIV
 
 add_library(core
-  clock.cpp
-  cp437.cpp
-  crc32.cpp
-  command_line.cpp
-  connection.cpp
-  datetime.cpp
-  eventbus.cpp
-  fake_clock.cpp
-  file.cpp
-  file_lock.cpp
-  findfiles.cpp
-  graphs.cpp
-  http_server.cpp
-  inifile.cpp
-  ip_address.cpp
-  jsonfile.cpp
-  log.cpp
-  md5.cpp
-  net.cpp
-  os.cpp
-  semaphore_file.cpp
-  socket_connection.cpp
-  socket_exceptions.cpp
-  strcasestr.cpp
-  strings.cpp
-  textfile.cpp
-  uuid.cpp
-  version.cpp
-  parser/ast.cpp
-  parser/lexer.cpp
-  parser/token.cpp
+  "clock.cpp"
+  "cp437.cpp"
+  "crc32.cpp"
+  "command_line.cpp"
+  "connection.cpp"
+  "datetime.cpp"
+  "eventbus.cpp"
+  "fake_clock.cpp"
+  "file.cpp"
+  "file_lock.cpp"
+  "findfiles.cpp"
+  "graphs.cpp"
+  "http_server.cpp"
+  "inifile.cpp"
+  "ip_address.cpp"
+  "jsonfile.cpp"
+  "log.cpp"
+  "md5.cpp"
+  "net.cpp"
+  "os.cpp"
+  "pipe.cpp"
+  "semaphore_file.cpp"
+  "socket_connection.cpp"
+  "socket_exceptions.cpp"
+  "strcasestr.cpp"
+  "strings.cpp"
+  "textfile.cpp"
+  "uuid.cpp"
+  "version.cpp"
+  "parser/ast.cpp"
+  "parser/lexer.cpp"
+  "parser/token.cpp"
   )
 
 if(UNIX) 
   target_sources(core PRIVATE
-    file_unix.cpp
-    os_unix.cpp
-    wfndfile_unix.cpp
+    "file_unix.cpp"
+    "os_unix.cpp"
+    "pipe_unix.cpp"
+    "wfndfile_unix.cpp"
   )
 endif()
 
@@ -46,18 +48,20 @@ if(WIN32)
   include(FindWWIVCurses)
 
   target_sources(core PRIVATE
-    file_win32.cpp
-    os_win.cpp
-    wfndfile_win32.cpp
+    "file_win32.cpp"
+    "os_win.cpp"
+    "pipe_win32.cpp"
+    "wfndfile_win32.cpp"
   )
 endif()
 
 if(OS2) 
   target_link_libraries(core libcx)
   target_sources(core PRIVATE
-    file_os2.cpp
-    os_os2.cpp
-    wfndfile_os2.cpp
+    "file_os2.cpp"
+    "os_os2.cpp"
+    "pipe_os2.cpp"
+    "wfndfile_os2.cpp"
   )
 endif()
 

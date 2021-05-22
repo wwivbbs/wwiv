@@ -19,12 +19,12 @@
 #include "bbs/exec.h"
 
 // Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "shortmsg.h"
 #include "core/wwiv_windows.h"
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/dropfile.h"
+#include "bbs/shortmsg.h"
 #include "bbs/sysoplog.h"
 #include "common/output.h"
 #include "common/remote_io.h"
