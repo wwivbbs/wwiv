@@ -45,7 +45,7 @@ Pipe::PIPE_HANDLE create_pipe(const std::string& name) {
   VLOG(2) << "create_pipe: " << name;
   Pipe::PIPE_HANDLE hPipe =
       CreateNamedPipe(name.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
-                      0xff, 4000, 4000, 0 /* default timeout */, NULL);
+                      0xff, Pipe::PIPE_BUFFER_SIZE, Pipe::PIPE_BUFFER_SIZE, 0 /* default timeout */, NULL);
   VLOG(4) << "create_pipe(" << name << "); handle: " << hPipe;
   return hPipe;
 }

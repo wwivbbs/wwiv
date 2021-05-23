@@ -18,16 +18,21 @@
 /**************************************************************************/
 #include "core/pipe.h"
 
+#define INCL_DOSERRORS
+#define INCL_DOSPROCESS
+#include <os2.h>
+
 #include "core/log.h"
 #include "fmt/format.h"
 
 namespace wwiv::core {
 
 Pipe::PIPE_HANDLE create_pipe(const std::string& name) {
-  PIPE_HANDLE hPipe;
+  Pipe::PIPE_HANDLE hPipe;
   auto rc = DosCreateNPipe((const unsigned char*)name.c_str(), &hPipe, NP_ACCESS_DUPLEX,
-                           NP_NOWAIT | NP_TYPE_BYTE | NP_READMODE_BYTE | 0xFF, PIPE_BUFFER_SIZE,
-                           PIPE_BUFFER_SIZE,
+                           NP_NOWAIT | NP_TYPE_BYTE | NP_READMODE_BYTE | 0xFF, 
+			   Pipe::PIPE_BUFFER_SIZE,
+                           Pipe::PIPE_BUFFER_SIZE,
                            0); // 0 == No Wait.
   VLOG(2) << "create_pipe(" << name << "); handle: " << hPipe;
   return hPipe;
@@ -36,7 +41,7 @@ Pipe::PIPE_HANDLE create_pipe(const std::string& name) {
 bool Pipe::WaitForClient(std::chrono::duration<double> timeout) {
   auto end = std::chrono::system_clock::now() + timeout;
   do {
-    if (DosConnectNPipe(h) == NO_ERROR) {
+    if (DosConnectNPipe(handle_) == NO_ERROR) {
       return true;
     }
     DosSleep(200);
@@ -57,10 +62,10 @@ bool close_pipe(Pipe::PIPE_HANDLE h) {
 /** returns the number of bytes written on success */
 std::optional<int> Pipe::write(const char* data, int size) {
   unsigned long num_written;
-  auto rc = DosWrite(h, buffer, num_read, &num_written);
+  auto rc = DosWrite(handle_, data, size, &num_written);
   VLOG(4) << "Wrote bytes to pipe: " << num_written;
   if (rc == NO_ERROR) {
-    return {num_wrtten};
+    return {num_written};
   }
   DosSleep(1);
   return std::nullopt;
@@ -68,7 +73,8 @@ std::optional<int> Pipe::write(const char* data, int size) {
 
 /** returns the number of bytes read on success */
 std::optional<int> Pipe::read(char* data, int size) {
-  if (auto rc = DosRead(h, &ch, 1, &num_read); rc == NO_ERROR && num_read > 0) {
+  unsigned long num_read;
+  if (auto rc = DosRead(handle_, data, size, &num_read); rc == NO_ERROR && num_read > 0) {
     VLOG(4) << "Read bytes from pipe: " << num_read;
     return {num_read};
   } else if (rc != 232 && rc != 0) {
