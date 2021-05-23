@@ -26,11 +26,8 @@
 
 #if defined( _WIN32 )
 
-#define NOCRYPT // Disable include of wincrypt.h
-#include <winsock2.h>
-
-// Really windows?
 typedef int socklen_t;
+typedef unsigned int SOCKET;
 
 #else
 

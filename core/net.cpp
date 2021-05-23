@@ -24,6 +24,8 @@
 #pragma comment(lib, "Mswsock.lib")
 #pragma comment(lib, "AdvApi32.lib")
 
+#define NOCRYPT // Disable include of wincrypt.h
+#include <winsock2.h>
 #include <MSWSock.h>
 #include <WS2tcpip.h>
 

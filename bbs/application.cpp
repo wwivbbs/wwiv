@@ -220,8 +220,6 @@ const Context& Application::context() const {
   return *context_;
 }
 
-//LocalIO* Application::localIO() const { return local_io_.get(); }
-
 bool Application::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
   ::bout.SetLocalIO(wlocal_io);
