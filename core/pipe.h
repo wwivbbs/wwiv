@@ -29,16 +29,12 @@ namespace wwiv::core {
 class Pipe {
 public:
 
-// TODO(rushfan): These seem generally useful, maybe wwivport.h?
-// and just call them native OS file handles?
 #ifdef _WIN32
   typedef void* PIPE_HANDLE;
 #elif defined(__OS2__)
   // HFILE is unsigned long
   typedef unsigned long HFILE;
   typedef HFILE PIPE_HANDLE;
-#else
-  typedef int PIPE_HANDLE;
 #endif
 
   static constexpr int PIPE_BUFFER_SIZE = 4000;

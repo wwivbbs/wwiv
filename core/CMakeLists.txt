@@ -21,7 +21,6 @@ add_library(core
   "md5.cpp"
   "net.cpp"
   "os.cpp"
-  "pipe.cpp"
   "semaphore_file.cpp"
   "socket_connection.cpp"
   "socket_exceptions.cpp"
@@ -39,7 +38,6 @@ if(UNIX)
   target_sources(core PRIVATE
     "file_unix.cpp"
     "os_unix.cpp"
-    "pipe_unix.cpp"
     "wfndfile_unix.cpp"
   )
 endif()
@@ -50,6 +48,7 @@ if(WIN32)
   target_sources(core PRIVATE
     "file_win32.cpp"
     "os_win.cpp"
+    "pipe.cpp"
     "pipe_win32.cpp"
     "wfndfile_win32.cpp"
   )
@@ -60,6 +59,7 @@ if(OS2)
   target_sources(core PRIVATE
     "file_os2.cpp"
     "os_os2.cpp"
+    "pipe.cpp"
     "pipe_os2.cpp"
     "wfndfile_os2.cpp"
   )

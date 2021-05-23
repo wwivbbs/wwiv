@@ -21,7 +21,6 @@ set(test_sources
   "log_test.cpp"
   "md5_test.cpp"
   "os_test.cpp"
-  "pipe_test.cpp"
   "scope_exit_test.cpp"
   "semaphore_file_test.cpp"
   "stl_test.cpp"
@@ -42,7 +41,16 @@ add_executable(core_tests ${test_sources})
 target_link_libraries(core_tests core_fixtures core gtest)
 gtest_discover_tests(core_tests)
 
+if(WIN32)
+  target_sources(core_tests
+  "pipe_test.cpp"
+  )
+endif()
+
 if(OS2)
+  target_sources(core_tests
+  "pipe_test.cpp"
+  )
   target_link_libraries(core_tests libcx)
 endif()
 
