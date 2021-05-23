@@ -25,6 +25,11 @@
 #include "core/log.h"
 #include "fmt/format.h"
 
+// Values from: The Art Of OS/2 Warp Programming. Chapter 5
+static constexpr ULONG PIPE_OPEN_FLAG = OPEN_ACTION_OPEN_IF_EXISTS;
+static constexpr ULONG PIPE_OPEN_MODE = (OPEN_FLAGS_WRITE_THROUGH | OPEN_FLAGS_FAIL_ON_ERROR | 
+                                         OPEN_FLAGS_RANDOM | OPEN_SHARE_DENYNONE | OPEN_ACCESS_READWRITE);
+
 namespace wwiv::core {
 
 Pipe::PIPE_HANDLE create_pipe(const std::string& name) {
@@ -84,6 +89,33 @@ std::optional<int> Pipe::read(char* data, int size) {
     return {0};
   }
 }
+
+bool Pipe::Open() {
+  VLOG(2) << "Pipe::Open: " << pipe_name_;
+  for (int i=0; i<5*10; i++) { // 10s
+    HFILE h;
+    ULONG ulAction;
+    auto rc = DosOpen((const unsigned char*)pipe_name_.c_str(), 
+		      &h, 
+		      &ulAction, 
+		      0, 
+		      FILE_NORMAL, 
+		      PIPE_OPEN_FLAG,
+		      PIPE_OPEN_MODE,
+		      0L);
+    if (rc == NO_ERROR) {
+      VLOG(3) << "Pipe::Open: exiting: " << pipe_name_;
+      handle_ = h;
+      return true;
+    }
+    LOG(WARNING) << "Could not open pipe. Error: " << rc;
+    DosSleep(200);
+  }
+  LOG(WARNING) << "Pipe::Open: failed to open: " << pipe_name_;
+  return false;
+}
+
+
 
 
 }
