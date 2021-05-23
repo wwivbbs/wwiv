@@ -23,8 +23,7 @@
 
 namespace wwiv::core {
  
-Pipe::PIPE_HANDLE create_pipe(const char* name) {
-  auto path = pipe_name(name);
+Pipe::PIPE_HANDLE create_pipe(const std::string& name) {
   return -1;
 }
 
@@ -40,6 +39,12 @@ std::string pipe_name(const std::string_view part) {
 static bool close_pipe(Pipe::PIPE_HANDLE h) { 
   return close(h) >= 0;
 }
+
+/** returns the number of bytes written on success */
+std::optional<int> Pipe::write(const char* data, int size) { return std::nullopt; }
+
+/** returns the number of bytes read on success */
+std::optional<int> Pipe::read(char* data, int size) { return std::nullopt; }
 
 
 }

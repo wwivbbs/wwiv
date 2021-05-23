@@ -25,33 +25,29 @@
 #include "fmt/format.h"
 
 namespace wwiv::core {
- 
-Pipe::PIPE_HANDLE create_pipe(const char* name) {
-  auto full_name = pipe_name(name);
-  Pipe::PIPE_HANDLE hPipe =
-      CreateNamedPipe(full_name.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
-                      0xff, 4000, 4000, 0 /* default timeout */, NULL);
-  VLOG(2) << "create_pipe(" << full_name << "); handle: " << hPipe;
-  return hPipe;
+
+static std::string ErrorAsString(DWORD last_error) {
+  LPSTR messageBuffer{nullptr};
+  const auto size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                                       FORMAT_MESSAGE_IGNORE_INSERTS,
+                                   nullptr, last_error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                                   reinterpret_cast<LPSTR>(&messageBuffer), 0, nullptr);
+
+  std::string message{messageBuffer, size};
+
+  // Free the buffer.
+  LocalFree(messageBuffer);
+  return fmt::format("({}): {}", last_error, message);
 }
 
-bool connect_pipe(Pipe::PIPE_HANDLE h) {
-  VLOG(2) << "Waiting for pipe to connect: [handle: " << h << "]";
-  int i = 0;
-  for (;;) {
-    if (i++ > 1000) {
-      LOG(ERROR) << "Failed to connect to pipe: " << h;
-      // Failed to connect to pipe.
-      return false;
-    }
-    if (ConnectNamedPipe(h, NULL)) {
-      VLOG(1) << "connected to pipe: " << h;
-      Sleep(100);
-      return true;
-    }
-    Sleep(100);
-    Sleep(0);
-  }
+ 
+Pipe::PIPE_HANDLE create_pipe(const std::string& name) {
+  VLOG(2) << "create_pipe: " << name;
+  Pipe::PIPE_HANDLE hPipe =
+      CreateNamedPipe(name.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
+                      0xff, 4000, 4000, 0 /* default timeout */, NULL);
+  VLOG(4) << "create_pipe(" << name << "); handle: " << hPipe;
+  return hPipe;
 }
 
 std::string pipe_name(const std::string_view part) {
@@ -68,5 +64,63 @@ bool close_pipe(Pipe::PIPE_HANDLE h) {
   return true;
 }
 
+bool Pipe::Open() {
+  VLOG(2) << "Pipe::Open: " << pipe_name_;
+  for (;;) {
+    HANDLE h = CreateFile(pipe_name_.c_str(), GENERIC_READ | GENERIC_WRITE,
+                          0,             // no sharing
+                          NULL,          // default security attributes
+                          OPEN_EXISTING, // opens existing pipe
+                          0,             // default attributes
+                          NULL);         // no template file
+    if (h != INVALID_HANDLE_VALUE) {
+      handle_ = h;
+      break;
+    }
+    // Exit if an error other than ERROR_PIPE_BUSY occurs.
+    const auto e = GetLastError();
+    if (GetLastError() != ERROR_PIPE_BUSY) {
+      LOG(WARNING) << "Could not open pipe. Error: " << ErrorAsString(e);
+      return false;
+    }
+  }
+  VLOG(3) << "Pipe::Open: exiting: " << pipe_name_;
+  //if (!WaitNamedPipe(pipe_name_.c_str(), 30 * 1000)) {
+  //  VLOG(2) << "Could not open pipe: 20 second wait timed out.";
+  //  return false;
+  //}
+  return true;
+}
+
+bool Pipe::WaitForClient(std::chrono::duration<double> timeout) { 
+  auto end = std::chrono::system_clock::now() + timeout;
+  do {
+    if (ConnectNamedPipe(handle_, nullptr) || GetLastError() == ERROR_PIPE_CONNECTED) {
+      return true;
+    }
+    LOG(WARNING) << "WaitForClient: " << ErrorAsString(GetLastError());
+    Sleep(250);
+  } while (std::chrono::system_clock::now() <= end);
+  return false;
+}
+
+
+/** returns the number of bytes written on success */
+std::optional<int> Pipe::write(const char* data, int size) { 
+  DWORD cbBytesWritten;
+  if (WriteFile(handle_, data, size, &cbBytesWritten, NULL)) {
+    return {cbBytesWritten};
+  }
+  return std::nullopt; 
+}
+
+/** returns the number of bytes read on success */
+std::optional<int> Pipe::read(char* data, int size) { 
+  DWORD cbBytesRead;
+  if (ReadFile(handle_, data, size, &cbBytesRead, NULL)) {
+    return { cbBytesRead };
+  }
+  return std::nullopt;
+}
 
 }

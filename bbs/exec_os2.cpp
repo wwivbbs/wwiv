@@ -138,8 +138,8 @@ void _System dos_pipe_loop(long unsigned int) {
       auto rc = DosWrite(h, buffer, num_read, &num_written);
       VLOG(4) << "Wrote bytes to pipe: " << num_written;
       if (rc != NO_ERROR) {
-	os_yield();
-	//log("Error Writing to the pipe: %d", rc);
+	      os_yield();
+	      //log("Error Writing to the pipe: %d", rc);
       }
     }
 
@@ -148,7 +148,7 @@ void _System dos_pipe_loop(long unsigned int) {
 
     // Read Data
     if (auto rc = DosRead(h, &ch, 1, &num_read); 
-	rc == NO_ERROR && num_read > 0) {
+      	rc == NO_ERROR && num_read > 0) {
       VLOG(4) << "Read bytes from pipe: " << num_read;
       const auto num_written = bout.remoteIO()->write(&ch, 1);
       continue;
@@ -167,12 +167,12 @@ void _System dos_pipe_loop(long unsigned int) {
       VLOG(1) << "Read from control: " << ch;
       switch (ch) {
       case 'D': 
-	// Froced disconnect.
-	stop = true;
-	VLOG(1) << "Force Disconnect came from control.";
-	break;
+      	// Forced disconnect.
+        stop = true;
+        VLOG(1) << "Force Disconnect came from control.";
+        break;
       case 'H': {
-	// Heartbeat
+	    // Heartbeat
       } break;
       }
     } else if (rc != 232 && rc != 0) {

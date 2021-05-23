@@ -16,64 +16,36 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_CORE_PIPE_H
-#define INCLUDED_CORE_PIPE_H
+#include "core/pipe.h"
+
+#include "gtest/gtest.h"
+#include "core/log.h"
+#include "core/pipe.h"
 
 #include <chrono>
-#include <optional>
 #include <string>
-#include <string_view>
+#include <thread>
 
-namespace wwiv::core {
+using namespace wwiv::core;
 
-class Pipe {
-public:
-
-// TODO(rushfan): These seem generally useful, maybe wwivport.h?
-// and just call them native OS file handles?
-#ifdef _WIN32
-  typedef void* PIPE_HANDLE;
-#elif defined(__OS2__)
-  typedef HFILE PIPE_HANDLE;
-#else
-  typedef int PIPE_HANDLE;
-#endif
-  static constexpr PIPE_HANDLE PIPE_INVALID_HANDLE_VALUE = ((PIPE_HANDLE)-1);
-
-  Pipe(const std::string_view name);
-  ~Pipe();
-
-  /** Creates a new Named Pipe */
-  bool Create();
-
-  /** Opens an existing named pipe */
-  bool Open();
-
-  /** Waits for a client to connect up time timeout */
-  bool WaitForClient(std::chrono::duration<double> timeout);
-
-  /** returns the number of bytes written on success */
-  std::optional<int> write(const char* data, int size);
-
-  /** returns the number of bytes read on success */
-  std::optional<int> read(char* data, int size);
-
-  /** returns the last error code */
-  int last_error() const noexcept { return last_error_ ; }
-
-private:
-  std::string pipe_name_;
-
-  PIPE_HANDLE handle_{PIPE_INVALID_HANDLE_VALUE};
-  int last_error_{0};
-};
-
-// Platform specific bits
-Pipe::PIPE_HANDLE create_pipe(const std::string& name);
-bool connect_pipe(Pipe::PIPE_HANDLE h);
-std::string pipe_name(const std::string_view part);
-bool close_pipe(Pipe::PIPE_HANDLE h);
-
+static void client() {
+  Pipe cp("1");
+  if (!cp.Open()) {
+    return;
+  }
+  cp.write("Hello\0", 6);
 }
 
-#endif  // INCLUDED_CORE_PIPE_H
+TEST(PipeTest, Smoke) {
+  Pipe sp("1");
+  auto client_thread = std::thread(client);
+  ASSERT_TRUE(sp.Create());
+  EXPECT_TRUE(sp.WaitForClient(std::chrono::seconds(2)));
+
+  char s[81];
+  auto o = sp.read(s, 6);
+  ASSERT_TRUE(o);
+  EXPECT_STREQ("Hello", s);
+
+  client_thread.join();
+}

@@ -26,27 +26,24 @@
 
 namespace wwiv::core {
 
-#ifdef __OS2__
-
-#elif defined(_WIN32)
+Pipe::Pipe(const std::string_view name) : pipe_name_(pipe_name(name)) {}
 
 
-
-#elif defined(__unix__)
-
-#else
-
-#error "No OS defined for this type."
-
-#endif
-
-Pipe::Pipe(const std::string_view name) : pipe_name_(pipe_name(name)) {
-
+bool Pipe::Create() {
+  handle_ = create_pipe(pipe_name_);
+  return handle_ != INVALID_HANDLE_VALUE;
 }
 
 Pipe::~Pipe() {
   close_pipe(handle_);
   handle_ = INVALID_HANDLE_VALUE;
 }
+
+// Implemented in pipe_PLATFORM.cpp
+// std::optional<int> Pipe::write(const char* data, int size);
+// std::optional<int> Pipe::read(char* data, int size)
+// bool Pipe::Open() {}
+// bool WaitForClient(std::chrono::duration<double> timeout);
+
 
 }
