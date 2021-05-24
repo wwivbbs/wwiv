@@ -41,7 +41,9 @@ public:
 
   static constexpr PIPE_HANDLE PIPE_INVALID_HANDLE_VALUE = ((PIPE_HANDLE)-1);
 
-  Pipe(const std::string_view name);
+  explicit Pipe(const std::string_view name);
+  Pipe(int node_number, bool control_pipe);
+  Pipe(int node_number);
   ~Pipe();
 
   /** Creates a new Named Pipe */

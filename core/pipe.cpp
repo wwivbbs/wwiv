@@ -28,6 +28,11 @@ namespace wwiv::core {
 
 Pipe::Pipe(const std::string_view name) : pipe_name_(pipe_name(name)) {}
 
+Pipe::Pipe(int node_number, bool control_pipe)
+    : Pipe(fmt::format("WWIV{}{}", node_number, control_pipe ? "C" : "")) {}
+  
+Pipe::Pipe(int node_number) : Pipe(node_number, false) {}
+
 
 bool Pipe::Create() {
   handle_ = create_pipe(pipe_name_);

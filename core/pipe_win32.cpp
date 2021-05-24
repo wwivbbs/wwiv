@@ -66,7 +66,7 @@ bool close_pipe(Pipe::PIPE_HANDLE h) {
 
 bool Pipe::Open() {
   VLOG(2) << "Pipe::Open: " << pipe_name_;
-  for (;;) {
+  for (int i=0; i<30 * 5; i++) {
     HANDLE h = CreateFile(pipe_name_.c_str(), GENERIC_READ | GENERIC_WRITE,
                           0,             // no sharing
                           NULL,          // default security attributes
@@ -75,21 +75,19 @@ bool Pipe::Open() {
                           NULL);         // no template file
     if (h != INVALID_HANDLE_VALUE) {
       handle_ = h;
-      break;
+      VLOG(3) << "Pipe::Open: sucess opened: " << pipe_name_;
+      return true;
     }
     // Exit if an error other than ERROR_PIPE_BUSY occurs.
     const auto e = GetLastError();
-    if (GetLastError() != ERROR_PIPE_BUSY) {
+    if (e != ERROR_PIPE_BUSY && e != ERROR_FILE_NOT_FOUND) {
       LOG(WARNING) << "Could not open pipe. Error: " << ErrorAsString(e);
       return false;
     }
+    Sleep(200);
   }
   VLOG(3) << "Pipe::Open: exiting: " << pipe_name_;
-  //if (!WaitNamedPipe(pipe_name_.c_str(), 30 * 1000)) {
-  //  VLOG(2) << "Could not open pipe: 20 second wait timed out.";
-  //  return false;
-  //}
-  return true;
+  return false;
 }
 
 bool Pipe::WaitForClient(std::chrono::duration<double> timeout) { 
@@ -126,7 +124,7 @@ std::optional<int> Pipe::read(char* data, int size) {
 std::optional<char> Pipe::peek() {
   char ch;
   DWORD num_read, num_avail, num_leftmsg;
-  if (PeekNamedPipe(handle_, &ch, 1, &num_read, &num_avail, &num_leftmsg)) {
+  if (PeekNamedPipe(handle_, &ch, 1, &num_read, &num_avail, &num_leftmsg) && num_read>0) {
     return {ch};
   }
   return std::nullopt;

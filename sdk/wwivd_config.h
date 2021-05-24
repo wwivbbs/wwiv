@@ -70,6 +70,8 @@ struct wwivd_matrix_entry_t {
   int end_node;
   /** Local node for this bbs */
   int local_node;
+  /** Mode for passing data to the BBS, Network (S)ocket or Named (P)ipe */
+  char data_mode{'S'};
 };
 
 class wwivd_config_t {

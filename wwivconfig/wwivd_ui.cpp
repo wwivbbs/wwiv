@@ -175,6 +175,8 @@ static void edit_matrix_entry(const Config& config, wwivd_matrix_entry_t& b) {
     items.add(new Label("End Node:"), new NumberEditItem<int>(&b.end_node), 1, y);
     y++;
     items.add(new Label("Local Node:"), new NumberEditItem<int>(&b.local_node), 1, y);
+    y++;
+    items.add(new Label("Data Mode:"), new StringEditItem<char*>(1, &b.data_mode, EditLineMode::UPPER_ONLY), 1, y);
   }
 
   items.relayout_items_and_labels();

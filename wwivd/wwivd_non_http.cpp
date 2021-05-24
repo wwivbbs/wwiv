@@ -21,6 +21,7 @@
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
+#include "core/pipe.h"
 #include "core/scope_exit.h"
 #include "core/semaphore_file.h"
 #include "core/socket_connection.h"
@@ -184,6 +185,68 @@ static bool telnet_to(const std::string& host_port, int /*node_number*/, int soc
   return true;
 }
 
+static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
+  LOG(INFO) << "Starting socket_pipe_loop";
+  if (!data_pipe.WaitForClient(std::chrono::seconds(10))) {
+    LOG(WARNING) << "Failed to connect bbs end of data pipe: " << data_pipe.name();
+  }
+  if (!control_pipe.WaitForClient(std::chrono::seconds(10))) {
+    LOG(WARNING) << "Failed to connect bbs end of control pipe: " << control_pipe.name();
+  }
+
+  struct timeval ts {};
+  VLOG(2) << "socket_pipe_loop: outside loop";
+  char data[1025];
+  while (sock != INVALID_SOCKET) {
+    VLOG(2) << "socket_pipe_loop: loop";
+    bool handled_anything{false};
+    // If we had more than 2 here, should move this out of the loop.
+    fd_set sock_set;
+    FD_ZERO(&sock_set);
+    FD_SET(sock, &sock_set);
+    ts.tv_sec = 0;
+    ts.tv_usec = 100; // 200ms
+    auto rc = select(sock + 1, &sock_set, nullptr, nullptr, &ts);
+    if (rc < 0) {
+      LOG(ERROR) << "select failed";
+      break;
+    } else if (rc == 0) {
+      // loop.
+      VLOG(3) << "socket_pipe_loop: select timed out";
+    }
+
+    if (data_pipe.peek()) {
+      // We got something from the pipe.
+      handled_anything = true;
+      if (const auto o = data_pipe.read(data, 1024)) {
+        if (send(sock, data, o.value(), 0) < 0) {
+          VLOG(1) << "socket_pipe_loop: write to in failed";
+          // TODO(rushfan): Care to check ENOWOULDBLOCK?
+          break;
+        }
+      }
+    }
+    // We got something from the socket!
+    if (FD_ISSET(sock, &sock_set)) {
+      handled_anything = true;
+      VLOG(4) << "FD_ISSET: in";
+      if (auto num_read = recv(sock, data, 1024, 0); num_read > 0) {
+        if (!data_pipe.write(data, num_read)) {
+          LOG(ERROR) << "Failed to write to pipe";
+          // TODO break?
+        }
+      } else {
+        LOG(INFO) << "Remote session closed; read returned 0";
+        sock = INVALID_SOCKET;
+      }
+    }
+    if (!handled_anything) {
+      wwiv::os::sleep_for(milliseconds(200));
+    }
+  }
+  VLOG(1) << "[socket_pipe_loop]: Loop done;";
+}
+
 static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
                        const std::string& working_dir, const std::shared_ptr<NodeManager>& nodes,
                        int node_number, int sock, ConnectionType connection_type,
@@ -197,10 +260,12 @@ static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
     {'P', std::to_string(get_pid())},
 };
 
-  // Reset the socket back to blocking mode
-  VLOG(2) << "Setting blocking mode.";
-  if (!SetBlockingMode(sock)) {
-    LOG(ERROR) << "Failed to reset the socket to blocking mode.";
+  if (sock != INVALID_SOCKET) {
+    // Reset the socket back to blocking mode
+    VLOG(2) << "Setting blocking mode.";
+    if (!SetBlockingMode(sock)) {
+      LOG(ERROR) << "Failed to reset the socket to blocking mode.";
+    }
   }
 
   VLOG(2) << "raw_cmd: " << raw_cmd;
@@ -213,10 +278,17 @@ static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
   return ExecCommandAndWait(wc, cmd, pid, node_number, sock);
 }
 
-static bool launch_node(const Config& config, const wwivd_config_t& wc, const std::string& raw_cmd,
-                        const std::string& working_dir, const std::shared_ptr<NodeManager>& nodes,
+static bool launch_node(const Config& config, const wwivd_config_t& wc, 
+                        wwivd_matrix_entry_t& bbs,
+                        const std::shared_ptr<NodeManager>& nodes,
                         int node_number, int sock, ConnectionType connection_type,
                         const std::string& remote_peer) {
+  const auto& raw_cmd = connection_type == ConnectionType::SSH ? bbs.ssh_cmd : bbs.telnet_cmd;
+  const auto root = config.root_directory();
+  const auto working_dir =
+      bbs.working_directory.empty() ? "" : FilePath(root, bbs.working_directory).string();
+
+  auto saved_socket_handle = sock;
   ScopeExit at_exit([=] {
     closesocket(sock);
     VLOG(2) << "closed socket: " << sock;
@@ -229,7 +301,29 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc, const st
 
   try {
     const auto semaphore_file = SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
-    return launch_cmd(wc, raw_cmd, working_dir, nodes, node_number, sock, connection_type, remote_peer);
+    Pipe data_pipe(node_number, false);
+    Pipe control_pipe(node_number, true);
+    std::thread pipes_thread;
+    if (bbs.data_mode == 'P') {
+      if (!data_pipe.Create()) {
+        LOG(ERROR) << "Failed to create pipe: " << data_pipe.name();
+      }
+      if (!control_pipe.Create()) {
+        LOG(ERROR) << "Failed to create pipe: " << data_pipe.name();
+      }
+      // Spawn named pipes
+      std::thread t(socket_pipe_loop, sock, std::ref(data_pipe), std::ref(control_pipe));
+      std::swap(t, pipes_thread);
+      // Stop places from stomping on this later.
+      sock = INVALID_SOCKET;
+    }
+    bool result = launch_cmd(wc, raw_cmd, working_dir, nodes, node_number, sock, connection_type, remote_peer);
+    if (pipes_thread.joinable()) {
+      // Force a close on the socket to make this terminate.
+      closesocket(saved_socket_handle);
+      pipes_thread.join();
+    }
+    return result;
   } catch (const semaphore_not_acquired& e) {
     LOG(ERROR) << pid << "Unable to create semaphore file: " << sem_path << "; errno: " << errno
                << "; what: " << e.what();
@@ -529,11 +623,8 @@ void ConnectionHandler::HandleConnection() {
     // Telnet or SSH connection.  Find open node number and launch the child.
     auto node = -1;
     if (nodemgr->AcquireNode(node)) {
-      const auto& cmd = connection_type == ConnectionType::SSH ? bbs.ssh_cmd : bbs.telnet_cmd;
       auto current_dir = File::current_directory();
-      const auto root = data.config->root_directory();
-      const auto wd = bbs.working_directory.empty() ? "" : FilePath(root, bbs.working_directory).string();
-      launch_node(*data.config, *data.c, cmd, wd, nodemgr, node, sock, connection_type, result.remote_peer);
+      launch_node(*data.config, *data.c, bbs, nodemgr, node, sock, connection_type, result.remote_peer);
       File::set_current_directory(current_dir);
       VLOG(1) << "Exiting HandleConnection (launch_node)";
     } else {

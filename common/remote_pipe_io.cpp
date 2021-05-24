@@ -52,9 +52,13 @@ RemotePipeIO::RemotePipeIO(unsigned int node_number, bool telnet)
 unsigned int RemotePipeIO::GetHandle() const { return 0; }
 
 bool RemotePipeIO::open() {
+  LOG(INFO) << "RemotePipeIO::open(): " << data_pipe_.name();
   VLOG(2) << "RemotePipeIO::open(): " << data_pipe_.name();
   if (!data_pipe_.Open()) {
     LOG(WARNING) << "Failed to open data pipe: " << data_pipe_.name();
+  }
+  if (!control_pipe_.Open()) {
+    LOG(WARNING) << "Failed to open control pipe: " << control_pipe_.name();
   }
   StartThreads();
 
@@ -104,8 +108,10 @@ unsigned int RemotePipeIO::put(unsigned char ch) {
   }
 
   if (const auto o = data_pipe_.write(reinterpret_cast<char*>(szBuffer), ssize(szBuffer))) {
+    //LOG(INFO) << "Wrote to pipe: " << szBuffer;
     return o.value();
   }
+  LOG(ERROR) << "Writing to pipe failed: " << data_pipe_.name();
   return 0;
 }
 
