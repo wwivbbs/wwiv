@@ -62,6 +62,16 @@ public:
   /** returns the last error code */
   int last_error() const noexcept { return last_error_ ; }
 
+  /** Returns the optional character that will be returned next */
+  std::optional<char> peek();
+
+  [[nodiscard]] bool IsOpen() const noexcept;
+
+  /** Close the pipe */
+  bool Close();
+
+  [[nodiscard]] std::string name() const noexcept;
+
 private:
   std::string pipe_name_;
 

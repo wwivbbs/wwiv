@@ -360,6 +360,7 @@ void RemoteSocketIO::InboundTelnetProc() {
         return;
       }
       if (!socket_avail(socket_, 1)) {
+        os::sleep_for(std::chrono::milliseconds(200));
         continue;
       }
       const auto num_read = recv(socket_, data.get(), size, 0);

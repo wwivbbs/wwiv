@@ -64,7 +64,6 @@
 #include "local_io/keycodes.h"
 #include "local_io/local_io.h"
 // ReSharper disable once CppUnusedIncludeDirective
-// ReSharper disable once CppUnusedIncludeDirective
 #include "bbs/chnedit.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "bbs/uedit.h"
@@ -105,9 +104,13 @@
 #include <unistd.h>
 #endif // _WIN32
 
-#if defined(__OS2__)
-// && defined (_WWIV_USE_TAKE_HANDLES)
+#if defined(__OS2__) && defined (_WWIV_USE_TAKE_HANDLES)
 #include "libcx/handles.h"
+#endif
+
+#if defined(__OS2__) || defined(_WIN32)
+#include "common/remote_pipe_io.h"
+
 #endif
 
 using namespace std::chrono;
@@ -265,10 +268,9 @@ void Application::CreateComm(unsigned int nHandle, unsigned int parent_pid, Comm
 #endif
   } break;
   case CommunicationType::TELNET: {
-    LOG(ERROR) << "Wh00ps";
-#if defined(__OS2__) 
-    //&& defined (_WWIV_USE_TAKE_HANDLES)
-    LIBCX_HANDLE handles[] = {{ LIBCX_HANDLE_FD, 0, nHandle }};
+#if defined(__OS2__) && defined (_WWIV_USE_TAKE_HANDLES)
+    LOG(ERROR) << "Using _WWIV_USE_TAKE_HANDLES";
+    LIBCX_HANDLE handles[] = {{LIBCX_HANDLE_FD, 0, nHandle}};
     wwiv::os::yield();
     wwiv::os::yield();
     wwiv::os::yield();
@@ -278,6 +280,11 @@ void Application::CreateComm(unsigned int nHandle, unsigned int parent_pid, Comm
     wwiv::os::yield();
 #endif
     comm_ = std::make_unique<RemoteSocketIO>(nHandle, true);
+  } break;
+  case CommunicationType::PIPE: {
+#if defined(__OS2__) || defined(_WIN32)
+    comm_ = std::make_unique<RemotePipeIO>(nHandle, true);
+#endif
   } break;
   case CommunicationType::NONE: {
     comm_ = std::make_unique<wwiv::common::NullRemoteIO>(local_io_.get());
@@ -844,7 +851,13 @@ int Application::Run(int argc, char* argv[]) {
   cmdline.add_argument({"run_basic", 's', "Executes a WWIVbasic script", ""});
   cmdline.add_argument({"user_num", 'u', "Pass usernumber <user#> online", "0"});
   cmdline.add_argument(BooleanCommandLineArgument{"version", 'V', "Display version.", false});
-  cmdline.add_argument({"x", 'x', "Someone is logged in with t for telnet or s for ssh.", ""});
+  std::ostringstream xhelp;
+  xhelp << "Someone is logged in with T for telnet";
+#if defined(__OS2__) || defined(_WIN32)
+  xhelp << ", P for pipes";
+#endif
+  xhelp << ", or S for ssh.";
+  cmdline.add_argument({"x", 'x', xhelp.str(), ""});
   cmdline.add_argument(BooleanCommandLineArgument{"no_hangup", 'z',
                                                   "Do not hang up on user when at log off", false});
   VLOG(4) << "Application::Run(): 3";
@@ -891,27 +904,36 @@ int Application::Run(int argc, char* argv[]) {
   auto this_usernum_from_commandline = static_cast<uint16_t>(cmdline.iarg("user_num"));
   if (const auto x = cmdline.sarg("x"); !x.empty()) {
     const auto xarg = to_upper_case_char(x.at(0));
-    if (cmdline.arg("handle").is_default()) {
+    if (cmdline.arg("handle").is_default() && (xarg == 'T' || xarg == 'S')) {
       std::clog << "-h must be specified when using '"
            << "-x" << x << "'" << std::endl;
       return errorlevel_;
     }
-    if (xarg == 'T' || xarg == 'S') {
+    if (xarg == 'T' || xarg == 'S' || xarg == 'P') {
       // Setting a max of 57600 for the BPS value, by default we use 38400
       // as the default value.
       bps = std::min<int>(cmdline.iarg("bps"), 57600);
-      if (xarg == 'S') {
+      switch (xarg) { 
+      case 'S':
         SetCurrentSpeed("SSH");
-      } else {
+        type = CommunicationType::SSH; 
+        break;
+      case 'P':
+        SetCurrentSpeed("TELNET/PIPE");
+        type = CommunicationType::PIPE;
+        break;
+      case 'T':
+      default:
         SetCurrentSpeed("TELNET");
+        type = CommunicationType::TELNET;
+        break;
       }
-      // Set it false until we call LiLo
+      // Set it false until we call liLo
       user_already_on_ = true;
       ooneuser = true;
       sess().using_modem(false);
       sess().incom(true);
       sess().outcom(false);
-      type = (xarg == 'S') ? CommunicationType::SSH : CommunicationType::TELNET;
     } else {
       std::clog << "Invalid Command line argument given '" << "-x" << x << "'" << std::endl;
       return errorlevel_;
@@ -972,7 +994,9 @@ int Application::Run(int argc, char* argv[]) {
 
   auto remote_opened = true;
   // If we are telnet...
-  if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
+  if (type == CommunicationType::TELNET || 
+      type == CommunicationType::SSH || 
+      type == CommunicationType::PIPE) {
     sess().ok_modem_stuff(true);
     remote_opened = bout.remoteIO()->open();
   }

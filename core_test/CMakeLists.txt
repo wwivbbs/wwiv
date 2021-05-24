@@ -42,13 +42,13 @@ target_link_libraries(core_tests core_fixtures core gtest)
 gtest_discover_tests(core_tests)
 
 if(WIN32)
-  target_sources(core_tests
+  target_sources(core_tests PRIVATE
   "pipe_test.cpp"
   )
 endif()
 
 if(OS2)
-  target_sources(core_tests
+  target_sources(core_tests PRIVATE
   "pipe_test.cpp"
   )
   target_link_libraries(core_tests libcx)

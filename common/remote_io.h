@@ -29,7 +29,8 @@ namespace wwiv::common {
   NONE,
   TELNET,
   SSH,
-  STDIO
+  STDIO,
+  PIPE
 };
 
 /** Information about the remote session. */

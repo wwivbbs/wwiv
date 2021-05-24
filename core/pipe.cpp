@@ -34,10 +34,30 @@ bool Pipe::Create() {
   return handle_ != Pipe::PIPE_INVALID_HANDLE_VALUE;
 }
 
-Pipe::~Pipe() {
-  close_pipe(handle_);
+bool Pipe::Close() {
+  if (!close_pipe(handle_)) {
+    return false;
+  }
   handle_ = Pipe::PIPE_INVALID_HANDLE_VALUE;
+  return true;
 }
+
+
+Pipe::~Pipe() {
+  if (!IsOpen()) {
+    return;
+  }
+  Close();
+}
+
+bool Pipe::IsOpen() const noexcept { 
+  return handle_ != Pipe::PIPE_INVALID_HANDLE_VALUE;
+}
+
+std::string Pipe::name() const noexcept { 
+  return pipe_name_;
+}
+
 
 // Implemented in pipe_PLATFORM.cpp
 // std::optional<int> Pipe::write(const char* data, int size);

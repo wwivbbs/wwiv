@@ -123,4 +123,13 @@ std::optional<int> Pipe::read(char* data, int size) {
   return std::nullopt;
 }
 
+std::optional<char> Pipe::peek() {
+  char ch;
+  DWORD num_read, num_avail, num_leftmsg;
+  if (PeekNamedPipe(handle_, &ch, 1, &num_read, &num_avail, &num_leftmsg)) {
+    return {ch};
+  }
+  return std::nullopt;
+}
+
 }

@@ -25,6 +25,7 @@ set(COMMON_SOURCES
  "printfile.cpp"
  "quote.cpp"
  "remote_io.cpp"
+ "remote_pipe_io.cpp"
  "remote_socket_io.cpp"
  "value/bbsvalueprovider.cpp"
  "value/uservalueprovider.cpp"

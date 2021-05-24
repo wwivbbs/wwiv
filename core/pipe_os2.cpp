@@ -115,6 +115,18 @@ bool Pipe::Open() {
   return false;
 }
 
+std::optional<char> Pipe::peek() {
+  char ch;
+  ULONG num_read, bytes_avail, pipe_state;
+  PAVAILDATA num_avail;
+
+  if (PeekNamedPipe(handle_, &ch, 1, &num_read, &num_avail, &bytes_avail, &pipe_state)) {
+    // TODO check if state is 4 (NP_STATE_CLOSING)?
+    return {ch};
+  }
+  return std::nullopt;
+}
+
 
 
 
