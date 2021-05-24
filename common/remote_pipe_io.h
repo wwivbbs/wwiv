@@ -60,7 +60,7 @@ class RemotePipeIO final : public RemoteIO {
 
 private:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);
-  void InboundTelnetProc();
+  void PipeLoop();
 
   std::queue<char> queue_;
   mutable std::mutex mu_;

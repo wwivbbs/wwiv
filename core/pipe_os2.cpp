@@ -58,7 +58,7 @@ std::string pipe_name(const std::string_view part) {
   return fmt::format("\\PIPE\\{}", part); 
 }
 
-bool close_pipe(Pipe::PIPE_HANDLE h) {
+bool close_pipe(Pipe::PIPE_HANDLE h, bool server) {
   VLOG(2) << "close_pipe(" << h << ")";
   return DosDisConnectNPipe(h) == NO_ERROR;
 }

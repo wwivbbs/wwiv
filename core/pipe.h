@@ -74,18 +74,22 @@ public:
 
   [[nodiscard]] std::string name() const noexcept;
 
+  /** returns true if this end is the server of the pipe */
+  [[nodiscard]] bool IsServer() const noexcept { return server_; }
+ 
 private:
   std::string pipe_name_;
 
   PIPE_HANDLE handle_{PIPE_INVALID_HANDLE_VALUE};
   int last_error_{0};
+  bool server_{false};
 };
 
 // Platform specific bits
 Pipe::PIPE_HANDLE create_pipe(const std::string& name);
 bool connect_pipe(Pipe::PIPE_HANDLE h);
 std::string pipe_name(const std::string_view part);
-bool close_pipe(Pipe::PIPE_HANDLE h);
+bool close_pipe(Pipe::PIPE_HANDLE h, bool server);
 
 }
 

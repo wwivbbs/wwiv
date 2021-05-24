@@ -54,10 +54,14 @@ std::string pipe_name(const std::string_view part) {
   return fmt::format("\\\\.\\PIPE\\{}", part);
 }
 
-bool close_pipe(Pipe::PIPE_HANDLE h) {
+bool close_pipe(Pipe::PIPE_HANDLE h, bool server) {
   VLOG(2) << "close_pipe(" << h << ")";
   if (h == INVALID_HANDLE_VALUE) {
     return true;
+  }
+  if (server) {
+    VLOG(2) << "Flushing File Buffers before shutdown.";
+    FlushFileBuffers(h);
   }
   DisconnectNamedPipe(reinterpret_cast<HANDLE>(h));
   CloseHandle(reinterpret_cast<HANDLE>(h));

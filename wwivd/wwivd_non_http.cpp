@@ -188,7 +188,8 @@ static bool telnet_to(const std::string& host_port, int /*node_number*/, int soc
 static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
   LOG(INFO) << "Starting socket_pipe_loop";
   if (!data_pipe.WaitForClient(std::chrono::seconds(10))) {
-    LOG(WARNING) << "Failed to connect bbs end of data pipe: " << data_pipe.name();
+    LOG(ERROR) << "Failed to connect bbs end of data pipe: " << data_pipe.name();
+    return;
   }
   if (!control_pipe.WaitForClient(std::chrono::seconds(10))) {
     LOG(WARNING) << "Failed to connect bbs end of control pipe: " << control_pipe.name();
@@ -198,7 +199,7 @@ static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
   VLOG(2) << "socket_pipe_loop: outside loop";
   char data[1025];
   while (sock != INVALID_SOCKET) {
-    VLOG(2) << "socket_pipe_loop: loop";
+    VLOG(4) << "socket_pipe_loop: loop";
     bool handled_anything{false};
     // If we had more than 2 here, should move this out of the loop.
     fd_set sock_set;
@@ -223,6 +224,8 @@ static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
           VLOG(1) << "socket_pipe_loop: write to in failed";
           // TODO(rushfan): Care to check ENOWOULDBLOCK?
           break;
+        } else {
+          VLOG(2) << "Wrote # bytes to sock: " << o.value();
         }
       }
     }

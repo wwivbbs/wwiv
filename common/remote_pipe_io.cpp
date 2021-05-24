@@ -232,11 +232,8 @@ void RemotePipeIO::StopThreads() {
   }
   os::yield();
 
-  // Wait for read thread to exit.
-  if (!read_thread_.joinable()) {
-    LOG(ERROR) << "read_thread_ is not JOINABLE.  Should not happen.";
-  }
   try {
+    // Wait for read thread to exit.
     if (read_thread_.joinable()) {
       read_thread_.join();
     }
@@ -253,9 +250,9 @@ void RemotePipeIO::StartThreads() {
     }
     threads_started_ = true;
   }
-
+  
   stop_.store(false);
-  read_thread_ = std::thread(&RemotePipeIO::InboundTelnetProc, this);
+  read_thread_ = std::thread(&RemotePipeIO::PipeLoop, this);
 }
 
 RemotePipeIO::~RemotePipeIO() {
@@ -267,7 +264,7 @@ RemotePipeIO::~RemotePipeIO() {
 }
 
 
-void RemotePipeIO::InboundTelnetProc() {
+void RemotePipeIO::PipeLoop() {
   constexpr size_t size = 4 * 1024;
   const auto data = std::make_unique<char[]>(size);
   try {
@@ -289,7 +286,7 @@ void RemotePipeIO::InboundTelnetProc() {
       AddStringToInputBuffer(0, num_read, data.get());
     }
   } catch (const std::exception& e) {
-    LOG(ERROR) << "InboundTelnetProc exiting. Caught socket_error: " << e.what();
+    LOG(ERROR) << "PipeLoop exiting. Caught socket_error: " << e.what();
     data_pipe_.Close();
   }
 }
