@@ -283,7 +283,8 @@ void Application::CreateComm(unsigned int nHandle, unsigned int parent_pid, Comm
   } break;
   case CommunicationType::PIPE: {
 #if defined(__OS2__) || defined(_WIN32)
-    comm_ = std::make_unique<RemotePipeIO>(nHandle, true);
+    const auto node_num = sess().instance_number();
+    comm_ = std::make_unique<RemotePipeIO>(node_num, true);
 #endif
   } break;
   case CommunicationType::NONE: {
