@@ -67,8 +67,9 @@ bool close_pipe(Pipe::PIPE_HANDLE h, bool server) {
 /** returns the number of bytes written on success */
 std::optional<int> Pipe::write(const char* data, int size) {
   unsigned long num_written;
+  VLOG(2) << "Pipe::Write: " << std::string(data, size);
   auto rc = DosWrite(handle_, data, size, &num_written);
-  VLOG(4) << "Wrote bytes to pipe: " << num_written;
+  VLOG(2) << "Wrote bytes to pipe: " << num_written;
   if (rc == NO_ERROR) {
     return {num_written};
   }
@@ -108,7 +109,7 @@ bool Pipe::Open() {
       handle_ = h;
       return true;
     }
-    LOG(WARNING) << "Could not open pipe. Error: " << rc;
+    LOG(WARNING) << "Could not open pipe: '" << pipe_name_ << "'; Error: " << rc;
     DosSleep(200);
   }
   LOG(WARNING) << "Pipe::Open: failed to open: " << pipe_name_;
@@ -117,12 +118,19 @@ bool Pipe::Open() {
 
 std::optional<char> Pipe::peek() {
   char ch;
-  ULONG num_read, bytes_avail, pipe_state;
-  PAVAILDATA num_avail;
+  ULONG num_read, pipe_state;
+  AVAILDATA num_avail;
 
-  if (PeekNamedPipe(handle_, &ch, 1, &num_read, &num_avail, &bytes_avail, &pipe_state)) {
+  VLOG(3) << "Peek: " << ch;
+  if (auto rc = DosPeekNPipe(handle_, &ch, 1, &num_read, &num_avail, &pipe_state); rc  == NO_ERROR) {
     // TODO check if state is 4 (NP_STATE_CLOSING)?
-    return {ch};
+    if (num_read > 0) {
+      return {ch};
+    } else {
+      VLOG(4) << "Peek: PipeState: " << pipe_state;
+    }
+  } else {
+    VLOG(1) << "Peek error: " << rc;
   }
   return std::nullopt;
 }
