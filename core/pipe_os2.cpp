@@ -59,8 +59,13 @@ std::string pipe_name(const std::string_view part) {
 }
 
 bool close_pipe(Pipe::PIPE_HANDLE h, bool server) {
-  VLOG(2) << "close_pipe(" << h << ")";
-  return DosDisConnectNPipe(h) == NO_ERROR;
+  if (server) {
+    auto rc = DosDisConnectNPipe(h) == NO_ERROR;
+    VLOG(2) << "close_pipe(" << h << "); Disconnect: rc: " << rc;
+  }
+  auto rc = DosClose(h);
+  VLOG(2) << "close_pipe(" << h << "); DosClose: rc: " << rc;
+  return rc == NO_ERROR;
 }
 
 
@@ -93,7 +98,7 @@ std::optional<int> Pipe::read(char* data, int size) {
 
 bool Pipe::Open() {
   VLOG(2) << "Pipe::Open: " << pipe_name_;
-  for (int i=0; i<5*10; i++) { // 10s
+  for (int i=0; i<10; i++) { // 10s
     HFILE h;
     ULONG ulAction;
     auto rc = DosOpen((const unsigned char*)pipe_name_.c_str(), 
@@ -110,7 +115,7 @@ bool Pipe::Open() {
       return true;
     }
     LOG(WARNING) << "Could not open pipe: '" << pipe_name_ << "'; Error: " << rc;
-    DosSleep(200);
+    DosSleep(1000);
   }
   LOG(WARNING) << "Pipe::Open: failed to open: " << pipe_name_;
   return false;
@@ -123,7 +128,6 @@ std::optional<char> Pipe::peek() {
 
   VLOG(3) << "Peek: " << ch;
   if (auto rc = DosPeekNPipe(handle_, &ch, 1, &num_read, &num_avail, &pipe_state); rc  == NO_ERROR) {
-    // TODO check if state is 4 (NP_STATE_CLOSING)?
     if (num_read > 0) {
       return {ch};
     } else {
@@ -131,6 +135,14 @@ std::optional<char> Pipe::peek() {
     }
   } else {
     VLOG(1) << "Peek error: " << rc;
+  }
+  if (pipe_state == 4) {
+    // NP_STATE_CLOSING
+    VLOG(1) << "Pipe in NP_STATE_CLOSING; Closing Pipe.";
+    Close();
+  } else if (pipe_state != 3) {
+    // 3 = connected
+    VLOG(1) << "Pipe state != 3: == " << pipe_state;
   }
   return std::nullopt;
 }

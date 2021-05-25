@@ -186,14 +186,23 @@ static bool telnet_to(const std::string& host_port, int /*node_number*/, int soc
   return true;
 }
 
-static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
-  LOG(INFO) << "Starting socket_pipe_loop";
+static bool socket_pipe_loop_one(int sock, Pipe& data_pipe, Pipe& control_pipe) {
+  LOG(INFO) << "Starting socket_pipe_loop_one";
+  if (!data_pipe.Create()) {
+    LOG(ERROR) << "Failed to create pipe: " << data_pipe.name();
+    return false;
+  }
+  if (!control_pipe.Create()) {
+    LOG(ERROR) << "Failed to create pipe: " << data_pipe.name();
+    //return false;
+  }
   if (!data_pipe.WaitForClient(std::chrono::seconds(10))) {
     LOG(ERROR) << "Failed to connect bbs end of data pipe: " << data_pipe.name();
-    return;
+    return false;
   }
-  if (!control_pipe.WaitForClient(std::chrono::seconds(10))) {
+  if (!control_pipe.WaitForClient(std::chrono::seconds(5))) {
     LOG(WARNING) << "Failed to connect bbs end of control pipe: " << control_pipe.name();
+    //return false;
   }
 
   struct timeval ts {};
@@ -212,22 +221,29 @@ static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
     auto rc = select(sock + 1, &sock_set, nullptr, nullptr, &ts);
     if (rc < 0) {
       LOG(ERROR) << "select failed; socket: " << sock << "; errno: " << errno;
-      break;
+      return true;
     } else if (rc == 0) {
       // loop.
       VLOG(3) << "socket_pipe_loop: select timed out";
     }
 
+    if (!data_pipe.IsOpen()) {
+      VLOG(1) << "Data Pipe was closed; exiting.";
+      return true;
+    }
+
     if (data_pipe.peek()) {
       VLOG(3) << "Pipe has something";
-      // We got something from the pipe.
-      handled_anything = true;
       if (const auto o = data_pipe.read(data, 1024)) {
+	// We got something from the pipe.
+	handled_anything = true;
         if (send(sock, data, o.value(), 0) < 0) {
           VLOG(1) << "socket_pipe_loop: write to in failed";
           // TODO(rushfan): Care to check ENOWOULDBLOCK?
-          break;
+	  return true;
         }
+      } else {
+	VLOG(1) << "ERROR: read failed after peek was true.";
       }
     }
     // We got something from the socket!
@@ -237,11 +253,11 @@ static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
       if (auto num_read = recv(sock, data, 1024, 0); num_read > 0) {
         if (!data_pipe.write(data, num_read)) {
           LOG(ERROR) << "Failed to write to pipe";
-          // TODO break?
+	  return true; // recent change
         }
       } else {
         LOG(INFO) << "Remote session closed; read returned 0";
-        sock = INVALID_SOCKET;
+	return true;
       }
     }
     if (!handled_anything) {
@@ -249,6 +265,14 @@ static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
     }
   }
   VLOG(1) << "[socket_pipe_loop]: Loop done;";
+}
+
+static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
+  VLOG(1) << "socket_pipe_loop";
+  bool keep_going;
+  do {
+    keep_going = socket_pipe_loop_one(sock, data_pipe, control_pipe);
+  } while (keep_going);
 }
 
 static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
@@ -309,12 +333,6 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
     auto real_sock = sock;
     std::thread pipes_thread;
     if (bbs.data_mode == 'P') {
-      if (!data_pipe.Create()) {
-        LOG(ERROR) << "Failed to create pipe: " << data_pipe.name();
-      }
-      if (!control_pipe.Create()) {
-        LOG(ERROR) << "Failed to create pipe: " << data_pipe.name();
-      }
       // Spawn named pipes
 #ifdef _WIN32
       VLOG(1) << "Spawning socket_pipe_loop. sock: " << sock;
@@ -336,7 +354,6 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
       pipes_thread.join();
       closesocket(real_sock);
     }
-
 #endif
     return result;
   } catch (const semaphore_not_acquired& e) {

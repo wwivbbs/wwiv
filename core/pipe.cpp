@@ -40,11 +40,9 @@ bool Pipe::Create() {
 }
 
 bool Pipe::Close() {
-  if (!close_pipe(handle_, server_)) {
-    return false;
-  }
+  auto ret = close_pipe(handle_, server_);
   handle_ = Pipe::PIPE_INVALID_HANDLE_VALUE;
-  return true;
+  return ret;
 }
 
 

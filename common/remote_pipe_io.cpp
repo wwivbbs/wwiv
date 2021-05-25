@@ -89,10 +89,8 @@ bool RemotePipeIO::open() {
 }
 
 void RemotePipeIO::close(bool temporary) {
-  if (!temporary) {
-    data_pipe_.Close();
-    control_pipe_.Close();
-  }
+  data_pipe_.Close();
+  control_pipe_.Close();
   StopThreads();
 }
 
