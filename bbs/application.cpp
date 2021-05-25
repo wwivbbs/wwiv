@@ -952,6 +952,13 @@ int Application::Run(int argc, char* argv[]) {
   if (isatty(fileno(stdin))) {
 #if defined(_WIN32) && !defined(WWIV_WIN32_CURSES_IO)
     reset_local_io(new Win32ConsoleIO());
+#elif defined(__OS2__)
+    // Like Win32, OS/2 has a real local console attached when a remote session is spawned.
+    // Let's use the same curses IO as we do locally.
+    wwiv::local::ui::CursesIO::Init(fmt::sprintf("WWIV BBS %s", full_version()));
+    reset_local_io(new CursesLocalIO(wwiv::local::ui::curses_out->GetMaxY(), 
+				     wwiv::local::ui::curses_out->GetMaxX()));
+
 #else
     if (type == CommunicationType::NONE) {
       // We only want the localIO if we ran this locally at a terminal

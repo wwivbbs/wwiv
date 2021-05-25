@@ -219,7 +219,7 @@ static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
     }
 
     if (data_pipe.peek()) {
-      VLOG(2) << "Pipe has something";
+      VLOG(3) << "Pipe has something";
       // We got something from the pipe.
       handled_anything = true;
       if (const auto o = data_pipe.read(data, 1024)) {
@@ -227,8 +227,6 @@ static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
           VLOG(1) << "socket_pipe_loop: write to in failed";
           // TODO(rushfan): Care to check ENOWOULDBLOCK?
           break;
-        } else {
-          VLOG(2) << "Wrote # bytes to sock: " << o.value();
         }
       }
     }

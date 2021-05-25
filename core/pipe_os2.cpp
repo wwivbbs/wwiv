@@ -67,9 +67,9 @@ bool close_pipe(Pipe::PIPE_HANDLE h, bool server) {
 /** returns the number of bytes written on success */
 std::optional<int> Pipe::write(const char* data, int size) {
   unsigned long num_written;
-  VLOG(2) << "Pipe::Write: " << std::string(data, size);
+  VLOG(4) << "Pipe::Write: " << std::string(data, size);
   auto rc = DosWrite(handle_, data, size, &num_written);
-  VLOG(2) << "Wrote bytes to pipe: " << num_written;
+  VLOG(4) << "Wrote bytes to pipe: " << num_written;
   if (rc == NO_ERROR) {
     return {num_written};
   }
