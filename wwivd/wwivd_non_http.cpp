@@ -352,7 +352,7 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
     bool result = launch_cmd(wc, raw_cmd, working_dir, nodes, node_number, sock, connection_type, remote_peer);
     VLOG(1) << "after launch_cmd";
 #if defined(WWIV_USE_PIPES)
-#if defined(__OS2__) && 
+#if defined(__OS2__)
     if (bbs.data_mode == 'P') {
       socket_pipe_loop(real_sock, data_pipe, control_pipe);
       // Force a close on the socket to make this terminate.
