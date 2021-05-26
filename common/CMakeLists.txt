@@ -25,7 +25,6 @@ set(COMMON_SOURCES
  "printfile.cpp"
  "quote.cpp"
  "remote_io.cpp"
- "remote_pipe_io.cpp"
  "remote_socket_io.cpp"
  "value/bbsvalueprovider.cpp"
  "value/uservalueprovider.cpp"
@@ -44,6 +43,10 @@ target_link_libraries(
   core 
   sdk 
 )
+
+if (OS2 OR WIN32)
+  target_sources(common PRIVATE "remote_pipe_io.cpp")
+endif()
 
 set_max_warnings()
 

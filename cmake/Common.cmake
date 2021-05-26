@@ -12,6 +12,7 @@ option(WWIV_BUILD_TESTS "Build WWIV test programs" ON)
 option(WWIV_SSH_CRYPTLIB "Include support for SSH using Cryptlib" ON)
 option(WWIV_ZIP_INSTALL_FILES "Create the zip files for data, gfiles, etc" ON)
 option(WWIV_INSTALL "Create install packages for both zip files and binaries." ON)
+option(WWIV_USE_PIPES "Enable Named Pipes support for WWIV." ON)
 
 ############################################################################### 
 #
@@ -110,6 +111,10 @@ elseif (WIN32)
     add_definitions(/D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
   endif(MSVC)
 endif (UNIX)
+
+if(WWIV_USE_PIPES AND (WIN32 OR OS2))
+  add_definitions(/DWWIV_USE_PIPES)
+endif()
 
 if( NOT CMAKE_BUILD_TYPE )
   set( CMAKE_BUILD_TYPE "Debug" )

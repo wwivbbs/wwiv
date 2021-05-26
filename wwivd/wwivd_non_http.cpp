@@ -21,7 +21,6 @@
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
-#include "core/pipe.h"
 #include "core/scope_exit.h"
 #include "core/semaphore_file.h"
 #include "core/socket_connection.h"
@@ -41,6 +40,10 @@
 #include <thread>
 #include <utility>
 #include <vector>
+
+#ifdef WWIV_USE_PIPES
+#include "core/pipe.h"
+#endif
 
 namespace wwiv::wwivd {
 
@@ -186,6 +189,7 @@ static bool telnet_to(const std::string& host_port, int /*node_number*/, int soc
   return true;
 }
 
+#if defined(WWIV_USE_PIPES)
 static bool socket_pipe_loop_one(int sock, Pipe& data_pipe, Pipe& control_pipe) {
   LOG(INFO) << "Starting socket_pipe_loop_one";
   if (!data_pipe.Create()) {
@@ -275,6 +279,7 @@ static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
     keep_going = socket_pipe_loop_one(sock, data_pipe, control_pipe);
   } while (keep_going);
 }
+#endif
 
 static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
                        const std::string& working_dir, const std::shared_ptr<NodeManager>& nodes,
@@ -329,13 +334,15 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
 
   try {
     const auto semaphore_file = SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
+#ifdef WWIV_USE_PIPES
     Pipe data_pipe(node_number, false);
     Pipe control_pipe(node_number, true);
-    auto real_sock = sock;
+#endif    
+    [[maybe_unused]] auto real_sock = sock;
     std::thread pipes_thread;
     if (bbs.data_mode == 'P') {
       // Spawn named pipes
-#ifdef _WIN32
+#if defined(_WIN32) && defined(WWIV_USE_PIPES)
       VLOG(1) << "Spawning socket_pipe_loop. sock: " << sock;
       std::thread t(socket_pipe_loop, sock, std::ref(data_pipe), std::ref(control_pipe));
       std::swap(t, pipes_thread);
@@ -344,17 +351,19 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
     }
     bool result = launch_cmd(wc, raw_cmd, working_dir, nodes, node_number, sock, connection_type, remote_peer);
     VLOG(1) << "after launch_cmd";
-#ifdef __OS2__
+#if defined(WWIV_USE_PIPES)
+#if defined(__OS2__) && 
     if (bbs.data_mode == 'P') {
       socket_pipe_loop(real_sock, data_pipe, control_pipe);
       // Force a close on the socket to make this terminate.
       closesocket(real_sock);
     }
-#elif defined(_WIN32)
+#elif defined(_WIN32) 
     if (pipes_thread.joinable()) {
       pipes_thread.join();
       closesocket(real_sock);
     }
+#endif
 #endif
     return result;
   } catch (const semaphore_not_acquired& e) {
