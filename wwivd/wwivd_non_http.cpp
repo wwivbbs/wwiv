@@ -235,15 +235,15 @@ static bool socket_pipe_loop_one(int sock, Pipe& data_pipe, Pipe& control_pipe) 
     if (data_pipe.peek()) {
       VLOG(3) << "Pipe has something";
       if (const auto o = data_pipe.read(data, 1024)) {
-	// We got something from the pipe.
-	handled_anything = true;
+	      // We got something from the pipe.
+	      handled_anything = true;
         if (send(sock, data, o.value(), 0) < 0) {
           VLOG(1) << "socket_pipe_loop: write to in failed";
           // TODO(rushfan): Care to check ENOWOULDBLOCK?
-	  return true;
+	        return true;
         }
       } else {
-	VLOG(1) << "ERROR: read failed after peek was true.";
+	      VLOG(1) << "ERROR: read failed after peek was true.";
       }
     }
     // We got something from the socket!
@@ -253,11 +253,11 @@ static bool socket_pipe_loop_one(int sock, Pipe& data_pipe, Pipe& control_pipe) 
       if (auto num_read = recv(sock, data, 1024, 0); num_read > 0) {
         if (!data_pipe.write(data, num_read)) {
           LOG(ERROR) << "Failed to write to pipe";
-	  return true; // recent change
+	        return true; // recent change
         }
       } else {
         LOG(INFO) << "Remote session closed; read returned 0";
-	return true;
+	      return true;
       }
     }
     if (!handled_anything) {
@@ -265,6 +265,7 @@ static bool socket_pipe_loop_one(int sock, Pipe& data_pipe, Pipe& control_pipe) 
     }
   }
   VLOG(1) << "[socket_pipe_loop]: Loop done;";
+  return true;
 }
 
 static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
