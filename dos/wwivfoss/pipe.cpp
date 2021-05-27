@@ -135,15 +135,18 @@ int DosPeekNmPipe(int handle) {
 
 Pipe::Pipe(const char* fn, int timeout_secs) __far {
   next_char_ = -1;
+  handle_ = -1;
   control_handle_ = -1;
 
   int h = -1;
   clock_t start_time = clock();
+  log("Pipe::Pipe");
   while (handle_ == -1 && ((clock() - start_time) / CLOCKS_PER_SEC) < timeout_secs) {
     if (_dos_open(fn, _O_RDWR, &h) != 0) {
       log("ERROR: (Pipe) Unable to open pipe: '%s'", fn);
       handle_ = -1;
-      sleep(100);
+      // Sleep for 1/10 of total time in ms (so time * 10 / 1000)
+      sleep(timeout_secs * 100);
     } else {
       handle_ = h;
       num_writes_ = 0;
@@ -154,7 +157,13 @@ Pipe::Pipe(const char* fn, int timeout_secs) __far {
       break;
     }
   }
+
+  if (handle_ == -1) {
+    log("Unable to open data handle");
+    return;
+  }
   os_yield();
+  log("Opened data pipe with handle: [%d]", handle_);
 
   char control_fn[81];
   sprintf(control_fn, "%sC", fn);
@@ -166,9 +175,13 @@ Pipe::Pipe(const char* fn, int timeout_secs) __far {
       os_yield();
       SetPipeNonBlocking(control_handle_);
       break;
+    } else {
+      log("ERROR: (Pipe) Unable to open pipe: '%s'", control_fn);
     }
-    sleep(100);
+    // Sleep for 1/10 of total time in ms (so time * 10 / 1000)
+    sleep(timeout_secs * 100);
   }
+  log("Opened control pipe with handle: [%d]", control_handle_);
 }
 
 /** Send a control code to the remote side */
