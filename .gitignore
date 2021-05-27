@@ -8,6 +8,7 @@
 *.VC.opendb
 *.VC.db
 .vs
+*.COD
 
 # Build results
 [Dd]ebug/
