@@ -4,12 +4,10 @@
 #include "pipe.h"
 #include "util.h"
 
-#include <conio.h>
 #include <ctype.h>
 #include <dos.h>
 #include <fcntl.h>
 #include <io.h>
-#include <iostream.h>
 #include <malloc.h>
 #include <stdarg.h>
 #include <stddef.h>

@@ -7,7 +7,6 @@
 #include <dos.h>
 #include <fcntl.h>
 #include <io.h>
-#include <iostream.h>
 #include <process.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -26,23 +25,26 @@ public:
 };
 
 static void show_help() {
-  cerr << "Usage: \r\n";
-  cerr << "  WWIVFOSS [args] COMMANDLINE\r\n\r\n";
-  cerr << "Example: \r\n";
-  cerr << "  WWIVFOSS -N2 BRE.BAT 2 Z:\\CHAIN.TXT\r\n\r\n";
-  cerr << "Commands: \r\n";
-  cerr << "  -N#   Node Number for this instance (1-99) [REQUIRED]" << endl;
-  cerr << "  -P#   Port Number for this fossil instance (unset means any)\r\n";
-  cerr << "  -?    Help - displays this information\r\n";
-  cerr << endl;
+  fprintf(stderr,
+    "Usage: \r\n"
+    "  WWIVFOSS [args] COMMANDLINE\r\n\r\n"
+    "Example: \r\n"
+    "  WWIVFOSS -N2 BRE.BAT 2 Z:\\CHAIN.TXT\r\n\r\n"
+    "Commands: \r\n"
+    "  -N#   Node Number for this instance (1-99) [REQUIRED]\r\n"
+    "  -P#   Port Number for this fossil instance (unset means any)\r\n"
+    "  -?    Help - displays this information\r\n"
+    "\r\n");
 }
 
 extern char __near* fossil_info_ident;
 
 int main(int argc, char** argv) {
-  cerr << "WWIVFOSS: " << ((char __near *)fossil_info_ident) << "\r\n";
-  cerr << "          Copyright (c) 2021, WWIV Software Services\r\n";
-  cerr << "          Built: " << __DATE__ << ", " << __TIME__ << "\r\n" << endl;
+  fprintf(stderr, "WWIVFOSS: ");
+  fprintf(stderr, ((char __near*)fossil_info_ident));
+  fprintf(stderr, "\r\n"
+      "          Copyright (c) 2021, WWIV Software Services\r\n"
+      "          Built: " __DATE__ ", " __TIME__ "\r\n\r\n");
 
   App app;
   int had_positional = 0;
@@ -50,12 +52,12 @@ int main(int argc, char** argv) {
     const char* arg = argv[i];
     const int alen = strlen(arg);
     if (!alen) {
-      cerr << "WARNING: Empty arg at position: " << i <<  endl;
+      log("WARNING: Empty arg at position: %d", i);
       continue;
     }
     if (!had_positional && (arg[0] == '-' || arg[0] == '/')) {
       if (alen < 2) {
-	      cerr << "Invalid argument: " << arg << endl;
+	      log("Invalid argument: '%s'", arg);
 	      continue;
       }
       // Process switch
@@ -86,20 +88,20 @@ int main(int argc, char** argv) {
 
   // Args parsed, do something.
   if (app.opts.node_number < 1) {
-    cerr << "Node number not specified.  Exiting.\r\n";
+    fprintf(stderr, "Node number not specified.  Exiting.\r\n");
     show_help();
     return 1;
   }
 
   if (!enable_fossil(&app.opts)) {
-    cerr << "Failed to initialize FOSSIL support." << endl;
+    log("Failed to initialize FOSSIL support.");
     return 2;
   }
   int ret = _spawnvp(_P_WAIT, app.cmdline.at(0), 
                      (const char**) app.cmdline.items());
   disable_fossil();
   if (ret < 0) {
-    cerr << "Error spawning process. " << endl;
+    log("Error spawning process. ");
     return 3;
   }
   return 0;
