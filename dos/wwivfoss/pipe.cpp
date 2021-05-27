@@ -13,8 +13,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#pragma warning(disable : 4505)
-
 
 // See http://www.delorie.com/djgpp/doc/rbinter/ix/21/5F.html
 /*
@@ -136,22 +134,29 @@ Pipe::Pipe(const char* fn) __far {
   next_char_ = -1;
   control_handle_ = -1;
 
-  int h;
-  if (_dos_open(fn, _O_RDWR, &h) != 0) {
-    log("ERROR: (Pipe) Unable to open pipe: '%s'", fn);
-    handle_ = -1;
-  } else {
-    handle_ = h;
-    num_writes_ = 0;
-    num_errors_ = 0;
-    bytes_written_ = 0;
-    os_yield();
-    SetPipeNonBlocking(handle_);
+  int count = 0;
+  int h = -1;
+  while (handle_ == -1 && count++ < 100 ) {
+    if (_dos_open(fn, _O_RDWR, &h) != 0) {
+      log("ERROR: (Pipe) Unable to open pipe: '%s'", fn);
+      handle_ = -1;
+      os_yield();
+      sleep(100);
+    } else {
+      handle_ = h;
+      num_writes_ = 0;
+      num_errors_ = 0;
+      bytes_written_ = 0;
+      os_yield();
+      SetPipeNonBlocking(handle_);
+      break;
+    }
   }
+  os_yield();
 
   char control_fn[81];
   sprintf(control_fn, "%sC", fn);
-  int count = 0;
+  count = 0;
   h = -1;
   while (control_handle_ == -1 && count++ < 100 ) {
     if (_dos_open(control_fn, _O_RDWR, &h) == 0) {
@@ -183,21 +188,24 @@ char Pipe::control_code() __far {
 
 
 void Pipe::close() __far {
+  log("Pipe::close()");
   if (handle_ != -1) {
+    log("Pipe::close(): closing data");
     _dos_close(handle_);
     handle_ = -1;
   }
 
   if (control_handle_ != -1) {
+    log("Pipe::close(): closing control");
     _dos_close(control_handle_);
     control_handle_ = -1;
   }
+  os_yield();
 }
 
 Pipe::~Pipe() __far {
-  if (!is_open()) {
-    close();
-  }
+  log("Pipe::~Pipe()");
+  close();
 }
 
 int Pipe::is_open() __far { 
