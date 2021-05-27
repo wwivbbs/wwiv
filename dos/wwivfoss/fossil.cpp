@@ -7,6 +7,7 @@
 #include <dos.h>
 #include <fcntl.h>
 #include <io.h>
+#include <iostream.h>
 #include <malloc.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -232,6 +233,19 @@ void __interrupt __far int14_sig() {
 }
 
 void enable_fossil(int nodenum, int comport) {
+  char pipename[200];
+  sprintf(pipename, "\\PIPE\\WWIV%d", nodenum);
+  pipe = new __far Pipe(pipename);
+  if (!pipe->is_open()) {
+    log("Unable to open FOSSIL log: wwivfoss.log");
+  } else {
+    log("Pipe Opened");
+  }
+  // This seems to make it work consistently with the test app.
+  os_yield();
+  // pipe_handle is used in the interrupt handler.
+  pipe_handle = pipe->handle();
+
   old_int14 = _dos_getvect(0x14);
 
   for (int i=0; i<32; i++) {
@@ -259,25 +273,12 @@ void enable_fossil(int nodenum, int comport) {
   _dos_setvect(0x14, (void (__interrupt __far *)()) int14_sig);
   _enable();
 
-  log("sig_addr=%p:%p, handler_addr=%p:%p diff=%d/%x", FP_SEG(sig_addr), FP_OFF(sig_addr), 
-      FP_SEG(handler_addr), FP_OFF(handler_addr), diff, diff);
-  int __far *ip = (int __far*)(p+1); // +1 is where the near address for JMP is
-  log("p:%d/%x", *ip, *ip);
+  log("signature:[%p:%p]; handler:[%p:%p] [offset: %d]", FP_SEG(sig_addr), FP_OFF(sig_addr), 
+      FP_SEG(handler_addr), FP_OFF(handler_addr), diff);
   fossil_enabled = 1;
-
-  char pipename[200];
-  sprintf(pipename, "\\PIPE\\WWIV%d", nodenum);
-  pipe = new __far Pipe(pipename);
-  if (!pipe->is_open()) {
-    log("Unable to open FOSSIL log: wwivfoss.log");
-  } else {
-    log("Pipe Opened");
-  }
-  // This seems to make it work consistently with the test app.
   os_yield();
-  // hack:
-  pipe_handle = pipe->handle();
-  log("FOSSIL Enabled. Pipe [handle:%d]", pipe_handle);
+
+  log("FOSSIL Enabled. Pipe Handle:[%d]", pipe_handle);
 }
 
 void disable_fossil() {

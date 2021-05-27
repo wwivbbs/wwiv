@@ -30,7 +30,7 @@ static void show_help() {
   cerr << "Usage: \r\n";
   cerr << "  WWIVFOSS [args] COMMANDLINE\r\n\r\n";
   cerr << "Example: \r\n";
-  cerr << "  WWIVFOSS -N2 BRE.BAT 2 Z:\CHAIN.TXT\r\n\r\n";
+  cerr << "  WWIVFOSS -N2 BRE.BAT 2 Z:\\CHAIN.TXT\r\n\r\n";
   cerr << "Commands: \r\n";
   cerr << "  -N#   Node Number for this instance (1-99) [REQUIRED]" << endl;
   cerr << "  -P#   Port Number for this fossil instance (unset means any)\r\n";
@@ -39,11 +39,11 @@ static void show_help() {
 }
 
 int main(int argc, char** argv) {
-  cerr << "WWIVFOSS - WWIV FOSSIL runner for Win32 and OS/2 Named Pipes" << endl;
-  cerr << "           Built at: " << __DATE__ << ", " << __TIME__ << "\r\n\r\n";
+  cerr << "WWIVFOSS - WWIV FOSSIL runner for Win32 and OS/2 Named Pipes\r\n";
+  cerr << "           Copyright (c) 2021, WWIV Software Services\r\n";
+  cerr << "           Built: " << __DATE__ << ", " << __TIME__ << "\r\n" << endl;
 
   App app;
-  cout << app.comport << endl;
   int had_positional = 0;
   for (int i = 1; i < argc; i++) {
     const char* arg = argv[i];
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
       // Process switch
       char schar = *(arg+1);
       const char* sval = (arg+2);
-      cerr << "Switch: " <<  schar << "; value: '" << sval << "'" << endl;
+      // cerr << "Switch: " <<  schar << "; value: '" << sval << "'" << endl;
       switch (schar) {
       case 'N': {
 	      // Node number
