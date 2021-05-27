@@ -17,7 +17,7 @@ class __far Pipe {
    * N.B: The pipe is expected to be created before installing a TSR
    * or interrupt handler.
    */
-  Pipe(const char* fn);
+  Pipe(const char* fn, int timeout_secs);
   /** Destroys the pipe, closing if needed */
   ~Pipe();
 

@@ -1,7 +1,9 @@
 #include "fossil.h"
 
+#include "dostypes.h"
 #include "pipe.h"
 #include "util.h"
+
 #include <conio.h>
 #include <ctype.h>
 #include <dos.h>
@@ -45,7 +47,7 @@ static char m[20];
 static Pipe __far * pipe = NULL;
 static int char_avail = 0;
 
-char __far * fossil_info_ident = "WWIV Named Pipes OS/2 FOSSIL Runner";
+char  __near* fossil_info_ident = "WWIV FOSSIL runner for Win32 and OS/2 Named Pipes";
 
 #pragma pack(1)
 struct fossil_info {
@@ -64,6 +66,9 @@ struct fossil_info {
 #pragma pack()
 
 static struct fossil_info info;
+
+FossilOptions::FossilOptions() : comport(0), node_number(0), open_timeout_seconds(10) {}
+FossilOptions::~FossilOptions() {}
 
 static unsigned status() {
   unsigned r = STATUS_BASE;
@@ -232,14 +237,18 @@ void __interrupt __far int14_sig() {
   char pad[10] = {0};
 }
 
-void enable_fossil(int nodenum, int comport) {
+bool enable_fossil(const FossilOptions* options) {
+  if (!options) {
+    log("NULL options passed to enable_fossil.");
+    abort();
+  }
   char pipename[200];
-  sprintf(pipename, "\\PIPE\\WWIV%d", nodenum);
-  pipe = new __far Pipe(pipename);
+  sprintf(pipename, "\\PIPE\\WWIV%d", options->node_number);
+  log("Opening pipe: '%s'", pipename);
+  pipe = new __far Pipe(pipename, options->open_timeout_seconds);
   if (!pipe->is_open()) {
-    log("Unable to open FOSSIL log: wwivfoss.log");
-  } else {
-    log("Pipe Opened");
+    log("Failed to open pipe: '%s'", pipename);
+    return false;
   }
   // This seems to make it work consistently with the test app.
   os_yield();
@@ -279,12 +288,13 @@ void enable_fossil(int nodenum, int comport) {
   os_yield();
 
   log("FOSSIL Enabled. Pipe Handle:[%d]", pipe_handle);
+  return true;
 }
 
-void disable_fossil() {
+bool disable_fossil() {
   if (!fossil_enabled) {
     log("ERROR: disable_fossil called when not enabled.");
-    return;
+    return false;
   }
 
   _disable();
@@ -304,5 +314,6 @@ void disable_fossil() {
   log("Closed pipe");
   delete pipe;
   pipe = NULL;
+  return true;
 }
 

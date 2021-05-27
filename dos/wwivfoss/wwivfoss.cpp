@@ -18,11 +18,10 @@
 
 class App {
 public:
-  App() : comport(0), node_number(0), cmdline(20) {}
+  App() : opts(), cmdline(20) {}
   ~App() {}
 
-  int comport;
-  int node_number;
+  FossilOptions opts;
   Array cmdline;
 };
 
@@ -38,10 +37,12 @@ static void show_help() {
   cerr << endl;
 }
 
+extern char __near* fossil_info_ident;
+
 int main(int argc, char** argv) {
-  cerr << "WWIVFOSS - WWIV FOSSIL runner for Win32 and OS/2 Named Pipes\r\n";
-  cerr << "           Copyright (c) 2021, WWIV Software Services\r\n";
-  cerr << "           Built: " << __DATE__ << ", " << __TIME__ << "\r\n" << endl;
+  cerr << "WWIVFOSS: " << ((char __near *)fossil_info_ident) << "\r\n";
+  cerr << "          Copyright (c) 2021, WWIV Software Services\r\n";
+  cerr << "          Built: " << __DATE__ << ", " << __TIME__ << "\r\n" << endl;
 
   App app;
   int had_positional = 0;
@@ -58,17 +59,17 @@ int main(int argc, char** argv) {
 	      continue;
       }
       // Process switch
-      char schar = *(arg+1);
+      char schar = (char)toupper(*(arg+1));
       const char* sval = (arg+2);
       // cerr << "Switch: " <<  schar << "; value: '" << sval << "'" << endl;
       switch (schar) {
       case 'N': {
 	      // Node number
-	      app.node_number = atoi(sval);
+	      app.opts.node_number = atoi(sval);
       } break;
       case 'P': {
 	      // Node number
-	      app.comport = atoi(sval);
+	      app.opts.comport = atoi(sval);
       } break;
       case '?': {
         // Help
@@ -84,19 +85,22 @@ int main(int argc, char** argv) {
   } 
 
   // Args parsed, do something.
-  if (app.node_number < 1) {
+  if (app.opts.node_number < 1) {
     cerr << "Node number not specified.  Exiting.\r\n";
     show_help();
     return 1;
   }
 
-  enable_fossil(app.node_number, app.comport);
+  if (!enable_fossil(&app.opts)) {
+    cerr << "Failed to initialize FOSSIL support." << endl;
+    return 2;
+  }
   int ret = _spawnvp(_P_WAIT, app.cmdline.at(0), 
                      (const char**) app.cmdline.items());
   disable_fossil();
   if (ret < 0) {
     cerr << "Error spawning process. " << endl;
-    return 1;
+    return 3;
   }
   return 0;
 }

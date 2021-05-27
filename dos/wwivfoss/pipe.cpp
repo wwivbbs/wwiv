@@ -12,6 +12,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
+
+#pragma warning(disable : 4505)
 
 
 // See http://www.delorie.com/djgpp/doc/rbinter/ix/21/5F.html
@@ -130,17 +133,16 @@ int DosPeekNmPipe(int handle) {
 }
 
 
-Pipe::Pipe(const char* fn) __far {
+Pipe::Pipe(const char* fn, int timeout_secs) __far {
   next_char_ = -1;
   control_handle_ = -1;
 
-  int count = 0;
   int h = -1;
-  while (handle_ == -1 && count++ < 100 ) {
+  clock_t start_time = clock();
+  while (handle_ == -1 && ((clock() - start_time) / CLOCKS_PER_SEC) < timeout_secs) {
     if (_dos_open(fn, _O_RDWR, &h) != 0) {
       log("ERROR: (Pipe) Unable to open pipe: '%s'", fn);
       handle_ = -1;
-      os_yield();
       sleep(100);
     } else {
       handle_ = h;
@@ -156,9 +158,9 @@ Pipe::Pipe(const char* fn) __far {
 
   char control_fn[81];
   sprintf(control_fn, "%sC", fn);
-  count = 0;
+  start_time = clock();
   h = -1;
-  while (control_handle_ == -1 && count++ < 100 ) {
+  while (control_handle_ == -1 && ((clock() - start_time) / CLOCKS_PER_SEC) < timeout_secs) {
     if (_dos_open(control_fn, _O_RDWR, &h) == 0) {
       control_handle_ = h;
       os_yield();
@@ -190,13 +192,11 @@ char Pipe::control_code() __far {
 void Pipe::close() __far {
   log("Pipe::close()");
   if (handle_ != -1) {
-    log("Pipe::close(): closing data");
     _dos_close(handle_);
     handle_ = -1;
   }
 
   if (control_handle_ != -1) {
-    log("Pipe::close(): closing control");
     _dos_close(control_handle_);
     control_handle_ = -1;
   }
@@ -204,7 +204,6 @@ void Pipe::close() __far {
 }
 
 Pipe::~Pipe() __far {
-  log("Pipe::~Pipe()");
   close();
 }
 
