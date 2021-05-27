@@ -26,11 +26,25 @@ public:
   Array cmdline;
 };
 
+static void show_help() {
+  cerr << "Usage: \r\n";
+  cerr << "  WWIVFOSS [args] COMMANDLINE\r\n\r\n";
+  cerr << "Example: \r\n";
+  cerr << "  WWIVFOSS -N2 BRE.BAT 2 Z:\CHAIN.TXT\r\n\r\n";
+  cerr << "Commands: \r\n";
+  cerr << "  -N#   Node Number for this instance (1-99) [REQUIRED]" << endl;
+  cerr << "  -P#   Port Number for this fossil instance (unset means any)\r\n";
+  cerr << "  -?    Help - displays this information\r\n";
+  cerr << endl;
+}
+
 int main(int argc, char** argv) {
+  cerr << "WWIVFOSS - WWIV FOSSIL runner for Win32 and OS/2 Named Pipes" << endl;
+  cerr << "           Built at: " << __DATE__ << ", " << __TIME__ << "\r\n\r\n";
+
   App app;
   cout << app.comport << endl;
   int had_positional = 0;
-  cerr << "Num arags: " << argc << endl;
   for (int i = 1; i < argc; i++) {
     const char* arg = argv[i];
     const int alen = strlen(arg);
@@ -40,8 +54,8 @@ int main(int argc, char** argv) {
     }
     if (!had_positional && (arg[0] == '-' || arg[0] == '/')) {
       if (alen < 2) {
-	cerr << "Invalid argument: " << arg << endl;
-	continue;
+	      cerr << "Invalid argument: " << arg << endl;
+	      continue;
       }
       // Process switch
       char schar = *(arg+1);
@@ -49,12 +63,17 @@ int main(int argc, char** argv) {
       cerr << "Switch: " <<  schar << "; value: '" << sval << "'" << endl;
       switch (schar) {
       case 'N': {
-	// Node number
-	app.node_number = atoi(sval);
+	      // Node number
+	      app.node_number = atoi(sval);
       } break;
       case 'P': {
-	// Node number
-	app.comport = atoi(sval);
+	      // Node number
+	      app.comport = atoi(sval);
+      } break;
+      case '?': {
+        // Help
+        show_help();
+        return 0;
       } break;
       }
       continue;
@@ -62,10 +81,14 @@ int main(int argc, char** argv) {
     had_positional = 1;
     // Positional arg, must be part of the commandline.
     app.cmdline.push_back(arg);
-    cerr << "Positional: '" << arg << "'" << endl;
   } 
 
   // Args parsed, do something.
+  if (app.node_number < 1) {
+    cerr << "Node number not specified.  Exiting.\r\n";
+    show_help();
+    return 1;
+  }
 
   enable_fossil(app.node_number, app.comport);
   int ret = _spawnvp(_P_WAIT, app.cmdline.at(0), 

@@ -44,7 +44,7 @@ static char m[20];
 static Pipe __far * pipe = NULL;
 static int char_avail = 0;
 
-char __far * fossil_info_ident = "WWIV OS/2 FOSSIL Driver";
+char __far * fossil_info_ident = "WWIV Named Pipes OS/2 FOSSIL Runner";
 
 #pragma pack(1)
 struct fossil_info {
