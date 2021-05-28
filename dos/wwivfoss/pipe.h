@@ -1,6 +1,8 @@
 #ifndef PIPE_H
 #define PIPE_H
 
+#include "util.h"
+
 #define PIPE_BUFFER_SIZE 4000
 
 

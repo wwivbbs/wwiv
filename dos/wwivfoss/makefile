@@ -14,7 +14,9 @@ all:	$(BINDIR)\WWIVFOSS.EXE \
 		$(BINDIR)\UTILTEST.EXE
 
 clean:
+	-@DEL /N $(BINDIR)\*.*
 	-@DEL /Q $(BINDIR)\*.*
+	-@DEL /N .\*.COD
 	-@DEL /Q .\*.COD
 
 .cpp{$(BINDIR)}.obj:

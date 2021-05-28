@@ -7,6 +7,7 @@
 #include <dos.h>
 #include <fcntl.h>
 #include <io.h>
+#include <malloc.h>
 #include <process.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -14,6 +15,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#pragma warning(disable : 4505)
 
 class App {
 public:
@@ -97,6 +100,8 @@ int main(int argc, char** argv) {
     log("Failed to initialize FOSSIL support.");
     return 2;
   }
+  
+  // Don't call _heapmin, or things crash later.
   int ret = _spawnvp(_P_WAIT, app.cmdline.at(0), 
                      (const char**) app.cmdline.items());
   disable_fossil();

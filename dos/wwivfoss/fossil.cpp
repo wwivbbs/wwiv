@@ -260,7 +260,7 @@ bool enable_fossil(const FossilOptions* options) {
   }
 
   _disable();
-  unsigned char __far * p = (unsigned char __far*) ((void __far*) int14_sig);
+  unsigned char __far * p = (unsigned char __far *) ((void __far *) int14_sig);
   void __far * sig_addr = int14_sig;
   void __far * handler_addr = int14_handler;
   // We offset by 3 since JMP is one, and then two for the address for a near JMP
