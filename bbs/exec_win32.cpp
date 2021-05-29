@@ -346,19 +346,15 @@ static int exec_cmdline_sync(const std::string& user_command_line, int flags, in
 
   VLOG(1) << "exec_cmdline: working_commandline: " << working_cmdline;
 
-  DWORD dwCreationFlags = 0;
-  const auto title = std::make_unique<char[]>(500);
-  if (flags & EFLAG_NETPROG) {
-    strcpy(title.get(), "NETWORK");
-  } else {
-    sprintf(title.get(), "%s in door on node %d", a()->user()->GetName(),
-            a()->sess().instance_number());
-  }
-  si.lpTitle = title.get();
+  std::string title = (flags & EFLAG_NETPROG)
+                          ? "NETWORK"
+                          : fmt::format("{} in door on node {}", a()->user()->GetName(),
+                                        a()->sess().instance_number());
+  si.lpTitle = &title[0];
 
   auto hSyncHangupEvent = INVALID_HANDLE_VALUE; // NOLINT(readability-qualified-auto)
   auto hSyncReadSlot = INVALID_HANDLE_VALUE;    // Mailslot for reading
-
+  DWORD dwCreationFlags = 0;
   SetupSyncFoss(dwCreationFlags, hSyncHangupEvent, hSyncReadSlot);
   wwiv::os::sleep_for(250ms);
 
@@ -424,6 +420,86 @@ static int exec_cmdline_sync(const std::string& user_command_line, int flags, in
   return static_cast<int>(dwExitCode);
 }
 
+HANDLE stdin_read = nullptr;
+HANDLE stdin_write = nullptr;
+HANDLE stdout_read = nullptr;
+HANDLE stdout_write = nullptr;
+std::atomic_bool stop_pipe;
+
+static bool create_stdio_pipes() {
+  stop_pipe.store(false);
+  SECURITY_ATTRIBUTES saAttr{};
+
+  // Set the bInheritHandle flag so pipe handles are inherited.
+  saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+  saAttr.bInheritHandle = TRUE;
+  saAttr.lpSecurityDescriptor = nullptr;
+
+  // Create a pipe for the child process's STDOUT.
+  if (!CreatePipe(&stdout_read, &stdout_write, &saAttr, 0)) {
+    return false;
+  }
+
+  // Ensure the read handle to the pipe for STDOUT is not inherited.
+  if (!SetHandleInformation(stdout_read, HANDLE_FLAG_INHERIT, 0)) {
+    return false;
+  }
+
+  // Create a pipe for the child process's STDIN.
+  if (!CreatePipe(&stdin_read, &stdin_write, &saAttr, 0)) {
+    return false;
+  }
+
+  // Ensure the write handle to the pipe for STDIN is not inherited.
+  if (!SetHandleInformation(stdin_write, HANDLE_FLAG_INHERIT, 0)) {
+    return false;
+  }
+
+  return true;
+}
+
+void pump_pipes(HANDLE hProcess) { 
+  static constexpr int check_process_every = 10;
+  char buf[1024];
+  int count = 0;
+  while (!stop_pipe.load()) {
+    DWORD num_read, num_avail, msg_left;
+    if (PeekNamedPipe(stdout_read, buf, sizeof(buf), &num_read, &num_avail, &msg_left) && num_read > 0) {
+      auto b = ReadFile(stdout_read, buf, sizeof(buf), &num_read, NULL);
+      if (!b || num_read == 0) {
+        VLOG(1) << "Exiting pump_pipes: b:" << b << "; num_read: " << num_read;
+        return;
+      }
+      bout.remoteIO()->write(buf, num_read);
+    }
+
+    if (!bout.remoteIO()->connected()) {
+      VLOG(1) << "Exiting pump_pipes: Caller Hung up.";
+      return;
+    }
+
+    if (bout.remoteIO()->incoming()) {
+      if (num_read = bout.remoteIO()->read(buf, sizeof(buf)); num_read > 0) {
+        DWORD num_written;
+        if (!WriteFile(stdin_write, buf, num_read, &num_written, nullptr)) {
+          VLOG(1) << "Exiting pump_pipes; Write to pipe failed";
+          return;
+        }
+      }
+    }
+
+    if (++count >= check_process_every) {
+      count = 0;
+      DWORD dwExitCode;
+      if (GetExitCodeProcess(hProcess, &dwExitCode) && dwExitCode != STILL_ACTIVE) {
+        VLOG(1) << "Process exited. Ending pump_pipes";
+        return;
+      }
+    }
+  }
+  Sleep(100);
+}
+
 int exec_cmdline(const std::string& user_command_line, int flags) {
   if ((flags & EFLAG_STDIO) && (flags & EFLAG_SYNC_FOSSIL)) {
     // Not allowed.
@@ -432,31 +508,44 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
     return false;
   }
 
+  bool need_reopen_remoteio = false;
   STARTUPINFO si{};
   PROCESS_INFORMATION pi{};
 
   ZeroMemory(&si, sizeof(si));
-  si.cb = sizeof(si);
+  si.cb = sizeof(STARTUPINFO);
   ZeroMemory(&pi, sizeof(pi));
   std::string working_cmdline = user_command_line;
 
   if (a()->sess().using_modem()) {
     if (flags & EFLAG_SYNC_FOSSIL) {
       return exec_cmdline_sync(user_command_line, flags, 0);
-    } else if (flags & EFLAG_COMIO) {
+    }
+    if (flags & EFLAG_COMIO) {
       return exec_cmdline_sync(user_command_line, flags,
                                CONST_SBBSFOS_DOSIN_MODE | CONST_SBBSFOS_DOSOUT_MODE);
-    } else if (flags & EFLAG_STDIO) {
+    }
+    
+    if (flags & EFLAG_STDIO) {
+      if (!create_stdio_pipes()) {
+        LOG(ERROR) << "Unable to create pipes for STDIO";
+        return -1;
+      }
       // Set the socket to be std{in,out}
       // This doesn't work at all
       const auto sock = bout.remoteIO()->GetDoorHandle();
-      si.hStdInput = reinterpret_cast<HANDLE>(sock);
-      si.hStdOutput = reinterpret_cast<HANDLE>(sock);
-      si.hStdError = reinterpret_cast<HANDLE>(sock);
+
+      //si.hStdError = stdout_write;
+      si.hStdOutput = stdout_write;
+      si.hStdInput = stdin_read;
       si.dwFlags |= STARTF_USESTDHANDLES;
+      // N.B. Don't close remote IO.
     } else if (flags & EFLAG_NETFOSS) {
       if (const auto nf_path = create_netfoss_bat()) {
         working_cmdline = fmt::format("{} {}", nf_path.value(), user_command_line);
+        VLOG(1) << "Closing remote IO for NetFOSS";
+        bout.remoteIO()->close(true);
+        need_reopen_remoteio = true;
       } else {
         ssm(1) << "NetFoss is not installed properly.";
         sysoplog() << "Failed to create NF.BAT for command: " << user_command_line;
@@ -467,30 +556,26 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
         bout.pausescr();
         return false;
       }
+    } else {
+      // Not STDIO so close remote IO  
+      VLOG(1) << "Closing remote IO";
+      bout.remoteIO()->close(true);
+      need_reopen_remoteio = true;
     }
   }
   VLOG(1) << "exec_cmdline: working_commandline: " << working_cmdline;
 
-  DWORD dwCreationFlags = 0;
-  const auto title = std::make_unique<char[]>(500);
-  if (flags & EFLAG_NETPROG) {
-    strcpy(title.get(), "NETWORK");
-  } else {
-    sprintf(title.get(), "%s in door on node %d",
-        a()->user()->GetName(), a()->sess().instance_number());
-  }
-  si.lpTitle = title.get();
+  std::string title = (flags & EFLAG_NETPROG) 
+    ? "NETWORK" : fmt::format("{} in door on node {}", a()->user()->GetName(), a()->sess().instance_number());
 
-  if (a()->sess().ok_modem_stuff() && a()->sess().using_modem()) {
-    VLOG(1) <<"Closing remote IO";
-    bout.remoteIO()->close(true);
-  }
+  si.lpTitle = &title[0];
 
   const auto current_directory = File::current_directory().string();
 
   // Need a non-const string for the commandline
   char szTempWorkingCommandline[MAX_PATH+1];
   to_char_array(szTempWorkingCommandline, working_cmdline);
+  DWORD dwCreationFlags = 0;
   if (!CreateProcess(nullptr, szTempWorkingCommandline, nullptr, nullptr, TRUE, dwCreationFlags,
                      nullptr, // a()->xenviron not using nullptr causes things to not work.
                      current_directory.c_str(), &si, &pi)) {
@@ -500,7 +585,7 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
     sysoplog() << "!!! CreateProcess failed for command: [" << working_cmdline << "] with Error Message: " << error_message;
 
     // If we return here, we may have to reopen the communications port.
-    if (a()->sess().ok_modem_stuff() && a()->sess().using_modem()) {
+    if (a()->sess().ok_modem_stuff() && a()->sess().using_modem() && need_reopen_remoteio) {
       VLOG(1) << "Reopening comm (on createprocess error)";
       bout.remoteIO()->open();
     }
@@ -508,13 +593,13 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
     return -1;
   }
 
-  // Kinda hacky but WaitForInputIdle doesn't work on console application.
-  wwiv::os::sleep_for(std::chrono::milliseconds(a()->GetExecChildProcessWaitTime()));
-  const auto sleep_zero_times = 5;
-  for (auto iter = 0; iter < sleep_zero_times; iter++) {
-    wwiv::os::yield();
-  }
   CloseHandle(pi.hThread);
+
+  if (a()->sess().using_modem() && (flags & EFLAG_STDIO)) {
+    CloseHandle(stdout_write);
+    CloseHandle(stdin_read);
+    pump_pipes(pi.hProcess);
+  }
 
   // Wait until child process exits.
   WaitForSingleObject(pi.hProcess, INFINITE);
@@ -522,11 +607,11 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
   DWORD dwExitCode = 0;
   GetExitCodeProcess(pi.hProcess, &dwExitCode);
 
-  // Close process and thread handles.
+  // Close process handle.
   CloseHandle(pi.hProcess);
 
   // reengage comm stuff
-  if (a()->sess().ok_modem_stuff() && a()->sess().using_modem()) {
+  if (need_reopen_remoteio && a()->sess().ok_modem_stuff() && a()->sess().using_modem()) {
     VLOG(1) << "Reopening comm";
     bout.remoteIO()->open();
   }

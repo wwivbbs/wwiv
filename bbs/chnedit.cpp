@@ -239,11 +239,7 @@ static void modify_chain(ssize_t chain_num) {
       break;
     case 'E':
       ++c.exec_mode;
-#ifdef _WIN32
-      if (c.exec_mode == chain_exec_mode_t::stdio) {
-        ++c.exec_mode;
-      }
-#elif defined (__OS2__)
+#if defined (__OS2__)
       if (c.exec_mode == chain_exec_mode_t::stdio) {
         ++c.exec_mode;
       }
@@ -253,7 +249,7 @@ static void modify_chain(ssize_t chain_num) {
       if (c.exec_mode == chain_exec_mode_t::netfoss) {
         c.exec_mode++;
       }
-#else
+#elif defined(__unix__)
       if (c.exec_mode == chain_exec_mode_t::dos) {
         c.exec_mode++;
       }
