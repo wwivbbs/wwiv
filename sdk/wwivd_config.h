@@ -46,6 +46,8 @@ struct wwivd_blocking_t {
   std::vector<std::string> block_duration;
 };
 
+enum class wwivd_data_mode_t { socket, pipe };
+
 struct wwivd_matrix_entry_t {
   /** Key to use when displaying this BBS in the matrix logon. */
   char key;
@@ -63,15 +65,15 @@ struct wwivd_matrix_entry_t {
   /** Working directory to use when launching the BBS */
   std::string working_directory;
   /** Does using this BBS require ANSI? */
-  bool require_ansi = false;
+  bool require_ansi{false};
   /** Start node for this bbs */
   int start_node;
   /** End node for this bbs */
   int end_node;
   /** Local node for this bbs */
   int local_node;
-  /** Mode for passing data to the BBS, Network (S)ocket or Named (P)ipe */
-  char data_mode{'S'};
+  /** Mode for passing data to the BBS: Socket or Named Pipe */
+  wwivd_data_mode_t data_mode{wwivd_data_mode_t::socket};
 };
 
 class wwivd_config_t {

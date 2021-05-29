@@ -340,7 +340,7 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
 #endif    
     [[maybe_unused]] auto real_sock = sock;
     std::thread pipes_thread;
-    if (bbs.data_mode == 'P') {
+    if (bbs.data_mode == wwivd_data_mode_t::pipe) {
       // Spawn named pipes
 #if defined(_WIN32) && defined(WWIV_USE_PIPES)
       VLOG(1) << "Spawning socket_pipe_loop. sock: " << sock;
@@ -353,7 +353,7 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
     VLOG(1) << "after launch_cmd";
 #if defined(WWIV_USE_PIPES)
 #if defined(__OS2__)
-    if (bbs.data_mode == 'P') {
+    if (bbs.data_mode == wwivd_data_mode_t::pipe) {
       socket_pipe_loop(real_sock, data_pipe, control_pipe);
       // Force a close on the socket to make this terminate.
       closesocket(real_sock);

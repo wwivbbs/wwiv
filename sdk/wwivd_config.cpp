@@ -32,6 +32,24 @@ using namespace wwiv::core;
 #undef DELETE
 #endif  // DELETE
 
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::wwivd_data_mode_t,
+                                   cereal::specialization::non_member_load_save_minimal);
+
+namespace cereal {
+
+template <class Archive> std::string save_minimal(Archive const&, const wwiv::sdk::wwivd_data_mode_t& t) {
+  return to_enum_string<wwiv::sdk::wwivd_data_mode_t>(
+      t, {"socket", "pipe"});
+}
+
+template <class Archive>
+void load_minimal(Archive const&, wwiv::sdk::wwivd_data_mode_t& t, const std::string& v) {
+  t = from_enum_string<wwiv::sdk::wwivd_data_mode_t>(
+      v, {"socket", "pipe"});
+}
+
+} // namespace cereal
+
 namespace wwiv::sdk {
 
 template <class Archive>
@@ -42,16 +60,6 @@ void serialize(Archive& ar, wwivd_blocking_t &b) {
   SERIALIZE(b, max_concurrent_sessions);
 
   SERIALIZE(b, auto_blocklist);
-  try {
-    // TODO(rushfan): Get rid of this later in 5.5.  This will read in the old name
-    // and next time wwivconfig saves this out, it'll write out both the new
-    // and old names. In 5.6 we'll get rid of this and only use the new name.
-    // This code will no longer be needed after 5.5 final release.
-    ar(cereal::make_nvp("auto_blacklist", b.auto_blocklist));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-
   SERIALIZE(b, auto_bl_sessions);
   SERIALIZE(b, auto_bl_seconds);
   SERIALIZE(b, use_dns_rbl);
@@ -64,16 +72,16 @@ void serialize(Archive& ar, wwivd_blocking_t &b) {
 
 template <class Archive>
 void serialize(Archive& ar, wwivd_matrix_entry_t &a) {
-  ar(cereal::make_nvp("description", a.description));
-  ar(cereal::make_nvp("end_node", a.end_node));
-  ar(cereal::make_nvp("key", a.key));
-  ar(cereal::make_nvp("local_node", a.local_node));
-  ar(cereal::make_nvp("name", a.name));
-  ar(cereal::make_nvp("require_ansi", a.require_ansi));
-  ar(cereal::make_nvp("ssh_cmd", a.ssh_cmd));
-  ar(cereal::make_nvp("start_node", a.start_node));
-  ar(cereal::make_nvp("telnet_cmd", a.telnet_cmd));
-  ar(cereal::make_nvp("data_mode", a.data_mode));
+  SERIALIZE(a, description);
+  SERIALIZE(a, end_node);
+  SERIALIZE(a, key);
+  SERIALIZE(a, local_node);
+  SERIALIZE(a, name);
+  SERIALIZE(a, require_ansi);
+  SERIALIZE(a, ssh_cmd);
+  SERIALIZE(a, start_node);
+  SERIALIZE(a, telnet_cmd);
+  SERIALIZE(a, data_mode);
   SERIALIZE(a, working_directory);
 }
 

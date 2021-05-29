@@ -149,6 +149,11 @@ static void edit_blocking(const Config& config, wwivd_blocking_t& b, CursesWindo
 static void edit_matrix_entry(const Config& config, wwivd_matrix_entry_t& b) {
   EditItems items{};
   char key[2] = {b.key, 0};
+
+  const std::vector<std::pair<wwiv::sdk::wwivd_data_mode_t, std::string>> data_modes = {
+      {wwivd_data_mode_t::socket, "Socket"},
+      {wwivd_data_mode_t::pipe, "Named Pipe"}};
+
   {
     int y = 1;
     items.add(new Label("Key:"), new StringEditItem<char*>(1, key, EditLineMode::ALL), 1, y);
@@ -176,7 +181,9 @@ static void edit_matrix_entry(const Config& config, wwivd_matrix_entry_t& b) {
     y++;
     items.add(new Label("Local Node:"), new NumberEditItem<int>(&b.local_node), 1, y);
     y++;
-    items.add(new Label("Data Mode:"), new StringEditItem<char*>(1, &b.data_mode, EditLineMode::UPPER_ONLY), 1, y);
+    items.add(new Label("Data Mode:"),
+              new ToggleEditItem<wwiv::sdk::wwivd_data_mode_t>(data_modes, &b.data_mode),
+              "The way to communicate from wwivd to bbs (default is socket handle)", 1, y);
   }
 
   items.relayout_items_and_labels();
