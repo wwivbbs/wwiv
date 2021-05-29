@@ -323,75 +323,151 @@ static std::string ErrorAsString(DWORD last_error) {
 }
 //  Main code that launches external programs and handle sbbsexec support
 
+static int exec_cmdline_sync(const std::string& user_command_line, int flags, int nSyncMode = 0) {
+  const auto saved_binary_mode = bout.remoteIO()->binary_mode();
+
+  STARTUPINFO si{};
+  PROCESS_INFORMATION pi{};
+
+  ZeroMemory(&si, sizeof(si));
+  si.cb = sizeof(STARTUPINFO);
+  ZeroMemory(&pi, sizeof(pi));
+
+  std::string syncFosTempFile;
+  if (!CreateSyncTempFile(&syncFosTempFile, user_command_line)) {
+    return -1;
+  }
+  auto working_cmdline = CreateSyncFosCommandLine(syncFosTempFile, nSyncMode);
+
+  const auto logfile_name = FilePath(a()->logdir(), "wwivsync.log");
+  hLogFile = fopen(logfile_name.string().c_str(), "at");
+  LogToSync(std::string(78, '='));
+  LogToSync("\r\n\r\n");
+
+  VLOG(1) << "exec_cmdline: working_commandline: " << working_cmdline;
+
+  DWORD dwCreationFlags = 0;
+  const auto title = std::make_unique<char[]>(500);
+  if (flags & EFLAG_NETPROG) {
+    strcpy(title.get(), "NETWORK");
+  } else {
+    sprintf(title.get(), "%s in door on node %d", a()->user()->GetName(),
+            a()->sess().instance_number());
+  }
+  si.lpTitle = title.get();
+
+  auto hSyncHangupEvent = INVALID_HANDLE_VALUE; // NOLINT(readability-qualified-auto)
+  auto hSyncReadSlot = INVALID_HANDLE_VALUE;    // Mailslot for reading
+
+  SetupSyncFoss(dwCreationFlags, hSyncHangupEvent, hSyncReadSlot);
+  wwiv::os::sleep_for(250ms);
+
+  const auto current_directory = File::current_directory().string();
+
+  // Need a non-const string for the commandline
+  char szTempWorkingCommandline[MAX_PATH + 1];
+  to_char_array(szTempWorkingCommandline, working_cmdline);
+  const auto bRetCP =
+      CreateProcess(nullptr, szTempWorkingCommandline, nullptr, nullptr, TRUE, dwCreationFlags,
+                    nullptr, // a()->xenviron not using nullptr causes things to not work.
+                    current_directory.c_str(), &si, &pi);
+
+  if (!bRetCP) {
+    const auto error_code = ::GetLastError();
+    const auto error_message = ErrorAsString(error_code);
+    LOG(ERROR) << "CreateProcessFailed: error: " << error_message;
+    sysoplog() << "!!! CreateProcess failed for command: [" << working_cmdline
+               << "] with Error Message: " << error_message;
+
+    // Restore old binary mode.
+    bout.remoteIO()->set_binary_mode(saved_binary_mode);
+    return -1;
+  }
+
+  // Kinda hacky but WaitForInputIdle doesn't work on console application.
+  wwiv::os::sleep_for(std::chrono::milliseconds(a()->GetExecChildProcessWaitTime()));
+  const auto sleep_zero_times = 5;
+  for (auto iter = 0; iter < sleep_zero_times; iter++) {
+    wwiv::os::yield();
+  }
+
+  CloseHandle(pi.hThread);
+
+  bout.remoteIO()->set_binary_mode(true);
+  const auto sync_loop_status =
+      DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
+  LogToSync(StrCat("DoSyncFosLoopNT: Returned ", sync_loop_status, "\r\n", std::string(78, '='),
+                    "\r\n\r\n\r\n"));
+
+  if (sync_loop_status) {
+    DWORD dwExitCode = 0;
+    GetExitCodeProcess(pi.hProcess, &dwExitCode);
+    if (dwExitCode == STILL_ACTIVE) {
+      LogToSync("Terminating Sync Process");
+      LOG(INFO) << "Terminating Sync process.";
+      TerminateProcess(pi.hProcess, 0);
+    } else {
+      LogToSync(fmt::format("Sync Process Exit Code: {}", dwExitCode));
+    }
+  }
+  fclose(hLogFile);
+
+  DWORD dwExitCode = 0;
+  GetExitCodeProcess(pi.hProcess, &dwExitCode);
+
+  // Close process and thread handles.
+  CloseHandle(pi.hProcess);
+
+  // Restore old binary mode.
+  bout.remoteIO()->set_binary_mode(saved_binary_mode);
+
+  return static_cast<int>(dwExitCode);
+}
+
 int exec_cmdline(const std::string& user_command_line, int flags) {
+  if ((flags & EFLAG_STDIO) && (flags & EFLAG_SYNC_FOSSIL)) {
+    // Not allowed.
+    sysoplog() << "Tried to execute command with sync and stdio: " << user_command_line;
+    LOG(ERROR) << "Tried to execute command with sync and stdio: " << user_command_line;
+    return false;
+  }
+
   STARTUPINFO si{};
   PROCESS_INFORMATION pi{};
 
   ZeroMemory(&si, sizeof(si));
   si.cb = sizeof(si);
   ZeroMemory(&pi, sizeof(pi));
-  std::string working_cmdline;
+  std::string working_cmdline = user_command_line;
 
-  const auto saved_binary_mode = bout.remoteIO()->binary_mode();
-
-  auto should_use_sync = false;
-  auto using_sync = false;
-  auto using_netfoss = false;
-  auto nSyncMode = 0;
   if (a()->sess().using_modem()) {
-    if (flags & EFLAG_NETFOSS) {
-      using_netfoss = true;
-    } else if (flags & EFLAG_SYNC_FOSSIL) {
-      should_use_sync = true;
+    if (flags & EFLAG_SYNC_FOSSIL) {
+      return exec_cmdline_sync(user_command_line, flags, 0);
     } else if (flags & EFLAG_COMIO) {
-      nSyncMode |= CONST_SBBSFOS_DOSIN_MODE;
-      nSyncMode |= CONST_SBBSFOS_DOSOUT_MODE;
-      should_use_sync = true;
+      return exec_cmdline_sync(user_command_line, flags,
+                               CONST_SBBSFOS_DOSIN_MODE | CONST_SBBSFOS_DOSOUT_MODE);
+    } else if (flags & EFLAG_STDIO) {
+      // Set the socket to be std{in,out}
+      // This doesn't work at all
+      const auto sock = bout.remoteIO()->GetDoorHandle();
+      si.hStdInput = reinterpret_cast<HANDLE>(sock);
+      si.hStdOutput = reinterpret_cast<HANDLE>(sock);
+      si.hStdError = reinterpret_cast<HANDLE>(sock);
+      si.dwFlags |= STARTF_USESTDHANDLES;
+    } else if (flags & EFLAG_NETFOSS) {
+      if (const auto nf_path = create_netfoss_bat()) {
+        working_cmdline = fmt::format("{} {}", nf_path.value(), user_command_line);
+      } else {
+        ssm(1) << "NetFoss is not installed properly.";
+        sysoplog() << "Failed to create NF.BAT for command: " << user_command_line;
+        LOG(ERROR) << "Failed to create NF.BAT for command: " << user_command_line;
+        bout.nl(2);
+        bout << "|#6Please tell the SysOp to install NetFoss properly." << wwiv::endl;
+        bout.nl(2);
+        bout.pausescr();
+        return false;
+      }
     }
-  }
-  if (flags & EFLAG_STDIO) {
-    if (should_use_sync) {
-      // Not allowed.
-      sysoplog() << "Tried to execute command with sync and stdio: " << user_command_line;
-      LOG(ERROR) << "Tried to execute command with sync and stdio: " << user_command_line;
-      return false;
-    }
-
-    // Set the socket to be std{in,out}
-    const auto sock = bout.remoteIO()->GetDoorHandle();
-    si.hStdInput = reinterpret_cast<HANDLE>(sock);
-    si.hStdOutput = reinterpret_cast<HANDLE>(sock);
-    si.hStdError = reinterpret_cast<HANDLE>(sock);
-    si.dwFlags |= STARTF_USESTDHANDLES;
-  }
-
-  if (should_use_sync) {
-    std::string syncFosTempFile;
-    if (!CreateSyncTempFile(&syncFosTempFile, user_command_line)) {
-      return -1;
-    }
-    working_cmdline = CreateSyncFosCommandLine(syncFosTempFile, nSyncMode);
-    using_sync = true;
-
-    const auto logfile_name = FilePath(a()->logdir(), "wwivsync.log");
-    hLogFile = fopen(logfile_name.string().c_str(), "at");
-    LogToSync(std::string(78, '='));
-    LogToSync("\r\n\r\n");
-  } else if (using_netfoss) {
-    if (const auto nf_path = create_netfoss_bat()) {
-      working_cmdline = fmt::format("{} {}", nf_path.value(), user_command_line);
-    } else {
-      ssm(1) << "NetFoss is not installed properly.";
-      sysoplog() << "Failed to create NF.BAT for command: " << user_command_line;
-      LOG(ERROR) << "Failed to create NF.BAT for command: " << user_command_line;
-      bout.nl(2);
-      bout << "|#6Please tell the SysOp to install NetFoss properly." << wwiv::endl;
-      bout.nl(2);
-      bout.pausescr();
-      return false;
-    }
-  } else {
-    working_cmdline = user_command_line;
   }
   VLOG(1) << "exec_cmdline: working_commandline: " << working_cmdline;
 
@@ -405,76 +481,43 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
   }
   si.lpTitle = title.get();
 
-  if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
+  if (a()->sess().ok_modem_stuff() && a()->sess().using_modem()) {
     VLOG(1) <<"Closing remote IO";
     bout.remoteIO()->close(true);
   }
 
-  auto hSyncHangupEvent = INVALID_HANDLE_VALUE;  // NOLINT(readability-qualified-auto)
-  auto hSyncReadSlot = INVALID_HANDLE_VALUE;     // Mailslot for reading
-    
-  if (using_sync) {
-    SetupSyncFoss(dwCreationFlags, hSyncHangupEvent, hSyncReadSlot);
-    wwiv::os::sleep_for(250ms);
-  }
-   
   const auto current_directory = File::current_directory().string();
 
   // Need a non-const string for the commandline
   char szTempWorkingCommandline[MAX_PATH+1];
   to_char_array(szTempWorkingCommandline, working_cmdline);
-  const auto bRetCP =
-      CreateProcess(nullptr, szTempWorkingCommandline, nullptr, nullptr, TRUE, dwCreationFlags,
-                    nullptr, // a()->xenviron not using nullptr causes things to not work.
-                    current_directory.c_str(), &si, &pi);
-
-  if (!bRetCP) {
+  if (!CreateProcess(nullptr, szTempWorkingCommandline, nullptr, nullptr, TRUE, dwCreationFlags,
+                     nullptr, // a()->xenviron not using nullptr causes things to not work.
+                     current_directory.c_str(), &si, &pi)) {
     const auto error_code = ::GetLastError();
     const auto error_message = ErrorAsString(error_code);
     LOG(ERROR) << "CreateProcessFailed: error: " << error_message;
     sysoplog() << "!!! CreateProcess failed for command: [" << working_cmdline << "] with Error Message: " << error_message;
 
     // If we return here, we may have to reopen the communications port.
-    if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
+    if (a()->sess().ok_modem_stuff() && a()->sess().using_modem()) {
       VLOG(1) << "Reopening comm (on createprocess error)";
       bout.remoteIO()->open();
     }
     // Restore old binary mode.
-    bout.remoteIO()->set_binary_mode(saved_binary_mode);
     return -1;
   }
 
-  if (using_sync || using_netfoss) {
-    // Kinda hacky but WaitForInputIdle doesn't work on console application.
-    wwiv::os::sleep_for(std::chrono::milliseconds(a()->GetExecChildProcessWaitTime()));
-    const auto sleep_zero_times = 5;
-    for (auto iter = 0; iter < sleep_zero_times; iter++) {
-      wwiv::os::yield();
-    }
+  // Kinda hacky but WaitForInputIdle doesn't work on console application.
+  wwiv::os::sleep_for(std::chrono::milliseconds(a()->GetExecChildProcessWaitTime()));
+  const auto sleep_zero_times = 5;
+  for (auto iter = 0; iter < sleep_zero_times; iter++) {
+    wwiv::os::yield();
   }
   CloseHandle(pi.hThread);
 
-  if (using_sync) {
-    bout.remoteIO()->set_binary_mode(true);
-    const auto sync_loop_status = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
-    LogToSync(StrCat("DoSyncFosLoopNT: Returned ", sync_loop_status, "\r\n", std::string(78, '='), "\r\n\r\n\r\n"));
-
-    if (sync_loop_status) {
-      DWORD dwExitCode = 0;
-      GetExitCodeProcess(pi.hProcess, &dwExitCode);
-      if (dwExitCode == STILL_ACTIVE) {
-        LogToSync("Terminating Sync Process");
-        LOG(INFO) << "Terminating Sync process.";
-        TerminateProcess(pi.hProcess, 0);
-      } else {
-        LogToSync(fmt::format("Sync Process Exit Code: {}", dwExitCode));
-      }
-    }
-    fclose(hLogFile);
-  } else {
-    // Wait until child process exits.
-    WaitForSingleObject(pi.hProcess, INFINITE);
-  }
+  // Wait until child process exits.
+  WaitForSingleObject(pi.hProcess, INFINITE);
 
   DWORD dwExitCode = 0;
   GetExitCodeProcess(pi.hProcess, &dwExitCode);
@@ -482,11 +525,8 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
   // Close process and thread handles.
   CloseHandle(pi.hProcess);
 
-  // Restore old binary mode.
-  bout.remoteIO()->set_binary_mode(saved_binary_mode);
-
   // reengage comm stuff
-  if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
+  if (a()->sess().ok_modem_stuff() && a()->sess().using_modem()) {
     VLOG(1) << "Reopening comm";
     bout.remoteIO()->open();
   }
