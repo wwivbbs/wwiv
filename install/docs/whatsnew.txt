@@ -37,6 +37,16 @@ What's New in WWIV 5.7.1 (2021)
 * Incorrect BY: line when posting to a Fido sub (#1460)
 * Don't let a sub go to position 0 (#1457)
 * regions and zip-city not unzipped with default install on linux (#1455)
++ STDIO support now works on Win32. It works when WWIV is using either
+  sockets or pipes to talk to wwivd.
++ OS/2 support is here if you build it yourself.  Also included is
+  WWIVFOSS which will convert FOSSIl into Named Pipe calls for telnet
+  ability from WWIVd.
+  * Use -XP for (PIPE) instead of -XS or -XT to use it.  -H is obsolete
+    when using PIPE since the pipe name is hard coded to be
+    \\.\PIPE\WWIV# and \\.\PIPE\WWIV#C where # is the node number.  
++ WWIVFOSS is now bundled with the OS/2 cpack target.
++ 
 
 
 
