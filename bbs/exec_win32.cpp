@@ -35,6 +35,7 @@
 #include "core/textfile.h"
 #include "fmt/format.h"
 #include <algorithm>
+#include <atomic>
 #include <sstream>
 #include <string>
 
