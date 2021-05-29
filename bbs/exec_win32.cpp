@@ -424,7 +424,7 @@ HANDLE stdin_read = nullptr;
 HANDLE stdin_write = nullptr;
 HANDLE stdout_read = nullptr;
 HANDLE stdout_write = nullptr;
-std::atomic_bool stop_pipe;
+std::atomic<bool> stop_pipe;
 
 static bool create_stdio_pipes() {
   stop_pipe.store(false);
