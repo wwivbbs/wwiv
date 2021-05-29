@@ -156,30 +156,40 @@ static void edit_matrix_entry(const Config& config, wwivd_matrix_entry_t& b) {
 
   {
     int y = 1;
-    items.add(new Label("Key:"), new StringEditItem<char*>(1, key, EditLineMode::ALL), 1, y);
+    items.add(new Label("Key:"), 
+      new StringEditItem<char*>(1, key, EditLineMode::ALL),
+      "Key to press to select this bbs", 1, y);
     y++;
-    items.add(new Label("Name:"),
-              new StringEditItem<std::string&>(12, b.name, EditLineMode::ALL), 1, y);
+    items.add(new Label("Name:"), new StringEditItem<std::string&>(12, b.name, EditLineMode::ALL),
+              "Name of the BBS (i.e WWIV)", 1, y);
     y++;
     items.add(new Label("Description:"),
-              new StringEditItem<std::string&>(52, b.description, EditLineMode::ALL), 1, y);
+              new StringEditItem<std::string&>(52, b.description, EditLineMode::ALL),
+              "Longer description for this BBS", 1, y);
     y++;
     items.add(new Label("Working Dir:"),
-              new StringFilePathItem(52, config.root_directory(), b.working_directory), 1, y);
+              new StringFilePathItem(52, config.root_directory(), b.working_directory), 
+              "Directory to set as working directory when launching the BBS", 1, y);
     y++;
     items.add(new Label("Telnet Command:"),
-              new StringEditItem<std::string&>(52, b.telnet_cmd, EditLineMode::ALL), 1, y);
+              new StringEditItem<std::string&>(52, b.telnet_cmd, EditLineMode::ALL), 
+              "Commandline to use when launching the BBS for a telnet connection", 1, y);
     y++;
     items.add(new Label("SSH Command:"),
-              new StringEditItem<std::string&>(52, b.ssh_cmd, EditLineMode::ALL), 1, y);
+              new StringEditItem<std::string&>(52, b.ssh_cmd, EditLineMode::ALL), 
+              "Commandline to use when launching the BBS for a SSH connection", 1, y);
     y++;
-    items.add(new Label("Require Ansi:"), new BooleanEditItem(&b.require_ansi), 1, y);
+    items.add(new Label("Require Ansi:"), new BooleanEditItem(&b.require_ansi), 
+              "Does this BBS require ANSI support", 1, y);
     y++;
-    items.add(new Label("Start Node:"), new NumberEditItem<int>(&b.start_node), 1, y);
+    items.add(new Label("Start Node:"), new NumberEditItem<int>(&b.start_node), 
+              "Starting node number to use for telnet/SSH connections", 1, y);
     y++;
-    items.add(new Label("End Node:"), new NumberEditItem<int>(&b.end_node), 1, y);
+    items.add(new Label("End Node:"), new NumberEditItem<int>(&b.end_node), 
+              "Ending node number to use for telnet/SSH connections", 1, y);
     y++;
-    items.add(new Label("Local Node:"), new NumberEditItem<int>(&b.local_node), 1, y);
+    items.add(new Label("Local Node:"), new NumberEditItem<int>(&b.local_node), 
+              "node number to use for local BBS session", 1, y);
     y++;
     items.add(new Label("Data Mode:"),
               new ToggleEditItem<wwiv::sdk::wwivd_data_mode_t>(data_modes, &b.data_mode),
@@ -244,12 +254,19 @@ static wwivd_matrix_entry_t CreateWWIVMatrixEntry() {
   e.key = 'W';
   e.description = "WWIV";
   e.name = "WWIV";
-  e.local_node = 1;
   e.require_ansi = false;
-  e.start_node = 2;
-  e.end_node = 4;
-  e.telnet_cmd = "./bbs -XT -H@H -N@N";
-  e.ssh_cmd = "./bbs -XS -H@H -N@N";
+  e.start_node = 1;
+  e.end_node = 3;
+  e.local_node = 4;
+#if defined(__OS2__)
+  e.telnet_cmd = File::FixPathSeparators("./bbs -XP -N@N");
+  e.ssh_cmd = "";
+  e.data_mode = wwivd_data_mode_t::socket;
+#else
+  e.telnet_cmd = File::FixPathSeparators("./bbs -XT -H@H -N@N");
+  e.ssh_cmd = File::FixPathSeparators("./bbs -XS -H@H -N@N");
+  e.data_mode = wwivd_data_mode_t::socket;
+#endif
   return e;
 }
 
@@ -259,13 +276,14 @@ wwivd_config_t LoadDaemonConfig(const wwiv::sdk::Config& config) {
   wwivd_config_t c{};
   if (!c.Load(config)) {
     c.binkp_port = -1;
-    c.telnet_port =
-#ifdef _WIN32
-        23;
-#else
-        2323;
+    c.ssh_port = 22;
+    c.telnet_port = 23;
+#if defined(__unix__)
+    c.telnet_port = 2323;
+#elif defined(__OS2__)
+    c.ssh_port = -1;
 #endif
-    c.http_port = 8080;
+    c.http_port = 59948; // 5WWIV on the telephone keypad.
     c.http_address = "127.0.0.1";
     c.binkp_cmd = File::FixPathSeparators("./networkb --receive --handle=@H");
     c.network_callout_cmd = File::FixPathSeparators("./networkb --send --net=@T --node=@N");
@@ -300,7 +318,6 @@ void wwivd_ui(const Config& config) {
   items.add(new Label("Telnet Port:"),
             new NumberEditItem<int>(&c.telnet_port),
             "Telnet Server Port Number (or -1 to disable).", 1, y);
-  //y++;
   items.add(new Label("SSH Port:"),
             new NumberEditItem<int>(&c.ssh_port),
             "SSH Server Port Number (or -1 to disable).", 3, y);
