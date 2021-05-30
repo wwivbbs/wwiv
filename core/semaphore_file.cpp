@@ -19,6 +19,7 @@
 #include "core/semaphore_file.h"
 
 #include "stl.h"
+#include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
 #include <cerrno>
@@ -101,9 +102,9 @@ SemaphoreFile::~SemaphoreFile() {
   }
   fd_ = -1;
 #ifndef _WIN32
-  // Since we don't have O_TEMPORARY on POSIX, we unlink the file
+  // Since we don't have O_TEMPORARY outside of WIN32, we unlink the file
   // which will delete it once the last file handle is closed.
-  if (::unlink(path_.string().c_str()) == -1) {
+  if (!File::Remove(path_, true)) {
     LOG(ERROR) << "Failed to unlink file: " << path_ << "; error: " << errno;
   }
 #endif  // _WIN32

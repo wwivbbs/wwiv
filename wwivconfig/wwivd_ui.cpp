@@ -259,9 +259,10 @@ static wwivd_matrix_entry_t CreateWWIVMatrixEntry() {
   e.end_node = 3;
   e.local_node = 4;
 #if defined(__OS2__)
-  e.telnet_cmd = File::FixPathSeparators("./bbs -XP -N@N");
+  e.working_directory = File::current_directory().string();
+  e.telnet_cmd = File::FixPathSeparators("bbs.exe -XP -N@N");
   e.ssh_cmd = "";
-  e.data_mode = wwivd_data_mode_t::socket;
+  e.data_mode = wwivd_data_mode_t::pipe;
 #else
   e.telnet_cmd = File::FixPathSeparators("./bbs -XT -H@H -N@N");
   e.ssh_cmd = File::FixPathSeparators("./bbs -XS -H@H -N@N");
