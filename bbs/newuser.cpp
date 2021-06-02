@@ -724,14 +724,15 @@ void SendNewUserFeedbackIfRequired() {
 
 void ExecNewUserCommand() {
   if (!a()->sess().hangup() && !a()->newuser_cmd.empty()) {
-    const auto commandLine = stuff_in(a()->newuser_cmd, create_chain_file(), "", "", "", "");
+    wwiv::bbs::CommandLine cl(a()->newuser_cmd);
+    cl.args(create_chain_file());
 
     // Log what is happening here.
     sysoplog(false) << "Executing New User Event: ";
-    sysoplog() << commandLine;
+    sysoplog() << cl.cmdline();
 
     a()->WriteCurrentUser();
-    ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_NEWUSER));
+    ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_NEWUSER));
     a()->ReadCurrentUser();
   }
 }

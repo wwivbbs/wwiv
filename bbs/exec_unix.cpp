@@ -38,6 +38,7 @@
 #endif
 
 #include "bbs/bbs.h"
+#include "bbs/stuffin.h"
 #include "common/context.h"
 #include "common/output.h"
 #include "common/remote_io.h"
@@ -116,10 +117,11 @@ static int ReadWriteBinary(int sock, int pty_fd, fd_set& rfd) {
   return 0;
 }
 
-static int UnixSpawn(const std::string& cmd, int flags, int sock) {
-  if (cmd.empty()) {
+static int UnixSpawn(const wwiv::bbs::CommandLine& cmdline, int flags, int sock) {
+  if (cmdline.empty()) {
     return 1;
   }
+  auto cmd = cmdline.cmdline();
   VLOG(1) << "Exec: '" << cmd << "' errno: " << errno;
 
   int pid = -1;
@@ -220,7 +222,7 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
   return -1;
 }
 
-int exec_cmdline(const std::string& cmdline, int flags) {
+int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
   if (flags & EFLAG_SYNC_FOSSIL) {
     LOG(ERROR) << "EFLAG_SYNC_FOSSIL is not supported on UNIX";
   }

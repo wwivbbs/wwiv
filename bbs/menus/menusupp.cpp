@@ -978,8 +978,9 @@ void LogOffCmd() {
   }
 
   bout.nl();
-  const auto cmd = stuff_in(a()->logoff_cmd, create_chain_file(), "", "", "", "");
-  ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGOFF));
+  wwiv::bbs::CommandLine cl(a()->logoff_cmd);
+  cl.args(create_chain_file());
+  ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_LOGOFF));
   bout.nl(2);
 }
 

@@ -999,8 +999,9 @@ void beginday(bool displayStatus) {
   }
   if (!a()->beginday_cmd.empty()) {
     LOG(INFO) << "Beginday command not empty, executing: " << a()->beginday_cmd;
-    const auto commandLine = stuff_in(a()->beginday_cmd, create_chain_file(), "", "", "", "");
-    ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_BEGINDAY));
+    wwiv::bbs::CommandLine cl(a()->beginday_cmd);
+    cl.args(create_chain_file());
+    ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_BEGINDAY));
   }
   if (displayStatus) {
     bout << "  |#7* |#1Purging inactive users (if enabled)...\r\n";

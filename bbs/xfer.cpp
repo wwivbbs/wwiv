@@ -66,9 +66,10 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   const auto comport = std::to_string(a()->sess().incom() ? a()->primary_port() : 0);
   const auto& d = a()->dirs()[directory_num];
   const auto dir_path = File::absolute(a()->bbspath(), d.path);
-  const auto cmd_line = stuff_in(a()->upload_cmd, create_chain_file(), dir_path.string(),
-                                FileName(u->filename).unaligned_filename(), comport, "");
-  ExecuteExternalProgram(cmd_line, a()->spawn_option(SPAWNOPT_ULCHK));
+  wwiv::bbs::CommandLine cl(a()->upload_cmd);
+  cl.args(create_chain_file(), dir_path.string(), FileName(u->filename).unaligned_filename(),
+          comport);
+  ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_ULCHK));
 
   if (const auto file = FilePath(dir_path, FileName(u->filename)); !File::Exists(file)) {
     sysoplog() << "File \"" << u->filename << "\" to " << a()->dirs()[directory_num].name << " deleted by UL event.";
@@ -161,7 +162,8 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
         bout << ((++line_num % 2) ? "|#9" : "|#1") << line << wwiv::endl;
       }
     } else {
-      return_code = ExecuteExternalProgram(cmd.cmd, a()->spawn_option(SPAWNOPT_ARCH_L));
+      wwiv::bbs::CommandLine cl(cmd.cmd);
+      return_code = ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_ARCH_L));
     }
   } else {
     bout << "\r\nUnknown archive: " << file_name << "\r\n";

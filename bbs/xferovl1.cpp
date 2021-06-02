@@ -209,7 +209,8 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
     // Can't handle internal extract
     return std::nullopt;
   }
-  ExecuteExternalProgram(cmd.value().cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
+  wwiv::bbs::CommandLine cl(cmd.value().cmd);
+  ExecuteExternalProgram(cl, EFLAG_NOHUP | EFLAG_TEMP_DIR);
   auto diz_fn = FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ);
   VLOG(1) << "Checking for diz: " << diz_fn;
   if (auto o = FindFile(diz_fn)) {

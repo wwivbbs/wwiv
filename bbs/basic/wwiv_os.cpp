@@ -30,8 +30,8 @@ using namespace wwiv::strings;
 
 namespace wwiv::bbs::basic {
 
-static int chain_type_to_flags(chain_type_t c, file_location_t loc) {
-  auto flags = 0;
+static uint32_t chain_type_to_flags(chain_type_t c, file_location_t loc) {
+  uint32_t flags = 0;
   if (c == chain_type_t::FOSSIL) {
     flags |= EFLAG_SYNC_FOSSIL;
   } else if (c == chain_type_t::STDIO) {
@@ -92,7 +92,8 @@ bool RegisterNamespaceWWIVOS(mb_interpreter_t* basi) {
     const auto& opt = stl::at(sd->exec_options, handle.value());
 
     LOG(INFO) << "Execute Command: " << cmd.value();
-    const auto ret = ExecuteExternalProgram(cmd.value(), chain_type_to_flags(opt.type, opt.loc));
+    const auto ret = ExecuteExternalProgram(wwiv::bbs::CommandLine(cmd.value()),
+                                            chain_type_to_flags(opt.type, opt.loc));
 
     return mb_push_int(bas, l, ret == 0 ? 1 : 0);
   });

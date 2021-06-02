@@ -19,6 +19,7 @@
 #ifndef INCLUDED_BBS_UTILITY_H
 #define INCLUDED_BBS_UTILITY_H
 
+#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -42,6 +43,6 @@ bool ok_external_fsed();
 bool okfsed();
 /** True if an internal fsed is enabled and user has ansi */
 bool ok_internal_fsed();
-int ansir_to_flags(uint16_t ansir);
+uint32_t ansir_to_flags(uint16_t ansir);
 
 #endif

@@ -18,6 +18,7 @@
 #ifndef INCLUDED_BBS_EXECEXTERNAL_H
 #define INCLUDED_BBS_EXECEXTERNAL_H
 
+#include "bbs/stuffin.h"
 #include <string>
 
 /**
@@ -29,6 +30,6 @@
  *
  * flags are the EFLAG_XXXX flags defined in vardec.h
  */
-int ExecuteExternalProgram(const std::string& command_line, int flags);
+int ExecuteExternalProgram(wwiv::bbs::CommandLine& command_line, uint32_t flags);
 
 #endif

@@ -451,15 +451,16 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       prstatus();
       bin.getkey();
       break;
-    case 'T':
+    case 'T': {
       if (a()->terminal_command.empty()) {
         bout << "Terminal Command not specified. " << wwiv::endl
              << " Please set TERMINAL_CMD in wwiv.ini" << wwiv::endl;
         bin.getkey();
         break;
       }
-      exec_cmdline(a()->terminal_command, INST_FLAGS_NONE);
-      break;
+      wwiv::bbs::CommandLine cl(a()->terminal_command);
+      exec_cmdline(cl, INST_FLAGS_NONE);
+    } break;
     case 'U': {
       // User edit
       auto exe = FilePath(a()->bindir(), "wwivconfig");
@@ -468,8 +469,8 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       // we don't use MakeAbsCmd on this, it's without .exe.
       exe.replace_extension(".exe");
 #endif // _WIN32
-      const auto cmd = StrCat(exe.string(), " --user_editor");
-      exec_cmdline(cmd, INST_FLAGS_NONE);
+      wwiv::bbs::CommandLine cl(StrCat(exe.string(), " --user_editor"));
+      exec_cmdline(cl, INST_FLAGS_NONE);
     } break;
     case 'V': {
       // InitVotes

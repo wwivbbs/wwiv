@@ -264,7 +264,7 @@ public:
 
   [[nodiscard]] bool HasConfigFlag(int nFlag) const { return (flags_ & nFlag) != 0; }
 
-  [[nodiscard]] uint16_t spawn_option(const std::string& c) const { return spawn_opts_.at(c); }
+  [[nodiscard]] uint32_t spawn_option(const std::string& c) const { return spawn_opts_.at(c); }
 
   void set_at_wfc(bool b) { at_wfc_ = b; }
   [[nodiscard]] bool at_wfc() const { return at_wfc_; }
@@ -468,7 +468,7 @@ private:
 
   // Former global variables and system_operation_rec members to be moved
   uint32_t flags_{0};
-  std::map<const std::string, uint16_t> spawn_opts_;
+  std::map<const std::string, uint32_t> spawn_opts_;
   bool full_screen_read_prompt_{true};
   int last_read_user_number_{0};
   std::chrono::duration<double> extratimecall_{};

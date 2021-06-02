@@ -73,11 +73,11 @@ static bool external_edit_internal(const std::string& edit_filename, const std::
   const auto orig_file_time = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
 
   const auto num_screen_lines = a()->user()->screen_lines();
-  const auto cmdLine = stuff_in(editorCommand, tft_fn.string(),
-                                std::to_string(a()->user()->screen_width()),
-                                std::to_string(num_screen_lines), std::to_string(numlines), "");
+  wwiv::bbs::CommandLine cl(editorCommand);
+  cl.args(tft_fn.string(), std::to_string(a()->user()->screen_width()),
+          std::to_string(num_screen_lines), std::to_string(numlines));
 
-  ExecuteExternalProgram(cmdLine, ansir_to_flags(editor.ansir) | EFLAG_NO_CHANGE_DIR);
+  ExecuteExternalProgram(cl, ansir_to_flags(editor.ansir) | EFLAG_NO_CHANGE_DIR);
   bout.clear_lines_listed();
 
   const auto file_time_now = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;

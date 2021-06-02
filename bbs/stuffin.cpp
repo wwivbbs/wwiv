@@ -21,6 +21,7 @@
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/dropfile.h"
+#include "bbs/make_abs_cmd.h"
 #include "bbs/utility.h"
 #include "common/context.h"
 #include "common/output.h"
@@ -36,6 +37,7 @@
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
+namespace wwiv::bbs {
 /**
  * Gets the time left in minutes.
  */
@@ -80,8 +82,9 @@ static unsigned int GetTimeLeft() {
  *
  * \endverbatim 
 */
-std::string stuff_in(const std::string& commandline, const std::string& arg1, const std::string& arg2,
-                     const std::string& arg3, const std::string& arg4, const std::string& arg5) {
+std::string CommandLine::stuff_in(const std::string& commandline, const std::string arg1,
+                                         const std::string arg2, const std::string arg3,
+                                         const std::string arg4, const std::string arg5) const {
   std::vector<std::string> flags = {arg1, arg2, arg3, arg4, arg5};
 
   auto iter = begin(commandline);
@@ -89,8 +92,7 @@ std::string stuff_in(const std::string& commandline, const std::string& arg1, co
   while (iter != end(commandline)) {
     if (*iter == '%') {
       ++iter;
-      const auto ch = to_upper_case<char>(*iter);
-      switch (ch) {
+      switch (const auto ch = to_upper_case<char>(*iter); ch) {
       // fixed strings
       case '%':
         os << "%";
@@ -153,6 +155,11 @@ std::string stuff_in(const std::string& commandline, const std::string& arg1, co
       case 'U':
         os << a()->user()->name();
         break;
+      default: {
+        if (wwiv::stl::contains(args_, ch)) {
+          os << args_.at(ch);
+        }
+      } break;
       }
       ++iter;
     } else {
@@ -160,4 +167,48 @@ std::string stuff_in(const std::string& commandline, const std::string& arg1, co
     }
   }
   return os.str();
+}
+
+std::string CommandLine::cmdline() const { 
+  auto cmd = stuff_in(cmd_, arg1_, arg2_, arg3_, arg4_, arg5_);
+  if (cmdtype_ == cmdtype_t::absolute) {
+    make_abs_cmd(bbs_root_, &cmd);
+  }
+  return cmd;
+}
+
+void CommandLine::args(const std::string arg1, const std::string arg2,
+                        const std::string arg3, const std::string arg4,
+                        const std::string arg5) {
+  arg1_ = arg1;
+  arg2_ = arg2;
+  arg3_ = arg3;
+  arg4_ = arg4;
+  arg5_ = arg5;
+}
+
+void CommandLine::arg(int n, const std::string& arg) {
+  switch (n) {
+  case 1:
+    arg1_ = arg;
+    break;
+  case 2:
+    arg2_ = arg;
+    break;
+  case 3:
+    arg3_ = arg;
+    break;
+  case 4:
+    arg4_ = arg;
+    break;
+  case 5:
+    arg5_ = arg;
+    break;
+  }
+}
+
+void CommandLine::add(char key, std::string value) {
+  args_.emplace(to_upper_case_char(key), value);
+}
+
 }

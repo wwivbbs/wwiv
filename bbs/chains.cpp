@@ -152,10 +152,6 @@ void run_chain(int chain_num) {
   write_inst(INST_LOC_CHAINS, chain_num + 1, INST_FLAGS_NONE);
   a()->chains->increment_chain_usage(chain_num);
   a()->chains->Save();
-  const auto chainCmdLine =
-      stuff_in(c.filename, create_chain_file(), std::to_string(a()->modem_speed_),
-               std::to_string(a()->primary_port()), std::to_string(a()->modem_speed_), "");
-
   sysoplog() << "!Ran \"" << c.description << "\"";
   a()->user()->chains_run(a()->user()->chains_run() + 1);
 #ifdef _WIN32
@@ -171,7 +167,10 @@ void run_chain(int chain_num) {
     // NetFoss requires launching from the temp dir.
     flags |= EFLAG_TEMP_DIR;
   }
-  ExecuteExternalProgram(chainCmdLine, flags);
+  wwiv::bbs::CommandLine cl(c.filename);
+  cl.args(create_chain_file(), std::to_string(a()->modem_speed_),
+          std::to_string(a()->primary_port()), std::to_string(a()->modem_speed_));
+  ExecuteExternalProgram(cl, flags);
   write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
   if (c.pause){
      bout.pausescr();

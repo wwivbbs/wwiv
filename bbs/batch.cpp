@@ -596,32 +596,39 @@ static std::filesystem::path make_dl_batch_list() {
 
 static void run_cmd(const std::string& orig_commandline, const std::string& downlist, const std::string& uplist,
                     const std::string& dl, bool bHangupAfterDl) {
-  std::string commandLine = stuff_in(orig_commandline,
-                                std::to_string(std::min<int>(a()->modem_speed_, 57600)),
-                                std::to_string(a()->primary_port()),
-                                downlist,
-                                std::to_string(std::min<int>(a()->modem_speed_, 57600)),
-                                uplist);
-
-  if (!commandLine.empty()) {
-    make_abs_cmd(a()->bbspath(), &commandLine);
-    a()->Cls();
-    const auto user_name_number = a()->user()->name_and_number();
-    const auto message = fmt::sprintf("%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
-                                      user_name_number, a()->modem_speed_, dl, commandLine);
-    bout.localIO()->Puts(message);
-    if (a()->sess().incom()) {
-      File::Remove(a()->dsz_logfile_name_, true);
-      ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_PROT_BATCH) | EFLAG_BATCH_DIR);
-      if (bHangupAfterDl) {
-        bihangup();
-      } else {
-        bout << "\r\n|#9Please wait...\r\n\n";
-      }
-      ProcessDSZLogFile(a()->dsz_logfile_name_);
-      a()->UpdateTopScreen();
+  if (orig_commandline.empty()) {
+    if (!downlist.empty()) {
+      File::Remove(downlist, true);
     }
+    if (!uplist.empty()) {
+      File::Remove(uplist, true);
+    }
+    return;
   }
+
+  wwiv::bbs::CommandLine cl(orig_commandline, a()->bbspath());
+  cl.args(std::to_string(std::min<int>(a()->modem_speed_, 57600)),
+          std::to_string(a()->primary_port()),
+          downlist,
+          std::to_string(std::min<int>(a()->modem_speed_, 57600)),
+          uplist);
+  a()->Cls();
+  const auto user_name_number = a()->user()->name_and_number();
+  const auto message = fmt::format("{} is currently online at {} bps\r\n\r\n{}\r\n{}\r\n",
+                                    user_name_number, a()->modem_speed_, dl, cl.cmdline());
+  bout.localIO()->Puts(message);
+  if (a()->sess().incom()) {
+    File::Remove(a()->dsz_logfile_name_, true);
+    ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_PROT_BATCH) | EFLAG_BATCH_DIR);
+    if (bHangupAfterDl) {
+      bihangup();
+    } else {
+      bout << "\r\n|#9Please wait...\r\n\n";
+    }
+    ProcessDSZLogFile(a()->dsz_logfile_name_);
+    a()->UpdateTopScreen();
+  }
+    
   if (!downlist.empty()) {
     File::Remove(downlist, true);
   }

@@ -46,17 +46,18 @@ public:
 };
 
 TEST_F(StuffInTest, SimpleCase) {
-  const auto actual = stuff_in("foo %1 %c %2 %k", "one", "two", "", "", "");
+  wwiv::bbs::CommandLine cl("foo %1 %c %2 %k");
+  cl.args("one", "two");
 
   std::ostringstream os;
   os << "foo one " << t(DROPFILE_CHAIN_TXT) << " two " << helper.gfiles() << COMMENT_TXT;
   const auto expected = os.str();
 
-  EXPECT_EQ(expected, actual);
+  EXPECT_EQ(expected, cl.cmdline());
 }
 
 TEST_F(StuffInTest, Empty) {
-  const auto actual = stuff_in("", "", "", "", "", "");
+  wwiv::bbs::CommandLine actual("");
   EXPECT_TRUE(actual.empty());
 }
 
@@ -65,10 +66,11 @@ TEST_F(StuffInTest, Empty) {
 //  %%       A single '%'                      "%"
 //  %1-%5    Specified passed-in parameter
 TEST_F(StuffInTest, AllNumbers) {
-  const auto actual = stuff_in("%0%1%2%3%4%5%6%%", "1", "2", "3", "4", "5");
+  wwiv::bbs::CommandLine cl("%0%1%2%3%4%5%6%%");
+  cl.args("1", "2", "3", "4", "5");
   const std::string expected = "12345%";
 
-  EXPECT_EQ(expected, actual);
+  EXPECT_EQ(expected, cl.cmdline());
 }
 
 // Param     Description                       Example
@@ -80,15 +82,15 @@ TEST_F(StuffInTest, AllNumbers) {
 //  %2 %k"; %O       pcboard full pathname             "c:\wwiv\temp\pcboard.sys" %R       door full
 //  pathname                "c:\wwiv\temp\door.sys"
 TEST_F(StuffInTest, AllDropFiles) {
-  const auto actual_lower = stuff_in("%a %c %d %e %o %r ", "", "", "", "", "");
-  const auto actual_upper = stuff_in("%A %C %D %E %O %R ", "", "", "", "", "");
+  wwiv::bbs::CommandLine actual_lower("%a %c %d %e %o %r ");
+  wwiv::bbs::CommandLine actual_upper("%A %C %D %E %O %R ");
 
   std::ostringstream expected;
   expected << t("callinfo.bbs") << " " << t(DROPFILE_CHAIN_TXT) << " " << t("dorinfo1.def") << " "
            << t("door32.sys") << " " << t("pcboard.sys") << " " << t("door.sys") << " ";
 
-  EXPECT_EQ(expected.str(), actual_lower);
-  EXPECT_EQ(expected.str(), actual_upper);
+  EXPECT_EQ(expected.str(), actual_lower.cmdline());
+  EXPECT_EQ(expected.str(), actual_upper.cmdline());
 }
 
 // Param     Description                       Example
@@ -97,12 +99,15 @@ TEST_F(StuffInTest, AllDropFiles) {
 //  %P       Com port number                   "1"
 TEST_F(StuffInTest, PortAndNode) {
   a()->sess().incom(false);
-  EXPECT_EQ(std::string("0"), stuff_in("%P", "", "", "", "", ""));
+  wwiv::bbs::CommandLine c0("%P");
+  EXPECT_EQ(std::string("0"), c0.cmdline());
 
   a()->sess().incom(true);
-  EXPECT_EQ(std::string("1"), stuff_in("%P", "", "", "", "", ""));
+  wwiv::bbs::CommandLine c1("%P");
+  EXPECT_EQ(std::string("1"), c1.cmdline());
 
-  EXPECT_EQ(std::string("42"), stuff_in("%N", "", "", "", "", ""));
+  wwiv::bbs::CommandLine cn("%N");
+  EXPECT_EQ(std::string("42"), cn.cmdline());
 }
 
 // Param     Description                       Example
@@ -110,10 +115,18 @@ TEST_F(StuffInTest, PortAndNode) {
 //  %M       Modem baud rate                   "14400"
 //  %S       Com port baud rate                "38400"
 TEST_F(StuffInTest, Speeds) {
-  EXPECT_EQ(std::string("0"), stuff_in("%M", "", "", "", "", ""));
-  EXPECT_EQ(std::string("0"), stuff_in("%S", "", "", "", "", ""));
+  {
+    wwiv::bbs::CommandLine cm("%M");
+    EXPECT_EQ(std::string("0"), cm.cmdline());
+    wwiv::bbs::CommandLine cs("%S");
+    EXPECT_EQ(std::string("0"), cs.cmdline());
+  }
 
-  a()->modem_speed_ = 38400;
-  EXPECT_EQ(std::string("38400"), stuff_in("%M", "", "", "", "", ""));
-  EXPECT_EQ(std::string("38400"), stuff_in("%S", "", "", "", "", ""));
+  {
+    a()->modem_speed_ = 38400;
+    wwiv::bbs::CommandLine cm("%M");
+    EXPECT_EQ(std::string("38400"), cm.cmdline());
+    wwiv::bbs::CommandLine cs("%S");
+    EXPECT_EQ(std::string("38400"), cs.cmdline());
+  }
 }

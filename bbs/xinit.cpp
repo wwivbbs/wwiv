@@ -98,7 +98,7 @@ void StatusManagerCallback(int i) {
 }
 
 // Turns a string into a bit mapped unsigned short flag for use with ExecuteExternalProgram.
-static uint16_t str2spawnopt(const std::string& s) {
+static uint32_t str2spawnopt(const std::string& s) {
   auto return_val = EFLAG_NONE;
   const auto ts = ToStringUpperCase(s);
 
@@ -137,6 +137,12 @@ static uint16_t str2spawnopt(const std::string& s) {
   }
   if (ts.find("QWK_DIR") != std::string::npos) {
     return_val |= EFLAG_QWK_DIR;
+  }
+  if (ts.find("LISTEN_SOCK") != std::string::npos) {
+    return_val |= EFLAG_LISTEN_SOCK;
+  }
+  if (ts.find("UNIX_SOCK") != std::string::npos) {
+    return_val |= EFLAG_UNIX_SOCK;
   }
   return return_val;
 }

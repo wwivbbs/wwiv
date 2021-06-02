@@ -115,16 +115,17 @@ int extern_prot(int num, const std::filesystem::path& path, bool bSending) {
   // Use this since fdsz doesn't like 115200
   const auto xfer_speed = std::to_string(std::min<int>(a()->modem_speed_, 57600));
   const auto primary_port= fmt::format("{:d}", a()->primary_port());
-  if (const auto command = stuff_in(s1, xfer_speed, primary_port, path.string(), xfer_speed, "");
-      !command.empty()) {
+  wwiv::bbs::CommandLine cl(s1);
+  cl.args(xfer_speed, primary_port, path.string(), xfer_speed);
+  if (!cl.empty()) {
     a()->ClearTopScreenProtection();
     ScopeExit at_exit([]{ a()->UpdateTopScreen(); });
     bout.localIO()->Puts(fmt::format("{} is currently online at {} bps\r\n\r\n",
                                      a()->user()->name_and_number(), a()->modem_speed_));
-    bout.localIO()->Puts(command);
+    bout.localIO()->Puts(cl.cmdline());
     bout.localIO()->Puts("\r\n");
     if (a()->sess().incom()) {
-      return ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_PROT_SINGLE));
+      return ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_PROT_SINGLE));
     }
   }
   return -5;

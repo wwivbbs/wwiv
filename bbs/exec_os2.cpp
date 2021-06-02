@@ -20,6 +20,7 @@
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
+#include "bbs/stuffin.h"
 #include "common/output.h"
 #include "common/remote_io.h"
 #include "core/log.h"
@@ -30,12 +31,13 @@
 #include <string>
 
 
-int exec_cmdline(const std::string& cmd, int flags) {
+int exec_cmdline(const wwiv::bbs::CommandLine& cmdline, int flags) {
   if (a()->sess().ok_modem_stuff() && a()->sess().using_modem()) {
     VLOG(1) <<"Closing remote IO";
     bout.remoteIO()->close(true);
   }
 
+  const auto cmd = cmdline.cmdline();
   auto res = system(cmd.c_str());
 
   if (a()->sess().ok_modem_stuff() && a()->sess().using_modem()) {

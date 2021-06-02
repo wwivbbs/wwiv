@@ -29,8 +29,8 @@
 
 using namespace wwiv::core;
 
-static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nFlags) {
-  LOG(INFO) << "ExecuteExternalProgram: " << commandLine;
+static int ExecuteExternalProgramNoScript(wwiv::bbs::CommandLine& commandLine, uint32_t nFlags) {
+  LOG(INFO) << "ExecuteExternalProgram: " << commandLine.cmdline();
   // forget it if the user has hung up
   if (!(nFlags & EFLAG_NOHUP)) {
     if (a()->CheckForHangup()) {
@@ -85,14 +85,15 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   return return_code;
 }
 
-int ExecuteExternalProgram(const std::string& command_line, int flags) {
+int ExecuteExternalProgram(wwiv::bbs::CommandLine& cmdline, uint32_t flags) {
+  auto command_line = cmdline.cmdline();
   if (command_line.front() != '@') {
-    return ExecuteExternalProgramNoScript(command_line, flags);
+    return ExecuteExternalProgramNoScript(cmdline, flags);
   }
 
   if (flags & EFLAG_NOSCRIPT) {
     LOG(WARNING) << "Not running '" << command_line << "' as a script since EFLAG_NOSCRIPT is specified.";
-    return ExecuteExternalProgramNoScript(command_line, flags);
+    return ExecuteExternalProgramNoScript(cmdline, flags);
   }
  
   // Let's see if we need to run a basic script.

@@ -1394,8 +1394,8 @@ bool Application::CheckForHangup() {
 void Application::Hangup(hangup_type_t t) {
   if (!cleanup_cmd.empty()) {
     bout.nl();
-    const auto cmd = stuff_in(cleanup_cmd, "", "", "", "", "");
-    ExecuteExternalProgram(cmd, spawn_option(SPAWNOPT_CLEANUP));
+    wwiv::bbs::CommandLine sc(cleanup_cmd);
+    ExecuteExternalProgram(sc, spawn_option(SPAWNOPT_CLEANUP));
     bout.nl(2);
   }
   if (sess().hangup()) {

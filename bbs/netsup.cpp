@@ -120,8 +120,9 @@ void cleanup_net() {
     ss << " --process_instance=" << a()->sess().instance_number();
     ss << " ." << nNetNumber;
     const auto networkc_cmd = ss.str();
-    VLOG(1) << "Executing Network Command: '" << networkc_cmd << "'";
-    ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG | EFLAG_NOHUP);
+    wwiv::bbs::CommandLine cl(networkc_cmd);
+    VLOG(1) << "Executing Network Command: '" << cl.cmdline() << "'";
+    ExecuteExternalProgram(cl, EFLAG_NETPROG | EFLAG_NOHUP);
     a()->status_manager()->reload_status();
     a()->sess().SetCurrentReadMessageArea(-1);
     a()->ReadCurrentUser(1);
@@ -156,7 +157,8 @@ static void do_callout(const Network& net, int sn) {
   }
   bout << "|#7Commandline is: |#2" << cmd << wwiv::endl
        << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
-  ExecuteExternalProgram(cmd, EFLAG_NETPROG | EFLAG_NOHUP);
+  wwiv::bbs::CommandLine cl(cmd);
+  ExecuteExternalProgram(cl, EFLAG_NETPROG | EFLAG_NOHUP);
   a()->status_manager()->reload_status();
   cleanup_net();
 }

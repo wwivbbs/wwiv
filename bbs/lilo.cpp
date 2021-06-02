@@ -883,8 +883,9 @@ void logon() {
   bout.pausescr();
   if (!a()->logon_cmd.empty()) {
     bout.nl();
-    const auto cmd = stuff_in(a()->logon_cmd, create_chain_file(), "", "", "", "");
-    ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGON));
+    wwiv::bbs::CommandLine cl(a()->logon_cmd);
+    cl.args(create_chain_file());
+    ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_LOGON));
     bout.nl(2);
   }
 

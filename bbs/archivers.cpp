@@ -79,9 +79,8 @@ std::optional<arc_command_t> get_arc_cmd(const std::string& arc_fn, arc_command_
     c.internal = true;
     return {c};
   }
-
-  auto out = stuff_in(cmdline, arc_fn, ofn, "", "", "");
-  make_abs_cmd(a()->bbspath(), &out);
-  arc_command_t c{false, out};
+  wwiv::bbs::CommandLine cl(cmdline, a()->bbspath());
+  cl.args(arc_fn, ofn);
+  arc_command_t c{false, cl.cmdline()};
   return {c};
 }

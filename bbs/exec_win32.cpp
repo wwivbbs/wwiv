@@ -501,11 +501,12 @@ void pump_pipes(HANDLE hProcess) {
   Sleep(100);
 }
 
-int exec_cmdline(const std::string& user_command_line, int flags) {
+int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
+  auto working_cmdline = cmdline.cmdline();
   if ((flags & EFLAG_STDIO) && (flags & EFLAG_SYNC_FOSSIL)) {
     // Not allowed.
-    sysoplog() << "Tried to execute command with sync and stdio: " << user_command_line;
-    LOG(ERROR) << "Tried to execute command with sync and stdio: " << user_command_line;
+    sysoplog() << "Tried to execute command with sync and stdio: " << working_cmdline;
+    LOG(ERROR) << "Tried to execute command with sync and stdio: " << working_cmdline;
     return false;
   }
 
@@ -516,14 +517,13 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
   ZeroMemory(&si, sizeof(si));
   si.cb = sizeof(STARTUPINFO);
   ZeroMemory(&pi, sizeof(pi));
-  std::string working_cmdline = user_command_line;
 
   if (a()->sess().using_modem()) {
     if (flags & EFLAG_SYNC_FOSSIL) {
-      return exec_cmdline_sync(user_command_line, flags, 0);
+      return exec_cmdline_sync(working_cmdline, flags, 0);
     }
     if (flags & EFLAG_COMIO) {
-      return exec_cmdline_sync(user_command_line, flags,
+      return exec_cmdline_sync(working_cmdline, flags,
                                CONST_SBBSFOS_DOSIN_MODE | CONST_SBBSFOS_DOSOUT_MODE);
     }
     
@@ -543,14 +543,14 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
       // N.B. Don't close remote IO.
     } else if (flags & EFLAG_NETFOSS) {
       if (const auto nf_path = create_netfoss_bat()) {
-        working_cmdline = fmt::format("{} {}", nf_path.value(), user_command_line);
+        working_cmdline = fmt::format("{} {}", nf_path.value(), working_cmdline);
         VLOG(1) << "Closing remote IO for NetFOSS";
         bout.remoteIO()->close(true);
         need_reopen_remoteio = true;
       } else {
         ssm(1) << "NetFoss is not installed properly.";
-        sysoplog() << "Failed to create NF.BAT for command: " << user_command_line;
-        LOG(ERROR) << "Failed to create NF.BAT for command: " << user_command_line;
+        sysoplog() << "Failed to create NF.BAT for command: " << working_cmdline;
+        LOG(ERROR) << "Failed to create NF.BAT for command: " << working_cmdline;
         bout.nl(2);
         bout << "|#6Please tell the SysOp to install NetFoss properly." << wwiv::endl;
         bout.nl(2);
@@ -558,7 +558,7 @@ int exec_cmdline(const std::string& user_command_line, int flags) {
         return false;
       }
     } else {
-      // Not STDIO so close remote IO  
+      // Not STDIO or NETFOSS so close remote IO  
       VLOG(1) << "Closing remote IO";
       bout.remoteIO()->close(true);
       need_reopen_remoteio = true;

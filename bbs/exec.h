@@ -19,10 +19,13 @@
 #ifndef INCLUDED_BBS_EXEC_H
 #define INCLUDED_BBS_EXEC_H
 
+#include "bbs/stuffin.h"
 #include <string>
 
 // Used to execute a command, called by ExecuteCommandline and the WFC
-int exec_cmdline(const std::string& user_command_line, int flags);
+//int exec_cmdline(const std::string& user_command_line, int flags);
+
+// Used to execute a command, called by ExecuteCommandline and the WFC
+int exec_cmdline(wwiv::bbs::CommandLine& sc, int flags);
 
 #endif
-

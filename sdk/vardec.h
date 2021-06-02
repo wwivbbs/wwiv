@@ -916,32 +916,37 @@ struct filestatusrec {
 // Execute Flags.  Used when spawning chains and external programs.
 
 // Default option, do nothing.
-constexpr uint16_t EFLAG_NONE = 0x0000;
+constexpr uint32_t EFLAG_NONE = 0x0000;
 // Don't allow running a basic script using the format: '@basic:scriptname.bas'
-constexpr uint16_t EFLAG_NOSCRIPT = 0x0001;
+constexpr uint32_t EFLAG_NOSCRIPT = 0x0001;
 // Don't reset or change the directory.
-constexpr uint16_t EFLAG_NO_CHANGE_DIR = 0x0002;
+constexpr uint32_t EFLAG_NO_CHANGE_DIR = 0x0002;
 // don't check for hangup (typically used for the upload event)
-constexpr uint16_t  EFLAG_NOHUP = 0x0004;
+constexpr uint32_t  EFLAG_NOHUP = 0x0004;
 // redirect DOS IO to com port
-constexpr uint16_t  EFLAG_COMIO = 0x0008;
+constexpr uint32_t  EFLAG_COMIO = 0x0008;
 // Binary Mode: Don't expand telnet IAC or LF -> CR/LF Translation
-constexpr uint16_t  EFLAG_BINARY = 0x0010;
+constexpr uint32_t  EFLAG_BINARY = 0x0010;
 // try running out of net dir first
-constexpr uint16_t  EFLAG_NETPROG = 0x0080;
+constexpr uint32_t  EFLAG_NETPROG = 0x0080;
 // Use Win32 Emulated FOSSIL using NetFOSS
-constexpr uint16_t  EFLAG_NETFOSS = 0x0100;
+constexpr uint32_t  EFLAG_NETFOSS = 0x0100;
 // Use Win32 Emulated FOSSIL using SyncFOSS
-constexpr uint16_t  EFLAG_SYNC_FOSSIL = 0x0200;
+constexpr uint32_t  EFLAG_SYNC_FOSSIL = 0x0200;
 // Use STDIO based doors for Window/Linux.  This will set the stdin/stdout
 // file descriptors to the socket before spawning the chain.
-constexpr uint16_t  EFLAG_STDIO = 0x0400;
+constexpr uint32_t  EFLAG_STDIO = 0x0400;
 // Run out of the TEMP directory instead of the BBS directory
-constexpr uint16_t  EFLAG_TEMP_DIR = 0x0800;
+constexpr uint32_t  EFLAG_TEMP_DIR = 0x0800;
 // Run out of the BATCH directory instead of the BBS directory
-constexpr uint16_t  EFLAG_BATCH_DIR = 0x1000;
+constexpr uint32_t  EFLAG_BATCH_DIR = 0x1000;
 // Run out of the QWK directory instead of the BBS directory
-constexpr uint16_t  EFLAG_QWK_DIR = 0x2000;
+constexpr uint32_t EFLAG_QWK_DIR = 0x2000;
+
+// Use Listening TCP Socket for connectivity
+constexpr uint32_t EFLAG_LISTEN_SOCK = 0x4000;
+// Use Listening UNIX Socket for connectivity
+constexpr uint32_t EFLAG_UNIX_SOCK = 0x8000;
 
 ///////////////////////////////////////////////////////////////////////////////
 

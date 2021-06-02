@@ -353,8 +353,8 @@ bool ok_internal_fsed() { return okansi() && a()->user()->default_editor() == 0x
 
 
 
-int ansir_to_flags(uint16_t ansir) {
-  auto flags = 0;
+uint32_t ansir_to_flags(uint16_t ansir) {
+  uint32_t flags = 0;
   if (!(ansir & ansir_no_DOS)) {
     flags |= EFLAG_COMIO;
   }
