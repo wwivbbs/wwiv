@@ -38,6 +38,7 @@
 #endif
 
 #include "bbs/bbs.h"
+#include "bbs/exec_socket.h"
 #include "bbs/stuffin.h"
 #include "common/context.h"
 #include "common/output.h"
@@ -46,7 +47,12 @@
 #include "core/os.h"
 #include "sdk/vardec.h"
 
+#include <tuple>
+
 static const char SHELL[] = "/bin/bash";
+
+using namespace wwiv::bbs;
+
 
 static int ReadWriteNonBinary(int sock, int pty_fd, fd_set& rfd) {
   if (FD_ISSET(sock, &rfd)) {
@@ -117,19 +123,88 @@ static int ReadWriteBinary(int sock, int pty_fd, fd_set& rfd) {
   return 0;
 }
 
-static int UnixSpawn(const wwiv::bbs::CommandLine& cmdline, int flags, int sock) {
+static void pump_stdio(int sock, int pty_fd, pid_t pid, bool binary) {
+  const auto max_fd = std::max<int>(sock, pty_fd) + 1;
+  for (;;) {
+    fd_set rfd;
+    FD_ZERO(&rfd);
+    if (pty_fd > -1) {
+      FD_SET(pty_fd, &rfd);
+    }
+    FD_SET(sock, &rfd);
+
+    struct timeval tv = {1, 0};
+    auto ret = select(max_fd, &rfd, nullptr, nullptr, &tv);
+    if (ret < 0) {
+      LOG(INFO) << "select returned <0";
+      break;
+    }
+    // N.B. This has been copied to ExecSocket::process_active
+    int status_code = 0;
+    pid_t wp = waitpid(pid, &status_code, WNOHANG);
+    if (wp == -1 || wp > 0) {
+      // -1 means error and >0 is the pid
+      VLOG(2) << "waitpid returned: " << wp << "; errno: " << errno;
+      if (WIFEXITED(status_code)) {
+        VLOG(1) << "child exited with code: " << WEXITSTATUS(status_code);
+        return;
+      }
+      if (WIFSIGNALED(status_code)) {
+        VLOG(1) << "child caught signal: " << WTERMSIG(status_code);
+      } else {
+        LOG(INFO) << "Raw status_code: " << status_code;
+      }
+      LOG(INFO) << "core dump? : " << WCOREDUMP(status_code);
+      return;
+    }
+
+    if (pty_fd != -1) {
+      // Only do this in STDIO mode.
+      if (binary) {
+        ReadWriteBinary(sock, pty_fd, rfd);
+      } else {
+        if (ReadWriteNonBinary(sock, pty_fd, rfd) == -1) {
+          close(pty_fd);
+          return;
+        }
+      }
+    }
+  }
+
+}
+
+static int wait_for_exit(pid_t pid) {
+  // Wait for child to exit.
+  for (;;) {
+    VLOG(1) << "about to call waitpid at the end";
+    // In the parent, wait for the child to terminate.
+    int status_code = 1;
+    if (waitpid(pid, &status_code, 0) == -1) {
+      if (errno != EINTR) {
+        return -1;
+      }
+    } else {
+      return status_code;
+    }
+  }
+  // Should never happen.
+  return -1;
+}
+
+/**
+ * returns a tuple of (pid, pty).
+ * if pid == -1, fork failed.
+ * if pty == -1, there is no pty
+ */
+static std::tuple<pid_t, int> UnixSpawn(const wwiv::bbs::CommandLine& cmdline, int flags, int sock) {
   if (cmdline.empty()) {
-    return 1;
+    std::make_tuple(-1, -1);
   }
   auto cmd = cmdline.cmdline();
-  VLOG(1) << "Exec: '" << cmd << "' errno: " << errno;
+  LOG(INFO) << "Exec: '" << cmd << "'";
 
   int pid = -1;
   int pty_fd = -1;
-  const bool binary = (flags & EFLAG_BINARY);
-  if (binary) {
-    LOG(INFO) << "Binary mode.";
-  }
   if (flags & EFLAG_STDIO) {
     LOG(INFO) << "Exec using STDIO: '" << cmd << "' errno: " << errno;
     struct winsize ws {};
@@ -151,7 +226,7 @@ static int UnixSpawn(const wwiv::bbs::CommandLine& cmdline, int flags, int sock)
     auto e = errno;
     LOG(ERROR) << "Fork Failed: errno: '" << e << "'";
     // Fork failed.
-    return -1;
+    return std::make_tuple(-1, -1);
   }
   if (pid == 0) {
     // In the child
@@ -162,88 +237,77 @@ static int UnixSpawn(const wwiv::bbs::CommandLine& cmdline, int flags, int sock)
 
   // In the parent now.
   VLOG(1) << "In parent, pid " << pid << "; errno: " << errno;
-  for (;;) {
-    fd_set rfd;
-    FD_ZERO(&rfd);
-
-    FD_SET(pty_fd, &rfd);
-    FD_SET(sock, &rfd);
-
-    struct timeval tv = {1, 0};
-    auto ret = select(std::max<int>(sock, pty_fd) + 1, &rfd, nullptr, nullptr, &tv);
-    if (ret < 0) {
-      LOG(INFO) << "select returned <0";
-      break;
-    }
-    // N.B. This has been copied to ExecSocket::process_active
-    int status_code = 0;
-    pid_t wp = waitpid(pid, &status_code, WNOHANG);
-    if (wp == -1 || wp > 0) {
-      // -1 means error and >0 is the pid
-      VLOG(2) << "waitpid returned: " << wp << "; errno: " << errno;
-      if (WIFEXITED(status_code)) {
-        VLOG(1) << "child exited with code: " << WEXITSTATUS(status_code);
-        break;
-      }
-      if (WIFSIGNALED(status_code)) {
-        VLOG(1) << "child caught signal: " << WTERMSIG(status_code);
-      } else {
-        LOG(INFO) << "Raw status_code: " << status_code;
-      }
-      LOG(INFO) << "core dump? : " << WCOREDUMP(status_code);
-      break;
-    }
-
-    if (pty_fd != -1) {
-      // Only do this in STDIO mode.
-      if (binary) {
-        ReadWriteBinary(sock, pty_fd, rfd);
-      } else {
-        if (ReadWriteNonBinary(sock, pty_fd, rfd) == -1) {
-          close(pty_fd);
-          break;
-        }
-      }
-    }
-  }
-  // Wait for child to exit.
-  for (;;) {
-    VLOG(1) << "about to call waitpid at the end";
-    // In the parent, wait for the child to terminate.
-    int status_code = 1;
-    if (waitpid(pid, &status_code, 0) == -1) {
-      if (errno != EINTR) {
-        return -1;
-      }
-    } else {
-      return status_code;
-    }
-  }
-  // Should never happen.
-  return -1;
+  return std::make_tuple(pid, pty_fd);
 }
 
 int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
-  if (flags & EFLAG_SYNC_FOSSIL) {
-    LOG(ERROR) << "EFLAG_SYNC_FOSSIL is not supported on UNIX";
-  }
-  if (flags & EFLAG_NETFOSS) {
-    LOG(ERROR) << "EFLAG_SYNC_FOSSIL is not supported on UNIX";
-  }
-  if (flags & EFLAG_COMIO) {
-    LOG(ERROR) << "EFLAG_COMIO is not supported on UNIX";
-  }
-
+  bool need_reopen_io = false;
+  std::unique_ptr<wwiv::bbs::ExecSocket> exec_socket;
   if (a()->sess().ok_modem_stuff()) {
-    VLOG(2) << "Temporarily pausing comm for spawn";
-    bout.remoteIO()->close(true);
+    if (flags & EFLAG_SYNC_FOSSIL) {
+      LOG(ERROR) << "EFLAG_SYNC_FOSSIL is not supported on UNIX";
+    }
+    if (flags & EFLAG_NETFOSS) {
+      LOG(ERROR) << "EFLAG_SYNC_FOSSIL is not supported on UNIX";
+    }
+    if (flags & EFLAG_COMIO) {
+      LOG(ERROR) << "EFLAG_COMIO is not supported on UNIX";
+    }
+    if (flags & EFLAG_STDIO) {
+      VLOG(2) << "Temporarily pausing comm for spawn";
+      need_reopen_io = true;
+      bout.remoteIO()->close(true);
+    } else if (flags & EFLAG_LISTEN_SOCK) {
+      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(a()->sess().dirs().scratch_directory(),
+                                                            wwiv::bbs::exec_socket_type_t::port);
+      // Add %Z into the commandline.
+      if (exec_socket->listening()) {
+        cmdline.add('Z', exec_socket->z());
+        VLOG(1) << "listening to socket: " << exec_socket->z();
+      }
+
+    } else if (flags & EFLAG_UNIX_SOCK) {
+      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(a()->sess().dirs().scratch_directory(),
+                                                            wwiv::bbs::exec_socket_type_t::unix_domain);
+      // Add %Z into the commandline.
+      if (exec_socket->listening()) {
+        cmdline.add('Z', exec_socket->z());
+        VLOG(1) << "listening to socket: " << exec_socket->z();
+      }
+
+    } else {
+      VLOG(2) << "Temporarily pausing comm for spawn";
+      need_reopen_io = true;
+      bout.remoteIO()->close(true);
+    }
   }
 
-  auto i = UnixSpawn(cmdline, flags, bout.remoteIO()->GetDoorHandle());
+  const auto sock = bout.remoteIO()->GetDoorHandle();
+  auto [pid, pty] = UnixSpawn(cmdline, flags, sock);
+  if (pid == -1) {
+    return 1;
+  }
+
+  if (flags & EFLAG_STDIO) {
+    pump_stdio(sock, pty, pid, (flags & EFLAG_BINARY));
+  } else if (exec_socket) {
+    if (const auto sock = exec_socket->accept()) {
+      DCHECK(bout.remoteIO());
+      if (exec_socket->pump_socket(pid, sock.value(), *bout.remoteIO()) !=
+          pump_socket_result_t::process_exit) {
+        // sockets closed but process still running.
+        VLOG(1) << "Forcefully terminating pid: " << pid;
+        kill(pid, SIGKILL);
+      }
+    }
+  }
+
+  // Wait for child to exit.
+  const auto result = wait_for_exit(pid);
 
   // reengage comm stuff
-  if (a()->sess().ok_modem_stuff()) {
+  if (need_reopen_io) {
     bout.remoteIO()->open();
   }
-  return i;
+  return result;
 }

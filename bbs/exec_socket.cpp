@@ -136,7 +136,15 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, exec_socket_type_t type
   }
 }
 
+ExecSocket::~ExecSocket() {
+  if (server_socket_ != -1) {
+    closesocket(server_socket_);
+  }
+}
+
+
 std::optional<int> ExecSocket::accept() {
+  VLOG(1) << "ExecSocket::accept()";
   struct timeval tv;
   fd_set rfds;
   FD_ZERO(&rfds);
@@ -148,6 +156,7 @@ std::optional<int> ExecSocket::accept() {
   if (const auto res = select(server_socket_ + 1, &rfds, nullptr, nullptr, &tv); res > 0) {
     if (client_socket_ = ::accept(server_socket_, nullptr, nullptr); client_socket_ > 0) {
       SetBlockingMode(client_socket_, false);
+      VLOG(1) << "Accepted: ";
       return {client_socket_};
     }
   }
@@ -196,7 +205,7 @@ bool ExecSocket::process_still_active(EXEC_SOCKET_HANDLE h) {
 #endif
 }
 
-void ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common::RemoteIO& io) {
+pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common::RemoteIO& io) {
   static constexpr int check_process_every = 10;
   char buf[1024];
   int count = 0;
@@ -205,12 +214,12 @@ void ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common
       io.write(buf, num_read);
     } else if (num_read == 0) {
       VLOG(1) << "Exiting pump_socket: recv.";
-      return;
+      return pump_socket_result_t::socket_error;
     }
 
     if (!io.connected()) {
       VLOG(1) << "Exiting pump_socket: Caller Hung up.";
-      return;
+      return pump_socket_result_t::socket_error;
     }
 
     if (io.incoming()) {
@@ -218,7 +227,7 @@ void ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common
         if (send(sock, buf, num_read, 0) == 0) {
           // TODO(rushfan): handle nonblocking error?
           VLOG(1) << "Exiting pump_socket; Write to socket failed";
-          return;
+          return pump_socket_result_t::socket_error;
         }
       }
     }
@@ -226,7 +235,7 @@ void ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common
     if (++count >= check_process_every) {
       count = 0;
       if (!process_still_active(hProcess)) {
-        return;
+        return pump_socket_result_t::process_exit;
       }
     }
     wwiv::os::sleep_for(std::chrono::milliseconds(100));

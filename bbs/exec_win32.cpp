@@ -65,6 +65,7 @@ const int CONST_NUM_LOOPS_BEFORE_EXIT_CHECK = 500;
 typedef HANDLE(WINAPI* OPENVXDHANDLEFUNC)(HANDLE);
 
 using namespace std::chrono_literals;
+using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -623,6 +624,7 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
   }
 
   CloseHandle(pi.hThread);
+  bool terminated = false;
 
   if (a()->sess().using_modem() && (flags & EFLAG_STDIO)) {
     CloseHandle(stdout_write);
@@ -631,12 +633,21 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
   } else if (exec_socket) {
     if (const auto sock = exec_socket->accept()) {
       DCHECK(bout.remoteIO());
-      exec_socket->pump_socket(pi.hProcess, sock.value(), *bout.remoteIO());
+      const auto res = exec_socket->pump_socket(pi.hProcess, sock.value(), *bout.remoteIO());
+      if (res != pump_socket_result_t::process_exit) {
+        // sockets closed but process still running.
+        DWORD exit_code;
+        if (TerminateProcess(pi.hProcess, &exit_code)) {
+          terminated = true;
+        }
+      }
     }
   }
 
-  // Wait until child process exits.
-  WaitForSingleObject(pi.hProcess, INFINITE);
+  if (!terminated) {
+    // Wait until child process exits.
+    WaitForSingleObject(pi.hProcess, INFINITE);
+  }
 
   DWORD dwExitCode = 0;
   GetExitCodeProcess(pi.hProcess, &dwExitCode);

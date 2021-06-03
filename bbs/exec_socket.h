@@ -26,19 +26,26 @@
 #include "common/remote_io.h"
 #include "core/net.h"
 
+#if defined(__unix__)
+#include <sys/types.h>
+#endif
+
 namespace wwiv::bbs {
 
 enum class exec_socket_type_t { port, unix_domain };
 
+enum class pump_socket_result_t { process_exit, socket_error };
+
 #ifdef _WIN32
 typedef void* EXEC_SOCKET_HANDLE;
 #else 
-typedef int EXEC_SOCKET_HANDLE;
+typedef pid_t EXEC_SOCKET_HANDLE;
 #endif
 
 class ExecSocket final {
 public:
   ExecSocket(const std::filesystem::path& dir, exec_socket_type_t type);
+  ~ExecSocket();
   std::optional<int> accept();
 
   [[nodiscard]] std::filesystem::path path() const;
@@ -49,7 +56,7 @@ public:
   [[nodiscard]] std::string z() const;
 
   /** Handles pumping data between socket and remote IO */
-  void pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common::RemoteIO& io);
+  pump_socket_result_t pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common::RemoteIO& io);
 
   bool stop_pump();
   static bool process_still_active(EXEC_SOCKET_HANDLE h);
