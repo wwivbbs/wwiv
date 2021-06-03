@@ -28,7 +28,7 @@
 
 namespace wwiv::bbs {
 
-enum class exec_socket_type_t { port, unix };
+enum class exec_socket_type_t { port, unix_domain };
 
 #ifdef _WIN32
 typedef void* EXEC_SOCKET_HANDLE;

@@ -21,8 +21,10 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/net.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+#include <chrono>
 #include <string>
 
 #ifdef _WIN32
@@ -30,6 +32,13 @@
 #include <WS2tcpip.h>
 #include <afunix.h>
 #include <MSWSock.h>
+#elif defined(__unix__)
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <sys/wait.h>
 #endif
 
 namespace wwiv::bbs {
@@ -55,7 +64,7 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, exec_socket_type_t type
     : dir_(dir), type_(type) {
   stop_.store(false);
 
-  const int af = (type == exec_socket_type_t::unix) ? AF_UNIX : AF_INET;
+  const int af = (type == exec_socket_type_t::unix_domain) ? AF_UNIX : AF_INET;
   server_socket_ = socket(af, SOCK_STREAM, 0);
   if (server_socket_ == -1) {
     LOG(ERROR) << "socket error";
@@ -63,7 +72,7 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, exec_socket_type_t type
     return;
   }
 
-  if (type == exec_socket_type_t::unix) {
+  if (type == exec_socket_type_t::unix_domain) {
     struct sockaddr_un addr {};
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
@@ -220,7 +229,7 @@ void ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common
         return;
       }
     }
-    Sleep(100);
+    wwiv::os::sleep_for(std::chrono::milliseconds(100));
   }
 }
 
