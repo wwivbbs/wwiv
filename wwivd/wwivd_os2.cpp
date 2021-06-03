@@ -131,14 +131,7 @@ bool ExecCommandAndWait(const wwivd_config_t& wc, const std::string& cmd, const 
   LOG(INFO) << "DosStartSession ret: " << arc << "; child pid: " << ulPid;
   int child_pid = ulPid;
 
-
-  //int mode = P_SESSION | P_UNRELATED | P_WINDOWED;
-  //VLOG(2) << "spawn2: " << argv[0] << " ... ";
-  //int child_pid = spawn2(mode, argv[0], argv, NULL, NULL, NULL);
-  //VLOG(3) << "spawn result: " << child_pid;
-
-
-  RESULTCODES code;  /* Result code for the child process   */
+  RESULTCODES code;  // Result code for the child process
   PID pidOut = child_pid;
 
   if(APIRET rc = DosWaitChild(DCWA_PROCESS, DCWW_WAIT, &code, &pidOut, child_pid); rc != NO_ERROR) {

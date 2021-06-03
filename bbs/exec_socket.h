@@ -19,13 +19,22 @@
 #ifndef INCLUDED_BBS_EXEC_SOCKET_H
 #define INCLUDED_BBS_EXEC_SOCKET_H
 
+#include <atomic>
 #include <filesystem>
 #include <optional>
 #include <string>
+#include "common/remote_io.h"
+#include "core/net.h"
 
 namespace wwiv::bbs {
 
 enum class exec_socket_type_t { port, unix };
+
+#ifdef _WIN32
+typedef void* EXEC_SOCKET_HANDLE;
+#else 
+typedef int EXEC_SOCKET_HANDLE;
+#endif
 
 class ExecSocket final {
 public:
@@ -39,6 +48,12 @@ public:
   /** returns the value to use for %Z, which is either the UNIX path or the socket hostname:port */
   [[nodiscard]] std::string z() const;
 
+  /** Handles pumping data between socket and remote IO */
+  void pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common::RemoteIO& io);
+
+  bool stop_pump();
+  static bool process_still_active(EXEC_SOCKET_HANDLE h);
+
 private:
   const std::filesystem::path dir_;
   exec_socket_type_t type_;
@@ -46,6 +61,7 @@ private:
   int server_socket_{-1};
   int client_socket_{-1};
   int port_{0};
+  std::atomic<bool> stop_;
 };
 
 }

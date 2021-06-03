@@ -53,6 +53,8 @@ static bool SetBlockingMode(SOCKET sock, bool blocking_mode) {
 
 ExecSocket::ExecSocket(const std::filesystem::path& dir, exec_socket_type_t type)
     : dir_(dir), type_(type) {
+  stop_.store(false);
+
   const int af = (type == exec_socket_type_t::unix) ? AF_UNIX : AF_INET;
   server_socket_ = socket(af, SOCK_STREAM, 0);
   if (server_socket_ == -1) {
@@ -153,6 +155,78 @@ std::string ExecSocket::z() const {
     return fmt::format("localhost:{}", port_);
   }
   return path().string();
+}
+
+// static 
+bool ExecSocket::process_still_active(EXEC_SOCKET_HANDLE h) {
+#ifdef _WIN32
+  DWORD dwExitCode;
+  if (GetExitCodeProcess(h, &dwExitCode) && dwExitCode != STILL_ACTIVE) {
+    VLOG(1) << "Process exited. Ending pump_socket";
+    return false;
+  }
+  return true;
+#elif defined(__unix__)
+  int status_code = 0;
+  pid_t wp = waitpid(h, &status_code, WNOHANG);
+  if (wp == -1 || wp > 0) {
+    // -1 means error and >0 is the pid
+    VLOG(2) << "waitpid returned: " << wp << "; errno: " << errno;
+    if (WIFEXITED(status_code)) {
+      VLOG(1) << "child exited with code: " << WEXITSTATUS(status_code);
+      return false;
+    }
+    if (WIFSIGNALED(status_code)) {
+      VLOG(1) << "child caught signal: " << WTERMSIG(status_code);
+    } else {
+      LOG(INFO) << "Raw status_code: " << status_code;
+    }
+    LOG(INFO) << "core dump? : " << WCOREDUMP(status_code);
+  }
+  return true;
+#endif
+}
+
+void ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common::RemoteIO& io) {
+  static constexpr int check_process_every = 10;
+  char buf[1024];
+  int count = 0;
+  while (!stop_.load()) {
+    if (auto num_read = recv(sock, buf, sizeof(buf), 0); num_read > 0) {
+      io.write(buf, num_read);
+    } else if (num_read == 0) {
+      VLOG(1) << "Exiting pump_socket: recv.";
+      return;
+    }
+
+    if (!io.connected()) {
+      VLOG(1) << "Exiting pump_socket: Caller Hung up.";
+      return;
+    }
+
+    if (io.incoming()) {
+      if (auto num_read = io.read(buf, sizeof(buf)); num_read > 0) {
+        if (send(sock, buf, num_read, 0) == 0) {
+          // TODO(rushfan): handle nonblocking error?
+          VLOG(1) << "Exiting pump_socket; Write to socket failed";
+          return;
+        }
+      }
+    }
+
+    if (++count >= check_process_every) {
+      count = 0;
+      if (!process_still_active(hProcess)) {
+        return;
+      }
+    }
+    Sleep(100);
+  }
+}
+
+bool ExecSocket::stop_pump() { 
+  stop_.store(true); 
+  return true;
 }
 
 } // namespace wwiv::bbs

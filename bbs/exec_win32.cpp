@@ -467,8 +467,6 @@ static bool create_stdio_pipes() {
   return true;
 }
 
-
-
 void pump_pipes(HANDLE hProcess) {
   static constexpr int check_process_every = 10;
   char buf[1024];
@@ -510,45 +508,6 @@ void pump_pipes(HANDLE hProcess) {
     }
   }
   Sleep(100);
-}
-
-void pump_socket(HANDLE hProcess, int sock) {
-  static constexpr int check_process_every = 10;
-  char buf[1024];
-  int count = 0;
-  while (!stop_pipe.load()) {
-    if (auto num_read = recv(sock, buf, sizeof(buf), 0); num_read > 0) {
-      bout.remoteIO()->write(buf, num_read);
-    } else if (num_read == 0) {
-      VLOG(1) << "Exiting pump_pipes: recv.";
-      return;
-    }
-
-    if (!bout.remoteIO()->connected()) {
-      VLOG(1) << "Exiting pump_pipes: Caller Hung up.";
-      return;
-    }
-
-    if (bout.remoteIO()->incoming()) {
-      if (auto num_read = bout.remoteIO()->read(buf, sizeof(buf)); num_read > 0) {
-        if (send(sock, buf, num_read, 0) == 0) {
-          // TODO(rushfan): handle nonblocking error?
-          VLOG(1) << "Exiting pump_pipes; Write to pipe failed";
-          return;
-        }
-      }
-    }
-
-    if (++count >= check_process_every) {
-      count = 0;
-      DWORD dwExitCode;
-      if (GetExitCodeProcess(hProcess, &dwExitCode) && dwExitCode != STILL_ACTIVE) {
-        VLOG(1) << "Process exited. Ending pump_pipes";
-        return;
-      }
-    }
-    Sleep(100);
-  }
 }
 
 int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
@@ -671,7 +630,8 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
     pump_pipes(pi.hProcess);
   } else if (exec_socket) {
     if (const auto sock = exec_socket->accept()) {
-      pump_socket(pi.hProcess, sock.value());
+      DCHECK(bout.remoteIO());
+      exec_socket->pump_socket(pi.hProcess, sock.value(), *bout.remoteIO());
     }
   }
 

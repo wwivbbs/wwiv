@@ -175,6 +175,7 @@ static int UnixSpawn(const wwiv::bbs::CommandLine& cmdline, int flags, int sock)
       LOG(INFO) << "select returned <0";
       break;
     }
+    // N.B. This has been copied to ExecSocket::process_active
     int status_code = 0;
     pid_t wp = waitpid(pid, &status_code, WNOHANG);
     if (wp == -1 || wp > 0) {
