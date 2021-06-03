@@ -130,3 +130,9 @@ TEST_F(StuffInTest, Speeds) {
     EXPECT_EQ(std::string("38400"), cs.cmdline());
   }
 }
+
+TEST_F(StuffInTest, Add) { 
+  wwiv::bbs::CommandLine cm("FOO %Z");
+  cm.add('z', "BAR");
+  EXPECT_EQ(cm.cmdline(), "FOO BAR");
+}

@@ -29,10 +29,8 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "local_io/wconstants.h"
-#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include <string>
-#include <vector>
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -49,44 +47,9 @@ static unsigned int GetTimeLeft() {
   return static_cast<unsigned int>(d / MINUTES_PER_HOUR);
 }
 
-/**
- * \verbatim 
- * Creates a commandline by expanding the replaceable parameters offered by
- * WWIV.
- * 
- * If you add one, please update these docs:
- * - http://docs.wwivbbs.org/en/latest/chains/parameters
- * 
- * Replaceable parameters:
- * ~~~~~~~~~~~~~~~~~~~~~~
- *  Param    Description                       Example
- *  ----------------------------------------------------------------------------
- *  %%       A single '%'                          "%"
- *  %1-%5    Specified passed-in parameter
- *  %A       callinfo full pathname                "c:\wwiv\temp\callinfo.bbs"
- *  %B       Full path to BATCH instance directory "C:\wwiv\e\1\batch"
- *  %C       chain.txt full pathname               "c:\wwiv\temp\chain.txt"
- *  %D       doorinfo full pathname                "c:\wwiv\temp\dorinfo1.def"
- *  %E       door32.sys full pathname              "C:\wwiv\temp\door32.sys"
- *  %H       Socket Handle                         "1234"
- *  %I       Full Path to TEMP instance directory  "C:\wwiv\e\1\temp"
- *  %K       gfiles comment file for archives      "c:\wwiv\gfiles\comment.txt"
- *  %M       Modem BPS rate                         "38400"
- *  %N       Instance number                       "1"
- *  %O       pcboard full pathname                 "c:\wwiv\temp\pcboard.sys"
- *  %P       Com port number                       "1"
- *  %R       door full pathname                    "c:\wwiv\temp\door.sys"
- *  %S       Com port BPS rate                     "38400"
- *  %T       Time remaining (min)                  "30"
- *  %U       Username                              "Rushfan #1"
- *
- * \endverbatim 
-*/
-std::string CommandLine::stuff_in(const std::string& commandline, const std::string arg1,
-                                         const std::string arg2, const std::string arg3,
-                                         const std::string arg4, const std::string arg5) const {
-  std::vector<std::string> flags = {arg1, arg2, arg3, arg4, arg5};
 
+std::string CommandLine::stuff_in() const {
+  auto commandline = cmd_;
   auto iter = begin(commandline);
   std::ostringstream os;
   while (iter != end(commandline)) {
@@ -94,16 +57,8 @@ std::string CommandLine::stuff_in(const std::string& commandline, const std::str
       ++iter;
       switch (const auto ch = to_upper_case<char>(*iter); ch) {
       // fixed strings
-      case '%':
+      case '%': // literal %
         os << "%";
-        break;
-      // replaceable parameters
-      case '1':
-      case '2':
-      case '3':
-      case '4':
-      case '5':
-        os << flags.at(ch - '1');
         break;
       // call-specific numbers
       case 'A':
@@ -155,9 +110,10 @@ std::string CommandLine::stuff_in(const std::string& commandline, const std::str
       case 'U':
         os << a()->user()->name();
         break;
+      // replacable params + everything else.
       default: {
-        if (wwiv::stl::contains(args_, ch)) {
-          os << args_.at(ch);
+        if (const auto it = args_.find(ch); it != std::end(args_)) {
+          os << it->second;
         }
       } break;
       }
@@ -170,41 +126,11 @@ std::string CommandLine::stuff_in(const std::string& commandline, const std::str
 }
 
 std::string CommandLine::cmdline() const { 
-  auto cmd = stuff_in(cmd_, arg1_, arg2_, arg3_, arg4_, arg5_);
+  auto cmd = stuff_in();
   if (cmdtype_ == cmdtype_t::absolute) {
     make_abs_cmd(bbs_root_, &cmd);
   }
   return cmd;
-}
-
-void CommandLine::args(const std::string arg1, const std::string arg2,
-                        const std::string arg3, const std::string arg4,
-                        const std::string arg5) {
-  arg1_ = arg1;
-  arg2_ = arg2;
-  arg3_ = arg3;
-  arg4_ = arg4;
-  arg5_ = arg5;
-}
-
-void CommandLine::arg(int n, const std::string& arg) {
-  switch (n) {
-  case 1:
-    arg1_ = arg;
-    break;
-  case 2:
-    arg2_ = arg;
-    break;
-  case 3:
-    arg3_ = arg;
-    break;
-  case 4:
-    arg4_ = arg;
-    break;
-  case 5:
-    arg5_ = arg;
-    break;
-  }
 }
 
 void CommandLine::add(char key, std::string value) {

@@ -166,7 +166,7 @@ static uint16_t str2restrict(const std::string& s) {
 // those in [WWIV] subsection.
 
 // See #defines SPAWNOPT_XXXX in vardec.h for these.
-static std::map<std::string, uint16_t> eventinfo = {
+static std::map<std::string, uint32_t> eventinfo = {
     {"NEWUSER", EFLAG_NONE},     {"BEGINDAY", EFLAG_NONE},
     {"LOGON", EFLAG_NONE},       {"ULCHK", EFLAG_NOHUP},
     {"PROT_SINGLE", EFLAG_NONE}, {"PROT_BATCH", EFLAG_BATCH_DIR},

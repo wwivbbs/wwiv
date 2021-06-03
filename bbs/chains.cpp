@@ -161,15 +161,10 @@ void run_chain(int chain_num) {
     at_exit.swap([] { set_wwiv_codepage(wwiv_codepage_t::utf8); });
   }
 #endif
-  // TODO(rushfan): Maybe we need Chains::to_exec_flags(chain_t)?
-  auto flags = ansir_to_flags(Chains::to_ansir(c));
-  if (c.exec_mode == chain_exec_mode_t::netfoss) {
-    // NetFoss requires launching from the temp dir.
-    flags |= EFLAG_TEMP_DIR;
-  }
   wwiv::bbs::CommandLine cl(c.filename);
   cl.args(create_chain_file(), std::to_string(a()->modem_speed_),
           std::to_string(a()->primary_port()), std::to_string(a()->modem_speed_));
+  const auto flags = Chains::to_exec_flags(c);
   ExecuteExternalProgram(cl, flags);
   write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
   if (c.pause){

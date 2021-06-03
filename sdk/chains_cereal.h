@@ -35,11 +35,13 @@ namespace cereal {
 
 template <class Archive>
 std::string save_minimal(Archive const&, const chain_exec_mode_t& t) {
-  return to_enum_string<chain_exec_mode_t>(t, {"none", "DOS", "FOSSIL", "STDIO", "NETFOSS"});
+  return to_enum_string<chain_exec_mode_t>(
+      t, {"none", "DOS", "FOSSIL", "STDIO", "NETFOSS", "SOCK_PORT", "SOCK_UNIX"});
 }
 template <class Archive>
 void load_minimal(Archive const&, chain_exec_mode_t& t, const std::string& s) {
-  t = from_enum_string<chain_exec_mode_t>(s, {"none", "DOS", "FOSSIL", "STDIO", "NETFOSS"});
+  t = from_enum_string<chain_exec_mode_t>(
+      s, {"none", "DOS", "FOSSIL", "STDIO", "NETFOSS", "SOCK_PORT", "SOCK_UNIX"});
 }
 
 template <class Archive>

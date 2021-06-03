@@ -43,7 +43,7 @@ namespace wwiv::sdk {
 
 chain_exec_mode_t& operator++(chain_exec_mode_t& t) {
   using T = std::underlying_type<chain_exec_mode_t>::type;
-  t = (t == chain_exec_mode_t::netfoss ? chain_exec_mode_t::none
+  t = (t == chain_exec_mode_t::sock_unix ? chain_exec_mode_t::none
                                      : static_cast<chain_exec_mode_t>(static_cast<T>(t) + 1));
   return t;
 }
@@ -51,7 +51,7 @@ chain_exec_mode_t& operator++(chain_exec_mode_t& t) {
 chain_exec_mode_t operator++(chain_exec_mode_t& t, int) {
   using T = std::underlying_type<chain_exec_mode_t>::type;
   const auto old = t;
-  t = (t == chain_exec_mode_t::netfoss ? chain_exec_mode_t::none
+  t = (t == chain_exec_mode_t::sock_unix ? chain_exec_mode_t::none
                                      : static_cast<chain_exec_mode_t>(static_cast<T>(t) + 1));
   return old;
 }
@@ -260,6 +260,36 @@ uint16_t Chains::to_ansir(const chain_t& c) {
     r |= ansir_multi_user;
   }
   return r;
+}
+
+uint32_t Chains::to_exec_flags(const chain_t& c) { 
+  auto r = to_exec_flags(c.exec_mode); 
+  if (c.dir == chain_exec_dir_t::temp) {
+    r |= EFLAG_TEMP_DIR;
+  }
+  return r;
+}
+
+// static
+uint32_t Chains::to_exec_flags(chain_exec_mode_t m) { 
+  switch (m) {
+  case chain_exec_mode_t::fossil:
+    return EFLAG_SYNC_FOSSIL;
+  case chain_exec_mode_t::stdio:
+    return EFLAG_STDIO;
+  case chain_exec_mode_t::netfoss:
+    // NetFoss implies temp dir too.
+    return EFLAG_NETFOSS | EFLAG_TEMP_DIR;
+  case chain_exec_mode_t::sock_port:
+    return EFLAG_LISTEN_SOCK;
+  case chain_exec_mode_t::sock_unix:
+    return EFLAG_UNIX_SOCK;
+  case chain_exec_mode_t::dos:
+    return EFLAG_COMIO;
+  case chain_exec_mode_t::none:
+  default:
+    return 0;
+  }
 }
 
 } // namespace wwiv

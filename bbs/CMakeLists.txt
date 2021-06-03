@@ -37,7 +37,7 @@ add_library(
   dropfile.cpp
   dsz.cpp
   email.cpp
-  exec.cpp
+  "exec_socket.cpp"
   execexternal.cpp
   external_edit.cpp
   external_edit_qbbs.cpp

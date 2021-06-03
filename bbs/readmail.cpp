@@ -266,7 +266,8 @@ static void add_netsubscriber(const Network& net, int network_number, int system
       if (bin.yesno()) {
         const auto autosend = FilePath(a()->bindir(), "autosend");
         const auto cmd = StrCat(autosend.string(), " ", subtype, " ", system_number, " .", network_number);
-        ExecuteExternalProgram(wwiv::bbs::CommandLine(cmd), EFLAG_NONE);
+        wwiv::bbs::CommandLine cl(cmd);
+        ExecuteExternalProgram(cl, EFLAG_NONE);
       }
     }
   }

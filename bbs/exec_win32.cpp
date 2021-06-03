@@ -24,12 +24,14 @@
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/dropfile.h"
+#include "bbs/exec_socket.h"
 #include "bbs/shortmsg.h"
 #include "bbs/sysoplog.h"
 #include "common/output.h"
 #include "common/remote_io.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/net.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -38,6 +40,11 @@
 #include <atomic>
 #include <sstream>
 #include <string>
+
+#ifdef _WIN32
+#define NOCRYPT // Disable include of wincrypt.h
+#include <winsock2.h>
+#endif // _WIN32
 
 static FILE* hLogFile;
 
@@ -324,7 +331,7 @@ static std::string ErrorAsString(DWORD last_error) {
 }
 //  Main code that launches external programs and handle sbbsexec support
 
-static int exec_cmdline_sync(const std::string& user_command_line, int flags, int nSyncMode = 0) {
+static int exec_cmdline_sync(wwiv::bbs::CommandLine& cmdline, int flags, int nSyncMode = 0) {
   const auto saved_binary_mode = bout.remoteIO()->binary_mode();
 
   STARTUPINFO si{};
@@ -335,6 +342,7 @@ static int exec_cmdline_sync(const std::string& user_command_line, int flags, in
   ZeroMemory(&pi, sizeof(pi));
 
   std::string syncFosTempFile;
+  const auto user_command_line = cmdline.cmdline();
   if (!CreateSyncTempFile(&syncFosTempFile, user_command_line)) {
     return -1;
   }
@@ -459,13 +467,16 @@ static bool create_stdio_pipes() {
   return true;
 }
 
-void pump_pipes(HANDLE hProcess) { 
+
+
+void pump_pipes(HANDLE hProcess) {
   static constexpr int check_process_every = 10;
   char buf[1024];
   int count = 0;
   while (!stop_pipe.load()) {
     DWORD num_read, num_avail, msg_left;
-    if (PeekNamedPipe(stdout_read, buf, sizeof(buf), &num_read, &num_avail, &msg_left) && num_read > 0) {
+    if (PeekNamedPipe(stdout_read, buf, sizeof(buf), &num_read, &num_avail, &msg_left) &&
+        num_read > 0) {
       auto b = ReadFile(stdout_read, buf, sizeof(buf), &num_read, NULL);
       if (!b || num_read == 0) {
         VLOG(1) << "Exiting pump_pipes: b:" << b << "; num_read: " << num_read;
@@ -501,12 +512,51 @@ void pump_pipes(HANDLE hProcess) {
   Sleep(100);
 }
 
+void pump_socket(HANDLE hProcess, int sock) {
+  static constexpr int check_process_every = 10;
+  char buf[1024];
+  int count = 0;
+  while (!stop_pipe.load()) {
+    if (auto num_read = recv(sock, buf, sizeof(buf), 0); num_read > 0) {
+      bout.remoteIO()->write(buf, num_read);
+    } else if (num_read == 0) {
+      VLOG(1) << "Exiting pump_pipes: recv.";
+      return;
+    }
+
+    if (!bout.remoteIO()->connected()) {
+      VLOG(1) << "Exiting pump_pipes: Caller Hung up.";
+      return;
+    }
+
+    if (bout.remoteIO()->incoming()) {
+      if (auto num_read = bout.remoteIO()->read(buf, sizeof(buf)); num_read > 0) {
+        if (send(sock, buf, num_read, 0) == 0) {
+          // TODO(rushfan): handle nonblocking error?
+          VLOG(1) << "Exiting pump_pipes; Write to pipe failed";
+          return;
+        }
+      }
+    }
+
+    if (++count >= check_process_every) {
+      count = 0;
+      DWORD dwExitCode;
+      if (GetExitCodeProcess(hProcess, &dwExitCode) && dwExitCode != STILL_ACTIVE) {
+        VLOG(1) << "Process exited. Ending pump_pipes";
+        return;
+      }
+    }
+    Sleep(100);
+  }
+}
+
 int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
-  auto working_cmdline = cmdline.cmdline();
-  if ((flags & EFLAG_STDIO) && (flags & EFLAG_SYNC_FOSSIL)) {
+  auto mask = EFLAG_COMIO | EFLAG_NETFOSS | EFLAG_LISTEN_SOCK | EFLAG_STDIO | EFLAG_SYNC_FOSSIL | EFLAG_UNIX_SOCK;
+  auto test = flags & mask;
+  if ((test & (test - 1)) != 0) {
     // Not allowed.
-    sysoplog() << "Tried to execute command with sync and stdio: " << working_cmdline;
-    LOG(ERROR) << "Tried to execute command with sync and stdio: " << working_cmdline;
+    LOG(ERROR) << "Tried to execute command with multiple exec types: " << cmdline.cmdline();
     return false;
   }
 
@@ -518,15 +568,18 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
   si.cb = sizeof(STARTUPINFO);
   ZeroMemory(&pi, sizeof(pi));
 
+  std::unique_ptr<wwiv::bbs::ExecSocket> exec_socket;
+
+  auto working_cmdline = cmdline.cmdline();
   if (a()->sess().using_modem()) {
     if (flags & EFLAG_SYNC_FOSSIL) {
-      return exec_cmdline_sync(working_cmdline, flags, 0);
+      return exec_cmdline_sync(cmdline, flags, 0);
     }
     if (flags & EFLAG_COMIO) {
-      return exec_cmdline_sync(working_cmdline, flags,
+      return exec_cmdline_sync(cmdline, flags,
                                CONST_SBBSFOS_DOSIN_MODE | CONST_SBBSFOS_DOSOUT_MODE);
     }
-    
+
     if (flags & EFLAG_STDIO) {
       if (!create_stdio_pipes()) {
         LOG(ERROR) << "Unable to create pipes for STDIO";
@@ -536,26 +589,42 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
       // This doesn't work at all
       const auto sock = bout.remoteIO()->GetDoorHandle();
 
-      //si.hStdError = stdout_write;
+      // si.hStdError = stdout_write;
       si.hStdOutput = stdout_write;
       si.hStdInput = stdin_read;
       si.dwFlags |= STARTF_USESTDHANDLES;
       // N.B. Don't close remote IO.
     } else if (flags & EFLAG_NETFOSS) {
       if (const auto nf_path = create_netfoss_bat()) {
-        working_cmdline = fmt::format("{} {}", nf_path.value(), working_cmdline);
+        working_cmdline = fmt::format("{} {}", nf_path.value(), cmdline.cmdline());
         VLOG(1) << "Closing remote IO for NetFOSS";
         bout.remoteIO()->close(true);
         need_reopen_remoteio = true;
       } else {
         ssm(1) << "NetFoss is not installed properly.";
-        sysoplog() << "Failed to create NF.BAT for command: " << working_cmdline;
         LOG(ERROR) << "Failed to create NF.BAT for command: " << working_cmdline;
         bout.nl(2);
         bout << "|#6Please tell the SysOp to install NetFoss properly." << wwiv::endl;
         bout.nl(2);
         bout.pausescr();
         return false;
+      }
+    } else if (flags & EFLAG_LISTEN_SOCK) {
+      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(a()->sess().dirs().scratch_directory(),
+                                                            wwiv::bbs::exec_socket_type_t::port);
+      // Add %Z into the commandline.
+      if (exec_socket->listening()) {
+        cmdline.add('Z', exec_socket->z());
+        working_cmdline = cmdline.cmdline();
+      }
+
+    } else if (flags & EFLAG_UNIX_SOCK) {
+      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(a()->sess().dirs().scratch_directory(),
+                                                            wwiv::bbs::exec_socket_type_t::unix);
+      // Add %Z into the commandline.
+      if (exec_socket->listening()) {
+        cmdline.add('Z', exec_socket->z());
+        working_cmdline = cmdline.cmdline();
       }
     } else {
       // Not STDIO or NETFOSS so close remote IO  
@@ -600,6 +669,10 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
     CloseHandle(stdout_write);
     CloseHandle(stdin_read);
     pump_pipes(pi.hProcess);
+  } else if (exec_socket) {
+    if (const auto sock = exec_socket->accept()) {
+      pump_socket(pi.hProcess, sock.value());
+    }
   }
 
   // Wait until child process exits.

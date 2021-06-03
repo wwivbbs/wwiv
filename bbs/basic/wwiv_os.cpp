@@ -92,8 +92,8 @@ bool RegisterNamespaceWWIVOS(mb_interpreter_t* basi) {
     const auto& opt = stl::at(sd->exec_options, handle.value());
 
     LOG(INFO) << "Execute Command: " << cmd.value();
-    const auto ret = ExecuteExternalProgram(wwiv::bbs::CommandLine(cmd.value()),
-                                            chain_type_to_flags(opt.type, opt.loc));
+    wwiv::bbs::CommandLine cl(cmd.value());
+    const auto ret = ExecuteExternalProgram(cl, chain_type_to_flags(opt.type, opt.loc));
 
     return mb_push_int(bas, l, ret == 0 ? 1 : 0);
   });
