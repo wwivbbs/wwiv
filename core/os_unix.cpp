@@ -23,6 +23,7 @@
 #include "fmt/format.h"
 #include <string>
 
+#include <signal.h>
 #include <unistd.h>
 
 using namespace std::chrono;
