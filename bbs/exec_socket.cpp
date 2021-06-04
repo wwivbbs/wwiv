@@ -60,7 +60,7 @@ static bool SetBlockingMode(SOCKET sock, bool blocking_mode) {
 #endif // _WIN32
 }
 
-ExecSocket::ExecSocket(const std::filesystem::path& dir, exec_socket_type_t type)
+ExecSocket::ExecSocket(const std::filesystem::path& dir, uint16_t port, exec_socket_type_t type)
     : dir_(dir), type_(type) {
   stop_.store(false);
 
@@ -108,7 +108,7 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, exec_socket_type_t type
                sizeof(optval));
 
     my_addr.sin_family = AF_INET;
-    my_addr.sin_port = htons(12345);
+    my_addr.sin_port = htons(port);
     memset(&(my_addr.sin_zero), 0, 8);
     my_addr.sin_addr.s_addr = INADDR_ANY;
 
@@ -129,7 +129,7 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, exec_socket_type_t type
     VLOG(1) << "Bound to port: " << port_;
   }
 
-  if (listen(server_socket_, 5) == -1) {
+  if (listen(server_socket_, 1) == -1) {
     LOG(ERROR) << "listen error";
     server_socket_ = -1;
     return;
@@ -170,7 +170,7 @@ std::optional<int> ExecSocket::accept() {
 
 std::string ExecSocket::z() const { 
   if (type_ == exec_socket_type_t::port) {
-    return fmt::format("localhost:{}", port_);
+    return fmt::format("{}", port_);
   }
   return path().string();
 }
@@ -240,6 +240,7 @@ pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, int so
     }
     wwiv::os::sleep_for(std::chrono::milliseconds(100));
   }
+  return pump_socket_result_t::process_exit;
 }
 
 bool ExecSocket::stop_pump() { 

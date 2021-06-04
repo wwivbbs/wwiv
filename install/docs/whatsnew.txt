@@ -46,7 +46,13 @@ What's New in WWIV 5.7.1 (2021)
     when using PIPE since the pipe name is hard coded to be
     \\.\PIPE\WWIV# and \\.\PIPE\WWIV#C where # is the node number.  
 + WWIVFOSS is now bundled with the OS/2 cpack target.
-+ 
++ WWIV supports listening on either a TCP local socket port or an UNIX
+  socket for the door to connect back to instead of using socket passing
+  ala DOOR32 style.  This works on both Windows and UNIX.  Please note that
+  Windows 10 17063 or later is needed for AF_UNIX support on Windows.
+  This is handy for using QEMU from within BBS to run DOS based doors.  
+  The port number or socket path will be available as a new (%Z) replacable
+  parameter from chainedit when using the selected chain execution mode.
 
 
 

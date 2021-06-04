@@ -62,25 +62,26 @@ static void showchains() {
 }
 
 void ShowChainCommandLineHelp() {
-  bout << "|#2  Macro   Value\r\n";
-  bout << "|#7 ======== =======================================\r\n";
-  bout << "|#1   %     |#9 A single \'%\' Character\r\n";
-  bout << "|#1   %1    |#9 CHAIN.TXT full pathname (legacy parameter)\r\n";
-  bout << "|#1   %A    |#9 CALLINFO.BBS full pathname \r\n";
-  bout << "|#1   %C    |#9 CHAIN.TXT full pathname \r\n";
-  bout << "|#1   %D    |#9 DORIFOx.DEF full pathname \r\n";
-  bout << "|#1   %E    |#9 DOOR32.SYS full pathname \r\n";
-  bout << "|#1   %H    |#9 Socket Handle \r\n";
-  bout << "|#1   %I    |#9 TEMP directory for the instance \r\n";
-  bout << "|#1   %K    |#9 GFiles Comment File For Archives\r\n";
-  bout << "|#1   %M    |#9 Modem Baud Rate\r\n";
-  bout << "|#1   %N    |#9 Node (Instance) number\r\n";
-  bout << "|#1   %O    |#9 PCBOARD.SYS full pathname\r\n";
-  bout << "|#1   %P    |#9 ComPort Number\r\n";
-  bout << "|#1   %R    |#9 DOOR.SYS Full Pathname\r\n";
-  bout << "|#1   %S    |#9 Com Port Baud Rate\r\n";
-  bout << "|#1   %T    |#9 Minutes Remaining\r\n";
-  bout << "|#1   %U    |#9 Users Handle (primary name)\r\n";
+  bout << "|#2Macro Value\r\n";
+  bout << "|#7===== ===============================================================\r\n";
+  bout << "|#1  %% |#9 A single '%' Character\r\n";
+  bout << "|#1  %1 |#9 CHAIN.TXT full pathname (legacy parameter)\r\n";
+  bout << "|#1  %A |#9 CALLINFO.BBS full pathname \r\n";
+  bout << "|#1  %C |#9 CHAIN.TXT full pathname \r\n";
+  bout << "|#1  %D |#9 DORIFOx.DEF full pathname \r\n";
+  bout << "|#1  %E |#9 DOOR32.SYS full pathname \r\n";
+  bout << "|#1  %H |#9 Socket Handle \r\n";
+  bout << "|#1  %I |#9 TEMP directory for the instance \r\n";
+  bout << "|#1  %K |#9 GFiles Comment File For Archives\r\n";
+  bout << "|#1  %M |#9 Modem Baud Rate\r\n";
+  bout << "|#1  %N |#9 Node (Instance) number\r\n";
+  bout << "|#1  %O |#9 PCBOARD.SYS full pathname\r\n";
+  bout << "|#1  %P |#9 ComPort Number\r\n";
+  bout << "|#1  %R |#9 DOOR.SYS Full Pathname\r\n";
+  bout << "|#1  %S |#9 Com Port Baud Rate\r\n";
+  bout << "|#1  %T |#9 Minutes Remaining\r\n";
+  bout << "|#1  %U |#9 Users Handle (primary name)\r\n";
+  bout << "|#1  %Z |#9Socket port/path '12345' or '/wwiv/bbs/e/1/scratch/wwiv.sock'\r\n";
   bout.nl();
 }
 

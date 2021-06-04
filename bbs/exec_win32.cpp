@@ -570,8 +570,8 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
         return false;
       }
     } else if (flags & EFLAG_LISTEN_SOCK) {
-      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(a()->sess().dirs().scratch_directory(),
-                                                            wwiv::bbs::exec_socket_type_t::port);
+      uint16_t port = 0;
+      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(port);
       // Add %Z into the commandline.
       if (exec_socket->listening()) {
         cmdline.add('Z', exec_socket->z());
@@ -579,8 +579,7 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
       }
 
     } else if (flags & EFLAG_UNIX_SOCK) {
-      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(a()->sess().dirs().scratch_directory(),
-                                                            wwiv::bbs::exec_socket_type_t::unix_domain);
+      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(a()->sess().dirs().scratch_directory());
       // Add %Z into the commandline.
       if (exec_socket->listening()) {
         cmdline.add('Z', exec_socket->z());
@@ -636,10 +635,16 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
       const auto res = exec_socket->pump_socket(pi.hProcess, sock.value(), *bout.remoteIO());
       if (res != pump_socket_result_t::process_exit) {
         // sockets closed but process still running.
-        DWORD exit_code;
-        if (TerminateProcess(pi.hProcess, &exit_code)) {
+        VLOG(1) << "Sockets closed, process still running; Forcefully terminating pid: "
+                << pi.hProcess;
+        if (TerminateProcess(pi.hProcess, 127)) {
           terminated = true;
         }
+      }
+    } else {
+      VLOG(1) << "Accept never happend; Forcefully terminating pid: " << pi.hProcess;
+      if (TerminateProcess(pi.hProcess, 127)) {
+        terminated = true;
       }
     }
   }

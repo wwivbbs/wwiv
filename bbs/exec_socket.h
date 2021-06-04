@@ -44,7 +44,9 @@ typedef pid_t EXEC_SOCKET_HANDLE;
 
 class ExecSocket final {
 public:
-  ExecSocket(const std::filesystem::path& dir, exec_socket_type_t type);
+  ExecSocket(const std::filesystem::path& dir)
+      : ExecSocket(dir, 0, exec_socket_type_t::unix_domain) {}
+  ExecSocket(uint16_t port) : ExecSocket("", port, exec_socket_type_t::port) {}
   ~ExecSocket();
   std::optional<int> accept();
 
@@ -62,6 +64,7 @@ public:
   static bool process_still_active(EXEC_SOCKET_HANDLE h);
 
 private:
+  ExecSocket(const std::filesystem::path& dir, uint16_t port, exec_socket_type_t type);
   const std::filesystem::path dir_;
   exec_socket_type_t type_;
   std::filesystem::path unix_path_;

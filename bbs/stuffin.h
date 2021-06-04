@@ -55,7 +55,7 @@ namespace wwiv::bbs {
  *  %S       Com port BPS rate                     "38400"
  *  %T       Time remaining (min)                  "30"
  *  %U       Username                              "Rushfan #1"
- *
+ *  %Z       Socket port or path                   "12345" or "/wwiv/bbs/e/1/scratch/wwiv.sock"
  * \endverbatim
  */
 class CommandLine {

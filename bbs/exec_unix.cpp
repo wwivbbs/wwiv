@@ -258,8 +258,7 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
       need_reopen_io = true;
       bout.remoteIO()->close(true);
     } else if (flags & EFLAG_LISTEN_SOCK) {
-      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(a()->sess().dirs().scratch_directory(),
-                                                            wwiv::bbs::exec_socket_type_t::port);
+      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(0);
       // Add %Z into the commandline.
       if (exec_socket->listening()) {
         cmdline.add('Z', exec_socket->z());
@@ -267,8 +266,7 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
       }
 
     } else if (flags & EFLAG_UNIX_SOCK) {
-      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(a()->sess().dirs().scratch_directory(),
-                                                            wwiv::bbs::exec_socket_type_t::unix_domain);
+      exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(a()->sess().dirs().scratch_directory());
       // Add %Z into the commandline.
       if (exec_socket->listening()) {
         cmdline.add('Z', exec_socket->z());
@@ -299,6 +297,10 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
         VLOG(1) << "Forcefully terminating pid: " << pid;
         kill(pid, SIGKILL);
       }
+    } else {
+      // sockets closed but process still running.
+      VLOG(1) << "Accept never happend; Forcefully terminating pid: " << pid;
+      kill(pid, SIGKILL);
     }
   }
 
