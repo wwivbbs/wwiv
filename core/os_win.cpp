@@ -107,5 +107,9 @@ pid_t get_pid() {
   return _getpid();
 }
 
+bool terminate_process(pid_t pid) {
+  return TerminateProcess(reinterpret_cast<HANDLE>(pid), 127);
+}
+
 
 } // namespace wwiv

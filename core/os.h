@@ -55,6 +55,9 @@ std::string stacktrace();
 // Gets the PID
 pid_t get_pid();
 
+// terminates a process
+bool terminate_process(pid_t pid);
+
 } // namespace
 
 #endif

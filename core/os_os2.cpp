@@ -68,5 +68,8 @@ std::string stacktrace() { return {};
 
 pid_t get_pid() { return getpid(); }
 
+bool terminate_process(pid_t pid) {
+  return false;
+}
 
 } // namespace wwiv

@@ -111,5 +111,10 @@ pid_t get_pid() {
   return getpid();
 }
 
+bool terminate_process(pid_t pid) {
+  kill(pid, SIGKILL);
+  return true;
+}
+
 
 } // namespace wwiv
