@@ -37,7 +37,6 @@ add_library(
   dropfile.cpp
   dsz.cpp
   email.cpp
-  "exec_socket.cpp"
   execexternal.cpp
   external_edit.cpp
   external_edit_qbbs.cpp
@@ -135,7 +134,8 @@ endif()
 if(UNIX) 
   target_sources(bbs_lib PRIVATE
       exec_unix.cpp 
-    	make_abs_cmd_unix.cpp 
+      "exec_socket.cpp"
+      make_abs_cmd_unix.cpp 
   )  
   if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
     list(APPEND CMAKE_EXE_LINKER_FLAGS "-lsocket -lnsl -lkstat -lssp")
@@ -149,6 +149,7 @@ endif()
 if(WIN32)
   target_sources(bbs_lib PRIVATE
 		exec_win32.cpp 
+		"exec_socket.cpp"
 		make_abs_cmd_win32.cpp 
   )
 

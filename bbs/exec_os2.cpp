@@ -31,7 +31,7 @@
 #include <string>
 
 
-int exec_cmdline(const wwiv::bbs::CommandLine& cmdline, int flags) {
+int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
   if (a()->sess().ok_modem_stuff() && a()->sess().using_modem()) {
     VLOG(1) <<"Closing remote IO";
     bout.remoteIO()->close(true);

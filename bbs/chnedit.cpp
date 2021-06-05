@@ -256,7 +256,7 @@ static void modify_chain(ssize_t chain_num) {
         c.exec_mode++;
       }
       if (c.exec_mode == chain_exec_mode_t::sock_port ||
-          c.exec_mode == chain_exec_mode_t::sock_unix {
+          c.exec_mode == chain_exec_mode_t::sock_unix) {
         c.exec_mode++;
       }
 #elif defined(__unix__)
