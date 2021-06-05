@@ -21,7 +21,9 @@
 #include "core/strings.h"
 #include "core/parser/ast.h"
 #include "core/parser/lexer.h"
+#include "fmt/ostream.h"
 #include "fmt/printf.h"
+#include "fmt/ostream.h"
 #include "sdk/acs/eval_error.h"
 #include <optional>
 #include <string>

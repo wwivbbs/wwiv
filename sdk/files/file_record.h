@@ -18,6 +18,7 @@
 #ifndef INCLUDED_SDK_FILES_FILE_RECORD_H
 #define INCLUDED_SDK_FILES_FILE_RECORD_H
 
+#include "fmt/format.h"
 #include "sdk/config.h"
 #include "sdk/vardec.h"
 
@@ -105,9 +106,14 @@ std::filesystem::path FilePath(const std::filesystem::path& directory_name,
 
 std::filesystem::path FilePath(const std::filesystem::path& directory_name,
                                    const FileName& f);
-
-
-
 } // namespace wwiv::sdk::files
 
-#endif  // __INCLUDED_SDK_FILES_FILE_RECORD_H__
+template <> struct fmt::formatter<wwiv::sdk::files::FileRecord> : fmt::formatter<string_view> {
+  // parse is inherited from formatter<string_view>.
+  template <typename FormatContext>
+  auto format(wwiv::sdk::files::FileRecord r, FormatContext& ctx) {
+    return formatter<string_view>::format(r.unaligned_filename(), ctx);
+  }
+};
+
+#endif  // INCLUDED_SDK_FILES_FILE_RECORD_H

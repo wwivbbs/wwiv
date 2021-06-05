@@ -77,7 +77,7 @@ void old_sublist() {
       const auto pos = std::distance(std::begin(a()->uconfsub), iter);
       setuconf(ConferenceType::CONF_SUBS, pos, -1);
       const auto s =
-          fmt::format("|#1Conference {}|#0:|#2 {}", iter->key, stripcolors(iter->conf_name));
+          fmt::format("|#1Conference {}|#0:|#2 {}", iter->key.key(), stripcolors(iter->conf_name));
       bout.bpla(s, &abort);
     }
     size_t i1 = 0;

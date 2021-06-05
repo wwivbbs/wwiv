@@ -19,6 +19,7 @@
 #define INCLUDED_SDK_ACS_VALUE_H
 
 #include "core/parser/ast.h"
+#include "fmt/format.h"
 #include "sdk/user.h"
 #include <any>
 #include <iostream>
@@ -70,10 +71,10 @@ public:
   explicit Value(const char* v) : Value(std::string(v)) {}
   explicit Value(Ar a) : value_type(ValueType::ar), value_(std::make_any<Ar>(a)) {}
 
-  [[nodiscard]] int as_number();
-  [[nodiscard]] std::string as_string();
-  [[nodiscard]] bool as_boolean();
-  [[nodiscard]] Ar as_ar();
+  [[nodiscard]] int as_number() const;
+  [[nodiscard]] std::string as_string() const;
+  [[nodiscard]] bool as_boolean() const;
+  [[nodiscard]] Ar as_ar() const;
 
   [[nodiscard]] bool is_boolean() const { return value_type == ValueType::boolean; }
 
@@ -91,5 +92,14 @@ private:
 std::ostream& operator<<(std::ostream& os, const Value& a);
 
 }
+
+// Custom formatter for FidoAddress
+template <> struct fmt::formatter<wwiv::sdk::value::Value> : fmt::formatter<string_view> {
+  // parse is inherited from formatter<string_view>.
+  template <typename FormatContext>
+  auto format(const wwiv::sdk::value::Value& v, FormatContext& ctx) {
+    return formatter<string_view>::format(v.as_string(), ctx);
+  }
+};
 
 #endif

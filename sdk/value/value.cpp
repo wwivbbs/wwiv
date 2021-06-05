@@ -176,7 +176,7 @@ Value Value::eval(Value l, Operator op, Value r) {
 }
 
 
-int Value::as_number() {
+int Value::as_number() const{
   switch (value_type) {
   case ValueType::number:
     return std::any_cast<int>(value_);
@@ -194,7 +194,7 @@ int Value::as_number() {
   return 0;
 }
 
-std::string Value::as_string() {
+std::string Value::as_string() const {
   switch (value_type) {
   case ValueType::number:
     return std::to_string(std::any_cast<int>(value_));
@@ -214,7 +214,7 @@ std::string Value::as_string() {
   return "";
 }
 
-bool Value::as_boolean() {
+bool Value::as_boolean() const {
   switch (value_type) {
   case ValueType::string: {
     const auto s = std::any_cast<std::string>(value_);
@@ -231,7 +231,7 @@ bool Value::as_boolean() {
   return false;
 }
 
-Ar Value::as_ar() {
+Ar Value::as_ar() const {
   switch (value_type) {
   case ValueType::ar:
     return std::any_cast<Ar>(value_);

@@ -18,11 +18,13 @@
 #ifndef INCLUDED_SDK_FIDO_FIDO_ADDRESS_H
 #define INCLUDED_SDK_FIDO_FIDO_ADDRESS_H
 
+#include "fmt/format.h"
 #include <cstdint>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
+
 
 namespace wwiv::sdk::fido {
 
@@ -188,5 +190,14 @@ struct hash<wwiv::sdk::fido::FidoAddress> {
 };
 
 }  // namespace std
+
+// Custom formatter for FidoAddress
+template <> struct fmt::formatter<wwiv::sdk::fido::FidoAddress> : fmt::formatter<string_view> {
+  // parse is inherited from formatter<string_view>.
+  template <typename FormatContext>
+  auto format(wwiv::sdk::fido::FidoAddress a, FormatContext& ctx) {
+    return formatter<string_view>::format(a.as_string(true, true), ctx);
+  }
+};
 
 #endif

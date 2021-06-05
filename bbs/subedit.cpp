@@ -121,7 +121,7 @@ static void DisplayNetInfo(size_t nSubNum) {
     bout.bprintf("   |#9|#1%c|#9) |#2", static_cast<char>('a' + i));
     if (sn.host == 0) {
       std::string host = "<HERE>";
-      const auto net_file_name = fmt::format("n{}.net", net.dir, sn.stype);
+      const auto net_file_name = fmt::format("n{}.net", sn.stype);
       std::set<uint16_t> subscribers;
       ReadSubcriberFile(FilePath(net.dir, net_file_name), subscribers);
       auto num = ssize(subscribers);
