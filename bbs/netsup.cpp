@@ -538,8 +538,9 @@ static std::pair<int, int> ansicallout() {
 
   if (!callout_ansi) {
     bout.nl();
-    bout << "|#2Which system: ";
-    auto sn = bin.input_number<uint16_t>(0, 0, 32767);
+    bout.cls();
+    bout << "|#9Callout to which system? ";
+    auto sn = bin.input_number<uint16_t>(1, 1, 32767);
     bout.localIO()->SetCursor(LocalIO::cursorNormal);
     return std::make_pair(sn, -1);
   }
