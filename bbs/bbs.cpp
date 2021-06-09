@@ -65,7 +65,9 @@ int bbsmain(int argc, char *argv[]) {
     std::cout << "pause";
     getchar();
 #endif
-    //set_wwiv_codepage(wwiv::core::wwiv_codepage_t::utf8);
+#ifndef __OS2__    
+    set_wwiv_codepage(wwiv::core::wwiv_codepage_t::utf8);
+#endif
 
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
