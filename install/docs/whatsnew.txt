@@ -15,6 +15,15 @@ Legend (starting with 5.3)
     so that you don't overwrite any files (or use winmerge or meld
     to compare new changes)
 
+
+What's New in WWIV 5.7.2 (2021)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Fixed: Garbled display while connected locally (probably encoding issue) (#1467)
+* Update to netfoss 1.25
+* default to 1 when ansi callout is off
+* Update dependencies to latest fmt::fmtlib, pdcurses, my_basic, and googletest.
+
 What's New in WWIV 5.7.1 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 + Telnet support from wwivd.  Use @telnet:HOST:PORT for the telnet command
