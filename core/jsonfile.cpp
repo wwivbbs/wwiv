@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "core/jsonfile.h"
 
-#include "deps/cereal/include/cereal/external/rapidjson/document.h"
+#include "cereal/external/rapidjson/document.h"
 
 namespace wwiv::core {
 

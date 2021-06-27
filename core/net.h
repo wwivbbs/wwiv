@@ -27,7 +27,12 @@
 #if defined( _WIN32 )
 
 typedef int socklen_t;
+
+#if defined(_WIN64)
+typedef unsigned __int64 SOCKET;
+#else
 typedef unsigned int SOCKET;
+#endif
 
 #else
 

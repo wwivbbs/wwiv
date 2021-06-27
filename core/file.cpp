@@ -264,7 +264,7 @@ void File::Close() noexcept {
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 File::size_type File::Read(void* buffer, File::size_type size) {
-  const auto ret = read(handle_, buffer, static_cast<size_t>(size));
+  const auto ret = read(handle_, buffer, static_cast<unsigned int>(size));
   if (ret == -1) {
     LOG(ERROR) << "[DEBUG]: Read errno: " << errno << " filename: " << full_path_name_
         << " size: " << size;
@@ -280,7 +280,7 @@ File::size_type File::Read(void* buffer, File::size_type size) {
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 File::size_type File::Write(const void* buffer, File::size_type size) {
-  const auto r = write(handle_, buffer, static_cast<size_t>(size));
+  const auto r = write(handle_, buffer, static_cast<unsigned int>(size));
   if (r == -1) {
     LOG(ERROR) << "[DEBUG: Write errno: " << errno << " filename: " << full_path_name_
         << " size: " << size;

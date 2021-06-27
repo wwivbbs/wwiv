@@ -339,10 +339,10 @@ std::string CommandLineCommand::GetHelp() const {
   ss << program_name << " arguments:" << std::endl;
   auto max_len = 8;
   for (const auto& [_, c] : args_allowed_) {
-    max_len = std::max<int>(max_len, c.name_.size());
+    max_len = std::max<size_t>(max_len, c.name_.size());
   }
   for (const auto& a : commands_allowed_) {
-    max_len = std::max<int>(max_len, a.second->name().size());
+    max_len = std::max<size_t>(max_len, a.second->name().size());
   }
 
   for (const auto& [_, c] : args_allowed_) {

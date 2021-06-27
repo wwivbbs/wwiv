@@ -26,9 +26,19 @@
 #include <sstream>
 
 // Windows headers
+#define NOMINMAX
+#define NOCRYPT // Disable include of wincrypt.h
 #include <Windows.h>
 #include <DbgHelp.h>
 #include <process.h>
+
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
 
 #pragma comment (lib, "DbgHelp.lib")
 

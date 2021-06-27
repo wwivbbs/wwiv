@@ -30,9 +30,18 @@
 #include <type_traits>
 #include <vector>
 
+// NOTE(rushfan): Keep all of these since sometimes windows headers get
+// included before this one.
 #ifdef StrCat
 #undef StrCat
 #endif // StrCat
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
 
 namespace wwiv::strings {
 

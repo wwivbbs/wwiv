@@ -18,12 +18,20 @@
 /**************************************************************************/
 #include "core/net.h"
 
+// Put these before the windows and os/2 includes. This was barfing on Win64
+#include "core/log.h"
+#include "core/scope_exit.h"
+#include "core/socket_exceptions.h"
+#include "core/strings.h"
+
 #ifdef _WIN32
 
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "Mswsock.lib")
 #pragma comment(lib, "AdvApi32.lib")
 
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #define NOCRYPT // Disable include of wincrypt.h
 #include <winsock2.h>
 #include <MSWSock.h>
@@ -39,11 +47,6 @@
 #ifdef __OS2__
 #include <libcx/net.h>
 #endif  // __OS2__
-
-#include "core/log.h"
-#include "core/scope_exit.h"
-#include "core/socket_exceptions.h"
-#include "core/strings.h"
 
 using namespace wwiv::strings;
 

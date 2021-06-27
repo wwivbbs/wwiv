@@ -43,7 +43,7 @@ if(UNIX)
 endif()
 
 if(WIN32)
-  include(FindWWIVCurses)
+  # include(FindWWIVCurses)
 
   target_sources(core PRIVATE
     "file_win32.cpp"
@@ -65,7 +65,7 @@ if(OS2)
   )
 endif()
 
-set_max_warnings()
+#set_max_warnings()
 
 configure_file(version_internal.h.in version_internal.h @ONLY)
 

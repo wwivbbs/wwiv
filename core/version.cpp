@@ -33,11 +33,19 @@ std::string wwiv_compile_datetime() {
 }
 
 std::string full_version() {
+#ifdef WWIV_FULL_RELEASE
   return WWIV_FULL_RELEASE;
+#else
+  return {};
+#endif
 }
 
 std::string short_version() {
+#ifdef WWIV_RELEASE
   return WWIV_RELEASE; 
+#else 
+  return {};
+#endif
 }
 
 uint16_t wwiv_config_version() {
