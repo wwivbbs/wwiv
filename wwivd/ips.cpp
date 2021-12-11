@@ -161,6 +161,11 @@ bool AutoBlocker::Connection(const std::string& ip) {
 
   const auto now = clock_.Now();
 
+  //
+  // Synchronized from here on down
+  //
+  std::lock_guard<std::mutex> lock(mu_);
+
   if (blocked(ip)) {
     // We have an auto-block and we're still blocked.
     LOG(INFO) << "Still in auto-block for ip: " << ip;
@@ -170,6 +175,7 @@ bool AutoBlocker::Connection(const std::string& ip) {
   const auto auto_bl_sessions = b_.auto_bl_sessions;
   const auto auto_bl_seconds = b_.auto_bl_seconds;
   const auto oldest_in_window = now.to_time_t() - auto_bl_seconds;
+
   auto& s = sessions_[ip];
   s.emplace(now.to_time_t());
   if (s.size() == 1) {

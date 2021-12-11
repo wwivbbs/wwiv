@@ -23,6 +23,7 @@
 #include <ctime>
 #include <filesystem>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
@@ -83,6 +84,7 @@ private:
   std::map<std::string, std::set<time_t>> sessions_;
   std::map<std::string, auto_blocked_entry_t> auto_blocked_;
   Clock& clock_;
+  std::mutex mu_;
 };
 
 } // namespace

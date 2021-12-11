@@ -49,7 +49,7 @@ TEST(BadIps, Smoke) {
   FileHelper helper;
   auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   FakeClock clock(DateTime::now());
-  BadIp ip(fn.string(), clock);
+  BadIp ip(fn, clock);
   EXPECT_TRUE(ip.IsBlocked("10.0.0.1"));
   EXPECT_TRUE(ip.IsBlocked("8.8.8.8"));
   EXPECT_FALSE(ip.IsBlocked("4.4.4.4"));
@@ -72,7 +72,7 @@ TEST(AutoBlock, ShouldBlock) {
   FileHelper helper;
   const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   FakeClock clock(DateTime::now());
-  auto bip = std::make_shared<BadIp>(fn.string(), clock);
+  auto bip = std::make_shared<BadIp>(fn, clock);
   AutoBlocker blocker(bip, b, helper.TempDir(), clock);
   EXPECT_FALSE(blocker.blocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");
@@ -90,7 +90,7 @@ TEST(AutoBlock, Escalate1) {
   FileHelper helper;
   const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   FakeClock clock(DateTime::now());
-  auto bip = std::make_shared<BadIp>(fn.string(), clock);
+  auto bip = std::make_shared<BadIp>(fn, clock);
   AutoBlocker blocker(bip, b, helper.TempDir(), clock);
   EXPECT_FALSE(blocker.blocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");
@@ -114,7 +114,7 @@ TEST(AutoBlock, Escalate_All) {
   FileHelper helper;
   const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   FakeClock clock(DateTime::now());
-  auto bip = std::make_shared<BadIp>(fn.string(), clock);
+  auto bip = std::make_shared<BadIp>(fn, clock);
   AutoBlocker blocker(bip, b, helper.TempDir(), clock);
   EXPECT_FALSE(blocker.blocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");
@@ -166,7 +166,7 @@ TEST(AutoBlock, ShouldNotBlock) {
   FileHelper helper;
   const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   FakeClock clock(DateTime::now());
-  auto bip = std::make_shared<BadIp>(fn.string(), clock);
+  auto bip = std::make_shared<BadIp>(fn, clock);
   AutoBlocker blocker(bip, b, helper.TempDir(), clock);
   EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");
@@ -174,3 +174,4 @@ TEST(AutoBlock, ShouldNotBlock) {
   blocker.Connection("1.1.1.1");
   EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
 }
+
