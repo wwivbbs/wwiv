@@ -56,7 +56,6 @@ using wwiv::sdk::LogDirFromConfig;
 
 int bbsmain(int argc, char *argv[]) {
   LoggerConfig config(LogDirFromConfig);
-  //config.log_startup = true;
   Logger::Init(argc, argv, config);
 
   std::unique_ptr<Application> bbs;
@@ -83,12 +82,13 @@ int bbsmain(int argc, char *argv[]) {
     if (bbs) {
       return bbs->ExitBBSImpl(Application::exitLevelOK, true);
     }
-    return 0;
+    return Application::exitLevelOK;
   } catch (const std::exception& e) {
     LOG(ERROR) << "BBS Terminated by exception: " << e.what();
     if (bbs) {
       return bbs->ExitBBSImpl(Application::exitLevelNotOK, true);
     }
   }
-  return 1;
+  DLOG(FATAL) << "Should never reach here";
+  return Application::exitLevelNotOK;
 }

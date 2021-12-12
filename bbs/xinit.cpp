@@ -403,6 +403,8 @@ bool Application::ReadConfig() {
     return false;
   }
 
+  // Since the BBS's config has been read, we can actually shut down the BBS when we exit.
+  shutdown_on_exit_allowed_ = true;
   return true;
 }
 

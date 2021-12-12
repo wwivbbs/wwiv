@@ -796,25 +796,32 @@ std::string Application::logdir() const noexcept { return logdir_; }
 int Application::verbose() const noexcept { return verbose_; }
 
 int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
-  // Only perform shutdown when asked, and we've loaded config.json
-  if (perform_shutdown && a()->config()) {
-    write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
-    if (exit_level != Application::exitLevelOK && exit_level != Application::exitLevelQuit) {
-      // Only log the exiting at abnormal error levels, since we see lots of exiting statements
-      // in the logs that don't correspond to sessions every being created (network probes, etc).
-      sysoplog(false) << "";
-      sysoplog(false) << "WWIV " << short_version() << ", inst " << sess().instance_number()
-                      << ", taken down at " << times() << " on " << fulldate() << " with exit code "
-                      << exit_level << ".";
-      sysoplog(false) << "";
-    }
-    catsl();
-    std::clog << "\r\n";
-    std::clog << "WWIV Bulletin Board System " << full_version()
-         << " exiting at error level " << exit_level << std::endl
-         << std::endl;
-    std::clog.flush();
+  std::clog << fmt::format("\r\nWWIV Bulletin Board System {} exiting at error level {}\r\n\n",
+                           full_version(), exit_level);
+  std::clog.flush();
+
+  // Only perform shutdown when asked and able.
+  if (!shutdown_on_exit_allowed_ || !perform_shutdown) {
+    return exit_level;
   }
+  
+  // Only perform shutdown if we've loaded config.json
+  if (!a()->config()) {
+    return exit_level;
+  }
+
+  write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
+  if (exit_level != Application::exitLevelOK && exit_level != Application::exitLevelQuit) {
+    // Only log the exiting at abnormal error levels, since we see lots of exiting statements
+    // in the logs that don't correspond to sessions every being created (network probes, etc).
+    sysoplog(false) << "";
+    sysoplog(false) << "WWIV " << short_version() << ", inst " << sess().instance_number()
+                    << ", taken down at " << times() << " on " << fulldate() << " with exit code "
+                    << exit_level << ".";
+    sysoplog(false) << "";
+  }
+  catsl();
+  std::clog.flush();
 
   return exit_level;
 }

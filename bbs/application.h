@@ -447,6 +447,9 @@ private:
   std::string network_extension_;
   bool user_already_on_{false};
   bool at_wfc_{false};
+  // If true, then we are allowed to perform a shutdown on exit, if false it means the BBS
+  // hasn't yet been started.
+  bool shutdown_on_exit_allowed_{false};
 
   std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
