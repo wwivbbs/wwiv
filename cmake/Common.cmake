@@ -18,7 +18,7 @@ option(WWIV_USE_PIPES "Enable Named Pipes support for WWIV." ON)
 #
 # Build variables to come from Jenkins, environment, etc.
 
-set(WWIV_RELEASE "5.7.2" CACHE STRING "WWIV Release Major Version to 3 digits")
+set(WWIV_RELEASE "5.8.0" CACHE STRING "WWIV Release Major Version to 3 digits")
 set(WWIV_BUILD_NUMBER "development" CACHE STRING "WWIV Build Number")
 set(WWIV_FULL_RELEASE "${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}" CACHE INTERNAL "WWIV Release Version, 4 digits with build number as 4th")
 set(WWIV_ARCH "x86" CACHE STRING "x86 or x64")
@@ -65,8 +65,8 @@ message(STATUS "WWIV Build Number: ${WWIV_FULL_RELEASE}")
 macro(ENSURE_MINIMUM_COMPILER_VERSIONS)
   # Set minimum GCC version
   # See https://stackoverflow.com/questions/14933172/how-can-i-add-a-minimum-compiler-version-requisite
-  if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.3)
-      message(FATAL_ERROR "Require at least gcc-8.3; found: ${CMAKE_CXX_COMPILER_VERSION}")
+  if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
+      message(FATAL_ERROR "Require at least gcc-10.0; found: ${CMAKE_CXX_COMPILER_VERSION}")
   endif()
 
   if (MSVC)
