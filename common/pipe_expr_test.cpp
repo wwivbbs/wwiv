@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "common/pipe_expr.h"
-#include "common_test/common_helper.h"
+#include "common/common_helper.h"
 
 using namespace wwiv::common;
 using namespace testing;

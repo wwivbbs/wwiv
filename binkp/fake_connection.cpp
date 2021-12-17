@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "binkp_test/fake_connection.h"
+#include "binkp/fake_connection.h"
 
 #include "core/os.h"
 #include "core/scope_exit.h"

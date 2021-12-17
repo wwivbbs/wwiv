@@ -19,7 +19,7 @@
 #include "binkp/binkp_commands.h"
 #include "binkp/binkp_config.h"
 #include "binkp/transfer_file.h"
-#include "binkp_test/fake_connection.h"
+#include "binkp/fake_connection.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"

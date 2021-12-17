@@ -351,7 +351,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
     // All others < 256
     default:
       if (c < 255 && c > 31 &&
-          (insert && nLength < max_length || !insert && pos < max_length)) {
+          ((insert && nLength < max_length) || (!insert && pos < max_length))) {
         if (mode != InputMode::MIXED && mode != InputMode::FILENAME && mode != InputMode::CMDLINE &&
             mode != InputMode::FULL_PATH_NAME) {
           c = upcase(static_cast<unsigned char>(c));

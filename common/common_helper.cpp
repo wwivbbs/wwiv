@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "common_test/common_helper.h"
+#include "common/common_helper.h"
 
 #include "common/output.h"
 #include "core/file.h"

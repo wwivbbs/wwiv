@@ -20,7 +20,7 @@
 #define INCLUDED_BBS_HELPER_H
 
 #include "bbs/bbs.h"
-#include "common_test/common_helper.h"
+#include "common/common_helper.h"
 #include <memory>
 
 /*

@@ -1,6 +1,9 @@
 # CMake for WWIV
 include_directories(../deps/cl342)
 include_directories(../deps/cereal/include)
+include_directories(${GTEST_INCLUDE_DIRS})
+include_directories(${GMOCK_INCLUDE_DIR})
+include(GoogleTest)
 Include(FindWWIVCurses)
 
 set(COMMON_SOURCES 
@@ -51,3 +54,29 @@ endif()
 set_max_warnings()
 
 target_include_directories(common PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+# Tests
+
+if (WWIV_BUILD_TESTS)
+
+  set(common_test_sources
+    "acs_test.cpp"
+    "input_range_test.cpp"
+    "common_test_main.cpp"
+    "menu_data_util_test.cpp"
+    "pipe_expr_test.cpp"
+    "remote_socket_io_test.cpp"
+  )
+
+  set(common_fixture_sources
+    common_helper.cpp 
+  )
+
+  add_library(common_fixtures ${common_fixture_sources})
+  target_link_libraries(common_fixtures common core core_fixtures)
+
+  add_executable(common_tests ${common_test_sources})
+  target_link_libraries(common_tests common_fixtures common gmock gtest)
+  gtest_discover_tests(common_tests)
+
+endif()
