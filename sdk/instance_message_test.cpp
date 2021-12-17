@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2021, WWIV Software Services             */
+/*                              WWIV Version 5.x                          */
+/*           Copyright (C)2007-2021, WWIV Software Services               */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,21 +14,29 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "core/strings.h"
-#include "core/file_helper.h"
-#include "binkp/cram.h"
-#include <string>
+#include "sdk/instance_message.h"
+#include "sdk/sdk_helper.h"
 
-using namespace wwiv::net;
-using namespace wwiv::strings;
+using namespace wwiv::sdk;
 
+class InstanceMessageTest : public testing::Test {
+public:
+  InstanceMessageTest() : config(helper.root()) { }
 
-TEST(CramTest, Basic) {
-  Cram c;
-  std::string h = c.CreateHashedSecret("cafebabecafebabecafebabecafebabe", "WELCOME");
-  // fidopoll from mystic returned bfd5323f395243161863e7a9cd1de854
-  EXPECT_EQ("bfd5323f395243161863e7a9cd1de854", h);
+  SdkHelper helper;
+  Config config;
+};
+
+TEST_F(InstanceMessageTest, Smoke) {
+  send_instance_string(config, instance_message_type_t::user, 2, 1, 1, "test");
+  const auto im2 = read_all_instance_messages(config, 2);
+  EXPECT_EQ(1u, im2.size());
+  EXPECT_EQ("test", im2.front().message);
+
+  const auto im1 = read_all_instance_messages(config, 1);
+  EXPECT_TRUE(im1.empty());
 }

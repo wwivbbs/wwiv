@@ -19,7 +19,7 @@
 
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core_test/file_helper.h"
+#include "core/file_helper.h"
 #include "fmt/printf.h"
 #include "binkp/transfer_file.h"
 #include "binkp/wfile_transfer_file.h"

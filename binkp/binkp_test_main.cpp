@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "core/log.h"
-#include "core_test/file_helper.h"
+#include "core/file_helper.h"
 
 #include "gtest/gtest.h"
 

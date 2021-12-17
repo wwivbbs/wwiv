@@ -19,7 +19,7 @@
 #include "core/datetime.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core_test/file_helper.h"
+#include "core/file_helper.h"
 #include "fmt/printf.h"
 #include "gtest/gtest.h"
 #include <chrono>

@@ -21,7 +21,7 @@
 
 #include "common/context.h"
 #include "common/remote_io.h"
-#include "core_test/file_helper.h"
+#include "core/file_helper.h"
 #include "local_io/local_io.h"
 #include "sdk/chains.h"
 #include "sdk/config.h"

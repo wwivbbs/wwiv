@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2021, WWIV Software Services             */
+/*                              WWIV Version 5.x                          */
+/*               Copyright (C)2014-2021, WWIV Software Services           */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,21 +14,26 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
 #include "gtest/gtest.h"
-
-#include "core/strings.h"
+#include "core/crc32.h"
+#include "core/file.h"
 #include "core/file_helper.h"
-#include "binkp/cram.h"
 #include <string>
+#include <vector>
 
-using namespace wwiv::net;
-using namespace wwiv::strings;
+using namespace wwiv::core;
 
+TEST(Crc32Test, Simple) {
+  FileHelper file;
+  const auto path = file.CreateTempFile("helloworld.txt", "Hello World");
 
-TEST(CramTest, Basic) {
-  Cram c;
-  std::string h = c.CreateHashedSecret("cafebabecafebabecafebabecafebabe", "WELCOME");
-  // fidopoll from mystic returned bfd5323f395243161863e7a9cd1de854
-  EXPECT_EQ("bfd5323f395243161863e7a9cd1de854", h);
+  ASSERT_TRUE(File::Exists(path));
+
+  const auto crc = crc32file(path);
+  const uint32_t expected = 0x4a17b156;
+
+  // use wwiv/scripts/crc32.py to generate golden values as needed.
+  EXPECT_EQ(expected, crc) << " was " << std::hex << crc;
 }

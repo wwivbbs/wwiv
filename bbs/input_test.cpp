@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2021, WWIV Software Services             */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)2018-2021, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,21 +14,18 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "core/strings.h"
-#include "core/file_helper.h"
-#include "binkp/cram.h"
-#include <string>
+#include "bbs/bbs_helper.h"
 
-using namespace wwiv::net;
-using namespace wwiv::strings;
+using wwiv::sdk::User;
 
+class InputTest : public ::testing::Test {
+protected:
+  void SetUp() override {}
+};
 
-TEST(CramTest, Basic) {
-  Cram c;
-  std::string h = c.CreateHashedSecret("cafebabecafebabecafebabecafebabe", "WELCOME");
-  // fidopoll from mystic returned bfd5323f395243161863e7a9cd1de854
-  EXPECT_EQ("bfd5323f395243161863e7a9cd1de854", h);
+TEST_F(InputTest, Smoke) { 
 }

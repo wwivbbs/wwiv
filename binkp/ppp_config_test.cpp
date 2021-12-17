@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 
 #include "core/strings.h"
-#include "core_test/file_helper.h"
+#include "core/file_helper.h"
 #include "binkp/ppp_config.h"
 #include <cstdint>
 #include <string>

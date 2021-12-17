@@ -16,19 +16,19 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "gtest/gtest.h"
-
 #include "core/strings.h"
 #include "core/file_helper.h"
-#include "binkp/cram.h"
-#include <string>
 
-using namespace wwiv::net;
 using namespace wwiv::strings;
 
 
-TEST(CramTest, Basic) {
-  Cram c;
-  std::string h = c.CreateHashedSecret("cafebabecafebabecafebabecafebabe", "WELCOME");
-  // fidopoll from mystic returned bfd5323f395243161863e7a9cd1de854
-  EXPECT_EQ("bfd5323f395243161863e7a9cd1de854", h);
+class NetworkCommandlineTest: public testing::Test {
+public:
+  NetworkCommandlineTest() {}
+
+protected:
+  FileHelper helper_;
+};
+
+TEST_F(NetworkCommandlineTest, NOP) {
 }

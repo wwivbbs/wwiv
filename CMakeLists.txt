@@ -77,13 +77,6 @@ add_subdirectory(wwivutil)
 
 if (WWIV_BUILD_TESTS)
   message (STATUS "WWIV_BUILD_TESTS is ON")
-  add_subdirectory(bbs_test)
-  add_subdirectory(core_test)
-  add_subdirectory(net_core_test)
-  add_subdirectory(sdk_test)
-if (WWIV_BUILD_WWIVD)
-  add_subdirectory(wwivd_test)
-endif()
 endif (WWIV_BUILD_TESTS)
 
 if (WWIV_INSTALL)
