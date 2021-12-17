@@ -1,0 +1,1342 @@
+
+
+              Network Technical Documentation
+
+
+                       version 3.0.52
+                             by
+                       Wayne Heyward
+                  aka Midnight Tree Bandit
+                   Updated for Net37, WSS
+                   Updated for Net52, WSS
+
+   Copyright (c) 1998-2016, WWIV Software Services
+               Copyright (c) 1995, Wayne Bell
+
+
+======================================================
+0. Table of Contents
+======================================================
+
+  1.  INTRODUCTION
+  2.  GENERAL OVERVIEW OF WWIV NETWORKING
+  3.  MAKING CONNECTIONS
+  4.  MESSAGE PACKETS
+  5.  BBSLIST/CONNECT FILES AND MESSAGE ROUTING
+  6.  TIPS FOR WRITING WWIVNET SOFTWARE
+
+
+======================================================
+1. INTRODUCTION
+======================================================
+
+ A.   History
+
+  Back in 1989, Wayne Bell released the first technical
+  documentation covering the technical workings of the
+  WWIV networking software.  While much of the information
+  in that document is still relevant now, much has changed
+  since 1989.  The Group structure has been added, support
+  for more message types, and support for preprocessors to
+  the packet tossers has been added.
+
+  So in late 1992 or early 1993 Wayne asked for volunteers
+  to rewrite the Network Technical documentation.  No one
+  spoke up. Then in March I started providing WWIV support
+  on the GEnie information service, and some people started
+  asking about getting technical information so they could
+  get their non-WWIV boards to communicate with WWIV
+  networks.  Looking around, I found the original doc, and
+  asked Wayne if anyone had answered his call.  As it
+  turned out, I became the volunteer.  After much
+  procrastination and "How's the doc coming?" from Wayne,
+  here it is.
+
+ B.   Purpose, Limitations, and Other Info
+
+  The purpose for this document is to explain WWIV based
+  networking interface for those who wish to write software
+  which communicates with WWIV based systems, either
+  independently or as an extra utility for the existing
+  NETXX software.
+
+  The documentation that you are reading now is more an
+  expansion and clarification of the original docs than it
+  is a total rewrite.  Now that the bulk of the work is done,
+  the plan is to update them with each release of NETxx to
+  reflect new features.  The information in this document
+  is current as of the Net52 release (NET52).
+
+  First clarification: in the context of this document, the
+  term "NETXX" refers to the software for interfacing
+  WWIV-type networks and any network which uses that
+  software.
+
+  This documentation assumes that the reader at least: a)
+  has a good working knowledge of C and the various C data
+  types and data structures. b)   has a general familiarity
+  of how file transfer protocols work.
+
+  This document is not a replacement for the NetXX
+  Software Documentation.  This doc does not describe how
+  to use the network software, only how it works.  For
+  instructions on using the NETXX software and familiarize
+  yourself with how to use it, see the documentation,
+  which can be found in the current NetXX release.
+
+  A note on the numbering for this document.  This is
+  version 3.0.51.  The first number indicates that this is
+  a major rewrite from the Midnight Tree Bandit which was
+  a rewrite of the original by Wayne Bell.  Unless
+  a major overhaul is done, this is not likely to change.
+  The 0 in the second part indicates that this is the first
+  version of this document.  If there are any major changes
+  or additions made, this will be incremented.  The 52
+  indicates that this information is current as of version
+  52 of the NETXX software (NET52).  Minor changes
+  reflecting small interface changes in the NETXX
+  software will cause this number to be changed.  This
+  number will not always be the same as the latest version
+  of the NETXX software; if there are no changes in the
+  external interface, this document will not be updated.
+
+  Comments concerning this document are welcome as are
+  suggestions for additional information to include,
+  things that could be explained more fully, and so
+  forth. For comments please log a bug on github at 
+  http://github.com/wwivbbs/wwiv/issues
+
+ C.   Relevant Copyrights and Acknowledgements
+  This document is Copyright 1994 by Wayne Heyward (aka
+  Midnight Tree Bandit) and updated by WWIV Software
+  Services (WSS).  It may be freely distributed provided
+  it is not altered in any way.  This is copyrighted to
+  prevent unauthorized (and possibly inaccurate) changes
+  from being made to this document by anyone other than
+  myself or any other appointed by WWIV Software Services (
+  should I be unable to continue updating this document).
+
+  WWIV BBS and the NETXX software (distributed as NETxx)
+  are Copyright 1989-1995 by Wayne Bell
+  and Copyright 1998-2016, WWIV Software Services.
+
+  The NETXX interface information and code in this
+  document is placed in the public domain, and may be
+  freely used for the purpose of interfacing with WWIV
+  networks and network software.
+
+  I would like to thank Wayne Bell, not only for creating a
+  top notch BBS program that is both powerful and easy to
+  use, but creating a networking scheme that is more
+  painless to set up and operate than any other out there.
+  He has said often that if he knew then what he does now,
+  things would have been different.  I cannot help thinking
+  that the result would have been less elegant or easy to
+  use.
+
+  I would also like to thank Wayne for his patience over
+  the last year and a half, waiting for me to get this
+  document started. I've fired thousands of questions at
+  him the last few weeks in an effort to make this
+  documentation as complete as possible, and he answered
+  every one.
+
+  And finally thanks to Filo, who also provided vital
+  information and advice without which this documentation
+  would be incomplete.
+
+======================================================
+2.  GENERAL OVERVIEW OF WWIV NETWORKING
+======================================================
+
+ A WWIV network is basically a loose confederation of WWIV
+ BBS systems that use the NETXX (or compatible) software.
+
+ The software does not limit the connection structure, so
+ the member sysops can connect to anyone they wish (subject
+ to the rules of their network).  For ease of
+ administration, the network may be split up into Groups,
+ each with their own coordinator.  Node numbers are an
+ unsigned short int, so that nodes may be assigned a value
+ from 1 to 65535. Node numbers from 32000 to 32767 are 
+ reserved for internal use by WWIV.  For example 32767
+ is reserved for Internet network Gateway, and 32765 is
+ reserved for native FTN style networking.
+
+ The lists of nodes are distributed in two sets of files:
+ bbslist.net and connect.net.  The connect.net file
+ assigns costs to each connection for each system.
+
+ Like all BBS networks, the primary purpose is to exchange
+ private mail and public posts between BBSes. The passing
+ of files in binary form, however, is not currently
+ supported by the NETXX software. There are some third party
+ programs and in fact, an entire network which can handle
+ the network transfer of files.  All messages also have a
+ maximum size limit of 32k.
+
+ NETXX (NET38) and earlier is proprietary software, from
+ WSS, distributed in netXX.zip by WSS.  Since NET51, the
+ network software is a new implementation of a subset of
+ this technical specification.  It is not related at all
+ in either code or complete functionality to NET38 and
+ earlier.
+
+ The basic NETXX software distributed as part of the
+ BBS software.  It consists of the following programs: 
+  * network
+  * networkb
+  * networkc
+  * networkf
+  * network1
+  * network2
+  * network3
+
+ NETWORK.EXE is a shim to invoke networkb.exe using the
+ same arguments as the legacy networking software.
+
+ NETWORKB.EXE is the WWIVnet transport software, it's
+ implemented as a BINKP'ish protocol.
+
+ NETWORKC.EXE is similar to the old CLNUP.EXE software by
+ Cerebrum Software.  It runs the other network{1,2,3} 
+ commands as needed.
+
+ network1 is the first of the two mail tossers.  This
+ one takes the incoming packet received by NETWORK.EXE and
+ distributed the messages within to their rightful places.
+ Local mail goes into local.net, while mail passing through
+ to other systems is tossed into packet files for the next
+ hop.
+
+ network2 tosses the local messages in local.net.  Most
+ are messages for email or local subboards, but there are
+ also network updates, sub REQuests, software "pings," and
+ other special purpose message types.  It also has the
+ ability to call on third-party preprocessors for special
+ handling of certain types of messages.
+
+ network3 processes all the network updates that come
+ in.  This helps determine what routing off-system mail
+ will take.
+
+ Each WWIV network also has its own special encoding and
+ decoding programs for handling of updates and network mail
+ from the Network Coordinator and Group Coordinators.
+ These are the DEmmm.EXE files (mmm corresponding to the
+ message type).  The DEmmm.EXE cannot be replaced, so any
+ network2 replacement must be able to recognize the
+ need for calling the appropriate DEmmm.EXE, as described
+ below.
+
+======================================================
+3. MAKING CONNECTIONS
+======================================================
+
+ Starting with With Net51, connections happen outside 
+ of the network software. You use networkb to call out
+ to another node or use networkb directly or use a
+ proxy like wwivserver or wwivd to listen on BinkP and
+ spawn networkb on demand.
+               
+======================================================
+4.  MESSAGE PACKETS
+======================================================
+
+ The most important component of any network is the mail
+ file, which contains all the public posts, email, and
+ network information which makes the BBS network what it
+ is.  NETXX mail files consist of a series of mail
+ packets, each with its own header segment describing the
+ type and size of the packet.
+
+ There are two types of mail files in NETXX, each similar
+ but processed differently.  The netmail file is the file
+ received from another system, and contains packets
+ destined for that system as well as other systems in the
+ network (if the BBS has more than one connect). The local 
+ mail file contains the packets from
+ the netmail file which are destined for the BBS only.
+
+ A.   Message Header
+
+  Each message sent through the network has a header.  The
+  header tells which user/system originated the message,
+  where it is to be sent to, the type of message, and other
+  information.  The structure of the header is:
+
+struct net_header_rec {
+  uint16_t  tosys,    /* destination system */
+           touser,     /* destination user */
+           fromsys,    /* originating system */
+           fromuser,   /* originating user */
+           main_type,  /* main message type */
+           minor_type, /* minor message type */
+           list_len;   /* # of entries in system list */
+  uint32_t   daten,    /* date/time sent */
+             length;   /* # of bytes of msg after header */
+  uint16_t  method;    /* method of compression */
+};
+
+  Each header is 24 bytes long.  The fields, in detail,
+  are:
+
+  tosys, touser
+
+   The destination of this message (system number and user
+   number, if applicable).  The touser field will be zero in
+   all cases except for email (main_type==2) and SSMs
+   (main_type==15).
+
+  fromsys, fromuser
+
+   The origin of the message (system number and user number).
+   This contains the user number/system number combination of
+   who actually wrote the message.
+
+  main_type, minor_type
+
+   The type of message this is.  The main type stores the
+   actual type (email, post), and the minor_type is used to
+   specify what sub-type it is.  For example, the main_type for
+   a post is 3.  The minor_type is then used to specify what
+   type of post it is, what subboard the post is to go on to.
+   A list of main and minor types is found in section IV(D),
+   below.
+
+  daten
+
+   The time the message was sent, stored in unix time, as the
+   number of seconds since Jan 1, 1970.
+
+  length
+
+   The length of the message.  This includes any information
+   between the packet header and the message itself, such as
+   the sender's name, message title, and so forth.  Note that
+   the length does not include the node list indicated by
+   list_len.
+
+  method
+
+   If the file is encrypted or source-verified,
+   this describes the type of encryption used.
+   This will tell NETWORK2 (or other local mail tosser) which
+   DEmmm.EXE to execute.  DEmmm.EXE is explained in more detail
+   in the next section, below.
+
+  list_len
+
+   Some messages need to go to more than one system.  For
+   example, networked posts may go to over 20 different
+   systems.  It makes no sense to have a separate copy of
+   the message for each destination system, so the same
+   copy of the header and message is used.  (This is
+   referred to as "stacking" the message).  The list_len
+   specifies the number of destination systems listed.  If
+   list_len is non-zero, then the touser and tosys fields
+   are ignored.  The list_len is not used for e-mail to a
+   user (main_type is 2 or 7).
+
+   When a message has only one destination system, the
+   destina tion system is stored in tosys, and list_len is
+   zero.  If there are two or more destinations, then tosys
+   is 0, and list_len holds the number of destination
+   systems.
+
+   When list_len is non-zero, the list of destination
+   systems is stored immediately after the header, but
+   before the actual message itself.  The length of the
+   list is not included in the length field in the header;
+   the length stored in the header is the length of the
+   message only.
+
+   Each entry in the destination system list is two bytes
+   long, and is stored in the standard byte-reversed format
+   of 80x86 chips.
+
+   For example, if a post is destined to system 1, the
+   tosys field will be 1, and list_len will be 0.  If the
+   post is destined to systems 1 and 2, tosys will be 0,
+   list_len will be 2, and there will be 4 bytes between
+   the header and message.  The bytes will be: 01 00 02 00
+   (remember, byte-reversed format).  The rest of the
+   header will be the same for both messages.
+
+  A packet thus consists of a net header, a destination
+  list (if any), and the text of the message.  The length
+  of a full message packet is thus: 24 + 2*list_len +
+  msg_length.
+
+  The message text (the part following the header) for a
+  post or email begins with information intended for the
+  message header shown when the message is displayed.  Each
+  piece of information is followed by a carriage return and
+  line feed (cr/lf) character to separate it from the next
+  except for the message title, which is followed by a NUL
+  character.  For most posts and email, that information
+  is:
+
+  Message Title
+
+    Whatever title the user gave to the post.
+
+  Sender name
+
+    usually the name and number of the user who wrote
+    the message with the system number, in whatever
+    format the sending BBS uses.
+
+  Date string
+
+   Formatted date the post was written, in whatever
+   format the BBS uses.
+
+  So the message header format for most posts and email
+  would be
+  TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
+  Some main_types have other information, as noted in the
+  main_type descriptions in section IV(D).
+
+ B.  Mail File Processing
+
+  A NETXX file is simply several packets appended into
+  one file. 
+
+  Once it has been received the mail file should be processed 
+  following these steps:
+
+  1.   Open the file, and set the current message pointer
+       to the beginning of the file.
+
+  2.   Read in the net header (24 bytes).
+
+  3.   If list_len is non-zero, read in the list following
+       the header (2 * list_len bytes).
+
+  4.   Read in the message itself (length bytes).
+
+  5.   Process the message.
+
+  6.   If not the end of file, go to step 2.
+
+  To ensure the integrity of the mail file, an initial pass
+  over it should be done.  This pass would step through
+  each packet in the file, reading each header and making
+  sure no packets are truncated.  If the file ends in the
+  middle of a packet, then it is obviously corrupted and
+  cannot be processed properly.  At this point, either
+  throw away the whole file or remove the truncated packet
+  and process the remaining packets.
+
+  During the packet tossing, each packet needs to be marked
+  as processed.  Thus, if analysis is interrupted before
+  completion, the packet analyzer can skip over those
+  packets already processed when run again.  To mark the
+  packet as already processed (or deleted), set the
+  main_type to 65535.  Any packet with a main_type of 65535
+  should therefore not be processed.
+
+  The analyzer should follow these steps when processing
+  each packet:
+
+  1.   If main_type is 65535 (deleted), skip the message.
+
+  2.   If list_len is non-zero, do steps 3-6 for each entry
+       in the list, substituting that entry for "tosys"
+
+  3.   If tosys is this system, process the file locally
+       (in the case of network1, the message is copied
+       to local.net for processing by the local packet
+       processor).
+
+  4.   If tosys is an unknown system or unreachable, put
+       the packet in the dead mail file.
+
+  5.   If the next system to forward the packet to ("next
+       hop") is the system that the message was last
+       received from, put the packet in the dead mail file.
+       This prevents messages from looping
+
+  6.   If the tosys is okay, put the packet into the file
+       that is to be sent to the next hop.
+
+  Of course, it is more complicated than that.  If list_len
+  is non-zero, all destination systems should be processed
+  before the message is stored anywhere.  This way, if the
+  message has 10 destinations, each of which has the same
+  next hop, only one copy of the message will be printed
+  out, that packet with 10 systems in its destination list.
+  Likewise, for a system with more than one connection, if
+  a message has 4 destination systems going through one
+  next hop and 3 going through another, one copy of the
+  message will go into each hop's file -- one with four
+  systems in the node list, the other with the remaining
+  three.
+
+  The dead mail file is reprocessed whenever a network
+  update (new BBSlist or connection list) is received.
+
+ C.   Local Mail Processing and DEmmm.EXE
+
+  Processing of local mail packets should be similar to
+  processing of incoming netmail packets.  The main
+  difference between netmail tossing and local mail tossing
+  is that the main and minor types are ignored during
+  netmail processing, and the list_len and node list are
+  ignored (since there won't be a list on local mail).
+
+  1.   Open the file, and set the current message pointer
+       to the beginning of the file.
+
+  2.   Read in the net header (24 bytes).
+
+  3.   Read in the message itself (length bytes).
+
+  4.   Process the message.  This is done according to the
+       main_type and (if applicable) minor_type of the
+       message.
+
+  5.   If not the end of file, go to step 2.
+
+  A few main_types (noted below) cause return messages to
+  be generated to go back out to other systems.  The local
+  mail file analyzer should place these into an interim
+  mail file that will be processed by the netmail file
+  analyzer after local mail processing has been completed.
+  The NETXX local mail analyzer (network2) puts these
+  messages into P1.001 or P2.001.  Then network1
+  analyzes this file and places them into outgoing netmail
+  files for the system's connections.
+
+  Some types of messages that contain network related files
+  such as updates to the nodelists and connect lists and
+  email to all sysops from the NC.  For the sake of
+  network security, these messages have a
+  source-verification signature at the beginning (using,
+  for example, RSA or a similar algorithm). There are
+  several "methods" used to handle these messages, and each
+  requires a decryption program, or DEmmm.EXE (where "mmm"
+  is the encryption method, as listed in the 'method. field
+  of the net header).  These DEmmm.EXE files MUST be
+  supplied by the NC of each network, and each
+  network's DEmmm.EXE are unique to that network.  That is,
+  NETXX's DE1.EXE will not handle method 1 messages from
+  WWIVLink, nor vice versa.
+
+  When a message is encountered with 'method!=0', the
+  following steps are taken:
+
+  1.   The local packet analyzer writes out the text of the
+       message (no header or node list) to a temporary file
+       (TEMPDE.XXX) in the data directory for the relevant
+       network.
+
+  2.   A command line for calling the appropriate DEmmm.EXE
+       is created using the C command "sprintf(cmd, "de%u
+       %s/tempde.xxx", nh.method, net_data);" ('nh' is a
+       structure of type net_header_record, 'net_data' is
+       the network data directory).  The command is then
+       executed.
+
+  3.   The DEmmm.EXE program is then responsible for
+       reading the TEMPDE.XXX in from disk, deleting it,
+       then attempting to decode it.  Two things can then
+       happen: a.   If the TEMPDE.XXX fails decoding (bad
+       CRC), DEmmm.EXE just exits (returning to the local
+       packet analyzer). If the analyzer finds the
+       TEMPDE.XXX file does not exist, the message is
+       deleted and the program goes to the next packet. b.
+       If the CRC checks out in the DEmmm.EXE program, it
+       writes out the decoded text into a new TEMPDE.XXX
+       file and exits.  The local packet analyzer reads in
+       the data from that file and replaces the text of the
+       message with that, then goes ahead and processes the
+       packet as determined by main_type.
+
+  Network operators who wish to write EN/DE programs for
+  their own netwide messages may wish to consider using the
+  RSAREF library to develop their own source-verification
+  scheme.
+
+ D.   Main and Minor Message Types
+
+  The main and minor type of each message determines how it
+  is processed (where it goes, whether it's a sub post,
+  email, or network info, etc.).  The analyzer reads the
+  message header in first to get the main and minor types,
+  then performs the operation indicated by those fields.
+
+  Here is a list of the main_ and minor_types, along with
+  the WWIV BBS #define name and descriptions of the
+  processing required. Encoding method is assumed to be
+  zero unless otherwise noted. Note that while these
+  descriptions concern analyzing local mail packets, they
+  also apply to how to create outgoing netmail packets.
+
+  main_type 1 (0x0001) -- main_type_net_info
+
+       These messages contain various network information
+       files, encoded with method 1 (requiring DE1.EXE).
+       Once DE1.EXE has verified the source and returned to
+       the analyzer, the file is created in the network's
+       DATA directory with the filename determined by the
+       minor_type (except minor_type 1).
+
+        0 -- Feedback to sysop from the NC.  This is sent
+       to the #1 account as source-verified email.
+
+        1 -- bbslist.net -- Node list.
+
+        2 -- connect.net -- Connections list.
+
+        3 -- SUBS.LST -- List of subboards ("subs")
+       available through the network.  This has been
+       replaced by main_type 9.
+
+        4 -- WWIVNEWS.NET -- An electronic magazine of
+       sorts distributed within some networks, usually
+       monthly.
+
+        5 -- FBACKHDR.NET -- a header file added to network
+       update reports for the network.
+
+        6 -- Additional WWIVNEWS.NET text -- appended to
+       the existing WWIVNEWS.NET file.
+
+        7 -- CATEG.NET -- List of sub categories.  WWIV's
+       sub setup facility uses this list so the sysop can
+       specify what category a netted sub falls into.  The
+       network's SUBS.LST compiler uses this information
+       for compiling the subs lists sent out as main_type
+       9.
+
+       8 -- NETWORKS.LST -- A list of all current NETXX
+       type networks.
+
+       This message type is source-verified.  That is,
+       there is a digital signature at the beginning of the
+       message text which is decoded by the DE1.EXE to
+       verify that it has come from a "legal" source.  This
+       helps make sure that the network info will only come
+       from the Network Coordinator.  If the source-
+       verification fails, the packet is discarded.
+
+  main_type 2 (0x0002) -- main_type_email
+
+       This is regular email sent to a user number at this
+       system (see tosys and touser, above).  Note that
+       this type of mail should only be received by systems
+       that assign numbers to users (WWIV, VBBS, etc.).
+       BBSes in a WWIV network that only identify users by
+       name (PCBoard, RBBS, etc.) can only receive
+       email-by-name (see main_type 7, below).  Email has
+       no minor type, so minor_type will always be zero.
+
+       Processing of the email is straightforward.  The
+       analyzer looks for the user number indicated by the
+       touser field.  If the number exists and the user has
+       not been deleted from the BBS, the message is
+       written into the email file, addressed to the user
+       indicated.  If the number does not exist or the user
+       at that number has been deleted, the packet is
+       deleted without processing.   Alternatively, the
+       analyzer may generate a return message (as email) to
+       the sender telling him that the mail was not
+       delivered and quoting the message back to him.
+
+  main_type 3 (0x0003) -- main_type_post
+
+       NET51 and later only supports type main_type_new_post.
+
+  main_type 4 (0x0004) -- UNUSED
+
+  main_type 5 (0x0005) -- main_type_obsolete_pre_post
+
+       NET51 only suppors type main_type_new_post.  
+       text (and the list_len field modified reflecting the
+       addition of the node list).  If the file cannot be
+       found, the analyzer assumes the BBS does not host
+       the sub and deletes the packet.
+
+       Many WWIV sysops use a feature of the software known
+       as network validation ("netval").  When a sub is set
+       for netval (this is found in the SUBS.DAT record for
+       the sub), the analyzer does not send the post out to
+       the network.  The sysop must validate the post on
+       the BBS, at which point it is sent out by the BBS.
+       This also applies to pre-posts for main_type 26
+       (main_type_new_post).
+
+  main_type 6 (0x0006) -- main_type_unused_external
+
+
+  main_type 7 (0x0007) -- main_type_email_name
+
+       The other email type.  The touser field is zero, and
+       the name is found at the beginning of the message
+       text, followed by a NUL character.  Minor_type will
+       always be zero.
+
+       When this type of packet is encountered, the
+       analyzer gets the name from the beginning of the
+       message text and searches through the BBS's user
+       list to find the specified name.  If it is found,
+       the message is written into the email file for the
+       BBS.  If it is not, the message will be deleted or a
+       return email may be sent back to the sender,
+       explaining that the message was not delivered and
+       quoting the email back.
+
+       The destination user's name is prepended to the
+       beginning of the message text, followed by a NUL,
+       then the rest of the usual message header info and
+       the message text.  The message header info at the
+       beginning of email-by-name messages is thus
+       DEST_USER_NAME<nul>TITLE<nul>SENDER_NAME<cr/lf>
+       DATE_STRING<cr/lf>MESSAGE_TEXT.
+
+  main_type 8 (0x0008) -- main_type_obsolete_net_edit
+
+  main_type 9 (0x0009) -- main_type_sub_list
+
+       Networks with large subs lists (over 32k) break them
+       up into parts and send the set out under this main
+       type rather than the subs.lst type under main_type
+       1.  The minor_type indicates the part of the subs
+       list.
+
+       When the analyzer processes this type, it creates a
+       file in the appropriate network directory and copies
+       the message text into it.  Minor_type zero creates
+       the file SUBS.LST, and all other minor_types create
+       a SUBS.x file where 'x' is the minor_type.
+
+  main_type 10 (0x000a) -- UNUSED
+
+  main_type 11 (0x000b) -- main_type_not_implemented_group_bbslist
+
+  main_type 12 (0x000c) -- main_type_not_implemented_group_connect
+
+  main_type 13 (0x000d) -- UNUSED
+
+  main_type 14 (0x000e) -- main_type_not_implemented_group_info
+
+  main_type 15 (0x000f) -- main_type_ssm
+
+       WWIV BBSes also send out small messages, known as
+       "SSMs", across the network.  These are little
+       one-line messages generally telling users when their
+       mail has been read and so forth.  Some BBSes have
+       been modified to send other types of messages.  At
+       any rate, main_type handles these small messages.
+       Minor_type is always zero.
+
+       Like email, the analyzer searches for the user
+       number in the BBS's user list.  If found, the
+       message is written into the SSM file for the BBS.
+       Since this is a feature most non-WWIV systems do not
+       support, they can be ignored.
+
+  One feature of WWIV networking is the ability fpr network
+  sysops to send "REQs" to the hosts of subs, enabling them
+  to automati cally subscribe to and drop subs they belong
+  to.  Main_types 16 through 19 handle REQs and their
+  responses.
+
+  main_type 16 (0x0010) -- main_type_sub_add_req
+
+       This is for requests to add the sending system to a
+       sub's subscriber list.  Minor_type will be the
+       numeric sub type, or zero for alphanumeric sub
+       types.  For minor_type==0, the sub type (followed by
+       NUL) will be the message text. Otherwise, there
+       should be no message text (if there is, ignore it).
+
+       When this message type is received, the analyzer
+       should search for the subtype's subscriber file
+       (N[subtype].NET for WWIV systems).  If the file is
+       found, the system number of the new subscriber is
+       added, if it is not in there already. If the add is
+       successful, it will then look for a text file in the
+       data directory (SA[subtype].NET for the NETXX
+       software) that contains information the sysop wants
+       to send back to the subscriber.   A type 18 message
+       is sent to the subscriber indicating status of the
+       add request (see below) and including the text in
+       the SA[subtype].NET file, if one is found.  If the
+       add is not allowed, the analyzer looks for
+       SR[subtype].NET and sends that text back to the
+       requester. If the add is otherwise unsuccessful, the
+       type 18 message will include the status and a short
+       explanation of why the add was not succcessful.
+
+  main_type 17 (0x0011) -- main_type_sub_drop_req
+
+       This is the same as a main_type 16 message, except
+       that it is sent by a subscriber wishing to drop a
+       sub.  The minor_type is determined the same way as
+       main_type 16. There should be no message text, but
+       if there is any, it is ignored.
+
+       Processing is similar to a type 16 message.  The
+       analyzer searches for the subtype's subscriber file,
+       and upon finding it removes the subscriber's system
+       number from it, if it is there.  Status of the drop
+       request is returned to the sender in a main_type 19
+       message, with a short message appended that explains
+       the status.
+
+  main_type 18 (0x0012) -- main_type_sub_add_resp
+
+       This carries the status response to a main_type 16
+       (sub add request).  The minor_type is determined the
+       same way as type 16 message.  The first byte of
+       message text (after the subtype, if minor_type==0)
+       is the status of the add request. Possible status
+       byte values are:
+
+       0 -- Subscriber added successfully.
+
+       1 -- This system is not the host (N[subtype].NET not
+       found).
+
+       3 -- Not allowed to add subscribers automatically.
+
+       4 -- System number already there (can't add it
+       again).
+
+
+       When received, the processor will send the message
+       text mentioned in the main_type 16 description
+       (minus the status byte) to the sysop as email.
+
+  main_type 19 (0x0013)- main_type_sub_drop_resp
+
+       Similar to main_type 18, this carries the response
+       to a sub drop request, with the minor_type following
+       the same conventions as above.  This also carries a
+       status byte as the message text:
+
+       0 -- Sub dropped successfully.
+
+       1 -- This system is not the host.
+
+       2 -- System number is not there (can't drop it).
+
+       3 - not allowed to drop subscribers automatically.
+
+       When received, the processor will send the message
+       text mentioned in ther main_type 17 description
+       (minus the status byte) to the sysop as email.
+
+  main_type 20 (0x0014) -- main_type_sub_list_info
+
+       In many WWIV networks, the subs list coordinator
+       (SLC) occasionally sends out "pings" to all network
+       members.
+
+       When this message type is received from the SLC
+       (minor_type 0), the analyzer checks the BBS's sub
+       data file.  If there are any subs hosted by the
+       receiving system which are flagged for inclusion in
+       the distributed SUBS.LST, a list of them is returned
+       to the SLC via another main_type 20 message with
+       minor_type==1).  When the SLC recieves the reply, it
+       is written into SUBS.INF in the network's data
+       directory (appended if the file exists).
+
+  main_type 26 (0x001a) -- main_type_new_post
+
+       Subtypes are seven characters -- the first must be a
+       letter, but the rest can be any character allowed in
+       a DOS filename.  This main_types covers both
+       subscriber- to-host and host-to-subscriber messages.
+       Minor type is always zero (since it's ignored), and
+       the subtype appears as the first part of the message
+       text, followed by a NUL. Thus, the message header
+       info at the beginning of the message text is in the
+       format SUBTYPE<nul>TITLE<nul>
+       SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
+
+  main_type 27 (0x001b) -- main_type_unused_new_external
+
+======================================================
+5.  BBSLIST/CONNECT FILES AND MESSAGE ROUTING
+======================================================
+
+So how does the network software know where to send an
+off-system message, especially if the BBS has more than one
+connect?  FidoNet has its nodelists, and so does NETXX.
+NETXX actually has two different types of node lists, as
+mentioned elsewhere.  We'll take these separately, then
+discuss figuring out the routing.
+
+ A.  NETXX -- bbslist.net & connect.net
+
+ In the beginning of NETXX, there were only two files
+ needed to keep up with the systems in the network --
+ bbslist.net and connect.net.  Though this is rarely used
+ now, there are still some smaller networks which use these
+ files, so they should be discussed.
+
+ bbslist.net holds a listing of what systems are in the
+ network. Each system has an entry, with the systems
+ usually grouped by area code.  The format for each
+ system's line: system number (preceded by @), system phone
+ number (preceded by *), max bps rate of the system
+ (preceded by #), system flags if any, WWIV registration
+ number or date of entry (enclosed in brackets), and system
+ name (enclosed in "").  For example, the BBSLIST line for
+ Amber in NETXX could be:
+
+ @1     *310-798-9993  #14400 <  !$     [1]  "Amber"
+
+ Most of the system flags after the modem speed indicate
+ the kind of high-speed modem being used by the system.
+ Currently, these flags are:
+
+ | -- Telebit-compatible (PEP) modem.
+ < -- USR HST 9600+bps modem.
+ > -- Hayes V-Series compatible 9600+bps modem.
+ Z -- Zoom V.32terbo (19.2kpbs) modem.
+ / -- CompuCom 9600+bps modem.
+ ! -- CCITT V.32 (9600bps) modem.
+ $ -- CCITT V.32bis (14.4kbps) modem.
+ ~ -- V.FAST (28.8kbps) modem.
+ ? -- Fax-capable modem (not currently used)
+
+ Other system flags used which are not modem designators:
+
+ + -- The system is a dedicated mail server.  That is, it
+      is not a true BBS, only handles the transfer of
+      network mail for an area or region.
+
+ \ -- Fidonet system.  Some systems in the network have
+      "gateways" into Fidonet (or Fidonet compatible, such
+      as GlobalNet).
+
+ = -- PCPursuitable system.  This is actually not useful
+      since PCPursuit has gone out of business (though
+      there are other similar networks still operating).
+
+ _ -- End node.  That is, a system with only one
+      connection.
+
+ There can also be one of three flags appearing before the
+ phone number: ^ -- Area Code coordinator (AC). & --
+ Network Coordinator (NC). % -- Group Coordinator (GC) Note
+ that since there can only be one Network Coordinator, the
+ "&" should only appear once in the bbslist.net file. Also,
+ the "%" is not likely to be seen except in the Group setup
+ described below, since this setup has no Groups.
+
+ The first line of the bbslist.net must be a tilde (~)
+ followed by the Unix timestamp (seconds since midnight,
+ Jan 1, 1970) indicating the date and time the file was
+ sent out by the NC or GC.
+
+ connect.net lists the connection costs between systems.
+ The cost listed should be the cost per minute, though for
+ most networks using this system, the rule of thumb is 0.00
+ for local connects, 0.01 for long distance connects, and
+ more for long distance connects that one wants to route
+ less mail through.
+
+ Each entry in the connect.net file specifies a one-way
+ connection between two systems.  The entries in the
+ connect.net file do NOT need to be in any specific order.
+ The format for system's connection entry is: the system
+ number (preceded by "@"), first connection and cost
+ (separated by "="), second connection and cost, and so
+ forth.  Like bbslist.net, the first line is a tilde (~)
+ followed by the UNIX timestamp.
+
+ Examples:
+ 1.   If there are two systems, numbered 1 and 2, and each
+      can call each other for free, the connect.net file
+      would look like:
+
+      @1      2=0.00
+      @2      1=0.00
+
+      Note that the routing analysis software should make
+      sure both ends of the connection have entries
+      referring to each other.
+
+ 2.   If there are three systems, each can call the others
+      for free, the connect.net file would look like:
+
+      @1      2=0.00 3=0.00
+      @2      1=0.00 3=0.00
+      @3      1=0.00 2=0.00
+
+ 3.   If system 3 called the other two for $0.10, the
+      connect.net file would look like:
+
+      @1      2=0.00 3=0.10
+      @2      1=0.00 3=0.10
+      @3      1=0.10 2=0.10
+
+
+ In both bbslist.net and connect.net file, each entry
+ begins with identifying the system number (preceded with
+ @), allowing system entries to take up more than one line
+ -- in larger networks a connect.net entry can fill more
+ than one line.  Everything after the system number
+ identifier up to the next "@", corresponds to that system.
+ Thus, the connect.net files above could also be listed as:
+
+ @1 2=0.00 3=0.10 @2 1=0.00 3=0.10 @3 1=0.10 2=0.10
+
+ or
+
+ @1
+ 2=0.00
+ 3=0.10
+ @2
+ 1=0.00
+ 2=0.10
+ @3
+ 1=0.10
+ 2=0.10
+
+ Thus, the end-of-line indicator (EOL) should be IGNORED.
+
+ Neither the bbslist.net nor connect.net file need to be in
+ any specific order.  There cannot, however, be multiple
+ entries per system in either bbslist.net or connect.net.
+
+ It is possible for a system to have references in one or
+ both of the .NET files, but not be reachable from any
+ other system.  For example, two systems may be listed in
+ bbslist.net, and listed in connect.net, but each can only
+ call the other.  No other system in the network can
+ connect with them, so they don't exist, essentially.
+ Also, a system can be listed in bbslist.net, but not have
+ any entries in connect.net.  This usually happens for
+ systems just joining the network, and those systems
+ essentially don't exist either.
+
+ It is also possible for one system to call another, but
+ the second system can't call back the first.  This is
+ unusual, but valid.  Also, the cost of a connection can be
+ different in one direction than it is in the other.  This
+ is also valid.
+
+ bbslist.net is received across the network as main_type 1,
+ minor_type 1 (1/1).  connect.net is received as main_type
+ 1, minor_type 2 (1/2).
+
+ C.  Figuring the Routing
+
+  There are three ways message routing could be determined:
+
+  1.   Each time you need to route a message, find the
+       least cost or shortest path (depending on whether
+       new or old update files are being used);
+
+  2.   Each time one of the network programs that has to
+       route messages is run, the least-cost or shortest
+       route to each system is decided; or
+
+  3.   Each time an update to the .NET files is received,
+       the least cost route is decided to each system.
+
+  Options 1 and 2 are simply not practical.  Depending on
+  network size and system speed, it can take a minute or
+  more to analyze the network data files and determine the
+  optimal route.  Finding the best route to a specific
+  system requires the same operation as finding the best
+  route to all systems, so option #1 is a waste of time
+  (besides possibly requiring the BBS to have the path-
+  finding code in it).  Option #2 holds no advantages over
+  option #3 because it will tie up the BBS unnecessarily.
+
+  Therefore, the optimal routes to all the systems in the
+  network should be analyzed only when a network update is
+  received. This routing analysis can be done any way, as
+  long as it determines the best route.  The best way,
+  however, could follow these steps:
+
+  1.   System records are read into an array from
+       bbslist.net. The array is of struct 
+       net_system_list_rec (see below).  All
+       fields are filled from the bbslist.net except numhops
+       and forsys, which are set to 65535 and 0, respec
+       tively.  For the Group setup, the bbslist.net
+       partial updates (.513-.768) are read in next, and
+       the indicated changes (existing systems replaced,
+       new systems added, systems indicated with "."
+       deleted) are made in the array and in the BBSLIST
+       files themselves.  After processing, the partial
+       updates are deleted.
+
+  2.   Next, the CONNECT files are read into another array.
+       Since system records may be repeated in the CONNECT
+       files, make sure, when each system record is read
+       in, a check is made in the array to see if there is
+       already an entry for it.  If there is, add the
+       connections in the new record to the existing
+       record.
+
+  3.   Then, the analysis starts.  The analyzer uses the
+       system's callout list (callout.net for NETxx) as a
+       base, starting with the first entry and checking
+       each of its connnects, spreading out from there to
+       THEIR connects.  This is done for each system in the
+       callout list.
+
+       For each destination system checked, the number of
+       hops found is compared to that entered in the
+       network data array (numhops) and changed if it is
+       less.  The forsys is also changed, if that is
+       different.  This is for the Group setup.
+
+       If the network is using the old NETXX setup, cost,
+       rather than number of hops, is considered.  In this
+       case, when figuring cost, the speed of a connection
+       (highest speed two connecting systems will support)
+       needs to be considered. For instance, two systems
+       connecting at 14400bps at a cost of 0.10 would take
+       precedence over two systems connectiung at 2400bps
+       at a cost of 0.10 (assuming that they are on the
+       path to the same destination system, and all other
+       scosts are equal).
+
+  4.   When all systems in the callout list are processed,
+       analysis is complete and the network data array is
+       written to disk. If specified, a piece of mail is
+       then sent to the sysop giving the results of the
+       analysis (for instance, how many valid systems are
+       in the network, how many systems route through each
+       of this system's connections, who the NC and GC and
+       AC are, and so forth).
+
+  The data structure NETxx's network3 uses for the
+  network data file is:
+
+  struct net_system_list_rec {
+  // system number of the system
+  uint16_t  sysnum;
+  /* phone number of system */
+  char phone[13];
+  /* name of system */
+  char name[40];
+  /* group of the system */
+  uint8_t   group;
+  /* max baud rate of system */
+  uint16_t  speed;
+  /* other info about sys (bit-mapped) */
+  uint16_t other;
+  /* how to get there */
+  uint16_t forsys;
+  /* how long to get there */
+  int16_t numhops;
+  union {
+    /* routing factor */
+    uint16_t  rout_fact;
+    /* cost factor */
+    float  cost;
+    /* temporary variable */
+    int32_t temp;
+  } xx;
+};
+
+  It is encouraged that this structure be used by any
+  NETXX compatible analyzer.  Not only is this used by
+  the WWIV BBS software, but some NETXX add-ons also use
+  this file, so supporting this structure will enhance
+  compatibility with NETXX.
+
+  The fields: sysnum, phone, name, group, and speed should
+  be self-explanatory.
+
+  other --  This is bitmapped, and contains the modem and
+            other information shown in BBSLIST.  The bitmap
+            values are (with corresponding BBSLIST flag):
+
+            \    other_fido          0x0001
+            |    other_Telebit_19200 0x0002
+            <    other_USR_9600      0x0004
+            >    other_Hayes_9600    0x0008
+            ^    other_area_coord    0x0010
+            !    other_V32           0x0020
+            $    other_V32bis        0x0040
+            =    other_PCP           0x0080
+            %    other_group_coord   0x0100
+            &    other_net_coord     0x0200
+            /    other_compucom      0x0400
+            +    other_net_server    0x0800
+            ?    other_FAX           0x1000
+            _    other_end_system    0x2000
+            ~    other_VFAST         0x4000
+
+  forsys -- Where to forward messages destined for this
+            system, also known as "next hop".  For example,
+            if a message going from system 1 to system 5
+            passes through systems 2 and 4, then forsys==2.
+            When it is determined that the system is
+            unreachable (listed in BBSLIST but no
+            connections listed), forsys==65535.
+
+  rout_fact -- This is the routing factor, but is currently
+            not used by the NETxx software.
+
+  cost --   this holds the cost of the call, calculated as
+            the sum of costs for each hop to the
+            destination.
+
+  When all systems have been processed, you should have a
+  database containing all systems in the network and how
+  they may be reached.  Whenever a packet that is not
+  destined for the local system is processed, the data file
+  is searched to find the system entry for the destination
+  system.  If it is not found, then the system is unknown.
+  If the system is identified as unreachable
+  (forsys==65535), the system is also considered unknown.
+
+======================================================
+6.  TIPS FOR WRITING WWIVNET SOFTWARE
+======================================================
+
+ That about covers all the technical details for designing
+ software compatible with WWIV networks.  Now for some
+ things to consider for those wishing to design a NETXX
+ interface for a non-WWIV BBS, or add-ons to existing
+ NETXX software.
+
+ A.   NETXX Interface Software
+
+  The information provided in this document is enough for
+  anyone wishing to write NETXX interface software from
+  scratch.  Unless you are writing for a BBS on a non-PC
+  platform (such as Hermes for Macintosh), there is no need
+  to rewrite all of the software to interface a PC-based
+  BBS to a WWIV network.  Since the local mail processor
+  (network2) is the only program that writes to BBS
+  message bases, that is really the only one needing
+  replace ment.  If any of the NETxx programs are used, it
+  is essential that all of the supporting data files used
+  by that software be present.  For details on those files,
+  see the NETXX software documentation.
+
+  Some additional programming may be necessary, though.
+  For one, a shell would be useful for executing the
+  various network programs, unless the BBS can be modified
+  to make the calls itself.  A batch file could do it, but
+  a program such as Jim Wire's CLOUT makes it much easier.
+  Any shell or BBS modification should follow these steps
+  (filenames in parentheses are programs from NET34 or
+  files created/used by them):
+
+  1.   Choose a system to call (or have one specified),
+       then execute the network callout program
+       (NETWORK.EXE).  If successful, proceed to step 2.
+       If not, either try again or end processing.
+
+  2.   Check for the incoming netmail file (P*.NET).  If
+       there isn't one, end processing.  If there is one,
+       run the netmail packet analyzer (network1).
+
+  3.   Check for the local mail file packet (local.net).
+       If there is none, end processing.  If there is one,
+       run the local mail packet analyzer (network2).
+
+  4.   Check again for a netmail packet (outgoing messages
+       result ing from local mail processing).  If there is
+       one run the netmail analyzer, otherwise proceed to
+       the next step.
+
+  5.   Check for a BBSLIST or CONNECT update.  The most
+       reliable way to do this is to compare the filedates
+       of the CONNECT and BBSLIST files against the
+       filedate of the database file created last time the
+       routing analyzer ran.  If one or more of the files
+       is new (or there is a partial BBSLIST update), run
+       the routing analyzer (network3).
+
+  If the software cannot be modified to handle these steps,
+  it is probably best to use a front-end such as Front Door
+  or Binkleyterm, then set up events that would run the
+  shell for making the network calls and processing.
+
+  The trickiest part is exporting messages from the BBS to
+  a WWIV network file.  Possibly the easiest way to pack
+  new messages is to have the BBS write them out to Fido
+  packets (if the BBS is Fido-compatible), then when
+  control returns to the front end, run an event that
+  converts the Fido packet to a WWIV mail file.  When doing
+  this, keep in mind that WWIV networks do not have all of
+  the fields a WWIV packet does, most notably the "To:"
+  field.
+
+  Another method could be a program that, after the BBS
+  returns control to the front end, scans the BBS's message
+  bases for new messages on the NETXX subboards.  This
+  would work best for BBS programs that cannot export Fido
+  messages.  In either case, it is important that the
+  netmail file processor analyze the outgoing message file
+  (P*.NET) for tossing into the various connection files
+  (S*.NET).
+
+  Of course, the optimal solution, if possible, would be to
+  modify the BBS software to export the messages directly
+  into a NETXX compatible mail file, and run the other
+  network programs as needed without the shell.
+
+  This is probably be a good time to discuss the naming of
+  the incoming and pending netmail files, mentioned in step
+  2 above. The actual name of the P*.NET can vary,
+  depending on NETxx version and what program generates it.
+  network.exe receives the file as p1-0-1.net. The "-0" in the
+  middle indicates that network.exe created the file (think
+  of it as network0).  When other NETXX programs generate
+  pending netmail files, the middle number indicates which
+  program created it (network2, the local mail
+  processor, would create a pending netmail file named
+  p1-2-1.net).  The main reason for this naming system
+  is so that we can tell the source of a p*.net file being
+  processed by the netmail analyzer.
+
+  The WWIV BBS just creates p0.net (network email,
+  generally) and P1.NET (outggoing sub posts, generally).
+  Multi-instance WWIV create P*.nnn (where 'nnn' is the
+  instance number, such as p*.001 for instance 1) while a
+  user is online, but they are renamed to P*.NET after the
+  user logs off.
+
+  The network1 processes all of the P*.NET files, until
+  none are left.  It is important that an alternate
+  netmail file analyzer be able to recognize and handle any
+  p*.NET file, not just pN.net.
+
+
+ B.   NETXX Software Add-ons
+
+  There are two possible types of add-ons supported by the
+  NETXX software, both working with the local mail
+  processor.
+
+  A common use for external messages is what is known as a
+  "ping," used by the authors of some WWIV network
+  utilities who wish to gain some information about the use
+  of their software.  The author sends out a main_type 27
+  message with the minor_type they are using.  If a
+  receiving system is using the software and it is
+  installed properly, it will execute after local mail
+  processing, and process the request in the external
+  message.
+
+  The local mail processor also supports use of
+  "pre-processors," generally used to scan the local mail
+  file for certain types of messages before the local mail
+  processor gets to it.  One example is JAFO's AUTOSEND,
+  which looks for sub requests and sends out messages from
+  the system's subs to new subscribers.  These, also, are
+  described in the NETXX Software Documentation.
+
+  Naturally, any external message processor or preprocessor
+  that generates new outgoing network messages must put
+  them into a p*.net file so that network1 can find it
+  and process it.
