@@ -1,0 +1,9 @@
+{
+    "name": "wwiv",
+    "version-string": "5.8.0",
+    "dependencies": [
+      "cereal",
+      "fmt",
+      "gtest"
+    ]
+  }
