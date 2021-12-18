@@ -1,9 +1,4 @@
 # CMake for WWIV
-include_directories(../deps/cl342)
-include_directories(../deps/cereal/include)
-include_directories(${GTEST_INCLUDE_DIRS})
-include_directories(${GMOCK_INCLUDE_DIR})
-include(GoogleTest)
 Include(FindWWIVCurses)
 
 set(COMMON_SOURCES 
@@ -76,7 +71,7 @@ if (WWIV_BUILD_TESTS)
   target_link_libraries(common_fixtures common core core_fixtures)
 
   add_executable(common_tests ${common_test_sources})
-  target_link_libraries(common_tests common_fixtures common gmock gtest)
+  target_link_libraries(common_tests common_fixtures common GTest::gmock GTest::gtest)
   gtest_discover_tests(common_tests)
 
 endif()

@@ -1,5 +1,4 @@
 # CMake for WWIV Daemon
-include_directories(../deps/cereal/include)
 
 set(WWIVD_SOURCES 
 	ips.cpp
@@ -33,8 +32,8 @@ target_link_libraries(wwivd wwivd_lib)
 ## Tests
 if (WWIV_BUILD_TESTS)
 
-include(GoogleTest)
-include_directories(${GTEST_INCLUDE_DIRS})
+#include(GoogleTest)
+#include_directories(${GTEST_INCLUDE_DIRS})
 
 set(test_sources
   wwivd_non_http_test.cpp
@@ -43,7 +42,7 @@ list(APPEND test_sources wwivd_test_main.cpp)
 
 set_max_warnings()
 add_executable(wwivd_tests ${test_sources})
-target_link_libraries(wwivd_tests wwivd_lib core_fixtures core sdk gtest)
+target_link_libraries(wwivd_tests wwivd_lib core_fixtures core sdk GTest::gtest)
 gtest_discover_tests(wwivd_tests)
 
 endif()

@@ -3,6 +3,10 @@
 # CMake for WWIV
 
 cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
+  CACHE STRING "Vcpkg toolchain file")
+
 project(wwiv)
 
 
@@ -12,23 +16,23 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 include(Common)
 include(FindASan)
+find_package(fmt CONFIG REQUIRED)
 
 MACRO_ENSURE_OUT_OF_SOURCE_BUILD()
 ENSURE_MINIMUM_COMPILER_VERSIONS()
 
 if (WWIV_BUILD_TESTS)
+  find_package(GTest CONFIG REQUIRED)
+
   # Workaround gtest really wanting to compile with /Mtd vs /MD
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   # Since we don't include the top level googletest CMakeLists.txt
   # explicitly set the version.
   set(GOOGLETEST_VERSION 1.10.0)
 
-  # googlemock also includes googletest
-  add_subdirectory(deps/googletest/googlemock)
-
   enable_testing()
   find_package(GTest REQUIRED)
-  find_package(GMock REQUIRED)
+#  find_package(GMock REQUIRED)
   message(STATUS "Using GoogleTest from ${GTEST_INCLUDE_DIRS}")
 endif (WWIV_BUILD_TESTS)
 
@@ -37,8 +41,6 @@ if (WWIV_SSH_CRYPTLIB AND NOT OS2)
 add_subdirectory(deps/cl345)
 endif()
 
-# FMT
-add_subdirectory(deps/fmt EXCLUDE_FROM_ALL)
 
 if(WIN32 OR OS2)
   # We only use pdcurses on Win32

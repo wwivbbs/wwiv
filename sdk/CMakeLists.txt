@@ -1,4 +1,3 @@
-include_directories(../deps/cereal/include)
 
 set(COMMON_SOURCES
   "arword.cpp"
@@ -75,10 +74,9 @@ target_link_libraries(sdk core local_io)
 ## Tests
 if (WWIV_BUILD_TESTS)
 
-include_directories(${GTEST_INCLUDE_DIRS})
-include_directories(${GMOCK_INCLUDE_DIR})
-include_directories(../deps/cereal/include)
-include(GoogleTest)
+#include_directories(${GTEST_INCLUDE_DIRS})
+#include_directories(${GMOCK_INCLUDE_DIR})
+#include(GoogleTest)
 
 set(test_sources
   "net/callout_test.cpp"
@@ -124,7 +122,7 @@ set_max_warnings()
 
 add_executable(sdk_tests ${test_sources})
 
-target_link_libraries(sdk_tests core core_fixtures gtest sdk)
+target_link_libraries(sdk_tests core core_fixtures GTest::gtest sdk)
 
 gtest_discover_tests(sdk_tests)
 

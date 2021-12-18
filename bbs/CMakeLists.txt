@@ -1,12 +1,5 @@
 # CMake for WWIV
 
-if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
-  include_directories(../deps/cl345)
-endif()
-
-include_directories(../deps/cereal/include)
-include_directories(prot)
-
 add_library(
   bbs_lib 
   acs.cpp
@@ -125,13 +118,9 @@ add_library(
   prot/zmwwiv.cpp
 )
 
-if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
-  target_sources(bbs_lib PRIVATE ssh.cpp)
-  target_link_libraries(bbs_lib CL345_LIB)
-
-endif()
 
 if(UNIX) 
+  message(STATUS "UNIX ROCKS")
   target_sources(bbs_lib PRIVATE
       exec_unix.cpp 
       "exec_socket.cpp"
@@ -163,11 +152,6 @@ if(OS2)
   )
 endif()
 
-if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
-  target_compile_definitions(bbs_lib PRIVATE WWIV_HAS_SSH_CRYPTLIB)
-  target_link_libraries( bbs_lib CL345_LIB )
-endif()
-
 target_link_libraries(
   bbs_lib 
   local_io 
@@ -178,6 +162,15 @@ target_link_libraries(
   sdk 
 )
 
+if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
+message(STATUS "WWIV_SSH_CRYPTLIB is ON")
+  include_directories(../deps/cl345)
+  target_sources(bbs_lib PRIVATE ssh.cpp)
+  target_link_libraries(bbs_lib CL345_LIB)
+  target_compile_definitions(bbs_lib PRIVATE WWIV_HAS_SSH_CRYPTLIB)
+endif()
+
+
 add_executable(bbs bbs_main.cpp)
 target_link_libraries(bbs bbs_lib fmt::fmt-header-only)
 
@@ -185,13 +178,10 @@ target_link_libraries(bbs bbs_lib fmt::fmt-header-only)
 ## Tests
 if (WWIV_BUILD_TESTS)
 
-
-include_directories(${GTEST_INCLUDE_DIRS})
-include_directories(${GMOCK_INCLUDE_DIR})
-include_directories(../deps/cereal/include)
 include(GoogleTest)
 
 set(test_sources
+  bbs_test_main.cpp
   bbs_helper.cpp
   bbs_macro_context_test.cpp
   bbslist_test.cpp
@@ -216,26 +206,22 @@ set(test_sources
   basic/util_test.cpp
   fsed/fsed_model_test.cpp
 )
+add_executable(bbs_tests ${test_sources})
+
+if(APPLE)
+  target_link_libraries(program "-framework CoreFoundation" "-framework Security" " -framework Foundation")
+endif()
 
 if(UNIX) 
-  if(APPLE)
-    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
-  endif()
   if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lsocket -lnsl -lkstat -lssp")
-  endif()
-else()
-  list(APPEND test_sources bbs_test_main.cpp)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}  -lnsl -lkstat -lssp")
+    endif()
+  find_package(ZLIB REQUIRED)
+  #target_link_libraries(bbs ZLIB::ZLIB)
+  #target_link_libraries(bbs_tests ZLIB::ZLIB)
 endif()
 
-
-add_executable(bbs_tests ${test_sources})
-if(UNIX)
-  target_link_libraries(bbs_tests core bbs_lib core_fixtures common_fixtures gtest_main)
-else()
-  target_link_libraries(bbs_tests core bbs_lib core_fixtures common_fixtures gtest)
-endif()
-
+target_link_libraries(bbs_tests core bbs_lib core_fixtures common_fixtures GTest::gtest)
 gtest_discover_tests(bbs_tests)
 
-endif()
+endif() # WWIV_BUILD_TESTS

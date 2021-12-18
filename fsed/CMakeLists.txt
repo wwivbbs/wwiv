@@ -1,5 +1,4 @@
 # CMake for WWIV
-include_directories(../deps/cereal/include)
 Include(FindWWIVCurses)
 
 set(SOURCES 
