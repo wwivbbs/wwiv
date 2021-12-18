@@ -178,8 +178,6 @@ target_link_libraries(bbs bbs_lib fmt::fmt-header-only)
 ## Tests
 if (WWIV_BUILD_TESTS)
 
-include(GoogleTest)
-
 set(test_sources
   bbs_test_main.cpp
   bbs_helper.cpp

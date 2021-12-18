@@ -74,10 +74,6 @@ target_link_libraries(sdk core local_io)
 ## Tests
 if (WWIV_BUILD_TESTS)
 
-#include_directories(${GTEST_INCLUDE_DIRS})
-#include_directories(${GMOCK_INCLUDE_DIR})
-#include(GoogleTest)
-
 set(test_sources
   "net/callout_test.cpp"
   "chains_test.cpp"

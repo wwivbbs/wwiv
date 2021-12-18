@@ -13,11 +13,6 @@ target_link_libraries(net_core fmt::fmt-header-only)
 ## Tests
 if (WWIV_BUILD_TESTS)
 
-#include(GoogleTest)
-#enable_testing()
-
-#include_directories(${GTEST_INCLUDE_DIRS})
-
 set(test_sources
   netdat_test.cpp
   net_cmdline_test.cpp
