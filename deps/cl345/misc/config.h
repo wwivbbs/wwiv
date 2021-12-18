@@ -33,6 +33,9 @@
    the build command (e.g. in a makefile), the following is mostly intended 
    for debugging */
 
+
+
+
 #if 0
   #define CONFIG_NO_CERTIFICATES
   #define CONFIG_NO_DEVICES
@@ -436,7 +439,7 @@
 #if defined( USE_CMS ) && !defined( USE_INT_CMS )
   /* CMS enveloping requires CMS data format support */
   #define USE_INT_CMS
-  #define USE_COMPRESSION
+//#define USE_COMPRESSION
 #endif /* USE_CMS */
 
 /* PGP envelopes require Elgamal, CAST, CFB mode, and compression support.  
@@ -460,7 +463,7 @@
   #ifndef USE_COMPRESSION
 	/* Decoding PGP messages from other implementations requires 
 	   compression support */
-	#define USE_COMPRESSION
+//	#define USE_COMPRESSION
   #endif /* !USE_COMPRESSION */
 #endif /* OpenPGP-specific algorithms */
 
@@ -1153,5 +1156,7 @@
 #if 0	/* Verbose error messages */
   #undef USE_ERRMSGS
 #endif /* 0 */
+
+	#undef USE_COMPRESSION
 
 #endif /* _CONFIG_DEFINED */

@@ -342,7 +342,7 @@ static int createSignedAttributes( OUT_BUFFER( attributeMaxLength, \
 #else
 	sputc( &stream, 1 + 1 );
 	sputc( &stream, PGP_SUBPACKET_PREF_COPR );
-	sputs( &stream, PGP_ALGO_NONE );
+	sputc( &stream, PGP_ALGO_NONE );
 #endif /* USE_COMPRESSION */
 
 	/* Primary userID:
