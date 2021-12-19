@@ -26,14 +26,8 @@ if (WWIV_BUILD_TESTS)
 
   # Workaround gtest really wanting to compile with /Mtd vs /MD
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-  # Since we don't include the top level googletest CMakeLists.txt
-  # explicitly set the version.
-  set(GOOGLETEST_VERSION 1.10.0)
-
   enable_testing()
-  find_package(GTest REQUIRED)
-#  find_package(GMock REQUIRED)
-  message(STATUS "Using GoogleTest from ${GTEST_INCLUDE_DIRS}")
+  include(GoogleTest)
 endif (WWIV_BUILD_TESTS)
 
 # Cryptlib

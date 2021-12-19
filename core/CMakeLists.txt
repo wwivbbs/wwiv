@@ -88,7 +88,7 @@ if (WWIV_BUILD_TESTS)
   add_library(core_fixtures 
     file_helper.cpp 
   )
-  target_link_libraries(core_fixtures core)
+  target_link_libraries(core_fixtures core GTest::gtest)
   add_executable(core_tests
     "core_test_main.cpp"
     "clock_test.cpp"
@@ -117,6 +117,7 @@ if (WWIV_BUILD_TESTS)
     "parser/lexer_test.cpp"
   )
 
+  include(GoogleTest)
   target_link_libraries(core_tests core_fixtures core GTest::gtest)
   gtest_discover_tests(core_tests)
 

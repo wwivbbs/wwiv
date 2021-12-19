@@ -178,48 +178,48 @@ target_link_libraries(bbs bbs_lib fmt::fmt-header-only)
 ## Tests
 if (WWIV_BUILD_TESTS)
 
-set(test_sources
-  bbs_test_main.cpp
-  bbs_helper.cpp
-  bbs_macro_context_test.cpp
-  bbslist_test.cpp
-  bputs_test.cpp
-  bputch_test.cpp
-  datetime_test.cpp
-  dsz_test.cpp
-  email_test.cpp
-  input_test.cpp
-  make_abs_test.cpp
-  msgbase1_test.cpp
-  pause_test.cpp
-  printfile_test.cpp
-  quote_test.cpp
-  qwk_test.cpp
-  stuffin_test.cpp
-  trashcan_test.cpp
-  utility_test.cpp
-  wutil_test.cpp
-  xfer_test.cpp
-  basic/basic_test.cpp
-  basic/util_test.cpp
-  fsed/fsed_model_test.cpp
-)
-add_executable(bbs_tests ${test_sources})
+    set(test_sources
+      bbs_test_main.cpp
+      bbs_helper.cpp
+      bbs_macro_context_test.cpp
+      bbslist_test.cpp
+      bputs_test.cpp
+      bputch_test.cpp
+      datetime_test.cpp
+      dsz_test.cpp
+      email_test.cpp
+      input_test.cpp
+      make_abs_test.cpp
+      msgbase1_test.cpp
+      pause_test.cpp
+      printfile_test.cpp
+      quote_test.cpp
+      qwk_test.cpp
+      stuffin_test.cpp
+      trashcan_test.cpp
+      utility_test.cpp
+      wutil_test.cpp
+      xfer_test.cpp
+      basic/basic_test.cpp
+      basic/util_test.cpp
+      fsed/fsed_model_test.cpp
+    )
+    add_executable(bbs_tests ${test_sources})
 
-if(APPLE)
-  target_link_libraries(program "-framework CoreFoundation" "-framework Security" " -framework Foundation")
-endif()
-
-if(UNIX) 
-  if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}  -lnsl -lkstat -lssp")
+    if(APPLE)
+      target_link_libraries(program "-framework CoreFoundation" "-framework Security" " -framework Foundation")
     endif()
-  find_package(ZLIB REQUIRED)
-  #target_link_libraries(bbs ZLIB::ZLIB)
-  #target_link_libraries(bbs_tests ZLIB::ZLIB)
-endif()
 
-target_link_libraries(bbs_tests core bbs_lib core_fixtures common_fixtures GTest::gtest)
-gtest_discover_tests(bbs_tests)
+    if(UNIX) 
+      if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}  -lnsl -lkstat -lssp")
+        endif()
+      find_package(ZLIB REQUIRED)
+    endif()
+
+  include(GoogleTest)
+
+  target_link_libraries(bbs_tests core bbs_lib core_fixtures common_fixtures GTest::gtest)
+  gtest_discover_tests(bbs_tests)
 
 endif() # WWIV_BUILD_TESTS
