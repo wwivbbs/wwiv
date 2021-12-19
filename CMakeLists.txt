@@ -12,6 +12,8 @@ project(wwiv)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+# Set the current root as the Include directory for the compiler,
+# since WWIV uses include paths like "core/foo.h"
 include_directories(${CMAKE_SOURCE_DIR})
 
 include(Common)
@@ -22,6 +24,7 @@ MACRO_ENSURE_OUT_OF_SOURCE_BUILD()
 ENSURE_MINIMUM_COMPILER_VERSIONS()
 
 if (WWIV_BUILD_TESTS)
+  message (STATUS "WWIV_BUILD_TESTS is ON")
   find_package(GTest CONFIG REQUIRED)
 
   # Workaround gtest really wanting to compile with /Mtd vs /MD
@@ -70,10 +73,6 @@ endif()
 
 add_subdirectory(wwivfsed)
 add_subdirectory(wwivutil)
-
-if (WWIV_BUILD_TESTS)
-  message (STATUS "WWIV_BUILD_TESTS is ON")
-endif (WWIV_BUILD_TESTS)
 
 if (WWIV_INSTALL)
   # Create build.nfo

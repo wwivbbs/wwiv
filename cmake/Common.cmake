@@ -65,7 +65,7 @@ message(STATUS "WWIV Build Number: ${WWIV_FULL_RELEASE}")
 macro(ENSURE_MINIMUM_COMPILER_VERSIONS)
   # Set minimum GCC version
   # See https://stackoverflow.com/questions/14933172/how-can-i-add-a-minimum-compiler-version-requisite
-  if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
+  if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.3)
       message(FATAL_ERROR "Require at least gcc-10.0; found: ${CMAKE_CXX_COMPILER_VERSION}")
   endif()
 
@@ -79,28 +79,24 @@ macro(ENSURE_MINIMUM_COMPILER_VERSIONS)
 endmacro(ENSURE_MINIMUM_COMPILER_VERSIONS)
 
 if (UNIX)
-  if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+message("Platform: UNIX")
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    message("Platform: Linux")
     set(LINUX TRUE)
   endif()
 
 elseif (OS2)
-  message("OS/2 in the house!")
+  message("Platform: OS/2")
   set(CMAKE_CXX_EXTENSIONS OFF)
 
 elseif (WIN32)
+  message("Platform: WIN32") 
 
   if (MSVC)
     # Don't show warnings on using normal POSIX functions.  Maybe one day
-    # We'll be using all C++ replacements for most things and can get rid
-    # of this.
+    # We'll be using all C++ replacements for most things and can get rid of this.
     add_definitions(/D_CRT_SECURE_NO_WARNINGS)
     add_definitions(/D_CRT_NONSTDC_NO_DEPRECATE)
-    # Make Windows.h not so awful if included
-    add_definitions(/D_WINSOCK_DEPRECATED_NO_WARNINGS)
-    add_definitions(/DNOMINMAX)
-    add_definitions(/DWIN32_LEAN_AND_MEAN=1)
-    # Otherwise fmt will include windows.h and that breaks everything
-    add_definitions(/DFMT_USE_WINDOWS_H=0)
     
     # Warning 26444 is too noisy to be useful for passing parameters to functions.
     # See https://developercommunity.visualstudio.com/content/problem/422153/warning-c26444-not-aligned-with-cppcoreguidelines.html
@@ -109,8 +105,19 @@ elseif (WIN32)
     # To silence cereal warnings that they know about already
     # bug: https://github.com/USCiLab/cereal/issues/456
     add_definitions(/D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
-  endif(MSVC)
-endif (UNIX)
+  endif()
+  #
+  # Non MSVC Windows Specific settings
+  #
+  
+  # Make Windows.h not so awful if included
+  add_definitions(/D_WINSOCK_DEPRECATED_NO_WARNINGS)
+  add_definitions(/DNOMINMAX)
+  add_definitions(/DWIN32_LEAN_AND_MEAN=1)
+  # Otherwise fmt will include windows.h and that breaks everything
+  add_definitions(/DFMT_USE_WINDOWS_H=0)
+
+endif()
 
 if(WWIV_USE_PIPES AND (WIN32 OR OS2))
   add_definitions(/DWWIV_USE_PIPES)
@@ -178,7 +185,6 @@ function(create_datafile_archive arc dir)
   zip("${WWIV_RELEASE_DIR}/${arc}.zip" "${DATA_FILES}" "${dir}/")
   set(ARC_PATH "${WWIV_RELEASE_DIR}/${arc}.zip")
   add_custom_target("${arc}_archive" ALL DEPENDS "${ARC_PATH}")
-  #message(TRACE "P: ${ARC_PATH}")
   install(FILES "${ARC_PATH}" DESTINATION .)
 endfunction()
 
@@ -188,10 +194,3 @@ IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 ENDIF()
 
 SET_MSVC_WARNING_LEVEL_4()
-
-
-
-
-
-
-
