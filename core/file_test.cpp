@@ -117,6 +117,13 @@ TEST(FileTest, Length_NotOpen) {
   ASSERT_EQ(static_cast<long>(kHelloWorld.size()), file.length());
 }
 
+TEST(FileTest, Length_RealFile) {
+  FileHelper helper;
+  auto path = wwiv::core::FilePath(FileHelper::TestData(), "len.txt");
+  File file(path);
+  ASSERT_EQ(11, file.length());
+}
+
 TEST(FileTest, IsDirectory_NotOpen) {
   static const std::string kHelloWorld = "Hello World";
   FileHelper helper;

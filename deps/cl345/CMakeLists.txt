@@ -7,6 +7,8 @@ if (WIN32)
     CL345_LIB PROPERTY 
   IMPORTED_LOCATION 
     ${CMAKE_CURRENT_SOURCE_DIR}/cl32.lib)
+  set (CL32_DLL ${CMAKE_CURRENT_SOURCE_DIR}/cl32.dll PARENT_SCOPE)
+  message(STATUS "Setting CL32_DLL: ${CL32_DLL}")
 else()
   set (LIBCL_A ${CMAKE_CURRENT_SOURCE_DIR}/libcl.a)
   add_custom_command(

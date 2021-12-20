@@ -55,11 +55,15 @@ public:
   static void set_wwiv_test_tempdir(const std::string& d) noexcept;
   static void set_wwiv_test_tempdir_from_commandline(int argc, char* argv[]) noexcept;
 
+  // Gets the root testdata directory specified as "WWIV_TESTDATA" on the environment
+  [[nodiscard]] static std::filesystem::path TestData();
+
 private:
   static std::filesystem::path GetTestTempDir();
   static std::filesystem::path CreateTempDir(const std::string& base);
   std::filesystem::path tmp_;
   static std::filesystem::path basedir_;
+  static std::filesystem::path testdata_;
 };
 
 #endif

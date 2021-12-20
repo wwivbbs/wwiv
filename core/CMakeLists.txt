@@ -119,8 +119,8 @@ if (WWIV_BUILD_TESTS)
 
   include(GoogleTest)
   target_link_libraries(core_tests core_fixtures core GTest::gtest)
-  gtest_discover_tests(core_tests)
-
+  gtest_discover_tests(core_tests EXTRA_ARGS "--wwiv_testdata=${CMAKE_CURRENT_SOURCE_DIR}/testdata")
+  
   if(WIN32)
     target_sources(core_tests PRIVATE
     "pipe_test.cpp"
@@ -133,6 +133,5 @@ if (WWIV_BUILD_TESTS)
     )
     target_link_libraries(core_tests libcx)
   endif()
-
 
 endif()

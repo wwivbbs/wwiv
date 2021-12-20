@@ -36,6 +36,7 @@ using namespace wwiv::strings;
 
 // Base test directory.
 std::filesystem::path FileHelper::basedir_;
+std::filesystem::path FileHelper::testdata_;
 
 FileHelper::FileHelper() {
   const auto* const test_info = testing::UnitTest::GetInstance()->current_test_info();
@@ -68,10 +69,13 @@ void FileHelper::set_wwiv_test_tempdir(const std::string& d) noexcept {
 }
 
 void FileHelper::set_wwiv_test_tempdir_from_commandline(int argc, char* argv[]) noexcept {
+  LOG(INFO) << "set_wwiv_test_tempdir_from_commandline";
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
   cmdline.add_argument(
       {"wwiv_test_tempdir", "Use instead of WWIV_TEST_TEMPDIR environment variable.", ""});
+  cmdline.add_argument(
+      {"wwiv_testdata", "Sets the location of the testdata directory for this test.", ""});
   cmdline.set_no_args_allowed(true);
   if (!cmdline.Parse()) {
     LOG(ERROR) << "Failed to parse cmdline.";
@@ -81,15 +85,29 @@ void FileHelper::set_wwiv_test_tempdir_from_commandline(int argc, char* argv[]) 
   if (tmpdir.empty()) {
     tmpdir = wwiv::os::environment_variable("WWIV_TEST_TEMPDIR");
   }
-  if (tmpdir.empty()) {
-    return;
+  if (!tmpdir.empty()) {
+    if (!File::Exists(tmpdir)) {
+      File::mkdirs(tmpdir);
+    }
+    File::set_current_directory(tmpdir);
+    set_wwiv_test_tempdir(tmpdir);
   }
-  if (!File::Exists(tmpdir)) {
-    File::mkdirs(tmpdir);
+
+  auto testdata = cmdline.arg("wwiv_testdata").as_string();
+  if (testdata.empty()) {
+    testdata = wwiv::os::environment_variable("WWIV_TESTDATA");
   }
-  File::set_current_directory(tmpdir);
-  set_wwiv_test_tempdir(tmpdir);
+  FileHelper::testdata_ = testdata;
 }
+
+// static
+std::filesystem::path FileHelper::TestData() {
+  CHECK(!testdata_.empty()) << "WWIV_TESTDATA must be set for using testdata.";
+  CHECK(File::Exists(testdata_)) << "WWIV_TESTDATA must be set to a directory that exists for using testdata.";
+  LOG(INFO) << "TestData: " << testdata_;
+  return testdata_;
+}
+
 
 // static
 std::filesystem::path FileHelper::GetTestTempDir() {

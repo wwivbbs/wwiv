@@ -17,6 +17,7 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 #include "core/cp437.h"
+#include "core/file_helper.h"
 #include "core/log.h"
 
 using namespace wwiv::core;
@@ -29,6 +30,7 @@ int main(int argc, char* argv[]) {
     logger_config.register_file_destinations = false;
     logger_config.log_startup = false;
     Logger::Init(argc, argv, logger_config);
+    FileHelper::set_wwiv_test_tempdir_from_commandline(argc, argv);
     return RUN_ALL_TESTS();
   } catch (const std::exception& e) {
     std::cerr << e.what();

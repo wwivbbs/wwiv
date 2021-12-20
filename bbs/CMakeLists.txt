@@ -173,7 +173,12 @@ endif()
 
 add_executable(bbs bbs_main.cpp)
 target_link_libraries(bbs bbs_lib fmt::fmt-header-only)
-
+if (WIN32)
+  add_custom_command(
+    TARGET bbs POST_BUILD
+    COMMAND cmake -E copy_if_different ${CL32_DLL} "$<TARGET_FILE_DIR:bbs>"
+  )
+endif()
 
 ## Tests
 if (WWIV_BUILD_TESTS)
@@ -205,6 +210,13 @@ if (WWIV_BUILD_TESTS)
       fsed/fsed_model_test.cpp
     )
     add_executable(bbs_tests ${test_sources})
+
+    if (WIN32)
+      add_custom_command(
+        TARGET bbs_tests POST_BUILD
+        COMMAND cmake -E copy_if_different ${CL32_DLL} "$<TARGET_FILE_DIR:bbs>"
+      )
+    endif()
 
     if(APPLE)
       target_link_libraries(program "-framework CoreFoundation" "-framework Security" " -framework Foundation")

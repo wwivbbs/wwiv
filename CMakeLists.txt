@@ -129,6 +129,8 @@ endif()
       message(DEBUG "Installing Platform Specific File: ${file}")
       INSTALL(FILES "${file}" DESTINATION .)
     endforeach()
+    INSTALL(FILES "${CL32_DLL}" DESTINATION .)
+
   elseif(OS2)
     set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/os2")
     file(GLOB PLATFORM_FILES "${PLATFORM_DIR}/*")
