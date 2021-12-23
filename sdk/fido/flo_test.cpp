@@ -20,7 +20,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "sdk/fido/flo_file.h"
 #include "gtest/gtest.h"
 #include <string>
@@ -39,7 +39,7 @@ public:
   }
 
 protected:
-  FileHelper helper_;
+  wwiv::core::test::FileHelper helper_;
   Network net{};
 
   std::filesystem::path p{};

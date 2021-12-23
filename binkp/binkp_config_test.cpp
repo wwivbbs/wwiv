@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "binkp/binkp_config.h"
 #include "sdk/config.h"
 #include <string>
@@ -56,7 +56,7 @@ TEST_F(ParseBinkConfigLineTest, InvalidLine) {
 }
 
 TEST(BinkConfigTest, NodeConfig) {
-  FileHelper files;
+  wwiv::core::test::FileHelper files;
   ASSERT_TRUE(files.Mkdir("network"));
   const std::string line("@2 example.com");
   files.CreateTempFile("network/binkp.net", line);

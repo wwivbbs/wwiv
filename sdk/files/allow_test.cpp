@@ -21,7 +21,6 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/files/allow.h"
 #include "sdk/sdk_helper.h"

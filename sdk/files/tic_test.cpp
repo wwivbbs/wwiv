@@ -20,7 +20,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "sdk/net/net.h"
 #include "sdk/files/tic.h"
 
@@ -28,7 +28,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk::net;
 
 TEST(TicTest, Smoke) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
 
   const std::string kFSXINFO = R"(
 Created by HTick, written by Gabriel Plutzar
@@ -98,7 +98,7 @@ Path 21:2/100 1591287460 Thu Jun 04 16:17:40 2020 UTC Mystic/1.12 A46
 
 
 TEST(TicTest, Malformed_Addresses) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
 
   const std::string kFSXINFO = R"(
 Created by PXTIC/Win v7.0 (c) 2018 Santronics
@@ -122,7 +122,7 @@ File HOBBYNET.ZIP
 }
 
 TEST(TicTest, FindFileAreaForTic) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
 
   const std::string contents = R"(
 Area AREANAME
@@ -170,7 +170,7 @@ File sample.zip
 }
 
 TEST(TicTest, FindFileAreaForTic_NotFound) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
 
   const std::string contents = R"(
 Area AREANAME

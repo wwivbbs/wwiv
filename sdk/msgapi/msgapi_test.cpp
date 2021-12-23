@@ -20,7 +20,6 @@
 
 #include "core/file.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"

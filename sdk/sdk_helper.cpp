@@ -22,7 +22,6 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "core/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"

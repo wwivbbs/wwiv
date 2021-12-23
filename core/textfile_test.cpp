@@ -16,9 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "file_helper.h"
 #include "core/file.h"
 #include "core/strings.h"
+#include "core/test/file_helper.h"
 #include "core/textfile.h"
 #include "gtest/gtest.h"
 #include <filesystem>
@@ -38,7 +38,7 @@ protected:
 
   [[nodiscard]] const std::string& test_name() const { return test_name_; }
 
-  FileHelper helper_;
+  wwiv::core::test::FileHelper helper_;
   std::filesystem::path hello_world_path_;
   std::string test_name_;
   static const std::string kHelloWorld;

@@ -18,7 +18,6 @@
 #include "gtest/gtest.h"
 
 #include "core/strings.h"
-#include "core/file_helper.h"
 #include "binkp/cram.h"
 #include <string>
 

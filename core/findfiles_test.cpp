@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "file_helper.h"
-#include "gtest/gtest.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/strings.h"
+#include "core/test/file_helper.h"
+#include "gtest/gtest.h"
 
 #include <string>
 
@@ -28,7 +28,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 TEST(FindFiles, Suffix) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
   FindFiles ff(FilePath(helper.TempDir(), "msg*"), FindFiles::FindFilesType::any);
   auto f = ff.begin();
@@ -38,7 +38,7 @@ TEST(FindFiles, Suffix) {
 }
 
 TEST(FindFiles, Prefix) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
   FindFiles ff(FilePath(helper.TempDir(), "*001"), FindFiles::FindFilesType::files);
   auto f = ff.begin();
@@ -48,7 +48,7 @@ TEST(FindFiles, Prefix) {
 }
 
 TEST(FindFiles, SingleCharSuffix) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
   FindFiles ff(FilePath(helper.TempDir(), "msg00000.00?"), FindFiles::FindFilesType::files);
   auto f = ff.begin();
@@ -58,7 +58,7 @@ TEST(FindFiles, SingleCharSuffix) {
 }
 
 TEST(FindFiles, SingleCharPrefix) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
   FindFiles ff(FilePath(helper.TempDir(), "?sg00000.001"), FindFiles::FindFilesType::files);
   auto f = ff.begin();
@@ -68,7 +68,7 @@ TEST(FindFiles, SingleCharPrefix) {
 }
 
 TEST(FindFiles, SingleCharExtensionPrefix) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
   FindFiles ff(FilePath(helper.TempDir(), "msg00000.?01"), FindFiles::FindFilesType::files);
   auto f = ff.begin();
@@ -78,9 +78,9 @@ TEST(FindFiles, SingleCharExtensionPrefix) {
 }
 
 TEST(FindFileTest, Smoke) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   helper.CreateTempFile("FOO", "");
-  EXPECT_TRUE(FindFile(FilePath(helper.TempDir(),"FOO")));
-  EXPECT_TRUE(FindFile(FilePath(helper.TempDir(),"foo")));
-  EXPECT_FALSE(FindFile(FilePath(helper.TempDir(),"bad")));
+  EXPECT_TRUE(FindFile(FilePath(helper.TempDir(), "FOO")));
+  EXPECT_TRUE(FindFile(FilePath(helper.TempDir(), "foo")));
+  EXPECT_FALSE(FindFile(FilePath(helper.TempDir(), "bad")));
 }

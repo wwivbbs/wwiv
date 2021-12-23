@@ -19,17 +19,15 @@
 #include "core/log.h"
 #include "core/strings.h"
 
-
 #include "gtest/gtest.h"
 
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "sdk/files/diz.h"
 
 class DizTest : public testing::Test {
 public:
-  DizTest() {
-  }
-  FileHelper helper;
+  DizTest() {}
+  wwiv::core::test::FileHelper helper;
 };
 
 TEST_F(DizTest, Smoke) {
@@ -65,7 +63,8 @@ Line3)";
 }
 
 TEST_F(DizTest, BlockChars) {
-  const char* kTEXT = R"(������������[ CyberWall v2.0�L ]����������Ŀ
+  const char* kTEXT =
+      R"(������������[ CyberWall v2.0�L ]����������Ŀ
 � Smaller  version  of  the  popular  door �
 � CyberWall.   Simple  and  easy  to  use, �
 � really  cool ANSi. Not  as many features �
@@ -75,7 +74,7 @@ TEST_F(DizTest, BlockChars) {
 ������������������������������������������ĳ
 �        --- LiQUID pRODUCTIoNS ---        �
 � MegaStuff BBS % (317) 873-5173 % 8am-5pm �
-��������������������������������������������)"; 
+��������������������������������������������)";
 
   const auto file = helper.CreateTempFile("FILE_ID.DIZ", kTEXT);
 
@@ -90,7 +89,6 @@ TEST_F(DizTest, BlockChars) {
   EXPECT_EQ(10u, v.size());
 }
 
-
 TEST_F(DizTest, EmptyLinesAtStart) {
   const auto* kTEXT = R"(
   <<< null e-magazine x00A (exec edition) >>>
@@ -102,7 +100,7 @@ TEST_F(DizTest, EmptyLinesAtStart) {
     : bbs scene and retro computing e-mag .
     :     https://github.com/xqtr/null    :
     '  telnet // andr01d.zapto.org:9999   :
-    +---- -  ---------  ---------- -------+)"; 
+    +---- -  ---------  ---------- -------+)";
 
   const auto file = helper.CreateTempFile("FILE_ID.DIZ", kTEXT);
 

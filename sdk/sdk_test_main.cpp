@@ -15,21 +15,17 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "core/file.h"
-#include "core/log.h"
-#include "core/file_helper.h"
+#include "core/test/wwivtest.h"
 #include "gtest/gtest.h"
 
 using namespace wwiv::core;
 
 int main(int argc, char* argv[]) {
-  testing::InitGoogleTest(&argc, argv);
-
-  LoggerConfig log_config{};
-  log_config.log_startup = false;
-  Logger::Init(argc, argv, log_config);
-
-  tzset();
-  FileHelper::set_wwiv_test_tempdir_from_commandline(argc, argv);
-  return RUN_ALL_TESTS();
+  try {
+    wwiv::core::test::InitTestForMain(argc, argv);
+    return RUN_ALL_TESTS();
+  } catch (const std::exception& e) {
+    std::cerr << e.what();
+    return 1;
+  }
 }

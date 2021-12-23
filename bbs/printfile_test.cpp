@@ -23,7 +23,6 @@
 #include "common/printfile.h"
 #include "core/file.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
 #include <regex>
 #include <string>
 

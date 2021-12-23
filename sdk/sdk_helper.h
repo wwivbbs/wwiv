@@ -21,7 +21,7 @@
 #include <string>
 
 #include <filesystem>
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 
 class SdkHelper {
 public:
@@ -38,10 +38,10 @@ public:
   [[nodiscard]] std::string scripts() const { return scripts_.string(); }
   [[nodiscard]] std::string logs() const { return logs_.string(); }
   [[nodiscard]] std::string scratch() const { return scratch_.string(); }
-  [[nodiscard]] FileHelper& files() { return files_; }
+  [[nodiscard]] wwiv::core::test::FileHelper& files() { return files_; }
 
   std::filesystem::path CreatePath(const std::string& name);
-  FileHelper files_;
+  wwiv::core::test::FileHelper files_;
   std::filesystem::path data_;
   std::filesystem::path dloads_;
   std::filesystem::path msgs_;

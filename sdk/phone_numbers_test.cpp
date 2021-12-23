@@ -20,7 +20,6 @@
 
 #include "core/file.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/phone_numbers.h"

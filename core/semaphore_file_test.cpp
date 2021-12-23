@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "file_helper.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/semaphore_file.h"
 #include "core/strings.h"
+#include "core/test/file_helper.h"
 #include "gtest/gtest.h"
 #include <chrono>
 #include <string>
@@ -29,8 +29,8 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 TEST(SemaphoreFileTest, AlreadyAcqired) {
-  const FileHelper file;
-  const auto tmp = file.TempDir();
+  const wwiv::core::test::FileHelper file;
+  const auto& tmp = file.TempDir();
   std::filesystem::path path;
   {
     // Will throw if it can't acquire.
@@ -54,8 +54,8 @@ TEST(SemaphoreFileTest, AlreadyAcqired) {
 }
 
 TEST(SemaphoreFileTest, Smoke) {
-  const FileHelper file;
-  const auto tmp = file.TempDir();
+  const wwiv::core::test::FileHelper file;
+  const auto& tmp = file.TempDir();
   // Will throw if it can't acquire.
   const auto ok =
       SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));

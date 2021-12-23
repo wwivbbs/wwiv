@@ -26,7 +26,6 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/files/files.h"
 #include "sdk/files/files_ext.h"

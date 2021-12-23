@@ -19,14 +19,14 @@
 #include "gtest/gtest.h"
 #include "core/crc32.h"
 #include "core/file.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include <string>
 #include <vector>
 
 using namespace wwiv::core;
 
 TEST(Crc32Test, Simple) {
-  FileHelper file;
+  wwiv::core::test::FileHelper file;
   const auto path = file.CreateTempFile("helloworld.txt", "Hello World");
 
   ASSERT_TRUE(File::Exists(path));

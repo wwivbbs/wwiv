@@ -18,10 +18,11 @@
 #include "gtest/gtest.h"
 
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "core/file.h"
 #include "binkp/file_manager.h"
 #include "core/textfile.h"
+#include <memory>
 #include <string>
 
 using namespace wwiv::core;
@@ -94,7 +95,7 @@ public:
     return CreateTic(dir, filename, "");
   }
 
-  FileHelper file_helper_;
+  wwiv::core::test::FileHelper file_helper_;
   Network net{};
   std::unique_ptr<FileManager> fm;
   std::unique_ptr<wwiv::sdk::Config> config_;

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2021, WWIV Software Services             */
+/*                              WWIV Version 5.x                          */
+/*                 Copyright (C)2021, WWIV Software Services              */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,21 +14,27 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#include "core/log.h"
-#include "core/test/file_helper.h"
+#ifndef INCLUDED_CORE_TEST_WWIVTEST_H
+#define INCLUDED_CORE_TEST_WWIVTEST_H
 
-#include "gtest/gtest.h"
+#include <string>
 
-using namespace wwiv::core;
+namespace wwiv::core::test {
 
-int main(int argc, char* argv[]) {
-  testing::InitGoogleTest(&argc, argv);
-  LoggerConfig log_config{};
-  log_config.log_startup = false;
-  Logger::Init(argc, argv, log_config);
+/**
+ * Initializes much of the WWIV Environment for a GTest main method. 
+ * 
+ * Specifically:
+ * 
+ * - Sets codepage to UTF8
+ * - Initialies WWIV's global logger
+ * - Initialies GoogleTest
+ * - Sets WWIV's test tempdir and testdata directories from the commandline.
+ */
+void InitTestForMain(int argc, char** argv);
 
-  tzset();
-  wwiv::core::test::FileHelper::set_wwiv_test_tempdir_from_commandline(argc, argv);
-  return RUN_ALL_TESTS();
-} 
+}
+
+#endif // INCLUDED_CORE_TEST_WWIVTEST_H

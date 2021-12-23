@@ -16,21 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "gtest/gtest.h"
-#include "core/cp437.h"
-#include "core/file_helper.h"
-#include "core/log.h"
+#include "core/test/wwivtest.h"
 
 using namespace wwiv::core;
 
 int main(int argc, char* argv[]) {
   try {
-    set_wwiv_codepage(wwiv_codepage_t::utf8);
-    testing::InitGoogleTest(&argc, argv);
-    LoggerConfig logger_config{};
-    logger_config.register_file_destinations = false;
-    logger_config.log_startup = false;
-    Logger::Init(argc, argv, logger_config);
-    FileHelper::set_wwiv_test_tempdir_from_commandline(argc, argv);
+    wwiv::core::test::InitTestForMain(argc, argv);
     return RUN_ALL_TESTS();
   } catch (const std::exception& e) {
     std::cerr << e.what();

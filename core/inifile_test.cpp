@@ -25,7 +25,7 @@
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/strings.h"
-#include "file_helper.h"
+#include "core/test/file_helper.h"
 
 using namespace wwiv::core;
 
@@ -71,7 +71,7 @@ protected:
     return path;
   }
 
-  FileHelper helper_;
+  wwiv::core::test::FileHelper helper_;
   std::string test_name_;
 };
 

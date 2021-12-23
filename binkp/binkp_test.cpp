@@ -22,7 +22,7 @@
 #include "binkp/fake_connection.h"
 #include "core/file.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "sdk/net/callout.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -74,7 +74,7 @@ protected:
   std::unique_ptr<BinkConfig> binkp_config_;
   FakeConnection conn_;
   std::thread thread_;
-  FileHelper files_;
+  wwiv::core::test::FileHelper files_;
 };
 
 TEST_F(BinkTest, ErrorAbortsSession) {

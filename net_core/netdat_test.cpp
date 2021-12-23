@@ -18,7 +18,7 @@
 #include "core/fake_clock.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "net_core/netdat.h"
 #include "sdk/net/net.h"
 
@@ -51,7 +51,7 @@ public:
   }
 
 protected:
-  FileHelper helper_;
+  wwiv::core::test::FileHelper helper_;
   std::filesystem::path gfiles_;
   std::filesystem::path logs_;
   tm t_{};

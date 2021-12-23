@@ -19,7 +19,6 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "core/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/sdk_helper.h"
 

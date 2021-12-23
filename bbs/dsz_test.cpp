@@ -21,12 +21,12 @@
 #include "bbs/dsz.h"
 #include "core/log.h"
 #include "core/textfile.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "sdk/files/files.h"
 #include <string>
 
 TEST(DszTest, Smoke) {
-  FileHelper h;
+  wwiv::core::test::FileHelper h;
   const std::string loglines=R"(Z  46532 38400 bps 3324 cps   0 errors    66 1024 DSZ.COM 1177
 Z 124087 19200 bps 1880 cps   0 errors     6 1024 MXY.TMP 1177
 S 217837 57600 bps 5050 cps   0 errors     0 1024 MPT110.ZIP MPt

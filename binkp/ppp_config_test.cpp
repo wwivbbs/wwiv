@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "binkp/ppp_config.h"
 #include <cstdint>
 #include <string>
@@ -47,7 +47,7 @@ TEST_F(ParsePPPConfigLineTest, InvalidLine) {
 }
 
 TEST(PPPConfigTest, NodeConfig) {
-  FileHelper files;
+  wwiv::core::test::FileHelper files;
   files.Mkdir("network");
   const std::string line("@2 foo@example.com");
   files.CreateTempFile("network/address.net", line);

@@ -19,7 +19,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "fmt/printf.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_util.h"
@@ -38,7 +38,7 @@ public:
   FidoUtilTest() = default;
 
 protected:
-  FileHelper helper_;
+  wwiv::core::test::FileHelper helper_;
   wwiv_to_fido_options opts;
 
 };
@@ -312,7 +312,7 @@ public:
     config_.reset(new wwiv::sdk::Config(root));
   }
 
-  FileHelper files_;
+  wwiv::core::test::FileHelper files_;
   std::unique_ptr<wwiv::sdk::Config> config_;
 };
 

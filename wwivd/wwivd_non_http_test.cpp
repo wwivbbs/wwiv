@@ -21,7 +21,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "sdk/wwivd_config.h"
 #include "wwivd/wwivd_non_http.h"
 
@@ -46,7 +46,7 @@ TEST(GoodIps, IsAlwaysAllowed) {
 }
 
 TEST(BadIps, Smoke) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   FakeClock clock(DateTime::now());
   BadIp ip(fn, clock);
@@ -69,7 +69,7 @@ TEST(AutoBlock, ShouldBlock) {
   b.auto_blocklist = true;
   b.auto_bl_seconds = 2;
   b.auto_bl_sessions = 1;
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   FakeClock clock(DateTime::now());
   auto bip = std::make_shared<BadIp>(fn, clock);
@@ -87,7 +87,7 @@ TEST(AutoBlock, Escalate1) {
   b.auto_blocklist = true;
   b.auto_bl_seconds = 2;
   b.auto_bl_sessions = 1;
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   FakeClock clock(DateTime::now());
   auto bip = std::make_shared<BadIp>(fn, clock);
@@ -111,7 +111,7 @@ TEST(AutoBlock, Escalate_All) {
   b.block_duration.emplace_back("2m");
   b.block_duration.emplace_back("3m");
   b.block_duration.emplace_back("4m");
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   FakeClock clock(DateTime::now());
   auto bip = std::make_shared<BadIp>(fn, clock);
@@ -163,7 +163,7 @@ TEST(AutoBlock, ShouldNotBlock) {
   b.auto_blocklist = true;
   b.auto_bl_seconds = 1;
   b.auto_bl_sessions = 1;
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
   FakeClock clock(DateTime::now());
   auto bip = std::make_shared<BadIp>(fn, clock);

@@ -23,7 +23,6 @@
 #include "core/jsonfile.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/file_helper.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include "sdk/files/dirs.h"

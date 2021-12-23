@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "bbs/bbslist.h"
 #include "bbs/bbs_helper.h"
-#include "core/file_helper.h"
 #include "sdk/menus/menu_set.h"
 
 #include "gtest/gtest.h"

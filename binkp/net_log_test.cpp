@@ -19,7 +19,7 @@
 #include "core/datetime.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "fmt/printf.h"
 #include "gtest/gtest.h"
 #include <chrono>
@@ -40,7 +40,7 @@ public:
   }
 
 protected:
-  FileHelper helper_;
+  wwiv::core::test::FileHelper helper_;
   time_t now_;
   std::string now_string_;
 };

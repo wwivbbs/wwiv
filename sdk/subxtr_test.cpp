@@ -22,7 +22,6 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/file_helper.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "sdk/sdk_helper.h"

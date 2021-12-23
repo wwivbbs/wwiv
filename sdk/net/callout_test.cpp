@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "sdk/net/callout.h"
 #include <string>
 
@@ -107,7 +107,7 @@ TEST_F(CalloutTest, InvalidLine) {
 }
 
 TEST_F(CalloutTest, NodeConfig) {
-  FileHelper files;
+  wwiv::core::test::FileHelper files;
   EXPECT_TRUE(files.Mkdir("network"));
   const std::string line("@1 \"foo\"");
   files.CreateTempFile("network/callout.net", line);

@@ -21,7 +21,7 @@
 
 #include "common/context.h"
 #include "common/remote_io.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "local_io/local_io.h"
 #include "sdk/chains.h"
 #include "sdk/config.h"
@@ -53,12 +53,12 @@ public:
   [[nodiscard]] virtual wwiv::common::Context& context();
 
   // Accessors for various directories
-  FileHelper& files() { return files_; }
+  wwiv::core::test::FileHelper& files() { return files_; }
   [[nodiscard]] const std::string& data() const { return dir_data_; }
   [[nodiscard]] const std::string& gfiles() const { return dir_gfiles_; }
   [[nodiscard]] const std::string& menus() const { return dir_menus_; }
 
-  FileHelper files_;
+  wwiv::core::test::FileHelper files_;
   std::string dir_data_;
   std::string dir_gfiles_;
   std::string dir_menus_;

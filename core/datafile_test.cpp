@@ -16,23 +16,26 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "file_helper.h"
-#include "gtest/gtest.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/strings.h"
+#include "core/test/file_helper.h"
+#include "gtest/gtest.h"
 #include <string>
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
 TEST(DataFileTest, Read) {
-  struct T { int a; int b; };
-  FileHelper file;
+  struct T {
+    int a;
+    int b;
+  };
+  wwiv::core::test::FileHelper file;
   const auto& tmp = file.TempDir();
 
   File x(FilePath(tmp, "Read"));
-  ASSERT_TRUE(x.Open(File::modeCreateFile|File::modeBinary|File::modeReadWrite));
+  ASSERT_TRUE(x.Open(File::modeCreateFile | File::modeBinary | File::modeReadWrite));
   T t1{1, 2};
   T t2{3, 4};
   x.Write(&t1, sizeof(T));
@@ -63,8 +66,11 @@ TEST(DataFileTest, Read) {
 }
 
 TEST(DataFileTest, ReadVector) {
-  struct T { int a; int b; };
-  FileHelper file;
+  struct T {
+    int a;
+    int b;
+  };
+  wwiv::core::test::FileHelper file;
   const auto& tmp = file.TempDir();
 
   File x(FilePath(tmp, "ReadVector"));
@@ -94,8 +100,11 @@ TEST(DataFileTest, ReadVector) {
 }
 
 TEST(DataFileTest, ReadVector_Empty) {
-  struct T { int a; int b; };
-  const FileHelper file{};
+  struct T {
+    int a;
+    int b;
+  };
+  const wwiv::core::test::FileHelper file{};
   const auto& tmp = file.TempDir();
 
   {
@@ -113,8 +122,11 @@ TEST(DataFileTest, ReadVector_Empty) {
 }
 
 TEST(DataFileTest, ReadVector_MaxRecords) {
-  struct T { int a; int b; };
-  FileHelper file;
+  struct T {
+    int a;
+    int b;
+  };
+  wwiv::core::test::FileHelper file;
   const auto& tmp = file.TempDir();
 
   File x(FilePath(tmp, "ReadVector_MaxRecords"));
@@ -142,8 +154,11 @@ TEST(DataFileTest, ReadVector_MaxRecords) {
 }
 
 TEST(DataFileTest, Write) {
-  struct T { int a; int b; };
-  FileHelper file;
+  struct T {
+    int a;
+    int b;
+  };
+  wwiv::core::test::FileHelper file;
   const auto& tmp = file.TempDir();
 
   T t1{1, 2};
@@ -157,7 +172,7 @@ TEST(DataFileTest, Write) {
     datafile.Write(&t2);
   }
   File x(FilePath(tmp, "Write"));
-  ASSERT_TRUE(x.Open(File::modeBinary|File::modeReadOnly));
+  ASSERT_TRUE(x.Open(File::modeBinary | File::modeReadOnly));
   x.Read(&t1, sizeof(T));
   x.Read(&t2, sizeof(T));
   x.Close();
@@ -168,8 +183,11 @@ TEST(DataFileTest, Write) {
 }
 
 TEST(DataFileTest, WriteVector) {
-  struct T { int a; int b; };
-  FileHelper file;
+  struct T {
+    int a;
+    int b;
+  };
+  wwiv::core::test::FileHelper file;
   const auto& tmp = file.TempDir();
 
   T t1{1, 2};
@@ -177,7 +195,7 @@ TEST(DataFileTest, WriteVector) {
 
   {
     DataFile<T> datafile(FilePath(tmp, "WriteVector"),
-        File::modeCreateFile | File::modeBinary | File::modeReadWrite);
+                         File::modeCreateFile | File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE(static_cast<bool>(datafile));
     std::vector<T> t = {t1, t2};
     datafile.WriteVector(t);
@@ -194,13 +212,16 @@ TEST(DataFileTest, WriteVector) {
 }
 
 TEST(DataFileTest, WriteVector_Empty) {
-  struct T { int a; int b; };
-  const FileHelper file{};
+  struct T {
+    int a;
+    int b;
+  };
+  const wwiv::core::test::FileHelper file{};
   const auto& tmp = file.TempDir();
 
   {
     DataFile<T> datafile(FilePath(tmp, "WriteVector_Empty"),
-        File::modeCreateFile | File::modeBinary | File::modeReadWrite);
+                         File::modeCreateFile | File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE(static_cast<bool>(datafile));
     const std::vector<T> t{};
     EXPECT_TRUE(datafile.WriteVector(t));
@@ -211,8 +232,11 @@ TEST(DataFileTest, WriteVector_Empty) {
 }
 
 TEST(DataFileTest, WriteVector_MaxRecords) {
-  struct T { int a; int b; };
-  FileHelper file;
+  struct T {
+    int a;
+    int b;
+  };
+  wwiv::core::test::FileHelper file;
   const auto& tmp = file.TempDir();
 
   T t1{1, 2};
@@ -221,7 +245,7 @@ TEST(DataFileTest, WriteVector_MaxRecords) {
 
   {
     DataFile<T> datafile(FilePath(tmp, "WriteVector_MaxRecords"),
-      File::modeCreateFile | File::modeBinary | File::modeReadWrite);
+                         File::modeCreateFile | File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE(static_cast<bool>(datafile));
     std::vector<T> t = {t1, t2, t3};
     datafile.WriteVector(t, 2);
@@ -239,14 +263,17 @@ TEST(DataFileTest, WriteVector_MaxRecords) {
 }
 
 TEST(DataFileTest, WriteVectorAndTruncate) {
-  struct T { int a; int b; };
-  FileHelper file;
+  struct T {
+    int a;
+    int b;
+  };
+  wwiv::core::test::FileHelper file;
   const auto& tmp = file.TempDir();
 
   T t1{1, 2};
   T t2{3, 4};
   const auto path = FilePath(tmp, "WriteVectorAndTruncate");
-  File f(path); 
+  File f(path);
 
   {
     // Create file containing two files.
@@ -261,7 +288,7 @@ TEST(DataFileTest, WriteVectorAndTruncate) {
     DataFile<T> datafile(path, File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE(static_cast<bool>(datafile));
     datafile.WriteVector({t1});
-    // Should still 
+    // Should still
     ASSERT_EQ(f.length(), static_cast<File::size_type>(2 * sizeof(T)));
   }
 
@@ -272,12 +299,13 @@ TEST(DataFileTest, WriteVectorAndTruncate) {
     datafile.Close();
     ASSERT_EQ(f.length(), static_cast<File::size_type>(sizeof(T)));
   }
-
 }
 
 TEST(DataFileTest, Read_DoesNotExist) {
-  struct T { int a; };
-  const FileHelper file;
+  struct T {
+    int a;
+  };
+  const wwiv::core::test::FileHelper file;
   const auto& tmp = file.TempDir();
   const DataFile<T> datafile(FilePath(tmp, "DoesNotExist"), File::modeBinary | File::modeReadWrite);
   if (datafile) {

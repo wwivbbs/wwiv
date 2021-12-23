@@ -17,7 +17,7 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 
 using namespace wwiv::strings;
 
@@ -27,7 +27,7 @@ public:
   NetworkCommandlineTest() {}
 
 protected:
-  FileHelper helper_;
+  wwiv::core::test::FileHelper helper_;
 };
 
 TEST_F(NetworkCommandlineTest, NOP) {

@@ -17,7 +17,7 @@
 /**************************************************************************/
 #include "core/datetime.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "sdk/net/callouts.h"
 #include "gtest/gtest.h"
 
@@ -48,7 +48,7 @@ public:
   CalloutsTest() : t_(fake_time_t()), dt_(DateTime::from_time_t(fake_time_t())) { c_.sysnum = 1; }
 
 protected:
-  FileHelper helper_;
+  wwiv::core::test::FileHelper helper_;
   net_call_out_rec c_{};
   NetworkContact ncn_{1};
   time_t t_;

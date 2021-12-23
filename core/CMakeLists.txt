@@ -86,8 +86,10 @@ if (WWIV_BUILD_TESTS)
   set_max_warnings()
 
   add_library(core_fixtures 
-    file_helper.cpp 
+    "test/file_helper.cpp"
+    "test/wwivtest.cpp"
   )
+
   target_link_libraries(core_fixtures core GTest::gtest)
   add_executable(core_tests
     "core_test_main.cpp"

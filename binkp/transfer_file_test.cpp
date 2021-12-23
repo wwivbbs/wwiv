@@ -19,7 +19,7 @@
 
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "fmt/printf.h"
 #include "binkp/transfer_file.h"
 #include "binkp/wfile_transfer_file.h"
@@ -45,7 +45,7 @@ public:
   const std::string filename;
   InMemoryTransferFile file;
   std::filesystem::path full_filename;
-  FileHelper file_helper_;
+  wwiv::core::test::FileHelper file_helper_;
 };
 
 TEST_F(TransferFileTest, AsPacketData) {

@@ -18,7 +18,7 @@
 #include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "sdk/net/packets.h"
 #include "gtest/gtest.h"
 #include <string>
@@ -49,7 +49,7 @@ public:
   PacketsTest() = default;
 
 protected:
-  FileHelper helper_;
+  wwiv::core::test::FileHelper helper_;
 };
 
 TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {

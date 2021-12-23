@@ -24,8 +24,10 @@
 #include <tuple>
 #include <filesystem>
 
+namespace wwiv::core::test {
+
 /**
- * Helper class for tests requiring local filesystem access.  
+ * Helper class for tests requiring local filesystem access.
  *
  * Note: This class can not use File since it is used by the tests for File.
  */
@@ -40,12 +42,13 @@ public:
   // This is suitable for use in constructing paths
   [[nodiscard]] std::filesystem::path Dir(const std::string& name) const;
   // Creates a directory under TempDir.
-  bool Mkdir(const std::string& name) const;  // NOLINT(modernize-use-nodiscard)
+  bool Mkdir(const std::string& name) const; // NOLINT(modernize-use-nodiscard)
   // Creates a path to a filename under TempDir named 'name'.  Does not create nor
   // write any contents to this file.
   [[nodiscard]] std::filesystem::path CreateTempFilePath(const std::string& name) const;
   // Opens a FILE* handle to a file named 'name' under TempDir
-  [[nodiscard]] std::tuple<FILE*, std::filesystem::path> OpenTempFile(const std::string& name) const;
+  [[nodiscard]] std::tuple<FILE*, std::filesystem::path>
+  OpenTempFile(const std::string& name) const;
   // Creates a a file under TempDir named 'name' containing the text 'contents'
   std::filesystem::path CreateTempFile(const std::string& name, const std::string& contents);
   // Returns the path of the temp directory for this testcase.
@@ -65,5 +68,7 @@ private:
   static std::filesystem::path basedir_;
   static std::filesystem::path testdata_;
 };
+
+} // namespace wwiv::core::test
 
 #endif

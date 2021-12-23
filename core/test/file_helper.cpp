@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 
 #include "core/command_line.h"
 #include "core/datetime.h"
@@ -33,6 +33,8 @@
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
+
+namespace wwiv::core::test {
 
 // Base test directory.
 std::filesystem::path FileHelper::basedir_;
@@ -69,7 +71,6 @@ void FileHelper::set_wwiv_test_tempdir(const std::string& d) noexcept {
 }
 
 void FileHelper::set_wwiv_test_tempdir_from_commandline(int argc, char* argv[]) noexcept {
-  LOG(INFO) << "set_wwiv_test_tempdir_from_commandline";
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
   cmdline.add_argument(
@@ -103,11 +104,11 @@ void FileHelper::set_wwiv_test_tempdir_from_commandline(int argc, char* argv[]) 
 // static
 std::filesystem::path FileHelper::TestData() {
   CHECK(!testdata_.empty()) << "WWIV_TESTDATA must be set for using testdata.";
-  CHECK(File::Exists(testdata_)) << "WWIV_TESTDATA must be set to a directory that exists for using testdata.";
+  CHECK(File::Exists(testdata_))
+      << "WWIV_TESTDATA must be set to a directory that exists for using testdata.";
   LOG(INFO) << "TestData: " << testdata_;
   return testdata_;
 }
-
 
 // static
 std::filesystem::path FileHelper::GetTestTempDir() {
@@ -129,7 +130,7 @@ std::filesystem::path FileHelper::GetTestTempDir() {
 std::filesystem::path FileHelper::CreateTempDir(const std::string& base) {
   const auto temp_path = GetTestTempDir();
   // TODO(rushfan): This may be good enough for linux too.
-#if defined (_WIN32) || defined (__OS2__)
+#if defined(_WIN32) || defined(__OS2__)
   auto dir = FilePath(temp_path, StrCat(base, ".", time_t_now()));
   if (std::error_code ec; create_directories(dir, ec)) {
     return dir;
@@ -151,7 +152,8 @@ std::filesystem::path FileHelper::CreateTempFilePath(const std::string& orig_nam
   return FilePath(TempDir(), name);
 }
 
-std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const std::string& orig_name) const {
+std::tuple<FILE*, std::filesystem::path>
+FileHelper::OpenTempFile(const std::string& orig_name) const {
   const auto path = CreateTempFilePath(orig_name);
   const auto fn = path.string();
   auto* fp = fopen(fn.c_str(), "wt");
@@ -160,7 +162,8 @@ std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const std::str
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
-std::filesystem::path FileHelper::CreateTempFile(const std::string& orig_name, const std::string& contents) {
+std::filesystem::path FileHelper::CreateTempFile(const std::string& orig_name,
+                                                 const std::string& contents) {
   auto [file, path] = OpenTempFile(orig_name);
   assert(file);
   fputs(contents.c_str(), file);
@@ -187,3 +190,5 @@ std::string FileHelper::ReadFile(const std::filesystem::path& name) const {
   fclose(fp);
   return contents;
 }
+
+} // namespace wwiv::core::test

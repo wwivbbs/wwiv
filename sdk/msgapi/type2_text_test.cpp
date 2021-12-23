@@ -20,7 +20,7 @@
 
 #include "core/file.h"
 #include "core/strings.h"
-#include "core/file_helper.h"
+#include "core/test/file_helper.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/type2_text.h"
 #include <memory>
@@ -57,7 +57,7 @@ public:
     return t_->readfile(m);
   }
 
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   unique_ptr<Type2Text> t_;
   std::filesystem::path path_;
 };

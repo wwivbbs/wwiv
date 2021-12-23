@@ -19,7 +19,7 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "file_helper.h"
+#include "core/test/file_helper.h"
 #include "fmt/format-inl.h"
 #include "gtest/gtest.h"
 #include <iostream>
@@ -29,7 +29,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 TEST(FileTest, DoesNotExist) {
-  FileHelper file;
+  wwiv::core::test::FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   const auto fn = FilePath(tmp, "doesnotexist");
@@ -37,7 +37,7 @@ TEST(FileTest, DoesNotExist) {
 }
 
 TEST(FileTest, DoesNotExist_Static) {
-  FileHelper file;
+  wwiv::core::test::FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   File dne(FilePath(tmp, "doesnotexist"));
@@ -45,7 +45,7 @@ TEST(FileTest, DoesNotExist_Static) {
 }
 
 TEST(FileTest, Exists) {
-  FileHelper file;
+  wwiv::core::test::FileHelper file;
   const auto tmp{file.TempDir()};
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
@@ -54,7 +54,7 @@ TEST(FileTest, Exists) {
 }
 
 TEST(FileTest, ExistsWildCard) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto path = helper.CreateTempFile("msg00000.001", "msg00000.001");
   ASSERT_TRUE(File::Exists(path));
 
@@ -69,7 +69,7 @@ TEST(FileTest, ExistsWildCard) {
 }
 
 TEST(FileTest, ExistsWildCard_Extension) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto path = helper.CreateTempFile("msg00000.001", "msg00000.001");
   ASSERT_TRUE(File::Exists(path));
 
@@ -81,7 +81,7 @@ TEST(FileTest, ExistsWildCard_Extension) {
 }
 
 TEST(FileTest, Exists_Static) {
-  FileHelper file{};
+  wwiv::core::test::FileHelper file{};
   const auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
@@ -90,7 +90,7 @@ TEST(FileTest, Exists_Static) {
 }
 
 TEST(FileTest, Exists_TrailingSlash) {
-  FileHelper file;
+  wwiv::core::test::FileHelper file;
   const auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
@@ -102,7 +102,7 @@ TEST(FileTest, Exists_TrailingSlash) {
 
 TEST(FileTest, Length_Open) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
@@ -111,22 +111,22 @@ TEST(FileTest, Length_Open) {
 
 TEST(FileTest, Length_NotOpen) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_EQ(static_cast<long>(kHelloWorld.size()), file.length());
 }
 
 TEST(FileTest, Length_RealFile) {
-  FileHelper helper;
-  auto path = wwiv::core::FilePath(FileHelper::TestData(), "len.txt");
+  wwiv::core::test::FileHelper helper;
+  auto path = wwiv::core::FilePath(wwiv::core::test::FileHelper::TestData(), "len.txt");
   File file(path);
   ASSERT_EQ(11, file.length());
 }
 
 TEST(FileTest, IsDirectory_NotOpen) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
   std::error_code ec;
@@ -136,7 +136,7 @@ TEST(FileTest, IsDirectory_NotOpen) {
 
 TEST(FileTest, IsDirectory_Open) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
@@ -147,7 +147,7 @@ TEST(FileTest, IsDirectory_Open) {
 
 TEST(FileTest, LastWriteTime_NotOpen) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto now = time(nullptr);
   const auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
@@ -156,7 +156,7 @@ TEST(FileTest, LastWriteTime_NotOpen) {
 
 TEST(FileTest, LastWriteTime_Open) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   time_t now = time(nullptr);
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
@@ -166,7 +166,7 @@ TEST(FileTest, LastWriteTime_Open) {
 
 TEST(FileTest, Read) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
@@ -178,7 +178,7 @@ TEST(FileTest, Read) {
 
 TEST(FileTest, GetName) {
   static const std::string kFileName = test_info_->name();
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
   File file{path};
   ASSERT_EQ(kFileName, file.path().filename().string());
@@ -210,7 +210,7 @@ TEST(FileTest, SetCurrentDirectory) {
   const auto original_dir = File::current_directory().string();
   ASSERT_STREQ(expected, original_dir.c_str());
 
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   File::set_current_directory(helper.TempDir());
   EXPECT_EQ(helper.TempDir(), File::current_directory().string());
 
@@ -219,7 +219,7 @@ TEST(FileTest, SetCurrentDirectory) {
 
 TEST(FileTest, MakeAbsolutePath_Relative) {
   static const std::string kFileName{test_info_->name()};
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
   const auto relative = File::absolute(helper.TempDir().string(), kFileName);
@@ -228,7 +228,7 @@ TEST(FileTest, MakeAbsolutePath_Relative) {
 
 TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute) {
   static const std::string kFileName = test_info_->name();
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto expected = helper.CreateTempFile(kFileName, "Hello World");
 
   const auto path = File::absolute(helper.TempDir().string(), expected.string());
@@ -237,7 +237,7 @@ TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute) {
 
 TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute_Returning) {
   static const std::string kFileName = test_info_->name();
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto expected = helper.CreateTempFile(kFileName, "Hello World");
 
   const auto path = File::absolute(helper.TempDir().string(), expected.string());
@@ -246,7 +246,7 @@ TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute_Returning) {
 
 TEST(FileTest, RealPath_Same) {
   static const std::string kFileName = test_info_->name();
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
   const auto c = File::canonical(path);
@@ -255,7 +255,7 @@ TEST(FileTest, RealPath_Same) {
 
 TEST(FileTest, RealPath_Different) {
   static const std::string kFileName{test_info_->name()};
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
   // Add an extra ./ into the path.
@@ -266,7 +266,7 @@ TEST(FileTest, RealPath_Different) {
 }
 
 TEST(FileTest, mkdir) {
-  const FileHelper helper{};
+  const wwiv::core::test::FileHelper helper{};
   const auto path = FilePath(helper.TempDir(), "a");
   const auto l = FilePath("b", "c").string();
 
@@ -281,7 +281,7 @@ TEST(FileTest, mkdir) {
 }
 
 TEST(FileTest, mkdirs) {
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto f = FilePath(helper.TempDir(), "a");
   const auto l = FilePath("b", "c");
   const auto path = FilePath(f, l.string());
@@ -294,7 +294,7 @@ TEST(FileTest, mkdirs) {
 }
 
 TEST(FileTest, Stream) {
-  FileHelper file{};
+  wwiv::core::test::FileHelper file{};
   File f(FilePath(file.TempDir(), "newdir"));
   std::stringstream s;
   s << f;
@@ -303,7 +303,7 @@ TEST(FileTest, Stream) {
 
 TEST(FileTest, IsOpen_Open) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
@@ -313,7 +313,7 @@ TEST(FileTest, IsOpen_Open) {
 
 TEST(FileTest, IsOpen_NotOpen) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path.concat("DNE"));
   EXPECT_FALSE(file.IsOpen());
@@ -322,7 +322,7 @@ TEST(FileTest, IsOpen_NotOpen) {
 
 TEST(FileTest, Seek) {
   static const std::string kContents = "0123456789";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto path = helper.CreateTempFile(test_info_->name(), kContents);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
@@ -342,7 +342,7 @@ TEST(FileTest, Seek) {
 
 TEST(FileTest, CurrentPosition) {
   static const std::string kContents = "0123456789";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto path = helper.CreateTempFile(test_info_->name(), kContents);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
@@ -355,7 +355,7 @@ TEST(FileTest, CurrentPosition) {
 }
 
 TEST(FileTest, FsCopyFile) {
-  FileHelper file;
+  wwiv::core::test::FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
@@ -374,7 +374,7 @@ TEST(FileTest, FsCopyFile) {
 }
 
 TEST(FileTest, CopyFile) {
-  FileHelper file;
+  wwiv::core::test::FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
@@ -392,7 +392,7 @@ TEST(FileTest, CopyFile) {
 }
 
 TEST(FileTest, MoveFile) {
-  FileHelper file;
+  wwiv::core::test::FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
@@ -413,7 +413,7 @@ TEST(FileTest, MoveFile) {
 
 TEST(FileTest, Remove_String) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   ASSERT_TRUE(File::Exists(path));
   File::Remove(path.string());
@@ -422,7 +422,7 @@ TEST(FileTest, Remove_String) {
 
 TEST(FileTest, Remove_Path) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   const auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   ASSERT_TRUE(File::Exists(path));
   File::Remove(path);
@@ -430,7 +430,7 @@ TEST(FileTest, Remove_Path) {
 }
 
 TEST(FileTest, Free) {
-  const FileHelper file;
+  const wwiv::core::test::FileHelper file;
   const auto& tmp = file.TempDir();
 
   const auto fs = File::freespace_for_path(tmp);
@@ -439,7 +439,7 @@ TEST(FileTest, Free) {
 
 TEST(FileTest, Move_Ctor) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
 
   File f(path);
@@ -457,7 +457,7 @@ TEST(FileTest, Move_Ctor) {
 
 TEST(FileTest, Move_Operator) {
   static const std::string kHelloWorld = "Hello World";
-  FileHelper helper;
+  wwiv::core::test::FileHelper helper;
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
 
   File f(path);
@@ -480,7 +480,7 @@ TEST(FileSystemTest, Empty) {
 }
 
 TEST(FileSystemTest, Path_IsDir) {
-  const FileHelper file;
+  const wwiv::core::test::FileHelper file;
   const auto& tmp = file.TempDir();
   auto p{tmp};
   std::cerr << p << std::endl;
