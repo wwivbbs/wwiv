@@ -16,8 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_CORE_TEST_WWIVTEST_H
-#define INCLUDED_CORE_TEST_WWIVTEST_H
+#include "core/test/wwivtest.h"
 
 #include "gtest/gtest.h"
 #include "core/cp437.h"
@@ -49,6 +48,12 @@ void InitTestForMain(int argc, char** argv) {
   FileHelper::set_wwiv_test_tempdir_from_commandline(argc, argv);
 }
 
+
+void TestDataTest::SetUp() {
+  if (!wwiv::core::test::FileHelper::HasTestData()) {
+    GTEST_SKIP() << "Skipping all tests that use real files since FileHelper::TestData() is empty.";
+  }
+}
+
 } // namespace wwiv::core::test
 
-#endif // INCLUDED_CORE_TEST_WWIVTEST_H

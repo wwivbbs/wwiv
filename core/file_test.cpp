@@ -20,6 +20,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/test/file_helper.h"
+#include "core/test/wwivtest.h"
 #include "fmt/format-inl.h"
 #include "gtest/gtest.h"
 #include <iostream>
@@ -28,6 +29,20 @@
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
+
+class FileTestDataTest : public wwiv::core::test::TestDataTest {};
+
+
+// Real File Tests
+
+TEST_F(FileTestDataTest, Length_RealFile) {
+  wwiv::core::test::FileHelper helper;
+  auto path = wwiv::core::FilePath(wwiv::core::test::FileHelper::TestData(), "len.txt");
+  File file(path);
+  ASSERT_EQ(11, file.length());
+}
+
+// Fake File Tests
 TEST(FileTest, DoesNotExist) {
   wwiv::core::test::FileHelper file;
   auto tmp = file.TempDir();
@@ -115,13 +130,6 @@ TEST(FileTest, Length_NotOpen) {
   auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_EQ(static_cast<long>(kHelloWorld.size()), file.length());
-}
-
-TEST(FileTest, Length_RealFile) {
-  wwiv::core::test::FileHelper helper;
-  auto path = wwiv::core::FilePath(wwiv::core::test::FileHelper::TestData(), "len.txt");
-  File file(path);
-  ASSERT_EQ(11, file.length());
 }
 
 TEST(FileTest, IsDirectory_NotOpen) {

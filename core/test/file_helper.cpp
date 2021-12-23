@@ -111,6 +111,9 @@ std::filesystem::path FileHelper::TestData() {
 }
 
 // static
+bool FileHelper::HasTestData() { return !testdata_.empty(); }
+
+  // static
 std::filesystem::path FileHelper::GetTestTempDir() {
   if (!basedir_.empty()) {
     return basedir_;

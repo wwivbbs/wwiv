@@ -19,6 +19,7 @@
 #ifndef INCLUDED_CORE_TEST_WWIVTEST_H
 #define INCLUDED_CORE_TEST_WWIVTEST_H
 
+#include "gtest/gtest.h"
 #include <string>
 
 namespace wwiv::core::test {
@@ -34,6 +35,22 @@ namespace wwiv::core::test {
  * - Sets WWIV's test tempdir and testdata directories from the commandline.
  */
 void InitTestForMain(int argc, char** argv);
+
+/**
+ * Specialized ::testing::Test class that skips tests that depend on WWIV_TESTDATA being set
+ * if it's not specified in the environment or from the commandline.
+ * 
+ * Example:
+ * 
+ * class FileTestDataTest : public wwiv::core::test::TestDataTest {};
+ * 
+ * TEST_F(FileTestDataTest, ...) ...
+ */
+class TestDataTest : public ::testing::Test {
+protected:
+  void SetUp() override;
+};
+
 
 }
 

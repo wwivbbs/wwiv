@@ -60,6 +60,7 @@ public:
 
   // Gets the root testdata directory specified as "WWIV_TESTDATA" on the environment
   [[nodiscard]] static std::filesystem::path TestData();
+  [[nodiscard]] static bool HasTestData();
 
 private:
   static std::filesystem::path GetTestTempDir();
