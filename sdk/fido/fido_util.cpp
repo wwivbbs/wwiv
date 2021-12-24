@@ -44,7 +44,7 @@ namespace wwiv::sdk::fido {
 constexpr char CZ = 26;
 
 // We use DDHHMMSS like SBBSECHO v2 does.
-std::string packet_name(DateTime& dt) {
+std::string packet_name(const DateTime& dt) {
   const auto buf = dt.to_string("%d%H%M%S");
   return StrCat(buf, ".pkt");
 }

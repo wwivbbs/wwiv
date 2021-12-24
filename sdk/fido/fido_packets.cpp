@@ -19,9 +19,13 @@
 
 #include "core/file.h"
 #include "core/log.h"
+#include "core/os.h"
 #include "core/strings.h"
+#include "core/version.h"
+#include "sdk/fido/fido_util.h"
 #include "sdk/net/packets.h"
 #include <algorithm>
+#include <optional>
 #include <string>
 
 using namespace wwiv::core;
@@ -84,7 +88,7 @@ static std::string ReadVariableLengthField(File& f, int max_len) {
 
 FidoStoredMessage::~FidoStoredMessage()  = default;
 
-bool write_fido_packet_header(File& f, packet_header_2p_t& header) {
+bool write_fido_packet_header(File& f, const packet_header_2p_t& header) {
   if (const auto num_written = f.Write(&header, sizeof(packet_header_2p_t));
       num_written != sizeof(packet_header_2p_t)) {
     LOG(ERROR) << "short write to packet, wrote " << num_written
@@ -94,7 +98,7 @@ bool write_fido_packet_header(File& f, packet_header_2p_t& header) {
   return true;
 }
 
-bool write_packed_message(File& f, FidoPackedMessage& packet) {
+bool write_packed_message(File& f, const FidoPackedMessage& packet) {
   if (const auto num_written = f.Write(&packet.nh, sizeof(fido_packed_message_t));
       num_written != sizeof(fido_packed_message_t)) {
     LOG(ERROR) << "short write to packet, wrote " << num_written
@@ -169,5 +173,122 @@ ReadPacketResponse read_stored_message(File& f, FidoStoredMessage& packet) {
   packet.text = ReadRestOfFile(f, 32 * 1024);
   return ReadPacketResponse::OK;
 }
+
+// FidoPacket
+
+packet_header_2p_t CreateType2PlusPacketHeader(const FidoAddress& from_address,
+                                               const FidoAddress& dest, const DateTime& now,
+                                               const std::string& packet_password) {
+
+  packet_header_2p_t header = {};
+  header.orig_zone = from_address.zone();
+  header.orig_net = from_address.net();
+  header.orig_node = from_address.node();
+  header.orig_point = from_address.point();
+  header.dest_zone = dest.zone();
+  header.dest_net = dest.net();
+  header.dest_node = dest.node();
+  header.dest_point = dest.point();
+
+  const auto tm = now.to_tm();
+  header.year = static_cast<uint16_t>(tm.tm_year);
+  header.month = static_cast<uint16_t>(tm.tm_mon);
+  header.day = static_cast<uint16_t>(tm.tm_mday);
+  header.hour = static_cast<uint16_t>(tm.tm_hour);
+  header.minute = static_cast<uint16_t>(tm.tm_min);
+  header.second = static_cast<uint16_t>(tm.tm_sec);
+  header.baud = 33600;
+  header.packet_ver = 2;
+  header.product_code_high = 0x1d;
+  header.product_code_low = 0xff;
+  header.qm_dest_zone = dest.zone();
+  header.qm_orig_zone = from_address.zone();
+  header.capabilities = 0x0001;
+  // Ideally we'd just use bswap_16 if it was available everywhere.
+  header.capabilities_valid =
+      (header.capabilities & 0xff) << 8 | (header.capabilities & 0xff00) >> 8;
+  header.product_rev_major = 0;
+  header.product_rev_minor = static_cast<uint8_t>(wwiv_network_compatible_version() & 0xff);
+  // Add in packet password.  We don't want to ensure we have
+  // a trailing null since we may want all 8 bytes to be usable
+  // by the password.
+  to_char_array_no_null(header.password, packet_password);
+  return header;
+}
+
+
+// static
+std::optional<FidoPacket> FidoPacket::Open(const std::filesystem::path& path) {
+  File f(path);
+  if (!f.Open(File::modeBinary | File::modeReadOnly)) {
+    VLOG(2) << "Unable to open file: " << path.string();
+    return std::nullopt;
+  }
+
+  FidoPacket packet(std::move(f), true);
+  auto num_header_read = packet.file_.Read(&packet.header_, sizeof(packet_header_2p_t));
+  if (num_header_read < static_cast<int>(sizeof(packet_header_2p_t))) {
+    LOG(ERROR) << "Read less than packet header";
+    return std::nullopt;
+  }
+
+  return packet;
+}
+
+// static
+std::optional<FidoPacket> FidoPacket::Create(const std::filesystem::path& outbound_path,
+                                             const packet_header_2p_t& header,
+                                             wwiv::core::Clock& clock) {
+  for (auto tries = 0; tries < 10; tries++) {
+    auto now = clock.Now().now();
+    File file(FilePath(outbound_path, packet_name(now)));
+    if (!file.Open(File::modeCreateFile | File::modeExclusive | File::modeReadWrite |
+                       File::modeBinary,
+                   File::shareDenyReadWrite)) {
+      LOG(INFO) << "Will try again: Unable to create packet file: " << file;
+      clock.SleepFor(std::chrono::seconds(1));
+      continue;
+    }
+
+    // Create packet with file and original header
+    FidoPacket packet(std::move(file), true, header);
+
+    // Then update packet header time to match when we actually created the packet on disk.
+    const auto tm = now.to_tm();
+    packet.header_.year = static_cast<uint16_t>(tm.tm_year);
+    packet.header_.month = static_cast<uint16_t>(tm.tm_mon);
+    packet.header_.day = static_cast<uint16_t>(tm.tm_mday);
+    packet.header_.hour = static_cast<uint16_t>(tm.tm_hour);
+    packet.header_.minute = static_cast<uint16_t>(tm.tm_min);
+    packet.header_.second = static_cast<uint16_t>(tm.tm_sec);
+
+    if (!packet.write_fido_packet_header()) {
+      return std::nullopt;
+    }
+    return std::move(packet);
+  }
+  return std::nullopt;
+}
+
+bool FidoPacket::write_fido_packet_header() {
+  if (const auto num_written = file_.Write(&header_, sizeof(packet_header_2p_t));
+      num_written != sizeof(packet_header_2p_t)) {
+    LOG(ERROR) << "short write to packet, wrote " << num_written
+               << "; expected: " << sizeof(packet_header_2p_t);
+    return false;
+  }
+  return true;
+}
+
+bool FidoPacket::Write(const FidoPackedMessage& packet) {
+  return write_packed_message(file_, packet);
+}
+
+std::tuple<wwiv::sdk::net::ReadPacketResponse, FidoPackedMessage> FidoPacket::Read() {
+  FidoPackedMessage msg;
+  auto response = read_packed_message(file_, msg);
+  return std::make_tuple(response, msg);
+}
+
 
 } // namespace wwiv

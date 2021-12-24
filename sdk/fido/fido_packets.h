@@ -15,23 +15,25 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_FIDO_FIDO_PACKETS_H__
-#define __INCLUDED_SDK_FIDO_FIDO_PACKETS_H__
+#ifndef INCLUDED_SDK_FIDO_FIDO_PACKETS_H
+#define INCLUDED_SDK_FIDO_FIDO_PACKETS_H
 
+#include "core/clock.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "sdk/config.h"
 #include "sdk/net/packets.h"
 #include <cstdint>
+#include <optional>
 #include <string>
+#include <tuple>
 #include <utility>
 
-namespace wwiv {
-namespace sdk {
-namespace fido {
+namespace wwiv::sdk::fido {
 
 #ifndef __MSDOS__
 #pragma pack(push, 1)
-#endif  // __MSDOS__
+#endif // __MSDOS__
 
 #ifdef ERROR
 #undef ERROR
@@ -73,39 +75,23 @@ namespace fido {
 * ProdData  36   4 Long  Product-specific data      Whatever
   PktTerm   3A   2 Word  Packet terminator          0000
 */
-struct packet_header_2p_t {               /* FSC-0039 Type 2.+ */
-  uint16_t orig_node,
-           dest_node,
-           year,
-           month,
-           day,
-           hour,
-           minute,
-           second,
-           baud,
-           packet_ver,
-           orig_net,
-           dest_net;
- 
+struct packet_header_2p_t { /* FSC-0039 Type 2.+ */
+  uint16_t orig_node, dest_node, year, month, day, hour, minute, second, baud, packet_ver, orig_net,
+      dest_net;
+
   uint8_t product_code_low;
   uint8_t product_rev_major;
   char password[8];
-  
-  uint16_t qm_orig_zone,
-           qm_dest_zone;
-  
-  uint8_t filler[2];
-  
-  uint16_t capabilities_valid;
-  
-  uint8_t product_code_high,
-          product_rev_minor;
 
-  uint16_t capabilities,
-           orig_zone,
-           dest_zone,
-           orig_point,
-           dest_point;
+  uint16_t qm_orig_zone, qm_dest_zone;
+
+  uint8_t filler[2];
+
+  uint16_t capabilities_valid;
+
+  uint8_t product_code_high, product_rev_minor;
+
+  uint16_t capabilities, orig_zone, dest_zone, orig_point, dest_point;
 
   uint32_t product_data;
 };
@@ -115,7 +101,7 @@ Stored Message (*.MSG format)
 From http://ftsc.org/docs/fts-0001.016
 -----------------------------------------------------
 
-Message    = 
+Message    =
 fromUserName(36)  (* Null terminated *)
 toUserName(36)    (* Null terminated *)
 subject(72)       (* see FileList below *)
@@ -141,19 +127,8 @@ struct fido_stored_message_t {
   char to[36];
   char subject[72];
   char date_time[20];
-  int16_t times_read,
-    dest_node,
-    orig_node,
-    cost,
-    orig_net,
-    dest_net,
-    dest_zone,
-    orig_zone,
-    dest_point,
-    orig_point,
-    reply_to,
-    attribute,
-    next_reply;
+  int16_t times_read, dest_node, orig_node, cost, orig_net, dest_net, dest_zone, orig_zone,
+      dest_point, orig_point, reply_to, attribute, next_reply;
 };
 
 static_assert(sizeof(packet_header_2p_t) == 58, "packet_header_2p_t != 58 bytes");
@@ -173,18 +148,12 @@ static_assert(sizeof(fido_stored_message_t) == 190, "fido_stored_message_t != 19
  */
 
 struct fido_packed_message_t {
-  uint16_t message_type,
-           orig_node,
-           dest_node,
-           orig_net,
-           dest_net,
-           attribute,
-           cost;
+  uint16_t message_type, orig_node, dest_node, orig_net, dest_net, attribute, cost;
 };
 
 #ifndef __MSDOS__
 #pragma pack(pop)
-#endif  // __MSDOS__
+#endif // __MSDOS__
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -192,13 +161,12 @@ struct fido_packed_message_t {
 //
 //
 
-
 // Private message
 static constexpr uint16_t MSGPRIVATE = 0x0001;
 // High priority
 static constexpr uint16_t MSGCRASH = 0x0002;
 // Read by addressee
-static constexpr uint16_t MSGREAD = 0x0004; 
+static constexpr uint16_t MSGREAD = 0x0004;
 // Has been sent
 static constexpr uint16_t MSGSENT = 0x0008;
 // File attached to msg
@@ -230,17 +198,17 @@ struct fido_variable_length_header_t {
   std::string date_time;
   std::string to_user_name;
   std::string from_user_name;
-  std::string subject; 
+  std::string subject;
   std::string text;
 };
 
 /**
-* Represents a message in a .PKT file in FidoNET.
-*/
+ * Represents a message in a .PKT file in FidoNET.
+ */
 class FidoPackedMessage {
 public:
   FidoPackedMessage(const fido_packed_message_t& h, fido_variable_length_header_t v)
-    : nh(h), vh(std::move(v)) {}
+      : nh(h), vh(std::move(v)) {}
 
   FidoPackedMessage() = default;
   virtual ~FidoPackedMessage() = default;
@@ -254,7 +222,7 @@ public:
  */
 class FidoStoredMessage {
 public:
-  FidoStoredMessage(const fido_stored_message_t& h, std::string t): nh(h), text(std::move(t)) {}
+  FidoStoredMessage(const fido_stored_message_t& h, std::string t) : nh(h), text(std::move(t)) {}
   FidoStoredMessage() = default;
   virtual ~FidoStoredMessage();
 
@@ -262,19 +230,46 @@ public:
   std::string text;
 };
 
-bool write_fido_packet_header(wwiv::core::File& f, packet_header_2p_t& header);
-bool write_packed_message(wwiv::core::File& f, FidoPackedMessage& packet);
-bool write_stored_message(wwiv::core::File& f, FidoStoredMessage& packet);
+/**
+ * Represents a .PKT file in FidoNET.
+ */
+class FidoPacket {
+public:
+  FidoPacket(wwiv::core::File&& f, bool writable) : file_(std::move(f)), writable_(writable) {}
+  FidoPacket(wwiv::core::File&& f, bool writable, const packet_header_2p_t& header)
+      : file_(std::move(f)), writable_(writable), header_(header) {}
 
+  static std::optional<FidoPacket> Create(const std::filesystem::path& outbound_path,
+                                          const packet_header_2p_t& header,
+                                          wwiv::core::Clock& clock);
+  static std::optional<FidoPacket> Open(const std::filesystem::path& path);
+
+  FidoPacket(FidoPacket&& o) noexcept
+      : file_(std::move(o.file_)), writable_(o.writable_), header_(o.header_) {}
+
+  bool Write(const FidoPackedMessage& packet);
+  std::tuple<wwiv::sdk::net::ReadPacketResponse, FidoPackedMessage> Read();
+  packet_header_2p_t& header() { return header_; }
+
+private:
+  bool write_fido_packet_header();
+  wwiv::core::File file_;
+  bool writable_{false};
+  packet_header_2p_t header_{};
+};
+  
+bool write_fido_packet_header(wwiv::core::File& f, const packet_header_2p_t& header);
+bool write_packed_message(wwiv::core::File& f, const FidoPackedMessage& packet);
+bool write_stored_message(wwiv::core::File& f, FidoStoredMessage& packet);
 
 wwiv::sdk::net::ReadPacketResponse read_packed_message(wwiv::core::File& file,
                                                        FidoPackedMessage& packet);
 wwiv::sdk::net::ReadPacketResponse read_stored_message(wwiv::core::File& file,
                                                        FidoStoredMessage& packet);
+packet_header_2p_t CreateType2PlusPacketHeader(const FidoAddress& from_address,
+                                               const FidoAddress& dest, const wwiv::core::DateTime& now,
+                                               const std::string& packet_password);
 
+} // namespace wwiv::sdk::fido
 
-}  // namespace fido
-}  // namespace sdk
-}  // namespace wwiv
-
-#endif  // __INCLUDED_SDK_FIDO_FIDO_PACKETS_H__
+#endif  // INCLUDED_SDK_FIDO_FIDO_PACKETS_H

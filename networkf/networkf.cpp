@@ -543,45 +543,6 @@ static bool iter_starts_with(const C& c, I& iter, const std::string& expected) {
   return true;
 }
 
-static packet_header_2p_t CreateType2PlusPacketHeader(const FidoAddress& from_address,
-                                                      const FidoAddress& dest, const DateTime& now,
-                                                      const std::string& packet_password) {
-
-  packet_header_2p_t header = {};
-  header.orig_zone = from_address.zone();
-  header.orig_net = from_address.net();
-  header.orig_node = from_address.node();
-  header.orig_point = from_address.point();
-  header.dest_zone = dest.zone();
-  header.dest_net = dest.net();
-  header.dest_node = dest.node();
-  header.dest_point = dest.point();
-
-  const auto tm = now.to_tm();
-  header.year = static_cast<uint16_t>(tm.tm_year);
-  header.month = static_cast<uint16_t>(tm.tm_mon);
-  header.day = static_cast<uint16_t>(tm.tm_mday);
-  header.hour = static_cast<uint16_t>(tm.tm_hour);
-  header.minute = static_cast<uint16_t>(tm.tm_min);
-  header.second = static_cast<uint16_t>(tm.tm_sec);
-  header.baud = 33600;
-  header.packet_ver = 2;
-  header.product_code_high = 0x1d;
-  header.product_code_low = 0xff;
-  header.qm_dest_zone = dest.zone();
-  header.qm_orig_zone = from_address.zone();
-  header.capabilities = 0x0001;
-  // Ideally we'd just use bswap_16 if it was available everywhere.
-  header.capabilities_valid =
-      (header.capabilities & 0xff) << 8 | (header.capabilities & 0xff00) >> 8;
-  header.product_rev_major = 0;
-  header.product_rev_minor = static_cast<uint8_t>(wwiv_network_compatible_version() & 0xff);
-  // Add in packet password.  We don't want to ensure we have
-  // a trailing null since we may want all 8 bytes to be usable
-  // by the password.
-  to_char_array_no_null(header.password, packet_password);
-  return header;
-}
 
 static std::string remove_fido_addr(std::string to_user) {
   std::string to_user_new;
@@ -603,6 +564,7 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
   FtnDirectories dirs(net_cmdline_.config().root_directory(), net_);
 
   FidoAddress from_address(net_.fido.fido_address);
+  auto pw = fido_callout_.packet_config_for(route_to).packet_password;
   for (auto tries = 0; tries < 10; tries++) {
     auto now = DateTime::now();
     File file(FilePath(dirs.temp_outbound_dir(), packet_name(now)));
@@ -614,7 +576,6 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
       continue;
     }
 
-    auto pw = fido_callout_.packet_config_for(route_to).packet_password;
     auto header = CreateType2PlusPacketHeader(from_address, route_to, now, pw);
 
     if (!write_fido_packet_header(file, header)) {

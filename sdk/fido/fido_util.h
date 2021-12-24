@@ -35,7 +35,7 @@ struct packet_header_2p_t;
 class FidoPackedMessage;
 
 // FTN Naming
-std::string packet_name(wwiv::core::DateTime& dt);
+std::string packet_name(const wwiv::core::DateTime& dt);
 std::string bundle_name(const FidoAddress& source, const FidoAddress& dest, int dow, int bundle_number);
 std::string bundle_name(const FidoAddress& source, const FidoAddress& dest, const std::string& extension);
 std::string net_node_name(const FidoAddress& dest, const std::string& extension);
