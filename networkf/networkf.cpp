@@ -53,10 +53,6 @@
 #include <string>
 #include <vector>
 
-#ifndef _WIN32
-#include <signal.h>
-#endif // _WIN32
-
 using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::os;
@@ -111,7 +107,7 @@ static std::string arc_stuff_in(const std::string& command_line, const std::stri
   return os.str();
 }
 
-static void ShowHelp(const NetworkCommandLine& cmdline) {
+void ShowNetworkfHelp(const NetworkCommandLine& cmdline) {
   std::cout << cmdline.GetHelp() << std::endl
        << "commands: " << std::endl
        << std::endl
@@ -990,7 +986,7 @@ bool NetworkF::Run() {
   auto cmds = net_cmdline_.cmdline().remaining();
   if (cmds.empty()) {
     LOG(ERROR) << "No command specified. Exiting.";
-    ShowHelp(net_cmdline_);
+    ShowNetworkfHelp(net_cmdline_);
     return false;
   }
 
@@ -1067,67 +1063,10 @@ bool NetworkF::Run() {
 
   } else {
     LOG(ERROR) << "Unknown command: " << cmd;
-    ShowHelp(net_cmdline_);
+    ShowNetworkfHelp(net_cmdline_);
     return false;
   }
   return num_packets_processed > 0;
 }
 
 } // namespace wwiv::net::networkf
-
-using namespace wwiv::net::networkf;
-
-int main(int argc, char** argv) {
-
-#ifndef _WIN32
-  // Set this to the default handling, since when wwivd invokes
-  // this (and wwivd ignores SIGCHLD).
-  signal(SIGCHLD, SIG_DFL);
-#endif // !_WIN32
-
-  LoggerConfig config(LogDirFromConfig);
-  Logger::Init(argc, argv, config);
-
-  CommandLine cmdline(argc, argv, "net");
-  const NetworkCommandLine net_cmdline_(cmdline, 'f');
-  try {
-    ScopeExit at_exit(Logger::ExitLogger);
-    if (!net_cmdline_.IsInitialized() || net_cmdline_.cmdline().help_requested()) {
-      ShowHelp(net_cmdline_);
-      return 1;
-    }
-    const auto& net = net_cmdline_.network();
-    if (net.type != network_type_t::ftn) {
-      LOG(ERROR) << "NETWORKF is only for use on FTN type networks.";
-      ShowHelp(net_cmdline_);
-      return 1;
-    }
-
-    VLOG(3) << "Reading bbsdata.net_..";
-    auto b = BbsListNet::ReadBbsDataNet(net.dir);
-    if (b.empty()) {
-      LOG(ERROR) << "ERROR: Unable to read bbsdata.net_.";
-      LOG(ERROR) << "       Do you need to run network3?";
-      return 3;
-    }
-
-    const auto fake_ftn_node = b.node_config_for(FTN_FAKE_OUTBOUND_NODE);
-    if (!fake_ftn_node) {
-      LOG(ERROR) << "Can not find node for outbound FTN address.";
-      LOG(ERROR) << "       Do you need to run network3?";
-      return 2;
-    }
-
-    auto semaphore =
-        SemaphoreFile::try_acquire(net_cmdline_.semaphore_path(), net_cmdline_.semaphore_timeout());
-    SystemClock clock{};
-    NetworkF nf(net_cmdline_, b, clock);
-    return nf.Run() ? 0 : 2;
-  } catch (const semaphore_not_acquired& e) {
-    LOG(ERROR) << "ERROR: [network" << net_cmdline_.net_cmd()
-               << "]: Unable to Acquire Network Semaphore: " << e.what();
-  } catch (const std::exception& e) {
-    LOG(ERROR) << "ERROR: [networkf]: " << e.what();
-  }
-  return 2;
-}

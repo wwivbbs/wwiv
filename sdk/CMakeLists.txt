@@ -68,8 +68,8 @@ set(COMMON_SOURCES
 set_max_warnings()
 
 add_library(sdk ${COMMON_SOURCES})
-target_link_libraries(sdk core local_io)
-
+target_link_libraries(sdk PRIVATE local_io)
+target_link_libraries(sdk PUBLIC core fmt::fmt-header-only)
 
 ## Tests
 if (WWIV_BUILD_TESTS)

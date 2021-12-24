@@ -87,6 +87,8 @@ private:
   std::vector<int> colors_{7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
 };
 
+void ShowNetworkfHelp(const NetworkCommandLine& cmdline);
+
 } // namespace wwiv::net::networkf
 
 #endif
