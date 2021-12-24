@@ -34,6 +34,7 @@ public:
 
   [[nodiscard]] DateTime Now() const noexcept override;
   void tick(std::chrono::duration<double> inc);
+  void SleepFor(std::chrono::duration<double>);
 
 private:
   DateTime date_time_;

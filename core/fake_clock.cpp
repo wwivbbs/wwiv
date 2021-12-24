@@ -19,11 +19,9 @@
 #include "core/fake_clock.h"
 
 #include "core/datetime.h"
-#include "core/strings.h"
 #include <chrono>
 
 using namespace std::chrono;
-using namespace wwiv::strings;
 
 namespace wwiv::core {
 
@@ -31,6 +29,8 @@ DateTime FakeClock::Now() const noexcept {
   return date_time_;
 }
 
-void FakeClock::tick(duration<double> inc) { date_time_ += inc; }
+void FakeClock::tick(duration<double> d) { date_time_ += d; }
+
+void FakeClock::SleepFor(duration<double> d) { tick(d); }
 
 }

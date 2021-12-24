@@ -19,6 +19,7 @@
 #include "core/clock.h"
 
 #include "core/datetime.h"
+#include "core/os.h"
 #include "core/strings.h"
 
 using namespace wwiv::strings;
@@ -28,5 +29,7 @@ namespace wwiv::core {
 DateTime SystemClock::Now() const noexcept {
   return DateTime::now();
 }
+
+void SystemClock::SleepFor(std::chrono::duration<double> d) { wwiv::os::sleep_for(d); }
 
 }

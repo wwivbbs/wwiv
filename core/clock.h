@@ -20,6 +20,7 @@
 #define INCLUDED_CORE_CLOCK_H
 
 #include "core/datetime.h"
+#include <chrono>
 
 namespace wwiv::core {
 
@@ -28,6 +29,7 @@ public:
   Clock() = default;
 
   [[nodiscard]] virtual DateTime Now() const noexcept = 0;
+  virtual void SleepFor(std::chrono::duration<double>) = 0;
 
   virtual ~Clock() = default;
 };
@@ -39,6 +41,7 @@ public:
   virtual ~SystemClock() = default;
 
   [[nodiscard]] DateTime Now() const noexcept override;
+  void SleepFor(std::chrono::duration<double>);
 };
 
 } // namespace
