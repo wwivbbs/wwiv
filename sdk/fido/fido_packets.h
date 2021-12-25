@@ -248,8 +248,14 @@ public:
       : file_(std::move(o.file_)), writable_(o.writable_), header_(o.header_) {}
 
   bool Write(const FidoPackedMessage& packet);
-  std::tuple<wwiv::sdk::net::ReadPacketResponse, FidoPackedMessage> Read();
-  packet_header_2p_t& header() { return header_; }
+  [[nodiscard]] std::tuple<wwiv::sdk::net::ReadPacketResponse, FidoPackedMessage> Read();
+  [[nodiscard]] packet_header_2p_t& header() { return header_; }
+
+  // Gets the packet password as a UPPER case string.
+  [[nodiscard]] std::string password() const;
+
+  // Close the packet
+  void Close() { file_.Close(); }
 
 private:
   bool write_fido_packet_header();

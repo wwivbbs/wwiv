@@ -23,6 +23,7 @@
 #include "net_core/netdat.h"
 #include "sdk/bbslist.h"
 #include "sdk/fido/fido_callout.h"
+#include "sdk/fido/fido_directories.h"
 #include "sdk/net/ftn_msgdupe.h"
 #include "sdk/net/packets.h"
 #include <string>
@@ -38,11 +39,11 @@ public:
   bool Run();
 
 private:
-  bool import_packet_file(const std::string& dir, const std::string& name);
+  bool import_packet_file(const std::filesystem::path& path);
 
   bool import_packets(const std::string& dir, const std::string& mask);
 
-  bool import_bundle_file(const std::string& dir, const std::string& name);
+  bool import_bundle_file(const std::filesystem::path& path);
 
   int import_bundles(const std::string& dir, const std::string& mask);
 
@@ -82,6 +83,8 @@ private:
   const sdk::net::Network& net_;
   sdk::fido::FidoCallout fido_callout_;
   NetDat netdat_;
+  sdk::fido::FtnDirectories dirs_;
+
 
   std::unique_ptr<sdk::FtnMessageDupe> dupe_;
   std::vector<int> colors_{7, 11, 14, 5, 31, 2, 12, 9, 6, 3};

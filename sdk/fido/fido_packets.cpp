@@ -290,5 +290,14 @@ std::tuple<wwiv::sdk::net::ReadPacketResponse, FidoPackedMessage> FidoPacket::Re
   return std::make_tuple(response, msg);
 }
 
+std::string FidoPacket::password() const {
+  // Do this dance to ensure that if there's no trailing null on header.password, we add one.
+  char temp[9];
+  memset(temp, 0, sizeof(temp));
+  strncpy(temp, header_.password, 8);
+  temp[8] = '\0';
+  std::string actual = temp;
+  return ToStringUpperCase(actual);
+}
 
 } // namespace wwiv
