@@ -279,7 +279,7 @@ TEST_F(FidoUtilTest, MkTime) {
   EXPECT_EQ(now, rt);
 }
 
-TEST_F(FidoUtilTest, Routes) {
+TEST_F(FidoUtilTest, RouteThrough) {
   const FidoAddress a("11:1/100");
 
   EXPECT_TRUE(RoutesThroughAddress(a, "*"));
@@ -301,6 +301,23 @@ TEST_F(FidoUtilTest, Routes) {
   EXPECT_TRUE(RoutesThroughAddress(a, "!11:* 11:1/100"));
   EXPECT_TRUE(RoutesThroughAddress(a, "* !11:* 11:1/100"));
   EXPECT_TRUE(RoutesThroughAddress(a, "11:* !11:1/* 11:1/100"));
+}
+
+
+TEST_F(FidoUtilTest, FindRouteAddres) {
+  const FidoAddress a("11:1/100");
+  const FidoAddress b("12:112/100");
+  const FidoAddress a1("1:1/1");
+  const FidoAddress a2("2:1/1");
+  const FidoAddress a11("11:1/1");
+  const FidoAddress a11_other("11:1/1");
+  const FidoAddress a12("12:1/1");
+
+  fido_node_config_t c11{"11:*"};
+  fido_node_config_t c12{"12:*"};
+  const std::map<FidoAddress, fido_node_config_t> m = {{a11, c11}, {a12, c12}};
+  EXPECT_EQ(a11, FindRouteToAddress(a, m));
+  EXPECT_EQ(a12, FindRouteToAddress(b, m));
 }
 
 class FidoUtilConfigTest : public testing::Test {

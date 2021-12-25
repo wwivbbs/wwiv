@@ -21,6 +21,7 @@
 #include "core/datetime.h"
 #include "core/file.h"
 #include "sdk/config.h"
+#include "sdk/net/net.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
 #include <ctime>
@@ -59,6 +60,10 @@ std::string to_zone_net_node(const FidoAddress& a);
 std::string to_zone_net_node_point(const FidoAddress& a);
 
 bool RoutesThroughAddress(const FidoAddress& a, const std::string& routes);
+
+// [[VisibleForTesting]]
+FidoAddress FindRouteToAddress(const FidoAddress& a,
+                               const std::map<FidoAddress, wwiv::sdk::net::fido_node_config_t>& node_configs_map);
 FidoAddress FindRouteToAddress(const FidoAddress& a, const FidoCallout& callout);
 
 // FTN Text Handling
@@ -103,7 +108,8 @@ FidoAddress get_address_from_origin(const std::string& text);
  * Gets the FidoAddress from an packet.
  *
  * Prefer the address from the Origin line of possible, otherwise use the zone
- * from the packet header, and net/node from the packed message.
+ * from the packet header, and net/node from the packed message that should be part of the
+ * packet containing the header.
  */
 FidoAddress get_address_from_packet(const FidoPackedMessage& msg, const packet_header_2p_t& header);
 
