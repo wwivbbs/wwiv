@@ -620,7 +620,7 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
     // Do this so we don't pop up a pause for sure.
     bout.clear_lines_listed();
 
-    if (i >= ssize(lines)) {
+    if (i >= size_int(lines)) {
       break;
     }
     bout.GotoXY(1, i - start + lines_start);

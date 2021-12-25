@@ -71,7 +71,7 @@ TEST(StlTest, Contains_MapConstStringStrings) {
 
 TEST(StlTest, SizeAsInt) {
   const std::vector<int> v = {1, 2, 3};
-  const auto vs = ssize(v);
+  const auto vs = wwiv::stl::ssize(v);
   EXPECT_EQ(3, vs);
 }
 

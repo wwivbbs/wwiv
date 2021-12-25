@@ -164,7 +164,7 @@ public:
           }
         } break;
         case 'I': {
-          if (num <= 0 || num >= ssize(items)) {
+          if (num <= 0 || num >= size_int(items)) {
             t_.push_back({});
           } else {
             menus::menu_action_56_t mr{};
@@ -282,7 +282,7 @@ public:
             }
           } break;
           case 'I': {
-            if (num <= 0 || num >= ssize(items)) {
+            if (num <= 0 || num >= size_int(items)) {
               t_.push_back({});
             } else {
               menus::menu_item_56_t mr{};

@@ -119,7 +119,7 @@ bool iscan1(int sub_index) {
   postrec p{};
 
   // forget it if an invalid sub #
-  if (sub_index < 0 || sub_index >= ssize(a()->subs().subs())) {
+  if (sub_index < 0 || sub_index >= size_int(a()->subs().subs())) {
     return false;
   }
 

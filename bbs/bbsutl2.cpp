@@ -58,7 +58,7 @@ std::string ctypes(int num) {
   if (iniFile.IsOpen()) {
     return iniFile.value<std::string>(fmt::format("COMP_TYPE[{}]", num + 1));
   }
-  if (num < 0 || num > ssize(default_ctypes)) {
+  if (num < 0 || num > size_int(default_ctypes)) {
     return "";
   }
   return default_ctypes[num];

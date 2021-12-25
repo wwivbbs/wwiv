@@ -670,7 +670,7 @@ void query_print_net_listing(bool force_pause) {
       std::set<char> odc;
       std::string onx{'Q'};
       bout.nl();
-      for (int i = 0; i < ssize(a()->nets()); i++) {
+      for (int i = 0; i < size_int(a()->nets()); i++) {
         if (i < 9) {
           onx.push_back(static_cast<char>(i + '1'));
         } else {
@@ -695,7 +695,7 @@ void query_print_net_listing(bool force_pause) {
         }
       }
 
-      if (current_net < 0 || current_net > ssize(a()->nets())) {
+      if (current_net < 0 || current_net > size_int(a()->nets())) {
         continue;
       }
     }

@@ -368,7 +368,7 @@ void tag_it() {
       break;
     }
     i--;
-    if (!s1.empty() && i >= 0 && i < ssize(a()->filelist)) {
+    if (!s1.empty() && i >= 0 && i < size_int(a()->filelist)) {
       auto& f = a()->filelist[i];
       if (a()->batch().contains_file(f.u.filename)) {
         bout << "|#6" << f.u.filename << " is already in the batch queue.\r\n";
@@ -495,7 +495,7 @@ void tag_files(bool& need_title) {
       bout << "|#9Which file (1-" << a()->filelist.size() << ")? ";
       auto s = bin.input(2, true);
       const auto i = to_number<int>(s) - 1;
-      if (!s.empty() && i >= 0 && i < ssize(a()->filelist)) {
+      if (!s.empty() && i >= 0 && i < size_int(a()->filelist)) {
         auto& f = a()->filelist[i];
         bout.nl();
         int i2;
@@ -538,7 +538,7 @@ void tag_files(bool& need_title) {
       bout << "|#2Which file (1-|#2" << a()->filelist.size() << ")? ";
       auto s = bin.input(2, true);
       int i = to_number<int>(s) - 1;
-      if (!s.empty() && i >= 0 && i < ssize(a()->filelist)) {
+      if (!s.empty() && i >= 0 && i < size_int(a()->filelist)) {
         auto& f = a()->filelist[i];
         auto s1 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
         if (a()->dirs()[f.directory].mask & mask_cdrom) {
@@ -705,7 +705,7 @@ void download() {
       bout <<
           "|#7\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\r\n";
     }
-    if (i < ssize(a()->batch().entry)) {
+    if (i < size_int(a()->batch().entry)) {
       const auto& b = a()->batch().entry[i];
       if (b.sending()) {
         const auto t = ctim(b.time(a()->modem_speed_));
@@ -789,7 +789,7 @@ void download() {
       rtn = 0;
       i = 0;
     }
-  } while (!done && !a()->sess().hangup() && i <= ssize(a()->batch().entry));
+  } while (!done && !a()->sess().hangup() && i <= size_int(a()->batch().entry));
 
   if (!a()->batch().numbatchdl()) {
     return;

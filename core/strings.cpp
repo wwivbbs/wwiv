@@ -362,9 +362,14 @@ int ssize(const unsigned char* s) {
   return static_cast<int>(size(reinterpret_cast<const char*>(s)));
 }
 
-int ssize(const std::string& s) {
-  return static_cast<int>(s.size());
+// String length without colors as an int
+int size_int(const unsigned char* s) {
+  return static_cast<int>(size(reinterpret_cast<const char*>(s)));
 }
+
+int ssize(const std::string& s) { return static_cast<int>(s.size()); }
+
+int size_int(const std::string& s) { return static_cast<int>(s.size()); }
 
 std::string trim_to_size(const std::string& orig, int max_size) {
   auto s(orig);

@@ -109,7 +109,7 @@ constexpr auto ssize(const C& c)
 
 template <typename C>
 int size_int(const C& c) {
-  return static_cast<int>(ssize(c));
+  return static_cast<int>(::wwiv::stl::ssize(c));
 }
 
 template <typename C, typename S = std::size_t, typename R>

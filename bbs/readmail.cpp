@@ -742,7 +742,7 @@ void readmail(bool newmail_only) {
             tmp_disable_conf(false);
             break;
           }
-          for (i1 = 0; i1 < ssize(a()->usub); i1++) {
+          for (i1 = 0; i1 < size_int(a()->usub); i1++) {
             if (ss1 == a()->usub[i1].keys) {
               i = i1;
             }
@@ -900,7 +900,7 @@ void readmail(bool newmail_only) {
                   a()->current_net().type == network_type_t::internet) {
                 fwd_email_name = a()->net_email_name;
               } else {
-                auto netname = ssize(a()->nets()) > 1 ? a()->network_name() : "";
+                auto netname = size_int(a()->nets()) > 1 ? a()->network_name() : "";
                 fwd_email_name = username_system_net_as_string(un, a()->net_email_name,
                                                                 sn, netname);
               }

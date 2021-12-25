@@ -340,7 +340,7 @@ int input_select_item(UIWindow* window, const std::string& prompt, const std::ve
     ++index;
   }
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
-  const auto x = (maxlen - ssize(prompt)) / 2;
+  const auto x = (maxlen - size_int(prompt)) / 2;
   dialog->PutsXY(x + 2, size_int(items) + 2, prompt);
   dialog->Refresh();
   return onek(window, allowed, false);

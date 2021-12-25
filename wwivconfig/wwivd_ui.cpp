@@ -62,7 +62,7 @@ static void blocked_country_subdialog(const Config&, wwivd_blocking_t& b_, Curse
           break;
         }
         auto code_num = to_number<int>(code_str);
-        if (const auto pos = result.selected; pos >= 0 && pos < ssize(items)) {
+        if (const auto pos = result.selected; pos >= 0 && pos < size_int(items)) {
           insert_at(b_.block_cc_countries, pos, code_num);
         } else {
           b_.block_cc_countries.push_back(code_num);
@@ -233,7 +233,7 @@ static void matrix_subdialog(const Config& config, wwivd_config_t& c, CursesWind
         wwivd_matrix_entry_t e{};
         e.name = name;
         e.key = name.front();
-        if (auto pos = result.selected; pos >= 0 && pos < ssize(items)) {
+        if (auto pos = result.selected; pos >= 0 && pos < size_int(items)) {
           insert_at(c.bbses, pos, e);
         } else {
           c.bbses.push_back(e);

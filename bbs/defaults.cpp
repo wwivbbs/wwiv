@@ -69,7 +69,7 @@ void select_editor() {
   if (okansi() && a()->IsUseInternalFsed()) {
     bout << "|#1A|#9) Full-Screen Editor\r\n";
   }
-  for (auto i = 0; i < ssize(a()->editors); i++) {
+  for (auto i = 0; i < size_int(a()->editors); i++) {
     bout << "|#1" << i + 1 << "|#9) " << a()->editors[i].description << wwiv::endl;
   }
   std::set<char> keys;
@@ -146,7 +146,7 @@ static void print_cur_stat() {
     if (a()->IsUseInternalFsed() && editor_num == 0xff) {
       editor_name = "Full Screen";
     }
-    if (editor_num > 0 && editor_num <= ssize(a()->editors)) {
+    if (editor_num > 0 && editor_num <= size_int(a()->editors)) {
       editor_name = a()->editors[editor_num - 1].description;
     }
     bout.format("|#19|#9) Message editor    : |#2{:<16} ", editor_name); 
@@ -1067,7 +1067,7 @@ void config_scan_plus(int type) {
         case 0:
           top += amount;
           if (type == 0) {
-            if (top >= ssize(a()->usub)) {
+            if (top >= size_int(a()->usub)) {
               top = 0;
             }
           } else {
@@ -1132,7 +1132,7 @@ void config_scan_plus(int type) {
           break;
         case 4:
           if (type == 0) {
-            for (auto this_sub = 0; this_sub < ssize(a()->usub); this_sub++) {
+            for (auto this_sub = 0; this_sub < size_int(a()->usub); this_sub++) {
               if (!(a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] &
                     (1L << (a()->usub[this_sub].subnum % 32)))) {
                 a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] ^=

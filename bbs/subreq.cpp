@@ -253,7 +253,7 @@ void sub_xtr_del(int n, int nn, int f) {
 
 bool sub_xtr_add(int n, int nn) {
   // nn may be -1
-  while (nn >= ssize(a()->subs().sub(n).nets)) {
+  while (nn >= size_int(a()->subs().sub(n).nets)) {
     a()->subs().sub(n).nets.push_back({});
   }
   subboard_network_data_t xnp = {};
@@ -450,7 +450,7 @@ bool sub_xtr_add(int n, int nn) {
       }
     }
   }
-  if (nn == -1 || nn >= ssize(a()->subs().sub(n).nets)) {
+  if (nn == -1 || nn >= size_int(a()->subs().sub(n).nets)) {
     // nn will be -1 when adding a new sub.
     a()->subs().sub(n).nets.push_back(xnp);
   } else {

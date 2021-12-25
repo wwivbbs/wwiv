@@ -92,7 +92,7 @@ static qwk_config read_qwk_cfg_430(const Config& config) {
 
   x = 0;
   for (auto& blt : c.bulletins) {
-    const auto pos = sizeof(qwk_config_430) + (ssize(c.bulletins) * BULL_SIZE) + (x * BNAME_SIZE);
+    const auto pos = static_cast<int>(sizeof(qwk_config_430)) + (size_int(c.bulletins) * BULL_SIZE) + (x * BNAME_SIZE);
     f.Seek(pos, File::Whence::begin);
     char b[BULL_SIZE]{};
     f.Read(&b, BULL_SIZE);

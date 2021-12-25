@@ -50,7 +50,7 @@ void FsedModel::set_view(const std::shared_ptr<editor_viewport_t>& view) { view_
 
 line_t& FsedModel::curline() const {
   // TODO: insert return statement here
-  while (curli >= ssize(lines_)) {
+  while (curli >= size_int(lines_)) {
     lines_.emplace_back();
   }
   try {
@@ -80,7 +80,7 @@ bool FsedModel::set_lines(std::vector<line_t>&& n) {
 void FsedModel::emplace_back(line_t&& n) { lines_.emplace_back(n); }
 
 bool FsedModel::insert_line() {
-  if (ssize(lines_) >= maxli()) {
+  if (size_int(lines_) >= maxli()) {
     return false;
   }
   return wwiv::stl::insert_at(lines_, curli, line_t());
@@ -154,7 +154,7 @@ editor_add_result_t FsedModel::add(char c) {
 
 cell_t FsedModel::current_cell() const {
   const auto& line = curline();
-  if (cx >= ssize(line)) {
+  if (cx >= size_int(line)) {
     return cell_t(0, ' ');
   }
   try {
@@ -187,7 +187,7 @@ bool FsedModel::cursor_up() {
 
 bool FsedModel::cursor_down() {
   const auto previous_line = curli;
-  if (curli < ssize(lines_) - 1) {
+  if (curli < size_int(lines_) - 1) {
     ++curli;
     const auto right_max = std::min<int>(max_line_len(), size_int(curline()));
     cx = std::min<int>(cx, right_max);
@@ -271,12 +271,12 @@ bool FsedModel::delete_line() {
 }
 
 bool FsedModel::delete_to_eol() {
-  if (cx < ssize(curline())) {
+  if (cx < size_int(curline())) {
     auto& oline = curline();
     oline.assign(oline.substr(0, cx));
     oline.wrapped(false);
     invalidate_to_eol();
-  } else if (ssize(curline()) == 0) {
+  } else if (size_int(curline()) == 0) {
     // delete line
     if (remove_line()) {
       invalidate_to_eof(curli);
@@ -368,7 +368,7 @@ bool FsedModel::bs() {
   bs_nowrap();
   if (cx > 0) {
     --cx;
-  } else if (curli > 0 && ssize(curline()) == 0) {
+  } else if (curli > 0 && size_int(curline()) == 0) {
     // If current line is empty then delete it and move up one line
     if (remove_line()) {
       --cy;
@@ -404,7 +404,7 @@ bool FsedModel::enter() {
   curline().wrapped(false);
   const auto previous_color = curline().wwiv_color();
   // Insert inserts after the current line
-  if (cx >= ssize(curline())) {
+  if (cx >= size_int(curline())) {
     ++curli;
     insert_line();
   } else {

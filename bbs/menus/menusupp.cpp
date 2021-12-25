@@ -965,7 +965,7 @@ void SetSubNumber(const MenuContext& context) {
 }
 
 void SetDirNumber(const MenuContext& context) {
-  for (auto i = 0; i < ssize(a()->udir); i++) {
+  for (auto i = 0; i < size_int(a()->udir); i++) {
     if (a()->udir[i].keys == context.data) {
       a()->set_current_user_dir_num(i);
     }

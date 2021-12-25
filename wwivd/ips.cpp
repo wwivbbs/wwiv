@@ -179,7 +179,7 @@ bool AutoBlocker::Connection(const std::string& ip) {
   auto& s = sessions_[ip];
   s.emplace(now.to_time_t());
   if (s.size() == 1) {
-    VLOG(1) << "OK: num sessions: " << ssize(s);
+    VLOG(1) << "OK: num sessions: " << size_int(s);
     return true;
   }
 
@@ -199,7 +199,7 @@ bool AutoBlocker::Connection(const std::string& ip) {
     escalate_block(ip);
     return false;
   }
-  VLOG(1) << "OK: num sessions: " << ssize(s);
+  VLOG(1) << "OK: num sessions: " << size_int(s);
   return true;
 }
 

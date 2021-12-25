@@ -351,7 +351,7 @@ static void display_title_new(const std::vector<std::string>& lines, const FullS
 static void display_titles_new(const std::vector<std::string>& lines, const FullScreenView& fs,
                                int start, int selected) {
   for (auto i = 0; i < fs.message_height(); i++) {
-    if (i >= ssize(lines)) {
+    if (i >= size_int(lines)) {
       break;
     }
     const auto is_selected = i == selected - start;
@@ -645,7 +645,7 @@ void HandleMessageMove(int& msg_num) {
       return;
     }
     auto ok = false;
-    for (auto i1 = 0; i1 < ssize(a()->usub) && !ok; i1++) {
+    for (auto i1 = 0; i1 < size_int(a()->usub) && !ok; i1++) {
       if (ss1 == a()->usub[i1].keys) {
         temp_sub_num = i1;
         bout.nl();

@@ -59,8 +59,8 @@ public:
 
   template <typename T> void invoke(const T& event_type) {
     const std::string name = typeid(T).name();
-    auto [first, last] = handlers_.equal_range(name);
-    for (auto& it = first; it != last; ++it) {
+    auto [first_hdandler, last_handler] = handlers_.equal_range(name);
+    for (auto& it = first_hdandler; it != last_handler; ++it) {
       try {
         it->second(std::make_any<T>(event_type));
       } catch (const std::bad_cast& e) {

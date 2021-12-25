@@ -501,7 +501,7 @@ static void fill_call(int color, int row, const std::vector<CalloutEntry>& entri
       x = 0;
       y++;
     }
-    if (i < ssize(entries)) {
+    if (i < size_int(entries)) {
       sprintf(s1, "%-5u", entries.at(i).node);
     } else {
       strcpy(s1, "     ");
@@ -618,7 +618,7 @@ static std::pair<int, int> ansicallout() {
       ch = to_upper_case_char(bout.localIO()->GetChar());
       switch (ch) {
       case RARROW: // right arrow
-        if (pos < ssize(entries) - 1 && x < 63) {
+        if (pos < size_int(entries) - 1 && x < 63) {
           bout.localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos++;
           x += 7;
@@ -651,14 +651,14 @@ static std::pair<int, int> ansicallout() {
         }
         break;
       case DNARROW: // down arrow
-        if (y < 5 && pos + 10 < ssize(entries)) {
+        if (y < 5 && pos + 10 < size_int(entries)) {
           bout.localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos += 10;
           y++;
-        } else if ((rownum + 6) * 10 < ssize(entries)) {
+        } else if ((rownum + 6) * 10 < size_int(entries)) {
           rownum++;
           fill_call(color4, rownum, entries);
-          if (pos + 10 < ssize(entries)) {
+          if (pos + 10 < size_int(entries)) {
             pos += 10;
           } else {
             --y;
@@ -702,21 +702,21 @@ static std::pair<int, int> ansicallout() {
           bout.localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos += 10 * (5 - y);
           y = 5;
-          while (pos >= ssize(entries)) {
+          while (pos >= size_int(entries)) {
             pos -= 10;
             --y;
           }
           bout.localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->nets()[entries[pos].net]);
-        } else if ((rownum + 6) * 10 < ssize(entries)) {
+        } else if ((rownum + 6) * 10 < size_int(entries)) {
           for (int i1 = 0; i1 < 6; i1++) {
-            if ((rownum + 6) * 10 < ssize(entries)) {
+            if ((rownum + 6) * 10 < size_int(entries)) {
               rownum++;
               pos += 10;
             }
           }
           fill_call(color4, rownum, entries);
-          if (pos >= ssize(entries)) {
+          if (pos >= size_int(entries)) {
             pos -= 10;
             --y;
           }

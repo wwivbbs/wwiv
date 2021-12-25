@@ -211,13 +211,13 @@ static void modify_chain(ssize_t chain_num) {
     case '[':
       a()->chains->at(chain_num) = c;
       if (--chain_num < 0) {
-        chain_num = ssize(a()->chains->chains()) - 1;
+        chain_num = size_int(a()->chains->chains()) - 1;
       }
       c = a()->chains->at(chain_num);
       break;
     case ']':
       a()->chains->at(chain_num) = c;
-      if (++chain_num >= ssize(a()->chains->chains())) {
+      if (++chain_num >= size_int(a()->chains->chains())) {
         chain_num = 0;
       }
       c = a()->chains->at(chain_num);
@@ -343,7 +343,7 @@ void chainedit() {
       bout.nl();
       bout << "|#2(Q=Quit) Chain number? ";
       auto r = bin.input_number_hotkey(0, {'Q'}, 0, size_int(a()->chains->chains()), false);
-      if (r.key != 'Q' && r.num < ssize(a()->chains->chains())) {
+      if (r.key != 'Q' && r.num < size_int(a()->chains->chains())) {
         modify_chain(r.num);
       }
     } break;
@@ -356,7 +356,7 @@ void chainedit() {
           break;
         }
         const auto chain = (r.key == '$') ? size_int(a()->chains->chains()) : r.num;
-        if (chain >= 0 && chain <= ssize(a()->chains->chains())) {
+        if (chain >= 0 && chain <= size_int(a()->chains->chains())) {
           insert_chain(chain);
         }
       }
@@ -368,7 +368,7 @@ void chainedit() {
       if (r.key == 'Q') {
         break;
       }
-      if (r.num >= 0 && r.num < ssize(a()->chains->chains())) {
+      if (r.num >= 0 && r.num < size_int(a()->chains->chains())) {
         bout.nl();
         bout << "|#5Delete " << a()->chains->at(r.num).description << "? ";
         if (bin.yesno()) {

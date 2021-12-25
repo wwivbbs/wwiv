@@ -378,7 +378,7 @@ void zmbatchdl(bool bHangupAfterDl) {
       a()->batch().delbatch(cur);
     }
   }
-  while (ok && !a()->sess().hangup() && ssize(a()->batch().entry) > cur && !bRatioBad);
+  while (ok && !a()->sess().hangup() && size_int(a()->batch().entry) > cur && !bRatioBad);
 
   if (bRatioBad) {
     bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n\n";
@@ -506,8 +506,7 @@ void ymbatchdl(bool bHangupAfterDl) {
     } else {
       a()->batch().delbatch(cur);
     }
-  }
-  while (ok && !a()->sess().hangup() && ssize(a()->batch().entry) > cur && !bRatioBad);
+  } while (ok && !a()->sess().hangup() && size_int(a()->batch().entry) > cur && !bRatioBad);
 
   if (ok && !a()->sess().hangup()) {
     end_ymodem_batch();
@@ -718,7 +717,7 @@ int batchdl(int mode) {
       bout << "|#9Remove which? ";
       std::string s = bin.input(4);
       auto i = to_number<int>(s);
-      if (i > 0 && i <= ssize(a()->batch().entry)) {
+      if (i > 0 && i <= size_int(a()->batch().entry)) {
         didnt_upload(a()->batch().entry[i - 1]);
         a()->batch().delbatch(i - 1);
       }

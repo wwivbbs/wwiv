@@ -36,6 +36,7 @@ typedef int socklen_t;
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -48,6 +49,7 @@ namespace wwiv::common {
 using std::chrono::milliseconds;
 using wwiv::core::ScopeExit;
 using wwiv::os::sleep_for;
+using wwiv::stl::size_int;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 

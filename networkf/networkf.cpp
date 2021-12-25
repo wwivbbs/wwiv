@@ -374,13 +374,13 @@ static std::string rename_fido_packet(const std::string& dir, const std::string&
   return origname;
 }
 
-bool NetworkF::create_ftn_bundle(const FidoAddress& route_to, const std::string& fido_packet_name,
-                                 std::string& out_bundle_name) {
+std::optional<std::string> NetworkF::create_ftn_bundle(const FidoAddress& route_to,
+                                                       const std::string& fido_packet_name) {
   // were in the temp dir now.
   auto arcs = read_arcs(net_cmdline_.config().datadir());
   if (arcs.empty()) {
     LOG(ERROR) << "No archivers defined!";
-    return false;
+    return std::nullopt;
   }
   auto now = clock_.Now();
   auto dow = now.dow();
@@ -402,11 +402,10 @@ bool NetworkF::create_ftn_bundle(const FidoAddress& route_to, const std::string&
     }
     if (!File::Move(in, out)) {
       LOG(ERROR) << "Unable to move packet file into outbound dir. file: " << fido_packet_name;
-      return false;
+      return std::nullopt;
     }
     LOG(INFO) << "Created bundle(packet): " << FilePath(dirs_.outbound_dir(), fido_packet_name);
-    out_bundle_name = fido_packet_name;
-    return true;
+    return fido_packet_name;
   }
 
   FidoAddress orig(net_.fido.fido_address);
@@ -427,21 +426,20 @@ bool NetworkF::create_ftn_bundle(const FidoAddress& route_to, const std::string&
     LOG(INFO) << "Command: " << zip_cmd;
     if (0 != system(zip_cmd.c_str())) {
       LOG(ERROR) << "Failed executing: " << zip_cmd;
-      return false;
+      return std::nullopt;
     }
     // Need to be back home.
     LOG(INFO) << "Changed directory back to: " << saved_dir;
     File::set_current_directory(saved_dir);
-    out_bundle_name = bname;
 
     LOG(INFO) << "Created bundle: " << FilePath(dirs_.outbound_dir(), bname);
     if (!File::Remove(FilePath(dirs_.temp_outbound_dir(), fido_packet_name))) {
       LOG(ERROR) << "Error removing packet: "
                  << FilePath(dirs_.temp_outbound_dir(), fido_packet_name);
     }
-    return true;
+    return bname;
   }
-  return false;
+  return std::nullopt;
 }
 
 static bool CleanupWWIVName(std::string& sender_name) {
@@ -522,8 +520,9 @@ static std::string remove_fido_addr(std::string to_user) {
   return to_user_new;
 }
 
-bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& route_to,
-                                 const Packet& wwivnet_packet, std::string& fido_packet_name) {
+std::optional<std::string> NetworkF::create_ftn_packet(const FidoAddress& dest,
+                                                       const FidoAddress& route_to,
+                                                       const Packet& wwivnet_packet) {
 
   VLOG(1) << "create_ftn_packet: dest: " << dest << "; route: " << route_to;
 
@@ -544,7 +543,7 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
 
     if (!write_fido_packet_header(file, header)) {
       LOG(ERROR) << "Error writing packet header.";
-      return false;
+      return std::nullopt;
     }
 
     auto is_email = wwivnet_packet.nh.main_type == main_type_email ||
@@ -686,7 +685,7 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
     FidoPackedMessage p(nh, vh);
     if (!write_packed_message(file, p)) {
       LOG(ERROR) << "Error writing packed message.";
-      return false;
+      return std::nullopt;
     }
 
     // Since we wrote the packed message, let's add it to the
@@ -694,29 +693,30 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
     if (!is_email) {
       dupe.add(p);
     }
-    fido_packet_name = file.path().filename().string();
-    return true;
+    return file.path().filename().string();
   }
-  return false;
+  return std::nullopt;
 }
 
-bool NetworkF::create_ftn_packet_and_bundle(const FidoAddress& dest, const FidoAddress& route_to,
-                                            const Packet& p, std::string& bundlename) {
+std::optional<std::string> NetworkF::create_ftn_packet_and_bundle(const FidoAddress& dest,
+                                                                  const FidoAddress& route_to,
+                                                                  const Packet& p) {
   LOG(INFO) << "Creating packet for subscriber: " << dest << "; route_to: " << route_to;
-  std::string fido_packet_name;
-  if (!create_ftn_packet(dest, route_to, p, fido_packet_name)) {
+  auto fido_packet_name = create_ftn_packet(dest, route_to, p);
+  if (!fido_packet_name) {
     LOG(ERROR) << "    ! ERROR Failed to create FTN packet; writing to dead.net";
     write_wwivnet_packet(DEAD_NET, net_, p);
-    return false;
+    return std::nullopt;
   }
-  LOG(INFO) << "Created packet: " << FilePath(dirs_.temp_outbound_dir(), fido_packet_name);
+  LOG(INFO) << "Created packet: " << FilePath(dirs_.temp_outbound_dir(), fido_packet_name.value());
 
-  if (!create_ftn_bundle(route_to, fido_packet_name, bundlename)) {
+  const auto bundlename = create_ftn_bundle(route_to, fido_packet_name.value());
+  if (!bundlename) {
     LOG(ERROR) << "    ! ERROR Failed to create FTN bundle; writing to dead.net";
     write_wwivnet_packet(DEAD_NET, net_, p);
-    return false;
+    return std::nullopt;
   }
-  return true;
+  return bundlename;
 }
 
 static std::string NextNetmailFilePath(const std::string& dir) {
@@ -806,9 +806,9 @@ static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddres
   return true;
 }
 
-bool NetworkF::CreateFloFile(const wwiv::sdk::fido::FidoAddress& dest,
-                             const std::string& bundlename,
-                             const fido_packet_config_t& packet_config) {
+std::optional<std::string> NetworkF::CreateFloFile(const wwiv::sdk::fido::FidoAddress& dest,
+                                                   const std::string& bundlename,
+                                                   const fido_packet_config_t& packet_config) {
   FidoAddress orig(net_.fido.fido_address);
   const auto floname = flo_name(dest, packet_config.netmail_status);
   const auto bsyname = net_node_name(dest, "bsy");
@@ -819,40 +819,41 @@ bool NetworkF::CreateFloFile(const wwiv::sdk::fido::FidoAddress& dest,
     TextFile flo_file(FilePath(dirs_.outbound_dir(), floname), "a+");
     if (!flo_file.IsOpen()) {
       LOG(ERROR) << "Unable to open FLO file: " << flo_file;
-      return false;
+      return std::nullopt;
     }
     const auto num_written =
         flo_file.WriteLine(StrCat("^", FilePath(dirs_.outbound_dir(), bundlename).string()));
-    return num_written > 0;
+    return num_written == 0 ? std::nullopt : std::make_optional(flo_file.full_pathname());
 
   } catch (const semaphore_not_acquired& e) {
     LOG(ERROR) << "Unable to create BSY file semaphore trying to create FLO file.";
     LOG(ERROR) << e.what();
   }
-  return false;
+  return std::nullopt;
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
-bool NetworkF::CreateNetmailAttach(const FidoAddress& dest, const std::string& bundlename,
-                                   const fido_packet_config_t& packet_config) {
+std::optional<std::string>
+NetworkF::CreateNetmailAttach(const FidoAddress& dest, const std::string& bundlename,
+                              const fido_packet_config_t& packet_config) {
   const auto netmail_filepath = NextNetmailFilePath(dirs_.netmail_dir());
 
   if (netmail_filepath.empty()) {
     LOG(ERROR) << "Unable to figure out netmail filename in dir: '" << dirs_.netmail_dir() << "'";
-    return false;
+    return std::nullopt;
   }
   const auto bundlepath = FilePath(dirs_.outbound_dir(), bundlename);
   if (!CreateFidoNetAttachNetMail(FidoAddress(net_.fido.fido_address), dest, netmail_filepath,
                                   bundlepath.string(), packet_config)) {
     LOG(ERROR) << "Unable to create netmail: " << netmail_filepath;
-    return false;
+    return std::nullopt;
   }
   LOG(INFO) << "Wrote attach netmail: " << netmail_filepath;
-  return true;
+  return netmail_filepath;
 }
 
-bool NetworkF::CreateNetmailAttachOrFloFile(const FidoAddress& dest, const std::string& bundlename,
-                                            const fido_packet_config_t& packet_config) {
+std::optional<std::string>
+NetworkF::CreateNetmailAttachOrFloFile(const FidoAddress& dest, const std::string& bundlename,
+                                       const fido_packet_config_t& packet_config) {
   if (net_.fido.mailer_type == fido_mailer_t::attach) {
     return CreateNetmailAttach(dest, bundlename, packet_config);
   }
@@ -860,7 +861,7 @@ bool NetworkF::CreateNetmailAttachOrFloFile(const FidoAddress& dest, const std::
     return CreateFloFile(dest, bundlename, packet_config);
   }
   LOG(ERROR) << "Unknown mailer type: " << static_cast<int>(net_.fido.mailer_type);
-  return false;
+  return std::nullopt;
 }
 
 static FidoAddress find_route_to(const FidoAddress& dest, const FidoCallout& callout,
@@ -887,18 +888,16 @@ bool NetworkF::export_main_type_new_post(std::set<std::string>& bundles, Packet&
     LOG(INFO) << "There are no subscribers on echo: '" << subtype << "'. Nothing to do!";
   }
   for (const auto& sub : subscribers) {
-    std::string bundlename;
-    auto packet_config = fido_callout_.packet_config_for(sub);
-    auto route_to = find_route_to(sub, fido_callout_, packet_config);
-    if (!create_ftn_packet_and_bundle(sub, route_to, p, bundlename)) {
-      continue;
-    }
-    if (!contains(bundles, bundlename)) {
-      // We only want to attach the bundle (or add it to the flo file)
-      // one time, so skip ones that have already been done.
-      bundles.insert(bundlename);
-      auto route_packet_config = fido_callout_.packet_config_for(route_to);
-      CreateNetmailAttachOrFloFile(route_to, bundlename, route_packet_config);
+    const auto packet_config = fido_callout_.packet_config_for(sub);
+    const auto route_to = find_route_to(sub, fido_callout_, packet_config);
+    if (auto bundlename = create_ftn_packet_and_bundle(sub, route_to, p)) {
+      if (!contains(bundles, bundlename.value())) {
+        // We only want to attach the bundle (or add it to the flo file)
+        // one time, so skip ones that have already been done.
+        bundles.insert(bundlename.value());
+        auto route_packet_config = fido_callout_.packet_config_for(route_to);
+        CreateNetmailAttachOrFloFile(route_to, bundlename.value(), route_packet_config);
+      }
     }
   }
   return true;
@@ -908,7 +907,6 @@ bool NetworkF::export_main_type_email_name(std::set<std::string>& bundles, Packe
   // Lame implementation that creates 1 file per message.
   LOG(INFO) << "Creating packet for netmail.";
 
-  std::string bundlename;
   auto it = p.text().begin();
   const auto to = get_message_field(p.text(), it, {0}, 80);
   const auto dest = get_address_from_single_line(to);
@@ -921,12 +919,12 @@ bool NetworkF::export_main_type_email_name(std::set<std::string>& bundles, Packe
   // right with net mail
   const auto packet_config = fido_callout_.packet_config_for(dest);
   const FidoAddress route_to = find_route_to(dest, fido_callout_, packet_config);
-  if (create_ftn_packet_and_bundle(dest, route_to, p, bundlename)) {
-    if (!contains(bundles, bundlename)) {
+  if (auto bundlename = create_ftn_packet_and_bundle(dest, route_to, p)) {
+    if (!contains(bundles, bundlename.value())) {
       // We only want to attach the bundle (or add it to the flo file)
       // one time, so skip ones that have already been done.
-      bundles.insert(bundlename);
-      CreateNetmailAttachOrFloFile(route_to, bundlename, packet_config);
+      bundles.insert(bundlename.value());
+      CreateNetmailAttachOrFloFile(route_to, bundlename.value(), packet_config);
     }
   }
   return true;

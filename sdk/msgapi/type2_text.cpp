@@ -174,7 +174,7 @@ std::optional<messagerec> Type2Text::savefile(const std::string& text) {
       }
       ++i4;
     }
-    if (ssize(gati) >= num_blocks_required) {
+    if (size_int(gati) >= num_blocks_required) {
       constexpr auto none = static_cast<uint16_t>(-1);
       gati.push_back(none);
       const auto text_len = ssize(text);

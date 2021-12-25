@@ -94,9 +94,9 @@ const Network& Networks::at(size_type num) const {
     // invalid network in WWIV.
     return *network_255;
   }
-  if (num >= ssize(networks_)) {
-    DLOG(FATAL) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
-    LOG(ERROR) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
+  if (num >= size_int(networks_)) {
+    DLOG(FATAL) << "Out of bounds at Networks::at: " << num << ">= size: " << size_int(networks_);
+    LOG(ERROR) << "Out of bounds at Networks::at: " << num << ">= size: " << size_int(networks_);
     // A network num 255 (-1 wrapped at uint8_t boundary) means an
     // invalid network in WWIV.
     return *network_255;
@@ -113,9 +113,9 @@ Network& Networks::at(size_type num) {
     // invalid network in WWIV.
     return *network_255;
   }
-  if (num >= ssize(networks_)) {
-    DLOG(FATAL) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
-    LOG(ERROR) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
+  if (num >= size_int(networks_)) {
+    DLOG(FATAL) << "Out of bounds at Networks::at: " << num << ">= size: " << size_int(networks_);
+    LOG(ERROR) << "Out of bounds at Networks::at: " << num << ">= size: " << size_int(networks_);
     // A network num 255 (-1 wrapped at uint8_t boundary) means an
     // invalid network in WWIV.
     return *network_255;

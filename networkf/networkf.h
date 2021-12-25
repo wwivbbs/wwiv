@@ -26,6 +26,7 @@
 #include "sdk/fido/fido_directories.h"
 #include "sdk/net/ftn_msgdupe.h"
 #include "sdk/net/packets.h"
+#include <optional>
 #include <string>
 
 namespace wwiv::net::networkf {
@@ -45,31 +46,50 @@ private:
 
   bool import_bundle_file(const std::filesystem::path& path);
 
+  /** imports FTN bundles, returning the number of packets processed */
   int import_bundles(const std::string& dir, const std::string& mask);
 
-  bool create_ftn_bundle(const sdk::fido::FidoAddress& route_to, 
-                         const std::string& fido_packet_name, std::string& out_bundle_name);
+  /**
+   * Creates a FTN bundle using the appropriate archiver for the route_to system,
+   * if PKT is and adds the FTN packet named 'fido_packet_name'.
+   *
+   * Returns the name of the fido bundle on success.
+   */
+  std::optional<std::string> create_ftn_bundle(const sdk::fido::FidoAddress& route_to,
+                                               const std::string& fido_packet_name);
 
-  // ReSharper disable once CppMemberFunctionMayBeConst
-  bool create_ftn_packet(const sdk::fido::FidoAddress& dest, const sdk::fido::FidoAddress& route_to,
-                         const sdk::net::Packet& wwivnet_packet,
-                         std::string& fido_packet_name);
+  /**
+   * Creates a FTN packet from the contents of the WWIVnet style packet.
+   *
+   * Returns the name of the fido packet on success.
+   */
+  std::optional<std::string> create_ftn_packet(const sdk::fido::FidoAddress& dest,
+                                               const sdk::fido::FidoAddress& route_to,
+                                               const sdk::net::Packet& wwivnet_packet);
 
-  bool create_ftn_packet_and_bundle(const sdk::fido::FidoAddress& dest,
-                                    const sdk::fido::FidoAddress& route_to,
-                                    const sdk::net::Packet& p,
-                                    std::string& bundlename);
+  /**
+   * Creates a FTN packet and bundle from the contents of the WWIVnet style packet.
+   *
+   * Returns the name of the fido packet on success.
+   */
+  std::optional<std::string> create_ftn_packet_and_bundle(const sdk::fido::FidoAddress& dest,
+                                                          const sdk::fido::FidoAddress& route_to,
+                                                          const sdk::net::Packet& p);
 
-  bool CreateFloFile(const wwiv::sdk::fido::FidoAddress& dest,
-                     const std::string& bundlename, const sdk::net::fido_packet_config_t& packet_config);
+  /** Create a FLO file, returning the name generated or nullopt */
+  std::optional<std::string> CreateFloFile(const wwiv::sdk::fido::FidoAddress& dest,
+                                           const std::string& bundlename,
+                                           const sdk::net::fido_packet_config_t& packet_config);
 
-  bool CreateNetmailAttach(const sdk::fido::FidoAddress& dest,
-                           const std::string& bundlename,
-                           const sdk::net::fido_packet_config_t& packet_config);
+  /** Create a FLO file, returning the name netmail attach file or nullopt */
+  std::optional<std::string>
+  CreateNetmailAttach(const sdk::fido::FidoAddress& dest, const std::string& bundlename,
+                      const sdk::net::fido_packet_config_t& packet_config);
 
-  bool CreateNetmailAttachOrFloFile(const sdk::fido::FidoAddress& dest,
-                                    const std::string& bundlename,
-                                    const sdk::net::fido_packet_config_t& packet_config);
+  /** Create a FLO file, returning the FLO file or generated or nullopt */
+  std::optional<std::string>
+  CreateNetmailAttachOrFloFile(const sdk::fido::FidoAddress& dest, const std::string& bundlename,
+                               const sdk::net::fido_packet_config_t& packet_config);
 
   bool export_main_type_new_post(std::set<std::string>& bundles, sdk::net::Packet& p);
 

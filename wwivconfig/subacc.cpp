@@ -85,7 +85,7 @@ bool iscan1(int si, const wwiv::sdk::Subs& subs, const wwiv::sdk::Config& config
   postrec p{};
 
   // forget it if an invalid sub #
-  if (si < 0 || si >= ssize(subs.subs())) {
+  if (si < 0 || si >= size_int(subs.subs())) {
     return false;
   }
 

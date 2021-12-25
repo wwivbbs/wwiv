@@ -222,10 +222,10 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
         }
         for (const auto& ql  : quoted_lines) {
           bout.bpla(ql, &abort);
-          if (curli == ssize(lin)) {
+          if (curli == size_int(lin)) {
             // we're inserting a new line at the end.
             lin.emplace_back(ql);
-          } else if (curli < ssize(lin)) {
+          } else if (curli < size_int(lin)) {
             // replacing an older line.
             lin.at(curli).assign(ql);
           }
@@ -324,10 +324,10 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
     }
 
     if (check_message_size) {
-      if (curli == ssize(lin)) {
+      if (curli == size_int(lin)) {
         // we're inserting a new line at the end.
         lin.emplace_back(current_line);
-      } else if (curli < ssize(lin)) {
+      } else if (curli < size_int(lin)) {
         // replacing an older line.
         lin.at(curli).assign(current_line);
       }

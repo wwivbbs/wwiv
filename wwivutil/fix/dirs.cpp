@@ -71,7 +71,7 @@ std::unordered_set<std::string> CheckDirForDuplicates(sdk::files::FileArea& area
   }
   if (data.size() != raw_files.size()) {
     // We deleted some, time to save.
-    LOG(INFO) << "Removed " << std::abs(ssize(data) - ssize(raw_files)) << " duplicate files";
+    LOG(INFO) << "Removed " << std::abs(size_int(data) - size_int(raw_files)) << " duplicate files";
     if (area.set_raw_files(data)) {
       if (!dry_run) {
         area.Save();

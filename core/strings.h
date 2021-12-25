@@ -185,6 +185,15 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   // String length as an int
   [[nodiscard]] int ssize(const std::string& s);
 
+  // String length as an int
+  [[nodiscard]] int size_int(const char* s);
+
+  // String length as an int
+  [[nodiscard]] int size_int(const unsigned char* s);
+
+  // String length as an int
+  [[nodiscard]] int size_int(const std::string& s);
+
   /** returns a copy of orig trimmed to size, excluding colors. */
   std::string trim_to_size(const std::string& orig, int size);
 

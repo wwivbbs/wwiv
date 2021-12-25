@@ -207,7 +207,7 @@ void post(const PostData& post_data) {
     }
     if (a()->current_net().sysnum != 0) {
       bout << "\r\n|#9This post will go out on: ";
-      for (auto i = 0; i < ssize(a()->current_sub().nets); i++) {
+      for (auto i = 0; i < size_int(a()->current_sub().nets); i++) {
         if (i) {
           bout << "|#9, ";
         }
@@ -364,7 +364,7 @@ std::string grab_user_name(messagerec* m, const std::string& file_name, int netw
   }
   text.resize(cr);
   // Don't assume that we have a valid network at the network_number position.
-  if (network_number < ssize(a()->nets()) &&
+  if (network_number < size_int(a()->nets()) &&
       a()->nets()[network_number].type == network_type_t::ftn) {
     // 1st line of message is from.
     a()->net_email_name = text;

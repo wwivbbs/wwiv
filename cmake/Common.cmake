@@ -5,6 +5,7 @@ message(VERBOSE "WWIV Common CMake Module.")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules/sanitizers)
+# Need https://github.com/USCiLab/cereal/issues/631 in a build we pull first to move to 20.
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 

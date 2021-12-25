@@ -205,7 +205,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
         }
         const auto unn = a()->user()->name_and_number();
         sprintf(temp1, "|17|#2 %s chatting with %s |16|#1", sysop_name.c_str(), unn.c_str());
-        const auto chars_to_move = (a()->user()->screen_width() - ssize(stripcolors(temp1))) / 2;
+        const auto chars_to_move = (a()->user()->screen_width() - size_int(stripcolors(temp1))) / 2;
         if (chars_to_move) {
           strncpy(&s2[chars_to_move - 1], temp1, (strlen(temp1)));
         } else {

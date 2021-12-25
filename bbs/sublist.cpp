@@ -276,7 +276,7 @@ void SubList() {
           bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
           const auto ss = mmkey(MMKeyAreaType::subs, true);
           if (isdigit(ss[0])) {
-            for (auto i2 = 0; i2 < ssize(a()->usub); i2++) {
+            for (auto i2 = 0; i2 < size_int(a()->usub); i2++) {
               if (ss == a()->usub[i2].keys) {
                 a()->set_current_user_sub_num(i2);
                 old_sub = a()->current_user_sub().subnum;

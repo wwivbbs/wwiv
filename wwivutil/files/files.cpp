@@ -121,7 +121,7 @@ public:
     const auto area_num = to_number<int>(area_string);
     const auto& dirs = o.value();
 
-    if (area_num < 0 || area_num >= ssize(dirs)) {
+    if (area_num < 0 || area_num >= size_int(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";
       const auto max_size = std::max<int>(0, dirs.size() - 1);
       LOG(ERROR) << "area_num must be between 0 and " << max_size;
@@ -192,7 +192,7 @@ public:
     }
     const auto area_num = to_number<int>(remaining().front());
     const auto dirs = o.value();
-    if (area_num < 0 || area_num >= ssize(dirs)) {
+    if (area_num < 0 || area_num >= size_int(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";
       const auto max_size = std::max<int>(0, dirs.size() - 1);
       LOG(ERROR) << "area_num must be between 0 and " << max_size;

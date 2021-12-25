@@ -88,7 +88,7 @@ void modify_sec(int n) {
       break;
     case ']':
       a()->gfiles().set_dir(n, r);
-      if (++n >= ssize(a()->gfiles())) {
+      if (++n >= size_int(a()->gfiles())) {
         n = 0;
       }
       r = a()->gfiles().dir(n);
