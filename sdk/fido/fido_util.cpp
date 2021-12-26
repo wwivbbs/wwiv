@@ -383,34 +383,34 @@ std::string WWIVToFidoText(const std::string& wt, const wwiv_to_fido_options& op
   return out.str();
 }
 
-FidoAddress get_address_from_single_line(const std::string& line) {
+std::optional<FidoAddress> get_address_from_single_line(const std::string& line) {
   const auto start = line.find_last_of('(');
   const auto end = line.find_last_of(')');
   if (start == std::string::npos || end == std::string::npos) {
-    return EMPTY_FIDO_ADDRESS;
+    return std::nullopt;
   }
 
   const auto astr = line.substr(start + 1, end - start - 1);
   try {
     return FidoAddress(astr);
   } catch (std::exception&) {
-    return EMPTY_FIDO_ADDRESS;
+    return std::nullopt;
   }
 }
 
-FidoAddress get_address_from_origin(const std::string& text) {
+std::optional<FidoAddress> get_address_from_origin(const std::string& text) {
   auto lines = split_message(text);
   for (const auto& line : lines) {
     if (starts_with(line, " * Origin:")) {
       return get_address_from_single_line(line);
     }
   }
-  return EMPTY_FIDO_ADDRESS;
+  return std::nullopt;
 }
 
 FidoAddress get_address_from_packet(const FidoPackedMessage& msg, const packet_header_2p_t& header) {
-  if (auto a = get_address_from_origin(msg.vh.text); a.zone() > 0) {
-    return a;
+  if (auto a = get_address_from_origin(msg.vh.text)) {
+    return a.value();
   }
   auto zone = header.orig_zone;
   if (zone <= 0) {
@@ -423,8 +423,8 @@ FidoAddress get_address_from_packet(const FidoPackedMessage& msg, const packet_h
 }
 
 FidoAddress get_address_from_stored_message(const FidoStoredMessage& msg) {
-  if (auto a = get_address_from_origin(msg.text); a.zone() > 0) {
-    return a;
+  if (auto a = get_address_from_origin(msg.text)) {
+    return a.value();
   }
   const auto zone = msg.nh.orig_zone;
   const auto net = msg.nh.orig_net;
@@ -522,8 +522,9 @@ bool RoutesThroughAddress(const FidoAddress& a, const std::string& routes) {
   return ok;
 }
 
-FidoAddress FindRouteToAddress(const FidoAddress& a,
-                               const std::map<FidoAddress, fido_node_config_t>& node_configs_map) {
+std::optional<FidoAddress>
+FindRouteToAddress(const FidoAddress& a,
+                   const std::map<FidoAddress, fido_node_config_t>& node_configs_map) {
 
   for (const auto& nc : node_configs_map) {
     if (nc.first == a) {
@@ -533,10 +534,10 @@ FidoAddress FindRouteToAddress(const FidoAddress& a,
       return nc.first;
     }
   }
-  return EMPTY_FIDO_ADDRESS;
+  return std::nullopt;
 }
 
-FidoAddress FindRouteToAddress(const FidoAddress& a, const FidoCallout& callout) {
+std::optional<FidoAddress> FindRouteToAddress(const FidoAddress& a, const FidoCallout& callout) {
   return FindRouteToAddress(a, callout.node_configs_map());
 }
 

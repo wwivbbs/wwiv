@@ -460,16 +460,16 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
       destination = a()->net_email_name;
       try {
         auto addr = fido::get_address_from_single_line(destination);
-        if (addr.zone() == -1) {
+        if (!addr.has_value()) {
           bout << "Bad FTN Address: " << destination;
           return;
         }
         if (auto & net = a()->mutable_current_net(); net.try_load_nodelist()) {
-          if (auto & nl = *net.nodelist; nl.contains(addr)) {
-            const auto& e = nl.entry(addr);
+          if (auto & nl = *net.nodelist; nl.contains(addr.value())) {
+            const auto& e = nl.entry(addr.value());
             destination_bbs_name = e.name();
           } else {
-            bout.format("|#6Address '|#2{}|#6' does not existing in the nodelist.\r\n", addr);
+            bout.format("|#6Address '|#2{}|#6' does not existing in the nodelist.\r\n", addr->as_string());
             bout.nl(2);
             bout.bputs("|#5Are you sure you want to send to this address? ");
             if (!bin.noyes()) {

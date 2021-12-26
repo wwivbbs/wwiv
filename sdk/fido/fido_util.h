@@ -62,9 +62,10 @@ std::string to_zone_net_node_point(const FidoAddress& a);
 bool RoutesThroughAddress(const FidoAddress& a, const std::string& routes);
 
 // [[VisibleForTesting]]
-FidoAddress FindRouteToAddress(const FidoAddress& a,
-                               const std::map<FidoAddress, wwiv::sdk::net::fido_node_config_t>& node_configs_map);
-FidoAddress FindRouteToAddress(const FidoAddress& a, const FidoCallout& callout);
+std::optional<FidoAddress> FindRouteToAddress(
+    const FidoAddress& a,
+    const std::map<FidoAddress, wwiv::sdk::net::fido_node_config_t>& node_configs_map);
+std::optional<FidoAddress> FindRouteToAddress(const FidoAddress& a, const FidoCallout& callout);
 
 // FTN Text Handling
 /** Splits a message to find a specific line. This will strip blank lines. */
@@ -95,14 +96,14 @@ std::string WWIVToFidoText(const std::string& wt, const wwiv_to_fido_options& op
  * Gets the FidoAddress from a single line of text of the form:
  * "Name (zone:node/net) or '* Origin: Foo BBS (zone:node/net)'"
  */
-FidoAddress get_address_from_single_line(const std::string& line);
+std::optional<FidoAddress> get_address_from_single_line(const std::string& line);
 
 /**
  * Gets the FidoAddress from an entire message by looking for the "* Origin: "
  * line in the message text.  The Origin line is expected to be of the form:
  * "* Origin: Some Origin Line Text (zone:node/net)"
  */
-FidoAddress get_address_from_origin(const std::string& text);
+std::optional<FidoAddress> get_address_from_origin(const std::string& text);
 
 /**
  * Gets the FidoAddress from an packet.

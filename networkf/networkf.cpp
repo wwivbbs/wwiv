@@ -870,12 +870,11 @@ static FidoAddress find_route_to(const FidoAddress& dest, const FidoCallout& cal
     return dest;
   }
 
-  const auto a = FindRouteToAddress(dest, callout);
-  if (a.node() == -1) {
-    // is this right? returning direct if we have no route?
-    return dest;
+  if (const auto a = FindRouteToAddress(dest, callout)) {
+    return a.value();
   }
-  return a;
+  // is this right? returning direct if we have no route?
+  return dest;
 }
 
 bool NetworkF::export_main_type_new_post(std::set<std::string>& bundles, Packet& p) {
@@ -909,11 +908,12 @@ bool NetworkF::export_main_type_email_name(std::set<std::string>& bundles, Packe
 
   auto it = p.text().begin();
   const auto to = get_message_field(p.text(), it, {0}, 80);
-  const auto dest = get_address_from_single_line(to);
-  if (dest.node() == -1) {
+  const auto odest = get_address_from_single_line(to);
+  if (!odest.has_value()) {
     LOG(ERROR) << "Unable to get address from to line: " << to;
     return false;
   }
+  const auto& dest = odest.value();
 
   // todo - actually we need a new way of making the ftn packet that works
   // right with net mail

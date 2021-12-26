@@ -87,22 +87,26 @@ static void UpdateMessageOriginInfo(int system_number, int user_number, Type2Mes
       auto& nl = *net.nodelist;
       auto addr =
           system_number == 0
-              ? fido::try_parse_fidoaddr(net.fido.fido_address).value_or(fido::FidoAddress())
+              ? fido::try_parse_fidoaddr(net.fido.fido_address)
               : fido::get_address_from_origin(data.message_text);
-      if (addr.zone() == -1) {
+      if (!addr.has_value()) {
         addr = fido::get_address_from_single_line(data.from_user_name);
-        if (addr.zone() == -1) {
+        if (!addr.has_value()) {
           addr = fido::get_address_from_single_line(data.from_user_name);
         }
       }
-      if (addr.point() != 0) {
+      if (!addr.has_value()) {
+        LOG(ERROR) << "Unable to get address from message.";
+        return;
+      }
+      if (addr->point() != 0) {
         // Hack to drop points and report parent.
-        if (auto o = fido::try_parse_fidoaddr(to_zone_net_node(addr))) {
+        if (auto o = fido::try_parse_fidoaddr(to_zone_net_node(addr.value()))) {
           addr = o.value();
         }
       }
-      if (nl.contains(addr)) {
-        const auto& e = nl.entry(addr);
+      if (nl.contains(addr.value())) {
+        const auto& e = nl.entry(addr.value());
         data.from_sys_name = e.name();
         data.from_sys_loc = e.location();
         return;

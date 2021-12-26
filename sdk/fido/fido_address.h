@@ -148,8 +148,6 @@ private:
   std::string domain_;
 };
 
-const static FidoAddress EMPTY_FIDO_ADDRESS = FidoAddress(-1, -1, -1, -1, "");
-
 class bad_fidonet_address final : public std::runtime_error {
 public:
   explicit bad_fidonet_address(const std::string& message): runtime_error(message) {}

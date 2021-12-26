@@ -111,9 +111,9 @@ std::vector<NetworkAndName> filter_networks(std::vector<Network>& nets,
     set_net_num(net.network_number());
     if (const auto csne = next_system(system_num)) {
       if (net.type == network_type_t::ftn) {
-        if (ftnadr.zone() != -1 && net.try_load_nodelist()) {
-          if (!net.nodelist->has_zone(ftnadr.zone())) {
-            VLOG(1) << "Skipping net known to not have zone: " << net.name << "; zone: " << ftnadr.zone();
+        if (ftnadr.has_value() && net.try_load_nodelist()) {
+          if (!net.nodelist->has_zone(ftnadr->zone())) {
+            VLOG(1) << "Skipping net known to not have zone: " << net.name << "; zone: " << ftnadr->zone();
             // This nodelist is loaded and doesn't have the zone, skip it.
             continue;
           }

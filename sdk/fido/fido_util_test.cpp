@@ -304,7 +304,7 @@ TEST_F(FidoUtilTest, RouteThrough) {
 }
 
 
-TEST_F(FidoUtilTest, FindRouteAddres) {
+TEST_F(FidoUtilTest, FindRouteAddress) {
   const FidoAddress a("11:1/100");
   const FidoAddress b("12:112/100");
   const FidoAddress a1("1:1/1");
@@ -316,8 +316,9 @@ TEST_F(FidoUtilTest, FindRouteAddres) {
   fido_node_config_t c11{"11:*"};
   fido_node_config_t c12{"12:*"};
   const std::map<FidoAddress, fido_node_config_t> m = {{a11, c11}, {a12, c12}};
-  EXPECT_EQ(a11, FindRouteToAddress(a, m));
-  EXPECT_EQ(a12, FindRouteToAddress(b, m));
+  EXPECT_EQ(a11, FindRouteToAddress(a, m).value());
+  EXPECT_EQ(a12, FindRouteToAddress(b, m).value());
+  EXPECT_FALSE(FindRouteToAddress(a1, m).has_value());
 }
 
 class FidoUtilConfigTest : public testing::Test {
@@ -350,21 +351,20 @@ TEST_F(FidoUtilConfigTest, ExistsBundle) {
 TEST_F(FidoUtilTest, GetAddressFromSingleLine) {
   {
     const auto a = get_address_from_single_line("");
-    EXPECT_EQ(-1, a.net());
-    EXPECT_EQ(-1, a.node());
+    EXPECT_FALSE(a.has_value());
   }
 
   {
     const auto a = get_address_from_single_line("Not an origin line");
-    EXPECT_EQ(-1, a.net());
-    EXPECT_EQ(-1, a.node());
+    EXPECT_FALSE(a.has_value());
   }
 
   {
     const auto a = get_address_from_single_line(" * Origin: Kewl BBS (1:2/3)");
-    EXPECT_EQ(1, a.zone());
-    EXPECT_EQ(2, a.net());
-    EXPECT_EQ(3, a.node());
+    ASSERT_TRUE(a.has_value());
+    EXPECT_EQ(1, a->zone());
+    EXPECT_EQ(2, a->net());
+    EXPECT_EQ(3, a->node());
   }
 }
 
@@ -420,3 +420,22 @@ TEST_F(FidoUtilTest, FtnBytesWaiting_NonExistant) {
   const auto bytes_waiting = ftn_bytes_waiting(net, dest);
   EXPECT_EQ(0, bytes_waiting);
 }
+
+TEST_F(FidoUtilTest, GetAddressFromOrigin) {
+  std::string msg = R"(
+this is test #4.
+
+Rushfan
+
+--- Mystic BBS v1.12 A45 2020/02/18 (Windows/64)
+ * Origin: My Origin (21:1/2)
+SEEN-BY: 1/1 2
+)";
+  std::replace(msg.begin(), msg.end(), '\n', '\r');
+
+  const auto a = get_address_from_origin(msg);
+  EXPECT_EQ(21, a->zone());
+  EXPECT_EQ(1, a->net());
+  EXPECT_EQ(2, a->node());
+}
+
