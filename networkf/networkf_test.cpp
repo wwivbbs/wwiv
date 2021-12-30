@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2021, WWIV Software Services             */
+/*             Copyright (C)2021-2022, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,17 +15,23 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "core/test/wwivtest.h"
 #include "gtest/gtest.h"
+#include "core/strings.h"
+#include "core/test/file_helper.h"
+#include "sdk/fido/test/ftn_directories_test_helper.h"
 
-using namespace wwiv::core;
+using namespace wwiv::strings;
+using namespace wwiv::sdk::fido::test;
 
-int main(int argc, char* argv[]) {
-  try {
-    wwiv::core::test::InitTestForMain(argc, argv);
-    return RUN_ALL_TESTS();
-  } catch (const std::exception& e) {
-    std::cerr << e.what();
-    return 1;
-  }
+class NetworkFTest : public testing::Test {
+public:
+  NetworkFTest() {}
+
+protected:
+  wwiv::core::test::FileHelper helper_;
+};
+
+TEST_F(NetworkFTest, Smoke) { 
+  FtnDirectoriesTestHelper helper(helper_);
+  ASSERT_EQ("TestNET", helper.net().name);
 }

@@ -63,24 +63,6 @@ using namespace wwiv::strings;
 
 namespace wwiv::net::networkf {
 
-static std::vector<arcrec> read_arcs(const std::string& datadir) {
-  std::vector<arcrec> arcs;
-  if (auto file = DataFile<arcrec>(FilePath(datadir, ARCHIVER_DAT))) {
-    file.ReadVector(arcs, 20);
-  }
-  return arcs;
-}
-
-/** returns the arcrec for the extension, or the 1st one if none match */
-static arcrec find_arc(const std::vector<arcrec>& arcs, const std::string& extension) {
-  const auto ue = ToStringUpperCase(extension);
-  for (const auto& a : arcs) {
-    if (ue == a.extension) {
-      return a;
-    }
-  }
-  return arcs.front();
-}
 
 static std::string arc_stuff_in(const std::string& command_line, const std::string& a1,
                                 const std::string& a2) {
@@ -291,13 +273,13 @@ bool NetworkF::import_bundle_file(const std::filesystem::path& path) {
   File::set_current_directory(dirs_.temp_inbound_dir());
 
   // were in the temp dir now.
-  const auto arcs = read_arcs(net_cmdline_.config().datadir());
+  const auto arcs = files::read_arcs(net_cmdline_.config().datadir());
   if (arcs.empty()) {
     LOG(ERROR) << "No archivers defined!";
     return false;
   }
 
-  const auto& arc = files::find_arcrec(arcs, path, "ZIP");
+  const auto arc = files::find_arcrec(arcs, path, "ZIP");
   if (!arc) {
     LOG(ERROR) << "Unable to find archiver for file: " << path;
     return false;
@@ -377,7 +359,7 @@ static std::string rename_fido_packet(const std::string& dir, const std::string&
 std::optional<std::string> NetworkF::create_ftn_bundle(const FidoAddress& route_to,
                                                        const std::string& fido_packet_name) {
   // were in the temp dir now.
-  auto arcs = read_arcs(net_cmdline_.config().datadir());
+  auto arcs = files::read_arcs(net_cmdline_.config().datadir());
   if (arcs.empty()) {
     LOG(ERROR) << "No archivers defined!";
     return std::nullopt;
@@ -411,8 +393,9 @@ std::optional<std::string> NetworkF::create_ftn_bundle(const FidoAddress& route_
   FidoAddress orig(net_.fido.fido_address);
   for (auto i = 0; i < 35; i++) {
     auto bname = bundle_name(orig, route_to, dow, i);
-    if (File::Exists(FilePath(dirs_.outbound_dir(), bname))) {
-      VLOG(1) << "Skipping candidate bundle: " << FilePath(dirs_.outbound_dir(), bname);
+    const auto full_bundle_path = FilePath(dirs_.outbound_dir(), bname);
+    if (File::Exists(full_bundle_path)) {
+      VLOG(1) << "Skipping candidate bundle: " << full_bundle_path.string();
       // Already exists.
       continue;
     }
@@ -420,9 +403,13 @@ std::optional<std::string> NetworkF::create_ftn_bundle(const FidoAddress& route_
     // we won't add paths.
     File::set_current_directory(dirs_.temp_outbound_dir());
     LOG(INFO) << "Changed directory to: " << dirs_.temp_outbound_dir();
-    const auto& arc = find_arc(arcs, ctype);
-    const auto zip_cmd =
-        arc_stuff_in(arc.arca, FilePath(dirs_.outbound_dir(), bname).string(), fido_packet_name);
+    const auto arc = files::find_arcrec(arcs, ctype);
+    if (!arc) {
+      LOG(WARNING) << "Skipping candidate bundle. Unable to find archiver for it! ";
+      // Already exists.
+      continue;
+    }
+    const auto zip_cmd = arc_stuff_in(arc->arca, full_bundle_path.string(), fido_packet_name);
     LOG(INFO) << "Command: " << zip_cmd;
     if (0 != system(zip_cmd.c_str())) {
       LOG(ERROR) << "Failed executing: " << zip_cmd;
@@ -432,7 +419,7 @@ std::optional<std::string> NetworkF::create_ftn_bundle(const FidoAddress& route_
     LOG(INFO) << "Changed directory back to: " << saved_dir;
     File::set_current_directory(saved_dir);
 
-    LOG(INFO) << "Created bundle: " << FilePath(dirs_.outbound_dir(), bname);
+    LOG(INFO) << "Created bundle: " << full_bundle_path.string();
     if (!File::Remove(FilePath(dirs_.temp_outbound_dir(), fido_packet_name))) {
       LOG(ERROR) << "Error removing packet: "
                  << FilePath(dirs_.temp_outbound_dir(), fido_packet_name);

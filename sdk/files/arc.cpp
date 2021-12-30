@@ -581,20 +581,18 @@ static std::optional<arcrec> find_arc_by_extension(const std::vector<arcrec> arc
 
 std::optional<arcrec> find_arcrec(const std::vector<arcrec>& arcs,
                                   const std::filesystem::path& path) {
-  const auto ext = determine_arc_extension(path);
-  if (!ext) {
-    return std::nullopt;
+  if (const auto ext = determine_arc_extension(path)) {
+    return find_arc_by_extension(arcs, ext.value());
   }
-  return find_arc_by_extension(arcs, ext.value());
+  return std::nullopt;
 }
 
 std::optional<arcrec> find_arcrec(const std::vector<arcrec> arcs, const std::filesystem::path& path,
                                   const std::string& default_ext) {
-  const auto ext = determine_arc_extension(path);
-  if (!ext) {
-    return find_arc_by_extension(arcs, ToStringUpperCase(default_ext));
+  if (const auto ext = determine_arc_extension(path)) {
+    return find_arc_by_extension(arcs, ext.value());
   }
-  return find_arc_by_extension(arcs, ext.value());
+  return find_arc_by_extension(arcs, ToStringUpperCase(default_ext));
 }
 
 } // namespace wwiv::sdk::files
