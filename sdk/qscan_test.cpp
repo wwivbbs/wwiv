@@ -31,15 +31,9 @@ using namespace wwiv::strings;
 
 class QScanTest : public testing::Test {
 public:
-  QScanTest() : config_(helper.root()) {
-    EXPECT_TRUE(config_.IsInitialized());
-  }
-
-  void SetUp() override {
-  }
+  QScanTest() {}
 
   SdkHelper helper;
-  Config config_;
 };
 
 TEST_F(QScanTest, Smoke) {

@@ -38,10 +38,9 @@ using namespace wwiv::strings;
 
 class NetworkTest : public testing::Test {
 public:
-  NetworkTest() : config_(helper.root()) {
-    EXPECT_TRUE(config_.IsInitialized());
+  NetworkTest() {
     EXPECT_TRUE(CreateNetworksDat({ "one", "two" }));
-    networks_.reset(new Networks(config_));
+    networks_.reset(new Networks(helper.config()));
     EXPECT_TRUE(networks_->IsInitialized());
   }
 
@@ -49,8 +48,8 @@ public:
   }
 
   [[nodiscard]] bool CreateNetworksDat(std::vector<std::string> names) const {
-    std::clog << "Writing NETWORK.DAT to: " << config_.datadir() << std::endl;
-    File file(FilePath(config_.datadir(), NETWORKS_DAT));
+    std::clog << "Writing NETWORK.DAT to: " << helper.data() << std::endl;
+    File file(FilePath(helper.data(), NETWORKS_DAT));
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file.IsOpen()) {
       return false;
@@ -72,7 +71,6 @@ public:
   [[nodiscard]] Networks& test_networks() const { return *networks_; }
 
   SdkHelper helper;
-  Config config_;
   unique_ptr<Networks> networks_;
 };
 

@@ -37,14 +37,13 @@ using namespace wwiv::strings;
 
 class NamesTest : public testing::Test {
 public:
-  NamesTest() : config_(helper.root()) {
-    EXPECT_TRUE(config_.IsInitialized());
+  NamesTest() {
     EXPECT_TRUE(CreateNames());
-    names_.reset(new Names(config_));
+    names_.reset(new Names(helper.config()));
   }
 
   [[nodiscard]] bool CreateNames() const {
-    File file(FilePath(config_.datadir(), NAMES_LST));
+    File file(FilePath(helper.data(), NAMES_LST));
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file.IsOpen()) {
       return false;
@@ -61,7 +60,6 @@ public:
   }
 
   SdkHelper helper;
-  Config config_;
   unique_ptr<Names> names_;
 };
 
@@ -84,7 +82,7 @@ TEST_F(NamesTest, Remove) {
 
   // Release the old names 1st.
   names_.reset();
-  names_.reset(new Names(config_));
+  names_.reset(new Names(helper.config()));
   // Should still have 2.
   EXPECT_EQ(2, names_->size());
 }
@@ -102,7 +100,7 @@ TEST_F(NamesTest, Insert) {
 
   // Release the old names 1st.
   names_.reset();
-  names_.reset(new Names(config_));
+  names_.reset(new Names(helper.config()));
   EXPECT_EQ(4, names_->size());
 }
 
@@ -113,9 +111,8 @@ TEST_F(NamesTest, SaveOnExit) {
 
 TEST(NamesRebuildTest, Rebuild) {
   SdkHelper helper;
-  Config config(helper.root());
 
-  UserManager um(config);
+  UserManager um(helper.config());
   User u1{};
   User::CreateNewUserRecord(&u1, 50, 20, 0, 0.1234f, 
   { 7, 11, 14, 13, 31, 10, 12, 9, 5, 3 }, { 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 });
@@ -127,7 +124,7 @@ TEST(NamesRebuildTest, Rebuild) {
   u2.set_name("BAR");
   um.writeuser(&u2, 2);
 
-  Names names(config);
+  Names names(helper.config());
   names.Rebuild(um);
   ASSERT_TRUE(names.Save());
 

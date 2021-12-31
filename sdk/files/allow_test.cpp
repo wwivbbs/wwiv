@@ -34,26 +34,21 @@ using namespace wwiv::strings;
 
 class AllowTest : public testing::Test {
 public:
-  AllowTest() : config_(helper.root()) {
-    EXPECT_TRUE(config_.IsInitialized());
-    config_.set_paths_for_test(helper.data(), helper.msgs(), helper.gfiles(), helper.menus(),
-                               helper.dloads(), helper.scripts());
-  }
+  AllowTest() {}
 
   void SetUp() override { helper.SetUp(); }
 
   SdkHelper helper;
-  Config config_;
 };
 
 TEST_F(AllowTest, Empty) {
-  const Allow a(config_);
+  const Allow a(helper.config());
   const auto& v = a.allow_vector();
   EXPECT_EQ(0, wwiv::stl::ssize(v));
 }
 
 TEST_F(AllowTest, Add) {
-  Allow a(config_);
+  Allow a(helper.config());
   a.Add("1.zip");
   a.Add("2.zip");
   a.Add("3.zip");
@@ -66,7 +61,7 @@ TEST_F(AllowTest, Add) {
 }
 
 TEST_F(AllowTest, IsAllowed) {
-  Allow a(config_);
+  Allow a(helper.config());
   a.Load();
   EXPECT_TRUE(a.IsAllowed("1.zip"));
   a.Add("1.zip");
@@ -74,7 +69,7 @@ TEST_F(AllowTest, IsAllowed) {
 }
 
 TEST_F(AllowTest, Remove) {
-  Allow a(config_);
+  Allow a(helper.config());
   a.Add("1.zip");
   a.Add("2.zip");
   a.Add("3.zip");
@@ -92,7 +87,7 @@ TEST_F(AllowTest, Load) {
         f.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite));
     f.Write(contents);
   }
-  Allow a(config_);
+  Allow a(helper.config());
   ASSERT_TRUE(a.Load());
   EXPECT_EQ(2, wwiv::stl::ssize(a.allow_vector()));
   EXPECT_EQ(to_allow_entry("badworld.zip"), a.allow_vector().front());
@@ -110,7 +105,7 @@ TEST_F(AllowTest, Save) {
     f.Write(contents);
   }
   // Load default allow.data
-  Allow a(config_);
+  Allow a(helper.config());
   ASSERT_TRUE(a.Load());
   EXPECT_EQ(2, wwiv::stl::ssize(a.allow_vector()));
   // Add a new one then save the reload it

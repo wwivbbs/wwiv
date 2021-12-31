@@ -91,6 +91,8 @@ SdkHelper::SdkHelper()
     c.max_subs = 64;
 
     config_ = std::make_unique<wwiv::sdk::Config>(root_, c);
+    config_->set_paths_for_test(data(), msgs(), gfiles(), menus(), dloads(), scripts());
+
     // Force this to be read-write since we're in a test environment (same as
     // in the upgrade case)
     config_->set_readonly(false);

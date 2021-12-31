@@ -40,11 +40,7 @@ using namespace wwiv::strings;
 
 class FilesTest : public testing::Test {
 public:
-  FilesTest() : config_(helper.root()), api_(helper.data()), api_helper_(&api_) {
-    EXPECT_TRUE(config_.IsInitialized());
-    config_.set_paths_for_test(helper.data(), helper.msgs(), helper.gfiles(), helper.menus(),
-                               helper.dloads(), helper.scripts());
-
+  FilesTest() : api_(helper.data()), api_helper_(&api_) {
     files_.emplace_back(ul("FILE0001.ZIP", "", 1234));
     files_.emplace_back(ul("FILE0002.ZIP", "", 2345));
     files_.emplace_back(ul("FILE0003.ZIP", "", 3456));
@@ -55,7 +51,7 @@ public:
   }
 
   [[nodiscard]] std::filesystem::path path_for(const std::string& filename) const {
-    return FilePath(config_.datadir(), StrCat(filename, ".dir"));
+    return FilePath(helper.config().datadir(), StrCat(filename, ".dir"));
   }
 
   [[nodiscard]] std::vector<uploadsrec> read_dir(const std::string& filename) const {
@@ -71,7 +67,6 @@ public:
   }
 
   SdkHelper helper;
-  Config config_;
   FileApi api_;
   FilesApiHelper api_helper_;
   std::vector<FileRecord> files_;
@@ -87,7 +82,7 @@ TEST_F(FilesTest, Smoke) {
 TEST_F(FilesTest, Create) {
   const string name = test_info_->name();
 
-  FileApi api(config_.datadir());
+  FileApi api(helper.data());
   ASSERT_FALSE(File::Exists(path_for(name)));
   ASSERT_TRUE(api.Create(name));
   EXPECT_TRUE(File::Exists(path_for(name)));

@@ -44,10 +44,10 @@ using namespace wwiv::strings;
 
 class FtnMsgDupeTest : public testing::Test {
 public:
-  FtnMsgDupeTest() : config_(helper.root()) {}
+  FtnMsgDupeTest() {}
 
   [[nodiscard]] bool CreateDupes(const std::vector<msgids>& ids) const {
-    DataFile<msgids> file(FilePath(config_.datadir(), MSGDUPE_DAT),
+    DataFile<msgids> file(FilePath(helper.data(), MSGDUPE_DAT),
                           File::modeReadWrite | File::modeBinary | File::modeCreateFile |
                               File::modeTruncate);
     if (!file) {
@@ -59,7 +59,7 @@ public:
 
   [[nodiscard]] bool SetLastMessageId(uint32_t message_id) const {
     uint64_t id = message_id;
-    DataFile<uint64_t> file(FilePath(config_.datadir(), MSGID_DAT),
+    DataFile<uint64_t> file(FilePath(helper.data(), MSGID_DAT),
                             File::modeReadWrite | File::modeBinary | File::modeCreateFile,
                             File::shareDenyReadWrite);
     if (!file) {
@@ -69,7 +69,6 @@ public:
   }
 
   SdkHelper helper;
-  Config config_;
 };
 
 // This is what the old msgdupe used.
@@ -91,7 +90,7 @@ TEST_F(FtnMsgDupeTest, As64) {
 }
 
 TEST_F(FtnMsgDupeTest, MsgId_NoExists) { 
-  FtnMessageDupe dupe(config_.datadir(), true);
+  FtnMessageDupe dupe(helper.data(), true);
   const FidoAddress a{"1:2/3"};
   const auto now = time(nullptr);
   const auto line = dupe.CreateMessageID(a);
@@ -101,15 +100,15 @@ TEST_F(FtnMsgDupeTest, MsgId_NoExists) {
   const auto id = std::stol(parts.at(1), nullptr, 16);
 
   EXPECT_LT(std::abs(id - now), 11) << "id: " << id << "; now: " << now;
-  EXPECT_TRUE(File::Exists(FilePath(config_.datadir(), MSGID_DAT)));
+  EXPECT_TRUE(File::Exists(FilePath(helper.data(), MSGID_DAT)));
 }
 
 TEST_F(FtnMsgDupeTest, Exists) {
   const auto now = daten_t_now();
   const auto last_message_id = now + 10000;
   ASSERT_TRUE(SetLastMessageId(last_message_id));
-  ASSERT_TRUE(File::Exists(FilePath(config_.datadir(), MSGID_DAT)));
-  FtnMessageDupe dupe(config_.datadir(), true);
+  ASSERT_TRUE(File::Exists(FilePath(helper.data(), MSGID_DAT)));
+  FtnMessageDupe dupe(helper.data(), true);
   const FidoAddress a{"1:2/3"};
   const auto line = dupe.CreateMessageID(a);
   auto parts = SplitString(line, " ");
@@ -121,14 +120,14 @@ TEST_F(FtnMsgDupeTest, Exists) {
 }
 
 TEST_F(FtnMsgDupeTest, Smoke) {
-  FtnMessageDupe dupe(config_.datadir(), false);
+  FtnMessageDupe dupe(helper.data(), false);
   dupe.add(1, 2);
   EXPECT_TRUE(dupe.is_dupe(1, 2));
   EXPECT_FALSE(dupe.is_dupe(2, 1));
 }
 
 TEST_F(FtnMsgDupeTest, Remove) {
-  FtnMessageDupe dupe(config_.datadir(), false);
+  FtnMessageDupe dupe(helper.data(), false);
   dupe.add(1, 2);
   EXPECT_TRUE(dupe.is_dupe(1, 2));
   dupe.remove(1, 2);

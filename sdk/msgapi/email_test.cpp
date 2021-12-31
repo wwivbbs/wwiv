@@ -41,10 +41,9 @@ using namespace wwiv::strings;
 class EmailTest: public testing::Test {
 public:
   void SetUp() override {
-    config = make_unique<Config>(helper.root());
     MessageApiOptions options{};
     options.overflow_strategy = OverflowStrategy::delete_none;
-    auto* a = new WWIVMessageApi(options, *config, {}, new NullLastReadImpl());
+    auto* a = new WWIVMessageApi(options, helper.config(), {}, new NullLastReadImpl());
     email = a->OpenEmail();
     api.reset(a);
   }
@@ -61,7 +60,6 @@ public:
 
   SdkHelper helper;
   unique_ptr<WWIVMessageApi> api;
-  unique_ptr<Config> config;
   unique_ptr<WWIVEmail> email;
 };
 

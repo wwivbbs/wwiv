@@ -25,18 +25,17 @@ using namespace wwiv::sdk;
 
 class InstanceMessageTest : public testing::Test {
 public:
-  InstanceMessageTest() : config(helper.root()) { }
+  InstanceMessageTest() {}
 
   SdkHelper helper;
-  Config config;
 };
 
 TEST_F(InstanceMessageTest, Smoke) {
-  send_instance_string(config, instance_message_type_t::user, 2, 1, 1, "test");
-  const auto im2 = read_all_instance_messages(config, 2);
+  send_instance_string(helper.config(), instance_message_type_t::user, 2, 1, 1, "test");
+  const auto im2 = read_all_instance_messages(helper.config(), 2);
   EXPECT_EQ(1u, im2.size());
   EXPECT_EQ("test", im2.front().message);
 
-  const auto im1 = read_all_instance_messages(config, 1);
+  const auto im1 = read_all_instance_messages(helper.config(), 1);
   EXPECT_TRUE(im1.empty());
 }

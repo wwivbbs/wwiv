@@ -41,16 +41,13 @@ using namespace wwiv::strings;
 
 class FilesExtTest : public testing::Test {
 public:
-  FilesExtTest() : config_(helper.root()), api_(helper.data()), api_helper_(&api_) {
-    EXPECT_TRUE(config_.IsInitialized());
-    config_.set_paths_for_test(helper.data(), helper.msgs(), helper.gfiles(), helper.menus(),
-                               helper.dloads(), helper.scripts());
+  FilesExtTest() : api_(helper.data()), api_helper_(&api_) {
   }
 
   void SetUp() override { helper.SetUp(); }
 
   [[nodiscard]] std::filesystem::path path_for(const std::string& filename) const {
-    return FilePath(config_.datadir(), StrCat(filename, ".dir"));
+    return FilePath(helper.config().datadir(), StrCat(filename, ".dir"));
   }
 
   [[nodiscard]] std::vector<uploadsrec> read_dir(const std::string& filename) const {
@@ -66,7 +63,6 @@ public:
   }
 
   SdkHelper helper;
-  Config config_;
   FileApi api_;
   FilesApiHelper api_helper_;
 };

@@ -42,6 +42,8 @@ TEST_F(ConfigTest, Helper_CreatedBBSRoot) {
   ASSERT_TRUE(ends_with(helper.root(), "bbs")) << helper.root();
 }
 
+TEST_F(ConfigTest, Helper_ConfigWorks) { ASSERT_EQ(helper.config().datadir(), helper.data()); }
+
 TEST_F(ConfigTest, Config_CurrentDirectory) {
   ASSERT_EQ(0, chdir(helper.root().c_str()));
 

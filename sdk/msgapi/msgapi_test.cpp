@@ -38,8 +38,7 @@ public:
   void SetUp() override {
     MessageApiOptions options;
     options.overflow_strategy = OverflowStrategy::delete_none;
-    config = make_unique<Config>(helper.root());
-    api.reset(new WWIVMessageApi(options, *config, {}, new NullLastReadImpl()));
+    api.reset(new WWIVMessageApi(options, helper.config(), {}, new NullLastReadImpl()));
   }
 
   static unique_ptr<Message> CreateMessage(MessageArea& area, uint16_t from, const string& fromname,
@@ -63,7 +62,6 @@ public:
 
   SdkHelper helper;
   unique_ptr<MessageApi> api;
-  unique_ptr<Config> config;
 };
 
 TEST_F(MsgApiTest, CreateArea) {
