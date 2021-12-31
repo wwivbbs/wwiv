@@ -180,12 +180,12 @@ public:
   explicit Config(std::filesystem::path root_directory);
   ~Config();
 
-  // remove unneeded operators/constructors
-
-  Config() = delete;
-  explicit Config(Config&& config) = delete;
   Config& operator=(const Config&);
-  Config& operator=(Config&&) = delete;
+  explicit Config(Config&& config);
+  Config& operator=(Config&&);
+
+  // remove unneeded operators/constructors
+  Config() = delete;
 
   // members
 

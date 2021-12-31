@@ -90,11 +90,11 @@ SdkHelper::SdkHelper()
     c.max_dirs = 64;
     c.max_subs = 64;
 
-    wwiv::sdk::Config config(root_, c);
+    config_ = std::make_unique<wwiv::sdk::Config>(root_, c);
     // Force this to be read-write since we're in a test environment (same as
     // in the upgrade case)
-    config.set_readonly(false);
-    if (!config.Save()) {
+    config_->set_readonly(false);
+    if (!config_->Save()) {
       throw std::runtime_error("failed to create config.json");
     }
   }
@@ -115,6 +115,11 @@ std::filesystem::path SdkHelper::CreatePath(const string& name) {
   File::mkdirs(path);
   return path;
 }
+
+wwiv::sdk::Config& SdkHelper::config() const { 
+  return *config_; 
+}
+
 
 SdkHelper::~SdkHelper() {
   try {

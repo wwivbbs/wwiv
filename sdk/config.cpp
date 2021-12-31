@@ -58,7 +58,23 @@ Config::Config(std::filesystem::path root_directory) : root_directory_(std::move
   }
 }
 
+Config::Config(Config&& c) : Config(c.root_directory(), c.config_) {
+  // Chained constructor sets initialized to true, but we want to
+  // match it from the copy.
+  initialized_ = c.IsInitialized();
+}
+
+
 Config& Config::operator=(const Config& o) {
+  initialized_ = true;
+  root_directory_ = o.root_directory_;
+  config_ = o.config_;
+  update_paths();
+  return *this;
+}
+
+Config& Config::operator=(Config&& o) {
+  // Our move is really just a copy
   initialized_ = true;
   root_directory_ = o.root_directory_;
   config_ = o.config_;

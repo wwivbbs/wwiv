@@ -18,10 +18,12 @@
 #ifndef INCLUDED_SDK_TEST_SDK_HELPER_H
 #define INCLUDED_SDK_TEST_SDK_HELPER_H
 
+#include <filesystem>
+#include <memory>
 #include <string>
 
-#include <filesystem>
 #include "core/test/file_helper.h"
+#include "sdk/config.h"
 
 class SdkHelper {
 public:
@@ -39,6 +41,7 @@ public:
   [[nodiscard]] std::string logs() const { return logs_.string(); }
   [[nodiscard]] std::string scratch() const { return scratch_.string(); }
   [[nodiscard]] wwiv::core::test::FileHelper& files() { return files_; }
+  [[nodiscard]] wwiv::sdk::Config& config() const;
 
   std::filesystem::path CreatePath(const std::string& name);
   wwiv::core::test::FileHelper files_;
@@ -54,6 +57,7 @@ public:
 private:
   const std::filesystem::path saved_dir_;
   const std::filesystem::path root_;
+  std::unique_ptr<wwiv::sdk::Config> config_;
 };
 
 #endif  // INCLUDED_SDK_TEST_SDK_HELPER_H
