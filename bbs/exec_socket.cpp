@@ -68,7 +68,7 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, uint16_t port, exec_soc
   server_socket_ = socket(af, SOCK_STREAM, 0);
   if (server_socket_ == -1) {
     LOG(ERROR) << "socket error";
-    server_socket_ = -1;
+    server_socket_ = INVALID_SOCKET;
     return;
   }
 
@@ -81,7 +81,7 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, uint16_t port, exec_soc
     to_char_array(addr.sun_path, p.string());
     if (bind(server_socket_, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
       LOG(ERROR) << "bind error";
-      server_socket_ = -1;
+      server_socket_ = INVALID_SOCKET;
       return;
     }
 
@@ -94,13 +94,13 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, uint16_t port, exec_soc
     if (setsockopt(server_socket_, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&optval),
                    sizeof(optval)) == -1) {
       LOG(ERROR) << "Unable to create socket [SO_REUSEADDR]";
-      server_socket_ = -1;
+      server_socket_ = INVALID_SOCKET;
       return;
     }
     if (setsockopt(server_socket_, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char*>(&optval),
                    sizeof(optval)) == -1) {
       LOG(ERROR) << "Unable to create socket [SO_KEEPALIVE]";
-      server_socket_ = -1;
+      server_socket_ = INVALID_SOCKET;
       return;
     }
     // Try to set nodelay.
@@ -115,7 +115,7 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, uint16_t port, exec_soc
     if (bind(server_socket_, reinterpret_cast<sockaddr*>(&my_addr), sizeof(my_addr)) == -1) {
       // throw socket_error(msg);
       LOG(ERROR) << "bind error";
-      server_socket_ = -1;
+      server_socket_ = INVALID_SOCKET;
       return;
     }
 
@@ -131,7 +131,7 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, uint16_t port, exec_soc
 
   if (listen(server_socket_, 1) == -1) {
     LOG(ERROR) << "listen error";
-    server_socket_ = -1;
+    server_socket_ = INVALID_SOCKET;
     return;
   }
 }
@@ -205,7 +205,7 @@ bool ExecSocket::process_still_active(EXEC_SOCKET_HANDLE h) {
 #endif
 }
 
-pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common::RemoteIO& io) {
+pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, SOCKET sock, wwiv::common::RemoteIO& io) {
   static constexpr int check_process_every = 10;
   char buf[1024];
   int count = 0;

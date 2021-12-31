@@ -113,7 +113,7 @@ bool SetNoDelayMode(SOCKET sock, bool no_delay) {
 #endif // _WIN32
 }
 
-static bool telnet_to(const std::string& host_port, int /*node_number*/, int sock) { 
+static bool telnet_to(const std::string& host_port, int /*node_number*/, SOCKET sock) { 
   LOG(INFO) << "telnet_to: " << host_port;
   auto idx = host_port.find(':');
   std::string host = host_port;
@@ -190,7 +190,7 @@ static bool telnet_to(const std::string& host_port, int /*node_number*/, int soc
 }
 
 #if defined(WWIV_USE_PIPES)
-static bool socket_pipe_loop_one(int sock, Pipe& data_pipe, Pipe& control_pipe) {
+static bool socket_pipe_loop_one(SOCKET sock, Pipe& data_pipe, Pipe& control_pipe) {
   LOG(INFO) << "Starting socket_pipe_loop_one";
   if (!data_pipe.Create()) {
     LOG(ERROR) << "Failed to create pipe: " << data_pipe.name();
@@ -272,7 +272,7 @@ static bool socket_pipe_loop_one(int sock, Pipe& data_pipe, Pipe& control_pipe) 
   return true;
 }
 
-static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
+static void socket_pipe_loop(SOCKET sock, Pipe& data_pipe, Pipe& control_pipe) {
   VLOG(1) << "socket_pipe_loop";
   bool keep_going;
   do {
@@ -283,7 +283,7 @@ static void socket_pipe_loop(int sock, Pipe& data_pipe, Pipe& control_pipe) {
 
 static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
                        const std::string& working_dir, const std::shared_ptr<NodeManager>& nodes,
-                       int node_number, int sock, ConnectionType connection_type,
+                       int node_number, SOCKET sock, ConnectionType connection_type,
                        const std::string& remote_peer) {
   const auto pid = fmt::format("[{}] ", get_pid());
   nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
@@ -315,7 +315,7 @@ static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
 static bool launch_node(const Config& config, const wwivd_config_t& wc, 
                         wwivd_matrix_entry_t& bbs,
                         const std::shared_ptr<NodeManager>& nodes,
-                        int node_number, int sock, ConnectionType connection_type,
+                        int node_number, SOCKET sock, ConnectionType connection_type,
                         const std::string& remote_peer) {
   const auto& raw_cmd = connection_type == ConnectionType::SSH ? bbs.ssh_cmd : bbs.telnet_cmd;
   const auto root = config.root_directory();

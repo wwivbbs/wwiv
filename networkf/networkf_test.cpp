@@ -32,6 +32,6 @@ protected:
 };
 
 TEST_F(NetworkFTest, Smoke) { 
-  FtnDirectoriesTestHelper helper(helper_);
-  ASSERT_EQ("TestNET", helper.net().name);
+  FAIL() << "Implemente me!";
 }
+

@@ -58,7 +58,7 @@ public:
   [[nodiscard]] std::string z() const;
 
   /** Handles pumping data between socket and remote IO */
-  pump_socket_result_t pump_socket(EXEC_SOCKET_HANDLE hProcess, int sock, wwiv::common::RemoteIO& io);
+  pump_socket_result_t pump_socket(EXEC_SOCKET_HANDLE hProcess, SOCKET sock, wwiv::common::RemoteIO& io);
 
   bool stop_pump();
   static bool process_still_active(EXEC_SOCKET_HANDLE h);
@@ -68,8 +68,8 @@ private:
   const std::filesystem::path dir_;
   exec_socket_type_t type_;
   std::filesystem::path unix_path_;
-  int server_socket_{-1};
-  int client_socket_{-1};
+  SOCKET server_socket_{INVALID_SOCKET};
+  SOCKET client_socket_{INVALID_SOCKET};
   int port_{0};
   std::atomic<bool> stop_;
 };

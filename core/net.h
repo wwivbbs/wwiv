@@ -34,6 +34,10 @@ typedef unsigned __int64 SOCKET;
 typedef unsigned int SOCKET;
 #endif
 
+#ifndef INVALID_SOCKET
+#define INVALID_SOCKET (SOCKET)(~0)
+#endif
+
 #else
 
 #include <netdb.h>
