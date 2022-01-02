@@ -39,13 +39,13 @@ public:
 };
 
 TEST_F(ConfigTest, Helper_CreatedBBSRoot) {
-  ASSERT_TRUE(ends_with(helper.root(), "bbs")) << helper.root();
+  ASSERT_TRUE(ends_with(helper.root_directory(), "bbs")) << helper.root_directory();
 }
 
-TEST_F(ConfigTest, Helper_ConfigWorks) { ASSERT_EQ(helper.config().datadir(), helper.data()); }
+TEST_F(ConfigTest, Helper_ConfigWorks) { ASSERT_EQ(helper.config().datadir(), helper.datadir()); }
 
 TEST_F(ConfigTest, Config_CurrentDirectory) {
-  ASSERT_EQ(0, chdir(helper.root().c_str()));
+  ASSERT_EQ(0, chdir(helper.root_directory().c_str()));
 
   const Config config(File::current_directory());
   ASSERT_TRUE(config.IsInitialized());
@@ -53,18 +53,18 @@ TEST_F(ConfigTest, Config_CurrentDirectory) {
 }
 
 TEST_F(ConfigTest, Config_DifferentDirectory) {
-  const Config config(helper.root());
+  const Config config(helper.root_directory());
   ASSERT_TRUE(config.IsInitialized());
   EXPECT_EQ(helper.data_, config.datadir());
 }
 
 TEST_F(ConfigTest, Config_WrongDirectory) {
-  const Config config(StrCat(helper.root(), "x"));
+  const Config config(StrCat(helper.root_directory(), "x"));
   ASSERT_FALSE(config.IsInitialized());
 }
 
 TEST_F(ConfigTest, SetConfig) {
-  Config config(helper.root());
+  Config config(helper.root_directory());
   ASSERT_TRUE(config.IsInitialized());
 
   config_t c{};
@@ -74,23 +74,23 @@ TEST_F(ConfigTest, SetConfig) {
 }
 
 TEST_F(ConfigTest, WrittenByNumVersion) {
-  const Config config(helper.root());
+  const Config config(helper.root_directory());
 
   ASSERT_EQ(wwiv_config_version(), config.written_by_wwiv_num_version());
 }
 
 TEST_F(ConfigTest, Is5XXOrLater) {
-  const Config config(helper.root());
+  const Config config(helper.root_directory());
 
   ASSERT_TRUE(config.is_5xx_or_later());
 }
 
 TEST_F(ConfigTest, LogDirFromConfig_Found) {
-  const Config config(helper.root());
-  ASSERT_EQ(config.logdir(), LogDirFromConfig(helper.root()));
+  const Config config(helper.root_directory());
+  ASSERT_EQ(config.logdir(), LogDirFromConfig(helper.root_directory()));
 }
 
 TEST_F(ConfigTest, LogDirFromConfig_NotFound) {
-  Config config(helper.root());
-  ASSERT_EQ("", LogDirFromConfig(StrCat(helper.root(), "x")));
+  Config config(helper.root_directory());
+  ASSERT_EQ("", LogDirFromConfig(StrCat(helper.root_directory(), "x")));
 }

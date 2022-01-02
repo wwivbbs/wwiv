@@ -463,7 +463,7 @@ bool convert_to_v5(UIWindow* window, Config& config) {
   // Update networks to get rid of base packet config.
   for (const auto& net : networks.networks()) {
     if (net.type == network_type_t::ftn) {
-      fido::FidoCallout callout(config, net);
+      fido::FidoCallout callout(config.root_directory(), config.max_backups(), net);
       for (auto& [a, node_config] : callout.node_configs_map()) {
         auto merged_config = callout.merged_packet_config_for(a, net.fido.packet_config);
         node_config.packet_config = merged_config;

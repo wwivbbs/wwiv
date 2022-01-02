@@ -212,7 +212,7 @@ void FileManager::rename_ftn_pending_files(const Remote& remote) {
         continue;
       }
       LOG(INFO) << "Tic file " << ticpath.string() << " is valid.";
-      FidoCallout callout(config_, remote.network());
+      FidoCallout callout(config_.root_directory(), config_.max_backups(), remote.network());
       std::string expected_tic_pw;
       try {
         FidoAddress address(remote.ftn_address());

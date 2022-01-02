@@ -488,11 +488,13 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
   if (!File::Exists(FilePath(dirs.net_dir(), FIDO_CALLOUT_JSON))) {
     text << " ** fido_callout.json file DOES NOT EXIST.\r\n\n";
   }
-  FidoCallout callout(net_cmdline.config(), net);
+  FidoCallout callout(net_cmdline.config().root_directory(), net_cmdline.config().max_backups(),
+                      net);
   if (!callout.IsInitialized()) {
     text << " ** Unable to read fido_callout.json\r\n\n";
   } else {
-    check_fido_host_networks(net_cmdline.config(), net_cmdline.networks(), net, net_cmdline.network_number(), text);
+    check_fido_host_networks(net_cmdline.config(), net_cmdline.networks(), net,
+                             net_cmdline.network_number(), text);
   }
 
   text << "Using nodelist base:     " << net.fido.nodelist_base << "\r\n";

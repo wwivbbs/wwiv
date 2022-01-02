@@ -325,7 +325,7 @@ public:
 
   void RunSubDialog(CursesWindow* window) override {
     window->GotoXY(x_, y_);
-    FidoCallout callout(config(), t_);
+    FidoCallout callout(config().root_directory(), config().max_backups(), t_);
     if (!callout.IsInitialized()) {
       messagebox(window, "Unable to initialize fido_callout.json.");
       return;

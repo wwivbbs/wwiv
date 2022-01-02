@@ -149,7 +149,7 @@ TEST_F(FileManagerTest, WithPassword) {
 
   fm->ReceiveFile("foo.zip");
   fm->ReceiveFile("foo.tic");
-  wwiv::sdk::fido::FidoCallout callout(*config_, net);
+  wwiv::sdk::fido::FidoCallout callout(config_->root_directory(), config_->max_backups(), net);
   const wwiv::sdk::fido::FidoAddress remote_addr("1:1/1");
   fido_node_config_t node_config{};
   node_config.packet_config.tic_password = "rush";
@@ -166,7 +166,7 @@ TEST_F(FileManagerTest, WithPassword_WrongPassword) {
 
   fm->ReceiveFile("foo.zip");
   fm->ReceiveFile("foo.tic");
-  wwiv::sdk::fido::FidoCallout callout(*config_, net);
+  wwiv::sdk::fido::FidoCallout callout(config_->root_directory(), config_->max_backups(), net);
   const wwiv::sdk::fido::FidoAddress remote_addr("1:1/1");
   fido_node_config_t node_config{};
   node_config.packet_config.tic_password = "rush";

@@ -40,7 +40,7 @@ using namespace wwiv::strings;
 
 class FilesTest : public testing::Test {
 public:
-  FilesTest() : api_(helper.data()), api_helper_(&api_) {
+  FilesTest() : api_(helper.datadir()), api_helper_(&api_) {
     files_.emplace_back(ul("FILE0001.ZIP", "", 1234));
     files_.emplace_back(ul("FILE0002.ZIP", "", 2345));
     files_.emplace_back(ul("FILE0003.ZIP", "", 3456));
@@ -82,7 +82,7 @@ TEST_F(FilesTest, Smoke) {
 TEST_F(FilesTest, Create) {
   const string name = test_info_->name();
 
-  FileApi api(helper.data());
+  FileApi api(helper.datadir());
   ASSERT_FALSE(File::Exists(path_for(name)));
   ASSERT_TRUE(api.Create(name));
   EXPECT_TRUE(File::Exists(path_for(name)));

@@ -23,22 +23,27 @@
 #include <string>
 
 #include "core/test/file_helper.h"
+#include "sdk/bbs_directories.h"
 #include "sdk/config.h"
 
-class SdkHelper {
+class SdkHelper : public wwiv::sdk::BbsDirectories {
 public:
   SdkHelper();
   ~SdkHelper();
   bool SetUp() { return true; }
 
-  [[nodiscard]] std::string root() const { return root_.string(); }
-  [[nodiscard]] std::string data() const { return data_.string(); }
-  [[nodiscard]] std::string dloads() const { return dloads_.string(); }
-  [[nodiscard]] std::string msgs() const { return msgs_.string(); }
-  [[nodiscard]] std::string gfiles() const { return gfiles_.string(); }
-  [[nodiscard]] std::string menus() const { return menus_.string(); }
-  [[nodiscard]] std::string scripts() const { return scripts_.string(); }
-  [[nodiscard]] std::string logs() const { return logs_.string(); }
+  [[nodiscard]] virtual std::string root_directory() const override { return root_.string(); }
+  [[nodiscard]] virtual std::string datadir() const override { return data_.string(); }
+  [[nodiscard]] virtual std::string msgsdir() const override { return msgs_.string(); }
+  [[nodiscard]] virtual std::string gfilesdir() const override { return gfiles_.string(); }
+  [[nodiscard]] virtual std::string menudir() const override { return menus_.string(); }
+  [[nodiscard]] virtual std::string dloadsdir() const override { return dloads_.string(); }
+  [[nodiscard]] virtual std::string scriptdir() const override { return scripts_.string(); }
+  [[nodiscard]] virtual std::string logdir() const override { return logs_.string(); }
+  [[nodiscard]] virtual std::filesystem::path scratch_dir(int) const override {
+    return scratch_;
+  }
+
   [[nodiscard]] std::string scratch() const { return scratch_.string(); }
   [[nodiscard]] wwiv::core::test::FileHelper& files() { return files_; }
   [[nodiscard]] wwiv::sdk::Config& config() const;

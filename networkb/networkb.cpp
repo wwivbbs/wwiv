@@ -203,7 +203,8 @@ static int Main(const NetworkCommandLine& net_cmdline) {
             LOG(ERROR) << "Domain is empty for FTN address. Please set it for: "
                        << n.fido.fido_address;
           }
-          auto c = std::make_unique<FidoCallout>(net_cmdline.config(), n);
+          auto c = std::make_unique<FidoCallout>(net_cmdline.config().root_directory(),
+                                                 net_cmdline.config().max_backups(), n);
           for (const auto& kv : c->node_configs_map()) {
             bink_config.address_pw_map.try_emplace(kv.first, kv.second.binkp_config.password);
           }

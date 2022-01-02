@@ -80,29 +80,29 @@ int main(int argc, char** argv) {
   Logger::Init(argc, argv, config);
 
   CommandLine cmdline(argc, argv, "net");
-  const NetworkCommandLine net_cmdline_(cmdline, 'f');
+  const NetworkCommandLine net_cmdline(cmdline, 'f');
   try {
     ScopeExit at_exit(Logger::ExitLogger);
-    if (!net_cmdline_.IsInitialized() || net_cmdline_.cmdline().help_requested()) {
-      ShowNetworkfHelp(net_cmdline_);
+    if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
+      ShowNetworkfHelp(net_cmdline);
       return 1;
     }
-    const auto& net = net_cmdline_.network();
+    const auto& net = net_cmdline.network();
     if (net.type != network_type_t::ftn) {
       LOG(ERROR) << "NETWORKF is only for use on FTN type networks.";
-      ShowNetworkfHelp(net_cmdline_);
+      ShowNetworkfHelp(net_cmdline);
       return 1;
     }
 
     VLOG(3) << "Reading bbsdata.net_..";
-    auto b = BbsListNet::ReadBbsDataNet(net.dir);
-    if (b.empty()) {
+    auto bbslist = BbsListNet::ReadBbsDataNet(net.dir);
+    if (bbslist.empty()) {
       LOG(ERROR) << "ERROR: Unable to read bbsdata.net_.";
       LOG(ERROR) << "       Do you need to run network3?";
       return 3;
     }
 
-    const auto fake_ftn_node = b.node_config_for(FTN_FAKE_OUTBOUND_NODE);
+    const auto fake_ftn_node = bbslist.node_config_for(FTN_FAKE_OUTBOUND_NODE);
     if (!fake_ftn_node) {
       LOG(ERROR) << "Can not find node for outbound FTN address.";
       LOG(ERROR) << "       Do you need to run network3?";
@@ -110,12 +110,16 @@ int main(int argc, char** argv) {
     }
 
     auto semaphore =
-        SemaphoreFile::try_acquire(net_cmdline_.semaphore_path(), net_cmdline_.semaphore_timeout());
+        SemaphoreFile::try_acquire(net_cmdline.semaphore_path(), net_cmdline.semaphore_timeout());
     SystemClock clock{};
-    NetworkF nf(net_cmdline_, b, clock);
-    return nf.Run() ? 0 : 2;
+
+    networkf_options_t opts{net_cmdline.config().max_backups(), net_cmdline.skip_delete()};
+    opts.system_name = net_cmdline.config().system_name();
+    const auto& net = net_cmdline.network();
+    NetworkF nf(net_cmdline.config(), opts, net, bbslist, clock);
+    return nf.Run(net_cmdline.cmdline().remaining()) ? 0 : 2;
   } catch (const semaphore_not_acquired& e) {
-    LOG(ERROR) << "ERROR: [network" << net_cmdline_.net_cmd()
+    LOG(ERROR) << "ERROR: [network" << net_cmdline.net_cmd()
                << "]: Unable to Acquire Network Semaphore: " << e.what();
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [networkf]: " << e.what();

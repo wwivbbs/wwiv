@@ -41,7 +41,7 @@ using namespace wwiv::strings;
 
 class FilesExtTest : public testing::Test {
 public:
-  FilesExtTest() : api_(helper.data()), api_helper_(&api_) {
+  FilesExtTest() : api_(helper.datadir()), api_helper_(&api_) {
   }
 
   void SetUp() override { helper.SetUp(); }

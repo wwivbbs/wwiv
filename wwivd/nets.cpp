@@ -67,7 +67,7 @@ static NetworkContact network_contact_from_last_time(const fido::FidoAddress& ad
 
 static void one_net_ftn_callout(const Config& config, const Network& net,
                                 const wwivd_config_t& c, int network_number) {
-  const fido::FidoCallout callout(config, net);
+  const fido::FidoCallout callout(config.root_directory(), config.max_backups(), net);
 
   // TODO(rushfan): 1. Right now we just keep the map of last call-out
   // time in memory, but we should checkpoint this to disk and reload

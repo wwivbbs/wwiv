@@ -109,14 +109,13 @@ static std::string get_echomail_areaname(const std::string& text) {
   return "";
 }
 
-NetworkF::NetworkF(const wwiv::net::NetworkCommandLine& net_cmdline,
-                   const wwiv::sdk::BbsListNet& bbslist, wwiv::core::Clock& clock)
-    : net_cmdline_(net_cmdline), bbslist_(bbslist), clock_(clock), net_(net_cmdline_.network()),
-      fido_callout_(net_cmdline_.config(), net_),
-      netdat_(net_cmdline_.config().gfilesdir(), net_cmdline_.config().logdir(), net_,
-              net_cmdline_.net_cmd(), clock_),
-      dirs_(net_cmdline_.config().root_directory(), net_) {
-  const IniFile ini(FilePath(net_cmdline_.config().root_directory(), WWIV_INI), {"WWIV"});
+NetworkF::NetworkF(const sdk::BbsDirectories& bbsdirs, const networkf_options_t& opts,
+                   const sdk::net::Network net, const sdk::BbsListNet& bbslist, core::Clock& clock)
+    : bbslist_(bbslist), clock_(clock), net_(net),
+      fido_callout_(bbsdirs.root_directory(), opts.max_backups, net_),
+      netdat_(bbsdirs.gfilesdir(), bbsdirs.logdir(), net_, opts.net_cmd, clock_),
+      dirs_(bbsdirs.root_directory(), net_), opts_(opts), datadir_(bbsdirs.datadir()) {
+  const IniFile ini(FilePath(bbsdirs.root_directory(), WWIV_INI), {"WWIV"});
   if (ini.IsOpen()) {
     // pull out new user colors
     for (auto i = 0; i < 10; i++) {
@@ -247,7 +246,7 @@ bool NetworkF::import_packets(const std::string& dir, const std::string& mask) {
   for (const auto& f : files) {
     if (import_packet_file(FilePath(dir, f.name))) {
       LOG(INFO) << "Successfully imported packet: " << FilePath(dir, f.name);
-      if (net_cmdline_.skip_delete()) {
+      if (opts_.skip_delete) {
         backup_file(FilePath(net_.dir, f.name));
       }
       File::Remove(FilePath(dir, f.name));
@@ -273,7 +272,7 @@ bool NetworkF::import_bundle_file(const std::filesystem::path& path) {
   File::set_current_directory(dirs_.temp_inbound_dir());
 
   // were in the temp dir now.
-  const auto arcs = files::read_arcs(net_cmdline_.config().datadir());
+  const auto arcs = files::read_arcs(datadir_);
   if (arcs.empty()) {
     LOG(ERROR) << "No archivers defined!";
     return false;
@@ -322,7 +321,7 @@ int NetworkF::import_bundles(const std::string& dir, const std::string& mask) {
       if (import_packet_file(path)) {
         LOG(INFO) << "Successfully imported packet: " << path;
         ++num_bundles_processed;
-        if (net_cmdline_.skip_delete()) {
+        if (opts_.skip_delete) {
           backup_file(path);
         }
         File::Remove(path);
@@ -330,7 +329,7 @@ int NetworkF::import_bundles(const std::string& dir, const std::string& mask) {
     } else if (import_bundle_file(path)) {
       LOG(INFO) << "Successfully imported bundle: " << path;
       ++num_bundles_processed;
-      if (net_cmdline_.skip_delete()) {
+      if (opts_.skip_delete) {
         backup_file(path);
       }
       File::Remove(path);
@@ -359,7 +358,7 @@ static std::string rename_fido_packet(const std::string& dir, const std::string&
 std::optional<std::string> NetworkF::create_ftn_bundle(const FidoAddress& route_to,
                                                        const std::string& fido_packet_name) {
   // were in the temp dir now.
-  auto arcs = files::read_arcs(net_cmdline_.config().datadir());
+  auto arcs = files::read_arcs(datadir_);
   if (arcs.empty()) {
     LOG(ERROR) << "No archivers defined!";
     return std::nullopt;
@@ -577,7 +576,7 @@ std::optional<std::string> NetworkF::create_ftn_packet(const FidoAddress& dest,
       vh.to_user_name = "All";
     }
 
-    FtnMessageDupe dupe(net_cmdline_.config());
+    FtnMessageDupe dupe(datadir_, true);
     auto msgid = FtnMessageDupe::GetMessageIDFromWWIVText(raw_text);
     auto needs_msgid = false;
     if (msgid.empty()) {
@@ -634,7 +633,7 @@ std::optional<std::string> NetworkF::create_ftn_packet(const FidoAddress& dest,
     auto origin_line = net_.fido.origin_line;
     if (origin_line.empty()) {
       // default origin line to system name if it doesn't exist.
-      origin_line = net_cmdline_.config().system_name();
+      origin_line = opts_.system_name;
     }
 
     if (from_address.point() == 0) {
@@ -919,12 +918,12 @@ bool NetworkF::export_main_type_email_name(std::set<std::string>& bundles, Packe
 
 sdk::FtnMessageDupe& NetworkF::dupe() {
   if (!dupe_) {
-    dupe_ = std::make_unique<wwiv::sdk::FtnMessageDupe>(net_cmdline_.config());
+    dupe_ = std::make_unique<wwiv::sdk::FtnMessageDupe>(datadir_, true);
   }
   return *dupe_;
 }
 
-bool NetworkF::Run() {
+bool NetworkF::Run(std::vector<std::string> cmds) {
   if (!fido_callout_.IsInitialized()) {
     LOG(ERROR) << "Unable to initialize fido_callout.";
     return false;
@@ -932,10 +931,8 @@ bool NetworkF::Run() {
 
   auto num_packets_processed = 0;
 
-  auto cmds = net_cmdline_.cmdline().remaining();
   if (cmds.empty()) {
     LOG(ERROR) << "No command specified. Exiting.";
-    ShowNetworkfHelp(net_cmdline_);
     return false;
   }
 
@@ -979,7 +976,7 @@ bool NetworkF::Run() {
       if (response == ReadPacketResponse::END_OF_FILE) {
         // Delete the packet.
         f.Close();
-        if (net_cmdline_.skip_delete()) {
+        if (opts_.skip_delete) {
           backup_file(f.full_pathname());
         }
         File::Remove(f.path());
@@ -1011,7 +1008,6 @@ bool NetworkF::Run() {
 
   } else {
     LOG(ERROR) << "Unknown command: " << cmd;
-    ShowNetworkfHelp(net_cmdline_);
     return false;
   }
   return num_packets_processed > 0;

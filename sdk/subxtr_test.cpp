@@ -68,8 +68,8 @@ TEST_F(SubXtrTest, Write) {
   s2.nets.emplace_back(xtrasubsnetrec{0, 0, 1, 1, "S2"});
   xsubs.emplace_back(s2);
 
-  write_subs_xtr(helper.data(), net_networks_, xsubs, 0);
-  TextFile subs_xtr_file(FilePath(helper.data(), "subs.xtr"), "r");
+  write_subs_xtr(helper.datadir(), net_networks_, xsubs, 0);
+  TextFile subs_xtr_file(FilePath(helper.datadir(), "subs.xtr"), "r");
   auto actual = SplitString(subs_xtr_file.ReadFileIntoString(), "\n");
   ASSERT_EQ(4u, actual.size());
   std::vector<std::string> expected = {
@@ -120,13 +120,13 @@ TEST_F(SubXtrTest, Read) {
     std::vector<std::string> contents{
       {"!1", "@this is sub2", "#0", "$testnet S2 0 1 1"},
     };
-    TextFile subs_xtr_file(FilePath(helper.data(), "subs.xtr"), "w");
+    TextFile subs_xtr_file(FilePath(helper.datadir(), "subs.xtr"), "w");
     for (const auto& line : contents) {
       subs_xtr_file.WriteLine(line);
     }
   }
   std::vector<xtrasubsrec> actual;
-  read_subs_xtr(helper.data(), net_networks_, subs_, actual);
+  read_subs_xtr(helper.datadir(), net_networks_, subs_, actual);
   ASSERT_EQ(subs_.size(), actual.size());
   ASSERT_EQ(expected.size(), actual.size());
   for (auto i = 0; i < wwiv::stl::ssize(subs_); i++) {

@@ -18,6 +18,7 @@
 #ifndef INCLUDED_SDK_CONFIG_H
 #define INCLUDED_SDK_CONFIG_H
 
+#include "sdk/bbs_directories.h"
 #include "sdk/vardec.h"
 #include <filesystem>
 #include <map>
@@ -173,7 +174,7 @@ struct config_t {
   system_toggles_t toggles;
 };
 
-class Config final {
+class Config final  : public BbsDirectories {
 public:
   Config(std::filesystem::path root_directory, config_t config);
   explicit Config(const Config& c);
@@ -209,20 +210,20 @@ public:
   [[nodiscard]] int config_revision_number() const { return config_.header.config_revision_number; }
   void config_revision_number(int v) { config_.header.config_revision_number = v; }
 
-  [[nodiscard]] std::string root_directory() const { return root_directory_.string(); }
-  [[nodiscard]] std::string datadir() const { return datadir_; }
+  [[nodiscard]] std::string root_directory() const override { return root_directory_.string(); }
+  [[nodiscard]] std::string datadir() const override { return datadir_; }
   void datadir(const std::string& d) { config_.datadir = d; }
-  [[nodiscard]] std::string msgsdir() const { return msgsdir_; }
+  [[nodiscard]] std::string msgsdir() const override { return msgsdir_; }
   void msgsdir(const std::string& d) { config_.msgsdir = d; }
-  [[nodiscard]] std::string gfilesdir() const { return gfilesdir_; }
+  [[nodiscard]] std::string gfilesdir() const override { return gfilesdir_; }
   void gfilesdir(const std::string& d) { config_.gfilesdir = d; }
-  [[nodiscard]] std::string menudir() const { return menudir_; }
+  [[nodiscard]] std::string menudir() const override { return menudir_; }
   void menudir(const std::string& d) { config_.menudir = d; }
-  [[nodiscard]] std::string dloadsdir() const { return dloadsdir_; }
+  [[nodiscard]] std::string dloadsdir() const override { return dloadsdir_; }
   void dloadsdir(const std::string& d) { config_.dloadsdir = d; }
-  [[nodiscard]] std::string scriptdir() const { return script_dir_; }
+  [[nodiscard]] std::string scriptdir() const override { return script_dir_; }
   void scriptdir(const std::string& d) { config_.scriptdir = d; }
-  [[nodiscard]] std::string logdir() const { return log_dir_; }
+  [[nodiscard]] std::string logdir() const override { return log_dir_; }
   void logdir(const std::string& d) { config_.logdir = d; }
 
   // moved from wwiv.ini
@@ -236,7 +237,7 @@ public:
   /**
    * Returns the scrarch directory for a given node.
    */
-  [[nodiscard]] std::filesystem::path scratch_dir(int node) const;
+  [[nodiscard]] std::filesystem::path scratch_dir(int node) const override;
   
   [[nodiscard]] int num_instances() const { return config_.num_instances; }
   void num_instances(int n) { config_.num_instances = n; }

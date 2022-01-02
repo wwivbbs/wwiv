@@ -71,8 +71,8 @@ TEST_F(MsgApiTest, CreateArea) {
   unique_ptr<MessageArea> a1(api->Open(sub, -1));
   EXPECT_TRUE(a1->Close());
 
-  EXPECT_TRUE(File::Exists(FilePath(helper.data(), "a1.sub")));
-  EXPECT_TRUE(File::Exists(FilePath(helper.msgs(), "a1.dat")));
+  EXPECT_TRUE(File::Exists(FilePath(helper.datadir(), "a1.sub")));
+  EXPECT_TRUE(File::Exists(FilePath(helper.msgsdir(), "a1.dat")));
 }
 
 TEST_F(MsgApiTest, SmokeTest) {

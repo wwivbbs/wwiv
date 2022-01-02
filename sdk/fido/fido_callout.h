@@ -31,7 +31,9 @@ class FidoCallout final : public Callout {
 public:
   typedef int size_type;
   static const size_type npos = -1;
-  FidoCallout(const wwiv::sdk::Config& config, const net::Network& net);
+  
+  FidoCallout(const std::string& root_directory, int max_backups, const wwiv::sdk::net::Network& net);
+
   // [[ VisibleForTesting ]]
   ~FidoCallout() override;
 
@@ -65,6 +67,8 @@ public:
   }
 
 private:
+  // TODO(rushfan): Remove this eventually
+  FidoCallout(const wwiv::sdk::Config& config, const net::Network& net);
   bool initialized_{false};
   const std::string root_dir_;
   net::Network net_;

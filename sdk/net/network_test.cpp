@@ -48,8 +48,8 @@ public:
   }
 
   [[nodiscard]] bool CreateNetworksDat(std::vector<std::string> names) const {
-    std::clog << "Writing NETWORK.DAT to: " << helper.data() << std::endl;
-    File file(FilePath(helper.data(), NETWORKS_DAT));
+    std::clog << "Writing NETWORK.DAT to: " << helper.datadir() << std::endl;
+    File file(FilePath(helper.datadir(), NETWORKS_DAT));
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file.IsOpen()) {
       return false;

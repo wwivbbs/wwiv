@@ -127,7 +127,7 @@ const binkp_session_config_t* BinkConfig::binkp_session_config_for(const std::st
   } else if (callout_network().type == network_type_t::ftn) {
     try {
       FidoAddress address(node);
-      FidoCallout fc(config_, callout_network());
+      FidoCallout fc(config_.root_directory(), config_.max_backups(), callout_network());
       if (!fc.IsInitialized())
         return nullptr;
       auto fido_node = fc.fido_node_config_for(address);

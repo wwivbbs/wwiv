@@ -43,7 +43,7 @@ public:
   }
 
   [[nodiscard]] bool CreateNames() const {
-    File file(FilePath(helper.data(), NAMES_LST));
+    File file(FilePath(helper.datadir(), NAMES_LST));
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file.IsOpen()) {
       return false;

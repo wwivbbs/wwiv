@@ -31,13 +31,21 @@
 
 namespace wwiv::net::networkf {
 
+struct networkf_options_t {
+  int max_backups{0};
+  bool skip_delete{false};
+  char net_cmd{'f'};
+  std::string system_name;
+};
+
 class NetworkF final {
 public:
-  NetworkF(const NetworkCommandLine& cmdline, const sdk::BbsListNet& bbslist,
+  NetworkF(const sdk::BbsDirectories& bbsdirs,
+           const networkf_options_t& opts, const sdk::net::Network, const sdk::BbsListNet& bbslist,
            core::Clock& clock);
   ~NetworkF();
 
-  bool Run();
+  bool Run(std::vector<std::string> cmds);
 
 private:
   bool import_packet_file(const std::filesystem::path& path);
@@ -104,6 +112,8 @@ private:
   sdk::fido::FidoCallout fido_callout_;
   NetDat netdat_;
   sdk::fido::FtnDirectories dirs_;
+  const networkf_options_t opts_;
+  const std::string datadir_;
 
 
   std::unique_ptr<sdk::FtnMessageDupe> dupe_;

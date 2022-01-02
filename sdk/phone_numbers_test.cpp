@@ -59,7 +59,7 @@ public:
 };
 
 TEST_F(PhoneNumbersTest, Find) {
-  const Config config(helper.root());
+  const Config config(helper.root_directory());
   ASSERT_TRUE(config.IsInitialized());
   ASSERT_TRUE(CreatePhoneNumDat(config));
 
@@ -72,7 +72,7 @@ TEST_F(PhoneNumbersTest, Find) {
 }
 
 TEST_F(PhoneNumbersTest, Insert) {
-  const Config config(helper.root());
+  const Config config(helper.root_directory());
   ASSERT_TRUE(config.IsInitialized());
   ASSERT_TRUE(CreatePhoneNumDat(config));
 
@@ -88,7 +88,7 @@ TEST_F(PhoneNumbersTest, Insert) {
 }
 
 TEST_F(PhoneNumbersTest, Erase) {
-  const Config config(helper.root());
+  const Config config(helper.root_directory());
   ASSERT_TRUE(config.IsInitialized());
   ASSERT_TRUE(CreatePhoneNumDat(config));
 

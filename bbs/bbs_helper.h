@@ -40,15 +40,7 @@ public:
   [[nodiscard]] wwiv::sdk::User* user() override;
   [[nodiscard]] const wwiv::sdk::User* user() const;
   [[nodiscard]] wwiv::common::Context& context() override;
-/*
- [[nodiscard]] wwiv::sdk::User* user() const { return user_; }
-  [[nodiscard]] TestIO* io() const { return io_.get(); }
 
-  // Accessors for various directories
-  FileHelper& files() { return files_; }
-  [[nodiscard]] const std::string& data() const { return dir_data_; }
-  [[nodiscard]] const std::string& gfiles() const { return dir_gfiles_; }
-*/
   std::unique_ptr<Application> app_;
 
 };

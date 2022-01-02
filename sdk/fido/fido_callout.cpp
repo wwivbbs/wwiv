@@ -55,12 +55,8 @@ void load_minimal(Archive const&, wwiv::sdk::fido::FidoAddress& a, const std::st
 
 namespace wwiv::sdk::fido {
 
-FidoCallout::FidoCallout(const Config& config, const Network& net)
-    : Callout(net, config.max_backups()), root_dir_(config.root_directory()), net_(net) {
-
-  if (!config.IsInitialized()) {
-    return;
-  }
+FidoCallout::FidoCallout(const std::string& root_directory, int max_backups, const Network& net)
+    : Callout(net, max_backups), root_dir_(root_directory), net_(net) {
 
   initialized_ = Load();
   if (!initialized_) {
@@ -69,7 +65,10 @@ FidoCallout::FidoCallout(const Config& config, const Network& net)
   initialized_ = true;
 }
 
-FidoCallout::~FidoCallout() = default;
+FidoCallout::FidoCallout(const Config& config, const Network& net)
+    : FidoCallout(config.root_directory(), config.max_backups(), net) {}
+
+    FidoCallout::~FidoCallout() = default;
 
 const net_call_out_rec* FidoCallout::net_call_out_for(int node) const {
   VLOG(2) << "       FidoCallout::net_call_out_for(" << node << ")";
