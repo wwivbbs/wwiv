@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2016-2021, WWIV Software Services             */
+/*             Copyright (C)2016-2022, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -115,7 +115,6 @@ int main(int argc, char** argv) {
 
     networkf_options_t opts{net_cmdline.config().max_backups(), net_cmdline.skip_delete()};
     opts.system_name = net_cmdline.config().system_name();
-    const auto& net = net_cmdline.network();
     NetworkF nf(net_cmdline.config(), opts, net, bbslist, clock);
     return nf.Run(net_cmdline.cmdline().remaining()) ? 0 : 2;
   } catch (const semaphore_not_acquired& e) {

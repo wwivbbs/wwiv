@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*          Copyright (C)2020-2021, WWIV Software Services                */
+/*          Copyright (C)2020-2022, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -105,7 +105,6 @@ private:
 
   sdk::FtnMessageDupe& dupe();
 
-  const NetworkCommandLine& net_cmdline_;
   const sdk::BbsListNet& bbslist_;
   core::Clock& clock_;
   const sdk::net::Network& net_;

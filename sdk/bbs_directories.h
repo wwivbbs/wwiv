@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2022, WWIV Software Services             */
+/*                          WWIV Version 5.x                              */
+/*             Copyright (C)2021-2022, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,9 +15,32 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_BBS_CHNEDIT_H
-#define INCLUDED_BBS_CHNEDIT_H
+#ifndef INCLUDED_SDK_BBS_DIRECTORIES_H
+#define INCLUDED_SDK_BBS_DIRECTORIES_H
 
-void chainedit();
+#include <filesystem>
+#include <string>
+
+namespace wwiv::sdk {
+
+
+class BbsDirectories {
+public:
+  [[nodiscard]] virtual std::string root_directory() const = 0;
+  [[nodiscard]] virtual std::string datadir() const = 0;
+  [[nodiscard]] virtual std::string msgsdir() const = 0;
+  [[nodiscard]] virtual std::string gfilesdir() const = 0;
+  [[nodiscard]] virtual std::string menudir() const = 0;
+  [[nodiscard]] virtual std::string dloadsdir() const = 0;
+  [[nodiscard]] virtual std::string scriptdir() const = 0;
+  [[nodiscard]] virtual std::string logdir() const = 0;
+
+  /**
+   * Returns the scrarch directory for a given node.
+   */
+  [[nodiscard]] virtual std::filesystem::path scratch_dir(int node) const = 0;
+};
+
+} // namespace wwiv::sdk
 
 #endif
