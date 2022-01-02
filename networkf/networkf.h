@@ -76,6 +76,7 @@ private:
 
   sdk::FtnMessageDupe& dupe();
 
+  const NetworkCommandLine& net_cmdline_;
   const sdk::BbsListNet& bbslist_;
   core::Clock& clock_;
   const sdk::net::Network& net_;
