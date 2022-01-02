@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
   fprintf(stderr, "WWIVFOSS: ");
   fprintf(stderr, ((char __near*)fossil_info_ident));
   fprintf(stderr, "\r\n"
-      "          Copyright (c) 2021, WWIV Software Services\r\n"
+      "          Copyright (c) 2021-2022, WWIV Software Services\r\n"
       "          Built: " __DATE__ ", " __TIME__ "\r\n\r\n");
 
   App app;

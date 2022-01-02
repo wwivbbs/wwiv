@@ -119,7 +119,7 @@ bool IsPhoneNumberUSAFormat(User *pUser) {
 
 static int GetAnsiStatusAndShowWelcomeScreen() {
   bout << "\r\nWWIV " << full_version() << wwiv::endl;
-  bout << "Copyright (c) 1998-2021, WWIV Software Services." << wwiv::endl;
+  bout << "Copyright (c) 1998-2022, WWIV Software Services." << wwiv::endl;
   bout << "All Rights Reserved." << wwiv::endl;
 
   const auto ans = check_ansi();
