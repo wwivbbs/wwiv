@@ -534,7 +534,7 @@ static bool mkdir_or_warn(const std::filesystem::path& dir, const std::string& n
 bool Application::InitializeBBS(bool cleanup_network) {
   Cls();
   std::clog << std::endl
-            << full_version() << ", Copyright (c) 1998-2021, WWIV Software Services."
+            << full_version() << ", Copyright (c) 1998-2022, WWIV Software Services."
             << std::endl
             << std::endl
             << "\r\nInitializing BBS..." << std::endl;

@@ -10,7 +10,7 @@
                    Updated for Net37, WSS
                    Updated for Net52, WSS
 
-   Copyright (c) 1998-2016, WWIV Software Services
+   Copyright (c) 1998-2022, WWIV Software Services
                Copyright (c) 1995, Wayne Bell
 
 

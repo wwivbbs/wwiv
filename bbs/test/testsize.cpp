@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
         if (argc != 2)
         {
                 printf("WWIV 5.X structure size test utility\r\n");
-                printf("Copyright 2000-2021 WWIV Software Services\r\n\n");
+                printf("Copyright 2000-2022, WWIV Software Services\r\n\n");
                 printf("Usage:\n\tTESTSIZE <output filename>\n\n");
                 return EXIT_BAD_PARAMS;
         }
