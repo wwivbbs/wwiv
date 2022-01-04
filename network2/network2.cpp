@@ -86,7 +86,7 @@ static bool handle_ssm(Context& context, Packet& p) {
   if (!context.ssm.send_local(p.nh.touser, p.text())) {
     LOG(ERROR) << "    ! ERROR writing SSM: '" << p.nh.touser << "; text: '" << p.text()
                << "'; writing to dead.net";
-    return write_wwivnet_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
   }
 
   LOG(INFO) << "    + SSM  to: " << p.nh.touser << "; text: '" << p.text() << "'";
@@ -96,12 +96,12 @@ static bool handle_ssm(Context& context, Packet& p) {
 static bool write_net_received_file(Context& context, const Network& net, Packet& p, NetInfoFileInfo info) {
   if (!info.valid) {
     LOG(ERROR) << "    ! ERROR NetInfoFileInfo is not valid; writing to dead.net";
-    return write_wwivnet_packet(DEAD_NET, net, p);
+    return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
   }
 
   if (info.filename.empty()) {
     LOG(ERROR) << "    ! ERROR Fell through handle_net_info_file; writing to dead.net";
-    return write_wwivnet_packet(DEAD_NET, net, p);
+    return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
   }
   // we know the name.
   context.ssm.send_local(1, StrCat("Received ", info.filename));
@@ -109,7 +109,7 @@ static bool write_net_received_file(Context& context, const Network& net, Packet
   if (!info.overwrite && File::Exists(fn)) {
     LOG(ERROR) << "    ! ERROR File [" << fn
                << "] already exists, and packet not set to overwrite; writing to dead.net";
-    return write_wwivnet_packet(DEAD_NET, net, p);
+    return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
   }
   File file(fn);
   if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate,
@@ -117,7 +117,7 @@ static bool write_net_received_file(Context& context, const Network& net, Packet
     // We couldn't create or open the file.
     LOG(ERROR) << "    ! ERROR Unable to create or open file: '" << info.filename
                << "'; writing to dead.net";
-    return write_wwivnet_packet(DEAD_NET, net, p);
+    return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
   }
   file.Write(info.data);
   LOG(INFO) << "  + Got " << info.filename;
@@ -226,7 +226,7 @@ static bool handle_packet(Context& context, Packet& p) {
   default:
     LOG(ERROR) << "    ! ERROR Writing message to dead.net for unhandled type: '"
                << main_type_name(p.nh.main_type) << "'; writing to dead.net";
-    return write_wwivnet_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
   }
 }
 

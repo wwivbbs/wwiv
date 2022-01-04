@@ -234,7 +234,7 @@ static void add_netsubscriber(const Network& net, int network_number, int system
   if (subtype.empty()) {
     return;
   }
-  const auto fn = StrCat(net.dir, "n", subtype, ".net");
+  const auto fn = FilePath(net.dir, StrCat("n", subtype, ".net"));
   if (!File::Exists(fn)) {
     bout.nl();
     bout << "|#6Subscriber file not found: " << fn << wwiv::endl;

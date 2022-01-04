@@ -32,7 +32,7 @@ namespace wwiv::sdk::net {
 #ifdef ERROR
 #undef ERROR
 #endif
-enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
+enum class ReadPacketResponse { NOT_OPENED, OK, ERROR, END_OF_FILE };
 
 // fwd
 class ParsedPacketText;
@@ -46,7 +46,7 @@ public:
   ~Packet() = default;
 
   bool UpdateRouting(const Network& net);
-  static std::string wwivnet_packet_name(const Network& net, uint16_t node);
+  static std::filesystem::path wwivnet_packet_path(const Network& net, uint16_t node);
 
   [[nodiscard]] const std::string& text() const noexcept;
   void set_text(const std::string& text);
@@ -119,6 +119,63 @@ private:
   std::string text_;
 };
 
+class PacketFile {
+public:
+  
+  class iterator {
+  public:
+    // iterator traits
+    using difference_type = int;
+    using value_type = Packet;
+    using pointer = const Packet*;
+    using reference = const Packet&;
+    using iterator_category = std::forward_iterator_tag;
+
+    // Constructor and bits to make it work.
+    iterator(PacketFile& f) : f_(f) {}
+    iterator(PacketFile& f, ReadPacketResponse response) : f_(f), response_(response) {}
+    // prefix (++iter)
+    iterator& operator++() {
+      std::tie(packet_, response_) = f_.Read();
+      ++num_;
+    }
+    // postfix (iter++)
+    iterator operator++(int) {
+      iterator retval = *this;
+      ++(*this);
+      return retval;
+    }
+    bool operator==(iterator other) const {
+      if (response_ == ReadPacketResponse::END_OF_FILE &&
+          other.response_ == ReadPacketResponse::END_OF_FILE) {
+        return true;
+      }
+      return (num_ == other.num_ && response_ == other.response_);
+    }
+    bool operator!=(iterator other) const { return !(*this == other); }
+    Packet operator*() { return packet_; }
+
+  private:
+    int num_{0};
+    PacketFile& f_;
+    Packet packet_;
+    ReadPacketResponse response_{ReadPacketResponse::NOT_OPENED};
+  };
+  
+  PacketFile(const std::filesystem::path& path, bool process_de);
+  virtual ~PacketFile();
+  std::tuple<Packet, ReadPacketResponse> Read();
+
+  iterator begin() { return iterator(*this); }
+  iterator end() { return iterator(*this, ReadPacketResponse::END_OF_FILE); }
+
+private:
+  wwiv::core::File file_;
+  bool process_de_{false};
+  bool open_{false};
+};
+
+
 /**
  * Gets the next message field from a packet text c with iterator iter.
  * The next message field will be the next set of characters that do not include
@@ -156,8 +213,7 @@ uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node);
 
 std::tuple<Packet, ReadPacketResponse> read_packet(wwiv::core::File& file, bool process_de);
 
-bool write_wwivnet_packet(const std::string& filename, const Network& net,
-                          const Packet& packet);
+bool write_wwivnet_packet(const std::filesystem::path& path, const Packet& packet);
 
 bool send_local_email(const Network& network, net_header_rec& nh, const std::string& text,
                       const std::string& byname, const std::string& title);

@@ -52,7 +52,7 @@ bool send_network_email(const std::string& filename, const Network& network,
   ppt.set_sender(byname);
   ppt.set_text(text);
 
-  return write_wwivnet_packet(filename, network, Packet(nh, list, ppt));
+  return write_wwivnet_packet(FilePath(network.dir, filename), Packet(nh, list, ppt));
 }
 
 std::tuple<Packet, ReadPacketResponse>  read_packet(File& f, bool process_de) {
@@ -105,26 +105,26 @@ std::tuple<Packet, ReadPacketResponse>  read_packet(File& f, bool process_de) {
   return std::make_tuple(packet, ReadPacketResponse::OK);
 }
 
-bool write_wwivnet_packet(const std::string& filename, const Network& net, const Packet& p) {
-  VLOG(2) << "write_wwivnet_packet: " << filename;
+bool write_wwivnet_packet(const std::filesystem::path& path, const Packet& p) {
+  VLOG(2) << "write_wwivnet_packet: " << path.string();
   LOG(INFO) << "write_wwivnet_packet: Writing type " << p.nh.main_type << "/" << p.nh.minor_type
-            << " message to packet: " << filename;
+            << " message to packet: " << path.string();
   if (p.nh.length != p.text().size()) {
-    LOG(ERROR) << "Error while writing packet: " << net.dir << filename;
+    LOG(ERROR) << "Error while writing packet: " << path.string();
     LOG(ERROR) << "Mismatched text and p.nh.length.  text =" << p.text().size()
                << " nh.length = " << p.nh.length;
     return false;
   }
-  File file(FilePath(net.dir, filename));
+  File file(path);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    LOG(ERROR) << "Error while writing packet: " << net.dir << filename << "Unable to open file.";
+    LOG(ERROR) << "Error while writing packet: " << path.string() << "Unable to open file.";
     return false;
   }
   file.Seek(0L, File::Whence::end);
   const auto num = file.Write(&p.nh, sizeof(net_header_rec));
   if (num != sizeof(net_header_rec)) {
     // Let's fail now since we didn't write this right.
-    LOG(ERROR) << "Error while writing packet: " << net.dir << filename << " num written (" << num
+    LOG(ERROR) << "Error while writing packet: " << path.string() << " num written (" << num
                << ") != net_header_rec size.";
     return false;
   }
@@ -316,6 +316,30 @@ int Packet::length() const {
   return nh.length;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// Packetfile
+
+PacketFile::PacketFile(const std::filesystem::path& path, bool process_de)
+    : file_(path), process_de_(process_de) {
+  open_ = file_.Open(File::modeBinary | File::modeReadOnly);
+  if (!open_) {
+    LOG(ERROR) << "Unable to open file: " << path.string();
+  }
+}
+
+
+PacketFile::~PacketFile() { 
+  if (open_) {
+    file_.Close();
+    open_ = false;
+  }
+}
+
+std::tuple<Packet, ReadPacketResponse> PacketFile::Read() {
+  return read_packet(file_, process_de_);
+}
+
+
 uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node) {
   VLOG(2) << "get_forsys (forward to systen number) for node: " << node;
 
@@ -338,15 +362,15 @@ uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node) {
 }
 
 // static
-std::string Packet::wwivnet_packet_name(const Network& net, uint16_t node) {
+std::filesystem::path Packet::wwivnet_packet_path(const Network& net, uint16_t node) {
   if (node == net.sysnum || node == 0) {
     // Messages to us to into local.net.
-    return LOCAL_NET;
+    return FilePath(net.dir, LOCAL_NET);
   }
   if (node == WWIVNET_NO_NODE) {
-    return DEAD_NET;
+    return FilePath(net.dir, DEAD_NET);
   }
-  return fmt::format("s{}.net", node);
+  return FilePath(net.dir, fmt::format("s{}.net", node));
 }
 
 const std::string& Packet::text() const noexcept { return text_; }
@@ -591,7 +615,7 @@ static std::string change_subtype_to(const std::string& org_text, const std::str
 bool write_wwivnet_packet_or_log(const Network& net, char network_app_id,
                                  const Packet& p) {
   const auto fn = create_pend(net.dir, false, network_app_id);
-  if (!write_wwivnet_packet(fn, net, p)) {
+  if (!write_wwivnet_packet(FilePath(net.dir, fn), p)) {
     LOG(ERROR) << "Error writing packet: " << net.dir << " " << fn;
     return false;
   }

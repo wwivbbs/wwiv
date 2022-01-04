@@ -92,7 +92,7 @@ bool Network1::write_multiple_wwivnet_packets(const net_header_rec& nh,
     }
     const auto forsys = fa.first;
     netdat_.add_file_bytes(forsys, np.length());
-    if (!write_wwivnet_packet(Packet::wwivnet_packet_name(net_, forsys), net_, np)) {
+    if (!write_wwivnet_packet(Packet::wwivnet_packet_path(net_, forsys), np)) {
       result = false;
     }
   }
@@ -108,13 +108,13 @@ bool Network1::handle_packet(Packet& p) {
   if (p.nh.tosys == net_.sysnum) {
     // Local Packet.
     netdat_.add_file_bytes(net_.sysnum, p.length());
-    return write_wwivnet_packet(LOCAL_NET, net_, p);
+    return write_wwivnet_packet(FilePath(net_.dir, LOCAL_NET), p);
   }
   if (p.list.empty()) {
     // Network packet, single destination
     const auto forsys = get_forsys(bbslist_, p.nh.tosys);
     netdat_.add_file_bytes(forsys, p.length());
-    return write_wwivnet_packet(Packet::wwivnet_packet_name(net_, forsys), net_, p);
+    return write_wwivnet_packet(Packet::wwivnet_packet_path(net_, forsys), p);
   }
   // Network packet, multiple destinations.
   return write_multiple_wwivnet_packets(p.nh, p.list, p.text());

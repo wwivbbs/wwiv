@@ -84,7 +84,7 @@ int SubReqCommand::Execute() {
   auto text = ToStringUpperCase(subtype);
   text.push_back('\0');
   Packet packet(nh, {}, text);
-  const auto ok = write_wwivnet_packet(packet_filename, net, packet);
+  const auto ok = write_wwivnet_packet(FilePath(net.dir, packet_filename), packet);
   if (!ok) {
     LOG(ERROR) << "Error writing packet: " << packet_filename;
     return 1;

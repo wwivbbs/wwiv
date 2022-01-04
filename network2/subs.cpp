@@ -149,7 +149,7 @@ static bool send_sub_add_drop_resp(Context& context,
   nh.length = size_int(text); // should be subtype.size() + 2
   const auto pendfile = create_pend(context.net.dir, false, '2');
   const Packet packet(nh, {}, text);
-  return write_wwivnet_packet(pendfile, context.net, packet);
+  return write_wwivnet_packet(FilePath(context.net.dir, pendfile), packet);
 }
 
 static bool IsHostedHere(Context& context, const std::string& subtype) {
@@ -329,7 +329,7 @@ bool handle_sub_list_info_request(Context& context, Packet& p) {
 
   const auto pendfile = create_pend(context.net.dir, false, '2');
   const Packet np(nh, {}, text);
-  return write_wwivnet_packet(pendfile, context.net, np);
+  return write_wwivnet_packet(FilePath(context.net.dir, pendfile), np);
 }
 
 

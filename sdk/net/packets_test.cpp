@@ -28,25 +28,28 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
-static std::string CreateFakePacketText(const std::string& subtype, const std::string& title, const std::string& sender,
-                                   const std::string& date, const std::string& text) {
-
-  std::string result;
-  result.append(subtype);
-  result.push_back(0);
-  result.append(title);
-  result.push_back(0);
-  result.append(sender).append("\r\n");
-  result.append(date).append("\r\n");
-  result.append(text);
-  result.push_back(26);
-
-  return result;
-}
-
 class PacketsTest : public testing::Test {
 public:
   PacketsTest() = default;
+  std::string CreateFakePacketText(const std::string& subtype, const std::string& title,
+                                   const std::string& sender, const std::string& text) {
+    std::string result;
+    result.reserve(500);
+    result.append(subtype);
+    result.push_back(0);
+    result.append(title);
+    result.push_back(0);
+    result.append(sender).append("\r\n");
+
+    const auto now = daten_t_now();
+    const auto date = daten_to_wwivnet_time(now);
+    result.append(date).append("\r\n");
+    result.append(text);
+    result.push_back(26);
+    result.shrink_to_fit();
+
+    return result;
+  }
 
 protected:
   wwiv::core::test::FileHelper helper_;
@@ -77,10 +80,9 @@ TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
 
 TEST_F(PacketsTest, UpdateRouting_Smoke) {
   const std::string body = "Hello World";
-  const auto now = daten_t_now();
-  const auto date = daten_to_wwivnet_time(now);
 
-  const auto packet_text = CreateFakePacketText("MYSUB", "This is a title", "Sysop #1", date, body);
+  const auto packet_text = CreateFakePacketText("MYSUB", "This is a title", "Sysop #1", body);
+  const auto now = daten_t_now();
 
   net_header_rec nh{};
   nh.daten = now;
@@ -133,7 +135,6 @@ TEST_F(PacketsTest, FromPacketText_FromPacketText_NewPost) {
   EXPECT_EQ(pp.date(), "d");
   EXPECT_EQ(pp.text(), "e");
 }
-
 
 TEST_F(PacketsTest, FromPacketText_ToPacketText_Email_NotName) {
   const std::string expected("b\000c\r\nd\r\ne", 9);

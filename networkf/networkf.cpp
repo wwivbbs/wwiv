@@ -195,15 +195,10 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
     auto from_address = get_address_from_packet(msg, packet.header());
 
     std::string s1;
-    if (is_email) {
-      // TO_USER<nul>TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
-      s1 = msg.vh.to_user_name;
-    } else {
-      // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
-      s1 = get_echomail_areaname(msg.vh.text);
-    }
-    std::string text = s1;
-
+    // Email Format: TO_USER<nul>TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
+    // Non-Email Sub Format: SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
+    std::string text = (is_email) ? msg.vh.to_user_name : get_echomail_areaname(msg.vh.text);
+    // Adding a 0 is adding a NULL character to the string
     text.push_back(0);
     text.append(msg.vh.subject);
     text.push_back(0);
@@ -225,7 +220,7 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
     nh.length = size_uint32(text);
     // Create file, write to local.net_ for network2 to import.
     Packet wwiv_packet(nh, {}, text);
-    if (!write_wwivnet_packet(LOCAL_NET, net_, wwiv_packet)) {
+    if (!write_wwivnet_packet(FilePath(net_.dir, LOCAL_NET), wwiv_packet)) {
       LOG(ERROR) << "ERROR Writing WWIV packet for message: " << wwiv_packet.nh.main_type << "/"
                  << wwiv_packet.nh.minor_type;
     } else {
@@ -570,7 +565,7 @@ std::optional<std::string> NetworkF::create_ftn_packet(const FidoAddress& dest,
     vh.from_user_name = sender_name;
     vh.subject = title;
     if (!to_user_name.empty()) {
-      auto username_only = remove_fido_addr(to_user_name);
+      const auto username_only = remove_fido_addr(to_user_name);
       vh.to_user_name = properize(username_only);
     } else {
       vh.to_user_name = "All";
@@ -691,7 +686,7 @@ std::optional<std::string> NetworkF::create_ftn_packet_and_bundle(const FidoAddr
   auto fido_packet_name = create_ftn_packet(dest, route_to, p);
   if (!fido_packet_name) {
     LOG(ERROR) << "    ! ERROR Failed to create FTN packet; writing to dead.net";
-    write_wwivnet_packet(DEAD_NET, net_, p);
+    write_wwivnet_packet(FilePath(net_.dir, DEAD_NET), p);
     return std::nullopt;
   }
   LOG(INFO) << "Created packet: " << FilePath(dirs_.temp_outbound_dir(), fido_packet_name.value());
@@ -699,7 +694,7 @@ std::optional<std::string> NetworkF::create_ftn_packet_and_bundle(const FidoAddr
   const auto bundlename = create_ftn_bundle(route_to, fido_packet_name.value());
   if (!bundlename) {
     LOG(ERROR) << "    ! ERROR Failed to create FTN bundle; writing to dead.net";
-    write_wwivnet_packet(DEAD_NET, net_, p);
+    write_wwivnet_packet(FilePath(net_.dir, DEAD_NET), p);
     return std::nullopt;
   }
   return bundlename;
@@ -1000,7 +995,7 @@ bool NetworkF::Run(std::vector<std::string> cmds) {
         LOG(ERROR) << "    ! ERROR Unhandled type: '" << main_type_name(p.nh.main_type)
                    << "'; writing to dead.net";
         // Let's write it to dead.net_
-        if (!write_wwivnet_packet(DEAD_NET, net_, p)) {
+        if (!write_wwivnet_packet(FilePath(net_.dir, DEAD_NET), p)) {
           LOG(ERROR) << "Error writing to dead.net";
         }
       }

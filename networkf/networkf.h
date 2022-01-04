@@ -45,6 +45,7 @@ public:
            core::Clock& clock);
   ~NetworkF();
 
+  /** Runs networkf using cmds for the subcommands passed from the commandline */
   bool Run(std::vector<std::string> cmds);
 
 private:

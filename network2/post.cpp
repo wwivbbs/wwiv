@@ -92,7 +92,7 @@ bool handle_inbound_post(Context& context, Packet& p) {
     LOG(INFO) << "      title: " << ppt.title() << "; writing to dead.net.";
     const auto msg = fmt::format("Unable to find message of subtype: '{}'; writing to dead.net", ppt.subtype());
     context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
-    return write_wwivnet_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
   }
 
   if (!context.api(sub.storage_type).Exist(sub)) {
@@ -106,7 +106,7 @@ bool handle_inbound_post(Context& context, Packet& p) {
       context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
       LOG(INFO) << "    ! ERROR: Failed to create message area: '" << sub.filename
                 << "'; writing to dead.net.";
-      return write_wwivnet_packet(DEAD_NET, context.net, p);
+      return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
     }
   }
 
@@ -116,7 +116,7 @@ bool handle_inbound_post(Context& context, Packet& p) {
     context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
     LOG(INFO) << "    ! ERROR Unable to open message area: '" << sub.filename
               << "'; writing to dead.net.";
-    return write_wwivnet_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
   }
 
   if (area->Exists(p.nh.daten, ppt.title(), p.nh.fromsys, p.nh.fromuser)) {
@@ -145,7 +145,7 @@ bool handle_inbound_post(Context& context, Packet& p) {
     const auto errmsg = fmt::format("Failed to add message: '{}'; writing to dead.net", ppt.title());
     context.netdat().add_message(NetDat::netdat_msgtype_t::error, errmsg);
     LOG(ERROR) << "    ! ERROR " << errmsg;
-    return write_wwivnet_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
   }
   LOG(INFO) << "    + Posted  '" << ppt.title() << "' on sub: '" << ppt.subtype() << "'.";
     context.netdat().add_message(NetDat::netdat_msgtype_t::post, fmt::format("Posted  '{}' on sub: '{}'",
@@ -186,7 +186,7 @@ bool send_post_to_subscribers(Context& context, Packet& template_packet,
     context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
     LOG(INFO) << msg;
     Packet p(template_packet.nh, {}, template_packet.text());
-    return write_wwivnet_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
   }
   VLOG(1) << "DEBUG: Found sub: " << sub.name;
 
