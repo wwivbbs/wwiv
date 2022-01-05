@@ -44,29 +44,29 @@ bool send_network_email(const std::string& filename, const Network& network,
                         const std::string& byname, const std::string& title) {
 
   LOG(INFO) << "send_network_email: Writing type " << nh.main_type << "/" << nh.minor_type
-            << " message to packet: " << filename << "; title: " << title;
+            << " message to NetPacket: " << filename << "; title: " << title;
 
-  ParsedPacketText ppt{nh.main_type};
+  ParsedNetPacketText ppt{nh.main_type};
   ppt.set_date(nh.daten);
   ppt.set_title(title);
   ppt.set_sender(byname);
   ppt.set_text(text);
 
-  return write_wwivnet_packet(FilePath(network.dir, filename), Packet(nh, list, ppt));
+  return write_wwivnet_packet(FilePath(network.dir, filename), NetPacket(nh, list, ppt));
 }
 
-std::tuple<Packet, ReadPacketResponse>  read_packet(File& f, bool process_de) {
-  Packet packet{};
+std::tuple<NetPacket, ReadNetPacketResponse>  read_packet(File& f, bool process_de) {
+  NetPacket packet{};
   auto num_read = f.Read(&packet.nh, sizeof(net_header_rec));
   if (num_read == 0) {
-    // at the end of the packet.
-    return std::make_tuple(packet, ReadPacketResponse::END_OF_FILE);
+    // at the end of the NetPacket.
+    return std::make_tuple(packet, ReadNetPacketResponse::END_OF_FILE);
   }
 
   if (num_read != sizeof(net_header_rec)) {
     LOG(INFO) << "error reading header, got short read of size: " << num_read
               << "; expected: " << sizeof(net_header_rec);
-    return std::make_tuple(packet, ReadPacketResponse::ERROR);
+    return std::make_tuple(packet, ReadNetPacketResponse::ERROR);
   }
 
   if (packet.nh.method > 0) {
@@ -84,7 +84,7 @@ std::tuple<Packet, ReadPacketResponse>  read_packet(File& f, bool process_de) {
 
     if (length > static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) || length < 0) {
       LOG(INFO) << "error reading header, got length too big (underflow?): " << length;
-      return std::make_tuple(packet, ReadPacketResponse::ERROR);
+      return std::make_tuple(packet, ReadNetPacketResponse::ERROR);
     }
 
     if (packet.nh.method > 0 && process_de &&
@@ -102,29 +102,29 @@ std::tuple<Packet, ReadPacketResponse>  read_packet(File& f, bool process_de) {
     read_text.resize(num_read);
     packet.set_text(std::move(read_text));
   }
-  return std::make_tuple(packet, ReadPacketResponse::OK);
+  return std::make_tuple(packet, ReadNetPacketResponse::OK);
 }
 
-bool write_wwivnet_packet(const std::filesystem::path& path, const Packet& p) {
+bool write_wwivnet_packet(const std::filesystem::path& path, const NetPacket& p) {
   VLOG(2) << "write_wwivnet_packet: " << path.string();
   LOG(INFO) << "write_wwivnet_packet: Writing type " << p.nh.main_type << "/" << p.nh.minor_type
-            << " message to packet: " << path.string();
+            << " message to NetPacket: " << path.string();
   if (p.nh.length != p.text().size()) {
-    LOG(ERROR) << "Error while writing packet: " << path.string();
+    LOG(ERROR) << "Error while writing NetPacket: " << path.string();
     LOG(ERROR) << "Mismatched text and p.nh.length.  text =" << p.text().size()
                << " nh.length = " << p.nh.length;
     return false;
   }
   File file(path);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    LOG(ERROR) << "Error while writing packet: " << path.string() << "Unable to open file.";
+    LOG(ERROR) << "Error while writing NetPacket: " << path.string() << "Unable to open file.";
     return false;
   }
   file.Seek(0L, File::Whence::end);
   const auto num = file.Write(&p.nh, sizeof(net_header_rec));
   if (num != sizeof(net_header_rec)) {
     // Let's fail now since we didn't write this right.
-    LOG(ERROR) << "Error while writing packet: " << path.string() << " num written (" << num
+    LOG(ERROR) << "Error while writing NetPacket: " << path.string() << " num written (" << num
                << ") != net_header_rec size.";
     return false;
   }
@@ -165,7 +165,7 @@ static std::string NetInfoFileName(uint16_t type) {
   }
 }
 
-NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
+NetInfoFileInfo GetNetInfoFileInfo(NetPacket& p) {
   NetInfoFileInfo info{};
   if (p.nh.main_type != main_type_net_info && p.nh.minor_type != net_info_file) {
     // Everything  here should be a main_type_net_info or net_info_file
@@ -249,24 +249,24 @@ static int number_of_header_lines(uint16_t main_type) {
   }
 }
 
-Packet::Packet(const net_header_rec& h, std::vector<uint16_t> l, std::string t)
+NetPacket::NetPacket(const net_header_rec& h, std::vector<uint16_t> l, std::string t)
     : nh(h), list(std::move(l)), text_(std::move(t)) {
   if (nh.list_len != list.size()) {
-    LOG(ERROR) << "ERROR: Malformed packet: list_len [" << nh.list_len << "] != list.size() ["
+    LOG(ERROR) << "ERROR: Malformed NetPacket: list_len [" << nh.list_len << "] != list.size() ["
                << list.size() << "]";
   }
   if (!list.empty() && nh.tosys != 0) {
-    LOG(ERROR) << "ERROR: Malformed packet: list is not empty and nh.tosys != 0";
+    LOG(ERROR) << "ERROR: Malformed NetPacket: list is not empty and nh.tosys != 0";
   }
   update_header();
 }
 
-Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedPacketText& t)
-    : Packet(h, l, ParsedPacketText::ToPacketText(t)) {}
+NetPacket::NetPacket(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedNetPacketText& t)
+    : NetPacket(h, l, ParsedNetPacketText::ToPacketText(t)) {}
 
-Packet::Packet() = default;
+NetPacket::NetPacket() = default;
 
-bool Packet::UpdateRouting(const Network& net) {
+bool NetPacket::UpdateRouting(const Network& net) {
   if (!need_to_update_routing(nh.main_type)) {
     return false;
   }
@@ -284,7 +284,7 @@ bool Packet::UpdateRouting(const Network& net) {
   }
   nh.length += stl::size_uint32(routing_information);
 
-  // Need to skip over either 3 or 4 lines 1st depending on the packet type.
+  // Need to skip over either 3 or 4 lines 1st depending on the NetPacket type.
   const auto lines = number_of_header_lines(nh.main_type);
   auto iter = text_.begin();
   for (auto i = 0; i < lines; i++) {
@@ -297,29 +297,29 @@ bool Packet::UpdateRouting(const Network& net) {
   return true;
 }
 
-void Packet::set_text(const std::string& text) {
+void NetPacket::set_text(const std::string& text) {
   text_ = text;
   update_header();
 }
 
-void Packet::set_text(std::string&& text) {
+void NetPacket::set_text(std::string&& text) {
   text_ = std::move(text);
   update_header();
 }
 
-void Packet::update_header() {
+void NetPacket::update_header() {
   nh.length = stl::size_uint32(text_);
   nh.list_len = static_cast<uint16_t>(list.size());
 }
 
-int Packet::length() const {
+int NetPacket::length() const {
   return nh.length;
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// Packetfile
+// NetMailFile
 
-PacketFile::PacketFile(const std::filesystem::path& path, bool process_de)
+NetMailFile::NetMailFile(const std::filesystem::path& path, bool process_de)
     : file_(path), process_de_(process_de) {
   open_ = file_.Open(File::modeBinary | File::modeReadOnly);
   if (!open_) {
@@ -328,15 +328,32 @@ PacketFile::PacketFile(const std::filesystem::path& path, bool process_de)
 }
 
 
-PacketFile::~PacketFile() { 
+NetMailFile::~NetMailFile() { 
   if (open_) {
     file_.Close();
     open_ = false;
   }
 }
 
-std::tuple<Packet, ReadPacketResponse> PacketFile::Read() {
+std::tuple<NetPacket, ReadNetPacketResponse> NetMailFile::Read() {
   return read_packet(file_, process_de_);
+}
+
+
+NetMailFile::iterator NetMailFile::begin() {
+  file_.Seek(0, File::Whence::begin);
+  return iterator(*this); 
+}
+
+NetMailFile::iterator::iterator(NetMailFile& f)
+    : NetMailFile::iterator::iterator(f, ReadNetPacketResponse::NOT_OPENED) {}
+
+NetMailFile::iterator::iterator(NetMailFile& f, ReadNetPacketResponse response)
+    : f_(f), response_(response) {
+  if (response == ReadNetPacketResponse::NOT_OPENED && f_.file_.current_position() == 0) {
+    // start of file that is not yet opened (or unknown).
+    std::tie(packet_, response_) = f_.Read();
+  }
 }
 
 
@@ -362,7 +379,7 @@ uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node) {
 }
 
 // static
-std::filesystem::path Packet::wwivnet_packet_path(const Network& net, uint16_t node) {
+std::filesystem::path NetPacket::wwivnet_packet_path(const Network& net, uint16_t node) {
   if (node == net.sysnum || node == 0) {
     // Messages to us to into local.net.
     return FilePath(net.dir, LOCAL_NET);
@@ -373,34 +390,34 @@ std::filesystem::path Packet::wwivnet_packet_path(const Network& net, uint16_t n
   return FilePath(net.dir, fmt::format("s{}.net", node));
 }
 
-const std::string& Packet::text() const noexcept { return text_; }
+const std::string& NetPacket::text() const noexcept { return text_; }
 
-ParsedPacketText::ParsedPacketText(uint16_t typ) : main_type_(typ) {}
+ParsedNetPacketText::ParsedNetPacketText(uint16_t typ) : main_type_(typ) {}
 
-void ParsedPacketText::set_date(daten_t d) { date_ = daten_to_wwivnet_time(d); }
-void ParsedPacketText::set_date(const std::string& d) { date_ = d; }
-void ParsedPacketText::set_subtype(const std::string& s) { subtype_or_email_to_ = s; }
-void ParsedPacketText::set_to(const std::string& s) { subtype_or_email_to_ = s; }
-void ParsedPacketText::set_title(const std::string& t) { title_ = t; }
-void ParsedPacketText::set_sender(const std::string& s) { sender_ = s; }
-void ParsedPacketText::set_text(const std::string& t) { text_ = t; }
-void ParsedPacketText::set_main_type(uint16_t t) { main_type_ = t; }
-uint16_t ParsedPacketText::main_type() const noexcept { return main_type_; }
+void ParsedNetPacketText::set_date(daten_t d) { date_ = daten_to_wwivnet_time(d); }
+void ParsedNetPacketText::set_date(const std::string& d) { date_ = d; }
+void ParsedNetPacketText::set_subtype(const std::string& s) { subtype_or_email_to_ = s; }
+void ParsedNetPacketText::set_to(const std::string& s) { subtype_or_email_to_ = s; }
+void ParsedNetPacketText::set_title(const std::string& t) { title_ = t; }
+void ParsedNetPacketText::set_sender(const std::string& s) { sender_ = s; }
+void ParsedNetPacketText::set_text(const std::string& t) { text_ = t; }
+void ParsedNetPacketText::set_main_type(uint16_t t) { main_type_ = t; }
+uint16_t ParsedNetPacketText::main_type() const noexcept { return main_type_; }
 
-const std::string& ParsedPacketText::subtype() const noexcept { return subtype_or_email_to_; }
-const std::string& ParsedPacketText::subtype_or_email_to() const noexcept {
+const std::string& ParsedNetPacketText::subtype() const noexcept { return subtype_or_email_to_; }
+const std::string& ParsedNetPacketText::subtype_or_email_to() const noexcept {
   return subtype_or_email_to_;
 }
-const std::string& ParsedPacketText::to() const noexcept { return subtype_or_email_to_; }
-const std::string& ParsedPacketText::title() const noexcept { return title_; }
-const std::string& ParsedPacketText::sender() const noexcept { return sender_; }
-const std::string& ParsedPacketText::date() const noexcept { return date_; }
-const std::string& ParsedPacketText::text() const noexcept { return text_; }
+const std::string& ParsedNetPacketText::to() const noexcept { return subtype_or_email_to_; }
+const std::string& ParsedNetPacketText::title() const noexcept { return title_; }
+const std::string& ParsedNetPacketText::sender() const noexcept { return sender_; }
+const std::string& ParsedNetPacketText::date() const noexcept { return date_; }
+const std::string& ParsedNetPacketText::text() const noexcept { return text_; }
 
 // static
-ParsedPacketText ParsedPacketText::FromPacketText(uint16_t typ, const std::string& raw) {
+ParsedNetPacketText ParsedNetPacketText::FromText(uint16_t typ, const std::string& raw) {
   auto iter = std::begin(raw);
-  ParsedPacketText p{typ};
+  ParsedNetPacketText p{typ};
   p.subtype_or_email_to_ = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
   p.title_ = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
   p.sender_ = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
@@ -413,12 +430,12 @@ ParsedPacketText ParsedPacketText::FromPacketText(uint16_t typ, const std::strin
 }
 
 // static
-ParsedPacketText ParsedPacketText::FromPacket(const Packet& p) {
-  return FromPacketText(p.nh.main_type, p.text());
+ParsedNetPacketText ParsedNetPacketText::FromNetPacket(const NetPacket& p) {
+  return FromText(p.nh.main_type, p.text());
 }
 
 // static
-std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
+std::string ParsedNetPacketText::ToPacketText(const ParsedNetPacketText& ppt) {
   std::string text;
   if (ppt.main_type() == main_type_new_post || ppt.main_type() == main_type_email_name) {
     // These types put the subtype or to address 1st
@@ -559,8 +576,8 @@ std::string get_subtype_from_packet_text(const std::string& text) {
   return get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
 }
 
-/** Creates an outbound packet to be sent */
-Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
+/** Creates an outbound NetPacket to be sent */
+NetPacket create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
                                        const std::string& subtype, std::set<uint16_t> receipients) {
 
   std::vector<uint16_t> list;
@@ -585,7 +602,7 @@ Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
   nh.minor_type = 0;
   nh.touser = 0;
 
-  // TODO(rushfan): Use ParsedPacketText here?
+  // TODO(rushfan): Use ParsedNetPacketText here?
   // text is subtype<0>title<0>sender<CRLF>date<crlf>body
   auto text = subtype;
   text.push_back(0);
@@ -599,7 +616,7 @@ Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
 
   nh.length = stl::size_uint32(text);
 
-  Packet p(nh, list, text);
+  NetPacket p(nh, list, text);
   return p;
 }
 
@@ -613,13 +630,13 @@ static std::string change_subtype_to(const std::string& org_text, const std::str
 }
 
 bool write_wwivnet_packet_or_log(const Network& net, char network_app_id,
-                                 const Packet& p) {
+                                 const NetPacket& p) {
   const auto fn = create_pend(net.dir, false, network_app_id);
   if (!write_wwivnet_packet(FilePath(net.dir, fn), p)) {
-    LOG(ERROR) << "Error writing packet: " << net.dir << " " << fn;
+    LOG(ERROR) << "Error writing NetPacket: " << net.dir << " " << fn;
     return false;
   }
-  VLOG(1) << "Wrote packet: " << fn;
+  VLOG(1) << "Wrote NetPacket: " << fn;
   return true;
 }
 
@@ -630,7 +647,7 @@ bool write_wwivnet_packet_or_log(const Network& net, char network_app_id,
  */
 bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net_num,
                               const std::string& original_subtype, const subboard_t& sub,
-                              Packet& template_packet, const std::set<uint16_t>& subscribers_to_skip,
+                              NetPacket& template_packet, const std::set<uint16_t>& subscribers_to_skip,
                               const subscribers_send_to_t& send_to) {
   VLOG(1) << "DEBUG: send_post_to_subscribers; original subtype: " << original_subtype;
 
@@ -665,14 +682,14 @@ bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net
       h.fromsys = current_net.sysnum;
     }
     // If the subtype has changed, then change the subtype in the
-    // packet text.
+    // NetPacket text.
     const auto text = subnet.stype == original_subtype
                         ? template_packet.text()
                         : change_subtype_to(template_packet.text(), subnet.stype);
     if (subnet.stype != original_subtype) {
       // we also have to update the nh.length to reflect this change.
       // TODO(rushfan): Really need higher level interface to manipulating
-      // WWIVnet packets...
+      // WWIVnet NetPackets...
       h.length -= stl::size_uint32(original_subtype);
       h.length += stl::size_uint32(subnet.stype);
     }
@@ -680,7 +697,7 @@ bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net
       h.tosys = FTN_FAKE_OUTBOUND_NODE;
       VLOG(1) << "current network is FTN";
       h.list_len = 0;
-      write_wwivnet_packet_or_log(current_net, network_app_id, Packet(h, {}, text));
+      write_wwivnet_packet_or_log(current_net, network_app_id, NetPacket(h, {}, text));
     } else if (current_net.type == network_type_t::wwivnet) {
       if (subnet.host == 0) {
         // We are the host.
@@ -697,19 +714,19 @@ bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net
           }
           VLOG(1) << "Removing subscriber (sender): " << template_packet.nh.fromsys;
           VLOG(1) << "Read subscribers #: " << subscribers.size();
-          VLOG(1) << "Creating wwivnet packet to: ";
+          VLOG(1) << "Creating wwivnet NetPacket to: ";
           for (const auto x : subscribers) {
             VLOG(1) << "        @" << x;
           }
 
           if (subscribers.empty()) {
-            VLOG(1) << "No subscribers left, skipping sending this packet";
+            VLOG(1) << "No subscribers left, skipping sending this NetPacket";
           }
           h.list_len = static_cast<uint16_t>(subscribers.size());
           h.tosys = 0;
           write_wwivnet_packet_or_log(
               current_net, network_app_id,
-              Packet(h, std::vector<uint16_t>(subscribers.begin(), subscribers.end()), text));
+              NetPacket(h, std::vector<uint16_t>(subscribers.begin(), subscribers.end()), text));
         } else {
           LOG(ERROR) << "Unable to read subscribers for " << current_net.dir << " " << subnet.stype;
         }
@@ -717,7 +734,7 @@ bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net
         // We are not the host.  Send message to host.
         h.tosys = subnet.host;
         h.list_len = 0;
-        write_wwivnet_packet_or_log(current_net, network_app_id, Packet(h, {}, text));
+        write_wwivnet_packet_or_log(current_net, network_app_id, NetPacket(h, {}, text));
       }
     }
   }

@@ -71,11 +71,11 @@ static bool find_sub(const Subs& subs, int network_number, const std::string& ne
 // subtype appears as the first part of the message text, followed by a NUL.Thus, the message
 // header info at the beginning of the message text is in the format
 // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
-bool handle_inbound_post(Context& context, Packet& p) {
+bool handle_inbound_post(Context& context, NetPacket& p) {
 
   ScopeExit at_exit;
 
-  auto ppt = ParsedPacketText::FromPacket(p);
+  auto ppt = ParsedNetPacketText::FromNetPacket(p);
   if (VLOG_IS_ON(1)) {
     at_exit.swap(
         [] { LOG(INFO) << "=============================================================="; });
@@ -162,7 +162,7 @@ static std::string set_to_string(const std::set<uint16_t>& lines) {
   return ss.str();
 }
 
-bool send_post_to_subscribers(Context& context, Packet& template_packet,
+bool send_post_to_subscribers(Context& context, NetPacket& template_packet,
                               const std::set<uint16_t>& subscribers_to_skip) {
   VLOG(1) << "DEBUG: send_post_to_subscribers; skipping: " << set_to_string(subscribers_to_skip);
 
@@ -185,7 +185,7 @@ bool send_post_to_subscribers(Context& context, Packet& template_packet,
     const auto msg = fmt::format("Unable to find message of subtype: '{}'; writing to dead.net", original_subtype);
     context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
     LOG(INFO) << msg;
-    Packet p(template_packet.nh, {}, template_packet.text());
+    NetPacket p(template_packet.nh, {}, template_packet.text());
     return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
   }
   VLOG(1) << "DEBUG: Found sub: " << sub.name;

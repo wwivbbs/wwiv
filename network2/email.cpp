@@ -71,7 +71,7 @@ static int GetUserNumber(const std::string& name, UserManager& um) {
   return realname_pos;
 }
 
-bool handle_email_byname(Context& context, Packet& p) {
+bool handle_email_byname(Context& context, NetPacket& p) {
   auto iter = std::begin(p.text());
   const auto to_name = get_message_field(p.text(), iter, {'\0'}, 80);
   VLOG(1) << "Processing email by name to: '" << to_name << "'";
@@ -93,7 +93,7 @@ bool handle_email_byname(Context& context, Packet& p) {
 
 
 bool handle_email(Context& context,
-  uint16_t to_user, Packet& p) {
+  uint16_t to_user, NetPacket& p) {
   LOG(INFO) << "==============================================================";
   ScopeExit at_exit([] {
     LOG(INFO) << "==============================================================";

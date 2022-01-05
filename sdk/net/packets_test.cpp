@@ -19,7 +19,9 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/test/file_helper.h"
+#include "sdk/filenames.h"
 #include "sdk/net/packets.h"
+#include "sdk/sdk_helper.h"
 #include "gtest/gtest.h"
 #include <string>
 
@@ -30,7 +32,7 @@ using namespace wwiv::strings;
 
 class PacketsTest : public testing::Test {
 public:
-  PacketsTest() = default;
+  PacketsTest(){};
   std::string CreateFakePacketText(const std::string& subtype, const std::string& title,
                                    const std::string& sender, const std::string& text) {
     std::string result;
@@ -51,8 +53,26 @@ public:
     return result;
   }
 
+  NetPacket CreatePacket(const std::string& subtype, const std::string& title,
+                         const std::string& sender, const std::string& text) {
+    const auto packet_text = CreateFakePacketText(subtype, title, sender, text);
+    const auto now = daten_t_now();
+
+    net_header_rec nh{};
+    nh.daten = now;
+    nh.fromsys = 1;
+    nh.tosys = 2;
+    nh.fromuser = 1;
+    nh.touser = 2;
+    nh.length = packet_text.size();
+    nh.main_type = main_type_new_post;
+    nh.method = 0;
+    nh.list_len = 0;
+    return NetPacket(nh, {}, packet_text);
+  }
+
 protected:
-  wwiv::core::test::FileHelper helper_;
+  SdkHelper sdk_helper_;
 };
 
 TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
@@ -69,7 +89,7 @@ TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
   nh.method = 0;
   nh.main_type = main_type_file;
   nh.minor_type = net_info_file;
-  Packet p(nh, {}, text);
+  NetPacket p(nh, {}, text);
 
   auto info = GetNetInfoFileInfo(p);
   ASSERT_TRUE(info.valid);
@@ -94,7 +114,7 @@ TEST_F(PacketsTest, UpdateRouting_Smoke) {
   nh.main_type = main_type_new_post;
   nh.method = 0;
   nh.list_len = 0;
-  Packet packet(nh, {}, packet_text);
+  NetPacket packet(nh, {}, packet_text);
 
   Network net{};
   net.dir = "Z:\\";
@@ -128,7 +148,7 @@ TEST_F(PacketsTest, GetMessageField) {
 
 TEST_F(PacketsTest, FromPacketText_FromPacketText_NewPost) {
   const std::string s("a\000b\000c\r\nd\r\ne", 11);
-  const auto pp = ParsedPacketText::FromPacketText(main_type_new_post, s);
+  const auto pp = ParsedNetPacketText::FromText(main_type_new_post, s);
   EXPECT_EQ(pp.subtype(), "a");
   EXPECT_EQ(pp.title(), "b");
   EXPECT_EQ(pp.sender(), "c");
@@ -138,35 +158,61 @@ TEST_F(PacketsTest, FromPacketText_FromPacketText_NewPost) {
 
 TEST_F(PacketsTest, FromPacketText_ToPacketText_Email_NotName) {
   const std::string expected("b\000c\r\nd\r\ne", 9);
-  ParsedPacketText ppt{main_type_email};
+  ParsedNetPacketText ppt{main_type_email};
   ppt.set_to("a");
   ppt.set_title("b");
   ppt.set_sender("c");
   ppt.set_date("d");
   ppt.set_text("e");
 
-  const auto actual = ParsedPacketText::ToPacketText(ppt);
+  const auto actual = ParsedNetPacketText::ToPacketText(ppt);
   EXPECT_EQ(expected, actual);
 }
 
 TEST_F(PacketsTest, FromPacketText_ToPacketText_EmailName) {
   const std::string expected("a\000b\000c\r\nd\r\ne", 11);
-  ParsedPacketText ppt{main_type_email_name};
+  ParsedNetPacketText ppt{main_type_email_name};
   ppt.set_to("a");
   ppt.set_title("b");
   ppt.set_sender("c");
   ppt.set_date("d");
   ppt.set_text("e");
 
-  const auto actual = ParsedPacketText::ToPacketText(ppt);
+  const auto actual = ParsedNetPacketText::ToPacketText(ppt);
   EXPECT_EQ(expected, actual);
 }
 
 TEST_F(PacketsTest, FromPacketText_Malformed) {
   const std::string s("a", 1);
-  const auto pp = ParsedPacketText::FromPacketText(main_type_new_post, s);
+  const auto pp = ParsedNetPacketText::FromText(main_type_new_post, s);
   EXPECT_EQ(pp.subtype(), "a");
   EXPECT_EQ(pp.title(), "");
   EXPECT_EQ(pp.sender(), "");
   EXPECT_EQ(pp.date(), "");
+}
+
+TEST_F(PacketsTest, PacketFileReader_Smoke) {
+  const auto net = sdk_helper_.CreateTestNetwork(wwiv::sdk::net::network_type_t::wwivnet);
+  const auto path = FilePath(net.dir, LOCAL_NET);
+  ASSERT_TRUE(
+      write_wwivnet_packet(path, CreatePacket("MYSUB", "Title1", "Sysop #1", "Hello World")));
+  ASSERT_TRUE(
+      write_wwivnet_packet(path, CreatePacket("MYSUB", "Title2", "Sysop #1", "Hello World")));
+  ASSERT_TRUE(
+      write_wwivnet_packet(path, CreatePacket("MYSUB", "Title3", "Sysop #1", "Hello World")));
+
+  NetMailFile reader(path, false);
+  auto iter = std::begin(reader);
+  auto end = std::end(reader);
+  ASSERT_NE(iter, end);
+  ASSERT_EQ(ParsedNetPacketText::FromNetPacket(*iter++).title(), "Title1");
+  ASSERT_NE(iter, end);
+  ASSERT_EQ(ParsedNetPacketText::FromNetPacket(*iter++).title(), "Title2");
+  ASSERT_NE(iter, end);
+  ASSERT_EQ(ParsedNetPacketText::FromNetPacket(*iter++).title(), "Title3");
+  ASSERT_EQ(iter, end);
+
+  auto iter2 = std::begin(reader);
+  const auto num = std::count_if(iter2, end, [](NetPacket p) { return true; });
+  EXPECT_EQ(3, num);
 }

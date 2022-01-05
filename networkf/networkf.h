@@ -74,7 +74,7 @@ private:
    */
   std::optional<std::string> create_ftn_packet(const sdk::fido::FidoAddress& dest,
                                                const sdk::fido::FidoAddress& route_to,
-                                               const sdk::net::Packet& wwivnet_packet);
+                                               const sdk::net::NetPacket& wwivnet_packet);
 
   /**
    * Creates a FTN packet and bundle from the contents of the WWIVnet style packet.
@@ -83,7 +83,7 @@ private:
    */
   std::optional<std::string> create_ftn_packet_and_bundle(const sdk::fido::FidoAddress& dest,
                                                           const sdk::fido::FidoAddress& route_to,
-                                                          const sdk::net::Packet& p);
+                                                          const sdk::net::NetPacket& p);
 
   /** Create a FLO file, returning the name generated or nullopt */
   std::optional<std::string> CreateFloFile(const wwiv::sdk::fido::FidoAddress& dest,
@@ -100,9 +100,9 @@ private:
   CreateNetmailAttachOrFloFile(const sdk::fido::FidoAddress& dest, const std::string& bundlename,
                                const sdk::net::fido_packet_config_t& packet_config);
 
-  bool export_main_type_new_post(std::set<std::string>& bundles, sdk::net::Packet& p);
+  bool export_main_type_new_post(std::set<std::string>& bundles, sdk::net::NetPacket& p);
 
-  bool export_main_type_email_name(std::set<std::string>& bundles, sdk::net::Packet& p);
+  bool export_main_type_email_name(std::set<std::string>& bundles, sdk::net::NetPacket& p);
 
   sdk::FtnMessageDupe& dupe();
 

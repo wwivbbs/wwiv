@@ -24,14 +24,18 @@
 #include "core/version.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/net/net.h"
 #include "sdk/vardec.h"
 
 #include "gtest/gtest.h"
 #include <string>
+#include "sdk_helper.h"
 
 
 using namespace std;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 static statusrec_t create_status() {
@@ -122,6 +126,22 @@ wwiv::sdk::Config& SdkHelper::config() const {
   return *config_; 
 }
 
+wwiv::sdk::net::Network SdkHelper::CreateTestNetwork(network_type_t net_type) {
+  const auto dir = CreatePath("network");
+  const uint16_t node = net_type == network_type_t::ftn ? FTN_FAKE_OUTBOUND_NODE : 1;
+  wwiv::sdk::net::Network n(net_type, "TestNET", dir, node);
+  if (net_type == network_type_t::ftn) {
+    n.fido.inbound_dir = "in";
+    n.fido.outbound_dir = "out";
+    n.fido.temp_inbound_dir = "tempin";
+    n.fido.temp_outbound_dir = "tempout";
+    n.fido.unknown_dir = "unknown";
+    n.fido.bad_packets_dir = "bad";
+    n.fido.netmail_dir = "netmail";
+    n.fido.fido_address = "21:12/2112";
+  }
+  return n;
+}
 
 SdkHelper::~SdkHelper() {
   try {

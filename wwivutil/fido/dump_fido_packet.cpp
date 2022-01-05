@@ -85,10 +85,10 @@ static int dump_stored_message(const std::string& filename) {
 
   FidoStoredMessage msg;
   const auto response = read_stored_message(f, msg);
-  if (response == ReadPacketResponse::END_OF_FILE) {
+  if (response == ReadNetPacketResponse::END_OF_FILE) {
     return 0;
   }
-  if (response == ReadPacketResponse::ERROR) {
+  if (response == ReadNetPacketResponse::ERROR) {
     return 1;
   }
 
@@ -135,10 +135,10 @@ static int dump_packet_file(const std::string& filename) {
   while (!done) {
     FidoPackedMessage msg;
     auto response = read_packed_message(f, msg);
-    if (response == ReadPacketResponse::END_OF_FILE) {
+    if (response == ReadNetPacketResponse::END_OF_FILE) {
       return 0;
     }
-    if (response == ReadPacketResponse::ERROR) {
+    if (response == ReadNetPacketResponse::ERROR) {
       return 1;
     }
 

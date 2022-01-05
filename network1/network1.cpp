@@ -82,7 +82,7 @@ bool Network1::write_multiple_wwivnet_packets(const net_header_rec& nh,
 
   auto result = true;
   for (const auto& fa : forsys_to_all) {
-    Packet np(nh, std::vector<uint16_t>(fa.second.begin(), fa.second.end()), text);
+    NetPacket np(nh, std::vector<uint16_t>(fa.second.begin(), fa.second.end()), text);
     np.nh.list_len = static_cast<uint16_t>(np.list.size());
     if (np.list.size() == 1) {
       // If we only have 1, move it out of list into tosys.
@@ -92,14 +92,14 @@ bool Network1::write_multiple_wwivnet_packets(const net_header_rec& nh,
     }
     const auto forsys = fa.first;
     netdat_.add_file_bytes(forsys, np.length());
-    if (!write_wwivnet_packet(Packet::wwivnet_packet_path(net_, forsys), np)) {
+    if (!write_wwivnet_packet(NetPacket::wwivnet_packet_path(net_, forsys), np)) {
       result = false;
     }
   }
   return result;
 }
 
-bool Network1::handle_packet(Packet& p) {
+bool Network1::handle_packet(NetPacket& p) {
 
   // Update the routing information on this packet since
   // we're unpacking it.
@@ -114,7 +114,7 @@ bool Network1::handle_packet(Packet& p) {
     // Network packet, single destination
     const auto forsys = get_forsys(bbslist_, p.nh.tosys);
     netdat_.add_file_bytes(forsys, p.length());
-    return write_wwivnet_packet(Packet::wwivnet_packet_path(net_, forsys), p);
+    return write_wwivnet_packet(NetPacket::wwivnet_packet_path(net_, forsys), p);
   }
   // Network packet, multiple destinations.
   return write_multiple_wwivnet_packets(p.nh, p.list, p.text());
@@ -129,10 +129,10 @@ bool Network1::handle_file(const std::string& name) {
 
   for (;;) {
     auto [packet, response] = read_packet(f, false);
-    if (response == ReadPacketResponse::END_OF_FILE) {
+    if (response == ReadNetPacketResponse::END_OF_FILE) {
       return true;
     }
-    if (response == ReadPacketResponse::ERROR) {
+    if (response == ReadNetPacketResponse::ERROR) {
       return false;
     }
     if (!handle_packet(packet)) {

@@ -79,7 +79,7 @@ static void ShowHelp(const NetworkCommandLine& cmdline) {
   exit(1);
 }
 
-static bool handle_ssm(Context& context, Packet& p) {
+static bool handle_ssm(Context& context, NetPacket& p) {
   ScopeExit at_exit(
       [] { VLOG(1) << "=============================================================="; });
   VLOG(1) << "==============================================================";
@@ -93,7 +93,7 @@ static bool handle_ssm(Context& context, Packet& p) {
   return true;
 }
 
-static bool write_net_received_file(Context& context, const Network& net, Packet& p, NetInfoFileInfo info) {
+static bool write_net_received_file(Context& context, const Network& net, NetPacket& p, NetInfoFileInfo info) {
   if (!info.valid) {
     LOG(ERROR) << "    ! ERROR NetInfoFileInfo is not valid; writing to dead.net";
     return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
@@ -124,12 +124,12 @@ static bool write_net_received_file(Context& context, const Network& net, Packet
   return true;
 }
 
-static bool handle_net_info_file(Context& context, const Network& net, Packet& p) {
+static bool handle_net_info_file(Context& context, const Network& net, NetPacket& p) {
   const auto info = GetNetInfoFileInfo(p);
   return write_net_received_file(context, net, p, info);
 }
 
-static bool handle_sub_list(Context& context, Packet& p) {
+static bool handle_sub_list(Context& context, NetPacket& p) {
   const auto& net = context.net;
   // Handle legacy type 9 main_type_sub_list (SUBS.LST)
   NetInfoFileInfo info{};
@@ -140,7 +140,7 @@ static bool handle_sub_list(Context& context, Packet& p) {
   return write_net_received_file(context, net, p, info);
 }
 
-static bool handle_packet(Context& context, Packet& p) {
+static bool handle_packet(Context& context, NetPacket& p) {
   LOG(INFO) << "Processing message with type: " << main_type_name(p.nh.main_type) << "/"
             << p.nh.minor_type;
 
@@ -239,10 +239,10 @@ static bool handle_file(Context& context, const std::string& name) {
 
   for (;;) {
     auto [packet, response] = read_packet(f, true);
-    if (response == ReadPacketResponse::END_OF_FILE) {
+    if (response == ReadNetPacketResponse::END_OF_FILE) {
       return true;
     }
-    if (response == ReadPacketResponse::ERROR) {
+    if (response == ReadNetPacketResponse::ERROR) {
       return false;
     }
 

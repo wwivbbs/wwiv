@@ -134,23 +134,23 @@ bool write_stored_message(File& f, FidoStoredMessage& packet) {
  * Reads a packed message.
  * See http://ftsc.org/docs/fts-0001.016
  */
-ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
+ReadNetPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
   const auto num_read = f.Read(&packet.nh, sizeof(fido_packed_message_t));
   if (num_read == 0) {
     // at the end of the packet.
-    return ReadPacketResponse::END_OF_FILE;
+    return ReadNetPacketResponse::END_OF_FILE;
   }
   if (num_read == 2) {
     // FIDO packets have 2 bytes of NULL at the end;
     if (packet.nh.message_type == 0) {
-      return ReadPacketResponse::END_OF_FILE;
+      return ReadNetPacketResponse::END_OF_FILE;
     }
   }
 
   if (num_read != sizeof(fido_packed_message_t)) {
     LOG(INFO) << "error reading header, got short read of size: " << num_read
               << "; expected: " << sizeof(fido_packed_message_t);
-    return ReadPacketResponse::ERROR;
+    return ReadNetPacketResponse::ERROR;
   }
 
   if (packet.nh.message_type != 2) {
@@ -161,17 +161,17 @@ ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
   packet.vh.from_user_name = ReadVariableLengthField(f, 36);
   packet.vh.subject = ReadVariableLengthField(f, 72);
   packet.vh.text = ReadVariableLengthField(f, 256 * 1024);
-  return ReadPacketResponse::OK;
+  return ReadNetPacketResponse::OK;
 }
 
-ReadPacketResponse read_stored_message(File& f, FidoStoredMessage& packet) {
+ReadNetPacketResponse read_stored_message(File& f, FidoStoredMessage& packet) {
   if (const auto num_read = f.Read(&packet.nh, sizeof(fido_stored_message_t)); num_read == 0) {
     // at the end of the packet.
-    return ReadPacketResponse::END_OF_FILE;
+    return ReadNetPacketResponse::END_OF_FILE;
   }
 
   packet.text = ReadRestOfFile(f, 32 * 1024);
-  return ReadPacketResponse::OK;
+  return ReadNetPacketResponse::OK;
 }
 
 // FidoPacket
@@ -284,7 +284,7 @@ bool FidoPacket::Write(const FidoPackedMessage& packet) {
   return write_packed_message(file_, packet);
 }
 
-std::tuple<wwiv::sdk::net::ReadPacketResponse, FidoPackedMessage> FidoPacket::Read() {
+std::tuple<wwiv::sdk::net::ReadNetPacketResponse, FidoPackedMessage> FidoPacket::Read() {
   FidoPackedMessage msg;
   auto response = read_packed_message(file_, msg);
   return std::make_tuple(response, msg);

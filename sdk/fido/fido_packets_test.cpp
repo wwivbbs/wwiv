@@ -46,14 +46,14 @@ TEST_F(FidoPacketsTestDataTest, OneMessage) {
 
   {
     auto [result, msg] = packet.Read();
-    ASSERT_EQ(ReadPacketResponse::OK, result);
+    ASSERT_EQ(ReadNetPacketResponse::OK, result);
     EXPECT_EQ("All", msg.vh.to_user_name);
     EXPECT_EQ("test 4", msg.vh.subject);
   }
   
   {
     auto [result, msg] = packet.Read();
-    ASSERT_EQ(ReadPacketResponse::END_OF_FILE, result);
+    ASSERT_EQ(ReadNetPacketResponse::END_OF_FILE, result);
   }
 
 }
@@ -76,25 +76,25 @@ TEST_F(FidoPacketsTestDataTest, ThreeMessages) {
 
   {
     auto [result, msg] = packet.Read();
-    ASSERT_EQ(ReadPacketResponse::OK, result);
+    ASSERT_EQ(ReadNetPacketResponse::OK, result);
     EXPECT_EQ("All", msg.vh.to_user_name);
     EXPECT_EQ("test5", msg.vh.subject);
   }
 
   {
     auto [result, msg] = packet.Read();
-    ASSERT_EQ(ReadPacketResponse::OK, result);
+    ASSERT_EQ(ReadNetPacketResponse::OK, result);
     EXPECT_EQ("All", msg.vh.to_user_name);
     EXPECT_EQ("test 6", msg.vh.subject);
   }
   {
     auto [result, msg] = packet.Read();
-    ASSERT_EQ(ReadPacketResponse::OK, result);
+    ASSERT_EQ(ReadNetPacketResponse::OK, result);
     EXPECT_EQ("All", msg.vh.to_user_name);
     EXPECT_EQ("test 7", msg.vh.subject);
   }
   {
     auto [result, msg] = packet.Read();
-    ASSERT_EQ(ReadPacketResponse::END_OF_FILE, result);
+    ASSERT_EQ(ReadNetPacketResponse::END_OF_FILE, result);
   }
 }

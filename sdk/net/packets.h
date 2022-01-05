@@ -32,18 +32,18 @@ namespace wwiv::sdk::net {
 #ifdef ERROR
 #undef ERROR
 #endif
-enum class ReadPacketResponse { NOT_OPENED, OK, ERROR, END_OF_FILE };
+enum class ReadNetPacketResponse { NOT_OPENED, OK, ERROR, END_OF_FILE };
 
 // fwd
-class ParsedPacketText;
+class ParsedNetPacketText;
 
-class Packet final {
+class NetPacket final {
 public:
-  Packet(const net_header_rec& h, std::vector<uint16_t> l, std::string t);
-  Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedPacketText& t);
+  NetPacket(const net_header_rec& h, std::vector<uint16_t> l, std::string t);
+  NetPacket(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedNetPacketText& t);
 
-  Packet();
-  ~Packet() = default;
+  NetPacket();
+  ~NetPacket() = default;
 
   bool UpdateRouting(const Network& net);
   static std::filesystem::path wwivnet_packet_path(const Network& net, uint16_t node);
@@ -80,15 +80,15 @@ public:
 
 
 /**
- * Represents a parsed packet text for main types: email, email_name, and new_post.
+ * Represents a parsed NetPacket text for main types: email, email_name, and new_post.
  * 
  * That means the text portion here just includes the message body and not the 
  * WWIV message fields encoded into the first few lines of message text that
  * exists both in message base format as well as on the network.
  */
-class ParsedPacketText {
+class ParsedNetPacketText {
 public:
-  ParsedPacketText(uint16_t typ);
+  ParsedNetPacketText(uint16_t typ);
   void set_date(daten_t d);
   void set_date(const std::string& d);
   void set_subtype(const std::string& s);
@@ -106,9 +106,9 @@ public:
   [[nodiscard]] const std::string& date() const noexcept;
   [[nodiscard]] const std::string& text() const noexcept;
 
-  static ParsedPacketText FromPacketText(uint16_t typ, const std::string& raw);
-  static ParsedPacketText FromPacket(const Packet& p);
-  static std::string ToPacketText(const ParsedPacketText& ppt);
+  static ParsedNetPacketText FromText(uint16_t typ, const std::string& raw);
+  static ParsedNetPacketText FromNetPacket(const NetPacket& p);
+  static std::string ToPacketText(const ParsedNetPacketText& ppt);
 
 private:
   uint16_t main_type_;
@@ -119,25 +119,36 @@ private:
   std::string text_;
 };
 
-class PacketFile {
+/**
+ * Class for reading a WWIVnet mail file, which contians a series of WWIVnet packets.  
+ * 
+ * // Example:
+ * NetMailFile NetPackets(path, true);
+ * for (auto NetPacket : NetPackets) {
+ *   // Process NetPacket.
+ *   process_wwivnet_packet(NetPacket);
+ * }
+ */
+class NetMailFile {
 public:
   
   class iterator {
   public:
     // iterator traits
-    using difference_type = int;
-    using value_type = Packet;
-    using pointer = const Packet*;
-    using reference = const Packet&;
+    using difference_type = std::ptrdiff_t;
+    using value_type = NetPacket;
+    using pointer = const NetPacket*;
+    using reference = const NetPacket&;
     using iterator_category = std::forward_iterator_tag;
 
     // Constructor and bits to make it work.
-    iterator(PacketFile& f) : f_(f) {}
-    iterator(PacketFile& f, ReadPacketResponse response) : f_(f), response_(response) {}
+    iterator(NetMailFile& f);
+    iterator(NetMailFile& f, ReadNetPacketResponse response);
     // prefix (++iter)
     iterator& operator++() {
       std::tie(packet_, response_) = f_.Read();
       ++num_;
+      return *this;
     }
     // postfix (iter++)
     iterator operator++(int) {
@@ -145,31 +156,33 @@ public:
       ++(*this);
       return retval;
     }
-    bool operator==(iterator other) const {
-      if (response_ == ReadPacketResponse::END_OF_FILE &&
-          other.response_ == ReadPacketResponse::END_OF_FILE) {
+    bool operator==(iterator other) const noexcept {
+      if (response_ == ReadNetPacketResponse::END_OF_FILE &&
+          other.response_ == ReadNetPacketResponse::END_OF_FILE) {
         return true;
       }
       return (num_ == other.num_ && response_ == other.response_);
     }
-    bool operator!=(iterator other) const { return !(*this == other); }
-    Packet operator*() { return packet_; }
+    bool operator!=(iterator other) const noexcept { return !(*this == other); }
+    NetPacket operator*() { return packet_; }
 
   private:
     int num_{0};
-    PacketFile& f_;
-    Packet packet_;
-    ReadPacketResponse response_{ReadPacketResponse::NOT_OPENED};
+    NetMailFile& f_;
+    NetPacket packet_;
+    ReadNetPacketResponse response_{ReadNetPacketResponse::NOT_OPENED};
   };
   
-  PacketFile(const std::filesystem::path& path, bool process_de);
-  virtual ~PacketFile();
-  std::tuple<Packet, ReadPacketResponse> Read();
+  NetMailFile(const std::filesystem::path& path, bool process_de);
+  virtual ~NetMailFile();
 
-  iterator begin() { return iterator(*this); }
-  iterator end() { return iterator(*this, ReadPacketResponse::END_OF_FILE); }
+  iterator begin();
+  iterator end() { return iterator(*this, ReadNetPacketResponse::END_OF_FILE); }
 
 private:
+  // Only used by iterator class.
+  std::tuple<NetPacket, ReadNetPacketResponse> Read();
+
   wwiv::core::File file_;
   bool process_de_{false};
   bool open_{false};
@@ -177,7 +190,7 @@ private:
 
 
 /**
- * Gets the next message field from a packet text c with iterator iter.
+ * Gets the next message field from a NetPacket text c with iterator iter.
  * The next message field will be the next set of characters that do not include
  * anything in the set of stop characters (stop) and less than a total of max.
  */
@@ -211,9 +224,9 @@ static std::string get_message_field(const C& c, I& iter, std::set<char> stop, s
  */
 uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node);
 
-std::tuple<Packet, ReadPacketResponse> read_packet(wwiv::core::File& file, bool process_de);
+std::tuple<NetPacket, ReadNetPacketResponse> read_packet(wwiv::core::File& file, bool process_de);
 
-bool write_wwivnet_packet(const std::filesystem::path& path, const Packet& packet);
+bool write_wwivnet_packet(const std::filesystem::path& path, const NetPacket& NetPacket);
 
 bool send_local_email(const Network& network, net_header_rec& nh, const std::string& text,
                       const std::string& byname, const std::string& title);
@@ -229,7 +242,7 @@ struct NetInfoFileInfo {
   bool valid{false};
 };
 
-NetInfoFileInfo GetNetInfoFileInfo(Packet& p);
+NetInfoFileInfo GetNetInfoFileInfo(NetPacket& p);
 
 void rename_pend(const std::filesystem::path& directory, const std::string& filename, char network_app_id);
 std::string create_pend(const std::filesystem::path& directory, bool local, char network_app_id);
@@ -238,23 +251,23 @@ std::string main_type_name(uint16_t typ);
 std::string net_info_minor_type_name(uint16_t typ);
 
 /**
- * Gets the subtype from a main_type_new_post message packet's text.
+ * Gets the subtype from a main_type_new_post message NetPacket's text.
  * Returns empty string on error.
  */
 std::string get_subtype_from_packet_text(const std::string& text);
 
-/** Creates an outbound packet to be sent */
-Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
+/** Creates an outbound NetPacket to be sent */
+NetPacket create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
                                        const std::string& subtype, std::set<uint16_t> receipients);
 
-// Writes out a WWIVnet packet to the pending file and logs success and failure to the 
+// Writes out a WWIVnet NetPacket to the pending file and logs success and failure to the 
 // system Logger.
-bool write_wwivnet_packet_or_log(const Network& net, char network_app_id, const Packet& p);
+bool write_wwivnet_packet_or_log(const Network& net, char network_app_id, const NetPacket& p);
 
 enum class subscribers_send_to_t { hosted_and_gated_only, all_subscribers };
 bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net_num,
                               const std::string& original_subtype, const subboard_t& sub,
-                              Packet& template_packet, const std::set<uint16_t>& subscribers_to_skip,
+                              NetPacket& template_packet, const std::set<uint16_t>& subscribers_to_skip,
                               const subscribers_send_to_t& send_to);
 
 } // namespace

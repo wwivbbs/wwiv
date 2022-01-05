@@ -49,10 +49,10 @@ int dump_file(const std::string& filename) {
   auto current{0};
   for (;;) {
     auto [packet, response] = read_packet(f, true);
-    if (response == ReadPacketResponse::END_OF_FILE) {
+    if (response == ReadNetPacketResponse::END_OF_FILE) {
       return 0;
     }
-    if (response == ReadPacketResponse::ERROR) {
+    if (response == ReadNetPacketResponse::ERROR) {
       return 1;
     }
 

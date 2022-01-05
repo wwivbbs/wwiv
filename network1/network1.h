@@ -42,7 +42,7 @@ public:
 private:
   bool write_multiple_wwivnet_packets(const net_header_rec& nh, const std::vector<uint16_t>& list,
                                       const std::string& text);
-  bool handle_packet(wwiv::sdk::net::Packet& p);
+  bool handle_packet(wwiv::sdk::net::NetPacket& p);
   bool handle_file(const std::string& name);
   const wwiv::net::NetworkCommandLine& net_cmdline_;
   const wwiv::sdk::BbsListNet& bbslist_;

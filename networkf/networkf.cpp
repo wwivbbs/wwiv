@@ -157,7 +157,7 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
 
   while (true) {
     auto [response, msg] = packet.Read();
-    if (response != ReadPacketResponse::OK) {
+    if (response != ReadNetPacketResponse::OK) {
       return true;
     }
 
@@ -219,7 +219,7 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
 
     nh.length = size_uint32(text);
     // Create file, write to local.net_ for network2 to import.
-    Packet wwiv_packet(nh, {}, text);
+    NetPacket wwiv_packet(nh, {}, text);
     if (!write_wwivnet_packet(FilePath(net_.dir, LOCAL_NET), wwiv_packet)) {
       LOG(ERROR) << "ERROR Writing WWIV packet for message: " << wwiv_packet.nh.main_type << "/"
                  << wwiv_packet.nh.minor_type;
@@ -503,7 +503,7 @@ static std::string remove_fido_addr(std::string to_user) {
 
 std::optional<std::string> NetworkF::create_ftn_packet(const FidoAddress& dest,
                                                        const FidoAddress& route_to,
-                                                       const Packet& wwivnet_packet) {
+                                                       const NetPacket& wwivnet_packet) {
 
   VLOG(1) << "create_ftn_packet: dest: " << dest << "; route: " << route_to;
 
@@ -681,7 +681,7 @@ std::optional<std::string> NetworkF::create_ftn_packet(const FidoAddress& dest,
 
 std::optional<std::string> NetworkF::create_ftn_packet_and_bundle(const FidoAddress& dest,
                                                                   const FidoAddress& route_to,
-                                                                  const Packet& p) {
+                                                                  const NetPacket& p) {
   LOG(INFO) << "Creating packet for subscriber: " << dest << "; route_to: " << route_to;
   auto fido_packet_name = create_ftn_packet(dest, route_to, p);
   if (!fido_packet_name) {
@@ -858,7 +858,7 @@ static FidoAddress find_route_to(const FidoAddress& dest, const FidoCallout& cal
   return dest;
 }
 
-bool NetworkF::export_main_type_new_post(std::set<std::string>& bundles, Packet& p) {
+bool NetworkF::export_main_type_new_post(std::set<std::string>& bundles, NetPacket& p) {
   // Lame implementation that creates 1 file per message.
   auto subtype = get_subtype_from_packet_text(p.text());
   LOG(INFO) << "Creating packet for subtype: " << subtype;
@@ -883,7 +883,7 @@ bool NetworkF::export_main_type_new_post(std::set<std::string>& bundles, Packet&
   return true;
 }
 
-bool NetworkF::export_main_type_email_name(std::set<std::string>& bundles, Packet& p) {
+bool NetworkF::export_main_type_email_name(std::set<std::string>& bundles, NetPacket& p) {
   // Lame implementation that creates 1 file per message.
   LOG(INFO) << "Creating packet for netmail.";
 
@@ -957,7 +957,7 @@ bool NetworkF::Run(std::vector<std::string> cmds) {
       return false;
     }
 
-    // Packet file is created by us for sure.
+    // NetMailFile file is created by us for sure.
     File f(FilePath(net_.dir, sfilename));
     if (!f.Open(File::modeBinary | File::modeReadOnly)) {
       LOG(ERROR) << "Unable to open file: " << net_.dir << sfilename;
@@ -968,7 +968,7 @@ bool NetworkF::Run(std::vector<std::string> cmds) {
     std::set<std::string> bundles;
     while (!done) {
       auto [p, response] = read_packet(f, true);
-      if (response == ReadPacketResponse::END_OF_FILE) {
+      if (response == ReadNetPacketResponse::END_OF_FILE) {
         // Delete the packet.
         f.Close();
         if (opts_.skip_delete) {
@@ -977,7 +977,7 @@ bool NetworkF::Run(std::vector<std::string> cmds) {
         File::Remove(f.path());
         break;
       }
-      if (response == ReadPacketResponse::ERROR) {
+      if (response == ReadNetPacketResponse::ERROR) {
         return false;
       }
       // If we got here, we had a packet to process.

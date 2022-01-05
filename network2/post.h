@@ -28,15 +28,15 @@ namespace net {
 namespace network2 {
 
 /**
- * Handles receiving a Packet with a post and writing it to the
+ * Handles receiving a NetPacket with a post and writing it to the
  * local database.
  */
-bool handle_inbound_post(Context& context, wwiv::sdk::net::Packet& packet);
+bool handle_inbound_post(Context& context, wwiv::sdk::net::NetPacket& packet);
 /**
  * Send a network post out to the other subscribers when you are the host off
  * a sub or gating a sub.
  */
-bool send_post_to_subscribers(Context& context, wwiv::sdk::net::Packet& packet,
+bool send_post_to_subscribers(Context& context, wwiv::sdk::net::NetPacket& packet,
                               const std::set<uint16_t>& subscribers_to_skip);
 
 } // namespace network2

@@ -25,6 +25,7 @@
 #include "core/test/file_helper.h"
 #include "sdk/bbs_directories.h"
 #include "sdk/config.h"
+#include "sdk/net/net.h"
 
 class SdkHelper : public wwiv::sdk::BbsDirectories {
 public:
@@ -47,6 +48,8 @@ public:
   [[nodiscard]] std::string scratch() const { return scratch_.string(); }
   [[nodiscard]] wwiv::core::test::FileHelper& files() { return files_; }
   [[nodiscard]] wwiv::sdk::Config& config() const;
+  [[nodiscard]] wwiv::sdk::net::Network CreateTestNetwork(wwiv::sdk::net::network_type_t net_type);
+
 
   std::filesystem::path CreatePath(const std::string& name);
   wwiv::core::test::FileHelper files_;

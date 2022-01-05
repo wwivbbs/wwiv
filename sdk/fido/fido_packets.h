@@ -248,7 +248,7 @@ public:
       : file_(std::move(o.file_)), writable_(o.writable_), header_(o.header_) {}
 
   bool Write(const FidoPackedMessage& packet);
-  [[nodiscard]] std::tuple<wwiv::sdk::net::ReadPacketResponse, FidoPackedMessage> Read();
+  [[nodiscard]] std::tuple<wwiv::sdk::net::ReadNetPacketResponse, FidoPackedMessage> Read();
   [[nodiscard]] packet_header_2p_t& header() { return header_; }
 
   // Gets the packet password as a UPPER case string.
@@ -268,9 +268,9 @@ bool write_fido_packet_header(wwiv::core::File& f, const packet_header_2p_t& hea
 bool write_packed_message(wwiv::core::File& f, const FidoPackedMessage& packet);
 bool write_stored_message(wwiv::core::File& f, FidoStoredMessage& packet);
 
-wwiv::sdk::net::ReadPacketResponse read_packed_message(wwiv::core::File& file,
+wwiv::sdk::net::ReadNetPacketResponse read_packed_message(wwiv::core::File& file,
                                                        FidoPackedMessage& packet);
-wwiv::sdk::net::ReadPacketResponse read_stored_message(wwiv::core::File& file,
+wwiv::sdk::net::ReadNetPacketResponse read_stored_message(wwiv::core::File& file,
                                                        FidoStoredMessage& packet);
 packet_header_2p_t CreateType2PlusPacketHeader(const FidoAddress& from_address,
                                                const FidoAddress& dest, const wwiv::core::DateTime& now,

@@ -148,7 +148,7 @@ static bool send_sub_add_drop_resp(Context& context,
 
   nh.length = size_int(text); // should be subtype.size() + 2
   const auto pendfile = create_pend(context.net.dir, false, '2');
-  const Packet packet(nh, {}, text);
+  const NetPacket packet(nh, {}, text);
   return write_wwivnet_packet(FilePath(context.net.dir, pendfile), packet);
 }
 
@@ -165,7 +165,7 @@ static bool IsHostedHere(Context& context, const std::string& subtype) {
   return false;
 }
 
-bool handle_sub_add_req(Context& context, Packet& p) {
+bool handle_sub_add_req(Context& context, NetPacket& p) {
   const auto subtype = SubTypeFromText(p.text());
   const auto resp = [&](uint8_t code) -> bool {
     const std::string base = (code == sub_adddrop_ok) ? "sa" : "sr";
@@ -212,7 +212,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
   return resp(sub_adddrop_ok);
 }
 
-bool handle_sub_drop_req(Context& context, Packet& p) {
+bool handle_sub_drop_req(Context& context, NetPacket& p) {
   const auto subtype = SubTypeFromText(p.text());
   const auto resp = [&](uint8_t code) -> bool { 
     return send_sub_add_drop_resp(context, p.nh, main_type_sub_drop_resp, code, subtype, ""); 
@@ -256,7 +256,7 @@ static std::string SubAddDropResponseMessage(uint8_t code) {
 
 }
 
-bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& add_or_drop) {
+bool handle_sub_add_drop_resp(Context& context, NetPacket& p, const std::string& add_or_drop) {
   // We want to stop at the 1st \0
   auto subname = p.text();
   StringTrimEnd(&subname);
@@ -302,14 +302,14 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
   return send_network_email(filename, context.net, nh, {}, body, byname, title);
 }
 
-bool handle_sub_list_info_response(Context& context, Packet& p) {
+bool handle_sub_list_info_response(Context& context, NetPacket& p) {
   TextFile subs_inf(FilePath(context.net.dir, "subs.inf"), "at");
   LOG(INFO) << "Received subs line for subs.inf:";
   LOG(INFO) << p.text();
   return subs_inf.Write(p.text()) > 0;
 }
 
-bool handle_sub_list_info_request(Context& context, Packet& p) {
+bool handle_sub_list_info_request(Context& context, NetPacket& p) {
 
   net_header_rec nh{};
   nh.fromsys = p.nh.tosys;
@@ -328,7 +328,7 @@ bool handle_sub_list_info_request(Context& context, Packet& p) {
   LOG(INFO) << text;
 
   const auto pendfile = create_pend(context.net.dir, false, '2');
-  const Packet np(nh, {}, text);
+  const NetPacket np(nh, {}, text);
   return write_wwivnet_packet(FilePath(context.net.dir, pendfile), np);
 }
 

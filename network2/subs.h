@@ -26,12 +26,12 @@ namespace wwiv {
 namespace net {
 namespace network2 {
 
-bool handle_sub_add_req(Context& context, wwiv::sdk::net::Packet& p);
-bool handle_sub_drop_req(Context& context, wwiv::sdk::net::Packet& p);
-bool handle_sub_add_drop_resp(Context& context, wwiv::sdk::net::Packet& p,
+bool handle_sub_add_req(Context& context, wwiv::sdk::net::NetPacket& p);
+bool handle_sub_drop_req(Context& context, wwiv::sdk::net::NetPacket& p);
+bool handle_sub_add_drop_resp(Context& context, wwiv::sdk::net::NetPacket& p,
                               const std::string& add_or_drop);
-bool handle_sub_list_info_request(Context& context, wwiv::sdk::net::Packet& p);
-bool handle_sub_list_info_response(Context& context, wwiv::sdk::net::Packet& p);
+bool handle_sub_list_info_request(Context& context, wwiv::sdk::net::NetPacket& p);
+bool handle_sub_list_info_response(Context& context, wwiv::sdk::net::NetPacket& p);
 
 }  // namespace network2
 }  // namespace net
