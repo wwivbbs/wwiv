@@ -48,7 +48,7 @@ public:
   bool UpdateRouting(const Network& net);
   static std::filesystem::path wwivnet_packet_path(const Network& net, uint16_t node);
 
-  [[nodiscard]] const std::string& text() const noexcept;
+  [[nodiscard]] const std::string& text() const noexcept { return text_; }
   void set_text(const std::string& text);
   void set_text(std::string&& text);
   // Updates the lengths in the header for list and text.

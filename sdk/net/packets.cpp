@@ -390,8 +390,6 @@ std::filesystem::path NetPacket::wwivnet_packet_path(const Network& net, uint16_
   return FilePath(net.dir, fmt::format("s{}.net", node));
 }
 
-const std::string& NetPacket::text() const noexcept { return text_; }
-
 ParsedNetPacketText::ParsedNetPacketText(uint16_t typ) : main_type_(typ) {}
 
 void ParsedNetPacketText::set_date(daten_t d) { date_ = daten_to_wwivnet_time(d); }
