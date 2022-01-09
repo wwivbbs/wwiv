@@ -45,7 +45,7 @@ FindFiles::FindFiles(const std::filesystem::path& mask, const FindFilesType type
   if (name_type == WinNameType::long_name) {
     fnd.set_use_long_filenames(true);
   }
-  if (!fnd.open(mask.string(), FindFilesTypeToInt(type))) {
+  if (!fnd.open(mask, FindFilesTypeToInt(type))) {
     VLOG(3) << "Unable to open mask: " << mask;
     return;
   }

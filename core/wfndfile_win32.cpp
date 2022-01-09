@@ -21,13 +21,14 @@
 #include "core/strings.h"
 #include "core/wwiv_windows.h"
 
-bool WFindFile::open(const std::string& file_spec, WFindFileTypeMask nTypeMask) {
+bool WFindFile::open(const std::filesystem::path& file_spec, WFindFileTypeMask nTypeMask) {
   ffdata_ =  std::make_any<WIN32_FIND_DATA>();
   __open(file_spec, nTypeMask);
 
   auto* f = std::any_cast<WIN32_FIND_DATA>(&ffdata_);
 
-  hFind = FindFirstFile(file_spec.c_str(), f);
+  const auto fs = file_spec.string();
+  hFind = FindFirstFile(fs.c_str(), f);
   if (hFind == INVALID_HANDLE_VALUE) {
     return false;
   }

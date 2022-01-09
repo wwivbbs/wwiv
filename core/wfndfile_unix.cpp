@@ -79,18 +79,18 @@ static int fname_ok(const struct dirent* ent) {
   return 0;
 }
 
-bool WFindFile::open(const std::string& filespec, WFindFileTypeMask nTypeMask) {
+bool WFindFile::open(const std::filesystem::path& filespec, WFindFileTypeMask nTypeMask) {
   __open(filespec, nTypeMask);
   filename_.clear();
 
   {
     char path[FILENAME_MAX];
-    to_char_array(path, filespec);
+    to_char_array(path, filespec.string());
     dir_ = dirname(path);
   }
   {
     char path[FILENAME_MAX];
-    to_char_array(path, filespec);
+    to_char_array(path, filespec.string());
     filespec_ = basename(path);
     filespec_ptr = filespec_.c_str();
   }

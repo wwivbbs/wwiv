@@ -37,14 +37,14 @@ class WFindFile {
 protected:
   std::filesystem::path dir_;
   std::string filename_;
-  std::string filespec_;
+  std::filesystem::path filespec_;
   long file_size_{0};
   WFindFileTypeMask type_mask_{WFindFileTypeMask::WFINDFILE_ANY};
   unsigned char file_type_{0};
   bool open_{false};
   bool use_long_filenames_{false};
 
-  void __open(const std::string& file_spec, WFindFileTypeMask type_mask) {
+  void __open(const std::filesystem::path& file_spec, WFindFileTypeMask type_mask) {
     filespec_ = file_spec;
     type_mask_ = type_mask;
   }
@@ -73,7 +73,7 @@ protected:
 
 public:
   WFindFile() noexcept { this->__close(); }
-  bool open(const std::string& filespec, WFindFileTypeMask nTypeMask);
+  bool open(const std::filesystem::path& filespec, WFindFileTypeMask nTypeMask);
   bool next();
   bool close();
   virtual ~WFindFile() { close(); }
