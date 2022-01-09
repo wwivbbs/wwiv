@@ -25,7 +25,7 @@
 #include "sdk/net/net.h"
 #include "sdk/net/packets.h"
 #include "wwivutil/util.h"
-
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -39,23 +39,15 @@ using namespace wwiv::strings;
 
 namespace wwiv::wwivutil {
 
-int dump_file(const std::string& filename) {
-  File f(filename);
-  if (!f.Open(File::modeBinary | File::modeReadOnly)) {
+int dump_file(const std::filesystem::path& filename) {
+  NetMailFile file(filename, true);
+  if (!file) {
     LOG(ERROR) << "Unable to open file: " << filename;
     return 1;
   }
 
   auto current{0};
-  for (;;) {
-    auto [packet, response] = read_packet(f, true);
-    if (response == ReadNetPacketResponse::END_OF_FILE) {
-      return 0;
-    }
-    if (response == ReadNetPacketResponse::ERROR) {
-      return 1;
-    }
-
+  for (auto packet : file) {
     std::cout << "Header for Packet Index Number: #" << std::setw(5) << std::left << current++ << std::endl;
     std::cout << "=============================================================================="
          << std::endl;
@@ -91,15 +83,16 @@ int dump_file(const std::string& filename) {
            << std::endl;
       std::cout << "Raw Packet Text:" << std::endl;
       std::cout << "=============================================================================="
-           << std::endl;
+                << std::endl;
       for (const auto ch : packet.text()) {
         dump_char(std::cout, ch);
       }
       std::cout << std::endl << std::endl;
     }
     std::cout << "=============================================================================="
-         << std::endl;
+              << std::endl;
   }
+  return file.last_read_response() == ReadNetPacketResponse::END_OF_FILE ? 0 : 1;
 }
 
 std::string DumpPacketCommand::GetUsage() const {
@@ -114,7 +107,7 @@ int DumpPacketCommand::Execute() {
     std::cout << GetUsage() << GetHelp() << std::endl;
     return 2;
   }
-  const std::string filename(remaining().front());
+  const std::filesystem::path filename(remaining().front());
   return dump_file(filename);
 }
 

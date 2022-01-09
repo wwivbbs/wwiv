@@ -328,12 +328,15 @@ NetMailFile::NetMailFile(const std::filesystem::path& path, bool process_de)
 }
 
 
-NetMailFile::~NetMailFile() { 
+NetMailFile::~NetMailFile() { Close(); }
+
+void NetMailFile::Close() noexcept {
   if (open_) {
     file_.Close();
     open_ = false;
   }
 }
+
 
 std::tuple<NetPacket, ReadNetPacketResponse> NetMailFile::Read() {
   return read_packet(file_, process_de_);

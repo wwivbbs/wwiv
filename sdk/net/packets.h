@@ -123,10 +123,14 @@ private:
  * Class for reading a WWIVnet mail file, which contians a series of WWIVnet packets.  
  * 
  * // Example:
- * NetMailFile NetPackets(path, true);
- * for (auto NetPacket : NetPackets) {
+ * NetMailFile packets(path, true);
+ * if (!packet) {
+ *   return error;
+ * }
+ * 
+ * for (auto packet : packets) {
  *   // Process NetPacket.
- *   process_wwivnet_packet(NetPacket);
+ *   process_wwivnet_packet(packet);
  * }
  */
 class NetMailFile {
@@ -148,6 +152,8 @@ public:
     iterator& operator++() {
       std::tie(packet_, response_) = f_.Read();
       ++num_;
+      // Update the owner with the last response.
+      f_.last_read_response_ = response_;
       return *this;
     }
     // postfix (iter++)
@@ -156,7 +162,7 @@ public:
       ++(*this);
       return retval;
     }
-    bool operator==(iterator other) const noexcept {
+    [[nodiscard]] bool operator==(iterator other) const noexcept {
       if (response_ == ReadNetPacketResponse::END_OF_FILE &&
           other.response_ == ReadNetPacketResponse::END_OF_FILE) {
         return true;
@@ -164,7 +170,7 @@ public:
       return (num_ == other.num_ && response_ == other.response_);
     }
     bool operator!=(iterator other) const noexcept { return !(*this == other); }
-    NetPacket operator*() { return packet_; }
+    [[nodiscard]] NetPacket operator*() { return packet_; }
 
   private:
     int num_{0};
@@ -176,8 +182,16 @@ public:
   NetMailFile(const std::filesystem::path& path, bool process_de);
   virtual ~NetMailFile();
 
-  iterator begin();
-  iterator end() { return iterator(*this, ReadNetPacketResponse::END_OF_FILE); }
+  // Closes the underlying File object.  This is useful if you need to move the file or reopen it
+  // elsewhere.
+  void Close() noexcept;
+
+  [[nodiscard]] iterator begin();
+  [[nodiscard]] iterator end() { return iterator(*this, ReadNetPacketResponse::END_OF_FILE); }
+
+  explicit operator bool() const noexcept { return file_.IsOpen(); }
+  // Response from the last operation reading from the WWIVnet mail file.
+  [[nodiscard]] ReadNetPacketResponse last_read_response() const noexcept { return last_read_response_; }
 
 private:
   // Only used by iterator class.
@@ -186,6 +200,7 @@ private:
   wwiv::core::File file_;
   bool process_de_{false};
   bool open_{false};
+  ReadNetPacketResponse last_read_response_{ReadNetPacketResponse::NOT_OPENED};
 };
 
 

@@ -918,13 +918,73 @@ sdk::FtnMessageDupe& NetworkF::dupe() {
   return *dupe_;
 }
 
+bool NetworkF::DoImport() {
+  auto num_packets_processed = 0;
+  std::unique_ptr<FtnMessageDupe> dupe;
+  const std::vector<std::string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
+  for (const auto& ext : extensions) {
+    num_packets_processed += import_bundles(dirs_.inbound_dir(), StrCat("*.", ext));
+#ifndef _WIN32
+    num_packets_processed +=
+        import_bundles(dirs_.inbound_dir(), StrCat("*.", ToStringUpperCase(ext)));
+#endif
+  }
+  return num_packets_processed > 0;
+}
+
+bool NetworkF::DoExport() {
+  const auto sfile_name = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
+  const auto path = FilePath(net_.dir, sfile_name);
+  if (!File::Exists(path)) {
+    LOG(INFO) << "No file '" << path.string() << "' exists to be exported to a FTN packet.";
+    return false;
+  }
+
+  NetMailFile file(path, true);
+  if (!file) {
+    LOG(ERROR) << "Unable to open file: " << path.string();
+    return false;
+  }
+
+  std::set<std::string> bundles;
+  auto num_packets_processed = 0;
+  for (auto p : file) {
+    // If we got here, we had a packet to process.
+    ++num_packets_processed;
+
+    if (p.nh.main_type == main_type_new_post) {
+      if (!export_main_type_new_post(bundles, p)) {
+        LOG(ERROR) << "Error exporting post.";
+      }
+    } else if (p.nh.main_type == main_type_email_name) {
+      if (!export_main_type_email_name(bundles, p)) {
+        LOG(ERROR) << "Error exporting email.";
+      }
+    } else {
+      LOG(ERROR) << "    ! ERROR Unhandled type: '" << main_type_name(p.nh.main_type)
+                 << "'; writing to dead.net";
+      // Let's write it to dead.net_
+      if (!write_wwivnet_packet(FilePath(net_.dir, DEAD_NET), p)) {
+        LOG(ERROR) << "Error writing to dead.net";
+      }
+    }
+  }
+
+  // Delete the packet.
+  file.Close();
+  if (opts_.skip_delete) {
+    backup_file(path);
+  }
+  File::Remove(path);
+
+  return file.last_read_response() != ReadNetPacketResponse::ERROR && num_packets_processed > 0;
+}
+
 bool NetworkF::Run(std::vector<std::string> cmds) {
   if (!fido_callout_.IsInitialized()) {
     LOG(ERROR) << "Unable to initialize fido_callout.";
     return false;
   }
-
-  auto num_packets_processed = 0;
 
   if (cmds.empty()) {
     LOG(ERROR) << "No command specified. Exiting.";
@@ -932,80 +992,17 @@ bool NetworkF::Run(std::vector<std::string> cmds) {
   }
 
   const auto cmd = cmds.front();
-  cmds.erase(cmds.begin());
-  VLOG(3) << "Command: " << cmd;
-  VLOG(3) << "Args: ";
-  for (const auto& r : cmds) {
-    VLOG(3) << r << std::endl;
-  }
 
   if (cmd == "import") {
-    std::unique_ptr<FtnMessageDupe> dupe;
-    const std::vector<std::string> extensions{"su?", "mo?", "tu?", "we?",
-                                              "th?", "fr?", "sa?", "pkt"};
-    for (const auto& ext : extensions) {
-      num_packets_processed += import_bundles(dirs_.inbound_dir(), StrCat("*.", ext));
-#ifndef _WIN32
-      num_packets_processed +=
-          import_bundles(dirs_.inbound_dir(), StrCat("*.", ToStringUpperCase(ext)));
-#endif
-    }
+    return DoImport();
+
   } else if (cmd == "export") {
-    const auto sfilename = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
-    if (!File::Exists(FilePath(net_.dir, sfilename))) {
-      LOG(INFO) << "No file '" << sfilename << "' exists to be exported to a FTN packet.";
-      return false;
-    }
-
-    // NetMailFile file is created by us for sure.
-    File f(FilePath(net_.dir, sfilename));
-    if (!f.Open(File::modeBinary | File::modeReadOnly)) {
-      LOG(ERROR) << "Unable to open file: " << net_.dir << sfilename;
-      return false;
-    }
-
-    auto done = false;
-    std::set<std::string> bundles;
-    while (!done) {
-      auto [p, response] = read_packet(f, true);
-      if (response == ReadNetPacketResponse::END_OF_FILE) {
-        // Delete the packet.
-        f.Close();
-        if (opts_.skip_delete) {
-          backup_file(f.full_pathname());
-        }
-        File::Remove(f.path());
-        break;
-      }
-      if (response == ReadNetPacketResponse::ERROR) {
-        return false;
-      }
-      // If we got here, we had a packet to process.
-      ++num_packets_processed;
-
-      if (p.nh.main_type == main_type_new_post) {
-        if (!export_main_type_new_post(bundles, p)) {
-          LOG(ERROR) << "Error exporting post.";
-        }
-      } else if (p.nh.main_type == main_type_email_name) {
-        if (!export_main_type_email_name(bundles, p)) {
-          LOG(ERROR) << "Error exporting email.";
-        }
-      } else {
-        LOG(ERROR) << "    ! ERROR Unhandled type: '" << main_type_name(p.nh.main_type)
-                   << "'; writing to dead.net";
-        // Let's write it to dead.net_
-        if (!write_wwivnet_packet(FilePath(net_.dir, DEAD_NET), p)) {
-          LOG(ERROR) << "Error writing to dead.net";
-        }
-      }
-    }
+    return DoExport();
 
   } else {
     LOG(ERROR) << "Unknown command: " << cmd;
     return false;
   }
-  return num_packets_processed > 0;
 }
 
 } // namespace wwiv::net::networkf

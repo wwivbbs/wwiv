@@ -45,6 +45,12 @@ public:
            core::Clock& clock);
   ~NetworkF();
 
+  /** Runs networkf import */
+  bool DoImport();
+
+  /** Runs networkf export */
+  bool DoExport();
+
   /** Runs networkf using cmds for the subcommands passed from the commandline */
   bool Run(std::vector<std::string> cmds);
 
