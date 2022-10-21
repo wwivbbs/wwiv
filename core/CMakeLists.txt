@@ -71,15 +71,15 @@ configure_file(version_internal.h.in version_internal.h @ONLY)
 
 #target_compile_options(core PRIVATE  /fsanitize=address)
 target_link_libraries(core fmt::fmt-header-only)
-target_link_libraries(core cereal::cereal)
+target_link_libraries(core cereal)
 target_include_directories(core PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (UNIX)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # using regular Clang or AppleClang
-  	target_link_libraries(core INTERFACE c++fs)
+  	target_link_libraries(core c++fs)
   else()
-  	target_link_libraries(core INTERFACE stdc++fs)
+  	target_link_libraries(core stdc++fs)
   endif()
 endif()
 

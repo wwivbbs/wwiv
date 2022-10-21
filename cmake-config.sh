@@ -41,4 +41,4 @@ fi
 echo "Using Ninja Build Tool: ${NINJA}"
 echo "Using Source Root:      ${HERE}"
 
-cmake -G "Ninja" ${HERE} "${@}"
+cmake -G "Ninja" ${HERE}  -DCMAKE_TOOLCHAIN_FILE=${HERE}/vcpkg/scripts/buildsystems/vcpkg.cmake "${@}"

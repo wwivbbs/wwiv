@@ -19,6 +19,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 include(Common)
 include(FindASan)
 find_package(fmt CONFIG REQUIRED)
+find_package(cereal CONFIG REQUIRED)
 
 MACRO_ENSURE_OUT_OF_SOURCE_BUILD()
 ENSURE_MINIMUM_COMPILER_VERSIONS()
