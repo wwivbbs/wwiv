@@ -112,7 +112,7 @@ static int JumpToUser(CursesWindow* window, const std::string& datadir) {
         messagebox(window, "Error reading smalrec");
         return -1;
       }
-      items.emplace_back(fmt::format("{} #{}", name.name, name.number), 0, name.number);
+      items.emplace_back(fmt::format("{} #{}", reinterpret_cast<char*>(name.name), name.number), 0, name.number);
     }
   }
 

@@ -321,7 +321,9 @@ int GotFileName(ZModem* info, int crcGood) {
     zmodemlog("GotFileName[{}]: bad crc, send ZNAK\n", sname(info));
     parseFileName(info, reinterpret_cast<char*>(info->buffer));
     zmodemlog("GotFileName[{}]: filename: '{}'", sname(info), info->filename);
-    zmodemlog("GotFileName[{}]: buffer: '{}'", sname(info), info->buffer);
+    // The u_char of info->buffer was causing an error "'Formatting of non-void pointers is disallowed." in newer
+    // fmtlib 9.x versions.
+    //zmodemlog("GotFileName[{}]: buffer: '{}'", sname(info), info->buffer);
 #endif
     info->state = RStart;
     return ZXmitHdrHex(ZNAK, zeros, info);

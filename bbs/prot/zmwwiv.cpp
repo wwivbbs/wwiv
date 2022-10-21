@@ -61,7 +61,7 @@ static void ZModemWindowStatusImpl(fmt::string_view format, fmt::format_args arg
 
 template <typename S, typename... Args>
 static void ZModemWindowStatus(const S& format, Args&&... args) {
-  ZModemWindowStatusImpl(format, fmt::make_args_checked<Args...>(format, args...));
+  ZModemWindowStatusImpl(format, fmt::make_format_args(args...));
 }
 
 /**
@@ -80,7 +80,7 @@ static void ZModemWindowXferStatusImpl(fmt::string_view format, fmt::format_args
 
 template <typename S, typename... Args>
 static void ZModemWindowXferStatus(const S& format, Args&&... args) {
-  ZModemWindowXferStatusImpl(format, fmt::make_args_checked<Args...>(format, args...));
+  ZModemWindowXferStatusImpl(format, fmt::make_format_args(args...));
 }
 
 static void ProcessLocalKeyDuringZmodem() {

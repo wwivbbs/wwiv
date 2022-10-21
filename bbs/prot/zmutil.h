@@ -27,7 +27,8 @@ void zmodemlog_impl(fmt::string_view format, fmt::format_args args);
 
 template <typename S, typename... Args>
 void zmodemlog(const S& format, Args&&... args) {
-  zmodemlog_impl(format, fmt::make_args_checked<Args...>(format, args...));
+  auto a = fmt::make_format_args(args...);
+  zmodemlog_impl(format, a);
 }
 
 struct ZModem;
