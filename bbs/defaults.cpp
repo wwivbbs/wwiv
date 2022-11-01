@@ -756,6 +756,9 @@ void defaults(bool& need_menu_reload) {
       break;
     case '2':
       input_ansistat();
+      if (!okansi()) {
+        a()->user()->clear_flag(User::fullScreenReader);
+      }
       break;
     case '3':
       a()->user()->toggle_flag(User::pauseOnPage);
