@@ -336,7 +336,7 @@ Runs a WWIVbasic Script
                      }));
   m.emplace("user:password", MenuItem(R"(Allows the user to change their password)", MENU_CAT_USER,
                                       [](MenuContext&) {
-                                        modify_mailbox();
+                                        change_password();
                                         a()->WriteCurrentUser();
                                       }));
   m.emplace("user:macros", MenuItem(R"(Allows the user to change their macros)", MENU_CAT_USER, [](MenuContext&) {

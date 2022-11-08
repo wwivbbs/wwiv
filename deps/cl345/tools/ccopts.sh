@@ -505,11 +505,11 @@ fi
 #
 # However, dumpversion has its own problems in that it lists major-version
 # releases as a single-digit number, '6' rather than '6.0', so if we find an
-# apparent version less than 10 we add a trailing zero to the string to make
+# apparent version less than 20 we add a trailing zero to the string to make
 # the checks that follow work.
 
 GCC_VER="$($CC -dumpversion | tr -d  '.' | cut -c 1-2)"
-if [ "$GCC_VER" -le 10 ] ; then
+if [ "$GCC_VER" -le 20 ] ; then
 	GCC_VER="${GCC_VER}0" ;
 fi
 
