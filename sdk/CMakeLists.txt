@@ -75,6 +75,7 @@ target_link_libraries(sdk PUBLIC core fmt::fmt-header-only)
 if (WWIV_BUILD_TESTS)
 
 set(test_sources
+  "bbslist_test.cpp"
   "chains_test.cpp"
   "config_test.cpp"
   "datetime_test.cpp"

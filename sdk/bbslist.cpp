@@ -107,7 +107,7 @@ bool ParseBbsListNetLine(const std::string& ss, net_system_list_rec* con, int32_
         while (iter != ss.end() && !isspace(*iter)) {
           phone_number.push_back(*iter++);
         }
-        to_char_array(con->phone, phone_number);
+        to_char_array_trim(con->phone, phone_number);
       }
       break;
       case '#': {
@@ -128,7 +128,7 @@ bool ParseBbsListNetLine(const std::string& ss, net_system_list_rec* con, int32_
         while (iter != ss.end() && *iter != '\"') {
           name.push_back(*iter++);
         }
-        to_char_array(con->name, name);
+        to_char_array_trim(con->name, name);
       }
       break;
       default:
