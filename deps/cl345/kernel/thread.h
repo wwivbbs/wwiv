@@ -3013,10 +3013,20 @@ INT8U threadSelf( void );
 	 underlying process context should yield the associated thread */
   #define THREAD_YIELD()		yield()
 #else
-  #if defined( __linux__ ) && !defined( __USE_GNU )
-	void pthread_yield( void );
-  #endif /* Present but not prototyped unless GNU extensions are enabled */
-  #define  THREAD_YIELD()		pthread_yield()
+  #if defined( __linux__ )
+  #if ( OSVERSION > 3 )
+	#include <sched.h>
+	#define THREAD_YIELD() sched_yield()
+  #else
+	#ifndef __USE_GNU
+	  void pthread_yield( void );
+	#endif / Present but not prototyped unless GNU extensions are enabled /
+	#define THREAD_YIELD() pthread_yield()
+  #endif // Linux > 3.x /</sched.h>
+  #else
+    #define THREAD_YIELD() pthread_yield()
+  #endif
+
 #endif /* Not-very-portable Posix portability */
 #define THREAD_SLEEP( ms )		{ \
 								struct timeval tv = { 0 }; \
