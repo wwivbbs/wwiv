@@ -358,8 +358,8 @@ std::optional<std::string> NetworkF::create_ftn_bundle(const FidoAddress& route_
     LOG(ERROR) << "No archivers defined!";
     return std::nullopt;
   }
-  auto now = clock_.Now();
-  auto dow = now.dow();
+  const auto now = clock_.Now();
+  const auto dow = now.dow();
 
   const auto saved_dir = File::current_directory();
   ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
@@ -386,21 +386,21 @@ std::optional<std::string> NetworkF::create_ftn_bundle(const FidoAddress& route_
 
   FidoAddress orig(net_.fido.fido_address);
   for (auto i = 0; i < 35; i++) {
-    auto bname = bundle_name(orig, route_to, dow, i);
+    const auto bname = bundle_name(orig, route_to, dow, i);
     const auto full_bundle_path = FilePath(dirs_.outbound_dir(), bname);
     if (File::Exists(full_bundle_path)) {
-      VLOG(1) << "Skipping candidate bundle: " << full_bundle_path.string();
       // Already exists.
+      VLOG(1) << "Skipping candidate bundle: " << full_bundle_path.string();
       continue;
     }
-    // We should actually change to the temp outbound dir so that
-    // we won't add paths.
+    // We should actually change to the temp outbound dir so that we won't add paths.
     File::set_current_directory(dirs_.temp_outbound_dir());
     LOG(INFO) << "Changed directory to: " << dirs_.temp_outbound_dir();
-    const auto arc = files::find_arcrec(arcs, ctype);
+    // Use ZIP by default if we can't find anything that matches, then we'll hope for the best.
+    const auto arc = files::find_arcrec(arcs, ctype, "ZIP"); 
     if (!arc) {
-      LOG(WARNING) << "Skipping candidate bundle. Unable to find archiver for it! ";
-      // Already exists.
+      LOG(WARNING) << "Skipping candidate bundle. Unable to find archiver for type: '" << ctype
+                   << "'";
       continue;
     }
     const auto zip_cmd = arc_stuff_in(arc->arca, full_bundle_path.string(), fido_packet_name);
