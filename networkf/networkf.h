@@ -54,6 +54,10 @@ public:
   /** Runs networkf using cmds for the subcommands passed from the commandline */
   bool Run(std::vector<std::string> cmds);
 
+  // [[VisibleForTesting]]
+  const sdk::net::Network& net() const { return net_; }
+
+
 private:
   bool import_packet_file(const std::filesystem::path& path);
 
@@ -114,7 +118,7 @@ private:
 
   const sdk::BbsListNet& bbslist_;
   core::Clock& clock_;
-  const sdk::net::Network& net_;
+  const sdk::net::Network net_;
   sdk::fido::FidoCallout fido_callout_;
   NetDat netdat_;
   sdk::fido::FtnDirectories dirs_;

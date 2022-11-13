@@ -74,6 +74,11 @@ target_link_libraries(sdk PUBLIC core fmt::fmt-header-only)
 ## Tests
 if (WWIV_BUILD_TESTS)
 
+add_library(sdk_fixtures 
+  "sdk_helper.cpp"
+)
+target_link_libraries(sdk_fixtures PUBLIC core fmt::fmt-header-only)
+
 set(test_sources
   "bbslist_test.cpp"
   "chains_test.cpp"
@@ -83,7 +88,6 @@ set(test_sources
   "names_test.cpp"
   "phone_numbers_test.cpp"
   "qscan_test.cpp"
-  "sdk_helper.cpp"
   "subxtr_test.cpp"
   "user_test.cpp"
 
@@ -122,7 +126,7 @@ set_max_warnings()
 
 add_executable(sdk_tests ${test_sources})
 
-target_link_libraries(sdk_tests core core_fixtures GTest::gtest sdk)
+target_link_libraries(sdk_tests core core_fixtures GTest::gtest sdk sdk_fixtures)
 
 gtest_discover_tests(sdk_tests)
 

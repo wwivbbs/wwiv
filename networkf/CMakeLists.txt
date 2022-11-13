@@ -18,7 +18,7 @@ if (WWIV_BUILD_TESTS)
   set_max_warnings()
 
   add_executable(networkf_tests ${networkf_test_sources})
-  target_link_libraries(networkf_tests net_core core_fixtures GTest::gtest sdk)
+  target_link_libraries(networkf_tests net_core core_fixtures GTest::gtest sdk sdk_fixtures networkf_lib)
 
   gtest_discover_tests(networkf_tests)
 
