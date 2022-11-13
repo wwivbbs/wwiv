@@ -63,18 +63,18 @@ Line3)";
 }
 
 TEST_F(DizTest, BlockChars) {
-  const char* kTEXT =
-      R"(������������[ CyberWall v2.0�L ]����������Ŀ
-� Smaller  version  of  the  popular  door �
-� CyberWall.   Simple  and  easy  to  use, �
-� really  cool ANSi. Not  as many features �
-� as  the  full  version,  but  this  is a �
-� freeware copy if you don't wanna pay for �
-� the   full   version.   Freeware   Copy. �
-������������������������������������������ĳ
-�        --- LiQUID pRODUCTIoNS ---        �
-� MegaStuff BBS % (317) 873-5173 % 8am-5pm �
-��������������������������������������������)";
+  const char kTEXT[] =
+"\xDA\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4[ CyberWall v2.0\xE1""L ]\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4Ŀ\n"
+"\xB3 Smaller  version  of  the  popular  door \xB3\n"
+"\xB3 CyberWall.   Simple  and  easy  to  use, \xB3\n"
+"\xB3 really  cool ANSi. Not  as many features \xB3\n"
+"\xB3 as  the  full  version,  but  this  is a \xB3\n"
+"\xB3 freeware copy if you don't wanna pay for \xB3\n"
+"\xB3 the   full   version.   Freeware   Copy. \xB3\n"
+"\xB3\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4ĳ\n"
+"\xB3        --- LiQUID pRODUCTIoNS ---        \xB3\n"
+"\xB3 MegaStuff BBS % (317) 873-5173 % 8am-5pm \xB3\n"
+"\xB3\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xB3\n";
 
   const auto file = helper.CreateTempFile("FILE_ID.DIZ", kTEXT);
 
@@ -83,7 +83,7 @@ TEST_F(DizTest, BlockChars) {
   ASSERT_TRUE(o);
 
   auto d = o.value();
-  EXPECT_EQ(d.description(), "[ CyberWall v2.0�L ]");
+  EXPECT_EQ(d.description(), "[ CyberWall v2.0\xE1L ]");
 
   auto v = wwiv::strings::SplitString(d.extended_description(), "\n");
   EXPECT_EQ(10u, v.size());

@@ -23,13 +23,14 @@
 using namespace wwiv::sdk;
 
 TEST(ChainsTest, ExecMode_Operator) {
-  auto t = chain_exec_mode_t::dos; 
+  auto t = chain_exec_mode_t::none; 
+  ASSERT_EQ(chain_exec_mode_t::none, t++);
   ASSERT_EQ(chain_exec_mode_t::dos, t++);
   ASSERT_EQ(chain_exec_mode_t::fossil, t++);
   ASSERT_EQ(chain_exec_mode_t::stdio, t++);
   ASSERT_EQ(chain_exec_mode_t::netfoss, t++);
-  ASSERT_EQ(chain_exec_mode_t::none, t++);
-  ASSERT_EQ(chain_exec_mode_t::dos, t);
+  ASSERT_EQ(chain_exec_mode_t::sock_port, t++);
+  ASSERT_EQ(chain_exec_mode_t::sock_unix, t++);
 }
 
 TEST(ChainsTest, ExecDir_Operator) {
