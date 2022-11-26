@@ -99,6 +99,7 @@ if (WWIV_INSTALL)
   endif()
 
   install(TARGETS bbs DESTINATION .)
+  install(TARGETS lnet DESTINATION .)
   install(TARGETS network DESTINATION .)
   install(TARGETS networkb DESTINATION .)
   install(TARGETS networkc DESTINATION .)
