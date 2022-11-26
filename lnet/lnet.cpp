@@ -19,31 +19,21 @@
 // WWIV5 LNet
 #include "core/command_line.h"
 #include "core/file.h"
-#include "core/findfiles.h"
 #include "core/log.h"
 #include "core/os.h"
-#include "core/scope_exit.h"
-#include "core/semaphore_file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "fmt/printf.h"
+#include "lnet/lnet.h"
 #include "local_io/local_io.h"
 #include "local_io/local_io_curses.h"
 #include "local_io/local_io_win32.h"
 #include "net_core/net_cmdline.h"
 #include "sdk/config.h"
-#include "sdk/fido/fido_directories.h"
 #include "sdk/fido/fido_util.h"
-#include "sdk/filenames.h"
 #include "sdk/net/packets.h"
 #include "sdk/status.h"
 
-#include <cstdlib>
-#include <ctime>
-#include <iostream>
-#include <memory>
-#include <sstream>
 #include <string>
 
 using namespace wwiv::core;
@@ -51,10 +41,8 @@ using namespace wwiv::net;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
-using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
-using namespace wwiv::os;
-using namespace wwiv::sdk::fido;
+
 
 static wwiv::local::io::LocalIO* CreateLocalIO() {
 #if defined(_WIN32) && !defined(WWIV_WIN32_CURSES_IO)
@@ -65,9 +53,16 @@ static wwiv::local::io::LocalIO* CreateLocalIO() {
                                             wwiv::local::ui::curses_out->GetMaxX());
 #endif
 }
-wwiv::local::io::LocalIO* io = nullptr;
 
-static void dump_char(char ch) {
+LNet::LNet(const wwiv::net::NetworkCommandLine& cmdline)
+    : net_cmdline_(cmdline), io(CreateLocalIO()) {}
+
+LNet::~LNet() {
+  delete io;
+  io = nullptr;
+}
+
+void LNet::dump_char(char ch) {
 
   switch (ch) {
   case 0:
@@ -114,11 +109,6 @@ static void dump_char(char ch) {
   }
 }
 
-static void ShowHelp(const NetworkCommandLine& cmdline) {
-  std::cout << cmdline.GetHelp() << std::endl;
-  exit(1);
-}
-
 static std::string minor_type_to_string(uint16_t main_type, uint16_t minor_type) {
   if (main_type == main_type_net_info) {
     return net_info_minor_type_name(minor_type);
@@ -128,7 +118,7 @@ static std::string minor_type_to_string(uint16_t main_type, uint16_t minor_type)
   return "0";
 }
 
-static void show_help() {
+void LNet::show_help() {
   const auto help_text = R"(
 
 R - Read message.
@@ -146,7 +136,7 @@ Q - Quit.
   io->Puts(help_text);
 }
 
-static void show_header(const net_header_rec& nh, int current, double percent) {
+void LNet::show_header(const net_header_rec& nh, int current, double percent) {
   io->Format("Entry {:3} ({:03}%): ", current, percent);
 
   if (nh.main_type == 65535) {
@@ -186,7 +176,8 @@ static int skip_messages(NetMailFile& file, int num_to_skip) {
 
 
 
-int lnet_main(const std::filesystem::path& filename) {
+int LNet::Run() {
+  const std::filesystem::path filename = net_cmdline_.cmdline().remaining().front();
   NetMailFile file(filename, true, true);
   if (!file) {
     LOG(ERROR) << "Unable to open file: " << filename << "; error: " << file.file().last_error();
@@ -283,31 +274,4 @@ int lnet_main(const std::filesystem::path& filename) {
       }
     } // !prompt_done
   }
-}
-
-int main(int argc, char** argv) {
-  LoggerConfig config(LogDirFromConfig);
-  Logger::Init(argc, argv, config);
-
-  ScopeExit at_exit(Logger::ExitLogger);
-  CommandLine cmdline(argc, argv, "net");
-
-  const NetworkCommandLine net_cmdline(cmdline, 'l');
-  if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested() ||
-      net_cmdline.cmdline().remaining().empty()) {
-    ShowHelp(net_cmdline);
-    return 1;
-  }
-
-  io = CreateLocalIO();
-  int ret = 0;
-  try {
-    auto semaphore =
-        SemaphoreFile::try_acquire(net_cmdline.semaphore_path(), net_cmdline.semaphore_timeout());
-    ret = lnet_main(net_cmdline.cmdline().remaining().front());
-  } catch (const semaphore_not_acquired& e) {
-    LOG(ERROR) << "ERROR: [lnet]: Unable to Acquire Network Semaphore: " << e.what();
-  }
-  delete io;
-  return ret;
 }
