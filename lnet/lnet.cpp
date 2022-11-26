@@ -28,6 +28,7 @@
 #include "local_io/local_io.h"
 #include "local_io/local_io_curses.h"
 #include "local_io/local_io_win32.h"
+#include "localui/curses_io.h"
 #include "net_core/net_cmdline.h"
 #include "sdk/config.h"
 #include "sdk/fido/fido_util.h"
