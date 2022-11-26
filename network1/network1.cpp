@@ -99,7 +99,14 @@ bool Network1::write_multiple_wwivnet_packets(const net_header_rec& nh,
   return result;
 }
 
+// returns true on success, false on error.
 bool Network1::handle_packet(NetPacket& p) {
+
+  if (p.nh.main_type == 65535) {
+    // Deleted message. return true since ignoring it *is* handling it appropriately.
+    LOG(INFO) << "Skipping deleted message of type: " << main_type_name(p.nh.main_type);
+    return true;
+  }
 
   // Update the routing information on this packet since
   // we're unpacking it.

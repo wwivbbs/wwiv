@@ -32,7 +32,13 @@ namespace wwiv::sdk::net {
 #ifdef ERROR
 #undef ERROR
 #endif
+
+// Response from reading a packet from disk. Used by the Iterator from NetMailFile
 enum class ReadNetPacketResponse { NOT_OPENED, OK, ERROR, END_OF_FILE };
+
+// Souce of the NetPacket, either on disk or memory.  New packets will be from memory and ones read
+// from disk, will or course be from disk.
+enum class NetPacketSource { DISK, MEMORY };
 
 // fwd
 class ParsedNetPacketText;
@@ -52,12 +58,22 @@ public:
   void set_text(const std::string& text);
   void set_text(std::string&& text);
   // Updates the lengths in the header for list and text.
+  NetPacketSource source() const { return source_; }
+  void set_source(NetPacketSource s) { source_ = s; }
+  wwiv::core::File::size_type offset() const { return offset_; }
+  void set_offset(wwiv::core::File::size_type o) { offset_ = o; }
   void update_header();
   int length() const;
 
   net_header_rec nh{};
   std::vector<uint16_t> list;
+
+private:
   std::string text_;
+  // Source of this packet (Disk, memory, or unknown)
+  NetPacketSource source_{NetPacketSource::MEMORY};
+  // Offset of this packet if it was loaded from disk, and -1 otherwise.
+  wwiv::core::File::size_type offset_{-1};
 };
 
 // Alpha subtypes are seven characters -- the first must be a letter, but the rest can be any
@@ -152,8 +168,6 @@ public:
     iterator& operator++() {
       std::tie(packet_, response_) = f_.Read();
       ++num_;
-      // Update the owner with the last response.
-      f_.last_read_response_ = response_;
       return *this;
     }
     // postfix (iter++)
@@ -179,7 +193,9 @@ public:
     ReadNetPacketResponse response_{ReadNetPacketResponse::NOT_OPENED};
   };
   
-  NetMailFile(const std::filesystem::path& path, bool process_de);
+  NetMailFile(const std::filesystem::path& path, bool process_de, bool allow_write);
+  NetMailFile(const std::filesystem::path& path, bool process_de)
+      : NetMailFile(path, process_de, false) {}
   virtual ~NetMailFile();
 
   // Closes the underlying File object.  This is useful if you need to move the file or reopen it
@@ -193,9 +209,13 @@ public:
   // Response from the last operation reading from the WWIVnet mail file.
   [[nodiscard]] ReadNetPacketResponse last_read_response() const noexcept { return last_read_response_; }
 
-private:
-  // Only used by iterator class.
+  // Reads a packet, returning the packet and repsonse.
   std::tuple<NetPacket, ReadNetPacketResponse> Read();
+
+  // Returns hte underlying file.
+  wwiv::core::File& file() { return file_; }
+
+private:
 
   wwiv::core::File file_;
   bool process_de_{false};

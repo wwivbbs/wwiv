@@ -57,6 +57,10 @@ bool send_network_email(const std::string& filename, const Network& network,
 
 std::tuple<NetPacket, ReadNetPacketResponse>  read_packet(File& f, bool process_de) {
   NetPacket packet{};
+  // Since this packet is read from disk, mark it as such, and note the current position
+  // as the packet offset.
+  packet.set_source(NetPacketSource::DISK);
+  packet.set_offset(f.current_position());
   auto num_read = f.Read(&packet.nh, sizeof(net_header_rec));
   if (num_read == 0) {
     // at the end of the NetPacket.
@@ -319,11 +323,12 @@ int NetPacket::length() const {
 /////////////////////////////////////////////////////////////////////////////
 // NetMailFile
 
-NetMailFile::NetMailFile(const std::filesystem::path& path, bool process_de)
+NetMailFile::NetMailFile(const std::filesystem::path& path, bool process_de, bool allow_write)
     : file_(path), process_de_(process_de) {
-  open_ = file_.Open(File::modeBinary | File::modeReadOnly);
+  const int mode = File::modeBinary | ((allow_write) ? File::modeReadWrite : File::modeReadOnly);
+  open_ = file_.Open(mode);
   if (!open_) {
-    LOG(ERROR) << "Unable to open file: " << path.string();
+    LOG(ERROR) << "Unable to open file: " << path.string() << "; error: " << file_.last_error();
   }
 }
 
@@ -339,7 +344,10 @@ void NetMailFile::Close() noexcept {
 
 
 std::tuple<NetPacket, ReadNetPacketResponse> NetMailFile::Read() {
-  return read_packet(file_, process_de_);
+  auto t = read_packet(file_, process_de_);
+  // Update the the last response.
+  last_read_response_ = std::get<1>(t);
+  return t;
 }
 
 
