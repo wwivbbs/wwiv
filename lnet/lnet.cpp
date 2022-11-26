@@ -33,11 +33,11 @@
 #include "local_io/local_io_win32.h"
 #include "net_core/net_cmdline.h"
 #include "sdk/config.h"
-#include "sdk/filenames.h"
-#include "sdk/status.h"
 #include "sdk/fido/fido_directories.h"
 #include "sdk/fido/fido_util.h"
+#include "sdk/filenames.h"
 #include "sdk/net/packets.h"
+#include "sdk/status.h"
 
 #include <cstdlib>
 #include <ctime>
@@ -45,7 +45,6 @@
 #include <memory>
 #include <sstream>
 #include <string>
-
 
 using namespace wwiv::core;
 using namespace wwiv::net;
@@ -57,6 +56,15 @@ using namespace wwiv::stl;
 using namespace wwiv::os;
 using namespace wwiv::sdk::fido;
 
+static wwiv::local::io::LocalIO* CreateLocalIO() {
+#if defined(_WIN32) && !defined(WWIV_WIN32_CURSES_IO)
+  return new wwiv::local::io::Win32ConsoleIO();
+#else
+  wwiv::local::ui::CursesIO::Init(fmt::sprintf("WWIV BBS %s", full_version()));
+  return new wwiv::local::io::CursesLocalIO(wwiv::local::ui::curses_out->GetMaxY(),
+                                            wwiv::local::ui::curses_out->GetMaxX());
+#endif
+}
 wwiv::local::io::LocalIO* io = nullptr;
 
 static void dump_char(char ch) {
@@ -106,24 +114,22 @@ static void dump_char(char ch) {
   }
 }
 
-
 static void ShowHelp(const NetworkCommandLine& cmdline) {
   std::cout << cmdline.GetHelp() << std::endl;
   exit(1);
 }
 
-
 static std::string minor_type_to_string(uint16_t main_type, uint16_t minor_type) {
-   if (main_type == main_type_net_info) {
-     return net_info_minor_type_name(minor_type);
-   } else if (main_type > 0) {
-     return std::to_string(minor_type);
-   }
-   return "0";
+  if (main_type == main_type_net_info) {
+    return net_info_minor_type_name(minor_type);
+  } else if (main_type > 0) {
+    return std::to_string(minor_type);
+  }
+  return "0";
 }
 
 static void show_help() {
-   const auto help_text = R"(
+  const auto help_text = R"(
 
 R - Read message.
 D - Delete message.
@@ -137,26 +143,54 @@ Q - Quit.
 
 
 )";
-   io->Puts(help_text);
+  io->Puts(help_text);
+}
+
+static void show_header(const net_header_rec& nh, int current, double percent) {
+  io->Format("Entry {:3} ({:03}%): ", current, percent);
+
+  if (nh.main_type == 65535) {
+    io->Puts(">DELETED<\n\n");
+  } else {
+    io->Format("{} ({})", main_type_name(nh.main_type),
+               minor_type_to_string(nh.main_type, nh.minor_type));
+    if (nh.fromuser) {
+      io->Format(", From #{} @{}", nh.fromuser, nh.fromsys);
+    } else {
+      io->Format(", From @{}", nh.fromsys);
+    }
+    io->Format(", {} bytes", nh.length);
+    const auto now = wwiv::core::daten_t_now();
+    const auto days_old = (int)((now - nh.daten) / 24 / 3600);
+    io->Format(", {} day{} old", days_old, days_old > 1 ? "s" : "");
+
+    if (nh.touser) {
+      io->Format("\n                  To #{} @{}\r\n\n", nh.touser, nh.tosys);
+    } else {
+      io->Format("\n                  To @{}\r\n\n", nh.tosys);
+    }
+  }
 }
 
 static int skip_messages(NetMailFile& file, int num_to_skip) {
-   int skipped = 0;
-   while (--num_to_skip >= 0) {
-     auto [packet, resp] = file.Read();
-     if (resp != ReadNetPacketResponse::OK) {
-       return skipped;
-     }
-     ++skipped;
-   }
-   return skipped;
+  int skipped = 0;
+  while (--num_to_skip >= 0) {
+    auto [packet, resp] = file.Read();
+    if (resp != ReadNetPacketResponse::OK) {
+      return skipped;
+    }
+    ++skipped;
+  }
+  return skipped;
 }
+
+
 
 int lnet_main(const std::filesystem::path& filename) {
   NetMailFile file(filename, true, true);
   if (!file) {
-     LOG(ERROR) << "Unable to open file: " << filename << "; error: " << file.file().last_error();
-     return 1;
+    LOG(ERROR) << "Unable to open file: " << filename << "; error: " << file.file().last_error();
+    return 1;
   }
 
   auto current{0};
@@ -164,37 +198,15 @@ int lnet_main(const std::filesystem::path& filename) {
   const auto file_length = file.file().length();
   for (;;) {
     io->Cls();
-    auto [ packet, response ] = file.Read();
+    auto [packet, response] = file.Read();
     if (response == ReadNetPacketResponse::END_OF_FILE) {
       return 0;
     } else if (response != ReadNetPacketResponse::OK) {
       return 1;
     }
     ++current;
-    const auto& nh = packet.nh;
-    io->Format("Entry {:3} ({:03}%): ", current, (packet.offset() / file_length));
-
-    if (nh.main_type == 65535) {
-      io->Puts(">DELETED<\n\n");
-    } else {
-      io->Format("{} ({})", main_type_name(nh.main_type),
-                 minor_type_to_string(nh.main_type, nh.minor_type));
-      if (packet.nh.fromuser) {
-        io->Format(", From #{} @{}", nh.fromuser, nh.fromsys);
-      } else {
-        io->Format(", From @{}", nh.fromsys);
-      }
-      io->Format(", {} bytes", nh.length);
-      const auto now = wwiv::core::daten_t_now();
-      const auto days_old = (int)((now - nh.daten) / 24 / 3600);
-      io->Format(", {} day{} old", days_old, days_old > 1 ? "s" : "");
-
-      if (nh.touser) {
-        io->Format("\n                  To #{} @{}\r\n\n", nh.touser, nh.tosys);
-      } else {
-        io->Format("\n                  To @{}\r\n\n", nh.tosys);
-      }
-    }
+    const auto percent = static_cast<double>(packet.offset() / file_length);
+    show_header(packet.nh, current, std::floor(percent * 100));
 
     auto prompt_done = false;
     while (!prompt_done) {
@@ -271,10 +283,7 @@ int lnet_main(const std::filesystem::path& filename) {
       }
     } // !prompt_done
   }
-
 }
-
-
 
 int main(int argc, char** argv) {
   LoggerConfig config(LogDirFromConfig);
@@ -282,7 +291,6 @@ int main(int argc, char** argv) {
 
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
-  cmdline.add_argument({"process_instance", "Also process pending files for BBS instance #", "0"});
 
   const NetworkCommandLine net_cmdline(cmdline, 'l');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested() ||
@@ -291,24 +299,15 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  // Setup the full-featured localIO if we have a TTY (or console)
-#if defined(_WIN32) && !defined(WWIV_WIN32_CURSES_IO)
-    io = new wwiv::local::io::Win32ConsoleIO();
-#else
-    // We always have a local console, so this is *NIX specific.
-    wwiv::local::ui::CursesIO::Init(fmt::sprintf("WWIV BBS %s", full_version()));
-    io = new wwiv::local::io::CursesLocalIO(wwiv::local::ui::curses_out->GetMaxY(),
-                                            wwiv::local::ui::curses_out->GetMaxX());
-#endif
-
+  io = CreateLocalIO();
   int ret = 0;
   try {
-    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_path(),
-                                                net_cmdline.semaphore_timeout());
+    auto semaphore =
+        SemaphoreFile::try_acquire(net_cmdline.semaphore_path(), net_cmdline.semaphore_timeout());
     ret = lnet_main(net_cmdline.cmdline().remaining().front());
   } catch (const semaphore_not_acquired& e) {
     LOG(ERROR) << "ERROR: [lnet]: Unable to Acquire Network Semaphore: " << e.what();
-  } 
+  }
   delete io;
   return ret;
 }
