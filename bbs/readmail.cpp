@@ -425,8 +425,7 @@ void readmail(bool newmail_only) {
     }
     bout << "|#9" << std::string(a()->user()->screen_width() - 1, '-') << wwiv::endl;
     bout.bputs("|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ");
-    // TODO: use input numberor hotkey for number 1-mw, or Q
-    auto res = bin.input_number_hotkey(1, {'Q'}, 1, mw);
+    const auto res = bin.input_number_hotkey(curmail + 1, {'Q'}, curmail + 1, mw, true);
     if (res.key == 'Q') { 
       return;
     }
