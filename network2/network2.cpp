@@ -95,22 +95,23 @@ static bool handle_ssm(Context& context, NetPacket& p) {
 
 static bool write_net_received_file(Context& context, const Network& net, NetPacket& p, NetInfoFileInfo info) {
   if (!info.valid) {
-    LOG(ERROR) << "    ! ERROR NetInfoFileInfo is not valid; writing to dead.net";
+    LOG(ERROR) << "    ! ERROR write_net_received_file: NetInfoFileInfo is not valid; writing to dead.net";
     return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
   }
 
   if (info.filename.empty()) {
-    LOG(ERROR) << "    ! ERROR Fell through handle_net_info_file; writing to dead.net";
+    LOG(ERROR) << "    ! ERROR write_net_received_file: info.filename.empty(); writing to dead.net";
     return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
   }
   // we know the name.
-  context.ssm.send_local(1, StrCat("Received ", info.filename));
-  const auto fn = FilePath(net.dir, info.filename);
+  const auto fn = net.dir / info.filename;
   if (!info.overwrite && File::Exists(fn)) {
-    LOG(ERROR) << "    ! ERROR File [" << fn
-               << "] already exists, and packet not set to overwrite; writing to dead.net";
+    const auto err = fmt::format("Received file '{}' already exists, and packet not set to overwrite.", fn.string());
+    LOG(ERROR) << "    ! ERROR " << err << "; writing to dead.net";
+    context.ssm.send_local(1, err);
     return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
   }
+  context.ssm.send_local(1, StrCat("Received ", info.filename));
   File file(fn);
   if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate,
                  File::shareDenyReadWrite)) {
@@ -231,31 +232,25 @@ static bool handle_packet(Context& context, NetPacket& p) {
 }
 
 static bool handle_file(Context& context, const std::string& name) {
-  File f(FilePath(context.net.dir, name));
-  if (!f.Open(File::modeBinary | File::modeReadOnly)) {
-    LOG(ERROR) << "Unable to open file: " << context.net.dir << name;
+  NetMailFile packets(context.net.dir / name, true, true);
+  if (!packets) {
     return false;
   }
-
-  for (;;) {
-    auto [packet, response] = read_packet(f, true);
-    if (response == ReadNetPacketResponse::END_OF_FILE) {
-      return true;
-    }
-    if (response == ReadNetPacketResponse::ERROR) {
-      return false;
-    }
-
+  for (auto packet : packets) {
     if (!handle_packet(context, packet)) {
       LOG(ERROR) << "Error handing packet: type: " << packet.nh.main_type;
+    } else if (packet.source() == NetPacketSource::DISK) {
+      // Seek to start of packet and mark it deleted.
+      delete_packet(packets.file(), packet);
     }
   }
+  return true;
 }
 
 int network2_main(const NetworkCommandLine& net_cmdline) {
   try {
     const auto& net = net_cmdline.network();
-    if (!File::Exists(FilePath(net.dir, LOCAL_NET))) {
+    if (!File::Exists(net.dir / LOCAL_NET)) {
       LOG(INFO) << "No local.net exists. exiting.";
       return 0;
     }
@@ -282,10 +277,10 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
     LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {
       if (net_cmdline.skip_delete()) {
-        backup_file(FilePath(net.dir, LOCAL_NET));
+        backup_file(net.dir / LOCAL_NET);
       }
       LOG(INFO) << "Deleting: " << net.dir << LOCAL_NET;
-      if (!File::Remove(FilePath(net.dir, LOCAL_NET))) {
+      if (!File::Remove(net.dir / LOCAL_NET)) {
         LOG(ERROR) << "ERROR: Unable to delete " << net.dir << LOCAL_NET;
       }
       update_filechange_status_dat(context.config.datadir(), email_changed, posts_changed);
@@ -312,7 +307,7 @@ int main(int argc, char** argv) {
   }
 
   try {
-    auto semaphore =
+    const auto semaphore =
         SemaphoreFile::try_acquire(net_cmdline.semaphore_path(), net_cmdline.semaphore_timeout());
     return network2_main(net_cmdline);
   } catch (const semaphore_not_acquired& e) {

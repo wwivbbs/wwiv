@@ -57,11 +57,23 @@ public:
   [[nodiscard]] const std::string& text() const noexcept { return text_; }
   void set_text(const std::string& text);
   void set_text(std::string&& text);
-  // Updates the lengths in the header for list and text.
+
+  // Gets the source of this packet, either disk or memory
   NetPacketSource source() const { return source_; }
+  // Sets the source of this packet, either disk or memory
   void set_source(NetPacketSource s) { source_ = s; }
+
+  // Offset for the start of the packet
   wwiv::core::File::size_type offset() const { return offset_; }
+  // Sets the offset for the start of the packet
   void set_offset(wwiv::core::File::size_type o) { offset_ = o; }
+
+  // Offset for the end of the packet
+  wwiv::core::File::size_type end_offset() const { return end_offset_; }
+  // Sets the offset for the start of the packet
+  void set_end_offset(wwiv::core::File::size_type o) { end_offset_ = o; }
+
+  // Updates the lengths in the header for list and text.
   void update_header();
   int length() const;
 
@@ -72,8 +84,11 @@ private:
   std::string text_;
   // Source of this packet (Disk, memory, or unknown)
   NetPacketSource source_{NetPacketSource::MEMORY};
+
   // Offset of this packet if it was loaded from disk, and -1 otherwise.
   wwiv::core::File::size_type offset_{-1};
+  // Offset of the end of this packet if it was loaded from disk, and -1 otherwise.
+  wwiv::core::File::size_type end_offset_{-1};
 };
 
 // Alpha subtypes are seven characters -- the first must be a letter, but the rest can be any
@@ -140,7 +155,7 @@ private:
  * 
  * // Example:
  * NetMailFile packets(path, true);
- * if (!packet) {
+ * if (!packets) {
  *   return error;
  * }
  * 
@@ -212,7 +227,7 @@ public:
   // Reads a packet, returning the packet and repsonse.
   std::tuple<NetPacket, ReadNetPacketResponse> Read();
 
-  // Returns hte underlying file.
+  // Returns the underlying file.
   wwiv::core::File& file() { return file_; }
 
 private:
@@ -259,9 +274,14 @@ static std::string get_message_field(const C& c, I& iter, std::set<char> stop, s
  */
 uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node);
 
+// Read the packet from disk, returning the packet and the response status.
 std::tuple<NetPacket, ReadNetPacketResponse> read_packet(wwiv::core::File& file, bool process_de);
 
-bool write_wwivnet_packet(const std::filesystem::path& path, const NetPacket& NetPacket);
+// Update the packet's header to be marked as deleted, rewrite the packet and seek
+// back to the end_offset of the packet.
+bool delete_packet(wwiv::core::File& f, NetPacket& packet);
+
+bool write_wwivnet_packet(const std::filesystem::path& path, const NetPacket& packet);
 
 bool send_local_email(const Network& network, net_header_rec& nh, const std::string& text,
                       const std::string& byname, const std::string& title);

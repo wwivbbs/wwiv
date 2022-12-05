@@ -55,7 +55,20 @@ bool send_network_email(const std::string& filename, const Network& network,
   return write_wwivnet_packet(FilePath(network.dir, filename), NetPacket(nh, list, ppt));
 }
 
-std::tuple<NetPacket, ReadNetPacketResponse>  read_packet(File& f, bool process_de) {
+bool delete_packet(File& f, NetPacket& packet) {
+  if (packet.source() == NetPacketSource::DISK) {
+    f.Seek(packet.offset(), File::Whence::begin);
+    packet.nh.main_type = 0xFFFF; // 65535
+    f.Write(&packet.nh, sizeof(net_header_rec));
+    // restore current position.
+    f.Seek(packet.end_offset(), File::Whence::begin);
+    return true;
+  }
+  return false;
+}
+
+
+std::tuple<NetPacket, ReadNetPacketResponse> read_packet(File& f, bool process_de) {
   NetPacket packet{};
   // Since this packet is read from disk, mark it as such, and note the current position
   // as the packet offset.
@@ -106,6 +119,7 @@ std::tuple<NetPacket, ReadNetPacketResponse>  read_packet(File& f, bool process_
     read_text.resize(num_read);
     packet.set_text(std::move(read_text));
   }
+  packet.set_end_offset(f.current_position());
   return std::make_tuple(packet, ReadNetPacketResponse::OK);
 }
 

@@ -96,7 +96,7 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
   }
   sm.tosys = static_cast<uint16_t>(0);  // 0 means local
   sm.touser = static_cast<uint16_t>(user_number);
-  to_char_array(sm.message, text);
+  to_char_array_trim(sm.message, text);
   file.Seek(pos * sizeof(shortmsgrec), File::Whence::begin);
   file.Write(&sm, sizeof(shortmsgrec));
   file.Close();
