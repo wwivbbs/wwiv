@@ -653,7 +653,7 @@ void boardedit() {
         bout.nl();
         bout << "|#5Delete " << a()->subs().sub(subnum).name << "? ";
         if (bin.yesno()) {
-          auto fn = a()->subs().sub(subnum).filename;
+          const auto fn = a()->subs().sub(subnum).filename;
           delete_sub(subnum);
           bout.nl();
           bout << "|#5Delete data files (including messages) for sub also? ";

@@ -529,11 +529,13 @@ void dlboardedit() {
         bout.nl();
         bout << "|#5Delete " << a()->dirs()[i].name << "? ";
         if (bin.yesno()) {
+          // Grab a reference to this filename before deleting it, since once
+          // a()->dirs()[i] is deleted it no longer exists.
+          const auto fn = a()->dirs()[i].filename;
           delete_dir(i);
           bout.nl();
           bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
           if (bin.yesno()) {
-            const auto& fn = a()->dirs()[i].filename;
             File::Remove(FilePath(a()->config()->datadir(), StrCat(fn, ".dir")));
             File::Remove(FilePath(a()->config()->datadir(), StrCat(fn, ".ext")));
           }

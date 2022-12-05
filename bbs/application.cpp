@@ -1272,7 +1272,11 @@ void Application::set_current_user_dir_num(int n) {
     subnum = 0;
   }
   // Update the value in the context.
-  sess().current_dir(dirs()[subnum]);
+  if (!dirs().empty()) {
+    sess().current_dir(dirs()[subnum]);
+  } else {
+    sess().current_dir(wwiv::sdk::files::directory_t{});
+  }
 }
 
 const files::directory_t& Application::current_dir() const {

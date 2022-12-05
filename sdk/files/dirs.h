@@ -108,6 +108,7 @@ public:
   bool insert(int n, directory_t r);
   bool erase(int n);
   [[nodiscard]] int size() const { return stl::size_int(dirs_); }
+  [[nodiscard]] bool empty() const { return dirs_.empty(); }
 
   static bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<directory_t>& entries);
   static bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const std::vector<directory_t>& entries);
