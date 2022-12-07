@@ -131,14 +131,13 @@ static bool handle_net_info_file(Context& context, const Network& net, NetPacket
 }
 
 static bool handle_sub_list(Context& context, NetPacket& p) {
-  const auto& net = context.net;
   // Handle legacy type 9 main_type_sub_list (SUBS.LST)
   NetInfoFileInfo info{};
   info.filename = SUBS_LST;
   info.data = p.text();
   info.valid = true;
   info.overwrite = true;
-  return write_net_received_file(context, net, p, info);
+  return write_net_received_file(context, context.net, p, info);
 }
 
 static bool handle_packet(Context& context, NetPacket& p) {

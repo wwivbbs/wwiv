@@ -44,7 +44,7 @@ using namespace wwiv::strings;
 
 namespace wwiv::bbs::basic {
 
-int my_print(const char* fmt, ...) {
+static int my_print(struct mb_interpreter_t *, const char* fmt, ...) {
   char buf[1024];
 
   va_list argptr;
@@ -57,7 +57,7 @@ int my_print(const char* fmt, ...) {
   return MB_FUNC_OK;
 }
 
-int my_input(const char* prompt, char* buf, int size) {
+static int my_input(struct mb_interpreter_t*, const char* prompt, char* buf, int size) {
   if (prompt && *prompt) {
     script_out().bputs(prompt);
   }
@@ -103,7 +103,7 @@ static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name)
   }
   const auto ret = mb_load_string(bas, o.value().c_str(), true);
   return ret == MB_FUNC_OK;
-}
+} 
 
 static void _on_error(struct mb_interpreter_t* s, mb_error_e e, const char* m, const char* f, int p,
                       unsigned short row, unsigned short col, int abort_code) {
@@ -112,7 +112,7 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e e, const char* m, c
 
   if (e != SE_NO_ERR) {
     if (f) {
-      if (e == SE_RN_WRONG_FUNCTION_REACHED) {
+      if (e == SE_RN_REACHED_TO_WRONG_FUNCTION) {
         printf(
             "Error:\n    Line %d, Col %d in Func: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
             row, col, f,
@@ -154,6 +154,19 @@ static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int 
   return MB_FUNC_OK;
 }
 
+static int _on_prev_stepped(struct mb_interpreter_t* s, void** l, const char* f, int p,
+                            unsigned short row, unsigned short col) {
+  mb_unrefvar(s);
+  mb_unrefvar(l);
+  mb_unrefvar(f);
+  mb_unrefvar(p);
+  mb_unrefvar(row);
+  mb_unrefvar(col);
+
+  return MB_FUNC_OK;
+}
+
+
 Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, common::Context* ctx)
     : bin_(i), bout_(o), config_(config), ctx_(ctx) {
 
@@ -168,7 +181,7 @@ Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, com
   bas_ = SetupBasicInterpreter();
   RegisterDefaultNamespaces();
 
-   mb_debug_set_stepped_handler(bas_, _on_stepped);
+   mb_debug_set_stepped_handler(bas_, _on_prev_stepped, _on_stepped);
 }
 
 static std::string ScriptBaseName(const std::string& script_name) {

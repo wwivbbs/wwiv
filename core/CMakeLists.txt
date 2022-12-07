@@ -56,7 +56,7 @@ if(WIN32)
 endif()
 
 if(OS2) 
-  target_link_libraries(core libcx)
+  target_link_libraries(core PUBLIC libcx)
   target_sources(core PRIVATE
     "file_os2.cpp"
     "os_os2.cpp"
@@ -70,16 +70,16 @@ endif()
 configure_file(version_internal.h.in version_internal.h @ONLY)
 
 #target_compile_options(core PRIVATE  /fsanitize=address)
-target_link_libraries(core fmt::fmt-header-only)
-target_link_libraries(core cereal)
+target_link_libraries(core PUBLIC fmt::fmt-header-only)
+target_link_libraries(core PUBLIC cereal::cereal)
 target_include_directories(core PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (UNIX)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # using regular Clang or AppleClang
-  	target_link_libraries(core c++fs)
+  	target_link_libraries(core PUBLIC c++fs)
   else()
-  	target_link_libraries(core stdc++fs)
+  	target_link_libraries(core PUBLIC stdc++fs)
   endif()
 endif()
 
