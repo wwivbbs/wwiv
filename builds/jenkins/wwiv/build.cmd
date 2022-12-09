@@ -66,7 +66,7 @@ del /q wwiv-*.zip
 del /q wwiv-*.exe
 
 echo "Updating vcpkg"
-.\vcpkg\bootstrap-vcpkg.bat
+call .\vcpkg\bootstrap-vcpkg.bat
 
 
 echo * Building WWIV
