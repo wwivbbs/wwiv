@@ -65,6 +65,10 @@ del /q %WWIV_RELEASE_DIR%
 del /q wwiv-*.zip
 del /q wwiv-*.exe
 
+echo "Updating vcpkg"
+.\vcpkg\bootstrap-vcpkg.bat
+
+
 echo * Building WWIV
 cd %CMAKE_BINARY_DIR%
 cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ^

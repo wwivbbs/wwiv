@@ -40,6 +40,11 @@ echo "Creating ${CMAKE_BINARY_DIR} and ${WWIV_RELEASE_DIR}"
 mkdir -p "${CMAKE_BINARY_DIR}"
 mkdir -p "${WWIV_RELEASE_DIR}"
 
+echo "Updating vcpkg"
+pushd ${WORKSPACE}
+./vcpkg/bootstrap-vcpkg.sh
+popd
+
 set -x
 echo "Building binaries"
 pushd ${CMAKE_BINARY_DIR}
