@@ -58,16 +58,16 @@ struct validation_config_t {
   // Friendly name of the validation type.
   std::string name;
   // SL
-  uint8_t sl; 
+  uint8_t sl{0}; 
   // DSL
-  uint8_t dsl;
+  uint8_t dsl{0};
 
   // AR
-  uint16_t ar;
+  uint16_t ar{0};
   // DAR
-  uint16_t dar;
+  uint16_t dar{0};
   // restrictions
-  uint16_t restrict; 
+  uint16_t restrict{0};
 };
 
 struct config_t {
@@ -105,68 +105,68 @@ struct config_t {
   std::string sysopname;
 
   // new user SL
-  uint8_t newusersl;
+  uint8_t newusersl{0};
   // new user DSL
-  uint8_t newuserdsl;
+  uint8_t newuserdsl{0};
   // Lowest SL given to a validated user.  If you want the BBS to
   // not require validation, set this to the same value as newusersl.
-  uint8_t validated_sl;
+  uint8_t validated_sl{0};
   // max mail waiting
-  uint8_t maxwaiting;
+  uint8_t maxwaiting{0};
   // file dir new uploads go
-  int newuploads;
+  int newuploads{0};
   // if system is closed
-  bool closedsystem;
+  bool closedsystem{false};
 
   // max users on system
-  uint16_t maxusers;
+  uint16_t maxusers{0};
   // new user restrictions
-  uint16_t newuser_restrict;
+  uint16_t newuser_restrict{0};
   // System configuration
-  uint16_t sysconfig;
+  uint16_t sysconfig{0};
   // Chat time on
-  uint16_t sysoplowtime;
+  uint16_t sysoplowtime{0};
   // Chat time off
-  uint16_t sysophightime;
+  uint16_t sysophightime{0};
   // Formerly required up/down ratio. This has been moved to wwiv.ini
-  float req_ratio;
+  float req_ratio{0.0f};
   // new user gold
-  float newusergold;
+  float newusergold{0.0f};
   // security level data
   std::map<int, slrec> sl;
   // sysop quick validation data
   std::map<int, validation_config_t> autoval;
   // user record length
-  uint16_t userreclen;
+  uint16_t userreclen{0};
   // mail waiting offset
-  uint16_t waitingoffset;
+  uint16_t waitingoffset{0};
   // inactive offset
-  uint16_t inactoffset;
+  uint16_t inactoffset{0};
   // SysOp's WWIV 4.x Registration Number
-  uint32_t wwiv_reg_number;
+  uint32_t wwiv_reg_number{0};
   // New User Password
   std::string newuserpw;
   // New user config
   newuser_config_t newuser_config;
   // Post/Call Ratio required to access transfers
-  float post_call_ratio;
+  float post_call_ratio{0.0f};
   // system status offset
-  uint16_t sysstatusoffset;
+  uint16_t sysstatusoffset{0};
   // offset values into user record, used by net3x.
-  uint16_t fuoffset;
-  uint16_t fsoffset;
-  uint16_t fnoffset;
+  uint16_t fuoffset{0};
+  uint16_t fsoffset{0};
+  uint16_t fnoffset{0};
 
   // max subboards
-  uint16_t max_subs;
+  uint16_t max_subs{0};
   // max directories
-  uint16_t max_dirs;
+  uint16_t max_dirs{0};
   // qscan pointer length in bytes
-  uint16_t qscn_len;
+  uint16_t qscn_len{0};
   /** Max number of backup files to make of datafiles. 0 = unlimited */
-  uint8_t max_backups;
+  uint8_t max_backups{0};
   /** Flags that control the execution of scripts */
-  uint16_t script_flags;
+  uint16_t script_flags{0};
   // path for menu dir
   std::string menudir;
 

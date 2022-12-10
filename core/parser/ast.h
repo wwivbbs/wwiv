@@ -87,7 +87,7 @@ public:
 
 protected:
   // Constructor for subclasses of expressions to use to eval.
-  explicit Expression(AstType t) : AstNode(t), id_(++expression_id) {}
+  explicit Expression(AstType t) : AstNode(t), id_(++expression_id), op_(Operator::UNKNOWN) {}
 };
 
 class Factor : public Expression {

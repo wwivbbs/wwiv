@@ -31,7 +31,7 @@ struct BbsListAddress {
 };
 
 struct BbsListEntry {
-  int id;
+  int id{0};
   std::string name;
   std::string software;
   std::string sysop_name;

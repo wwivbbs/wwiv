@@ -42,7 +42,7 @@ enum class pipe_expr_token_type_t {
 
 class pipe_expr_token_t {
 public:
-  pipe_expr_token_t() = default;
+  pipe_expr_token_t() : type(pipe_expr_token_type_t::string_literal) {}
   pipe_expr_token_t(pipe_expr_token_type_t t, std::string l) : type(t), lexeme(std::move(l)) {}
   pipe_expr_token_type_t type;
   std::string lexeme;

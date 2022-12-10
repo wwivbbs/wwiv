@@ -505,12 +505,14 @@ void Application::handle_sysop_key(uint8_t key) {
           sess().chatting(chatting_t::none);
         }
         break;
-      case HOME: /* HOME */
+      case HOME: /* HOME */ {
         if (sess().chatting() == chatting_t::one_way) {
           toggle_chat_file();
         }
+      } break;
+      default:
         break;
-      default: ;
+        ;
       }
     }
   }
