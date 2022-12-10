@@ -67,7 +67,7 @@ Here's the best way to work with the WWIV git repository:
     # make sure your branch is back onto the "main" branch
     git checkout main
     # pull (this is a fetch + merge) in the changes from the wwivbbs/wwiv respository.
-    git pull upstream main
+    git pull --recurse upstream main
     # push the changes from wwivbbs/wwiv to your fork on github.
     git push
     ```
@@ -84,7 +84,7 @@ Here's the best way to work with the WWIV git repository:
 5. Merge any new changes from the wwivbbs/wwiv respository into your development branch
 
     ```bash
-    git pull upstream main
+    git pull --recurse upstream main
     ```    
     
 6. Push your changes from your local machine to your fork on github.
