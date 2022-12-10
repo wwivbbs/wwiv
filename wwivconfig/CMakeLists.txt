@@ -25,7 +25,7 @@ set(COMMON_SOURCES
   "wwivd_ui.cpp"
   )
 
-set_max_warnings()
 
 add_executable(wwivconfig ${COMMON_SOURCES})
+set_max_warnings(wwivconfig)
 target_link_libraries(wwivconfig localui common core sdk ${CURSES_LIBRARIES})

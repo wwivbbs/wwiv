@@ -1,6 +1,5 @@
 # CMake for WWIVfsed
 
-set_max_warnings()
 
 if(UNIX) 
   find_package (Threads)
@@ -8,6 +7,7 @@ if(UNIX)
 endif()
 
 add_executable(wwivfsed wwivfsed.cpp fsedconfig.cpp)
+set_max_warnings(wwivfsed)
 target_link_libraries(wwivfsed 
 	common 
 	core

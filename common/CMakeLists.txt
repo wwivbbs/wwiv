@@ -46,7 +46,7 @@ if (OS2 OR WIN32)
   target_sources(common PRIVATE "remote_pipe_io.cpp")
 endif()
 
-set_max_warnings()
+set_max_warnings(common)
 
 target_include_directories(common PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

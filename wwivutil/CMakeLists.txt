@@ -41,7 +41,7 @@ set(COMMAND_SOURCES
   "util.cpp"
   )
 
-set_max_warnings()
 
 add_executable(wwivutil ${WWIVUTIL_MAIN} ${COMMAND_SOURCES})
+set_max_warnings(wwivutil)
 target_link_libraries(wwivutil common core binkp_lib sdk)

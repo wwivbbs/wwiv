@@ -12,16 +12,13 @@ set(SOURCES
  transfer_file.cpp
  wfile_transfer_file.cpp
 )
-set_max_warnings()
 
 add_library(binkp_lib ${SOURCES})
 target_link_libraries(binkp_lib fmt::fmt-header-only)
+set_max_warnings(binkp_lib)
 
 # Tests
 if (WWIV_BUILD_TESTS)
-
-    set_max_warnings()
-
     add_executable(binkp_tests 
         binkp_test.cpp
         binkp_config_test.cpp
@@ -33,6 +30,7 @@ if (WWIV_BUILD_TESTS)
         ppp_config_test.cpp
         binkp_test_main.cpp
     )
+    set_max_warnings(binkp_tests)
     target_link_libraries(binkp_tests binkp_lib core core_fixtures GTest::gmock GTest::gtest sdk)
     
     gtest_discover_tests(binkp_tests)

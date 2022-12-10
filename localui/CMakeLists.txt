@@ -10,7 +10,7 @@ set(COMMON_SOURCES
   "listbox.cpp"
   "stdio_win.cpp"
   )
-set_max_warnings()
 
 add_library(localui ${COMMON_SOURCES} ${PLATFORM_SOURCES})
 target_link_libraries(localui ${CURSES_LIBRARIES} fmt::fmt-header-only)
+set_max_warnings(localui)

@@ -2,7 +2,12 @@
 #
 # CMake for WWIV
 
-cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+
+if(POLICY CMP0092)
+  # MSVC warning flags are not in CMAKE_<LANG>_FLAGS by default.
+  cmake_policy(SET CMP0092 NEW)
+endif()
 
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
   CACHE STRING "Vcpkg toolchain file")

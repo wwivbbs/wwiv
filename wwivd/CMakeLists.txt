@@ -22,9 +22,8 @@ elseif(OS2)
   list(APPEND WWIVD_SOURCES wwivd_os2.cpp)
 endif()
 
-set_max_warnings()
-
 add_library(wwivd_lib ${WWIVD_SOURCES})
+set_max_warnings(wwivd_lib)
 target_link_libraries(wwivd_lib sdk core sdk ${CMAKE_THREAD_LIBS_INIT})
 add_executable(wwivd ${WWIVD_MAIN})
 target_link_libraries(wwivd wwivd_lib)
@@ -37,8 +36,8 @@ if (WWIV_BUILD_TESTS)
   )
   list(APPEND test_sources wwivd_test_main.cpp)
 
-  set_max_warnings()
   add_executable(wwivd_tests ${test_sources})
+  set_max_warnings(wwivd_tests)
   target_link_libraries(wwivd_tests wwivd_lib core_fixtures core sdk GTest::gtest)
   gtest_discover_tests(wwivd_tests)
 

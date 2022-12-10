@@ -65,9 +65,8 @@ set(COMMON_SOURCES
   "value/valueprovider.cpp"
    )
 
-set_max_warnings()
-
 add_library(sdk ${COMMON_SOURCES})
+set_max_warnings(sdk)
 target_link_libraries(sdk PRIVATE local_io)
 target_link_libraries(sdk PUBLIC core fmt::fmt-header-only)
 
@@ -122,10 +121,9 @@ set(test_sources
 )
 list(APPEND test_sources sdk_test_main.cpp)
 
-set_max_warnings()
 
 add_executable(sdk_tests ${test_sources})
-
+set_max_warnings(sdk_tests)
 target_link_libraries(sdk_tests core core_fixtures GTest::gtest sdk sdk_fixtures)
 
 gtest_discover_tests(sdk_tests)

@@ -7,8 +7,8 @@ set(NETWORK_MAIN
 	post.cpp
 	subs.cpp
 	)
-set_max_warnings()
 
 add_executable(network2 ${NETWORK_MAIN})
+set_max_warnings(network2)
 target_link_libraries(network2 binkp_lib net_core core sdk)
 

@@ -86,12 +86,11 @@ endif()
 # Tests
 if (WWIV_BUILD_TESTS)
 
-  set_max_warnings()
-
   add_library(core_fixtures 
     "test/file_helper.cpp"
     "test/wwivtest.cpp"
   )
+  set_max_warnings(core_fixtures)
 
   target_link_libraries(core_fixtures core GTest::gtest)
   add_executable(core_tests

@@ -24,6 +24,6 @@ target_link_libraries(
   sdk 
 )
 
-set_max_warnings()
 
+set_max_warnings(fsed)
 target_include_directories(fsed PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

@@ -142,7 +142,7 @@ if(WIN32)
 		make_abs_cmd_win32.cpp 
   )
 
-  SET_MSVC_WARNING_LEVEL_4()
+  set_max_warnings(bbs_lib)
 endif()
 
 if(OS2)
