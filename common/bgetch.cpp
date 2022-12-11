@@ -365,7 +365,7 @@ int Input::bgetch_handle_key_translation(int key, numlock_status_t numlock_mode)
       return ret;
   }
   if (key < 127) {
-    return HandleControlKey(static_cast<const char>(key), sess(), user());
+    return HandleControlKey(static_cast<char>(key), sess(), user());
   }
   return key;
 }

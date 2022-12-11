@@ -526,7 +526,7 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
   }
 
   auto unx = -1;
-  const auto ch = to_upper_case<char>(bout.localIO()->GetChar());
+  const auto ch = static_cast<unsigned char>(to_upper_case<char>(bout.localIO()->GetChar()));
   switch (ch) {
   case 'Y': {
     bout.localIO()->Puts(YesNoString(true));
@@ -534,7 +534,7 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
     return std::make_tuple(local_logon_t::prompt, -1);
   }
   case 0:
-  case 224: {
+  case 0xE0: {
     // The ch == 224 is a Win32'ism
     bout.localIO()->GetChar();
     return std::make_tuple(local_logon_t::exit, -1);

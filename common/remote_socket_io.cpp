@@ -74,8 +74,8 @@ static bool socket_avail(SOCKET sock, int seconds) {
   return result == 1;
 }
 
-RemoteSocketIO::RemoteSocketIO(unsigned int socket_handle, bool telnet)
-    : socket_(static_cast<SOCKET>(socket_handle)), telnet_(telnet) {
+RemoteSocketIO::RemoteSocketIO(SOCKET socket_handle, bool telnet)
+    : socket_(socket_handle), telnet_(telnet) {
   // assigning the value to a static causes this only to be initialized once.
   [[maybe_unused]] static auto once = Initialize();
 

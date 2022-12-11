@@ -265,7 +265,7 @@ std::optional<FidoPacket> FidoPacket::Create(const std::filesystem::path& outbou
     if (!packet.write_fido_packet_header()) {
       return std::nullopt;
     }
-    return std::move(packet);
+    return packet;
   }
   return std::nullopt;
 }

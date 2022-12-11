@@ -213,6 +213,6 @@ TEST_F(PacketsTest, PacketFileReader_Smoke) {
   ASSERT_EQ(iter, end);
 
   auto iter2 = std::begin(reader);
-  const auto num = std::count_if(iter2, end, [](NetPacket p) { return true; });
+  const auto num = std::count_if(iter2, end, [](NetPacket) { return true; });
   EXPECT_EQ(3, num);
 }

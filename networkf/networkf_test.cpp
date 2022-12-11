@@ -41,7 +41,7 @@ protected:
 TEST_F(NetworkFTest, Smoke) { 
   constexpr int max_backups = 2;
   constexpr bool skip_delete = false;
-  networkf_options_t opts{max_backups, skip_delete};
+  networkf_options_t opts{max_backups, skip_delete, 'f', ""};
   opts.system_name = "test bbsname";
 
   net_system_list_rec netsys;

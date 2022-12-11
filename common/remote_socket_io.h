@@ -64,7 +64,7 @@ class RemoteSocketIO final : public RemoteIO {
 
   static bool Initialize();
 
-  RemoteSocketIO(unsigned int socket_handle, bool telnet);
+  RemoteSocketIO(SOCKET socket_handle, bool telnet);
   ~RemoteSocketIO() override;
 
   bool open() override;

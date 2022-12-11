@@ -564,11 +564,14 @@ void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   GotoXY(xx, yy);
 }
 
-void CursesLocalIO::UpdateNativeTitleBar(const std::string& system_name, int instance_number) {
+void CursesLocalIO::UpdateNativeTitleBar([[maybe_unused]] const std::string& system_name, 
+                                         [[maybe_unused]] int instance_number) {
 #ifdef _WIN32
   // Set console title
   const auto s = StrCat("WWIV Node ", instance_number, " (", system_name, ")");
   SetConsoleTitle(s.c_str());
+#else
+  
 #endif // _WIN32
 }
 

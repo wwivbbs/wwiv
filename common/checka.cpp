@@ -67,6 +67,7 @@ bool Input::checka(bool* abort, bool* next) {
     case CN:
       bout.clear_lines_listed();
       *next = true;
+      break;
     case CC:
     case SPACE:
     case CX:
