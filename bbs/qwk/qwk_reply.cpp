@@ -510,7 +510,7 @@ void upload_reply_packet() {
 
 void qwk_inmsg(const char* text, messagerec* m1, const std::string& aux, const std::string& name,
                const DateTime& dt) {
-  ScopeExit at_exit([=]() {
+  auto at_exit = finally([=]() {
     // Might not need to do this anymore since quoting
     // isn't so convoluted.
     bin.charbufferpointer_ = 0;

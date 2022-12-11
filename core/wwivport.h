@@ -34,10 +34,10 @@ typedef uint32_t daten_t;
 #endif
 
 #if defined(_MSC_VER)
-#if (_MSC_VER < 1922)
-// See https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
-#error "Visual Studio 2017 version 16.2.0 or later is required"
-#endif // _MSC_VER < 1922
+#if (_MSC_VER < 1932)
+// See https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
+#error "Visual Studio 2022 version 17.2.0 or later is required"
+#endif // _MSC_VER < 1932
 
 #ifdef _WIN64
 typedef int64_t ssize_t;

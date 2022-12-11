@@ -527,7 +527,7 @@ static std::tuple<bool, int> display_header_file(Type2MessageData& msg) {
   a()->context().add_context_variable("net", n);
 
   const auto saved_mci_enabled = bout.mci_enabled();
-  ScopeExit at_exit([=] {
+  auto at_exit = finally([=] {
     a()->context().clear_context_variables();
     bout.set_mci_enabled(saved_mci_enabled);
   });

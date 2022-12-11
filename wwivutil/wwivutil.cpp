@@ -64,7 +64,7 @@ public:
   ~WWIVUtil() = default;
 
   int Main() {
-    ScopeExit at_exit(Logger::ExitLogger);
+    auto at_exit = finally(Logger::ExitLogger);
     try {
       Add(std::make_unique<acs::AcsCommand>());
       Add(std::make_unique<ConfCommand>());

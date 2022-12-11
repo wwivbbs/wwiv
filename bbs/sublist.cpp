@@ -37,6 +37,7 @@
 
 #include <string>
 
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -151,7 +152,7 @@ int get_new_posts_count(int subnum) {
   auto msgIndex = num;
   int64_t last_qscan = 0;
   open_sub(false);
-  wwiv::core::ScopeExit at_exit([]{ close_sub();});
+  auto at_exit = finally([] { close_sub(); });
   while(msgIndex > midpoint) {
     const auto cur = get_post(msgIndex)->qscan;
     if (cur <= q) {

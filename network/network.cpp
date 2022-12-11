@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
   LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
   try {
-    ScopeExit at_exit(Logger::ExitLogger);
+    auto at_exit = finally(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "net");
     cmdline.AddStandardArgs();
     AddStandardNetworkArgs(cmdline);

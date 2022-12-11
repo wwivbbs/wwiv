@@ -394,7 +394,7 @@ public:
   ShowGeneratedMenuSubDialog& operator=(ShowGeneratedMenuSubDialog&&) = delete;
 
   EditlineResult Run(CursesWindow* window) override {
-    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    auto at_exit = finally([] { curses_out->footer()->SetDefaultFooter(); });
     curses_out->footer()->ShowHelpItems(0, {});
     curses_out->footer()->ShowContextHelp("Viewing Menu: Press any key to continue.");
     window->GotoXY(x_, y_);

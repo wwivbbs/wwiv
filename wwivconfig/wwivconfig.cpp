@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
   try {
     LoggerConfig config(LogDirFromConfig);
     Logger::Init(argc, argv, config);
-    ScopeExit at_exit(Logger::ExitLogger);
+    auto at_exit = finally(Logger::ExitLogger);
 
     const WWIVConfigApplication app{};
     return app.Main(argc, argv);

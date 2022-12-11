@@ -30,6 +30,7 @@
 #include <string>
 
 using namespace std::chrono;
+using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -151,7 +152,7 @@ int CursesWindow::GetChar(duration<double> timeout) const {
     if (ch == 27) {
       wtimeout(window, 0);
       nodelay(window, true);
-      wwiv::core::ScopeExit at_exit([=]{ nodelay(window, false); });
+      auto at_exit = finally([=] { nodelay(window, false); });
       // Check for alt.
       const auto ch2 = wgetch(window);
       if (ch2 == ERR) {

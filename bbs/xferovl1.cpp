@@ -228,7 +228,7 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
 }
 
 bool get_file_idz(FileRecord& fr, const directory_t& dir) {
-  ScopeExit at_exit([] {
+  auto at_exit = finally([] {
     File::Remove(FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ));
     File::Remove(FilePath(a()->sess().dirs().temp_directory(), DESC_SDI));
   });

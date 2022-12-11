@@ -245,7 +245,7 @@ int main(int argc, char** argv) {
   LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
 
-  ScopeExit at_exit(Logger::ExitLogger);
+  auto at_exit = finally(Logger::ExitLogger);
 
 #ifdef __unix__
   // Let the socket library handle EPIPE

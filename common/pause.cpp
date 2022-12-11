@@ -98,7 +98,7 @@ void Output::pausescr() {
   const auto saved_curatr = curatr();
   bin.clearnsp();
   bus().invoke<PauseProcessingInstanceMessages>();
-  ScopeExit at_exit(
+  auto at_exit = finally(
       [] { wwiv::core::bus().invoke<ResetProcessingInstanceMessages>(); });
   if (!okansi(user())) {
     pausescr_noansi();

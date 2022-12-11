@@ -120,7 +120,7 @@ std::string FakeConnection::receive(int, duration<double> d) {
   }
 
   std::lock_guard<std::mutex> lock(mu_);
-  wwiv::core::ScopeExit on_exit([=] { receive_queue_.pop(); });
+  auto on_exit = finally([=] { receive_queue_.pop(); });
   const FakeBinkpPacket& front = receive_queue_.front();
   return front.data();
 }

@@ -152,7 +152,7 @@ public:
  *
  *   LoggerConfig lc(LogDirFromConfig);
  *   Logger::Init(argc, argv, lc);
- *   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
+ *   auto at_exit = finally(Logger::ExitLogger);
  *
  * In code, just use "LOG(INFO) << messages" and it will end up in the information logs.
  */

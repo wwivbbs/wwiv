@@ -95,7 +95,7 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
   const auto y = screen_length_ - 1;
   bout_.GotoXY(1, y);
   const auto saved_color = bout.curatr();
-  ScopeExit at_ext([=] { bout.SystemColor(saved_color); });
+  auto at_exit = finally([=] { bout.SystemColor(saved_color); });
 
   bout_ << "|09" << static_cast<unsigned char>(198)
         << std::string(screen_width_ - 2, static_cast<unsigned char>(205))

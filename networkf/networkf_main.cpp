@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
   CommandLine cmdline(argc, argv, "net");
   const NetworkCommandLine net_cmdline(cmdline, 'f');
   try {
-    ScopeExit at_exit(Logger::ExitLogger);
+    auto at_exit = finally(Logger::ExitLogger);
     if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
       ShowNetworkfHelp(net_cmdline);
       return 1;

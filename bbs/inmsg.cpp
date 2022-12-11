@@ -554,7 +554,7 @@ bool inmsg(MessageEditorData& data) {
     }
   }
 
-  ScopeExit at_exit([=]() {
+  auto at_exit = finally([=]() {
     setiia(oiia);
     // Might not need to do this anymore since quoting
     // isn't so convoluted.

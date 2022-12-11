@@ -346,7 +346,7 @@ bool zmodem_receive(const std::filesystem::path& path) {
 
   const auto saved_mode = bout.remoteIO()->binary_mode();
   bout.remoteIO()->set_binary_mode(true);
-  ScopeExit at_exit([=]{bout.remoteIO()->set_binary_mode(saved_mode);});
+  auto at_exit = finally([=] { bout.remoteIO()->set_binary_mode(saved_mode); });
 
   auto newpath = path;
   const auto local_filename(wwiv::sdk::files::unalign(path.filename().string()));

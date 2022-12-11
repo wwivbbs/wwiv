@@ -20,12 +20,23 @@
 #include "core/scope_exit.h"
 
 using wwiv::core::ScopeExit;
+using wwiv::core::finally;
 
 TEST(ScopeExitTest, Basic) {
   auto committed = false;
   auto f = [&] { committed = true; };
   {
     ScopeExit e(f);
+    ASSERT_FALSE(committed);
+  }
+  ASSERT_TRUE(committed);
+}
+
+TEST(ScopeExitTest, BasicFinally) {
+  auto committed = false;
+  auto f = [&] { committed = true; };
+  {
+    auto e = finally(f);
     ASSERT_FALSE(committed);
   }
   ASSERT_TRUE(committed);

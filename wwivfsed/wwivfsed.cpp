@@ -264,7 +264,7 @@ int main(int argc, char** argv) {
   LoggerConfig logger_config(LogDirFromConfig);
   Logger::Init(argc, argv, logger_config);
 
-  ScopeExit at_exit(Logger::ExitLogger);
+  auto at_exit = finally(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
   cmdline.add_argument({"socket_handle", 'H', "Socket Handle from BBS."});

@@ -123,7 +123,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
   HANDLE hSyncWriteSlot = INVALID_HANDLE_VALUE;     // Mail Slot for writing
 
   // Cleanup on all exit paths
-  ScopeExit at_exit([&] {
+  auto at_exit = finally([&] {
     if (hSyncHangupEvent != INVALID_HANDLE_VALUE) { 
       CloseHandle(hSyncHangupEvent);
       hSyncHangupEvent = INVALID_HANDLE_VALUE;

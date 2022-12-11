@@ -80,7 +80,7 @@ bool fsed(Context& ctx, std::vector<std::string>& lin, int maxli, MessageEditorD
           bool file) {
   const auto saved_mci_enabled = bout.mci_enabled();
   const auto saved_okskey = bin.okskey();
-  ScopeExit at_exit([=] {
+  auto at_exit = finally([=] {
     bout.set_mci_enabled(saved_mci_enabled);
     bin.okskey(saved_okskey);
   });
@@ -103,7 +103,7 @@ bool fsed(Context& ctx, std::vector<std::string>& lin, int maxli, MessageEditorD
 bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
   const auto saved_mci_enabled = bout.mci_enabled();
   const auto saved_okskey = bin.okskey();
-  ScopeExit at_exit([=] {
+  auto at_exit = finally([=] {
     bout.set_mci_enabled(saved_mci_enabled);
     bin.okskey(saved_okskey);
   });

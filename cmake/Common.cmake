@@ -71,10 +71,10 @@ macro(ENSURE_MINIMUM_COMPILER_VERSIONS)
   endif()
 
   if (MSVC)
-    if (${MSVC_VERSION} LESS 1922)
-      # See https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
+    if (${MSVC_VERSION} LESS 1932)
+      # See https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
       # for versions
-      message(FATAL_ERROR "Require at least MSVC 2019 16.2 (1922); Found: ${MSVC_VERSION}")
+      message(FATAL_ERROR "Require at least MSVC 2022 16.2 (1932); Found: ${MSVC_VERSION}")
     endif()
   endif()
 endmacro(ENSURE_MINIMUM_COMPILER_VERSIONS)

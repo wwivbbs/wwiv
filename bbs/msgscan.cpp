@@ -247,7 +247,7 @@ static FullScreenView CreateFullScreenListTitlesView() {
   a()->context().add_context_variable("cursub", m);
 
   const auto saved_mci_enabled = bout.mci_enabled();
-  ScopeExit at_exit([=] {
+  auto at_exit = finally([=] {
     a()->context().clear_context_variables();
     bout.set_mci_enabled(saved_mci_enabled);
   });
@@ -783,7 +783,7 @@ static void HandleMessageDelete(int& msg_num) {
   delete_message(msg_num);
   close_sub();
 
-  wwiv::core::ScopeExit at_exit([&] { resynch(&msg_num, &p2); });
+  auto at_exit = finally([&] { resynch(&msg_num, &p2); });
   if (p2.ownersys != 0) {
     return;
   }

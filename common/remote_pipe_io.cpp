@@ -35,7 +35,6 @@
 namespace wwiv::common {
 
 using std::chrono::milliseconds;
-using wwiv::core::ScopeExit;
 using wwiv::os::sleep_for;
 using namespace wwiv::core;
 using namespace wwiv::strings;

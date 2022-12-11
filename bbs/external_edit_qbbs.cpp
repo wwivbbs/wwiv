@@ -32,7 +32,6 @@
 #include <filesystem>
 #include <string>
 
-using wwiv::core::ScopeExit;
 using namespace wwiv::core;
 using namespace wwiv::local::io;
 using namespace wwiv::strings;

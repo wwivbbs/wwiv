@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
   LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
 
-  ScopeExit at_exit(Logger::ExitLogger);
+  auto at_exit = finally(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
 
   const NetworkCommandLine net_cmdline(cmdline, 'l');

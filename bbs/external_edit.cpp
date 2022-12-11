@@ -34,7 +34,6 @@
 #include "fsed/fsed.h"
 #include <string>
 
-using wwiv::core::ScopeExit;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -64,7 +63,7 @@ static bool external_edit_internal(const std::string& edit_filename, const std::
   make_abs_cmd(a()->bbspath(), &editorCommand);
 
   const auto stripped_file_name{stripfn(edit_filename)};
-  ScopeExit on_exit([=] { File::set_current_directory(a()->bbspath()); });
+  auto on_exit = finally([=] { File::set_current_directory(a()->bbspath()); });
   if (!working_directory.empty()) {
     File::set_current_directory(working_directory);
   }

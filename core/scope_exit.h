@@ -34,7 +34,7 @@ namespace wwiv::core {
  * Example use:
  * \code
  *  // We need to call do_cleanup after everything else is done.
- *  ScopeExit on_exit([=] { do_cleanup() });
+ *  auto on_exit = finally([=] { do_cleanup() });
  *  if (!foo()) {
  *    do_something()
  *    return false
@@ -43,14 +43,21 @@ namespace wwiv::core {
  *  return true;
  *  \endcode 
  */
-class ScopeExit final {
+template <class F = std::function<void()>> class ScopeExit final {
 public:
   ScopeExit() noexcept = default;
   ScopeExit(const ScopeExit&) = delete;
-  ScopeExit(ScopeExit&& other) noexcept { fn_.swap(other.fn_); }
+  ScopeExit(ScopeExit&& other) noexcept {
+    fn_.swap(other.fn_);
+    invoke_ = other.invoke_;
+  }
 
   ScopeExit& operator=(const ScopeExit&) = delete;
-  ScopeExit& operator=(ScopeExit&& other) noexcept { fn_.swap(other.fn_); return *this; }
+  ScopeExit& operator=(ScopeExit&& other) noexcept {
+    fn_(std::move(other.fn_));
+    invoke_ = other.invoke_;
+    return *this;
+  }
 
   /**
    * Construct a  scope guard with the exit function "<void()>".
@@ -60,16 +67,27 @@ public:
 #if defined(_MSC_VER)
   [[nodiscard]]
 #endif // _MSC_VER
-  explicit ScopeExit(std::function<void()> fn)
-    : fn_(std::move(fn)) {
+  explicit ScopeExit(F fn)
+    : fn_(std::move(fn)), invoke_(true) {
   }
 
-  ~ScopeExit() { if (fn_) { fn_(); } }
-  void swap(std::function<void()> fn) { fn_.swap(fn); }
+  ~ScopeExit() { if (invoke_) { fn_(); } }
+  void swap(std::function<void()> fn) {
+    invoke_ = false;
+    fn_.swap(fn);
+    if (fn_) {
+      invoke_ = true;
+    }
+  }
+
 private:
-  std::function<void()> fn_;
+  F fn_;
+  bool invoke_{false};
 };
 
+template <class F> [[nodiscard]] auto finally(F&& f) noexcept {
+  return ScopeExit<std::decay_t<F>>{std::forward<F>(f)};
+}
 } // namespace
 
 #endif

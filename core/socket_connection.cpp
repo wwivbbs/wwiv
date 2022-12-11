@@ -103,7 +103,7 @@ bool WouldSocketBlock() {
 std::string GetLastErrorText() {
 #if defined ( _WIN32 )
   char* error_text{nullptr};
-  ScopeExit on_exit([&error_text] {LocalFree(error_text);});
+  auto on_exit = finally([&error_text] { LocalFree(error_text); });
   const auto last_error = GetLastError();
   FormatMessage(
     FORMAT_MESSAGE_ALLOCATE_BUFFER |

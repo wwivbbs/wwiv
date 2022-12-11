@@ -263,7 +263,7 @@ bool NetworkF::import_bundle_file(const std::filesystem::path& path) {
   }
 
   const auto saved_dir = File::current_directory();
-  ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
+  auto at_exit = finally([=] { File::set_current_directory(saved_dir); });
   File::set_current_directory(dirs_.temp_inbound_dir());
 
   // were in the temp dir now.
@@ -362,7 +362,7 @@ std::optional<std::string> NetworkF::create_ftn_bundle(const FidoAddress& route_
   const auto dow = now.dow();
 
   const auto saved_dir = File::current_directory();
-  ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
+  auto at_exit = finally([=] { File::set_current_directory(saved_dir); });
 
   const auto ctype = fido_callout_.packet_config_for(route_to).compression_type;
 

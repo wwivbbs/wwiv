@@ -656,7 +656,7 @@ void query_print_net_listing(bool force_pause) {
       a()->user()->toggle_flag(User::pauseOnPage);
     }
   }
-  ScopeExit at_exit([=] {
+  auto at_exit = finally([=] {
   if (force_pause && had_pause) {
     a()->user()->toggle_flag(User::pauseOnPage);
   }

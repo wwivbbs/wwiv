@@ -182,7 +182,7 @@ public:
  */
 // ReSharper disable once CppMemberFunctionMayBeConst
 bool Output::printfile_path(const std::filesystem::path& file_path, bool abortable, bool force_pause) {
-  ScopeExit at_exit([this]() { sess().set_file_bps(0); });
+  auto at_exit = finally([this]() { sess().set_file_bps(0); });
   if (!File::Exists(file_path)) {
     // No need to print a file that does not exist.
     return false;
@@ -193,7 +193,7 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
   }
 
   const auto save_mci = bout.mci_enabled();
-  ScopeExit at_exit_mci([=]() { bout.set_mci_enabled(save_mci); });
+  auto at_exit_mci = finally([=]() { bout.set_mci_enabled(save_mci); });
   bout.enable_mci();
   TextFile tf(file_path, "rb");
   const auto v = tf.ReadFileIntoVector();

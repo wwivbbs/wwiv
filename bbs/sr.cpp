@@ -119,7 +119,7 @@ int extern_prot(int num, const std::filesystem::path& path, bool bSending) {
   cl.args(xfer_speed, primary_port, path.string(), xfer_speed);
   if (!cl.empty()) {
     a()->ClearTopScreenProtection();
-    ScopeExit at_exit([]{ a()->UpdateTopScreen(); });
+    auto at_exit = finally([] { a()->UpdateTopScreen(); });
     bout.localIO()->Puts(fmt::format("{} is currently online at {} bps\r\n\r\n",
                                      a()->user()->name_and_number(), a()->modem_speed_));
     bout.localIO()->Puts(cl.cmdline());

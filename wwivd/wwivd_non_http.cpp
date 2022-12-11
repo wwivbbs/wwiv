@@ -303,7 +303,7 @@ static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
   }
 
   VLOG(2) << "raw_cmd: " << raw_cmd;
-  ScopeExit at_exit([=] { nodes->ReleaseNode(node_number); });
+  auto at_exit = finally([=] { nodes->ReleaseNode(node_number); });
   if (starts_with(raw_cmd, "@telnet:")) {
     return telnet_to(raw_cmd.substr(8), node_number, sock);
   }
@@ -322,7 +322,7 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
   const auto working_dir =
       bbs.working_directory.empty() ? "" : FilePath(root, bbs.working_directory).string();
 
-  ScopeExit at_exit([=] {
+  auto at_exit = finally([=] {
     closesocket(sock);
     VLOG(2) << "closed socket: " << sock;
   });
@@ -560,12 +560,12 @@ void ConnectionHandler::HandleBinkPConnection() {
       closesocket(sock);
       return;
     }
-    ScopeExit at_exit([&] { data.concurrent_connections_->release(result.remote_peer); });
+    auto at_exit = finally([&] { data.concurrent_connections_->release(result.remote_peer); });
 
     auto& nodemgr = data.nodes->at("BINKP");
     auto node = -1;
     if (nodemgr->AcquireNode(node)) {
-      ScopeExit at_exit2([=] {
+      auto at_exit2 = finally([=] {
         closesocket(sock);
         VLOG(2) << "closed socket: " << sock;
       });
@@ -623,7 +623,7 @@ void ConnectionHandler::HandleConnection() {
       return;
     }
     VLOG(4) << "After concurrent check";
-    ScopeExit at_exit([&] { data.concurrent_connections_->release(result.remote_peer); });
+    auto at_exit = finally([&] { data.concurrent_connections_->release(result.remote_peer); });
     const auto connection_type = connection_type_for(*data.c, r.port);
 
     if (data.c->blocking.mailer_mode && connection_type == ConnectionType::TELNET) {

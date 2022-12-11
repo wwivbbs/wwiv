@@ -24,6 +24,13 @@
 #include "fmt/format.h"
 #include <string>
 
+#ifndef _WIN32
+// for strerror_r
+#include <string.h>
+#endif  // !_WIN32
+
+using wwiv::core::finally;
+
 namespace wwiv::common {
 
 // static
@@ -36,7 +43,6 @@ void RemoteIO::set_binary_mode(bool b) {
 std::string RemoteIO::GetLastErrorText() {
 #if defined ( _WIN32 )
   char* error_text;
-  wwiv::core::ScopeExit on_exit([&error_text] {LocalFree(error_text);});
   
   FormatMessage(
     FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -50,8 +56,14 @@ std::string RemoteIO::GetLastErrorText() {
     nullptr
   );
   error_text_.assign(error_text);
+  LocalFree(error_text);
 #else
-  return fmt::format("errno: {}", errno);
+  // int strerror_r(int errnum, char *buf, size_t buflen);
+  char buf[500];
+  if (strerror_r(errno, buf, sizeof(buf)) != 0) {
+    buf[0] = '\0';
+  }
+  return fmt::format("errno: {} (num: {})", buf, errno);
 #endif
   return error_text_;
 }

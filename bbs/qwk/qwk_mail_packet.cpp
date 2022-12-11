@@ -287,7 +287,7 @@ void qwk_gather_sub(uint16_t bn, qwk_state* qwk_info) {
     {
       // Pre-open the sub to speed up access.
       open_sub(false);
-      ScopeExit at_exit([]{ close_sub();});
+      auto at_exit = finally([]{ close_sub();});
       const auto total = a()->GetNumMessagesInCurrentMessageArea();
       for (i = total; i > 1 && get_post(i - 1)->qscan > qscnptrx; i--) {
         if ((++amount % 1000) == 0) {
@@ -312,7 +312,7 @@ void qwk_gather_sub(uint16_t bn, qwk_state* qwk_info) {
       // Open the sub first, so that we don't open/close it repeatedly
       // in get_post.
       open_sub(false);
-      ScopeExit at_exit([]{ close_sub();});
+      auto at_exit = finally([] { close_sub(); });
 
       if (a()->GetNumMessagesInCurrentMessageArea() > 0 &&
           i <= a()->GetNumMessagesInCurrentMessageArea() && !qwk_info->abort) {

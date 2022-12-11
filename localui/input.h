@@ -911,7 +911,7 @@ public:
   virtual void RunSubDialog(CursesWindow* window) = 0;
 
   EditlineResult Run(CursesWindow* window) override {
-    core::ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    auto at_exit = core::finally([] { curses_out->footer()->SetDefaultFooter(); });
     curses_out->footer()->ShowHelpItems(
         0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
@@ -990,7 +990,7 @@ public:
   EditExternalFileItem& operator=(EditExternalFileItem&&) = delete;
 
   EditlineResult Run(CursesWindow* window) override {
-    core::ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    auto at_exit = core::finally([] { curses_out->footer()->SetDefaultFooter(); });
     curses_out->footer()->ShowHelpItems(
         0, {{"Esc", "Exit"}, {"ENTER", "Edit File (opens editor)"}});
     window->GotoXY(x_, y_);

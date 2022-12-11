@@ -80,7 +80,8 @@ static void ShowHelp(const NetworkCommandLine& cmdline) {
 }
 
 static bool handle_ssm(Context& context, NetPacket& p) {
-  ScopeExit at_exit(
+  auto at_exit =
+      finally(
       [] { VLOG(1) << "=============================================================="; });
   VLOG(1) << "==============================================================";
   if (!context.ssm.send_local(p.nh.touser, p.text())) {
@@ -297,7 +298,7 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
 int main(int argc, char** argv) {
   LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
-  ScopeExit at_exit(Logger::ExitLogger);
+  auto at_exit = finally(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   const NetworkCommandLine net_cmdline(cmdline, '2');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {

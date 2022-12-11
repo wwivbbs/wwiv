@@ -175,7 +175,7 @@ int StatusMgr::user_count() {
 }
 
 bool StatusMgr::Run(status_txn_fn fn) {
-  ScopeExit at_exit([&] { this->reload_status(); });
+  auto at_exit = finally([&] { this->reload_status(); });
   if (auto file = DataFile<statusrec_t>(FilePath(datadir_, STATUS_DAT),
                                         File::modeBinary | File::modeReadWrite)) {
     if (file.Read(0, &statusrec_)) {

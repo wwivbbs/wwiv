@@ -247,7 +247,7 @@ static void DoFailedLoginAttempt() {
 }
 
 static void LeaveBadPasswordFeedback(int ans) {
-  ScopeExit at_exit([] {
+  auto at_exit = finally([] {
     a()->sess().user_num(0);
   });
   
@@ -333,7 +333,7 @@ static void logon_guest() {
 
 void getuser() {
   // Reset the key timeout to 30 seconds while trying to log in a user.
-  ScopeExit at_exit([] { a()->sess().okmacro(true); bin.reset_key_timeout(); });
+  auto at_exit = finally([] { a()->sess().okmacro(true); bin.reset_key_timeout(); });
 
   a()->sess().okmacro(false);
   // TODO(rushfan): uncomment this

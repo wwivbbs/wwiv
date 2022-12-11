@@ -95,7 +95,8 @@ bool handle_email_byname(Context& context, NetPacket& p) {
 bool handle_email(Context& context,
   uint16_t to_user, NetPacket& p) {
   LOG(INFO) << "==============================================================";
-  ScopeExit at_exit([] {
+  auto at_exit = finally(
+      [] {
     LOG(INFO) << "==============================================================";
   });
   LOG(INFO) << "Processing email to user #" << to_user;

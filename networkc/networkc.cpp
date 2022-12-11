@@ -249,7 +249,7 @@ int main(int argc, char** argv) {
   LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
 
-  ScopeExit at_exit(Logger::ExitLogger);
+  auto at_exit = finally(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.add_argument({"process_instance", "Also process pending files for BBS instance #", "0"});
 
