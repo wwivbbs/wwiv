@@ -164,7 +164,7 @@ static void printtitle_plus_old() {
       fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
                    a()->dirs()[a()->current_user_dir().subnum].name,
                    a()->current_file_area()->number_of_files());
-  bout.bprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf);
+  bout.printf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf);
 
   if (a()->user()->data.lp_options & cfl_header) {
     build_header();
@@ -213,7 +213,7 @@ void print_searching(search_record* search_rec) {
   }
   bout << "|#9<Space> aborts  : ";
   bout.cls();
-  bout.bprintf(" |17|15%-40.40s|16|#0\r",
+  bout.printf(" |17|15%-40.40s|16|#0\r",
                        a()->dirs()[a()->current_user_dir().subnum].name);
 }
 
@@ -376,7 +376,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
 
   auto fi = trim_to_size_ignore_colors(file_information, will_fit);
   fi += "\r\n";
-  bout.bputs(fi);
+  bout.puts(fi);
   numl++;
 
   if (extdesc_pos > 0) {
@@ -473,7 +473,7 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
       l.resize(will_fit);
     }
     bout.SystemColor(static_cast<uint8_t>(color));
-    bout.bputs(lines.at(i));
+    bout.puts(lines.at(i));
     bout.nl();
   }
   bout.Color(0);

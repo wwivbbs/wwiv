@@ -39,10 +39,10 @@ int select_qwk_archiver(qwk_state* qwk_info, int ask) {
   std::string allowed = "Q\r";
 
   bout.nl(2);
-  bout.bputs("|#5Select an archiver");
+  bout.puts("|#5Select an archiver");
   bout.nl();
   if (ask) {
-    bout.bputs("|#20|#9) Ask each time\r\n");
+    bout.puts("|#20|#9) Ask each time\r\n");
   }
   auto num = 0;
   for (const auto& arc : a()->arcs) {
@@ -143,7 +143,7 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
     } break;
     case 'A': {
       bout.nl();
-      bout.bputs("Enter complete path to Bulletin");
+      bout.puts("Enter complete path to Bulletin");
       bin.input(s, 80);
 
       if (!core::File::Exists(s)) {
@@ -153,11 +153,11 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
         }
       }
 
-      bout.bputs("Now enter its bulletin name, in the format BLT-????.???");
+      bout.puts("Now enter its bulletin name, in the format BLT-????.???");
       bin.input(t, BNAME_SIZE);
 
       if (strncasecmp(t, "BLT-", 4) != 0) {
-        bout.bputs("Improper format");
+        bout.puts("Improper format");
         break;
       }
 
@@ -170,7 +170,7 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
         if (bin.checka()) {
           break;
         }
-        bout.bprintf("[%d] %s Is copied over from", x++, b.name);
+        bout.printf("[%d] %s Is copied over from", x++, b.name);
         bout.nl();
         bout.Color(7);
         bout << std::string(78, '\xCD');

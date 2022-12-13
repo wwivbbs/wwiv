@@ -92,7 +92,7 @@ static void handle_inst_msg(const instance_message_t& ih) {
   }
   if (ih.message_type == instance_message_type_t::system) {
     const auto from_user_name = a()->names()->UserName(ih.from_user);
-    bout.bprintf("|#1%.12s (%d)|#0> |#2", from_user_name, ih.from_instance);
+    bout.printf("|#1%.12s (%d)|#0> |#2", from_user_name, ih.from_instance);
   } else {
     bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
   }

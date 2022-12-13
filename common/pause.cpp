@@ -87,7 +87,7 @@ static bool okansi(const User& user) { return user.ansi(); }
 void Output::pausescr_noansi() {
   const auto str_pause = bout.lang().value("PAUSE", "|#3More? [Y/n/c]"); 
   const auto stripped_size = ssize(stripcolors(str_pause));
-  bputs(str_pause);
+  puts(str_pause);
   GetKeyForPause();
   for (auto i = 0; i < stripped_size; i++) {
     bs();
@@ -114,7 +114,7 @@ void Output::pausescr() {
 
   const auto stripped_size = ssize(stripcolors(str_pause));
   const auto com_freeze = sess().incom();
-  bputs(str_pause);
+  puts(str_pause);
   Left(stripped_size);
   SystemColor(saved_curatr);
 
@@ -133,7 +133,7 @@ void Output::pausescr() {
           // Strip the colors and display the pause prompt all red here.
           bputch(CG);
           SystemColor(user().color(6));
-          bputs(stripcolors(str_pause));
+          puts(stripcolors(str_pause));
           Left(stripped_size);
           SystemColor(saved_curatr);
         }

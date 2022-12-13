@@ -58,7 +58,7 @@ FullScreenView::~FullScreenView() {
 
 void FullScreenView::PrintTimeoutWarning(int) {
   bout_.GotoXY(1, command_line_);
-  bout_.bputs("|12Press space if you are still there.");
+  bout_.puts("|12Press space if you are still there.");
   bout_.clreol();
 }
 
@@ -88,7 +88,7 @@ void FullScreenView::DrawTopBar() {
   ss << "|#7" << static_cast<unsigned char>(198)
      << std::string(std::max<int>(40, screen_width_) - 2, static_cast<unsigned char>(205))
      << static_cast<unsigned char>(181);
-  bout_.bputs(ss.str());
+  bout_.puts(ss.str());
 }
 
 void FullScreenView::DrawBottomBar(const std::string& text) {

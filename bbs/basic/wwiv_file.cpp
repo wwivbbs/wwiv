@@ -117,7 +117,7 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
       const auto idx = wwiv_mb_make_int(current_count++);
       const auto ret = mb_set_coll(bas, l, arg, idx, val);
       if (ret != MB_FUNC_OK) {
-        sd->out->bputs("[oops] ");
+        sd->out->puts("[oops] ");
       }
     }
 

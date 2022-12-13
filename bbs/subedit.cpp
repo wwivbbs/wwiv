@@ -118,23 +118,23 @@ static void DisplayNetInfo(size_t nSubNum) {
       continue;
     }
     const auto& net = a()->nets()[sn.net_num];
-    bout.bprintf("   |#9|#1%c|#9) |#2", static_cast<char>('a' + i));
+    bout.printf("   |#9|#1%c|#9) |#2", static_cast<char>('a' + i));
     if (sn.host == 0) {
       std::string host = "<HERE>";
       const auto net_file_name = fmt::format("n{}.net", sn.stype);
       std::set<uint16_t> subscribers;
       ReadSubcriberFile(FilePath(net.dir, net_file_name), subscribers);
       auto num = size_int(subscribers);
-      bout.bprintf("%-12.12s %-12.12s %-20.20s  %-4d  %s%s\r\n",
+      bout.printf("%-12.12s %-12.12s %-20.20s  %-4d  %s%s\r\n",
                            net.name, host, sn.stype, num,
                            (sn.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
                            (sn.flags & XTRA_NET_AUTO_INFO) ? auto_info_text : "");
     } else if (net.type == network_type_t::ftn) {
       const auto host = sn.ftn_uplinks.empty() ? "[-none-]" : sn.ftn_uplinks.begin()->as_string();
-      bout.bprintf("%-12.12s %-12.12s %s\r\n", net.name, host, sn.stype);
+      bout.printf("%-12.12s %-12.12s %s\r\n", net.name, host, sn.stype);
     } else {
       auto host = fmt::format("{} ", sn.host);
-      bout.bprintf("%-12.12s %-12.12s %-20.20s  %s%s\r\n", net.name,
+      bout.printf("%-12.12s %-12.12s %-20.20s  %s%s\r\n", net.name,
                            host, sn.stype, (sn.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
                            (sn.flags & XTRA_NET_AUTO_INFO) ? auto_info_text : "");
     }

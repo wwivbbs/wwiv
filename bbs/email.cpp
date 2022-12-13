@@ -266,7 +266,7 @@ void sendout_email(EmailData& data) {
     memmove(&b1[i], b.c_str(), b.length());
     nh.length = wwiv::stl::size_int(b) + i;
     if (nh.length > 32760) {
-      bout.bprintf("Message truncated by %lu bytes for the network.", nh.length - 32760L);
+      bout.printf("Message truncated by %lu bytes for the network.", nh.length - 32760L);
       nh.length = 32760;
     }
     if (data.from_network_number != a()->net_num()) {
@@ -471,7 +471,7 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
           } else {
             bout.print("|#6Address '|#2{}|#6' does not existing in the nodelist.\r\n", addr->as_string());
             bout.nl(2);
-            bout.bputs("|#5Are you sure you want to send to this address? ");
+            bout.puts("|#5Are you sure you want to send to this address? ");
             if (!bin.noyes()) {
               return;
             }

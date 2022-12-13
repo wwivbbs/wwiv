@@ -181,7 +181,7 @@ public:
    * if applicable).  The com port is also checked first to see if a remote
    * user has hung up.  Returns the number of characters displayed.
    */
-  int bputs(const std::string& text);
+  int puts(const std::string& text);
 
   // Prints an abort-able string (contained in *text). Returns 1 in *abort if the
   // string was aborted, else *abort should be zero.
@@ -190,42 +190,36 @@ public:
   /**
    * Displays s which checking for abort and next
    * @see checka
-   * Note: bout.bputs means "Output String And Next".
+   * Note: bout.puts means "Output String And Next".
    *
    * @param text The text to display
    * @param abort The abort flag (Output Parameter)
    * @param next The next flag (Output Parameter)
    */
-  int bputs(const std::string& text, bool* abort, bool* next);
+  int puts(const std::string& text, bool* abort, bool* next);
 
   template <typename T> Output& operator<<(T const& value) {
     std::ostringstream ss;
     ss << value;
-    bputs(ss.str());
+    puts(ss.str());
     return *this;
   }
 
   Output& operator<<(ENDL_TYPE_O* value) {
     std::ostringstream ss;
     ss << value;
-    bputs(ss.str());
+    puts(ss.str());
     return *this;
   }
 
-  template <class... Args> int bprintf(const char* format_str, Args&&... args) {
+  template <class... Args> int printf(const char* format_str, Args&&... args) {
     // Process arguments
-    return bputs(fmt::sprintf(format_str, std::forward<Args>(args)...));
-  }
-
-  template <typename... Args> 
-  [[deprecated]] int format(const char* format_str, Args&&... args) {
-    // Process arguments
-    return bputs(fmt::format(format_str, args...));
+    return puts(fmt::sprintf(format_str, std::forward<Args>(args)...));
   }
 
   template <typename... Args> int print(const char* format_str, Args&&... args) {
     // Process arguments
-    return bputs(fmt::format(format_str, args...));
+    return puts(fmt::format(format_str, args...));
   }
 
   /**
@@ -275,7 +269,7 @@ public:
     if (!map.empty()) {
       context().add_context_variable("", map);
     }
-    const int r = bputs(format_str);
+    const int r = puts(format_str);
     context().remove_context_variable("");
     return r;
   }

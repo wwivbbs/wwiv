@@ -42,7 +42,7 @@ bool RegisterNamespaceWWIV(mb_interpreter_t* basi) {
   mb_register_func(basi, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
     const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_empty_function(bas, l));
-    sd->out->bputs("wwiv\r\n");
+    sd->out->puts("wwiv\r\n");
     mb_check(mb_push_string(bas, l, BasicStrDup("wwiv")));
     return MB_FUNC_OK;
   });

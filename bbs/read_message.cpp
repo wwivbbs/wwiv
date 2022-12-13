@@ -226,7 +226,7 @@ void display_message_text(const std::string& text, bool* next) {
     if (printit || ansi || line_len_ptr >= 80) {
       if (centre && ctrld != -1) {
         const auto spaces_to_center = (a()->user()->screen_width() - bout.wherex() - line_len_ptr) / 2;
-        bout.bputs(std::string(spaces_to_center, ' '), &abort, next);
+        bout.puts(std::string(spaces_to_center, ' '), &abort, next);
       }
       if (!s.empty()) {
         if (ctrld != -1) {
@@ -234,7 +234,7 @@ void display_message_text(const std::string& text, bool* next) {
               !centre && !ansi) {
             bout.nl();
           }
-          bout.bputs(s, &abort, next);
+          bout.puts(s, &abort, next);
           if (ctrla && !s.empty() && s.back() != SPACE && !ansi) {
             if (bout.wherex() < static_cast<int>(a()->user()->screen_width()) - 1) {
               bout.bputch(SPACE);

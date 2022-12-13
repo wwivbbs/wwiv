@@ -96,7 +96,7 @@ void ListAllColors() {
       bout.nl();
     }
     bout.SystemColor(i);
-    bout.bprintf("%3d", i);
+    bout.printf("%3d", i);
   }
   bout.Color(0);
   bout.nl();

@@ -161,7 +161,7 @@ void build_qwk_packet() {
   qwk_info.file = std::make_unique<DataFile<qwk_record>>(filename, filemode);
 
   if (!qwk_info.file->ok()) {
-    bout.bputs("Open error");
+    bout.puts("Open error");
     sysoplog() << "Couldn't open MESSAGES.DAT";
     return;
   }
@@ -303,7 +303,7 @@ void qwk_gather_sub(uint16_t bn, qwk_state* qwk_info) {
     const auto subinfo = fmt::sprintf("|#7\xB3|#9%-4d|#7\xB3|#1%-52s|#7\xB3 |#2%-8d|#7\xB3|#3%-8d|#7\xB3",
                                       bn + 1, thissub, a()->GetNumMessagesInCurrentMessageArea(),
                                       a()->GetNumMessagesInCurrentMessageArea() - i + 1);
-    bout.bputs(subinfo);
+    bout.puts(subinfo);
     bout.nl();
 
     bin.checka(&qwk_info->abort);
@@ -573,7 +573,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
 
   if (!qwk_info->file->Write(&qwk_info->qwk_rec)) {
     qwk_info->abort = true; // Must be out of disk space
-    bout.bputs("Write error");
+    bout.puts("Write error");
     bout.pausescr();
   }
 
@@ -675,7 +675,7 @@ void finish_qwk(qwk_state *qwk_info) {
 
   auto qwk_cfg = read_qwk_cfg(*a()->config());
   if (!a()->user()->data.qwk_leave_bulletin) {
-    bout.bputs("Grabbing hello/news/goodbye text files...");
+    bout.puts("Grabbing hello/news/goodbye text files...");
 
     if (!qwk_cfg.hello.empty()) {
       auto parem1 = FilePath(a()->config()->gfilesdir(), qwk_cfg.hello);
@@ -728,7 +728,7 @@ void finish_qwk(qwk_state *qwk_info) {
 
     File qwk_file_to_send_file(qwk_file_to_send);
     if (!File::Exists(qwk_file_to_send)){
-      bout.bputs("No such file.");
+      bout.puts("No such file.");
       bout.nl();
       qwk_info->abort = true;
       return;
@@ -736,7 +736,7 @@ void finish_qwk(qwk_state *qwk_info) {
     numbytes = qwk_file_to_send_file.length();
 
     if (numbytes == 0L) {
-      bout.bputs("File has nothing in it.");
+      bout.puts("File has nothing in it.");
       qwk_info->abort = true;
       return;
     }
@@ -751,7 +751,7 @@ void finish_qwk(qwk_state *qwk_info) {
       } else {
         bout.nl();
         bout.Color(2);
-        bout.bputs("Packet was not successful...");
+        bout.puts("Packet was not successful...");
         bout.Color(1);
         bout << "Try transfer again?";
 

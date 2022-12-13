@@ -98,7 +98,7 @@ void qwk_gather_email(qwk_state* qwk_info) {
   auto f(OpenEmailFile(false));
   if (!f->IsOpen()) {
     bout.nl(2);
-    bout.bputs("No mail file exists!");
+    bout.puts("No mail file exists!");
     bout.nl();
     return;
   }
@@ -123,13 +123,13 @@ void qwk_gather_email(qwk_state* qwk_info) {
 
   if (mw == 0) {
     bout.nl();
-    bout.bputs("You have no mail.");
+    bout.puts("You have no mail.");
     bout.nl();
     return;
   }
 
   bout.Color(7);
-  bout.bputs("Gathering Email");
+  bout.puts("Gathering Email");
 
   auto curmail = 0;
   auto done = false;
@@ -212,7 +212,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
 
     if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
       bout.nl();
-      bout.bputs("Sorry, not enough disk space left.");
+      bout.puts("Sorry, not enough disk space left.");
       bout.nl();
       bout.pausescr();
       return;
@@ -220,10 +220,10 @@ void qwk_email_text(const char* text, char* title, char* to) {
 
     if (ForwardMessage(&un, &sy)) {
       bout.nl();
-      bout.bputs("Mail Forwarded.");
+      bout.puts("Mail Forwarded.");
       bout.nl();
       if (un == 0 && sy == 0) {
-        bout.bputs("Forwarded to unknown user.");
+        bout.puts("Forwarded to unknown user.");
         bout.pausescr();
         return;
       }

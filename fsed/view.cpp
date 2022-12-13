@@ -72,7 +72,7 @@ void FsedView::draw_current_line(FsedModel& ed, int previous_line) {
     const auto py = previous_line - top_line() + fs_.lines_start();
     bout_.GotoXY(0, py);
     if (previous_line < size_int(ed)) {
-      bout_.bputs(ed.line(previous_line).to_colored_text(-1));
+      bout_.puts(ed.line(previous_line).to_colored_text(-1));
     }
     bout_.clreol();
   }
@@ -118,7 +118,7 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
         bout_.bputch(c.ch);
       }
     } else {
-      bout_.bputs(rl.to_colored_text(-1));
+      bout_.puts(rl.to_colored_text(-1));
     }
     bout_.clreol();
   }

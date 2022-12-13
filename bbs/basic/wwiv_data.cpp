@@ -207,12 +207,12 @@ bool RegisterNamespaceData(mb_interpreter_t* basi) {
         const auto idx = wwiv_mb_make_int(current_count++);
         const auto ret = mb_set_coll(bas, l, arg, idx, val);
         if (ret != MB_FUNC_OK) {
-          sd->out->bputs("[oops] ");
+          sd->out->puts("[oops] ");
         }
       }
 
       //if (!SaveData(sd, scope, data)) {
-      //  sd->out->bputs("#6Error loading data.\r\n");
+      //  sd->out->puts("#6Error loading data.\r\n");
       //}
     }
     mb_check(mb_attempt_close_bracket(bas, l));

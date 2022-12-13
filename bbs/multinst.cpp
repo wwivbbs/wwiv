@@ -209,7 +209,7 @@ void multi_instance() {
     return;
   }
 
-  bout.bprintf("|#5Node |#1%-35.35s |#2%-37.37s\r\n", "User Name", "Activity");
+  bout.printf("|#5Node |#1%-35.35s |#2%-37.37s\r\n", "User Name", "Activity");
   bout << "==== " << std::string(35, '=') << " " << std::string(37, '=') << "\r\n";
 
   for (int inst = 1; inst <= num; inst++) {

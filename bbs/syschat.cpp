@@ -590,7 +590,7 @@ void chat1(const char* chat_line, bool two_way) {
     const auto s = fmt::format("|#4 {} chatting with {} ", sysop_name, unn);
     const auto x = a()->user()->screen_width() - wwiv::stl::size_int(stripcolors(s)) / 2;
     bout.GotoXY(std::max<int>(x, 0), 12);
-    bout.bputs(s);
+    bout.puts(s);
     bout.GotoXY(1, 1);
   }
   bout << "|#7" << sysop_name << "'s here...";

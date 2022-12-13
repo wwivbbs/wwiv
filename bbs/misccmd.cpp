@@ -108,7 +108,7 @@ void kill_old_email() {
         } else {
           bout << "#" << m.tosys << " @" << m.tosys << wwiv::endl;
         }
-        bout.bprintf("|#1Subj|#9: |#%d%60.60s\r\n", a()->GetMessageColor(), m.title);
+        bout.printf("|#1Subj|#9: |#%d%60.60s\r\n", a()->GetMessageColor(), m.title);
         time_t lCurrentTime = time(nullptr);
         int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / SECONDS_PER_DAY);
         bout << "|#1Sent|#9: ";
@@ -273,8 +273,8 @@ void list_users(int mode) {
       bout.Color(color);
       bout << ".";
       if (count == NUM_DOTS) {
-        bout.bputs("\r", &abort, &next);
-        bout.bputs("|#2Searching ", &abort, &next);
+        bout.puts("\r", &abort, &next);
+        bout.puts("|#2Searching ", &abort, &next);
         color++;
         count = 0;
         if (color == 4) {

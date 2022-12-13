@@ -267,14 +267,14 @@ void SubList() {
                            i1 + 1, yns, net_info, subname_color, a()->subs().sub(a()->usub[i1].subnum).name,
                            a()->GetNumMessagesInCurrentMessageArea(), num_new_posts ? '6' : '3',
                            num_new_posts);
-        bout.bputs(sdf, &abort, &next);
+        bout.puts(sdf, &abort, &next);
         bout.nl();
         auto lastp = i1++;
         if (bout.lines_listed() >= a()->sess().num_screen_lines() - 2) {
           p = 1;
           bout.clear_lines_listed();
           DisplayHorizontalBar(78, 7);
-          bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
+          bout.printf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
           const auto ss = mmkey(MMKeyAreaType::subs, true);
           if (isdigit(ss[0])) {
             for (auto i2 = 0; i2 < size_int(a()->usub); i2++) {
@@ -311,12 +311,12 @@ void SubList() {
         DisplayHorizontalBar(78, 7);
         if (okconf(a()->user())) {
           if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
-            bout.bprintf("|#1Select |#9[|#21-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+            bout.printf("|#1Select |#9[|#21-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ", ns);
           } else {
-            bout.bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+            bout.printf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
           }
         } else {
-          bout.bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+          bout.printf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
         }
         const auto ss = mmkey(MMKeyAreaType::subs, true);
 

@@ -251,7 +251,7 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
               }
             }
             for (auto i4 = 0; (i4 < (a()->user()->screen_width() - i5) / 2) && (!abort); i4++) {
-              bout.bputs(" ", &abort, &next);
+              bout.puts(" ", &abort, &next);
             }
           }
           bout.bpla(line, &abort);

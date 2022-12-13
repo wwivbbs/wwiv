@@ -29,7 +29,7 @@ protected:
   void SetUp() override { helper.SetUp(); }
 
   virtual int Puts(const std::string& s) {
-    const auto size = bout.bputs(s);
+    const auto size = bout.puts(s);
     std::cerr << "Puts: [" << s << "]; size: " << size << "\r\n";
     return size;
   }
@@ -38,7 +38,7 @@ protected:
 };
 
 TEST_F(BPutsTest, SingleLetter) {
-  EXPECT_EQ(1, bout.bputs("A"));
+  EXPECT_EQ(1, bout.puts("A"));
   EXPECT_STREQ("A", helper.io()->captured().c_str());
 }
 
@@ -102,7 +102,7 @@ TEST_F(BPutsTest, IfPipe_Yes) {
   helper.user()->real_name("RealName");
   helper.user()->sl(200);
   helper.sess().effective_sl(200);
-  bout.bputs(s1);
+  bout.puts(s1);
   EXPECT_EQ("Rushfan", helper.io()->captured());
 }
 
@@ -112,7 +112,7 @@ TEST_F(BPutsTest, IfPipe_No) {
   helper.user()->real_name("RealName");
   helper.user()->sl(100);
   helper.sess().effective_sl(100);
-  bout.bputs(s1);
+  bout.puts(s1);
   EXPECT_EQ("RealName", helper.io()->captured());
 }
 
@@ -122,7 +122,7 @@ TEST_F(BPutsTest, IfPipe_Embedded) {
   helper.user()->real_name("RealName");
   helper.user()->sl(200);
   helper.sess().effective_sl(200);
-  bout.bputs(s1);
+  bout.puts(s1);
   EXPECT_EQ("Hello Rushfan", helper.io()->captured());
 }
 
@@ -132,14 +132,14 @@ TEST_F(BPutsTest, MapValue_Smoke) {
   helper.user()->sl(200);
   helper.sess().effective_sl(200);
   helper.context().add_context_variable("m", {{"num", "1234"}});
-  bout.bputs(R"(Message # |{m.num})");
+  bout.puts(R"(Message # |{m.num})");
   EXPECT_EQ("Message # 1234", helper.io()->captured());
 }
 
 TEST_F(BPutsTest, Pipe_User) {
   helper.user()->set_name("Rushfan");
   helper.user()->real_name("RealName");
-  bout.bputs(R"(Hello |{user.name})");
+  bout.puts(R"(Hello |{user.name})");
   EXPECT_EQ("Hello Rushfan", helper.io()->captured());
 }
 
@@ -148,6 +148,6 @@ TEST_F(BPutsTest, Pipe_BBS) {
   auto cfg = helper.config().to_config_t();
   cfg.systemname = "TestBBS";
   helper.config().set_config(cfg, false);
-  bout.bputs(R"(BBS Name: |{bbs.name})");
+  bout.puts(R"(BBS Name: |{bbs.name})");
   EXPECT_EQ("BBS Name: TestBBS", helper.io()->captured());
 }

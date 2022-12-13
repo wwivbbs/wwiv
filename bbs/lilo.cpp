@@ -746,7 +746,7 @@ static void DisplayUserLoginInformation() {
       bout << "|#0.................. ";
       width = 0;
     }
-    bout.bputs(s);
+    bout.puts(s);
     width += len;
   }
   bout.nl();

@@ -750,7 +750,7 @@ int batchdl(int mode) {
           dszbatchul(hangup_after_dl, a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
                      a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
           if (!hangup_after_dl) {
-            bout.bprintf("Your ratio is now: %-6.3f\r\n", a()->user()->ratio());
+            bout.printf("Your ratio is now: %-6.3f\r\n", a()->user()->ratio());
           }
         }
         done = true;
@@ -791,7 +791,7 @@ int batchdl(int mode) {
           }
           if (!hangup_after_dl) {
             bout.nl();
-            bout.bprintf("Your ratio is now: %-6.3f\r\n", a()->user()->ratio());
+            bout.printf("Your ratio is now: %-6.3f\r\n", a()->user()->ratio());
           }
         }
       }

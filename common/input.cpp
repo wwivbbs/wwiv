@@ -84,7 +84,7 @@ static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
     bout.SavePosition();
     bout.mpl(max_length_for_number(maxv));
     bout.Color(ok ? 4 : 6);
-    bout.bputs(std::to_string(result));
+    bout.puts(std::to_string(result));
   }
   return ok;
 }
@@ -816,9 +816,9 @@ void Input::nsp(int n) { nsp_ = n; }
 
 std::optional<ScreenPos> Input::screen_size() {
   bout.SavePosition();
-  // Use bputs so the local ansi interpretation will work.
+  // Use puts so the local ansi interpretation will work.
   // This should position it one past the end.
-  bout.bputs("\x1b[999;999H");
+  bout.puts("\x1b[999;999H");
   auto pos = remoteIO()->screen_position();
   bout.RestorePosition();
   if (!pos) {

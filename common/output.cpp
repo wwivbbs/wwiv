@@ -97,14 +97,14 @@ void Output::SetLocalIO(LocalIO* local_io) {
 
 void Output::Color(int wwiv_color) {
   const auto saved_x{x_};
-  bputs(MakeColor(wwiv_color));
+  puts(MakeColor(wwiv_color));
   x_ = saved_x;
 }
 
 void Output::ResetColors() {
   const auto saved_x{x_};
   // ANSI Clear Attributes String
-  bputs("\x1b[0m");
+  puts("\x1b[0m");
   x_ = saved_x;
 }
 
@@ -112,7 +112,7 @@ void Output::GotoXY(int x, int y) {
   if (okansi(user())) {
     // Don't get Y get too big or mTelnet will not be happy
     y = std::min<int>(y, sess().num_screen_lines());
-    bputs(StrCat("\x1b[", y, ";", x, "H"));
+    puts(StrCat("\x1b[", y, ";", x, "H"));
   }
   x_ = x;
 }
@@ -127,7 +127,7 @@ void Output::Up(int num) {
     ss << num;
   }
   ss << "A";
-  bputs(ss.str());
+  puts(ss.str());
 }
 
 void Output::Down(int num) {
@@ -140,7 +140,7 @@ void Output::Down(int num) {
     ss << num;
   }
   ss << "B";
-  bputs(ss.str());
+  puts(ss.str());
 }
 
 void Output::Left(int num) {
@@ -154,7 +154,7 @@ void Output::Left(int num) {
     ss << num;
   }
   ss << "D";
-  bputs(ss.str());
+  puts(ss.str());
   x_ = std::max<int>(0, saved_x - num);
 }
 
@@ -169,17 +169,17 @@ void Output::Right(int num) {
     ss << num;
   }
   ss << "C";
-  bputs(ss.str());
+  puts(ss.str());
   x_ = std::max<int>(0, saved_x + num);
 
 }
 
 void Output::SavePosition() {
-  bputs("\x1b[s");
+  puts("\x1b[s");
 }
 
 void Output::RestorePosition() {
-  bputs("\x1b[u");
+  puts("\x1b[u");
 }
 
 void Output::nl(int num_lines) {
@@ -187,7 +187,7 @@ void Output::nl(int num_lines) {
     return;
   }
   for (auto i = 0; i < num_lines; i++) {
-    bputs("\r\n");
+    puts("\r\n");
     core::bus().invoke(ProcessInstanceMessages{});
   }
   x_ = 1;
@@ -199,7 +199,7 @@ void Output::bs() {
     bputch(' ');
     Left(1);
   } else {
-    bputs("\b \b");
+    puts("\b \b");
   }
 }
 
@@ -209,7 +209,7 @@ void Output::SystemColor(wwiv::sdk::Color c) {
 }
 
 void Output::SystemColor(int c) {
-  bputs(MakeSystemColor(c));
+  puts(MakeSystemColor(c));
 }
 
 std::string Output::MakeColor(int wwiv_color) {
@@ -236,7 +236,7 @@ std::string Output::MakeSystemColor(sdk::Color color) const {
 void Output::litebar(const std::string& msg) {
   const auto len = user().screen_width() - 2;
   if (okansi(user())) {
-    bputs(fmt::format("|17|15 {:<{}}|#0\r\n\n", msg, len));
+    puts(fmt::format("|17|15 {:<{}}|#0\r\n\n", msg, len));
   }
   else {
     print("|#5 {}|#0\r\n\n", msg);
@@ -258,7 +258,7 @@ void Output::cls() {
   // Adding color 0 so previous color would not be picked up. #1245
   Color(0);  
   if (okansi(user())) {
-    bputs("\x1b[2J");
+    puts("\x1b[2J");
     GotoXY(1, 1);
   } else {
     bputch(CL);
@@ -273,7 +273,7 @@ void Output::clreol(int ct) {
   const auto saved_x{x_};
   if (okansi(user())) {
     if (ct == 0) {
-      bputs("\x1b[K");
+      puts("\x1b[K");
     } else {
       print("\x1b[{}K", ct);
     }
@@ -291,25 +291,25 @@ void Output::mpl(int length) {
     return;
   }
   Color(4);
-  bputs(std::string(length, ' '));
+  puts(std::string(length, ' '));
   Left(length);
 }
 
 int Output::PutsXY(int x, int y, const std::string& text) {
   GotoXY(x, y);
-  return bputs(text);
+  return puts(text);
 }
 
 int Output::PutsXYSC(int x, int y, int a, const std::string& text) {
   GotoXY(x, y);
   SystemColor(a);
-  return bputs(text);
+  return puts(text);
 }
 
 int Output::PutsXYA(int x, int y, int color, const std::string& text) {
   GotoXY(x, y);
   Color(color);
-  return bputs(text);
+  return puts(text);
 }
 
 void Output::do_movement(const Interpreted& r) {
@@ -352,7 +352,7 @@ static int pipecode_int(T& it, const T end, int num_chars) {
   return to_number<int>(s);
 }
 
-int Output::bputs(const std::string& text) {
+int Output::puts(const std::string& text) {
   core::bus().invoke<CheckForHangupEvent>();
   if (text.empty() || sess().hangup()) {
     return 0;
@@ -393,7 +393,7 @@ int Output::bputs(const std::string& text) {
         if (auto r = ctx.interpret(it, fin); r.cmd == interpreted_cmd_t::text) {
           // Don't use bout here since we can loop.
           if (r.needs_reinterpreting) {
-            num_written += bputs(r.text);
+            num_written += puts(r.text);
           } else {
             for (const auto rich : r.text) {
               num_written += bputch(rich, true);
@@ -432,7 +432,7 @@ int Output::bputs(const std::string& text) {
         break;
       }
       auto s = ctx.interpret_macro_char(*it++);
-      num_written += bputs(s);
+      num_written += puts(s);
     } else if (it == fin) { 
       break; 
     }
@@ -449,7 +449,7 @@ int Output::bputs(const std::string& text) {
 // it consistent.
 int Output::bpla(const std::string& text, bool *abort) {
   bool dummy;
-  const auto ret = bputs(text, abort, &dummy);
+  const auto ret = puts(text, abort, &dummy);
   if (!bin.checka(abort, &dummy)) {
     nl();
   }
@@ -457,12 +457,12 @@ int Output::bpla(const std::string& text, bool *abort) {
 }
 
 // This one doesn't do a newline. (used to be osan)
-int Output::bputs(const std::string& text, bool *abort, bool *next) {
+int Output::puts(const std::string& text, bool *abort, bool *next) {
   core::bus().invoke<CheckForHangupEvent>();
   if (bin.checka(abort, next)) {
     return 0;
   }
-  return bputs(text);
+  return puts(text);
 }
 
 void Output::move_up_if_newline(int num_lines) {
@@ -477,7 +477,7 @@ void Output::move_up_if_newline(int num_lines) {
 int Output::str(const std::string& key) {
   // Process arguments
   const auto format_str = lang().value(key);
-  return bputs(format_str);
+  return puts(format_str);
 }
 
 void Output::back_puts(const std::string& text, int color, std::chrono::duration<double> char_dly, std::chrono::duration<double> string_dly) {
@@ -507,7 +507,7 @@ void Output::rainbow(const std::string& text) {
 
 void Output::spin_puts(const std::string& text, int color) {
   if (!okansi(user())) {
-    bputs(text);
+    puts(text);
     return;
   }
   Color(color);

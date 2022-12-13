@@ -181,7 +181,7 @@ bool ratio_ok() {
     if (a()->config()->req_ratio() > 0.0001f && a()->user()->ratio() < a()->config()->req_ratio()) {
       bout.cls();
       bout.nl();
-      bout.bprintf(
+      bout.printf(
           "Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
           a()->user()->ratio(), a()->config()->req_ratio());
       return false;
@@ -191,7 +191,7 @@ bool ratio_ok() {
     if (a()->config()->post_to_call_ratio() > 0.0001f &&
         post_ratio() < a()->config()->post_to_call_ratio()) {
       bout.nl();
-      bout.bprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n", "Your post/call ratio is",
+      bout.printf("%s %-5.3f.  %s %-5.3f %s.\r\n\n", "Your post/call ratio is",
                            post_ratio(), "You need a ratio of", a()->config()->post_to_call_ratio(),
                            "to download.");
       return false;
@@ -240,7 +240,7 @@ void printinfo(uploadsrec* u, bool *abort) {
     const FileName fn(u->filename);
     const auto s = fmt::format("\r|#{}{:<2} |#1{} ", a()->batch().contains_file(u->filename) ? 6 : 0,
                                size_int(a()->filelist), fn.aligned_filename());
-    bout.bputs(s, abort, &next);
+    bout.puts(s, abort, &next);
   }
 
   auto size = humanize(u->numbytes);

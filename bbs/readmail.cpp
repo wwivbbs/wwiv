@@ -424,7 +424,7 @@ void readmail(bool newmail_only) {
       bout.bpla(current_line, &abort);
     }
     bout << "|#9" << std::string(a()->user()->screen_width() - 1, '-') << wwiv::endl;
-    bout.bputs("|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ");
+    bout.puts("|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ");
     const auto res = bin.input_number_hotkey(curmail + 1, {'Q'}, curmail + 1, mw, true);
     if (res.key == 'Q') { 
       return;

@@ -68,9 +68,9 @@ void qwk_menu() {
     }
     bout.nl();
     if (so()) {
-      bout.bputs("|#7(|#1*|#7=|#2Sysop Menu|#7,|#1Q|#7=|#2Quit|#7) |#1C|#7, |#1D|#7, |#1U|#7: ");
+      bout.puts("|#7(|#1*|#7=|#2Sysop Menu|#7,|#1Q|#7=|#2Quit|#7) |#1C|#7, |#1D|#7, |#1U|#7: ");
     } else {
-      bout.bputs("|#7(|#1Q|#7=|#2Quit|#7) |#1C|#7, |#1D|#7, |#1U|#7: ");
+      bout.puts("|#7(|#1Q|#7=|#2Quit|#7) |#1C|#7, |#1D|#7, |#1U|#7: ");
     }
 
     switch (const auto key = onek(allowed, true); key) {
@@ -106,12 +106,12 @@ void qwk_nscan() {
   ;
 
   bout.Color(3);
-  bout.bputs("Building NEWFILES.DAT");
+  bout.puts("Building NEWFILES.DAT");
 
   sprintf(s, "%s%s", a()->sess().dirs().qwk_directory().c_str(), "NEWFILES.DAT");
   newfile = open(s, O_BINARY | O_RDWR | O_TRUNC | O_CREAT, S_IREAD | S_IWRITE;
   if (newfile < 1) {
-    bout.bputs("Open Error");
+    bout.puts("Open Error");
     return;
   }
 
@@ -119,7 +119,7 @@ void qwk_nscan() {
     bin.checka(&abort);
     count++;
 
-    bout.bprintf("%d.", color);
+    bout.printf("%d.", color);
     if (count >= DOTS) {
       bout << "\r";
       bout << "Searching";

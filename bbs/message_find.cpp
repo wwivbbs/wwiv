@@ -52,7 +52,7 @@ find_message_result_t FindNextMessageAgain(int msgno) {
       break;
     }
     if (!(tmp_msgnum % 5)) {
-      bout.bprintf("%5.5d", tmp_msgnum);
+      bout.printf("%5.5d", tmp_msgnum);
       for (auto i1 = 0; i1 < 5; i1++) {
         bout << "\b";
       }

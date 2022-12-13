@@ -554,7 +554,7 @@ void relist() {
     const auto s =
         fmt::format("|#{}{:<2} |#1{}", a()->batch().contains_file(f.u.filename) ? 6 : 0, i + 1,
           fn.aligned_filename());
-    bout.bputs(s, &abort, &next);
+    bout.puts(s, &abort, &next);
 
     const auto width = a()->user()->screen_width() - 28;
     const auto bd = fmt::format(" |#2{:>5} |#2{:>5} |#1{}", 

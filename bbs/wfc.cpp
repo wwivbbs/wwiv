@@ -376,7 +376,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     case 'E':
       Clear();
       a_->sess().user_num(1);
-      bout.bputs("|#1Send Email:");
+      bout.puts("|#1Send Email:");
       send_email();
       a_->WriteCurrentUser(sysop_usernum);
       cleanup_net();
