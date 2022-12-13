@@ -379,7 +379,7 @@ bool detect_screensize() {
   if (const auto sso = bin.screen_size()) {
     const auto& ss = sso.value();
     if (ss.x != a()->user()->screen_width() || ss.y != a()->user()->screen_lines()) {
-      bout.format("|#9Screen size of |#2{}|#9x|#2{} |#9detected.  Use it?", ss.x, ss.y);
+      bout.print("|#9Screen size of |#2{}|#9x|#2{} |#9detected.  Use it?", ss.x, ss.y);
       if (bin.noyes()) {
         a()->user()->screen_width(ss.x);
         a()->user()->screen_lines(ss.y);
@@ -946,7 +946,7 @@ NewUserItemResult DoBirthDay(NewUserContext& c) {
           c.user.birthday_mdy(m, d, y);
           cln_nu();
           auto dt = c.user.birthday_dt().to_string("%B %d, %Y");
-          bout.format("|#2{} ({} years old)\r\n", dt, c.user.age());
+          bout.print("|#2{} ({} years old)\r\n", dt, c.user.age());
           return NewUserItemResult::success;
         }
       }
@@ -958,7 +958,7 @@ NewUserItemResult DoBirthDay(NewUserContext& c) {
     } while (!ok && !a()->sess().hangup());
   } 
   auto dt = c.user.birthday_dt().to_string("%B %d, %Y");
-  bout.format("|#2{} ({} years old)\r\n", dt, c.user.age());
+  bout.print("|#2{} ({} years old)\r\n", dt, c.user.age());
   return NewUserItemResult::no_change;
 }
 

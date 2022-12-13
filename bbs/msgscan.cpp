@@ -259,9 +259,9 @@ static FullScreenView CreateFullScreenListTitlesView() {
       num_header_lines = to_number<int>(iter->second);
     }
   } else {
-    bout.format("|[2J|#4Sub #{} - {}  ({} messages.)|[K|#0\r\n", a()->current_user_sub_num(),
+    bout.print("|[2J|#4Sub #{} - {}  ({} messages.)|[K|#0\r\n", a()->current_user_sub_num(),
                   a()->current_sub().name, a()->GetNumMessagesInCurrentMessageArea());
-    bout.format("|14      Num {:<42} From\r\n", "Title");
+    bout.print("|14      Num {:<42} From\r\n", "Title");
   }
 
   bout.clear_lines_listed();

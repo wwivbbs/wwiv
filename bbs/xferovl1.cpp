@@ -506,7 +506,7 @@ void tag_files(bool& need_title) {
         }
         std::string keys = i2 < size_int(a()->udir) ? a()->udir[i2].keys : "??";
         const auto& dir = a()->dirs()[f.directory];
-        bout.format("|#1Directory  : |#2#{}, {}\r\n", keys, dir.name);
+        bout.print("|#1Directory  : |#2#{}, {}\r\n", keys, dir.name);
         printfileinfo(&f.u, dir);
         bout.nl();
         bout.pausescr();

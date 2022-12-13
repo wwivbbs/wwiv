@@ -382,7 +382,7 @@ Type2MessageData read_type2_message(messagerec* msg, uint8_t an, bool readit, co
 static int legacy_display_header_text(Type2MessageData& msg) {
   auto num_header_lines = 0;
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
-    bout.format("|#9 Sub|#7: |#{}{:<35.35}", a()->GetMessageColor(), msg.message_area);
+    bout.print("|#9 Sub|#7: |#{}{:<35.35}", a()->GetMessageColor(), msg.message_area);
     if (a()->user()->screen_width() >= 78) {
       bout << " ";
     } else {
@@ -390,14 +390,14 @@ static int legacy_display_header_text(Type2MessageData& msg) {
       num_header_lines++;
     }
     if (msg.message_number > 0 && msg.total_messages > 0) {
-      bout.format("|#9Msg#|#7: [|#{}{}|#7 of |#{}{}|#7]", a()->GetMessageColor(),
+      bout.print("|#9Msg#|#7: [|#{}{}|#7 of |#{}{}|#7]", a()->GetMessageColor(),
                   msg.message_number, a()->GetMessageColor(), msg.total_messages);
     }
     bout.nl();
     num_header_lines++;
   }
 
-  bout.format("|#9From|#7: |#1{:<35.35}", msg.from_user_name);
+  bout.print("|#9From|#7: |#1{:<35.35}", msg.from_user_name);
   if (a()->user()->screen_width() >= 78) {
     bout << " ";
   } else {
@@ -410,11 +410,11 @@ static int legacy_display_header_text(Type2MessageData& msg) {
     bout << "  |#9To|#7: |#1" << msg.to_user_name << wwiv::endl;
     num_header_lines++;
   }
-  bout.format("|#9Subj|#7: |#{}{}\r\n", a()->GetMessageColor(), msg.title);
+  bout.print("|#9Subj|#7: |#{}{}\r\n", a()->GetMessageColor(), msg.title);
   num_header_lines++;
 
   if (!msg.from_sys_name.empty()) {
-    bout.format("|#9 Sys|#7: |#1{:<35.35}", msg.from_sys_name);
+    bout.print("|#9 Sys|#7: |#1{:<35.35}", msg.from_sys_name);
     if (a()->user()->screen_width() >= 78) {
       bout << " ";
     } else {
@@ -422,7 +422,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
       num_header_lines++;
     }
     if (!msg.from_sys_loc.empty()) {
-      bout.format(" |#9Loc|#7: |#1{:<30}\r\n", msg.from_sys_loc);
+      bout.print(" |#9Loc|#7: |#1{:<30}\r\n", msg.from_sys_loc);
       num_header_lines++;
     }
   }

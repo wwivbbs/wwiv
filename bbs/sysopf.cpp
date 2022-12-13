@@ -196,7 +196,7 @@ static void valuser_manual(User& user) {
 static void valuser_auto(User& user) {
   for (auto i = 1; i <= 10; i++) {
     const auto& v = a()->config()->auto_val(i);
-    bout.format("|#2{:>2}|#9) |#1{:<30.30} |#9(SL: |#5{:<3}|#9 DSL: |#5{:<3}|#9)\r\n", i, v.name, v.sl, v.dsl);
+    bout.print("|#2{:>2}|#9) |#1{:<30.30} |#9(SL: |#5{:<3}|#9 DSL: |#5{:<3}|#9)\r\n", i, v.name, v.sl, v.dsl);
   }
   bout.nl();
   bout << "|#9(|#2Q|#9=|#1Quit|#9) Which Auto Validation: ";
@@ -623,7 +623,7 @@ static bool print_ftn_net_listing(Network& net) {
           continue;
         }
       }
-      bout.format(" |#5{:<18.18}  |#1{}\r\n", e.first.as_string(false, false), e.second.name());
+      bout.print(" |#5{:<18.18}  |#1{}\r\n", e.first.as_string(false, false), e.second.name());
       if (bin.checka()) {
         break;
       }

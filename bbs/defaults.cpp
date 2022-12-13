@@ -129,17 +129,17 @@ static void print_cur_stat() {
       fmt::format("{} X {}", a()->user()->screen_width(), a()->user()->screen_lines());
   const std::string ansi_setting =
       a()->user()->ansi() ? (a()->user()->color() ? "Color" : "Monochrome") : "No ANSI";
-  bout.format("|#11|#9) Screen size       : |#2{:<16} ", screen_size);
-  bout.format("|#12|#9) ANSI              : |#2{}", ansi_setting);
+  bout.print("|#11|#9) Screen size       : |#2{:<16} ", screen_size);
+  bout.print("|#12|#9) ANSI              : |#2{}", ansi_setting);
   bout.nl();
-  bout.format("|#13|#9) Pause on screen   : |#2{:<16} ", a()->user()->pause() ? "On " : "Off");
+  bout.print("|#13|#9) Pause on screen   : |#2{:<16} ", a()->user()->pause() ? "On " : "Off");
   bout.nl();
-  bout.format("|#14|#9) Mailbox           : |#2{}", GetMailBoxStatus());
+  bout.print("|#14|#9) Mailbox           : |#2{}", GetMailBoxStatus());
   bout.nl();
-  bout.format("{:<45} {}\r\n", "|#15|#9) Configured Q-scan", "|#16|#9) Change password");
+  bout.print("{:<45} {}\r\n", "|#15|#9) Configured Q-scan", "|#16|#9) Change password");
   
   if (okansi()) {
-    bout.format("{:<45} {}\r\n", "|#17|#9) Update macros", "|#18|#9) Change colors");
+    bout.print("{:<45} {}\r\n", "|#17|#9) Update macros", "|#18|#9) Change colors");
 
     const auto editor_num = a()->user()->default_editor();
     std::string editor_name = "Line";
@@ -149,7 +149,7 @@ static void print_cur_stat() {
     if (editor_num > 0 && editor_num <= size_int(a()->editors)) {
       editor_name = a()->editors[editor_num - 1].description;
     }
-    bout.format("|#19|#9) Message editor    : |#2{:<16} ", editor_name); 
+    bout.print("|#19|#9) Message editor    : |#2{:<16} ", editor_name); 
     bout << "|#1A|#9) Extended colors   : |#2" << YesNoString(a()->user()->extra_color()) << wwiv::endl;
   } else {
     bout << "|#17|#9) Update macros" << wwiv::endl;
@@ -157,19 +157,19 @@ static void print_cur_stat() {
 
   const auto internet_email_address = 
       ((a()->user()->email_address().empty()) ? "None." : a()->user()->email_address());
-  bout.format("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->optional_val());
+  bout.print("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->optional_val());
   bout << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->use_conference()) << wwiv::endl;
-  bout.format("|#1D|#9) Show Hidden Lines : |#2{:<16} ", YesNoString(a()->user()->has_flag(User::msg_show_controlcodes)));
+  bout.print("|#1D|#9) Show Hidden Lines : |#2{:<16} ", YesNoString(a()->user()->has_flag(User::msg_show_controlcodes)));
   if (a()->fullscreen_read_prompt()) {
     bout << "|#1G|#9) Message Reader    : |#2" << (a()->user()->has_flag(User::fullScreenReader) ? "Full-Screen" : "Traditional") << wwiv::endl;;
   }
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
   bout << "|#1K|#9) Configure Menus" << wwiv::endl;
   if (num_instances() > 1) {
-    bout.format("|#1M|#9) Allow user msgs   : |#2{:<16} |#1N|#9) Configure QWK", YesNoString(!a()->user()->ignore_msgs()));
+    bout.print("|#1M|#9) Allow user msgs   : |#2{:<16} |#1N|#9) Configure QWK", YesNoString(!a()->user()->ignore_msgs()));
   }
   bout.nl();
-  bout.format("|#1S|#9) Cls Between Msgs? : |#2{:<16} ",
+  bout.print("|#1S|#9) Cls Between Msgs? : |#2{:<16} ",
                       YesNoString(a()->user()->clear_screen()));
   bout << "|#1T|#9) 12hr or 24hr clock: |#2" << (a()->user()->twentyfour_clock() ? "24hr" : "12hr")
        << wwiv::endl;
@@ -178,7 +178,7 @@ static void print_cur_stat() {
   if (a()->user()->wwiv_regnum()) {
     wwiv_regnum = std::to_string(a()->user()->wwiv_regnum());
   }
-  bout.format("|#1U|#9) Use Msg AutoQuote : |#2{:<16} ",
+  bout.print("|#1U|#9) Use Msg AutoQuote : |#2{:<16} ",
                       YesNoString(a()->user()->auto_quote()));
   bout << "|#1W|#9) WWIV reg num      : |#2" << wwiv_regnum << wwiv::endl;
 

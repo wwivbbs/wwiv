@@ -66,7 +66,7 @@ static std::map<int, menu_set_t> ListMenuDirs() {
       VLOG(1) << "check acs failed for: " << d.name;
       continue;
     }
-    bout.format("|#2#{} |#1{:<8.8} |#9{:<60.60}\r\n", num, m.menu_set.name, m.menu_set.description);
+    bout.print("|#2#{} |#1{:<8.8} |#9{:<60.60}\r\n", num, m.menu_set.name, m.menu_set.description);
     result.emplace(num, m.menu_set);
     ++num;
   }
@@ -138,7 +138,7 @@ void ConfigUserMenuSet(const std::string& data) {
       auto sel = bin.input_number<int>(1, 1, r.size(), false);
       if (const auto m = r.at(sel); ValidateMenuSet(m.name)) {
         bout.nl();
-        bout.format("|#9Menu Set : |#2{:<8.8} :  |#1{}|#0\r\n", m.name, m.description);
+        bout.print("|#9Menu Set : |#2{:<8.8} :  |#1{}|#0\r\n", m.name, m.description);
         bout << "|#5Use this menu set? ";
         if (bin.noyes()) {
           SetMenuSet(m);

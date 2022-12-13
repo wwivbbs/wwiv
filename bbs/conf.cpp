@@ -117,7 +117,7 @@ conf_info_t get_conf_info(ConferenceType conftype) {
       allowed.push_back(c);
     }
   }
-  bout.format("|#9Select a free conference key (|#1{}|#9): ", allowed);
+  bout.print("|#9Select a free conference key (|#1{}|#9): ", allowed);
   const auto key = onek(allowed, true);
   if (key == ' ' || key == '\r' || key == '\n') {
     return std::nullopt;

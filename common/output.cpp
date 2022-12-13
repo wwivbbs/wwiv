@@ -239,7 +239,7 @@ void Output::litebar(const std::string& msg) {
     bputs(fmt::format("|17|15 {:<{}}|#0\r\n\n", msg, len));
   }
   else {
-    format("|#5 {}|#0\r\n\n", msg);
+    print("|#5 {}|#0\r\n\n", msg);
   }
 }
 
@@ -275,7 +275,7 @@ void Output::clreol(int ct) {
     if (ct == 0) {
       bputs("\x1b[K");
     } else {
-      format("\x1b[{}K", ct);
+      print("\x1b[{}K", ct);
     }
   }
   x_ = saved_x;

@@ -345,15 +345,15 @@ void qwk_config_sysop() {
   auto done = false;
   while (!done && !a()->sess().hangup()) {
     bout.cls();
-    bout.format("|#21|#9) Hello file     : |#5{}\r\n", c.hello.empty() ? "|#3<None>" : c.hello);
-    bout.format("|#22|#9) News file      : |#5{}\r\n", c.news.empty() ? "|#3<None>" : c.news);
-    bout.format("|#23|#9) Goodbye file   : |#5{}\r\n", c.bye.empty() ? "|#3<None>" : c.bye);
+    bout.print("|#21|#9) Hello file     : |#5{}\r\n", c.hello.empty() ? "|#3<None>" : c.hello);
+    bout.print("|#22|#9) News file      : |#5{}\r\n", c.news.empty() ? "|#3<None>" : c.news);
+    bout.print("|#23|#9) Goodbye file   : |#5{}\r\n", c.bye.empty() ? "|#3<None>" : c.bye);
     auto sn = qwk_system_name(c, a()->config()->system_name());
-    bout.format("|#24|#9) Packet name    : |#5{}\r\n", sn);
+    bout.print("|#24|#9) Packet name    : |#5{}\r\n", sn);
     const auto max_msgs = c.max_msgs == 0 ? "(Unlimited)" : std::to_string(c.max_msgs);
-    bout.format("|#25|#9) Max Msgs/Packet: |#5{}\r\n", max_msgs);
-    bout.format("|#26|#9) Modify Bulletins ({})\r\n", c.bulletins.size());
-    bout.format("|#2Q|#9) Quit\r\n");
+    bout.print("|#25|#9) Max Msgs/Packet: |#5{}\r\n", max_msgs);
+    bout.print("|#26|#9) Modify Bulletins ({})\r\n", c.bulletins.size());
+    bout.print("|#2Q|#9) Quit\r\n");
     bout.nl();
     bout << "|#9Selection? ";
 
@@ -378,7 +378,7 @@ void qwk_config_sysop() {
       sn = qwk_system_name(c, a()->config()->system_name());
       write_qwk_cfg(*a()->config(), c);
       bout.nl();
-      bout.format("|#9 Current Packet Name:  |#1{}\r\n", sn);
+      bout.print("|#9 Current Packet Name:  |#1{}\r\n", sn);
       bout << "|#9Enter new packet name: ";
       bout.mpl(8);
       sn = bin.input_text(sn, 8);

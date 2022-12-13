@@ -335,7 +335,7 @@ bool show_protocols(const std::vector<AvailableProtocol>& prots) {
   bout << "|#9[|#20|#9] |#9Don't Transfer\r\n";
 
   for (const auto& p : prots) {
-    bout.format("|#9[|#2{}|#9] |#9{}\r\n", p.key, p.name);
+    bout.print("|#9[|#2{}|#9] |#9{}\r\n", p.key, p.name);
   }
   bout.nl(2);
   return true;

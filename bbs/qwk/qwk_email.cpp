@@ -248,17 +248,17 @@ void qwk_email_text(const char* text, char* title, char* to) {
 
     if (sy != 0 && csne.has_value()) {
       bout.nl();
-      bout.format("Name of system: {}\r\n", csne->name);
-      bout.format("Number of hops: {}\r\n", csne->numhops);
+      bout.print("Name of system: {}\r\n", csne->name);
+      bout.print("Number of hops: {}\r\n", csne->numhops);
       bout.nl();
     }
 
     bout.cls();
     bout.Color(2);
-    bout.format("Sending to: {}", send_to_name);
+    bout.print("Sending to: {}", send_to_name);
     bout.nl();
     bout.Color(2);
-    bout.format("Titled    : {}", title);
+    bout.print("Titled    : {}", title);
     bout.nl(2);
     bout.Color(5);
     bout << "Correct? ";

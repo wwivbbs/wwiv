@@ -217,7 +217,13 @@ public:
     return bputs(fmt::sprintf(format_str, std::forward<Args>(args)...));
   }
 
-  template <typename... Args> int format(const char* format_str, Args&&... args) {
+  template <typename... Args> 
+  [[deprecated]] int format(const char* format_str, Args&&... args) {
+    // Process arguments
+    return bputs(fmt::format(format_str, args...));
+  }
+
+  template <typename... Args> int print(const char* format_str, Args&&... args) {
     // Process arguments
     return bputs(fmt::format(format_str, args...));
   }

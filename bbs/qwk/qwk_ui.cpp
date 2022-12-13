@@ -50,7 +50,7 @@ int select_qwk_archiver(qwk_state* qwk_info, int ask) {
     ++num;
     if (!StringTrim(ext).empty() && ext != "EXT") {
       allowed.append(std::to_string(num));
-      bout.format("|#2{}|#9) {}\r\n", num, ext);
+      bout.print("|#2{}|#9) {}\r\n", num, ext);
     }
   }
   bout.nl();

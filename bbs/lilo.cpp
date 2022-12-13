@@ -664,7 +664,7 @@ static void CheckAndUpdateUserInfo() {
       bout.nl();
       input_age(a()->user());
       bout.nl();
-      bout.format("{} -- Correct? ", a()->user()->birthday_mmddyy());
+      bout.print("{} -- Correct? ", a()->user()->birthday_mmddyy());
       if (!bin.yesno()) {
         a()->user()->birthday_mdy(0, 0, 0);
       }

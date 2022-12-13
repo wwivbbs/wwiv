@@ -469,7 +469,7 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
             const auto& e = nl.entry(addr.value());
             destination_bbs_name = e.name();
           } else {
-            bout.format("|#6Address '|#2{}|#6' does not existing in the nodelist.\r\n", addr->as_string());
+            bout.print("|#6Address '|#2{}|#6' does not existing in the nodelist.\r\n", addr->as_string());
             bout.nl(2);
             bout.bputs("|#5Are you sure you want to send to this address? ");
             if (!bin.noyes()) {
@@ -494,7 +494,7 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
   }
   bout << "|#9E-mailing:      |#2" << destination;
   if (system_number != 0) {
-    bout.format(" |#9(|#1{}|#9)", a()->current_net().name); 
+    bout.print(" |#9(|#1{}|#9)", a()->current_net().name); 
   }
   bout.nl();
   uint8_t i = (a()->config()->sl(a()->sess().effective_sl()).ability & ability_email_anony) ? anony_enable_anony : anony_none;

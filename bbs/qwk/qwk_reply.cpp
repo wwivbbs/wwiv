@@ -222,9 +222,9 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 
     bout.cls();
     bout << "|#5Posting New Message.\r\n\n";
-    bout.format("|#9Title      : |#2{}\r\n", title);
-    bout.format("|#9To         : |#2{}\r\n", to.empty() ? "All" : to);
-    bout.format("|#9Area       : |#2{}\r\n", stripcolors(a()->current_sub().name));
+    bout.print("|#9Title      : |#2{}\r\n", title);
+    bout.print("|#9To         : |#2{}\r\n", to.empty() ? "All" : to);
+    bout.print("|#9Area       : |#2{}\r\n", stripcolors(a()->current_sub().name));
 
     if (!a()->current_sub().nets.empty()) {
       bout << "|#9On Networks: |#5";
@@ -396,7 +396,7 @@ static void process_reply_dat(const std::string& name) {
       to_email = true;
     } else if (qwk.status != ' ' && qwk.status != '-') { // if not public
       bout.cls();
-      bout.format("|#9Message '|#2{}|#9' is marked |#3PRIVATE\r\n", title);
+      bout.print("|#9Message '|#2{}|#9' is marked |#3PRIVATE\r\n", title);
       bout.bprintf("|#9It is addressed to |#2%s", to);
       bout.nl(2);
       bout << "|#5Route into E-Mail? ";
@@ -473,7 +473,7 @@ void upload_reply_packet() {
   const auto rep_name = StrCat(qwk_system_name(qwk_cfg, a()->config()->system_name()), ".rep");
   bout.litebar("Upload QWK Reply Packet");
   bout.nl();
-  bout.format("|#9QWK Reply Packet must be named: \"|#2{}|#9\"\r\n", rep_name);
+  bout.print("|#9QWK Reply Packet must be named: \"|#2{}|#9\"\r\n", rep_name);
   bout.bputs("|#5Would you like to upload a QWK Reply Packet? ");
   const auto rep_path = FilePath(a()->sess().dirs().qwk_directory(), rep_name);
 
@@ -496,7 +496,7 @@ void upload_reply_packet() {
     } else {
       sysoplog() << "Aborted";
       bout.nl();
-      bout.format("|#6Reply Packet: |#2{} |#6not found.\r\n", rep_name);
+      bout.print("|#6Reply Packet: |#2{} |#6not found.\r\n", rep_name);
       bout.nl();
     }
   }

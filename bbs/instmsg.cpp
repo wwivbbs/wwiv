@@ -288,7 +288,7 @@ void toggle_avail() {
   const auto line = bout.SaveCurrentLine();
   chat_avail = !chat_avail;
 
-  bout.format("\r\nYou are now {}\r\n\r\n", chat_avail ? "available for chat." : "not available for chat.");
+  bout.print("\r\nYou are now {}\r\n\r\n", chat_avail ? "available for chat." : "not available for chat.");
   const auto loc = a()->instances().at(a()->sess().instance_number()).loc_code();
   write_inst(loc, a()->current_user_sub().subnum, INST_FLAGS_NONE);
   bout.RestoreCurrentLine(line);
@@ -300,7 +300,7 @@ void toggle_invis() {
   const auto line = bout.SaveCurrentLine();
   chat_invis = !chat_invis;
 
-  bout.format("\r\nYou are now {}\r\n\r\n", chat_invis ? "invisible." : "visible.");
+  bout.print("\r\nYou are now {}\r\n\r\n", chat_invis ? "invisible." : "visible.");
   const auto loc = a()->instances().at(a()->sess().instance_number()).loc_code();
   write_inst(loc, a()->current_user_sub().subnum, INST_FLAGS_NONE);
   bout.RestoreCurrentLine(line);

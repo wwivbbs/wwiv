@@ -368,7 +368,7 @@ bool maybe_upload(const std::string& file_name, int directory_num, const std::st
 
   if (i == -1) {
     if (!is_uploadable(file_name) && dcs()) {
-      bout.format("{:<12}: |#5In filename database - add anyway? ", file_name);
+      bout.print("{:<12}: |#5In filename database - add anyway? ", file_name);
       const auto ch = bin.ynq();
       const auto key_quit = bout.lang().value("KEY_QUIT", "Q").front();
       if (ch == key_quit) {

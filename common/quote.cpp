@@ -237,7 +237,7 @@ std::vector<std::string> query_quote_lines(wwiv::common::SessionContext& ctx) {
     if (lines.empty() || ctx.hangup()) {
       return {};
     }
-    bout.format("|#2Quote from line 1-{}? (?=relist, Q=quit) ", num_lines);
+    bout.print("|#2Quote from line 1-{}? (?=relist, Q=quit) ", num_lines);
     auto k = bin.input_number_hotkey(1, {'Q', '?'}, 1, num_lines);
 
     if (k.key == 'Q') {
@@ -251,7 +251,7 @@ std::vector<std::string> query_quote_lines(wwiv::common::SessionContext& ctx) {
     if (start_line == num_lines) {
       end_line = start_line;
     } else {
-      bout.format("|#2through line {} - {} ? (Q=quit) ", start_line, num_lines);
+      bout.print("|#2through line {} - {} ? (Q=quit) ", start_line, num_lines);
       k = bin.input_number_hotkey(start_line, {'Q', '?'}, start_line, num_lines);
       if (k.key == 'Q') {
         return {};

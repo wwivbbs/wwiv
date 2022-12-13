@@ -136,7 +136,7 @@ void HopDir() {
         } else {
           bout.nl();
         }
-        bout.format("|#5Do you mean \"{}\" (Y/N/Q)? ", dir.name);
+        bout.print("|#5Do you mean \"{}\" (Y/N/Q)? ", dir.name);
         const auto ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;

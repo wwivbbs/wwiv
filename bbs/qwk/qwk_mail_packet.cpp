@@ -291,7 +291,7 @@ void qwk_gather_sub(uint16_t bn, qwk_state* qwk_info) {
       const auto total = a()->GetNumMessagesInCurrentMessageArea();
       for (i = total; i > 1 && get_post(i - 1)->qscan > qscnptrx; i--) {
         if ((++amount % 1000) == 0) {
-          bout.format("\r|#9Finding Last Read: (|#2{} |#9/ |#1{}|#9)|#0", amount, total);
+          bout.print("\r|#9Finding Last Read: (|#2{} |#9/ |#1{}|#9)|#0", amount, total);
         }
       }
     }
@@ -363,7 +363,7 @@ void qwk_start_read(int msgnum, qwk_state *qwk_info) {
     ++amount;
     bin.checka(&qwk_info->abort);
     if ((amount % 100) == 0) {
-      bout.format("\r|#9Packing Message(|#2{} |#9/ |#1{}|#9)|#0", amount, total);
+      bout.print("\r|#9Packing Message(|#2{} |#9/ |#1{}|#9)|#0", amount, total);
     }
   } while (!done && !a()->sess().hangup() && !qwk_info->abort);
   bout.clear_whole_line();
