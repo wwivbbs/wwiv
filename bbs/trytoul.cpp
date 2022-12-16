@@ -53,12 +53,12 @@ static void t2u_error(const std::string& file_name, const std::string& msg) {
   bout.nl(2);
   const auto s1 = StrCat("**  ", file_name, " failed T2U qualifications");
   bout << s1 << wwiv::endl;
-  sysoplog() << s1;
+  sysoplog(s1);
 
   const auto s2 = StrCat("** Reason : ", msg);
   bout << s2 << wwiv::endl;
   bout.nl();
-  sysoplog() << s2;
+  sysoplog(s2);
 }
 
 static int try_to_ul_wh(const std::string& orig_file_name) {
@@ -321,7 +321,7 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
     status.increment_uploads_today();
     status.increment_filechanged(Status::file_change_upload);
   });
-  sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f, a()->dirs()[dn].name);
+  sysoplog(fmt::format("+ \"{}\" uploaded on {}", f, a()->dirs()[dn].name));
   return 0;                                 // This means success
 }
 
@@ -344,7 +344,7 @@ int try_to_ul(const std::string& file_name) {
 
   bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
-  sysoplog() << fmt::format("Failed to upload {}, moving to TRY2UL dir", file_name);
+  sysoplog(fmt::format("Failed to upload {}, moving to TRY2UL dir", file_name));
 
   const auto src = FilePath(a()->sess().dirs().batch_directory(), file_name);
   const auto dest = FilePath(FilePath(a()->config()->dloadsdir(), "TRY2UL"), file_name);

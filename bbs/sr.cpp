@@ -541,7 +541,7 @@ void send_file(const std::filesystem::path& path, bool* sent, bool* abort, const
       *sent = true;
     } else {
       const auto fn = path.filename().string();
-      sysoplog() << fmt::sprintf("Tried D/L \"%s\" %3.2f%%", fn, percent * 100.0);
+      sysoplog(fmt::sprintf("Tried D/L \"%s\" %3.2f%%", fn, percent * 100.0));
     }
   }
 }

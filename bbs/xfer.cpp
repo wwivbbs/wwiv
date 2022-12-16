@@ -72,7 +72,7 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_ULCHK));
 
   if (const auto file = FilePath(dir_path, FileName(u->filename)); !File::Exists(file)) {
-    sysoplog() << fmt::format("File \"{}\" to {} deleted by UL event.", u->filename, a()->dirs()[directory_num].name);
+    sysoplog(fmt::format("File \"{}\" to {} deleted by UL event.", u->filename, a()->dirs()[directory_num].name));
     bout << u->filename << " was deleted by the upload event.\r\n";
     return false;
   }

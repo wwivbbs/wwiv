@@ -162,7 +162,7 @@ void build_qwk_packet() {
 
   if (!qwk_info.file->ok()) {
     bout.puts("Open error");
-    sysoplog() << "Couldn't open MESSAGES.DAT";
+    sysoplog("Couldn't open MESSAGES.DAT");
     return;
   }
 
@@ -245,7 +245,7 @@ void build_qwk_packet() {
   if (qwk_info.abort || a()->user()->data.qwk_dontsetnscan || a()->sess().hangup()) {
     save_qscan.restore();
     if (qwk_info.abort) {
-      sysoplog() << "Aborted";
+      sysoplog("Aborted");
     }
   }
   if (a()->user()->data.qwk_delete_mail && !qwk_info.abort) {

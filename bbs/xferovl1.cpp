@@ -949,7 +949,7 @@ void removefilesnotthere(int dn, int* autodel) {
           bout << "ll";
           *autodel = 1;
         }
-        sysoplog() << fmt::format("- '{}' Removed from {}", f, a()->dirs()[dn].name);
+        sysoplog(fmt::format("- '{}' Removed from {}", f, a()->dirs()[dn].name));
         if (area->DeleteFile(f, i)) {
           area->Save();
         }

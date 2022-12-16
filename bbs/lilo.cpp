@@ -240,9 +240,9 @@ static void DoFailedLoginAttempt() {
   a()->WriteCurrentUser();
   bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
-  sysoplog(false) << "";
-  sysoplog(false) << fmt::format("### ILLEGAL LOGON for {}", a()->user()->name_and_number());
-  sysoplog(false) << "";
+  sysoplog(false, "");
+  sysoplog(false, fmt::format("### ILLEGAL LOGON for {}", a()->user()->name_and_number()));
+  sysoplog(false, "");
   a()->sess().user_num(0);
 }
 
@@ -573,14 +573,14 @@ static void UpdateLastOnFile() {
                                              a()->GetCurrentSpeed(),
                                              a()->user()->ontoday(),
                                              a()->sess().instance_number());
-    sysoplog(false) << "";
-    sysoplog(false) << stripcolors(sysop_log_line);
-    sysoplog(false) << "";
+    sysoplog(false, "");
+    sysoplog(false, stripcolors(sysop_log_line));
+    sysoplog(false, "");
   }
   if (a()->sess().incom()) {
     const auto& remote_address = bout.remoteIO()->remote_info().address;
     if (!remote_address.empty()) {
-      sysoplog() << fmt::format("Remote IP: {}", remote_address);
+      sysoplog(fmt::format("Remote IP: {}", remote_address));
     }
   }
   if (a()->sess().effective_sl() == 255 && !a()->sess().incom()) {
@@ -969,8 +969,8 @@ void logoff() {
   std::string text = "  Logged Off At ";
   text += times();
   if (a()->sess().effective_sl() != 255 || a()->sess().incom()) {
-    sysoplog(false) << "";
-    sysoplog(false) << stripcolors(text);
+    sysoplog(false, "");
+    sysoplog(false, stripcolors(text));
   }
   a()->user()->last_bps(a()->modem_speed_);
 
@@ -995,8 +995,8 @@ void logoff() {
   a()->user()->last_daten(daten_t_now());
   const auto used_this_session = (std::chrono::system_clock::now() - a()->sess().system_logon_time());
   const auto min_used = std::chrono::duration_cast<std::chrono::minutes>(used_this_session);
-  sysoplog(false) << fmt::format("Read: {}   Time on: {} minutes.",
-                                 a()->GetNumMessagesReadThisLogon(), min_used.count());
+  sysoplog(false, fmt::format("Read: {}   Time on: {} minutes.", a()->GetNumMessagesReadThisLogon(),
+                              min_used.count()));
   {
     if (auto file_email(OpenEmailFile(true)); file_email->IsOpen()) {
       a()->user()->email_waiting(0);

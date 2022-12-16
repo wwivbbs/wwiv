@@ -87,7 +87,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_
   int dn = FindDN(dir_fn);
 
   if (dn == -1) {
-    sysoplog() << "Download: Dir Not Found";                  /* DL - DIR NOT FOUND */
+    sysoplog("Download: Dir Not Found");                  /* DL - DIR NOT FOUND */
     return 0;
   }
   const auto& dir = a()->dirs()[dn];
@@ -99,7 +99,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_
     if (abort) {
       return -1;
     }
-    sysoplog() << "Download: File Not Found"; /* DL - FILE NOT FOUND */
+    sysoplog("Download: File Not Found"); /* DL - FILE NOT FOUND */
     return 0;
   }
   bool ok = true;
@@ -143,7 +143,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_
           a()->current_file_area()->Save();
         }
 
-        sysoplog() << fmt::format("Downloaded '{}'.", f);
+        sysoplog(fmt::format("Downloaded '{}'.", f));
 
         if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
           a()->users()->readuser(&ur, f.u().ownerusr);
@@ -304,7 +304,7 @@ void DisableConf() {
 }
 
 void SetNewScanMsg() {
-  sysoplog() << "Select Subs";
+  sysoplog("Select Subs");
   config_qscan();
 }
 

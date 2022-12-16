@@ -219,7 +219,7 @@ void print_searching(search_record* search_rec) {
 
 static void catch_divide_by_zero(int signum) {
   if (signum == SIGFPE) {
-    sysoplog() << "Caught divide by 0";
+    sysoplog("Caught divide by 0");
   }
 }
 
@@ -541,7 +541,7 @@ int prep_search_rec(search_record* r, int type) {
     r->nscandate = a()->sess().nscandate();
     r->alldirs = ALL_DIRS;
   } else {
-    sysoplog() << "Undef LP type";
+    sysoplog("Undef LP type");
     return 0;
   }
 
@@ -1245,7 +1245,7 @@ static int remove_filename(const std::string& file_name, int dn) {
             }
           }
         }
-        sysoplog() << fmt::format("- '{}' removed off of {}", f, a()->dirs()[dn].name);
+        sysoplog(fmt::format("- '{}' removed off of {}", f, a()->dirs()[dn].name));
         if (a()->current_file_area()->DeleteFile(f, i)) {
           a()->current_file_area()->Save();
           --i;
@@ -1494,10 +1494,10 @@ LP_SEARCH_HELP:
       if (sr->filemask[0]) {
         if (okfn(sr->filemask)) {
           if (sr->filemask.size() < 8) {
-            sysoplog() << fmt::format("Filespec: {}", sr->filemask);
+            sysoplog(fmt::format("Filespec: {}", sr->filemask));
           } else {
             if (contains(sr->filemask, '.')) {
-              sysoplog() << fmt::format("Filespec: {}", sr->filemask);
+              sysoplog(fmt::format("Filespec: {}", sr->filemask));
             } else {
               bout << "|#6Invalid filename: " << sr->filemask << wwiv::endl;
               bout.pausescr();
@@ -1516,7 +1516,7 @@ LP_SEARCH_HELP:
       bout << "Keyword(s) : ";
       sr->search = bin.input_upper(60);
       if (sr->search[0]) {
-        sysoplog() << StrCat("Keyword: ", sr->search);
+        sysoplog(StrCat("Keyword: ", sr->search));
       }
       break;
 

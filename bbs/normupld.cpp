@@ -157,7 +157,7 @@ void normalupload(int dn) {
         bout << "upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n";
         bout << "the sysop.\r\n\n";
         const auto message = fmt::format("Wanted to upload \"{}\"", f);
-        sysoplog() << fmt::format("*** ASS-PTS: 5, Reason: [{}]", message);
+        sysoplog(fmt::format("*** ASS-PTS: 5, Reason: [{}]", message));
         a()->user()->increment_ass_points(5);
         ok = 0;
       } else {
@@ -230,7 +230,7 @@ void normalupload(int dn) {
               s.increment_uploads_today();
               s.increment_filechanged(Status::file_change_upload);
             });
-            sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f, a()->dirs()[dn].name);
+            sysoplog(fmt::format("+ \"{}\" uploaded on {}", f, a()->dirs()[dn].name));
             bout.nl(2);
             bout.printf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", a()->user()->ratio());
             bout.nl(2);

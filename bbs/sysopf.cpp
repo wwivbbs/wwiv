@@ -836,7 +836,7 @@ void chuser() {
   read_qscn(user_number, a()->sess().qsc, false);
   a()->sess().user_num(static_cast<uint16_t>(user_number));
   a()->sess().effective_sl(255);
-  sysoplog() << StrCat("#*#*#* Changed to ", a()->user()->name_and_number());
+  sysoplog(StrCat("#*#*#* Changed to ", a()->user()->name_and_number()));
   changedsl();
   a()->UpdateTopScreen();
 }
@@ -894,15 +894,15 @@ void auto_purge() {
 
   if (days < 60) {
     if (days > 0) {
-      sysoplog(false) << "!!! WARNING: Auto-Purge canceled [AUTO_USER_PURGE < 60]";
-      sysoplog(false) << "!!! WARNING: Edit WWIV.INI and Fix this";
+      sysoplog(false, "!!! WARNING: Auto-Purge canceled [AUTO_USER_PURGE < 60]");
+      sysoplog(false, "!!! WARNING: Edit WWIV.INI and Fix this");
     }
     return;
   }
 
   const auto current_daten = daten_t_now();
   int user_number = 1;
-  sysoplog(false) << fmt::format("Auto-Purged Inactive Users (over {} days, SL less than {})", days, skipsl);
+  sysoplog(false, fmt::format("Auto-Purged Inactive Users (over {} days, SL less than {})", days, skipsl));
 
   do {
     User user;
@@ -912,7 +912,7 @@ void auto_purge() {
       // if user is not already deleted && SL<NO_PURGE_SL && last_logon
       // greater than AUTO_USER_PURGE days ago
       if (!user.deleted() && user.sl() < skipsl && d > days) {
-        sysoplog(false) << fmt::format("*** AUTOPURGE: Deleted User: #{} {}", user_number, user.name());
+        sysoplog(false, fmt::format("*** AUTOPURGE: Deleted User: #{} {}", user_number, user.name()));
         a()->users()->delete_user(user_number);
       }
     }
@@ -1011,7 +1011,7 @@ void beginday(bool displayStatus) {
     bout << "|#7* |#1Done!\r\n";
   }
 
-  sysoplog(false) << "* Ran Daily Maintenance...";
+  sysoplog(false, "* Ran Daily Maintenance...");
   LOG(INFO) << "Completed executing beginday";
 }
 

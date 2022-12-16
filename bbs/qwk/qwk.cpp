@@ -47,12 +47,12 @@ using namespace wwiv::stl;
 namespace wwiv::bbs::qwk {
 
 void qwk_download() {
-  sysoplog() << "Download QWK packet";
+  sysoplog("Download QWK packet");
   build_qwk_packet();
 }
 
 void qwk_upload() {
-  sysoplog() << "Upload REP packet";
+  sysoplog("Upload REP packet");
   upload_reply_packet();
 }
 
@@ -249,7 +249,7 @@ static std::string qwk_current_text(int pos) {
 }
 
 void qwk_config_user() {
-  sysoplog() << "Config Options";
+  sysoplog("Config Options");
   bool done = false;
 
   while (!done && !a()->sess().hangup()) {
@@ -338,7 +338,7 @@ void qwk_config_sysop() {
   if (!so()) {
     return;
   }
-  sysoplog() << "Ran Sysop Config";
+  sysoplog("Ran Sysop Config");
 
   auto c = read_qwk_cfg(*a()->config());
 

@@ -356,7 +356,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
       status.increment_uploads_today();
       status.increment_filechanged(Status::file_change_upload);
     });
-    sysoplog() << fmt::format("+ '{}' uploaded on ", f, d.name);
+    sysoplog(fmt::format("+ '{}' uploaded on ", f, d.name));
     a()->UpdateTopScreen();
   }
   return true;

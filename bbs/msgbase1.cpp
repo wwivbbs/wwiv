@@ -323,7 +323,7 @@ void post(const PostData& post_data) {
   close_sub();
 
   a()->UpdateTopScreen();
-  sysoplog() << fmt::format("+ '{}' posted on {}", p.title, a()->current_sub().name);
+  sysoplog(fmt::format("+ '{}' posted on {}", p.title, a()->current_sub().name));
   bout << "Posted on " << a()->current_sub().name << wwiv::endl;
   if (!a()->current_sub().nets.empty()) {
     a()->user()->posts_net(a()->user()->posts_net() + 1);
@@ -533,7 +533,7 @@ void remove_post() {
           }
         }
       }
-      sysoplog() << fmt::format("- '{}' removed from {}", get_post(postnum)->title, a()->current_sub().name);
+      sysoplog(fmt::format("- '{}' removed from {}", get_post(postnum)->title, a()->current_sub().name));
       delete_message(postnum);
       bout << "\r\nMessage removed.\r\n\n";
     }

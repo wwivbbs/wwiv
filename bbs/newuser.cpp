@@ -596,7 +596,7 @@ bool CanCreateNewUserAccountHere() {
       if (password == a()->config()->newuser_password()) {
         ok = true;
       } else {
-        sysoplog() << StrCat("Wrong newuser password: ", password);
+        sysoplog(StrCat("Wrong newuser password: ", password));
       }
     } while (!ok && !a()->sess().hangup() && (nPasswordAttempt++ < 4));
     if (!ok) {
@@ -652,37 +652,36 @@ static void add_phone_number(int usernum, const std::string& phone) {
 
 void WriteNewUserInfoToSysopLog() {
   const auto* u = a()->user();
-  sysoplog() << "** New User Information **";
-  sysoplog() << fmt::format("-> {} #{} ({})", u->name(), a()->sess().user_num(), u->real_name_or_empty());
+  sysoplog("** New User Information **");
+  sysoplog(fmt::format("-> {} #{} ({})", u->name(), a()->sess().user_num(), u->real_name_or_empty()));
   if (a()->config()->newuser_config().use_address_street != newuser_item_type_t::unused) {
-    sysoplog() << StrCat("-> ", u->street());
+    sysoplog(StrCat("-> ", u->street()));
   }
   if (a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
-    sysoplog() << fmt::format("-> {}, {} {}  ({})", u->city(), u->state(), u->zip_code(),
-                              u->country());
+    sysoplog(fmt::format("-> {}, {} {}  ({})", u->city(), u->state(), u->zip_code(), u->country()));
   }
   if (a()->config()->newuser_config().use_voice_phone != newuser_item_type_t::unused) {
-    sysoplog() << fmt::format("-> {} (Voice)", u->voice_phone());
+    sysoplog(fmt::format("-> {} (Voice)", u->voice_phone()));
     if (!u->voice_phone().empty()) {
       add_phone_number(a()->sess().user_num(), u->voice_phone());
     }
   }
   if (a()->config()->newuser_config().use_data_phone != newuser_item_type_t::unused) {
-    sysoplog() << fmt::format("-> {} (Data)", u->data_phone());
+    sysoplog(fmt::format("-> {} (Data)", u->data_phone()));
     if (!u->data_phone().empty()) {
       add_phone_number(a()->sess().user_num(), u->data_phone());
     }
   }
   if (a()->config()->newuser_config().use_birthday != newuser_item_type_t::unused) {
-    sysoplog() << fmt::format("-> {} ({} yr old {})", u->birthday_mmddyy(), u->age(), u->gender());
+    sysoplog(fmt::format("-> {} ({} yr old {})", u->birthday_mmddyy(), u->age(), u->gender()));
   }
   if (a()->config()->newuser_config().use_computer_type != newuser_item_type_t::unused) {
-    sysoplog() << fmt::format("-> Using a {} Computer", ctypes(u->computer_type()));
+    sysoplog(fmt::format("-> Using a {} Computer", ctypes(u->computer_type())));
   }
   if (u->wwiv_regnum()) {
-    sysoplog() << fmt::format("-> WWIV Registration # {}", u->wwiv_regnum());
+    sysoplog(fmt::format("-> WWIV Registration # {}", u->wwiv_regnum()));
   }
-  sysoplog() << "********";
+  sysoplog("********");
 
 }
 
@@ -729,8 +728,8 @@ void ExecNewUserCommand() {
     cl.args(create_chain_file());
 
     // Log what is happening here.
-    sysoplog(false) << "Executing New User Event: ";
-    sysoplog() << cl.cmdline();
+    sysoplog(false, "Executing New User Event: ");
+    sysoplog(cl.cmdline());
 
     a()->WriteCurrentUser();
     ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_NEWUSER));
@@ -1311,8 +1310,8 @@ void newuser() {
   sysoplog(false);
   const auto t = times();
   const auto f = fulldate();
-  sysoplog(false) << fmt::format("*** NEW USER {}   {}    {} ({})", f, t, a()->GetCurrentSpeed(),
-                                  a()->sess().instance_number());
+  sysoplog(false, fmt::format("*** NEW USER {}   {}    {} ({})", f, t, a()->GetCurrentSpeed(),
+                              a()->sess().instance_number()));
 
   LOG(INFO) << "New User Attempt from IP Address: " << bout.remoteIO()->remote_info().address;
   a()->sess().num_screen_lines(25);

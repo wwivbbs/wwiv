@@ -164,7 +164,7 @@ void ValidateUser() {
   bout << "|#9Enter user name or number:\r\n:";
   const auto user_name = bin.input_upper(30);
   if (const auto user_number = finduser1(user_name); user_number > 0) {
-    sysoplog() << fmt::format("@ Validated user #{}", user_number);
+    sysoplog(fmt::format("@ Validated user #{}", user_number));
     valuser(user_number);
   } else {
     bout << "Unknown user.\r\n";
@@ -438,13 +438,13 @@ void JumpEdit() {
 
 void BoardEdit() {
   write_inst(INST_LOC_BOARDEDIT, 0, INST_FLAGS_NONE);
-  sysoplog() << "@ Ran Board Edit";
+  sysoplog("@ Ran Board Edit");
   boardedit();
 }
 
 void ChainEdit() {
   write_inst(INST_LOC_CHAINEDIT, 0, INST_FLAGS_NONE);
-  sysoplog() << "@ Ran Chain Edit";
+  sysoplog("@ Ran Chain Edit");
   chainedit();
 }
 
@@ -455,7 +455,7 @@ void ToggleChat() {
   const bool bNewAvail = sysop2();
   if (bOldAvail != bNewAvail) {
     bout << ((bNewAvail) ? "|#5Sysop now available\r\n" : "|#3Sysop now unavailable\r\n");
-    sysoplog() << "@ Changed sysop available status";
+    sysoplog("@ Changed sysop available status");
   } else {
     bout << "|#6Unable to toggle Sysop availability (hours restriction)\r\n";
   }
@@ -469,7 +469,7 @@ void ChangeUser() {
 
 void DirEdit() {
   write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
-  sysoplog() << "@ Ran Directory Edit";
+  sysoplog("@ Ran Directory Edit");
   dlboardedit();
 }
 
@@ -502,13 +502,13 @@ void EditText() {
 
 void EditBulletins() {
   write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
-  sysoplog() << "@ Ran Gfile Edit";
+  sysoplog("@ Ran Gfile Edit");
   gfileedit();
 }
 
 void ReadAllMail() {
   write_inst(INST_LOC_MAILR, 0, INST_FLAGS_NONE);
-  sysoplog() << "@ Read mail";
+  sysoplog("@ Read mail");
   mailr();
 }
 
@@ -536,7 +536,7 @@ void MemoryStatus() {
 
 void InitVotes() {
   write_inst(INST_LOC_VOTE, 0, INST_FLAGS_NONE);
-  sysoplog() << "@ Ran Ivotes";
+  sysoplog("@ Ran Ivotes");
   ivotes();
 }
 
@@ -559,7 +559,7 @@ void PrintStatus() {
 
 void TextEdit() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-  sysoplog() << "@ Ran Text Edit";
+  sysoplog("@ Ran Text Edit");
   text_edit();
 }
 

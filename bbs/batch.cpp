@@ -126,9 +126,9 @@ static void downloaded(const std::string& file_name, long lCharsPerSecond) {
           area->Save();
         }
         if (lCharsPerSecond) {
-          sysoplog() << fmt::format("Downloaded '{}' ({} cps).", f, lCharsPerSecond);
+          sysoplog(fmt::format("Downloaded '{}' ({} cps).", f, lCharsPerSecond));
         } else {
-          sysoplog() << fmt::format("Downloaded '{}'.", f);
+          sysoplog(fmt::format("Downloaded '{}'.", f));
         }
         if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
           if (const auto user = a()->users()->readuser(f.u().ownerusr, UserManager::mask::non_deleted);
@@ -145,7 +145,7 @@ static void downloaded(const std::string& file_name, long lCharsPerSecond) {
       return;
     }
   }
-  sysoplog() << fmt::format("!!! Couldn't find \"{}\" in DL batch queue.", file_name);
+  sysoplog(fmt::format("!!! Couldn't find \"{}\" in DL batch queue.", file_name));
 }
 
 void didnt_upload(const BatchEntry& b) {
@@ -157,7 +157,7 @@ void didnt_upload(const BatchEntry& b) {
   auto* area = a()->current_file_area();
   auto nRecNum = recno(b.aligned_filename());
   if (nRecNum <= 0) {
-    sysoplog() << fmt::format("!!! Couldn't find \"{}\" in transfer area.", b.aligned_filename());
+    sysoplog(fmt::format("!!! Couldn't find \"{}\" in transfer area.", b.aligned_filename()));
     return;
   }
   files::FileRecord f{};
@@ -170,7 +170,7 @@ void didnt_upload(const BatchEntry& b) {
   while (nRecNum != -1 && f.numbytes() != 0);
 
   if (nRecNum == -1 || f.numbytes() != 0) {
-    sysoplog() << fmt::format("!!! Couldn't find \"\" in transfer area.", b.aligned_filename());
+    sysoplog(fmt::format("!!! Couldn't find \"\" in transfer area.", b.aligned_filename()));
     return;
   }
   if (area->DeleteFile(f, nRecNum)) {
@@ -226,8 +226,8 @@ static void uploaded(const std::string& file_name, long lCharsPerSecond) {
               if (area->UpdateFile(f, nRecNum)) {
                 area->Save();
               }
-              sysoplog() << fmt::format("+ \"{}\" uploaded on {} ({} cps)", f,
-                                        a()->dirs()[b.dir()].name, lCharsPerSecond);
+              sysoplog(fmt::format("+ \"{}\" uploaded on {} ({} cps)", f, a()->dirs()[b.dir()].name,
+                                   lCharsPerSecond));
               bout << "Uploaded '" << f << "' to " << a()->dirs()[b.dir()].name << " ("
                    << lCharsPerSecond << " cps)" << wwiv::endl;
             }
@@ -238,14 +238,14 @@ static void uploaded(const std::string& file_name, long lCharsPerSecond) {
       }
       it = a()->batch().delbatch(it);
       if (try_to_ul(file_name)) {
-        sysoplog() << fmt::sprintf("!!! Couldn't find file \"%s\" in directory.", file_name);
+        sysoplog(fmt::sprintf("!!! Couldn't find file \"%s\" in directory.", file_name));
         bout << "Deleting - couldn't find data for file " << file_name << wwiv::endl;
       }
       return;
     }
   }
   if (try_to_ul(file_name)) {
-    sysoplog() << fmt::format("!!! Couldn't find \"{}\" in UL batch queue.", file_name);
+    sysoplog(fmt::format("!!! Couldn't find \"{}\" in UL batch queue.", file_name));
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
     File::Remove(FilePath(a()->sess().dirs().batch_directory(), file_name));
@@ -264,7 +264,7 @@ static void ProcessDSZLogFile(const std::string& path) {
       break;
     case dsz_logline_t::error:
     default:
-      sysoplog() << fmt::format("Error transferring \"{}\"", fn);
+      sysoplog(fmt::format("Error transferring \"{}\"", fn));
       break;
     }
   });
@@ -326,7 +326,7 @@ void zmbatchdl(bool bHangupAfterDl) {
   if (bHangupAfterDl) {
     message += ", HAD";
   }
-  sysoplog() << message;
+  sysoplog(message);
   bout.nl();
   bout << message;
   bout.nl(2);
@@ -457,7 +457,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   if (bHangupAfterDl) {
     message += ", HAD";
   }
-  sysoplog() << message;
+  sysoplog(message);
   bout.nl();
   bout << message;
   bout.nl(2);
@@ -643,7 +643,7 @@ void dszbatchdl(bool bHangupAfterDl, const std::string& command_line, const std:
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
-  sysoplog() << download_log_entry;
+  sysoplog(download_log_entry);
   bout.nl();
   bout << download_log_entry;
   bout.nl(2);
@@ -659,7 +659,7 @@ static void dszbatchul(bool bHangupAfterDl, char* command_line, const std::strin
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
-  sysoplog() << download_log_entry;
+  sysoplog(download_log_entry);
   bout.nl();
   bout << download_log_entry;
   bout.nl(2);

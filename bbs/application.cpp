@@ -816,11 +816,11 @@ int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
   if (exit_level != Application::exitLevelOK && exit_level != Application::exitLevelQuit) {
     // Only log the exiting at abnormal error levels, since we see lots of exiting statements
     // in the logs that don't correspond to sessions every being created (network probes, etc).
-    sysoplog(false) << "";
-    sysoplog(false) << fmt::format("WWIV {}, inst {}, taken down at {} on {} with exit code {}.",
+    sysoplog(false, "");
+    sysoplog(false, fmt::format("WWIV {}, inst {}, taken down at {} on {} with exit code {}.",
                                    short_version(), sess().instance_number(), times(), fulldate(),
-                                   exit_level);
-    sysoplog(false) << "";
+                                   exit_level));
+    sysoplog(false, "");
   }
   catsl();
   std::clog.flush();
@@ -1030,7 +1030,7 @@ int Application::Run(int argc, char* argv[]) {
       // event from the commandline, so we'll just check the date.
       beginday(true);
     } else {
-      sysoplog(false) << "!!! Wanted to run the beginday event when it's not required!!!";
+      sysoplog(false, "!!! Wanted to run the beginday event when it's not required!!!");
       std::clog << "! WARNING: Tried to run beginday event again\r\n\n";
       sleep_for(seconds(2));
     }
@@ -1154,14 +1154,14 @@ int Application::Run(int argc, char* argv[]) {
           wwiv::bbs::menus::mainmenu();
         } catch (const std::logic_error& le) {
           std::cerr << "Caught std::logic_error: " << le.what() << "\r\n";
-          sysoplog() << le.what();
+          sysoplog(le.what());
         }
       }
     } catch (const hangup_error& h) {
       if (sess().IsUserOnline() && h.hangup_type() == hangup_type_t::user_disconnected) {
         // Don't need to log this unless the user actually made it online.
         std::cerr << h.what() << "\r\n";
-        sysoplog() << h.what();
+        sysoplog(h.what());
       }
     }
     logoff();
@@ -1397,7 +1397,7 @@ void Application::frequent_init() {
 bool Application::CheckForHangup() {
   if (!sess().hangup() && sess().using_modem() && !bout.remoteIO()->connected()) {
     if (sess().IsUserOnline()) {
-      sysoplog() << "Hung Up.";
+      sysoplog("Hung Up.");
     }
     a()->Hangup(hangup_type_t::user_disconnected);
   }

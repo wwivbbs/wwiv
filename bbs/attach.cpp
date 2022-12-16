@@ -317,9 +317,8 @@ void attach_file(int mode) {
                         attachFile.Write(&fsr, sizeof(filestatusrec));
                         attachFile.Close();
                         const auto to_user_name = a()->names()->UserName(m.touser);
-                        sysoplog()
-                            << fmt::sprintf("Attached %s (%u bytes) in message to %s", fsr.filename,
-                                            fsr.numbytes, to_user_name);
+                        sysoplog(fmt::sprintf("Attached %s (%u bytes) in message to %s",
+                                              fsr.filename, fsr.numbytes, to_user_name));
                         bout << "File attached.\r\n" ;
                       }
                     } else {

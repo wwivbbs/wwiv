@@ -25,22 +25,8 @@ std::string sysoplog_filename(const std::string& date);
 std::string GetTemporaryInstanceLogFileName();
 void catsl();
 void sysopchar(const std::string& text);
-
-class sysoplog {
-public:
-  sysoplog(bool indent = true) : indent_(indent) {}
-  ~sysoplog();
-
-  template <typename T>
-  sysoplog& operator<<(T const & value) {
-    stream_ << value;
-    return *this;
-  }
-
-private:
-  std::ostringstream stream_;
-  bool indent_{true};
-};
+void sysoplog(bool indent, const std::string& text);
+void sysoplog(const std::string& text);
 
 
 #endif  // __INCLUDED_SYSOPLOG_H__

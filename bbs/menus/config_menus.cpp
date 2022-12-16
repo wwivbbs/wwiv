@@ -89,8 +89,8 @@ static bool SetMenuSet(const menu_set_t& m) {
   }
 
   a()->user()->set_menu_set(m.name);
-  sysoplog() << fmt::format("Menu in use : {} - {}", a()->user()->menu_set(),
-                           a()->user()->hotkeys() ? "Hot" : "Off");
+  sysoplog(fmt::format("Menu in use : {} - {}", a()->user()->menu_set(),
+                       a()->user()->hotkeys() ? "Hot" : "Off"));
   // Save current menu setup.
   return a()->WriteCurrentUser();
 }

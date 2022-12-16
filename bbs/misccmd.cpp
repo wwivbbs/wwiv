@@ -183,11 +183,11 @@ void kill_old_email() {
             bout.nl();
             if (found) {
               bout << "Mail and file deleted.\r\n\n";
-              sysoplog() << fmt::format("Deleted mail and attached file: {}", fsr.filename);
+              sysoplog(fmt::format("Deleted mail and attached file: {}", fsr.filename));
             } else {
               bout << "Mail deleted.\r\n\n";
               const std::string username_num = a()->names()->UserName(m1.touser);
-              sysoplog() << fmt::format("Deleted mail sent to {}", username_num);
+              sysoplog(fmt::format("Deleted mail sent to {}", username_num));
             }
           } else {
             bout << "Mail file changed; try again.\r\n";

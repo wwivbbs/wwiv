@@ -219,7 +219,7 @@ void removefile() {
               }
             }
           }
-          sysoplog() << fmt::format("- \"{}\" removed off of {}", f, dir.name);
+          sysoplog(fmt::format("- \"{}\" removed off of {}", f, dir.name));
           if (a()->current_file_area()->DeleteFile(f, record_num)) {
             a()->current_file_area()->Save();
             --record_num;

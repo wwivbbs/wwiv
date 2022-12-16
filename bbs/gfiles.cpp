@@ -403,7 +403,7 @@ static void gfile_sec(int sn) {
       i1 = bout.printfile_path(file_name);
       a()->user()->gfiles_read(a()->user()->gfiles_read() + 1);
       if (i1 == 0) {
-        sysoplog() << fmt::format("Read G-file '{}'", g[i - 1].filename);
+        sysoplog(fmt::format("Read G-file '{}'", g[i - 1].filename));
       }
     } else if (ss == "D") {
       bool done1 = false;
@@ -441,7 +441,7 @@ static void gfile_sec(int sn) {
               bout.nl();
               bout << s1;
               bout.nl();
-              sysoplog() << s1;
+              sysoplog(s1);
             }
           } else {
             done1 = true;
@@ -454,14 +454,14 @@ static void gfile_sec(int sn) {
 
 void gfiles2() {
   write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_ONLINE);
-  sysoplog() << "@ Ran Gfile Edit";
+  sysoplog("@ Ran Gfile Edit");
   gfileedit();
   gfiles();
 }
 
 void gfiles3(int n) {
   write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_ONLINE);
-  sysoplog() << "@ Ran Gfile Edit";
+  sysoplog("@ Ran Gfile Edit");
   modify_sec(n);
   gfile_sec(n);
 }

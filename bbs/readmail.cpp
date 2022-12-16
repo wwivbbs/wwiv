@@ -603,11 +603,11 @@ void readmail(bool newmail_only) {
         send_file(fn.string(), &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
         if (sentt) {
           bout << "\r\nAttached file sent.\r\n";
-          sysoplog() << fmt::sprintf("Downloaded %ldk of attached file %s.",
-                                     (fsr.numbytes + 1023) / 1024, fsr.filename);
+          sysoplog(fmt::sprintf("Downloaded %ldk of attached file %s.",
+                                     (fsr.numbytes + 1023) / 1024, fsr.filename));
         } else {
           bout << "\r\nAttached file not completely sent.\r\n";
-          sysoplog() << fmt::sprintf("Tried to download attached file %s.", fsr.filename);
+          sysoplog(fmt::sprintf("Tried to download attached file %s.", fsr.filename));
         }
         bout.nl();
       } break;
@@ -1134,7 +1134,7 @@ void readmail(bool newmail_only) {
           send_file(fn.string(), &bSent, &bAbort, fn.string(), -1, ssize(b));
           if (bSent) {
             bout << "E-mail download successful.\r\n";
-            sysoplog() << "Downloaded E-mail";
+            sysoplog("Downloaded E-mail");
           } else {
             bout << "E-mail download aborted.\r\n";
           }

@@ -81,7 +81,7 @@ void catsl() {
 * Writes a line to the sysop log.
 */
 void AddLineToSysopLogImpl(log_cmd_t cmd, const std::string& text) {
-  static std::string::size_type midline = 0;
+  static size_t midline = 0;
   
   if (a()->config()->gfilesdir().empty()) {
     LOG(ERROR) << "gfilesdir empty, can't write to sysop log: " << text;
@@ -145,14 +145,12 @@ void sysopchar(const std::string& text) {
   }
 }
 
-sysoplog::~sysoplog() {
-  try {
-    if (indent_) {
-      AddLineToSysopLogImpl(log_cmd_t::log_string, StrCat("   ", stream_.str()));
-    } else {
-      AddLineToSysopLogImpl(log_cmd_t::log_string, stream_.str());
-    }
-  } catch (...) {
-    // NOP
+void sysoplog(bool indent, const std::string& text) {
+  if (indent) {
+    AddLineToSysopLogImpl(log_cmd_t::log_string, StrCat("   ", text));
+  } else {
+    AddLineToSysopLogImpl(log_cmd_t::log_string, text);
   }
 }
+
+void sysoplog(const std::string& text) { sysoplog(true, text); }

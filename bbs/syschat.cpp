@@ -119,7 +119,7 @@ void RequestChat() {
         }
         const auto cr = fmt::format("Chat: {}", chatReason);
         bout.nl();
-        sysoplog() << cr;
+        sysoplog(cr);
         a()->sess().chat_reason(cr);
         a()->UpdateTopScreen();
         bout << "Chat call turned ON.\r\n";

@@ -128,10 +128,10 @@ void write_automessage() {
     TextFile file(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "wt");
     const auto authorName = a()->user()->name_and_number();
     file.WriteLine(authorName);
-    sysoplog() << "Changed Auto-message";
+    sysoplog("Changed Auto-message");
     for (const auto& line : lines) {
       file.WriteLine(line);
-      sysoplog(true) << line;
+      sysoplog(true, line);
     }
     bout << "\r\n|#5Auto-message saved.\r\n\n";
     file.Close();
