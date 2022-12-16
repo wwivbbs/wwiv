@@ -65,7 +65,7 @@ static void log_command(menu_logtype_t logging, const menu_item_56_t& mi) {
   } break;
   case menu_logtype_t::description: {
     if (!mi.item_text.empty()) {
-      sysoplog() << "(" << mi.item_key << ") : " << mi.item_text;
+      sysoplog() << fmt::format("({}) : {}", mi.item_key, mi.item_text);
     } else {
       for (const auto& a : mi.actions) {
         sysoplog() << a.cmd;
@@ -323,7 +323,7 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
     if (auto omi = GetMenuItemForCommand(cmd)) {
       const auto& mi = omi.value();
       if (!check_acs(mi.acs)) {
-        sysoplog() << "Insufficient ACS for menu item: " << mi.item_key;
+        sysoplog() << fmt::format("Insufficient ACS for menu item: {}", mi.item_key);
         bout << "|#6Insufficient ACS for menu item: " << mi.item_key << endl;
         continue;
       }

@@ -194,7 +194,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
                                     FILE_ATTRIBUTE_NORMAL,
                                     static_cast<HANDLE>(nullptr));
         if (hSyncWriteSlot == INVALID_HANDLE_VALUE) {
-          sysoplog() << "!!! Unable to create mail slot for writing for SyncFoss External program: " << GetLastError();
+          sysoplog() << StrCat("!!! Unable to create mail slot for writing for SyncFoss External program: ", GetLastError());
           LogToSync(StrCat("!!! Unable to create mail slot for writing for SyncFoss External program: ", GetLastError()));
           return false;
         }
@@ -294,7 +294,7 @@ static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HAND
   hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, event_name.c_str());
   if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
     LogToSync(StrCat("!!! Unable to create Hangup Event for SyncFoss External program: ", GetLastError()));
-    sysoplog() << "!!! Unable to create Hangup Event for SyncFoss External program: " << GetLastError();
+    sysoplog() << StrCat("!!! Unable to create Hangup Event for SyncFoss External program: ", GetLastError());
     return false;
   }
 
@@ -303,7 +303,7 @@ static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HAND
   hSyncReadSlot = CreateMailslot(readslot_name.c_str(), CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
   if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
     LogToSync(StrCat("!!! Unable to create mail slot for reading for SyncFoss External program: ", GetLastError()));
-    sysoplog() << "!!! Unable to create mail slot for reading for SyncFoss External program: " << GetLastError();
+    sysoplog() << StrCat("!!! Unable to create mail slot for reading for SyncFoss External program: ", GetLastError());
     CloseHandle(hSyncHangupEvent);
     hSyncHangupEvent = INVALID_HANDLE_VALUE;
     return false;
@@ -382,8 +382,7 @@ static int exec_cmdline_sync(wwiv::bbs::CommandLine& cmdline, int flags, int nSy
     const auto error_code = ::GetLastError();
     const auto error_message = ErrorAsString(error_code);
     LOG(ERROR) << "CreateProcessFailed: error: " << error_message;
-    sysoplog() << "!!! CreateProcess failed for command: [" << working_cmdline
-               << "] with Error Message: " << error_message;
+    sysoplog() << fmt::format("!!! CreateProcess failed for command: [{}] with Error Message: {}", working_cmdline, error_message);
 
     // Restore old binary mode.
     bout.remoteIO()->set_binary_mode(saved_binary_mode);
@@ -611,7 +610,7 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
     const auto error_code = ::GetLastError();
     const auto error_message = ErrorAsString(error_code);
     LOG(ERROR) << "CreateProcessFailed: error: " << error_message;
-    sysoplog() << "!!! CreateProcess failed for command: [" << working_cmdline << "] with Error Message: " << error_message;
+    sysoplog() << fmt::format("!!! CreateProcess failed for command: [{}] with Error Message: {}", working_cmdline, error_message);
 
     // If we return here, we may have to reopen the communications port.
     if (a()->sess().ok_modem_stuff() && a()->sess().using_modem() && need_reopen_remoteio) {

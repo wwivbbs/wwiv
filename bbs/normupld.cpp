@@ -157,7 +157,7 @@ void normalupload(int dn) {
         bout << "upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n";
         bout << "the sysop.\r\n\n";
         const auto message = fmt::format("Wanted to upload \"{}\"", f);
-        sysoplog() << "*** ASS-PTS: " << 5 << ", Reason: [" << message << "]";
+        sysoplog() << fmt::format("*** ASS-PTS: 5, Reason: [{}]", message);
         a()->user()->increment_ass_points(5);
         ok = 0;
       } else {

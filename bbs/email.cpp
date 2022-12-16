@@ -320,7 +320,7 @@ void sendout_email(EmailData& data) {
       logMessagePart = username_system_net_as_string(data.user_number, a()->net_email_name,
                                                      data.system_number, netname);
     }
-    sysoplog() << logMessage << logMessagePart;
+    sysoplog() << fmt::format("{}{}", logMessage, logMessagePart);
   }
 
   a()->status_manager()->Run([&](Status& status) {
@@ -479,8 +479,8 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
         } else {
           bout << "Unable to validate FTN address against nodelist." << wwiv::endl;
           sysoplog() << "WARNING: Unable to validate FTN address against nodelist.";
-          sysoplog() << "Nodelist base: " << net.fido.nodelist_base
-                     << " does not exist in netdir: " << net.dir;
+          sysoplog() << fmt::format("Nodelist base: {} does not exist in netdir: {}",
+                                    net.fido.nodelist_base, net.dir.string());
         }
       } catch (const fido::bad_fidonet_address& e) {
         bout << "Bad FTN Address: " << destination << "; error: " << e.what();

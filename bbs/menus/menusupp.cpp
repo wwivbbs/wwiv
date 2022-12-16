@@ -164,7 +164,7 @@ void ValidateUser() {
   bout << "|#9Enter user name or number:\r\n:";
   const auto user_name = bin.input_upper(30);
   if (const auto user_number = finduser1(user_name); user_number > 0) {
-    sysoplog() << "@ Validated user #" << user_number;
+    sysoplog() << fmt::format("@ Validated user #{}", user_number);
     valuser(user_number);
   } else {
     bout << "Unknown user.\r\n";
@@ -404,8 +404,7 @@ void WWIVVersion() {
   bout << "|#9Copyright (C) 1998-2021, WWIV Software Services.\r\n";
   bout << "|#9All Rights Reserved.\r\n\r\n";
   bout << "|#9Licensed under the Apache License, Version 2.0." << wwiv::endl;
-  bout << "|#9Please see |#1http://www.wwivbbs.org/ |#9for more information"
-       << wwiv::endl << wwiv::endl;
+  bout << "|#9Please see |#1http://www.wwivbbs.org/ |#9for more information\r\n\r\n";
   bout << "|#9Compile Time    : |#2" << wwiv_compile_datetime() << wwiv::endl;
   bout << "|#9SysOp Name      : |#2" << a()->config()->sysop_name() << wwiv::endl;
   bout << "|#9OS              : |#2" << os::os_version_string() << wwiv::endl;

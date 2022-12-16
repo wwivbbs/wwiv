@@ -817,9 +817,9 @@ int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
     // Only log the exiting at abnormal error levels, since we see lots of exiting statements
     // in the logs that don't correspond to sessions every being created (network probes, etc).
     sysoplog(false) << "";
-    sysoplog(false) << "WWIV " << short_version() << ", inst " << sess().instance_number()
-                    << ", taken down at " << times() << " on " << fulldate() << " with exit code "
-                    << exit_level << ".";
+    sysoplog(false) << fmt::format("WWIV {}, inst {}, taken down at {} on {} with exit code {}.",
+                                   short_version(), sess().instance_number(), times(), fulldate(),
+                                   exit_level);
     sysoplog(false) << "";
   }
   catsl();

@@ -658,8 +658,8 @@ bool Application::InitializeBBS(bool cleanup_network) {
   if (cleanup_network) {
     cleanup_net();
     sysoplog(false) << "";
-    sysoplog(false) << "WWIV " << full_version() << ", inst " << sess().instance_number()
-                    << ", brought up at " << times() << " on " << fulldate() << ".";
+    sysoplog(false) << fmt::format("WWIV {}, inst {}, brought up at {} on {}.", full_version(),
+                                   sess().instance_number(), times(), fulldate());
   }
 
   catsl();

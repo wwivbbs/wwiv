@@ -340,7 +340,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 
     close_sub();
 
-    sysoplog() << "+ '" << p.title << "' posted on '" << a()->current_sub().name;
+    sysoplog() << fmt::format("+ '{}' posted on '{}'", p.title, a()->current_sub().name);
 
     if (!a()->current_sub().nets.empty()) {
       ++a()->user()->data.postnet;

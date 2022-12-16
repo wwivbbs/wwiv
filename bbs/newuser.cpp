@@ -596,7 +596,7 @@ bool CanCreateNewUserAccountHere() {
       if (password == a()->config()->newuser_password()) {
         ok = true;
       } else {
-        sysoplog() << "Wrong newuser password: " << password;
+        sysoplog() << StrCat("Wrong newuser password: ", password);
       }
     } while (!ok && !a()->sess().hangup() && (nPasswordAttempt++ < 4));
     if (!ok) {
@@ -612,7 +612,8 @@ void DoNewUserASV() {
   if (!ini.IsOpen()) {
     return;
   }
-  const auto asv_num = ini.value<int>("SIMPLE_ASV_NUM", 0);
+  // TODO(rushfan) : Fix this, it's clearly broken"
+  //const auto asv_num = ini.value<int>("SIMPLE_ASV_NUM", 0);
   if (a()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) && a()->asv.sl > a()->config()->newuser_sl() &&
       a()->asv.sl < 90) {
     bout.nl();
@@ -652,13 +653,13 @@ static void add_phone_number(int usernum, const std::string& phone) {
 void WriteNewUserInfoToSysopLog() {
   const auto* u = a()->user();
   sysoplog() << "** New User Information **";
-  sysoplog() << fmt::sprintf("-> %s #%ld (%s)", u->name(), a()->sess().user_num(), u->real_name_or_empty());
+  sysoplog() << fmt::format("-> {} #{} ({})", u->name(), a()->sess().user_num(), u->real_name_or_empty());
   if (a()->config()->newuser_config().use_address_street != newuser_item_type_t::unused) {
-    sysoplog() << "-> " << u->street();
+    sysoplog() << StrCat("-> ", u->street());
   }
   if (a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
-    sysoplog() << "-> " << u->city() << ", " << u->state() << " " << u->zip_code() << "  ("
-               << u->country() << " )";
+    sysoplog() << fmt::format("-> {}, {} {}  ({})", u->city(), u->state(), u->zip_code(),
+                              u->country());
   }
   if (a()->config()->newuser_config().use_voice_phone != newuser_item_type_t::unused) {
     sysoplog() << fmt::format("-> {} (Voice)", u->voice_phone());
@@ -679,7 +680,7 @@ void WriteNewUserInfoToSysopLog() {
     sysoplog() << fmt::format("-> Using a {} Computer", ctypes(u->computer_type()));
   }
   if (u->wwiv_regnum()) {
-    sysoplog() << fmt::sprintf("-> WWIV Registration # %ld", u->wwiv_regnum());
+    sysoplog() << fmt::format("-> WWIV Registration # {}", u->wwiv_regnum());
   }
   sysoplog() << "********";
 
@@ -1310,7 +1311,7 @@ void newuser() {
   sysoplog(false);
   const auto t = times();
   const auto f = fulldate();
-  sysoplog(false) << fmt::sprintf("*** NEW USER %s   %s    %s (%ld)", f, t, a()->GetCurrentSpeed(),
+  sysoplog(false) << fmt::format("*** NEW USER {}   {}    {} ({})", f, t, a()->GetCurrentSpeed(),
                                   a()->sess().instance_number());
 
   LOG(INFO) << "New User Attempt from IP Address: " << bout.remoteIO()->remote_info().address;
@@ -1351,7 +1352,7 @@ void newuser() {
   NewUserDataEntry(a()->config()->newuser_config());
 
   bout.nl(4);
-  bout << "Random password: " << a()->user()->password() << wwiv::endl << wwiv::endl;
+  bout.print("Random password: \"{}\"\r\n\r\n", a()->user()->password());
   bout << "|#5Do you want a different password (Y/N)? ";
   if (bin.yesno()) {
     input_pw(a()->user());

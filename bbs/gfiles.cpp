@@ -403,7 +403,7 @@ static void gfile_sec(int sn) {
       i1 = bout.printfile_path(file_name);
       a()->user()->gfiles_read(a()->user()->gfiles_read() + 1);
       if (i1 == 0) {
-        sysoplog() << "Read G-file '" << g[i - 1].filename << "'";
+        sysoplog() << fmt::format("Read G-file '{}'", g[i - 1].filename);
       }
     } else if (ss == "D") {
       bool done1 = false;

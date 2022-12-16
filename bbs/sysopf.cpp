@@ -902,7 +902,7 @@ void auto_purge() {
 
   const auto current_daten = daten_t_now();
   int user_number = 1;
-  sysoplog(false) << "Auto-Purged Inactive Users (over " << days << " days, SL less than " << skipsl << ")";
+  sysoplog(false) << fmt::format("Auto-Purged Inactive Users (over {} days, SL less than {})", days, skipsl);
 
   do {
     User user;
@@ -912,7 +912,7 @@ void auto_purge() {
       // if user is not already deleted && SL<NO_PURGE_SL && last_logon
       // greater than AUTO_USER_PURGE days ago
       if (!user.deleted() && user.sl() < skipsl && d > days) {
-        sysoplog(false) << "*** AUTOPURGE: Deleted User: #" << user_number << " " << user.name();
+        sysoplog(false) << fmt::format("*** AUTOPURGE: Deleted User: #{} {}", user_number, user.name());
         a()->users()->delete_user(user_number);
       }
     }

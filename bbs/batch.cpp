@@ -126,9 +126,9 @@ static void downloaded(const std::string& file_name, long lCharsPerSecond) {
           area->Save();
         }
         if (lCharsPerSecond) {
-          sysoplog() << "Downloaded '" << f << "' (" << lCharsPerSecond << " cps).";
+          sysoplog() << fmt::format("Downloaded '{}' ({} cps).", f, lCharsPerSecond);
         } else {
-          sysoplog() << "Downloaded '" << f << "'.";
+          sysoplog() << fmt::format("Downloaded '{}'.", f);
         }
         if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
           if (const auto user = a()->users()->readuser(f.u().ownerusr, UserManager::mask::non_deleted);
@@ -145,7 +145,7 @@ static void downloaded(const std::string& file_name, long lCharsPerSecond) {
       return;
     }
   }
-  sysoplog() << "!!! Couldn't find \"" << file_name << "\" in DL batch queue.";
+  sysoplog() << fmt::format("!!! Couldn't find \"{}\" in DL batch queue.", file_name);
 }
 
 void didnt_upload(const BatchEntry& b) {
@@ -245,7 +245,7 @@ static void uploaded(const std::string& file_name, long lCharsPerSecond) {
     }
   }
   if (try_to_ul(file_name)) {
-    sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in UL batch queue.", file_name);
+    sysoplog() << fmt::format("!!! Couldn't find \"{}\" in UL batch queue.", file_name);
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
     File::Remove(FilePath(a()->sess().dirs().batch_directory(), file_name));

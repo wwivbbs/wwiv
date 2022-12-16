@@ -113,7 +113,7 @@ void ConfigUserMenuSet(const std::string& data) {
   const auto r = ListMenuDirs();
   if (r.size() == 1) {
     if (const auto m = std::begin(r)->second; ValidateMenuSet(m.name)) {
-      bout << "|#5You are currently using the only available menuset." << wwiv::endl << wwiv::endl;
+      bout << "|#5You are currently using the only available menuset.\r\n\r\n";
       SetMenuSet(m);
       bout.pausescr();
       return;

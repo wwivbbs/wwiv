@@ -45,7 +45,7 @@ static bool external_edit_internal(const std::string& edit_filename, const std::
 
   std::string editorCommand = a()->sess().incom() ? editor.filename : editor.filenamecon;
   if (editorCommand.empty()) {
-    bout << "You can't use that full screen editor. (eti)" << wwiv::endl << wwiv::endl;
+    bout << "You can't use that full screen editor. (eti)\r\n\r\n";
     bout.pausescr();
     return false;
   }
@@ -54,7 +54,7 @@ static bool external_edit_internal(const std::string& edit_filename, const std::
     File file(edit_filename);
     if (File::is_directory(edit_filename)) {
       bout.nl();
-      bout << "|#6You can't edit a directory." << wwiv::endl << wwiv::endl;
+      bout << "|#6You can't edit a directory.\r\n\r\n";
       bout.pausescr();
       return false;
     }
@@ -120,7 +120,7 @@ bool external_text_edit(const std::string& edit_filename, const std::filesystem:
   bout.nl();
   const auto editor_number = a()->user()->default_editor() - 1;
   if (editor_number >= wwiv::stl::ssize(a()->editors) || !okansi()) {
-    bout << "You can't use that full screen editor. (ete1)" << wwiv::endl << wwiv::endl;
+    bout << "You can't use that full screen editor. (ete1)\r\n\r\n";
     bout.pausescr();
     return false;
   }

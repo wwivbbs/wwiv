@@ -276,7 +276,7 @@ void text_edit() {
   if (filename.find(".log") != std::string::npos || !okfn(filename)) {
     return;
   }
-  sysoplog() << "@ Edited: " << filename;
+  sysoplog() << fmt::format("@ Edited: {}", filename);
   if (ok_external_fsed()) {
     fsed_text_edit(filename, a()->config()->gfilesdir(), 500, MSGED_FLAG_NO_TAGLINE);
   }

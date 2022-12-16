@@ -241,7 +241,7 @@ static void DoFailedLoginAttempt() {
   bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
   sysoplog(false) << "";
-  sysoplog(false) << StrCat("### ILLEGAL LOGON for ", a()->user()->name_and_number());
+  sysoplog(false) << fmt::format("### ILLEGAL LOGON for {}", a()->user()->name_and_number());
   sysoplog(false) << "";
   a()->sess().user_num(0);
 }
@@ -580,7 +580,7 @@ static void UpdateLastOnFile() {
   if (a()->sess().incom()) {
     const auto& remote_address = bout.remoteIO()->remote_info().address;
     if (!remote_address.empty()) {
-      sysoplog() << "Remote IP: " << remote_address;
+      sysoplog() << fmt::format("Remote IP: {}", remote_address);
     }
   }
   if (a()->sess().effective_sl() == 255 && !a()->sess().incom()) {
@@ -995,8 +995,8 @@ void logoff() {
   a()->user()->last_daten(daten_t_now());
   const auto used_this_session = (std::chrono::system_clock::now() - a()->sess().system_logon_time());
   const auto min_used = std::chrono::duration_cast<std::chrono::minutes>(used_this_session);
-  sysoplog(false) << "Read: " << a()->GetNumMessagesReadThisLogon() 
-      << "   Time on: "  << min_used.count() << " minutes.";
+  sysoplog(false) << fmt::format("Read: {}   Time on: {} minutes.",
+                                 a()->GetNumMessagesReadThisLogon(), min_used.count());
   {
     if (auto file_email(OpenEmailFile(true)); file_email->IsOpen()) {
       a()->user()->email_waiting(0);

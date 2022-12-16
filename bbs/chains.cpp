@@ -152,7 +152,7 @@ void run_chain(int chain_num) {
   write_inst(INST_LOC_CHAINS, chain_num + 1, INST_FLAGS_NONE);
   a()->chains->increment_chain_usage(chain_num);
   a()->chains->Save();
-  sysoplog() << "!Ran \"" << c.description << "\"";
+  sysoplog() << fmt::format("!Ran \"{}\"", c.description);
   a()->user()->chains_run(a()->user()->chains_run() + 1);
 #ifdef _WIN32
   ScopeExit at_exit;
