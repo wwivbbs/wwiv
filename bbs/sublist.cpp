@@ -52,7 +52,7 @@ void old_sublist() {
   if (okconf(a()->user())) {
     if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
       bout.nl();
-      bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
+      bout.puts("|#2A)ll conferences, Q)uit, <space> for current conference: ");
       const auto ch = onek("Q A");
       bout.nl();
       switch (ch) {
@@ -185,7 +185,7 @@ void SubList() {
   if (okconf(a()->user())) {
     if (a()->uconfsub.size() > 1) {
       bout.nl();
-      bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
+      bout.puts("|#2A)ll conferences, Q)uit, <space> for current conference: ");
       ch = onek("Q A");
       bout.nl();
       switch (ch) {
@@ -228,7 +228,7 @@ void SubList() {
           }
           bout.litebar(s);
           DisplayHorizontalBar(78, 7);
-          bout << "|#2 Sub   Scan   Net/Local   Sub Name                                 Old   New\r\n";
+          bout.puts("|#2 Sub   Scan   Net/Local   Sub Name                                 Old   New\r\n");
           DisplayHorizontalBar(78, 7);
         }
         ++ns;

@@ -269,8 +269,7 @@ void display_message_text(const std::string& text, bool* next) {
   //
 
   if (!abort && !s.empty()) {
-    bout << s;
-    bout.nl();
+    bout.pl(s);
   }
   bout.Color(0);
   bout.nl();
@@ -384,7 +383,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
     bout.print("|#9 Sub|#7: |#{}{:<35.35}", a()->GetMessageColor(), msg.message_area);
     if (a()->user()->screen_width() >= 78) {
-      bout << " ";
+      bout.puts(" ");
     } else {
       bout.nl();
       num_header_lines++;
@@ -399,7 +398,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
 
   bout.print("|#9From|#7: |#1{:<35.35}", msg.from_user_name);
   if (a()->user()->screen_width() >= 78) {
-    bout << " ";
+    bout.puts(" ");
   } else {
     bout.nl();
     num_header_lines++;
@@ -416,7 +415,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
   if (!msg.from_sys_name.empty()) {
     bout.print("|#9 Sys|#7: |#1{:<35.35}", msg.from_sys_name);
     if (a()->user()->screen_width() >= 78) {
-      bout << " ";
+      bout.puts(" ");
     } else {
       bout.nl();
       num_header_lines++;
@@ -428,32 +427,32 @@ static int legacy_display_header_text(Type2MessageData& msg) {
   }
 
   if (!msg.flags.empty()) {
-    bout << "|#9Info|#7: |#1";
+    bout.puts("|#9Info|#7: |#1");
     for (const auto& f : msg.flags) {
       switch (f) {
       case MessageFlags::FORCED:
-        bout << "|13[FORCED] ";
+        bout.puts("|13[FORCED] ");
         break;
       case MessageFlags::NOT_NETWORK_VALIDATED:
-        bout << "|12[Not Network Validated] ";
+        bout.puts("|12[Not Network Validated] ");
         break;
       case MessageFlags::NOT_VALIDATED:
-        bout << "|12<<< NOT VALIDATED >>>";
+        bout.puts("|12<<< NOT VALIDATED >>>");
         break;
       case MessageFlags::PERMANENT:
-        bout << "|13[Permanent] ";
+        bout.puts("|13[Permanent] ");
         break;
       case MessageFlags::LOCAL:
-        bout << "|10[Local] ";
+        bout.puts("|10[Local] ");
         break;
       case MessageFlags::FTN:
-        bout << "|10[Fido] ";
+        bout.puts("|10[Fido] ");
         break;
       case MessageFlags::PRIVATE:
-        bout << "|10[Pvt] ";
+        bout.puts("|10[Pvt] ");
         break;
       case MessageFlags::WWIVNET:
-        bout << "|10[WWIVnet] ";
+        bout.puts("|10[WWIVnet] ");
         break;
       }
     }

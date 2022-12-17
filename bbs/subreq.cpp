@@ -394,7 +394,7 @@ bool sub_xtr_add(int n, int nn) {
         }
         done = true;
       } catch (const fido::bad_fidonet_address& e) {
-        bout << "Bad Address: " << e.what();
+        bout.print("Bad Address: {}", e.what());
       }
     } while (!done && !a()->sess().hangup());
 

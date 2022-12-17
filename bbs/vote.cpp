@@ -146,7 +146,7 @@ static void vote_question(int i, int ii) {
     return;
   }
 
-  bout << "|#5Which (0-" << static_cast<int>(v.numanswers) << ")? ";
+  bout.print("|#5Which (0-{})? ", static_cast<int>(v.numanswers));
   bout.mpl(2);
   auto empty_set = std::set<char>();
   const auto ans = mmkey(empty_set);

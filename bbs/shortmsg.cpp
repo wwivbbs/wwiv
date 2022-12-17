@@ -58,7 +58,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   for (auto cur = 0; cur < number_of_records; cur++) {
     file.Read(cur, &sm);
     if (sm.touser == nUserNum && sm.tosys == 0) {
-      bout << "|#9" << sm.message << "\r\n";
+      bout.print("|#9{}\r\n", sm.message);
       bool bHandledMessage = false;
       bShownAnyMessage = true;
       if (!so() || !bAskToSaveMsgs) {
@@ -66,7 +66,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
       } else {
         if (a()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
           if (!bHandledMessage && bAskToSaveMsgs) {
-            bout << "|#5Would you like to save this notification? ";
+            bout.puts("|#5Would you like to save this notification? ");
             bHandledMessage = !bin.yesno();
           }
         } else {

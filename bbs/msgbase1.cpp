@@ -167,25 +167,25 @@ static std::string net_type_to_string(const network_type_t& t) {
 
 void post(const PostData& post_data) {
   if (!iscan(a()->current_user_sub_num())) {
-    bout << "\r\n|#6A file required is in use by another instance. Try again later.\r\n";
+    bout.puts("\r\n|#6A file required is in use by another instance. Try again later.\r\n");
     return;
   }
   if (a()->sess().GetCurrentReadMessageArea() < 0) {
-    bout << "\r\nNo subs available.\r\n\n";
+    bout.puts("\r\nNo subs available.\r\n\n");
     return;
   }
 
   if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
-    bout << "\r\nSorry, not enough disk space left.\r\n\n";
+    bout.puts("\r\nSorry, not enough disk space left.\r\n\n");
     return;
   }
   if (a()->user()->restrict_post() ||
       a()->user()->posts_today() >= a()->config()->sl(a()->sess().effective_sl()).posts) {
-    bout << "\r\nToo many messages posted today.\r\n\n";
+    bout.puts("\r\nToo many messages posted today.\r\n\n");
     return;
   }
   if (!check_acs(a()->current_sub().post_acs)) {
-    bout << "\r\nYou can't post here.\r\n\n";
+    bout.puts("\r\nYou can't post here.\r\n\n");
     return;
   }
 
@@ -202,19 +202,19 @@ void post(const PostData& post_data) {
   if (!a()->current_sub().nets.empty()) {
     data.anonymous_flag &= anony_real_name;
     if (a()->user()->restrict_net()) {
-      bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
+      bout.puts("\r\nYou can't post on networked sub-boards.\r\n\n");
       return;
     }
     if (a()->current_net().sysnum != 0) {
-      bout << "\r\n|#9This post will go out on: ";
+      bout.puts("\r\n|#9This post will go out on: ");
       for (auto i = 0; i < size_int(a()->current_sub().nets); i++) {
         if (i) {
-          bout << "|#9, ";
+          bout.puts("|#9, ");
         }
         const auto& n = a()->nets()[a()->current_sub().nets[i].net_num];
         bout << "|#2" << n.name << "|#1(" << net_type_to_string(n.type) << ")";
       }
-      bout << ".\r\n\n";
+      bout.puts(".\r\n\n");
     }
   }
   const auto start_time = DateTime::now().to_system_clock();
@@ -443,7 +443,7 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
 void nscan(uint16_t start_subnum) {
   bool nextsub = true;
 
-  bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
+  bout.puts("\r\n|#3-=< Q-Scan All >=-\r\n");
   for (auto i = start_subnum; i < a()->usub.size() && nextsub && !a()->sess().hangup();
        i++) {
     if (a()->sess().qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
@@ -457,7 +457,7 @@ void nscan(uint16_t start_subnum) {
   }
   bout.nl();
   bout.clreol();
-  bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
+  bout.puts("|#3-=< Global Q-Scan Done >=-\r\n\n");
   if (nextsub && a()->user()->newscan_files() && !a()->sess().scanned_files()) {
     bout.clear_lines_listed();
     tmp_disable_conf(true);
@@ -468,12 +468,12 @@ void nscan(uint16_t start_subnum) {
 
 void ScanMessageTitles() {
   if (!iscan(a()->current_user_sub_num())) {
-    bout << "\r\n|#7A file required is in use by another instance. Try again later.\r\n";
+    bout.puts("\r\n|#7A file required is in use by another instance. Try again later.\r\n");
     return;
   }
   bout.nl();
   if (a()->sess().GetCurrentReadMessageArea() < 0) {
-    bout << "No subs available.\r\n";
+    bout.puts("No subs available.\r\n");
     return;
   }
   bout.printf("|#2%d |#9messages in area |#2%s\r\n",
@@ -494,11 +494,11 @@ void ScanMessageTitles() {
 
 void remove_post() {
   if (!iscan(a()->current_user_sub_num())) {
-    bout << "\r\n|#6A file required is in use by another instance. Try again later.\r\n\n";
+    bout.puts("\r\n|#6A file required is in use by another instance. Try again later.\r\n\n");
     return;
   }
   if (a()->sess().GetCurrentReadMessageArea() < 0) {
-    bout << "\r\nNo subs available.\r\n\n";
+    bout.puts("\r\nNo subs available.\r\n\n");
     return;
   }
   bool any = false, abort = false;
@@ -510,12 +510,12 @@ void remove_post() {
     }
   }
   if (!any) {
-    bout << "None.\r\n";
+    bout.puts("None.\r\n");
     if (!cs()) {
       return;
     }
   }
-  bout << "\r\n|#2Remove which? ";
+  bout.puts("\r\n|#2Remove which? ");
   const auto postnum = bin.input_number(0, 0, a()->GetNumMessagesInCurrentMessageArea(), false);
   OpenSub opened_sub(true);
   if (postnum > 0 && postnum <= a()->GetNumMessagesInCurrentMessageArea()) {
@@ -535,7 +535,7 @@ void remove_post() {
       }
       sysoplog(fmt::format("- '{}' removed from {}", get_post(postnum)->title, a()->current_sub().name));
       delete_message(postnum);
-      bout << "\r\nMessage removed.\r\n\n";
+      bout.puts("\r\nMessage removed.\r\n\n");
     }
   }
 }

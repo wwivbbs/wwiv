@@ -99,7 +99,7 @@ namespace wwiv::bbs::menus {
 
 void UnQScan() {
   bout.nl();
-  bout << "|#9Mark messages as unread on [C]urrent sub or [A]ll subs (A/C/Q)? ";
+  bout.puts("|#9Mark messages as unread on [C]urrent sub or [A]ll subs (A/C/Q)? ");
   switch (const char ch = onek("QAC\r"); ch) {
   case 'Q':
   case RETURN:
@@ -108,15 +108,14 @@ void UnQScan() {
     for (int i = 0; i < a()->config()->max_subs(); i++) {
       a()->sess().qsc_p[i] = 0;
     }
-    bout << "\r\nQ-Scan pointers reset.\r\n\n";
+    bout.puts("\r\nQ-Scan pointers reset.\r\n\n");
   }
   break;
   case 'C': {
     bout.nl();
     a()->sess().qsc_p[a()->current_user_sub().subnum] = 0;
-    bout << "Messages on " 
-         << a()->subs().sub(a()->current_user_sub().subnum).name
-         << " marked as unread.\r\n";
+    bout.print("Messages on {} marked as unread.\r\n",
+               a()->subs().sub(a()->current_user_sub().subnum).name);
   }
   break;
   }
@@ -161,13 +160,13 @@ void UpSub() {
 
 void ValidateUser() {
   bout.nl(2);
-  bout << "|#9Enter user name or number:\r\n:";
+  bout.puts("|#9Enter user name or number:\r\n:");
   const auto user_name = bin.input_upper(30);
   if (const auto user_number = finduser1(user_name); user_number > 0) {
     sysoplog(fmt::format("@ Validated user #{}", user_number));
     valuser(user_number);
   } else {
-    bout << "Unknown user.\r\n";
+    bout.puts("Unknown user.\r\n");
   }
 }
 
@@ -240,12 +239,12 @@ void KillEMail() {
 void LastCallers() {
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
       a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
-    bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
+    bout.puts("|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n");
   } else {
-    bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
+    bout.puts("|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n");
   }
   const char filler_char = okansi() ? '\xCD' : '=';
-  bout << "|#7" << std::string(79, filler_char) << wwiv::endl;
+  bout.print("|#7{}\r\n", std::string(79, filler_char));
   bout.printfile(LASTON_TXT);
 }
 
@@ -256,7 +255,7 @@ void ReadEMail() {
 void NewMessageScan() {
   if (okconf(a()->user())) {
     bout.nl();
-    bout << "|#5New message scan in all conferences? ";
+    bout.puts("|#5New message scan in all conferences? ");
     if (bin.noyes()) {
       NewMsgsAllConfs();
       return;
@@ -272,7 +271,7 @@ void GoodBye() {
 
   if (a()->batch().numbatchdl() != 0) {
     bout.nl();
-    bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
+    bout.puts("|#2Download files in your batch queue (|#1Y/n|#2)? ");
     if (bin.noyes()) {
       batchdl(1);
     }
@@ -306,7 +305,7 @@ void GoodBye() {
         auto used_this_session =
             (std::chrono::system_clock::now() - a()->sess().system_logon_time());
         auto secs_used = std::chrono::duration_cast<std::chrono::seconds>(used_this_session);
-        bout <<  "Time on   = " << ctim(static_cast<long>(secs_used.count())) << wwiv::endl;
+        bout.print("Time on   = {}\r\n", ctim(static_cast<long>(secs_used.count())));
         {
           TempDisablePause disable_pause(bout);
           bout.printfile(LOGOFF_NOEXT);
@@ -324,14 +323,14 @@ void GoodBye() {
     } while (cycle == 0);
   } else {
     bout.nl(2);
-    bout << "|#5Log Off? ";
+    bout.puts("|#5Log Off? ");
     if (bin.yesno()) {
       write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
       bout.cls();
       const auto used_this_session =
           (std::chrono::system_clock::now() - a()->sess().system_logon_time());
       const auto sec_used = static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(used_this_session).count());
-      bout << "Time on   = " << ctim(sec_used) << wwiv::endl;
+      bout.print("Time on   = {}\r\n", ctim(sec_used));
       {
         TempDisablePause disable_pause(bout);
         bout.printfile(LOGOFF_NOEXT);
@@ -394,35 +393,35 @@ void ToggleExpert(const std::string& data) {
   a()->user()->toggle_flag(User::flag_expert);
   auto o = opts.opts("quiet");
   if (const auto quiet = !o.empty() && *std::begin(o) == "off"; !quiet) {
-    bout << "|#3Expert mode is: " << (a()->user()->IsExpert() ? "On" : "Off") << wwiv::endl;
+    bout.print("|#3Expert mode is: {}\r\n", (a()->user()->IsExpert() ? "On" : "Off"));
   }
 }
 
 void WWIVVersion() {
   bout.cls();
-  bout << "|#9WWIV Bulletin Board System " << full_version() << wwiv::endl;
-  bout << "|#9Copyright (C) 1998-2021, WWIV Software Services.\r\n";
-  bout << "|#9All Rights Reserved.\r\n\r\n";
-  bout << "|#9Licensed under the Apache License, Version 2.0." << wwiv::endl;
-  bout << "|#9Please see |#1http://www.wwivbbs.org/ |#9for more information\r\n\r\n";
-  bout << "|#9Compile Time    : |#2" << wwiv_compile_datetime() << wwiv::endl;
-  bout << "|#9SysOp Name      : |#2" << a()->config()->sysop_name() << wwiv::endl;
-  bout << "|#9OS              : |#2" << os::os_version_string() << wwiv::endl;
-  bout << "|#9Instance        : |#2" << a()->sess().instance_number() << wwiv::endl;
+  bout.print("|#9WWIV Bulletin Board System {}\r\n", full_version());
+  bout.puts("|#9Copyright (C) 1998-2021, WWIV Software Services.\r\n");
+  bout.puts("|#9All Rights Reserved.\r\n\r\n");
+  bout.pl(  "|#9Licensed under the Apache License, Version 2.0.");
+  bout.puts("|#9Please see |#1http://www.wwivbbs.org/ |#9for more information\r\n\r\n");
+  bout.print("|#9Compile Time    : |#2{}\r\n", wwiv_compile_datetime());
+  bout.print("|#9SysOp Name      : |#2{}\r\n", a()->config()->sysop_name());
+  bout.print("|#9OS              : |#2{}\r\n", os::os_version_string());
+  bout.print("|#9Instance        : |#2{}\r\n", a()->sess().instance_number());
 
   if (!a()->nets().empty()) {
     const auto status = a()->status_manager()->get_status();
     a()->status_manager()->reload_status();
     bool first = true;
-    bout << "|#9Network Version : |#2" << "net" << status->status_net_version() << wwiv::endl;
-    bout << "|#9Networks        : ";
+    bout.print("|#9Network Version : |#2net{}\r\n", status->status_net_version());
+    bout.puts("|#9Networks        : ");
     for (const auto& n : a()->nets().networks()) {
       if (n.sysnum) {
         if (!first) {
-          bout << "                : ";
+          bout.puts("                : ");
         }
         first = false;
-        bout << to_string(n) << wwiv::endl;
+        bout.pl(to_string(n));
       }
     }
   }
@@ -454,10 +453,10 @@ void ToggleChat() {
   ToggleScrollLockKey();
   const bool bNewAvail = sysop2();
   if (bOldAvail != bNewAvail) {
-    bout << ((bNewAvail) ? "|#5Sysop now available\r\n" : "|#3Sysop now unavailable\r\n");
+    bout.puts(bNewAvail ? "|#5Sysop now available\r\n" : "|#3Sysop now unavailable\r\n");
     sysoplog("@ Changed sysop available status");
   } else {
-    bout << "|#6Unable to toggle Sysop availability (hours restriction)\r\n";
+    bout.puts("|#6Unable to toggle Sysop availability (hours restriction)\r\n");
   }
   a()->UpdateTopScreen();
 }
@@ -475,11 +474,11 @@ void DirEdit() {
 
 void LoadTextFile() {
   bout.nl();
-  bout << "|#9Enter Filename: ";
+  bout.puts("|#9Enter Filename: ");
   const auto fileName = bin.input_path("", 50);
   if (!fileName.empty()) {
     bout.nl();
-    bout << "|#5Allow editing? ";
+    bout.puts("|#5Allow editing? ");
     if (bin.yesno()) {
       bout.nl();
       LoadFileIntoWorkspace(a()->context(), fileName, false);
@@ -493,7 +492,7 @@ void LoadTextFile() {
 void EditText() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
   bout.nl();
-  bout << "|#7Enter Filespec: ";
+  bout.puts("|#7Enter Filespec: ");
   const auto fn = bin.input_path(50);
   if (!fn.empty()) {
     fsed_text_edit(fn, "", 500, MSGED_FLAG_NO_TAGLINE);
@@ -513,7 +512,7 @@ void ReadAllMail() {
 }
 
 void ResetQscan() {
-  bout << "|#5Reset all QScan/NScan pointers (For All Users)? ";
+  bout.puts("|#5Reset all QScan/NScan pointers (For All Users)? ");
   if (bin.yesno()) {
     write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
     for (int i = 0; i <= a()->users()->num_user_records(); i++) {
@@ -531,7 +530,7 @@ void ResetQscan() {
 void MemoryStatus() {
   const auto status = a()->status_manager()->get_status();
   bout.nl();
-  bout << "Qscanptr        : " << status->qscanptr() << wwiv::endl;
+  bout.print("Qscanptr        : {}\r\n", status->qscanptr());
 }
 
 void InitVotes() {
@@ -580,7 +579,7 @@ void ZLog() {
 void ViewNetDataLog() {
   while (!a()->sess().hangup()) {
     bout.nl();
-    bout << "|#9Which NETDAT log (0-2,Q)? ";
+    bout.puts("|#9Which NETDAT log (0-2,Q)? ");
     const auto netdat_num= onek("Q012");
     if (netdat_num == 'Q') {
       return;
@@ -638,7 +637,7 @@ void ChatRoom() {
 
 void ClearQScan() {
   bout.nl();
-  bout << "|#5Mark messages as read on [C]urrent sub or [A]ll subs (A/C/Q)? ";
+  bout.puts("|#5Mark messages as read on [C]urrent sub or [A]ll subs (A/C/Q)? ");
   switch (const auto ch = onek("QAC\r"); ch) {
   case 'Q':
   case RETURN:
@@ -649,15 +648,14 @@ void ClearQScan() {
       a()->sess().qsc_p[i] = status->qscanptr() - 1L;
     }
     bout.nl();
-    bout << "Q-Scan pointers cleared.\r\n";
+    bout.puts("Q-Scan pointers cleared.\r\n");
   }
   break;
   case 'C':
     const auto status = a()->status_manager()->get_status();
     bout.nl();
     a()->sess().qsc_p[a()->current_user_sub().subnum] = status->qscanptr() - 1L;
-    bout << "Messages on " << a()->subs().sub(a()->current_user_sub().subnum).name
-         << " marked as read.\r\n";
+    bout.print("Messages on {} marked as read.\r\n", a()->subs().sub(a()->current_user_sub().subnum).name);
     break;
   }
 }
@@ -665,7 +663,7 @@ void ClearQScan() {
 void FastGoodBye() {
   if (a()->batch().numbatchdl() != 0) {
     bout.nl();
-    bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
+    bout.puts("|#2Download files in your batch queue (|#1Y/n|#2)? ");
     if (bin.noyes()) {
       batchdl(1);
     }
@@ -695,7 +693,7 @@ void NewFilesAllConfs() {
 
 void ReadIDZ() {
   bout.nl();
-  bout << "|#5Read FILE_ID.DIZ for all directories? ";
+  bout.puts("|#5Read FILE_ID.DIZ for all directories? ");
   if (bin.yesno()) {
     read_idz_all();
   } else {
@@ -712,8 +710,7 @@ void UploadAllDirs() {
   auto ok = true;
   for (auto dn = 0;
        dn < size_int(a()->udir) && a()->udir[dn].subnum >= 0 && ok && !a()->sess().hangup(); dn++) {
-    bout << "|#9Now uploading files for: |#2" << a()->dirs()[a()->udir[dn].subnum].name
-         << wwiv::endl;
+    bout.print("|#9Now uploading files for: |#2{}\r\n", a()->dirs()[a()->udir[dn].subnum].name);
     ok = uploadall(dn);
   }
 }
@@ -733,10 +730,10 @@ void MoveFiles() {
 
 void SortDirs() {
   bout.nl();
-  bout << "|#5Sort all dirs? ";
+  bout.puts("|#5Sort all dirs? ");
   bool bSortAll = bin.yesno();
   bout.nl();
-  bout << "|#5Sort by date? ";
+  bout.puts("|#5Sort by date? ");
 
   int nType = 0;
   if (bin.yesno()) {
@@ -753,7 +750,7 @@ void SortDirs() {
 
 void ReverseSort() {
   bout.nl();
-  bout << "|#5Sort all dirs? ";
+  bout.puts("|#5Sort all dirs? ");
   bool bSortAll = bin.yesno();
   bout.nl();
   TempDisablePause disable_pause(bout);
@@ -770,14 +767,14 @@ void AllowEdit() {
 
 void UploadFilesBBS() {
   bout.nl();
-  bout << "|#21|#9) PCB, RBBS   - <filename> <size> <date> <description>\r\n";
-  bout << "|#22|#9) QBBS format - <filename> <description>\r\n";
+  bout.puts("|#21|#9) PCB, RBBS   - <filename> <size> <date> <description>\r\n");
+  bout.puts("|#22|#9) QBBS format - <filename> <description>\r\n");
   bout.nl();
-  bout << "|#Select Format (1,2,Q) : ";
+  bout.puts("|#Select Format (1,2,Q) : ");
   char ch = onek("Q12");
   bout.nl();
   if (ch != 'Q') {
-    bout << "|#9Enter Filename (wildcards allowed).\r\n|#7: ";
+    bout.puts("|#9Enter Filename (wildcards allowed).\r\n|#7: ");
     bout.mpl(77);
     const auto filespec = bin.input_text(80);
     const auto type = (ch == '1') ? 2 : 0;
@@ -878,7 +875,7 @@ void NewFileScan() {
   bool abort = false;
   bool need_title = true;
   bout.nl();
-  bout << "|#5Search all directories? ";
+  bout.puts("|#5Search all directories? ");
   if (bin.yesno()) {
     nscanall();
   } else {
@@ -888,7 +885,7 @@ void NewFileScan() {
       endlist(2);
     } else {
       bout.nl();
-      bout << "|#2No new files found.\r\n";
+      bout.puts("|#2No new files found.\r\n");
     }
   }
 }
@@ -931,7 +928,7 @@ void YourInfoDL() {
 void UploadToSysop() {
   bout.printfile(ZUPLOAD_NOEXT);
   bout.nl(2);
-  bout << "Sending file to sysop :-\r\n\n";
+  bout.puts("Sending file to sysop :-\r\n\n");
   upload(0);
 }
 
@@ -939,7 +936,7 @@ void GuestApply() {
   if (a()->user()->guest_user()) {
     newuser();
   } else {
-    bout << "You already have an account on here!\r\n\r\n";
+    bout.puts("You already have an account on here!\r\n\r\n");
   }
 }
 
@@ -949,7 +946,7 @@ void AttachFile() {
 
 bool GuestCheck() {
   if (a()->user()->guest_user()) {
-    bout << "|#6This command is only for registered users.\r\n";
+    bout.puts("|#6This command is only for registered users.\r\n");
     return false;
   }
   return true;

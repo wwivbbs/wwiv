@@ -86,14 +86,14 @@ static void purgemail(std::vector<tmpmailrec>& mloc, int mw, int* curmail, mailr
   mailrec m{};
 
   if (m1->anony & anony_sender && (sl->ability & ability_read_email_anony) == 0) {
-    bout << "|#5Delete all mail to you from this user? ";
+    bout.puts("|#5Delete all mail to you from this user? ");
   } else {
-    bout << "|#5Delete all mail to you from ";
+    bout.puts("|#5Delete all mail to you from ");
     if (m1->fromsys) {
       bout << "#" << m1->fromuser << " @" << m1->fromsys << "? ";
     } else {
       if (m1->fromuser == 65535) {
-        bout << "Networks? ";
+        bout.puts("Networks? ");
       } else {
         bout << "#" << m1->fromuser << "? ";
       }
@@ -228,8 +228,8 @@ static void add_netsubscriber(const Network& net, int network_number, int system
   }
 
   bout.nl();
-  bout << "|#1Adding subscriber to subscriber list...\r\n\n";
-  bout << "|#2SubType: ";
+  bout.puts("|#1Adding subscriber to subscriber list...\r\n\n");
+  bout.puts("|#2SubType: ");
   const auto subtype = bin.input(7, true);
   if (subtype.empty()) {
     return;
@@ -245,7 +245,7 @@ static void add_netsubscriber(const Network& net, int network_number, int system
     bout << "Add @" << system_number << "." << net.name << " to subtype " << subtype << "? ";
   }
   if (!system_number || !bin.noyes()) {
-    bout << "|#2System Number: ";
+    bout.puts("|#2System Number: ");
     const auto s = bin.input(5, true);
     if (s.empty()) {
       return;
@@ -262,7 +262,7 @@ static void add_netsubscriber(const Network& net, int network_number, int system
     host_file.Close();
     // TODO find replacement for autosend.exe
     if (File::Exists("autosend.exe")) {
-      bout << "AutoSend starter messages? ";
+      bout.puts("AutoSend starter messages? ");
       if (bin.yesno()) {
         const auto autosend = FilePath(a()->bindir(), "autosend");
         const auto cmd = StrCat(autosend.string(), " ", subtype, " ", system_number, " .", network_number);
@@ -289,7 +289,7 @@ void delete_attachment(unsigned long daten, int forceit) {
         auto delfile = true;
         if (!forceit) {
           if (so()) {
-            bout << "|#5Delete attached file? ";
+            bout.puts("|#5Delete attached file? ");
             delfile = bin.yesno();
           }
         }
@@ -377,7 +377,7 @@ void readmail(bool newmail_only) {
   {
     auto file(OpenEmailFile(false));
     if (!file->IsOpen()) {
-      bout << "\r\n\nNo mail file exists!\r\n\n";
+      bout.puts("\r\n\nNo mail file exists!\r\n\n");
       return;
     }
     auto mfl = static_cast<File::size_type>(file->length() / sizeof(mailrec));
@@ -399,13 +399,13 @@ void readmail(bool newmail_only) {
   }
   a()->user()->email_waiting(mw);
   if (mloc.empty()) {
-    bout << "\r\n\n|#3You have no mail.\r\n\n";
+    bout.puts("\r\n\n|#3You have no mail.\r\n\n");
     return;
   }
   if (mloc.size() == 1) {
     curmail = 0;
   } else {
-    bout << "\r\n\n|#2You have mail from:\r\n";
+    bout.puts("\r\n\n|#2You have mail from:\r\n");
     bout << "|#9" << std::string(a()->user()->screen_width() - 1, '-') << wwiv::endl;
     for (auto i = 0; i < mw && !abort; i++) {
       if (!read_same_email(mloc, mw, i, m, false, 0)) {
@@ -530,10 +530,10 @@ void readmail(bool newmail_only) {
             }
           }
           if (!found) {
-            bout << "File attached but attachment data missing.  Alert sysop!\r\n";
+            bout.puts("File attached but attachment data missing.  Alert sysop!\r\n");
           }
         } else {
-          bout << "File attached but attachment data missing.  Alert sysop!\r\n";
+          bout.puts("File attached but attachment data missing.  Alert sysop!\r\n");
         }
         fileAttach.Close();
       }
@@ -549,32 +549,32 @@ void readmail(bool newmail_only) {
       i1 = 1;
       if (!a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
         strcpy(mnu, EMAIL_NOEXT);
-        bout << "|#2Mail {?} : ";
+        bout.puts("|#2Mail {?} : ");
       }
       if (so()) {
         strcpy(mnu, SY_EMAIL_NOEXT);
         if (a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
-          bout << "|#2Mail |#7{|#1QSRIDAF?-+GEMZPVUOLCNY@|#7} |#2: ";
+          bout.puts("|#2Mail |#7{|#1QSRIDAF?-+GEMZPVUOLCNY@|#7} |#2: ");
         }
         allowable = "QSRIDAF?-+GEMZPVUOLCNY@";
       } else {
         if (cs()) {
           strcpy(mnu, CS_EMAIL_NOEXT);
           if (a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
-            bout << "|#2Mail |#7{|#1QSRIDAF?-+GZPVUOCY@|#7} |#2: ";
+            bout.puts("|#2Mail |#7{|#1QSRIDAF?-+GZPVUOCY@|#7} |#2: ");
           }
           allowable = "QSRIDAF?-+GZPVUOCY@";
         } else {
           if (!okmail) {
             strcpy(mnu, RS_EMAIL_NOEXT);
             if (a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
-              bout << "|#2Mail |#7{|#1QI?-+GY|#7} |#2: ";
+              bout.puts("|#2Mail |#7{|#1QI?-+GY|#7} |#2: ");
             }
             allowable = "QI?-+G";
           } else {
             strcpy(mnu, EMAIL_NOEXT);
             if (a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
-              bout << "|#2Mail |#7{|#1QSRIDAF?+-GY@|#7} |#2: ";
+              bout.puts("|#2Mail |#7{|#1QSRIDAF?+-GY@|#7} |#2: ");
             }
             allowable = "QSRIDAF?-+GY@";
           }
@@ -582,13 +582,13 @@ void readmail(bool newmail_only) {
       }
       if ((m.status & status_file) && found && attach_exists) {
         if (a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
-          bout << "\b\b|#7{|#1T|#7} |#2: |#0";
+          bout.puts("\b\b|#7{|#1T|#7} |#2: |#0");
         }
         allowable += "T";
       }
       ch = onek(allowable);
       if (okmail && !read_same_email(mloc, mw, curmail, m, false, 0)) {
-        bout << "\r\nMail got deleted.\r\n\n";
+        bout.puts("\r\nMail got deleted.\r\n\n");
         ch = 'R';
       }
       delme = 0;
@@ -602,11 +602,11 @@ void readmail(bool newmail_only) {
         bool abortt;
         send_file(fn.string(), &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
         if (sentt) {
-          bout << "\r\nAttached file sent.\r\n";
+          bout.puts("\r\nAttached file sent.\r\n");
           sysoplog(fmt::sprintf("Downloaded %ldk of attached file %s.",
                                      (fsr.numbytes + 1023) / 1024, fsr.filename));
         } else {
-          bout << "\r\nAttached file not completely sent.\r\n";
+          bout.puts("\r\nAttached file not completely sent.\r\n");
           sysoplog(fmt::sprintf("Tried to download attached file %s.", fsr.filename));
         }
         bout.nl();
@@ -633,7 +633,7 @@ void readmail(bool newmail_only) {
       case 'O': {
         if (cs() && okmail && m.fromuser != 65535 && nn != 255) {
           show_files("*.frm", a()->config()->gfilesdir().c_str());
-          bout << "|#2Which form letter: ";
+          bout.puts("|#2Which form letter: ");
           auto user_input = bin.input(8, true);
           if (user_input.empty()) {
             break;
@@ -680,7 +680,7 @@ void readmail(bool newmail_only) {
               File::Remove(FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG));
             }
           } else {
-            bout << "\r\nFile not found.\r\n\n";
+            bout.puts("\r\nFile not found.\r\n\n");
             i1 = 0;
           }
         }
@@ -728,7 +728,7 @@ void readmail(bool newmail_only) {
           bout.nl();
           std::string ss1;
           do {
-            bout << "|#2Move to which sub? ";
+            bout.puts("|#2Move to which sub? ");
             ss1 = mmkey(MMKeyAreaType::subs);
             if (ss1[0] == '?') {
               old_sublist();
@@ -749,7 +749,7 @@ void readmail(bool newmail_only) {
           if (i != -1) {
             const auto& sub = a()->subs().sub(a()->usub[i].subnum);
             if (!wwiv::bbs::check_acs(sub.post_acs)) {
-              bout << "\r\nSorry, you don't have post access on that sub.\r\n\n";
+              bout.puts("\r\nSorry, you don't have post access on that sub.\r\n\n");
               i = -1;
             }
           }
@@ -803,7 +803,7 @@ void readmail(bool newmail_only) {
             close_sub();
             tmp_disable_conf(false);
             iscan(a()->current_user_sub_num());
-            bout << "\r\n\n|#9Message moved.\r\n\n";
+            bout.puts("\r\n\n|#9Message moved.\r\n\n");
             auto temp_num_msgs = a()->GetNumMessagesInCurrentMessageArea();
             resynch(&temp_num_msgs, &p);
             a()->SetNumMessagesInCurrentMessageArea(temp_num_msgs);
@@ -816,7 +816,7 @@ void readmail(bool newmail_only) {
         if (!okmail) {
           break;
         }
-        bout << "|#5Delete this message? ";
+        bout.puts("|#5Delete this message? ");
         if (!bin.noyes()) {
           break;
         }
@@ -866,7 +866,7 @@ void readmail(bool newmail_only) {
           break;
         }
         if (m.status & status_multimail) {
-          bout << "\r\nCan't forward multimail.\r\n\n";
+          bout.puts("\r\nCan't forward multimail.\r\n\n");
           break;
         }
         bout.nl(2);
@@ -881,15 +881,15 @@ void readmail(bool newmail_only) {
           break;
         }
 
-        bout << "|#2Forward to: ";
+        bout.puts("|#2Forward to: ");
         auto user_input = fixup_user_entered_email(bin.input(75));
         auto [un, sn] = parse_email_info(user_input);
         if (un || sn) {
           if (ForwardMessage(&un, &sn)) {
-            bout << "Mail forwarded.\r\n";
+            bout.puts("Mail forwarded.\r\n");
           }
           if (un == a()->sess().user_num() && sn == 0 && !cs()) {
-            bout << "Can't forward to yourself.\r\n";
+            bout.puts("Can't forward to yourself.\r\n");
             un = 0;
           }
           if (un || sn) {
@@ -917,10 +917,10 @@ void readmail(bool newmail_only) {
                 file->Seek(mloc[curmail].index * sizeof(mailrec), File::Whence::begin);
                 file->Read(&m, sizeof(mailrec));
                 if (!same_email(mloc[curmail], m)) {
-                  bout << "Error, mail moved.\r\n";
+                  bout.puts("Error, mail moved.\r\n");
                   break;
                 }
-                bout << "|#5Delete this message? ";
+                bout.puts("|#5Delete this message? ");
                 if (bin.yesno()) {
                   if (m.status & status_file) {
                     delete_attachment(m.daten, 0);
@@ -960,7 +960,7 @@ void readmail(bool newmail_only) {
                 if (delme) {
                   a()->user()->email_waiting(a()->user()->email_waiting() - 1);
                 }
-                bout << "Forwarding: ";
+                bout.puts("Forwarding: ");
                 ::EmailData email;
                 email.title = m.title;
                 email.msg = &m.msg;
@@ -1002,7 +1002,7 @@ void readmail(bool newmail_only) {
                    static_cast<long>(a()->user()->email_sent()) +
                    static_cast<long>(a()->user()->email_net());
         if (nn == 255) {
-          bout << "|#6Deleted network.\r\n";
+          bout.puts("|#6Deleted network.\r\n");
           i1 = 0;
           break;
         }
@@ -1021,7 +1021,7 @@ void readmail(bool newmail_only) {
           }
 
           if (ch == '@') {
-            bout << "\r\n|#9Enter user name or number:\r\n:";
+            bout.puts("\r\n|#9Enter user name or number:\r\n:");
             auto user_email = fixup_user_entered_email(bin.input(75, true));
             auto [un, sy] = parse_email_info(user_email);
             if (un || sy) {
@@ -1064,7 +1064,7 @@ void readmail(bool newmail_only) {
               delete_attachment(m.daten, 0);
             }
           } else {
-            bout << "\r\nNo mail sent.\r\n\n";
+            bout.puts("\r\nNo mail sent.\r\n\n");
             i1 = 0;
           }
         } else {
@@ -1090,7 +1090,7 @@ void readmail(bool newmail_only) {
             valuser(m.fromuser);
           }
         } else if (cs()) {
-          bout << "\r\nMail from another system.\r\n\n";
+          bout.puts("\r\nMail from another system.\r\n\n");
         }
         i1 = 0;
         break;
@@ -1098,11 +1098,11 @@ void readmail(bool newmail_only) {
         if (!so()) {
           break;
         }
-        bout << "\r\n|#2Filename: ";
+        bout.puts("\r\n|#2Filename: ");
         auto fileName = bin.input_path(50);
         if (!fileName.empty()) {
           bout.nl();
-          bout << "|#5Allow editing? ";
+          bout.puts("|#5Allow editing? ");
           if (bin.yesno()) {
             bout.nl();
             LoadFileIntoWorkspace(a()->context(), fileName, false);
@@ -1119,7 +1119,7 @@ void readmail(bool newmail_only) {
             break;
           }
           auto b = o.value();
-          bout << "E-mail download -\r\n\n|#2Filename: ";
+          bout.puts("E-mail download -\r\n\n|#2Filename: ");
           auto downloadFileName = bin.input(12);
           if (!okfn(downloadFileName)) {
             break;
@@ -1133,10 +1133,10 @@ void readmail(bool newmail_only) {
           bool bAbort;
           send_file(fn.string(), &bSent, &bAbort, fn.string(), -1, ssize(b));
           if (bSent) {
-            bout << "E-mail download successful.\r\n";
+            bout.puts("E-mail download successful.\r\n");
             sysoplog("Downloaded E-mail");
           } else {
-            bout << "E-mail download aborted.\r\n";
+            bout.puts("E-mail download aborted.\r\n");
           }
         }
         break;

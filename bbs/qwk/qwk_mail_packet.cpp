@@ -222,7 +222,7 @@ void build_qwk_packet() {
 
   if (qwk_info.abort) {
     bout.Color(1);
-    bout << "Abort everything? (NO=Download what I have gathered)";
+    bout.puts("Abort everything? (NO=Download what I have gathered)");
     if (!bin.yesno()) {
       qwk_info.abort = false;
     }
@@ -507,7 +507,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
   int cur = 0;
   if (m.message_text.empty() && m.title.empty()) {
     // TODO(rushfan): Really read_type2_message should return an std::optional<Type2MessageData>
-    bout << "File not found.";
+    bout.puts("File not found.");
     bout.nl();
     return;
   }
@@ -753,7 +753,7 @@ void finish_qwk(qwk_state *qwk_info) {
         bout.Color(2);
         bout.puts("Packet was not successful...");
         bout.Color(1);
-        bout << "Try transfer again?";
+        bout.puts("Try transfer again?");
 
         if (!bin.noyes()) {
           done = true;
@@ -770,7 +770,7 @@ void finish_qwk(qwk_state *qwk_info) {
     }
   } else while (!done && !a()->sess().hangup() && !qwk_info->abort) {
     bout.Color(2);
-    bout << "Move to what dir? ";
+    bout.puts("Move to what dir? ");
     bout.mpl(60);
     auto new_dir = StringTrim(bin.input_path(60));
     if (new_dir.empty()) {
@@ -780,7 +780,7 @@ void finish_qwk(qwk_state *qwk_info) {
     const auto nfile = FilePath(new_dir, qwkname);
 
     if (File::Exists(nfile)) {
-      bout << "|#5File Exists. Would you like to overrite it?";
+      bout.puts("|#5File Exists. Would you like to overrite it?");
       if (bin.yesno()) {
         File::Remove(nfile);
       }
@@ -788,7 +788,7 @@ void finish_qwk(qwk_state *qwk_info) {
 
     auto ofile = FilePath(a()->sess().dirs().qwk_directory(), qwkname);
     if (!replacefile(ofile.string(), nfile.string())) {
-      bout << "|#6Unable to copy file\r\n|#5Would you like to try again?";
+      bout.puts("|#6Unable to copy file\r\n|#5Would you like to try again?");
       if (!bin.noyes()) {
         qwk_info->abort = true;
         done = true;

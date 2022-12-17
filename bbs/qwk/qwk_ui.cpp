@@ -54,7 +54,7 @@ int select_qwk_archiver(qwk_state* qwk_info, int ask) {
     }
   }
   bout.nl();
-  bout << "|#7(|#1Q=Quit|#7,|#1<CR>=1|#7) Enter # :";
+  bout.puts("|#7(|#1Q=Quit|#7,|#1<CR>=1|#7) Enter # :");
 
   if (ask) {
     allowed.push_back('0');
@@ -120,7 +120,7 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
 
   while (!a()->sess().hangup()) {
     bout.nl();
-    bout << "Add - Delete - ? List - Quit";
+    bout.puts("Add - Delete - ? List - Quit");
     bout.mpl(1);
 
     const int key = onek("Q\rAD?");
@@ -131,7 +131,7 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
       return;
     case 'D': {
       bout.nl();
-      bout << "Which one?";
+      bout.puts("Which one?");
       bout.mpl(2);
 
       bin.input(s, 2);
@@ -147,7 +147,7 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
       bin.input(s, 80);
 
       if (!core::File::Exists(s)) {
-        bout << "File doesn't exist, continue?";
+        bout.puts("File doesn't exist, continue?");
         if (!bin.yesno()) {
           break;
         }
@@ -185,9 +185,9 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
 
 bool get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
   bout.nl();
-  bout << "|#9(0=Unlimited) Most messages you want per sub? ";
+  bout.puts("|#9(0=Unlimited) Most messages you want per sub? ");
   *max_per_sub = bin.input_number(*max_per_sub);
-  bout << "|#9(0=Unlimited) Most messages per packet?       ";
+  bout.puts("|#9(0=Unlimited) Most messages per packet?       ");
   *qwk_max_msgs = bin.input_number(*qwk_max_msgs);
   return true;
 }

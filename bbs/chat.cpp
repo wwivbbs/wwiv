@@ -106,7 +106,7 @@ static int grabname(const std::string& orig, int channel) {
     }
     if (const auto ir = a()->instances().at(n); ir.online() && (!ir.invisible() || so())) {
       if (channel && ir.loc_code() != channel) {
-        bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
+        bout.puts("|#1[|#9That user is not in this chat channel|#1]\r\n");
         return 0;
       }
       return n;
@@ -132,9 +132,9 @@ static int grabname(const std::string& orig, int channel) {
   }
   if (!node) {
     if (channel) {
-      bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
+      bout.puts("|#1[|#9That user is not in this chat channel|#1]\r\n");
     } else {
-      bout << "|#1[|#9Specified user is not online|#1]\r\n";
+      bout.puts("|#1[|#9Specified user is not online|#1]\r\n");
     }
   }
   return node;
@@ -174,22 +174,22 @@ void chat_room() {
     get_colors(szColorString, &ini);
     ini.Close();
   } else {
-    bout << "|#6[CHAT] SECTION MISSING IN CHAT.INI - ALERT THE SYSOP IMMEDIATELY!\r\n";
+    bout.puts("|#6[CHAT] SECTION MISSING IN CHAT.INI - ALERT THE SYSOP IMMEDIATELY!\r\n");
     bout.pausescr();
     return;
   }
   cleanup_chat();
-  bout << "\r\n|#2Welcome to the WWIV Chatroom\n\r\n";
+  bout.puts("\r\n|#2Welcome to the WWIV Chatroom\n\r\n");
   auto loc = 0;
   if (bShowPrompt) {
     while (!loc) {
       bout.nl();
-      bout << "|#1Select a chat channel to enter:\r\n";
+      bout.puts("|#1Select a chat channel to enter:\r\n");
       loc = change_channels(-1);
     }
   } else {
     if (a()->user()->restrict_iichat() || !check_ch(1)) {
-      bout << "\r\n|#6You may not access inter-instance chat facilities.\r\n";
+      bout.puts("\r\n|#6You may not access inter-instance chat facilities.\r\n");
       bout.pausescr();
       return;
     }
@@ -341,15 +341,15 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
     bActionHandled = 0;
   } else if (iequals(raw_message, "/q") || iequals(raw_message, "x")) {
     bActionHandled = 0;
-    bout << "\r\n|#2Exiting Chatroom\r\n";
+    bout.puts("\r\n|#2Exiting Chatroom\r\n");
     return 0;
   } else if (iequals(raw_message, "/a")) {
     bActionHandled = 0;
     if (bActionMode) {
-      bout << "|#1[|#9Action mode disabled|#1]\r\n";
+      bout.puts("|#1[|#9Action mode disabled|#1]\r\n");
       bActionMode = false;
     } else {
-      bout << "|#1[|#9Action mode enabled|#1]\r\n";
+      bout.puts("|#1[|#9Action mode enabled|#1]\r\n");
       bActionMode = true;
     }
   } else if (iequals(raw_message, "/s")) {
@@ -362,9 +362,9 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
       File::Remove(fn);
       const auto m = fmt::format("\r\n|#1[|#9{} has unsecured the channel|#1]", a()->user()->name());
       out_msg(m, loc);
-      bout << "|#1[|#9Channel Unsecured|#1]\r\n";
+      bout.puts("|#1[|#9Channel Unsecured|#1]\r\n");
     } else {
-      bout << "|#1[|#9Channel not secured!|#1]\r\n";
+      bout.puts("|#1[|#9Channel not secured!|#1]\r\n");
     }
   } else if (iequals(raw_message, "/p")) {
     bActionHandled = 0;
@@ -432,19 +432,19 @@ void intro(int loc) {
       User u;
       a()->users()->readuser(&u, usernum);
       if (!first) {
-        bout << "|#7and ";
+        bout.puts("|#7and ");
       }
       bout << "|#1" << u.name() << " ";
       first = false;
     }
   } else {
-    bout << "|#7You are the only one here.\r\n";
+    bout.puts("|#7You are the only one here.\r\n");
   }
   const auto fn = fmt::format("CHANNEL.{}", (loc + 1 - INST_LOC_CH1));
   if (loc != INST_LOC_CH1 && File::Exists(fn)) {
-    bout << "|#7This channel is |#1secured|#7.\r\n";
+    bout.puts("|#7This channel is |#1secured|#7.\r\n");
   }
-  bout << "|#7Type ? for help.\r\n";
+  bout.puts("|#7Type ? for help.\r\n");
 }
 
 // This function is called when a > sign is encountered at the beginning of
@@ -452,7 +452,7 @@ void intro(int loc) {
 
 void ch_direct(const std::string& message, int loc, char* color_string, int node) {
   if (message.empty()) {
-    bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
+    bout.puts("|#1[|#9Message required after using a / or > command.|#1]\r\n");
     return;
   }
 
@@ -479,7 +479,7 @@ void ch_direct(const std::string& message, int loc, char* color_string, int node
 //   a raw_message, used for whispering
 void ch_whisper(const std::string& message, char* color_string, int node) {
   if (message.empty()) {
-    bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
+    bout.puts("|#1[|#9Message required after using a / or > command.|#1]\r\n");
     return;
   }
   if (!node) {
@@ -519,19 +519,19 @@ int wusrinst(char* n) {
 
 void secure_ch(int ch) {
   if (ch == INST_LOC_CH1) {
-    bout << "|#1[|#9Cannot secure channel 1|#1]\r\n";
+    bout.puts("|#1[|#9Cannot secure channel 1|#1]\r\n");
     return;
   }
   const auto fn = fmt::format("CHANNEL.{}", (ch + 1 - INST_LOC_CH1));
   if (File::Exists(fn)) {
-    bout << "|#1[|#9Channel already secured!|#1]\r\n";
+    bout.puts("|#1[|#9Channel already secured!|#1]\r\n");
   } else {
     {
       File file(fn);
       file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeText);
       file.Write(a()->user()->name());
     }
-    bout << "|#1[|#9Channel Secured|#1]\r\n";
+    bout.puts("|#1[|#9Channel Secured|#1]\r\n");
     const auto msg = fmt::format("\r\n|#1[|#9{} has secured the channel|#1]", a()->user()->name());
     out_msg(msg, ch);
   }
@@ -567,7 +567,7 @@ void page_user(int loc) {
     i = to_number<int>(s);
   }
   if (i == a()->sess().instance_number()) {
-    bout << "|#1[|#9Cannot page the instance you are on|#1]\r\n";
+    bout.puts("|#1[|#9Cannot page the instance you are on|#1]\r\n");
     return;
   }
   const auto ir = a()->instances().at(i);
@@ -576,7 +576,7 @@ void page_user(int loc) {
     return;
   }
   if (!ir.available() && !so()) {
-    bout << "|#1[|#9That user is not available for chat!|#1]";
+    bout.puts("|#1[|#9That user is not available for chat!|#1]");
     return;
   }
   const auto s = fmt::format(
@@ -584,7 +584,7 @@ void page_user(int loc) {
       "Chatroom.",
       a()->user()->name(), loc);
   send_inst_str(i, s);
-  bout << "|#1[|#9Page Sent|#1]\r\n";
+  bout.puts("|#1[|#9Page Sent|#1]\r\n");
 }
 
 // Announces when a user has left a channel
@@ -687,7 +687,7 @@ void exec_action(const char* message, char* color_string, int loc, int nact) {
   if (ok) {
     sprintf(tmsg, actions[nact]->toperson, a()->user()->GetName());
   } else if (actions[nact]->r) {
-    bout << "This action requires a recipient.\r\n";
+    bout.puts("This action requires a recipient.\r\n");
     return;
   } else {
     sprintf(tmsg, actions[nact]->singular, a()->user()->GetName());
@@ -727,24 +727,24 @@ void action_help(int num) {
   sprintf(buffer, actions[num]->toall, ac, rec);
   bout << "|#5To everyone else:|#1 " << buffer << wwiv::endl;
   if (actions[num]->r == 1) {
-    bout << "|#5This action requires a recipient.\n\r\n";
+    bout.puts("|#5This action requires a recipient.\n\r\n");
     return;
   }
   sprintf(buffer, actions[num]->singular, ac);
   bout << "|#5Used singular:|#1 " << buffer << wwiv::endl;
-  bout << "|#5This action does not require a recipient.\n\r\n";
+  bout.puts("|#5This action does not require a recipient.\n\r\n");
 }
 
 // Executes a GA command
 
 void ga(const char* message, char* color_string, int loc, int type) {
   if (!strlen(message) || message[0] == '\0') {
-    bout << "|#1[|#9A message is required after the GA command|#1]\r\n";
+    bout.puts("|#1[|#9A message is required after the GA command|#1]\r\n");
     return;
   }
   char buffer[500];
   sprintf(buffer, "%s%s%s %s", color_string, a()->user()->GetName(), (type ? "'s" : ""), message);
-  bout << "|#1[|#9Generic Action Sent|#1]\r\n";
+  bout.puts("|#1[|#9Generic Action Sent|#1]\r\n");
   out_msg(buffer, loc);
 }
 
@@ -785,15 +785,15 @@ void list_channels() {
     for (const auto& usernum : users) {
       if (auto u = a()->users()->readuser(usernum)) {
         if (!first) {
-          bout << "|#7and ";
+          bout.puts("|#7and ");
         }
         bout << "|#1" << u.value().name() << " ";
         first = false;
       }
     }
-    bout << " ";
+    bout.puts(" ");
     if (secure[tl]) {
-      bout << "|#6[SECURED]";
+      bout.puts("|#6[SECURED]");
     }
     bout.nl();
   }
@@ -810,7 +810,7 @@ int change_channels(int loc) {
   bout.nl();
   while ((temploc < 1 || temploc > 10) && !a()->sess().hangup()) {
     a()->CheckForHangup();
-    bout << "|#1Enter a channel number, 1 to 10, Q to quit: ";
+    bout.puts("|#1Enter a channel number, 1 to 10, Q to quit: ");
     bin.input(szMessage, 2);
     if (to_upper_case_char(szMessage[0]) == 'Q') {
       return loc;
@@ -823,12 +823,12 @@ int change_channels(int loc) {
       ch_ok = 1;
     } else {
       if (a()->user()->sl() >= g_nChatOpSecLvl || so()) {
-        bout << "|#9This channel is secured.  Are you |#1SURE|#9 you wish to enter? ";
+        bout.puts("|#9This channel is secured.  Are you |#1SURE|#9 you wish to enter? ");
         if (bin.yesno()) {
           ch_ok = 1;
         }
       } else {
-        bout << "|#1Channel is secured.  You cannot enter it.\r\n";
+        bout.puts("|#1Channel is secured.  You cannot enter it.\r\n");
       }
     }
     if (ch_ok) {
@@ -873,11 +873,11 @@ bool check_ch(int ch) {
   if (gender != 65 && a()->user()->gender() != gender &&
       a()->user()->sl() < g_nChatOpSecLvl) {
     if (gender == 77) {
-      bout << "\r\n|#9Only |#1males|#9 are allowed in this channel.\r\n";
+      bout.puts("\r\n|#9Only |#1males|#9 are allowed in this channel.\r\n");
     } else if (gender == 70) {
-      bout << "\r\n|#9Only |#1females|#9 are allowed in this channel.\r\n";
+      bout.puts("\r\n|#9Only |#1females|#9 are allowed in this channel.\r\n");
     } else {
-      bout << "\r\n|#6The sysop has configured this channel improperly!\r\n";
+      bout.puts("\r\n|#6The sysop has configured this channel improperly!\r\n");
     }
     return false;
   }

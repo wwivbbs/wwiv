@@ -207,7 +207,7 @@ void edit_conf_subs(Conference& conf) {
   while (!a()->sess().hangup()) {
     const auto count = display_conf_subs(conf);
     bout.nl();
-    bout << "|#9(|#2Q|#9)uit, (|#2S|#9)et, (|#2C|#9)lear, (|#2T|#9)oggle conferences, (|#2?|#9) List conferences: ";
+    bout.puts("|#9(|#2Q|#9)uit, (|#2S|#9)et, (|#2C|#9)lear, (|#2T|#9)oggle conferences, (|#2?|#9) List conferences: ");
     const auto cmd = onek_ncr("CSTQ?");
     if (cmd == 'Q') {
       break;
@@ -218,7 +218,7 @@ void edit_conf_subs(Conference& conf) {
     }
     bout.Left(80);
     bout.clreol();
-    bout << "|#9(|#2ENTER|#9=Exit) Enter conference key: ";
+    bout.puts("|#9(|#2ENTER|#9=Exit) Enter conference key: ");
     const auto key = onek_ncr(StrCat("\r\n\x1b", conf.keys_string()));
     if (key == 0 || key == '\r' || key == '\n' || key == ESC) {
       continue;
@@ -226,7 +226,7 @@ void edit_conf_subs(Conference& conf) {
 
     bout.Left(80);
     bout.clreol();
-    bout << "|#9Enter range (i.e. 1-10, 5, etc): ";
+    bout.puts("|#9Enter range (i.e. 1-10, 5, etc): ");
     std::set<int> range;
     for (auto i=0; i <count; i++) {
       range.insert(i);
@@ -282,20 +282,20 @@ static void modify_conf(Conference& conf, char key) {
     bout << "|#9C) ACS  : |#2" << c.acs << wwiv::endl;
     bout.nl();
 
-    bout << "|#7(|#2Q|#7=|#1Quit|#7) Conference Edit [|#1A|#7-|#1C|#7] : ";
+    bout.puts("|#7(|#2Q|#7=|#1Quit|#7) Conference Edit [|#1A|#7-|#1C|#7] : ");
     const auto ch = onek("QABC", true);
 
     switch (ch) { // NOLINT(hicpp-multiway-paths-covered)
     case 'A': {
       bout.nl();
-      bout << "|#2New Key: ";
+      bout.puts("|#2New Key: ");
       const auto ch1 = onek("\rABCDEFGHIJKLMNOPQRSTUVWXYZ");
       if (ch1 == c.key.key() || ch1 == '\r') {
         break;
       }
       if (conf.exists(ch1)) {
         bout.nl();
-        bout << "|#6That key already in use!\r\n";
+        bout.puts("|#6That key already in use!\r\n");
         bout.pausescr();
         break;
       }
@@ -304,7 +304,7 @@ static void modify_conf(Conference& conf, char key) {
     } break;
     case 'B': {
       bout.nl();
-      bout << "|#2Conference Name: ";
+      bout.puts("|#2Conference Name: ");
       auto cname = bin.input_text(60);
       if (!cname.empty()) {
         c.conf_name = cname;
@@ -363,12 +363,12 @@ void conf_edit(Conference& conf) {
   do {
     list_confs(conf, false);
     bout.nl();
-    bout << "|#2I|#7)|#1nsert, |#2D|#7)|#1elete, |#2M|#7)|#1odify, |#2Q|#7)|#1uit, |#2S|#7)|#1ubs Configuration|#2? |#7 : ";
+    bout.puts("|#2I|#7)|#1nsert, |#2D|#7)|#1elete, |#2M|#7)|#1odify, |#2Q|#7)|#1uit, |#2S|#7)|#1ubs Configuration|#2? |#7 : ");
     const auto ch = onek("QIDMS?", true);
     switch (ch) { // NOLINT(hicpp-multiway-paths-covered)
     case 'D':
       if (conf.size() == 1) {
-        bout << "\r\n|#6Cannot delete all conferences!\r\n";
+        bout.puts("\r\n|#6Cannot delete all conferences!\r\n");
       } else {
         if (auto ec = select_conf("Delete which conference? ", conf, false)) {
           delete_conf(conf, ec.value());
@@ -377,7 +377,7 @@ void conf_edit(Conference& conf) {
       break;
     case 'I':
       if (conf.size() == MAX_CONFERENCES) {
-        bout << "\r\n|#6Cannot insert any more conferences!\r\n";
+        bout.puts("\r\n|#6Cannot insert any more conferences!\r\n");
       } else {
         if (auto ec = select_free_conf_key(conf, false)){
           insert_conf(conf, ec.value());
@@ -476,7 +476,7 @@ std::optional<char> select_conf(const std::string& prompt_text, Conference& conf
     if (conf.exists(key)) {
       return {key};
     }
-    bout << "\r\n|#6Invalid conference key!\r\n";
+    bout.puts("\r\n|#6Invalid conference key!\r\n");
   }
   return std::nullopt;
 }

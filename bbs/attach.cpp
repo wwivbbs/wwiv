@@ -90,18 +90,18 @@ void attach_file(int mode) {
           bout.puts("|#1  To|#7: |#2");
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) &&
               (a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_email_anony) == 0) {
-            bout << ">UNKNOWN<";
+            bout.puts(">UNKNOWN<");
           } else {
-            bout << a()->names()->UserName(m.touser);
+            bout.puts(a()->names()->UserName(m.touser));
           }
           bout.nl();
         } else {
-          bout << "|#1To|#7: |#2User " << m.tosys << " System " << m.touser << wwiv::endl;
+          bout.print("|#1To|#7: |#2User {} System {}\r\n", m.tosys, m.touser);
         }
-        bout << "|#1Subj|#7: |#2" << m.title << wwiv::endl;
+        bout.print("|#1Subj|#7: |#2{}\r\n", m.title);
         time_t tTimeNow = time(nullptr);
         int nDaysAgo = static_cast<int>((tTimeNow - m.daten) / SECONDS_PER_DAY);
-        bout << "|#1Sent|#7: |#2 " << nDaysAgo << " days ago" << wwiv::endl;
+        bout.print("|#1Sent|#7: |#2 {} days ago\r\n", nDaysAgo);
         if (m.status & status_file) {
           File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
           if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
@@ -117,20 +117,20 @@ void attach_file(int mode) {
               }
             }
             if (!found) {
-              bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
+              bout.puts("|#1Filename|#0.... |#2Unknown or missing|#0\r\n");
             }
             fileAttach.Close();
           } else {
-            bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
+            bout.puts("|#1Filename|#0.... |#2Unknown or missing|#0\r\n");
           }
         }
         bout.nl();
         char ch = 0;
         if (mode == 0) {
-          bout << "|#9(R)ead, (A)ttach, (N)ext, (Q)uit : ";
+          bout.puts("|#9(R)ead, (A)ttach, (N)ext, (Q)uit : ");
           ch = onek("QRAN");
         } else {
-          bout << "|#9(R)ead, (A)ttach, (Q)uit : ";
+          bout.puts("|#9(R)ead, (A)ttach, (Q)uit : ");
           ch = onek("QRA");
         }
         switch (ch) {
@@ -142,7 +142,7 @@ void attach_file(int mode) {
           bool newname = false;
           bool done2 = false;
           if (m.status & status_file) {
-            bout << "|#6File already attached, (D)elete, (O)verwrite, or (Q)uit? : ";
+            bout.puts("|#6File already attached, (D)elete, (O)verwrite, or (Q)uit? : ");
             char ch1 = onek("QDO");
             switch (ch1) {
             case 'Q':
@@ -169,7 +169,7 @@ void attach_file(int mode) {
                   }
                 }
                 attachFile.Close();
-                bout << "File attachment removed.\r\n";
+                bout.puts("File attachment removed.\r\n");
               }
               if (ch1 == 'D') {
                 done2 = true;
@@ -179,7 +179,7 @@ void attach_file(int mode) {
             }
           }
           if (File::freespace_for_path(a()->GetAttachmentDirectory()) < 500) {
-            bout << "Not enough free space to attach a file.\r\n";
+            bout.puts("Not enough free space to attach a file.\r\n");
           } else {
             if (!done2) {
               bool bRemoteUpload = false;
@@ -187,13 +187,13 @@ void attach_file(int mode) {
               bout.nl();
               if (so()) {
                 if (a()->sess().incom()) {
-                  bout << "|#5Upload from remote? ";
+                  bout.puts("|#5Upload from remote? ");
                   if (bin.yesno()) {
                     bRemoteUpload = true;
                   }
                 }
                 if (!bRemoteUpload) {
-                  bout << "|#5Path/filename (wildcards okay) : \r\n";
+                  bout.puts("|#5Path/filename (wildcards okay) : \r\n");
                   file_to_attach = bin.input(35, true);
                   if (!file_to_attach.empty()) {
                     bout.nl();
@@ -220,7 +220,7 @@ void attach_file(int mode) {
               }
               std::string new_filename;
               if (!so() || bRemoteUpload) {
-                bout << "|#2Filename: ";
+                bout.puts("|#2Filename: ");
                 file_to_attach = bin.input(12, true);
                 new_filename = FilePath(a()->GetAttachmentDirectory(), file_to_attach).string();
                 if (!okfn(file_to_attach) || strchr(file_to_attach.c_str(), '?')) {
@@ -228,13 +228,13 @@ void attach_file(int mode) {
                 }
               }
               if (File::Exists(new_filename)) {
-                bout << "Target file exists.\r\n";
+                bout.puts("Target file exists.\r\n");
                 bool done3 = false;
                 do {
                   found = true;
-                  bout << "|#5New name? ";
+                  bout.puts("|#5New name? ");
                   if (bin.yesno()) {
-                    bout << "|#5Filename: ";
+                    bout.puts("|#5Filename: ");
                     new_filename = bin.input(12, true);
                     full_pathname = FilePath(a()->GetAttachmentDirectory(), new_filename).string();
                     if (okfn(new_filename) && !strchr(new_filename.c_str(), '?') && !File::Exists(new_filename)) {
@@ -242,7 +242,7 @@ void attach_file(int mode) {
                       done3 = true;
                       newname = true;
                     } else {
-                      bout << "Try Again.\r\n";
+                      bout.puts("Try Again.\r\n");
                     }
                   } else {
                     done3 = true;
@@ -262,15 +262,15 @@ void attach_file(int mode) {
                 fileAttach.Close();
               }
               if (found) {
-                bout << "File already exists or invalid filename.\r\n";
+                bout.puts("File already exists or invalid filename.\r\n");
               } else {
                 if (so() && !bRemoteUpload) {
                   std::error_code ec;
                   if (!std::filesystem::copy_file(file_to_attach, full_pathname, ec)) {
-                    bout << "done.\r\n";
+                    bout.puts("done.\r\n");
                     ok = 1;
                   } else {
-                    bout << "\r\n|#6Error in copy.\r\n";
+                    bout.puts("\r\n|#6Error in copy.\r\n");
                     bin.getkey();
                   }
                 } else {
@@ -281,7 +281,7 @@ void attach_file(int mode) {
                   File attachmentFile(full_pathname);
                   if (!attachmentFile.Open(File::modeReadOnly | File::modeBinary)) {
                     ok = 0;
-                    bout << "\r\n\nDOS error - File not bFound.\r\n\n";
+                    bout.puts("\r\n\nDOS error - File not bFound.\r\n\n");
                   } else {
                     fsr.numbytes = static_cast<decltype(fsr.numbytes)>(attachmentFile.length());
                     attachmentFile.Close();
@@ -298,7 +298,7 @@ void attach_file(int mode) {
                       pFileEmail->Write(&m, sizeof(mailrec));
                       File attachFile(FilePath(a()->config()->datadir(), ATTACH_DAT));
                       if (!attachFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-                        bout << "Could not write attachment data.\r\n";
+                        bout.puts("Could not write attachment data.\r\n");
                         m.status ^= status_file;
                         pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
                         pFileEmail->Write(&m, sizeof(mailrec));
@@ -366,11 +366,11 @@ void attach_file(int mode) {
                 }
               }
               if (!found) {
-                bout << "File attached but attachment data missing.  Alert sysop!\r\n";
+                bout.puts("File attached but attachment data missing.  Alert sysop!\r\n");
               }
               f.Close();
             } else {
-              bout << "File attached but attachment data missing.  Alert sysop!\r\n";
+              bout.puts("File attached but attachment data missing.  Alert sysop!\r\n");
             }
           }
         }

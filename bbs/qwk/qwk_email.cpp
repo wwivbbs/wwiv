@@ -261,7 +261,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
     bout.print("Titled    : {}", title);
     bout.nl(2);
     bout.Color(5);
-    bout << "Correct? ";
+    bout.puts("Correct? ");
 
     if (!bin.yesno()) {
       return;

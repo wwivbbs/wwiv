@@ -108,10 +108,10 @@ void RequestChat() {
   if (sysop2() && !a()->user()->restrict_chat()) {
     if (a()->sess().chatcall()) {
       a()->sess().clear_chatcall();
-      bout << "Chat call turned off.\r\n";
+      bout.puts("Chat call turned off.\r\n");
       a()->UpdateTopScreen();
     } else {
-      bout << "|#9Enter Reason for chat: \r\n|#0:";
+      bout.puts("|#9Enter Reason for chat: \r\n|#0:");
       auto chatReason = bin.input_text(70);
       if (!chatReason.empty()) {
         if (!play_sdf(CHAT_NOEXT, false)) {
@@ -122,13 +122,13 @@ void RequestChat() {
         sysoplog(cr);
         a()->sess().chat_reason(cr);
         a()->UpdateTopScreen();
-        bout << "Chat call turned ON.\r\n";
+        bout.puts("Chat call turned ON.\r\n");
         bout.nl();
       }
     }
   } else {
-    bout << "|#6" << a()->config()->sysop_name()
-         << " is not available.\r\n\n|#5Try sending feedback instead.\r\n";
+    bout.print("|#6{} is not available.\r\n\n|#5Try sending feedback instead.\r\n",
+               a()->config()->sysop_name());
     imail("|#1Tried Chatting", 1, 0);
   }
 }
@@ -281,7 +281,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
                 wwiv_y1 = bout.localIO()->WhereY() + 1;
                 wwiv_x1 = bout.localIO()->WhereX() + 1;
               }
-              bout << "\x1b[K";
+              bout.puts("\x1b[K");
               s2[0] = 0;
             }
             sprintf(s2, "\x1b[%d;%dH", wwiv_y1, wwiv_x1);
@@ -314,7 +314,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
                 wwiv_y2 = bout.localIO()->WhereY() + 1;
                 wwiv_x2 = bout.localIO()->WhereX() + 1;
               }
-              bout << "\x1b[K";
+              bout.puts("\x1b[K");
               s2[0] = '\0';
             }
             sprintf(s2, "\x1b[%d;%dH", wwiv_y2, wwiv_x2);
@@ -593,7 +593,7 @@ void chat1(const char* chat_line, bool two_way) {
     bout.puts(s);
     bout.GotoXY(1, 1);
   }
-  bout << "|#7" << sysop_name << "'s here...";
+  bout.print("|#7{}'s here...", sysop_name);
   bout.nl(2);
   std::string rollover = chat_line;
 
@@ -648,7 +648,7 @@ void chat1(const char* chat_line, bool two_way) {
   }
 
   bout.nl();
-  bout << "|#7Chat mode over...\r\n\n";
+  bout.puts("|#7Chat mode over...\r\n\n");
   a()->sess().chatting(chatting_t::none);
   auto tc_used = duration_cast<seconds>(steady_clock::now() - tc_start);
   a()->add_extratimecall(tc_used);

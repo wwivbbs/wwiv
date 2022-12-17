@@ -177,21 +177,21 @@ void print_pending_list() {
   auto current_time = DateTime::now();
 
   bout.nl(2);
-  bout << "                           |#3-> |#9Network Status |#3<-\r\n";
+  bout.puts("                           |#3-> |#9Network Status |#3<-\r\n");
   bout.nl();
 
-  bout << "|#"
+  bout.puts("|#"
           "7\xDA\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4"
           "\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4"
           "\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4"
-          "\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
-  bout << "|#7\xB3 |#1Ok? |#7\xB3 |#1Network  |#7\xB3 |#1 Node |#7\xB3  |#1 Sent  "
-          "|#7\xB3|#1Received |#7\xB3|#1Ready |#7\xB3|#1Fails|#7\xB3  |#1Elapsed  |#7\xB3|#7\r\n";
-  bout << "|#"
+          "\xC4\xC4\xC4\xC4\xC4\xBF\r\n");
+  bout.puts("|#7\xB3 |#1Ok? |#7\xB3 |#1Network  |#7\xB3 |#1 Node |#7\xB3  |#1 Sent  "
+          "|#7\xB3|#1Received |#7\xB3|#1Ready |#7\xB3|#1Fails|#7\xB3  |#1Elapsed  |#7\xB3|#7\r\n");
+  bout.puts("|#"
           "7\xC3\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4"
           "\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4"
           "\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4"
-          "\xC4\xC4\xC4\xC4\xC4\xB4\r\n";
+          "\xC4\xC4\xC4\xC4\xC4\xB4\r\n");
 
   for (const auto& net : a()->nets().networks()) {
     if (!net.sysnum) {
@@ -276,11 +276,11 @@ void print_pending_list() {
     }
   }
 
-  bout << "|#"
+  bout.puts("|#"
           "7\xc0\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4"
           "\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4"
           "\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4"
-          "\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
+          "\xC4\xC4\xC4\xC4\xC4\xD9\r\n");
   bout.nl();
   a()->user()->SetStatus(ss);
   if (bout.lines_listed()) {
@@ -539,7 +539,7 @@ static std::pair<int, int> ansicallout() {
   if (!callout_ansi) {
     bout.nl();
     bout.cls();
-    bout << "|#9Callout to which system? ";
+    bout.puts("|#9Callout to which system? ");
     auto sn = bin.input_number<uint16_t>(1, 1, 32767);
     bout.localIO()->SetCursor(LocalIO::cursorNormal);
     return std::make_pair(sn, -1);

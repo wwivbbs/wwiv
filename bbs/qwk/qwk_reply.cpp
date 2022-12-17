@@ -133,7 +133,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 
       while (!done5 && !a()->sess().hangup()) {
         bout.nl();
-        bout << "Then which sub?  ?=List  Q=Don't Post :";
+        bout.puts("Then which sub?  ?=List  Q=Don't Post :");
         auto substr = bin.input(3);
 
         StringTrim(&substr);
@@ -166,7 +166,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     while (!a()->sess().hangup()) {
       if (!qwk_iscan_literal(a()->current_user_sub_num())) {
         bout.nl();
-        bout << "MSG file is busy on another instance, try again?";
+        bout.puts("MSG file is busy on another instance, try again?");
         if (!bin.noyes()) {
           ++pass;
           continue;
@@ -221,13 +221,13 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     }
 
     bout.cls();
-    bout << "|#5Posting New Message.\r\n\n";
+    bout.puts("|#5Posting New Message.\r\n\n");
     bout.print("|#9Title      : |#2{}\r\n", title);
     bout.print("|#9To         : |#2{}\r\n", to.empty() ? "All" : to);
     bout.print("|#9Area       : |#2{}\r\n", stripcolors(a()->current_sub().name));
 
     if (!a()->current_sub().nets.empty()) {
-      bout << "|#9On Networks: |#5";
+      bout.puts("|#9On Networks: |#5");
       for (const auto& xnp : a()->current_sub().nets) {
         bout << a()->nets()[xnp.net_num].name << " ";
       }
@@ -235,7 +235,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     }
 
     bout.nl();
-    bout << "|#5Correct? ";
+    bout.puts("|#5Correct? ");
 
     if (bin.noyes()) {
       done = true;
@@ -262,7 +262,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 
       if (f == -1) {
         bout.nl();
-        bout << "MSG file is busy on another instance, try again?";
+        bout.puts("MSG file is busy on another instance, try again?");
         if (!bin.noyes()) {
           return;
         }
@@ -274,7 +274,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     // Anonymous
     uint8_t an = 0;
     if (an) {
-      bout << "|#5Anonymous?";
+      bout.puts("|#5Anonymous?");
       an = bin.yesno() ? 1 : 0;
     }
     bout.nl();
@@ -399,7 +399,7 @@ static void process_reply_dat(const std::string& name) {
       bout.print("|#9Message '|#2{}|#9' is marked |#3PRIVATE\r\n", title);
       bout.printf("|#9It is addressed to |#2%s", to);
       bout.nl(2);
-      bout << "|#5Route into E-Mail? ";
+      bout.puts("|#5Route into E-Mail? ");
       if (bin.noyes()) {
         to_email = true;
       }
@@ -428,7 +428,7 @@ static void process_reply_dat(const std::string& name) {
         bout.printf("|#12|#9) |#2%s", to_from_msg_opt.value());
         bout.nl(2);
 
-        bout << "|#5Which address is correct? ";
+        bout.puts("|#5Which address is correct? ");
         const int x = onek("12", true);
 
         if (x == '2') {

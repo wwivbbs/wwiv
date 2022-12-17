@@ -201,7 +201,7 @@ void xymodem_send(const std::filesystem::path& path, bool *sent, double *percent
   File file(path);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     if (!use_ymodemBatch) {
-      bout << "\r\nFile not found.\r\n\n";
+      bout.puts("\r\nFile not found.\r\n\n");
     }
     *sent = false;
     *percent = 0.0;
@@ -215,7 +215,7 @@ void xymodem_send(const std::filesystem::path& path, bool *sent, double *percent
   const auto tpb = 12.656f / static_cast<double>(a()->modem_speed_);
 
   if (!use_ymodemBatch) {
-    bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
+    bout.puts("\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n");
   }
   int xx1 = bout.localIO()->WhereX();
   int yy1 = bout.localIO()->WhereY();
@@ -288,7 +288,7 @@ void xymodem_send(const std::filesystem::path& path, bool *sent, double *percent
   file.Close();
   bout.localIO()->GotoXY(xx1, yy1);
   if (*sent && !use_ymodemBatch) {
-    bout << "-=> File transmission complete.\r\n\n";
+    bout.puts("-=> File transmission complete.\r\n\n");
   }
 }
 

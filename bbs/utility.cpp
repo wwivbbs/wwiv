@@ -181,7 +181,7 @@ std::string get_wildlist(const std::string& orig_file_mask) {
 
   FindFiles ff(file_mask, FindFiles::FindFilesType::any);
   if (ff.empty()) {
-    bout << "No files found\r\n";
+    bout.puts("No files found\r\n");
     return {};
   }
   auto f = ff.begin();
@@ -220,7 +220,7 @@ std::string get_wildlist(const std::string& orig_file_mask) {
   bout.nl();
   if (i == 1) {
     bout << "One file found: " << f->name << wwiv::endl;
-    bout << "Use this file? ";
+    bout.puts("Use this file? ");
     if (bin.yesno()) {
       return pszPath;
     }
@@ -228,7 +228,7 @@ std::string get_wildlist(const std::string& orig_file_mask) {
     return pszPath;
   }
   pszPath[t] = '\0';
-  bout << "Filename: ";
+  bout.puts("Filename: ");
   bin.input(file_mask, 12, true);
   strcat(pszPath, file_mask);
   return pszPath;
