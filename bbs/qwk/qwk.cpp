@@ -255,20 +255,19 @@ void qwk_config_user() {
   while (!done && !a()->sess().hangup()) {
     bout.cls();
     bout.litebar("QWK Preferences");
-    bout << "|#1A|#9) Include E-Mail            : |#2" << qwk_current_text(0) << wwiv::endl;
-    bout << "|#1B|#9) Delete Included E-Mail    : |#2" << qwk_current_text(1) << wwiv::endl;
-    bout << "|#1C|#9) Update Last Read Pointer  : |#2" << qwk_current_text(2) << wwiv::endl;
-    bout << "|#1D|#9) Remove WWIV color codes   : |#2" << qwk_current_text(3) << wwiv::endl;
-    bout << "|#1E|#9) Convert WWIV color to ANSI: |#2" << qwk_current_text(4) << wwiv::endl;
-    bout << "|#1F|#9) Include Bulletins         : |#2" << qwk_current_text(5) << wwiv::endl;
-    // bout << "|#1G|#9) Scan New Files         : |#2" << qwk_current_text(6) << wwiv::endl;
-    bout << "|#1H|#9) Remove Routing Information: |#2" << qwk_current_text(7) << wwiv::endl;
-    bout << "|#1I|#9) Default Compression Type  : |#2" << qwk_current_text(8) << wwiv::endl;
-    bout << "|#1J|#9) Default Transfer Protocol : |#2" << qwk_current_text(9) << wwiv::endl;
-    bout << "|#1K|#9) Max Messages To Include   : |#2" << qwk_current_text(10) << wwiv::endl;
-    bout << "|#1Q|#9) Done" << wwiv::endl;
-    bout.nl();
-    bout.nl();
+    bout.print("|#1A|#9) Include E-Mail            : |#2{}\r\n", qwk_current_text(0));
+    bout.print("|#1B|#9) Delete Included E-Mail    : |#2{}\r\n", qwk_current_text(1));
+    bout.print("|#1C|#9) Update Last Read Pointer  : |#2{}\r\n", qwk_current_text(2));
+    bout.print("|#1D|#9) Remove WWIV color codes   : |#2{}\r\n", qwk_current_text(3));
+    bout.print("|#1E|#9) Convert WWIV color to ANSI: |#2{}\r\n", qwk_current_text(4));
+    bout.print("|#1F|#9) Include Bulletins         : |#2{}\r\n", qwk_current_text(5));
+    // bout.print("|#1G|#9) Scan New Files           : |#2{}\r\n", qwk_current_text(6));
+    bout.print("|#1H|#9) Remove Routing Information: |#2{}\r\n", qwk_current_text(7));
+    bout.print("|#1I|#9) Default Compression Type  : |#2{}\r\n", qwk_current_text(8));
+    bout.print("|#1J|#9) Default Transfer Protocol : |#2{}\r\n", qwk_current_text(9));
+    bout.print("|#1K|#9) Max Messages To Include   : |#2{}\r\n", qwk_current_text(10));
+    bout.pl("|#1Q|#9) Done");
+    bout.nl(2);
     bout.puts("|#9Select: ");
     int key = onek("QABCDEFGHIJK", true);
 

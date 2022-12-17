@@ -212,15 +212,15 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
           to_char_array(s2, std::string(a()->user()->screen_width() - 1, '\xCD'));
         }
         s2[a()->user()->screen_width()] = '\0';
-        bout << s2;
+        bout.puts(s2);
         s2[0] = '\0';
         temp1[0] = '\0';
         for (int cntr = 1; cntr < 12; cntr++) {
           sprintf(s2, "\x1b[%d;%dH", cntr, 1);
-          bout << s2;
+          bout.puts(s2);
           if (cntr >= 0 && cntr < 5) {
             bout.Color(1);
-            bout << side0[cntr + 6];
+            bout.puts(side0[cntr + 6]);
           }
           bout.clreol();
           s2[0] = 0;
@@ -239,22 +239,22 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
       if (bout.localIO()->WhereY() >= 23) {
         for (int cntr = 13; cntr < 25; cntr++) {
           sprintf(s2, "\x1b[%d;%dH", cntr, 1);
-          bout << s2;
+          bout.puts(s2);
           if ((cntr >= 13) && (cntr < 17)) {
             bout.Color(5);
-            bout << side1[cntr - 7];
+            bout.puts(side1[cntr - 7]);
           }
           bout.clreol();
           s2[0] = '\0';
         }
         sprintf(s2, "\x1b[%d;%dH", 17, 1);
-        bout << s2;
+        bout.puts(s2);
         s2[0] = '\0';
       } else if (bout.localIO()->WhereY() < 12 && side == 0) {
         wwiv_x1 = (bout.localIO()->WhereX() + 1);
         wwiv_y1 = (bout.localIO()->WhereY() + 1);
         sprintf(s2, "\x1b[%d;%dH", wwiv_y2, wwiv_x2);
-        bout << s2;
+        bout.puts(s2);
         s2[0] = 0;
       }
       side = 1;
@@ -274,10 +274,10 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
             side0[bout.localIO()->WhereY()][cp0] = 0;
             for (int cntr = 0; cntr < 12; cntr++) {
               sprintf(s2, "\x1b[%d;%dH", cntr, 1);
-              bout << s2;
+              bout.puts(s2);
               if ((cntr >= 0) && (cntr < 6)) {
                 bout.Color(1);
-                bout << side0[cntr + 6];
+                bout.puts(side0[cntr + 6]);
                 wwiv_y1 = bout.localIO()->WhereY() + 1;
                 wwiv_x1 = bout.localIO()->WhereX() + 1;
               }
@@ -285,7 +285,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
               s2[0] = 0;
             }
             sprintf(s2, "\x1b[%d;%dH", wwiv_y1, wwiv_x1);
-            bout << s2;
+            bout.puts(s2);
             s2[0] = 0;
           }
           if (bout.localIO()->WhereX() == (a()->user()->screen_width() - 1)) {
@@ -307,10 +307,10 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
             side1[bout.localIO()->WhereY() - 13][cp1] = 0;
             for (int cntr = 13; cntr < 25; cntr++) {
               sprintf(s2, "\x1b[%d;%dH", cntr, 1);
-              bout << s2;
+              bout.puts(s2);
               if (cntr >= 13 && cntr < 18) {
                 bout.Color(5);
-                bout << side1[cntr - 7];
+                bout.puts(side1[cntr - 7]);
                 wwiv_y2 = bout.localIO()->WhereY() + 1;
                 wwiv_x2 = bout.localIO()->WhereX() + 1;
               }
@@ -318,7 +318,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
               s2[0] = '\0';
             }
             sprintf(s2, "\x1b[%d;%dH", wwiv_y2, wwiv_x2);
-            bout << s2;
+            bout.puts(s2);
             s2[0] = '\0';
           }
           if (bout.localIO()->WhereX() == (a()->user()->screen_width() - 1)) {

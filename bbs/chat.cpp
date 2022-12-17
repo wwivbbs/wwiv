@@ -212,7 +212,8 @@ void chat_room() {
     if (inst_msg_waiting()) {
       process_inst_msgs(); 
     }
-    bout << "|#1: " << szColorString;
+    bout.Color(1);
+    bout.puts(szColorString);
     a()->tleft(true);
     a()->sess().chatline(false);
     auto message = bin.input_text("", false, 255);
@@ -392,7 +393,7 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
     bActionHandled = 0;
   } else {
     if (bActionHandled) {
-      bout << messageSent;
+      bout.puts(messageSent);
     }
     if (!raw_message[0]) {
       return loc;
@@ -424,7 +425,7 @@ std::vector<int> who_online(int loc) {
 // help
 void intro(int loc) {
 
-  bout << "|#7You are in " << channels[loc - INST_LOC_CH1 + 1].name << " with: " << wwiv::endl;
+  bout.print("|#7You are in {} with: \r\n", channels[loc - INST_LOC_CH1 + 1].name);
   auto users = who_online(loc);
   if (!users.empty()) {
     auto first = true;
@@ -434,7 +435,7 @@ void intro(int loc) {
       if (!first) {
         bout.puts("|#7and ");
       }
-      bout << "|#1" << u.name() << " ";
+      bout.print("|#1{} ", u.name());
       first = false;
     }
   } else {
@@ -468,9 +469,9 @@ void ch_direct(const std::string& message, int loc, char* color_string, int node
         send_inst_str(i, s);
       }
     }
-    bout << "|#1[|#9Message directed to " << u.name() << "|#1\r\n";
+    bout.print("|#1[|#9Message directed to {}|#1\r\n", u.name());
   } else {
-    bout << message;
+    bout.puts(message);
     bout.nl();
   }
 }
@@ -780,7 +781,7 @@ void list_channels() {
     if (tl == 10) {
       bout.bputch(SPACE);
     }
-    bout << "    |#9Users in channel: ";
+    bout.puts("    |#9Users in channel: ");
     auto first = true;
     for (const auto& usernum : users) {
       if (auto u = a()->users()->readuser(usernum)) {
@@ -866,7 +867,7 @@ bool check_ch(int ch) {
   if (c_ar && !a()->user()->has_ar(c_ar)) {
     sprintf(szMessage, "\r\n|#9The \"|#1%c|#9\" AR is required to access this chat channel.\r\n",
             channels[ch].ar);
-    bout << szMessage;
+    bout.puts(szMessage);
     return false;
   }
   char gender = channels[ch].sex;

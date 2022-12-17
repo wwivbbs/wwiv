@@ -53,7 +53,7 @@ void move_file_t() {
   bout.nl();
   if (a()->batch().empty()) {
     bout.nl();
-    bout << "|#6No files have been tagged for movement.\r\n";
+    bout.puts("|#6No files have been tagged for movement.\r\n");
     bout.pausescr();
   }
   // TODO(rushfan): rewrite using iterators.
@@ -63,7 +63,7 @@ void move_file_t() {
     dliscan1(a()->batch().entry[pos].dir());
     int temp_record_num = recno(cur_batch_fn);
     if (temp_record_num < 0) {
-      bout << "File not found.\r\n";
+      bout.puts("File not found.\r\n");
       bout.pausescr();
     }
     while (!a()->sess().hangup() && temp_record_num > 0) {
@@ -71,7 +71,7 @@ void move_file_t() {
       auto f = a()->current_file_area()->ReadFile(temp_record_num);
       const auto& dir = a()->dirs()[a()->batch().entry[pos].dir()];
       printfileinfo(&f.u(), dir);
-      bout << "|#5Move this (Y/N/Q)? ";
+      bout.puts("|#5Move this (Y/N/Q)? ");
       const auto ch = bin.ynq();
       if (ch == 'Q') {
         tmp_disable_conf(false);
@@ -83,7 +83,7 @@ void move_file_t() {
         s1 = FilePath(dir.path, f);
         std::string dirnum;
         do {
-          bout << "|#2To which directory? ";
+          bout.puts("|#2To which directory? ");
           dirnum = mmkey(MMKeyAreaType::dirs);
           if (dirnum.front() == '?') {
             dirlist(1);
@@ -105,16 +105,16 @@ void move_file_t() {
           dliscan1(d1);
           if (recno(f.aligned_filename()) > 0) {
             ok = false;
-            bout << "Filename already in use in that directory.\r\n";
+            bout.puts("Filename already in use in that directory.\r\n");
           }
           if (a()->current_file_area()->number_of_files() >= a()->dirs()[d1].maxfiles) {
             ok = false;
-            bout << "Too many files in that directory.\r\n";
+            bout.puts("Too many files in that directory.\r\n");
           }
           if (File::freespace_for_path(a()->dirs()[d1].path) <
               static_cast<long>(f.numbytes() / 1024L) + 3) {
             ok = false;
-            bout << "Not enough disk space to move it.\r\n";
+            bout.puts("Not enough disk space to move it.\r\n");
           }
           dliscan();
         } else {
@@ -124,7 +124,7 @@ void move_file_t() {
         ok = false;
       }
       if (ok) {
-        bout << "|#5Reset upload time for file? ";
+        bout.puts("|#5Reset upload time for file? ");
         if (bin.yesno()) {
           f.set_date(DateTime::now());
         }
@@ -149,7 +149,7 @@ void move_file_t() {
           didnt_upload(a()->batch().entry[pos]);
           a()->batch().delbatch(pos);
         }
-        bout << "File moved.\r\n";
+        bout.puts("File moved.\r\n");
       }
       dliscan();
       temp_record_num = nrecno(cur_batch_fn, cur_pos);
@@ -161,7 +161,7 @@ void move_file_t() {
 void removefile() {
   dliscan();
   bout.nl();
-  bout << "|#9Enter filename to remove.\r\n:";
+  bout.puts("|#9Enter filename to remove.\r\n:");
   auto remove_fn = bin.input(12, true);
   if (remove_fn.empty()) {
     return;
@@ -178,10 +178,10 @@ void removefile() {
       const auto& dir = a()->dirs()[a()->current_user_dir().subnum];
       bout.nl();
       if (a()->batch().contains_file(f.filename())) {
-        bout << "|#6That file is in the batch queue; remove it from there.\r\n\n";
+        bout.puts("|#6That file is in the batch queue; remove it from there.\r\n\n");
       } else {
         printfileinfo(&f.u(), dir);
-        bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
+        bout.puts("|#9Remove (|#2Y/N/Q|#9) |#0: |#2");
         auto ch = bin.ynq();
         if (ch == 'Q') {
           abort = true;
@@ -189,14 +189,14 @@ void removefile() {
           bool bRemoveDlPoints = true;
           bool bDeleteFileToo;
           if (dcs()) {
-            bout << "|#5Delete file too? ";
+            bout.puts("|#5Delete file too? ");
             bDeleteFileToo = bin.yesno();
             if (bDeleteFileToo && (f.u().ownersys == 0)) {
-              bout << "|#5Remove DL points? ";
+              bout.puts("|#5Remove DL points? ");
               bRemoveDlPoints = bin.yesno();
             }
             bout.nl();
-            bout << "|#5Remove from ALLOW.DAT? ";
+            bout.puts("|#5Remove from ALLOW.DAT? ");
             if (bin.yesno()) {
               remove_from_file_database(f.aligned_filename());
             }

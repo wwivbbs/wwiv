@@ -109,7 +109,7 @@ void attach_file(int mode) {
             auto lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
             while (lNumRead > 0 && !found) {
               if (m.daten == static_cast<uint32_t>(fsr.id)) {
-                bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0";
+                bout.print("|#1Filename|#0.... |#2{} ({} bytes)|#0\r\n", fsr.filename, fsr.numbytes);
                 found = true;
               }
               if (!found) {
@@ -291,7 +291,7 @@ void attach_file(int mode) {
                       to_char_array(fsr.filename, stripfn(file_to_attach));
                     }
                     fsr.id = m.daten;
-                    bout << "|#5Attach " << fsr.filename << " (" << fsr.numbytes << " bytes) to Email? ";
+                    bout.print("|#5Attach {} ({} bytes) to Email? ", fsr.filename, fsr.numbytes);
                     if (bin.yesno()) {
                       m.status ^= status_file;
                       pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
@@ -320,7 +320,7 @@ void attach_file(int mode) {
                         const auto to_user_name = a()->names()->UserName(m.touser);
                         sysoplog(fmt::sprintf("Attached %s (%u bytes) in message to %s",
                                               fsr.filename, fsr.numbytes, to_user_name));
-                        bout << "File attached.\r\n" ;
+                        bout.puts("File attached.\r\n");
                       }
                     } else {
                       File::Remove(FilePath(a()->GetAttachmentDirectory(), fsr.filename));
@@ -357,7 +357,7 @@ void attach_file(int mode) {
               auto num_read = f.Read(&fsr, sizeof(fsr));
               while (num_read > 0 && !found) {
                 if (m.daten == static_cast<uint32_t>(fsr.id)) {
-                  bout << "Attached file: " << fsr.filename << " (" << fsr.numbytes << " bytes).";
+                  bout.print("Attached file: {} ({} bytes).", fsr.filename, fsr.numbytes);
                   bout.nl();
                   found = true;
                 }

@@ -170,13 +170,8 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
         if (bin.checka()) {
           break;
         }
-        bout.printf("[%d] %s Is copied over from", x++, b.name);
-        bout.nl();
-        bout.Color(7);
-        bout << std::string(78, '\xCD');
-        bout.nl();
-        bout << b.path;
-        bout.nl();
+        bout.print("|#7[{}] |#1{} |#5Is copied over from\r\n", x++, b.name);
+        bout.print("|#7{}\r\n{}|#1\r\n", std::string(78, '\xCD'), b.path);
       }
     } break;
     }

@@ -49,9 +49,9 @@ void LoadFileIntoWorkspace(Context& context, const std::filesystem::path& filena
   use_workspace = (no_edit_allowed || !ok_fsed);
 
   if (!silent_mode) {
-    bout << "\r\nFile loaded into workspace.\r\n\n";
+    bout.puts("\r\nFile loaded into workspace.\r\n\n");
     if (!use_workspace) {
-      bout << "Editing will be allowed.\r\n";
+      bout.puts("Editing will be allowed.\r\n");
     }
   }
 }

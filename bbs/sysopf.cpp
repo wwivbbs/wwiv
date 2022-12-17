@@ -112,27 +112,27 @@ void prstatus() {
 // returns true if user deleted.
 static bool valuser_delete(int user_number) {
   bout.nl();
-  bout << "|#5Delete? ";
+  bout.puts("|#5Delete? ");
   if (bin.yesno()) {
     a()->users()->delete_user(user_number);
-    bout << "\r\n|#6Deleted.\r\n\n";
+    bout.puts("\r\n|#6Deleted.\r\n\n");
     return true;
   }
-  bout << "\r\n|#3NOT deleted.\r\n";
+  bout.puts("\r\n|#3NOT deleted.\r\n");
   return false;
 }
 
 static void valuser_manual(User& user) {
   bout << "|#9SL  : |#2" << user.sl() << wwiv::endl;
   if (user.sl() < a()->sess().effective_sl()) {
-    bout << "|#9New : ";
+    bout.puts("|#9New : ");
     const auto sl = bin.input_number(user.sl(), 0, 255);
     user.sl(sl);
   }
   bout.nl();
   bout << "|#9DSL : |#2" << user.dsl() << wwiv::endl;
   if (user.dsl() < a()->user()->dsl()) {
-    bout << "|#9New ? ";
+    bout.puts("|#9New ? ");
     const auto dsl = bin.input_number(user.dsl(), 0, 255);
     user.dsl(dsl);
   }
@@ -141,7 +141,7 @@ static void valuser_manual(User& user) {
     allowed_ar.push_back(RETURN);
     do {
       bout << "|#9AR  : |#2" << word_to_arstr(user.ar_int(), "") << wwiv::endl;
-      bout << "|#9Togl? ";
+      bout.puts("|#9Togl? ");
       const auto ch_ar = onek(allowed_ar);
       if (ch_ar == RETURN) {
         break;
@@ -155,7 +155,7 @@ static void valuser_manual(User& user) {
     allowed_dar.push_back(RETURN);
     do {
       bout << "|#9DAR : |#2" << word_to_arstr(user.dar_int(), "") << wwiv::endl;
-      bout << "|#9Togl? ";
+      bout.puts("|#9Togl? ");
       const auto ch_dar = onek(allowed_dar);
       if (ch_dar == RETURN) {
         break;
@@ -177,7 +177,7 @@ static void valuser_manual(User& user) {
     }
     bout << "      |#2" << restrict_string << wwiv::endl;
     bout << "|#9Rstr: |#2" << user_rs << wwiv::endl;
-    bout << "|#9Togl? ";
+    bout.puts("|#9Togl? ");
     const auto ch = onek(allowed);
     if (ch != RETURN && ch != SPACE && ch != '?') {
       if (const auto pos = r.find(ch); pos != std::string::npos) {
@@ -199,7 +199,7 @@ static void valuser_auto(User& user) {
     bout.print("|#2{:>2}|#9) |#1{:<30.30} |#9(SL: |#5{:<3}|#9 DSL: |#5{:<3}|#9)\r\n", i, v.name, v.sl, v.dsl);
   }
   bout.nl();
-  bout << "|#9(|#2Q|#9=|#1Quit|#9) Which Auto Validation: ";
+  bout.puts("|#9(|#2Q|#9=|#1Quit|#9) Which Auto Validation: ");
   const auto [num, key] = bin.input_number_hotkey(0, {'Q'}, 1, 10);
   if (key == 'Q') {
     return;
@@ -238,7 +238,7 @@ void valuser(int user_number) {
   bout.nl();
   auto o = a()->users()->readuser(user_number);
   if (!o) {
-    bout << "\r\n|#6No Such User.\r\n\n";
+    bout.puts("\r\n|#6No Such User.\r\n\n");
     return;
   }
   auto user = o.value();
@@ -266,7 +266,7 @@ void valuser(int user_number) {
     bout << "|#9SL  : |#2" << user.sl() << wwiv::endl;
     bout << "|#9DSL : |#2" << user.sl() << wwiv::endl;
     bout.nl(2);
-    bout << "|#9(|#2Q|#9=|#1Quit|#9) (|#2D|#9)elete, (|#2M|#9)anual, (|#2A|#9)utoval : ";
+    bout.puts("|#9(|#2Q|#9=|#1Quit|#9) (|#2D|#9)elete, (|#2M|#9)anual, (|#2A|#9)utoval : ");
     switch (onek("ADMQ", true)) { 
     case 'A':
       valuser_auto(user);
@@ -316,19 +316,19 @@ bool print_wwivnet_net_listing(const Network& net) {
     bout << "|#9Network|#2: |#1" << net.name << wwiv::endl;
     bout.nl();
 
-    bout << "|#21|#9) List All\r\n";
-    bout << "|#22|#9) Area Code\r\n";
-    bout << "|#23|#9) Group\r\n";
-    bout << "|#24|#9) Subs Coordinators\r\n";
-    bout << "|#25|#9) Area Coordinators\r\n";
-    bout << "|#26|#9) Group Coordinators\r\n";
-    bout << "|#27|#9) Net Coordinator\r\n";
-    bout << "|#28|#9) BBS Name SubString\r\n";
-    bout << "|#29|#9) Phone SubString\r\n";
-    bout << "|#20|#9) Unconnected Systems\r\n";
-    bout << "|#2Q|#9) Quit NetList\r\n";
+    bout.puts("|#21|#9) List All\r\n");
+    bout.puts("|#22|#9) Area Code\r\n");
+    bout.puts("|#23|#9) Group\r\n");
+    bout.puts("|#24|#9) Subs Coordinators\r\n");
+    bout.puts("|#25|#9) Area Coordinators\r\n");
+    bout.puts("|#26|#9) Group Coordinators\r\n");
+    bout.puts("|#27|#9) Net Coordinator\r\n");
+    bout.puts("|#28|#9) BBS Name SubString\r\n");
+    bout.puts("|#29|#9) Phone SubString\r\n");
+    bout.puts("|#20|#9) Unconnected Systems\r\n");
+    bout.puts("|#2Q|#9) Quit NetList\r\n");
     bout.nl();
-    bout << "|#9Select: |#2";
+    bout.puts("|#9Select: |#2");
     switch (auto cmd = onek("Q1234567890"); cmd) {
     case 'Q':
       return true;
@@ -338,7 +338,7 @@ bool print_wwivnet_net_listing(const Network& net) {
     case '2':
       cmdbit = net_search_type_t::NET_SEARCH_AREACODE;
       bout.nl();
-      bout << "|#1Enter Area Code|#2: |#0";
+      bout.puts("|#1Enter Area Code|#2: |#0");
       bin.input(acstr, 3);
       if (strlen(acstr) != 3) {
         abort = true;
@@ -351,7 +351,7 @@ bool print_wwivnet_net_listing(const Network& net) {
         }
       }
       if (abort) {
-        bout << "|#6Area code must be a 3-digit number!\r\n";
+        bout.puts("|#6Area code must be a 3-digit number!\r\n");
         bout.pausescr();
         continue;
       }
@@ -359,10 +359,10 @@ bool print_wwivnet_net_listing(const Network& net) {
     case '3':
       cmdbit = net_search_type_t::NET_SEARCH_GROUP;
       bout.nl();
-      bout << "|#1Enter group number|#2: |#0";
+      bout.puts("|#1Enter group number|#2: |#0");
       bin.input(s, 2);
       if (s[0] == 0 || to_number<int>(s) < 1) {
-        bout << "|#6Invalid group number!\r\n";
+        bout.puts("|#6Invalid group number!\r\n");
         bout.pausescr();
         continue;
       }
@@ -383,10 +383,10 @@ bool print_wwivnet_net_listing(const Network& net) {
     case '8':
       cmdbit = net_search_type_t::NET_SEARCH_SUBSTR;
       bout.nl();
-      bout << "|#1Enter SubString|#2: |#0";
+      bout.puts("|#1Enter SubString|#2: |#0");
       bin.input(substr, 40);
       if (substr[0] == 0) {
-        bout << "|#6Enter a substring!\r\n";
+        bout.puts("|#6Enter a substring!\r\n");
         bout.pausescr();
         continue;
       }
@@ -394,10 +394,10 @@ bool print_wwivnet_net_listing(const Network& net) {
     case '9':
       cmdbit = net_search_type_t::NET_SEARCH_PHSUBSTR;
       bout.nl();
-      bout << "|#1Enter phone substring|#2: |#0";
+      bout.puts("|#1Enter phone substring|#2: |#0");
       bin.input(phstr, 12);
       if (phstr[0] == 0) {
-        bout << "|#6Enter a phone substring!\r\n";
+        bout.puts("|#6Enter a phone substring!\r\n");
         bout.pausescr();
         continue;
       }
@@ -414,7 +414,7 @@ bool print_wwivnet_net_listing(const Network& net) {
     }
 
     bout.nl();
-    bout << "|#1Print BBS region info? ";
+    bout.puts("|#1Print BBS region info? ");
     bool useregion = bin.yesno();
 
     auto bbslist = BbsListNet::ReadBbsDataNet(net.dir);
@@ -575,12 +575,12 @@ static bool print_ftn_net_listing(Network& net) {
   bout << "|#9Network|#2: |#1" << net.name << wwiv::endl;
   bout.nl();
 
-  bout << "|#21|#9) List All\r\n";
-  bout << "|#22|#9) Zone\r\n";
-  bout << "|#23|#9) BBS Name SubString\r\n";
-  bout << "|#2Q|#9) Quit NetList\r\n";
+  bout.puts("|#21|#9) List All\r\n");
+  bout.puts("|#22|#9) Zone\r\n");
+  bout.puts("|#23|#9) BBS Name SubString\r\n");
+  bout.puts("|#2Q|#9) Quit NetList\r\n");
   bout.nl();
-  bout << "|#9Select: |#2";
+  bout.puts("|#9Select: |#2");
   auto zone = 0;
   std::string name_part;
   switch (const auto cmd = onek("Q123"); cmd) {
@@ -589,7 +589,7 @@ static bool print_ftn_net_listing(Network& net) {
   }
   case '2': {
     bout.nl();
-    bout << "|#9Enter Zone Number|#7: |#0";
+    bout.puts("|#9Enter Zone Number|#7: |#0");
     const auto r = bin.input_number_hotkey(zone, {'Q'}, 0, 37627);
     if (r.key == 'Q') {
       return false;
@@ -599,7 +599,7 @@ static bool print_ftn_net_listing(Network& net) {
   case '3': {
     zone = 0;
     bout.nl();
-    bout << "|#9Enter Name Substring|#7: |#0";
+    bout.puts("|#9Enter Name Substring|#7: |#0");
     name_part = bin.input_upper(20);
   } break;
   }
@@ -679,8 +679,8 @@ void query_print_net_listing(bool force_pause) {
         }
         bout << "|#2" << i + 1 << "|#9)|#1 " << a()->nets()[i].name << wwiv::endl;
       }
-      bout << "|#2Q|#9)|#1 Quit\r\n\n";
-      bout << "|#9Which network? |#2";
+      bout.puts("|#2Q|#9)|#1 Quit\r\n\n");
+      bout.puts("|#9Which network? |#2");
       if (wwiv::stl::ssize(a()->nets()) < 9) {
         if (const char ch = onek(onx); ch == 'Q') {
           return;
@@ -734,11 +734,11 @@ void mailr() {
         User user;
         a()->users()->readuser(&user, m.touser);
         const auto unn = a()->names()->UserName(m.touser);
-        bout << "|#9  To|#7: ";
+        bout.puts("|#9  To|#7: ");
         bout.Color(a()->GetMessageColor());
         bout << unn << wwiv::endl;
         set_net_num(network_number_from(&m));
-        bout << "|#9Subj|#7: ";
+        bout.puts("|#9Subj|#7: ");
         bout.Color(a()->GetMessageColor());
         bout << m.title << wwiv::endl;
         if (m.status & status_file) {
@@ -756,18 +756,18 @@ void mailr() {
               }
             }
             if (!found) {
-              bout << "|#1Filename|#0.... |#2File : Unknown or Missing|#0\r\n";
+              bout.puts("|#1Filename|#0.... |#2File : Unknown or Missing|#0\r\n");
             }
             attachDat.Close();
           } else {
-            bout << "|#1Filename|#0.... |#2|#2File : Unknown or Missing|#0\r\n";
+            bout.puts("|#1Filename|#0.... |#2|#2File : Unknown or Missing|#0\r\n");
           }
         }
         bool next;
         auto msg = read_type2_message(&m.msg, m.anony & 0x0f, true, "email", m.fromsys, m.fromuser);
         int fake_msgno = -1;
         display_type2_message(fake_msgno, msg, &next);
-        bout << "|#2R,D,Q,<space>  : ";
+        bout.puts("|#2R,D,Q,<space>  : ");
         if (next) {
           c = ' ';
         } else {
@@ -799,7 +799,7 @@ void mailr() {
               }
             }
           } else {
-            bout << "Mail file changed; try again.\r\n";
+            bout.puts("Mail file changed; try again.\r\n");
           }
           pFileEmail->Close();
           if (!a()->sess().IsUserOnline() && m.touser == 1 && m.tosys == 0) {
@@ -823,11 +823,11 @@ void chuser() {
     return;
   }
 
-  bout << "|#9Enter user to change to: ";
+  bout.puts("|#9Enter user to change to: ");
   const auto userName = bin.input(30, true);
   const auto user_number = finduser1(userName);
   if (user_number <= 0) {
-    bout << "|#6Unknown user.\r\n";
+    bout.puts("|#6Unknown user.\r\n");
     return;
   }
   a()->WriteCurrentUser();
@@ -865,10 +865,10 @@ void zlog() {
         z.active, z.posts, z.email, z.fback, z.up, 10 * z.active / 144, nTimePerUser);
     // alternate colors to make it easier to read across the lines
     if (i % 2) {
-      bout << "|#1";
+      bout.puts("|#1");
       bout.bpla(buffer, &abort);
     } else {
-      bout << "|#3";
+      bout.puts("|#3");
       bout.bpla(buffer, &abort);
     }
     ++i;
@@ -937,8 +937,8 @@ void beginday(bool displayStatus) {
     status.ensure_dates_valid();
 
     if (displayStatus) {
-      bout << "|#7* |#1Running Daily Maintenance...\r\n";
-      bout << "  |#7* |#1Updating system activity...\r\n";
+      bout.puts("|#7* |#1Running Daily Maintenance...\r\n");
+      bout.puts("  |#7* |#1Updating system activity...\r\n");
     }
 
     zlogrec z{};
@@ -952,7 +952,7 @@ void beginday(bool displayStatus) {
     status.NewDay();
 
     if (displayStatus) {
-      bout << "  |#7* |#1Updating ZLOG information...\r\n";
+      bout.puts("  |#7* |#1Updating ZLOG information...\r\n");
     }
     File fileZLog(FilePath(a()->config()->datadir(), ZLOG_DAT));
     zlogrec z1{};
@@ -981,12 +981,12 @@ void beginday(bool displayStatus) {
     fileZLog.Close();
 
     if (displayStatus) {
-      bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
+      bout.puts("  |#7* |#1Updating STATUS.DAT...\r\n");
     }
   });
   const auto nus = a()->config()->max_users() - st->num_users();
   if (displayStatus) {
-    bout << "  |#7* |#1Checking system directories and user space...\r\n";
+    bout.puts("  |#7* |#1Checking system directories and user space...\r\n");
   }
 
   const auto fk = File::freespace_for_path(a()->config()->datadir());
@@ -1004,11 +1004,11 @@ void beginday(bool displayStatus) {
     ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_BEGINDAY));
   }
   if (displayStatus) {
-    bout << "  |#7* |#1Purging inactive users (if enabled)...\r\n";
+    bout.puts("  |#7* |#1Purging inactive users (if enabled)...\r\n");
   }
   auto_purge();
   if (displayStatus) {
-    bout << "|#7* |#1Done!\r\n";
+    bout.puts("|#7* |#1Done!\r\n");
   }
 
   sysoplog(false, "* Ran Daily Maintenance...");

@@ -84,7 +84,7 @@ void multimail(int *pnUserNumber, int numu) {
   savefile(data.text, &m.msg, data.aux);
   strcpy(m.title, data.title.c_str());
 
-  bout <<  "Mail sent to:\r\n";
+  bout.puts("Mail sent to:\r\n");
   sysoplog("Multi-Mail to:");
 
   lineadd(&m.msg, "\003""7----", "email");
@@ -97,7 +97,7 @@ void multimail(int *pnUserNumber, int numu) {
     if ((user.sl() == 255 && (user.email_waiting() > a()->config()->max_waiting() * 5)) ||
         ((user.sl() != 255) && (user.email_waiting() > a()->config()->max_waiting())) ||
         user.email_waiting() > 200) {
-      bout << a()->names()->UserName(pnUserNumber[cv]) << " mailbox full, not sent.";
+      bout.print("{} mailbox full, not sent.", a()->names()->UserName(pnUserNumber[cv]));
       pnUserNumber[cv] = -1;
       continue;
     }
@@ -123,7 +123,7 @@ void multimail(int *pnUserNumber, int numu) {
       }
     });
     sysoplog(s);
-    bout << s;
+    bout.puts(s);
     bout.nl();
     if (show_all) {
       const std::string pnunn2 = a()->names()->UserName(pnUserNumber[cv]);
@@ -251,7 +251,7 @@ int oneuser() {
     bout.puts("Deleted user.\r\n\n");
     return 0;
   }
-  bout << "     -> " << a()->names()->UserName(user_number) << wwiv::endl;
+  bout.print("     -> {}\r\n", a()->names()->UserName(user_number));
   return user_number;
 }
 
@@ -399,7 +399,7 @@ void slash_e() {
       for (i = 0; i < numu; i++) {
         User user;
         a()->users()->readuser(&user, user_number[i]);
-        bout << i + 1 << ". " << a()->names()->UserName(user_number[i]) << wwiv::endl;
+        bout.print("{}. {}\r\n", i + 1, a()->names()->UserName(user_number[i]));
       }
       break;
     }

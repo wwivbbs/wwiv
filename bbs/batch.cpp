@@ -84,9 +84,9 @@ static void listbatch() {
     return;
   }
   bool abort = false;
-  bout << "|#9Files - |#2" << a()->batch().size() << "  ";
+  bout.print("|#9Files - |#2{}  ", a()->batch().size());
   if (a()->batch().numbatchdl()) {
-    bout << "|#9Time - |#2" << ctim(a()->batch().dl_time_in_secs());
+    bout.print("|#9Time - |#2{}", ctim(a()->batch().dl_time_in_secs()));
   }
   bout.nl(2);
   int current_num = 0;
@@ -178,7 +178,7 @@ void didnt_upload(const BatchEntry& b) {
   }
 }
 
-static void uploaded(const std::string& file_name, long lCharsPerSecond) {
+static void uploaded(const std::string& file_name, long cps) {
   for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); ++it) {
     const auto& b = *it;
     if (file_name == b.aligned_filename() && !b.sending()) {
@@ -226,10 +226,9 @@ static void uploaded(const std::string& file_name, long lCharsPerSecond) {
               if (area->UpdateFile(f, nRecNum)) {
                 area->Save();
               }
-              sysoplog(fmt::format("+ \"{}\" uploaded on {} ({} cps)", f, a()->dirs()[b.dir()].name,
-                                   lCharsPerSecond));
-              bout << "Uploaded '" << f << "' to " << a()->dirs()[b.dir()].name << " ("
-                   << lCharsPerSecond << " cps)" << wwiv::endl;
+              sysoplog(
+                  fmt::format("+ '{}' uploaded on {} ({} cps)", f, a()->dirs()[b.dir()].name, cps));
+              bout.print("Uploaded '{}' to {} ({} cps)\r\n", f, a()->dirs()[b.dir()].name, cps);
             }
           }
           it = a()->batch().delbatch(it);
@@ -239,14 +238,14 @@ static void uploaded(const std::string& file_name, long lCharsPerSecond) {
       it = a()->batch().delbatch(it);
       if (try_to_ul(file_name)) {
         sysoplog(fmt::sprintf("!!! Couldn't find file \"%s\" in directory.", file_name));
-        bout << "Deleting - couldn't find data for file " << file_name << wwiv::endl;
+        bout.print("Deleting - couldn't find data for file {}\r\n", file_name);
       }
       return;
     }
   }
   if (try_to_ul(file_name)) {
     sysoplog(fmt::format("!!! Couldn't find \"{}\" in UL batch queue.", file_name));
-    bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
+    bout.print("Deleting - don't know what to do with file {}\r\n", file_name);
 
     File::Remove(FilePath(a()->sess().dirs().batch_directory(), file_name));
   }
@@ -297,7 +296,8 @@ static void bihangup() {
       nextbeep += seconds(1);
       const auto left = 10 - static_cast<int>(duration_cast<seconds>(elapsed).count());
       bout.Color(hangup_color(left));
-      bout << "\r" << left;
+      bout.puts("\r");
+      bout.puts(std::to_string(left));
     }
     if (dd - batch_lastchar > seconds(10)) {
       bout.nl();
@@ -328,7 +328,7 @@ void zmbatchdl(bool bHangupAfterDl) {
   }
   sysoplog(message);
   bout.nl();
-  bout << message;
+  bout.puts(message);
   bout.nl(2);
 
   bool bRatioBad = false;
@@ -459,7 +459,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   }
   sysoplog(message);
   bout.nl();
-  bout << message;
+  bout.puts(message);
   bout.nl(2);
 
   bool bRatioBad = false;
@@ -575,14 +575,14 @@ static std::filesystem::path make_dl_batch_list() {
     bool ok = true;
     if (nsl() < b.time(a()->modem_speed_) + at) {
       ok = false;
-      bout << "Cannot download " << b.aligned_filename() << ": Not enough time" << wwiv::endl;
+      bout.print("Cannot download {}: Not enough time\r\n", b.aligned_filename());
     }
     const auto thisk = bytes_to_k(b.len());
     if (a()->config()->req_ratio() > 0.0001f &&
         ratio1(addk + thisk) < a()->config()->req_ratio() &&
         !a()->user()->exempt_ratio()) {
       ok = false;
-      bout << "Cannot download " << b.aligned_filename() << ": Ratio too low" << wwiv::endl;
+      bout.print("Cannot download {}: Ratio too low\r\n", b.aligned_filename());
     }
     if (ok) {
       tf.WriteLine(filename_to_send);
@@ -645,7 +645,7 @@ void dszbatchdl(bool bHangupAfterDl, const std::string& command_line, const std:
   }
   sysoplog(download_log_entry);
   bout.nl();
-  bout << download_log_entry;
+  bout.puts(download_log_entry);
   bout.nl(2);
 
   write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
@@ -661,7 +661,7 @@ static void dszbatchul(bool bHangupAfterDl, char* command_line, const std::strin
   }
   sysoplog(download_log_entry);
   bout.nl();
-  bout << download_log_entry;
+  bout.puts(download_log_entry);
   bout.nl(2);
 
   write_inst(INST_LOC_UPLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
@@ -812,7 +812,7 @@ void upload(int dn) {
     return;
   }
   listbatch();
-  bout << "Upload - " << free_space << "k free.";
+  bout.print("Upload - {}k free.", free_space);
   bout.nl();
   bout.printfile(TRY2UL_NOEXT);
 

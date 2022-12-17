@@ -110,8 +110,8 @@ void input_dataphone() {
   do {
     bout.nl();
     bout.puts("|#9Enter your DATA phone no. in the form. \r\n");
-    bout << "|#9 ###-###-#### - Press Enter to use [" << a()->user()->voice_phone() << "].\r\n";
-    std::string data_phone_number = bin.input_phonenumber(a()->user()->data_phone(), 12);
+    bout.print("|#9 ###-###-#### - Press Enter to use [{}].\r\n", a()->user()->voice_phone());
+    auto data_phone_number = bin.input_phonenumber(a()->user()->data_phone(), 12);
     if (data_phone_number[0] == '\0') {
       data_phone_number = a()->user()->voice_phone();
     }
@@ -357,7 +357,7 @@ void input_comptype() {
     bout.puts("Known computer types:\r\n\n");
     int i = 0;
     for (i = 1; !ctypes(i).empty(); i++) {
-      bout << i << ". " << ctypes(i) << wwiv::endl;
+      bout.print("{}. {}", i, ctypes(i));
     }
     bout.nl();
     bout.puts("|#3Enter your computer type, or the closest to it (ie, Compaq -> IBM).\r\n");
@@ -576,8 +576,7 @@ static bool CreateNewUserRecord() {
 bool CanCreateNewUserAccountHere() {
   if (a()->status_manager()->user_count() >= a()->config()->max_users()) {
     bout.nl(2);
-    bout << "I'm sorry, but the system currently has the maximum number of users it "
-            "can\r\nhandle.\r\n\n";
+    bout.puts("I'm sorry, but the system currently has the maximum number of users it can\r\nhandle.\r\n\n");
     return false;
   }
 
@@ -689,8 +688,8 @@ void VerifyNewUserPassword() {
   bool ok = false;
   do {
     bout.nl(2);
-    bout << "|#9Your User Number: |#2" << a()->sess().user_num() << wwiv::endl;
-    bout << "|#9Your Password:    |#2" << a()->user()->password() << wwiv::endl;
+    bout.print("|#9Your User Number: |#2{}\r\n", a()->sess().user_num());
+    bout.print("|#9Your Password:    |#2{}\r\n", a()->user()->password());
     bout.nl(1);
     bout.puts("|#9Please write down this information, and enter your password for verification.\r\n");
     bout.puts("|#9You will need to know this password in order to change it to something else.\r\n\n");
@@ -783,7 +782,7 @@ bool check_zip(const std::string& zipcode, int mode) {
   if (!zip_file.IsOpen()) {
     ok = false;
     if (mode != 2) {
-      bout << "\r\n|#6" << FilePath(zipcity_dir, fn).string() << " not found\r\n";
+      bout.print("\r\n|#6{} not found\r\n", FilePath(zipcity_dir, fn).string());
     }
   } else {
     char zip_buf[81];
@@ -807,18 +806,18 @@ bool check_zip(const std::string& zipcode, int mode) {
 
   if (mode != 2 && !found) {
     bout.nl();
-    bout << "|#6No match for " << zipcode << ".";
+    bout.print("|#6No match for {}.", zipcode);
     ok = false;
   }
 
   if (!mode && found) {
-    bout << "\r\n|#2" << zipcode << " is in " << city << ", " << state << ".";
+    bout.print("\r\n|#2{} is in {}, {}.", zipcode, city, state);
     ok = false;
   }
 
   if (found) {
     if (mode != 2) {
-      bout << "\r\n|#2" << city << ", " << state << "  USA? (y/N): ";
+      bout.print("\r\n|#2{}, {}  USA? (y/N): ", city, state);
       if (bin.yesno()) {
         a()->user()->city(city);
         a()->user()->state(state);
@@ -881,7 +880,7 @@ public:
 };
 
 NewUserItemResult DoNameOrHandle(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) Name (alias or real)    : ";
+  bout.print("|#1{c}|#9) Name (alias or real)    : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -894,13 +893,13 @@ NewUserItemResult DoNameOrHandle(NewUserContext& c) {
     BackPrint("I'm sorry, you can't use that name.", 6, 20, 1000);
   }
   cln_nu();
-  bout << "|#2" << c.user.name();
+  bout.print("|#2{}", c.user.name());
   bout.nl();
   return NewUserItemResult::success;
 }
 
 NewUserItemResult DoRealName(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) Real Name               : ";
+  bout.print("|#1{c}|#9) Real Name               : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -913,13 +912,13 @@ NewUserItemResult DoRealName(NewUserContext& c) {
     BackPrint("I'm sorry, you can't use that name.", 6, 20, 1000);
   }
   cln_nu();
-  bout << "|#2" << c.user.real_name();
+  bout.print("|#2{}", c.user.real_name());
   bout.nl();
   return NewUserItemResult::success;
 }
 
 NewUserItemResult DoBirthDay(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) Birth Date (MM/DD/YYYY) : ";
+  bout.print("|#1{c}|#9) Birth Date (MM/DD/YYYY) : ", c.letter);
   bout.SavePosition();
   if (c.user.age() == 0 && c.first) {
     bool ok = false;
@@ -964,19 +963,19 @@ NewUserItemResult DoBirthDay(NewUserContext& c) {
 
 // TODO(rushfan): This needs updating, maybe add option to quit, system defined items?
 NewUserItemResult DoGender(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) Sex (Gender)            : ";
+  bout.print("|#1{c}|#9) Sex (Gender)            : ", c.letter);
   bout.SavePosition();
   if (c.user.gender() != 'M' && c.user.gender() != 'F') {
     bout.mpl(1);
     c.user.gender(onek_ncr("MF"));
   }
   cln_nu();
-  bout << "|#2" << (c.user.gender() == 'M' ? "Male" : "Female") << wwiv::endl;
+  bout.print("|#2{}\r\n", c.user.gender() == 'M' ? "Male" : "Female");
   return NewUserItemResult::success;
 }
 
 NewUserItemResult DoCountry(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) Country                 : ";
+  bout.print("|#1{c}|#9) Country                 : ", c.letter);
   bout.SavePosition();
   if (c.first) {
     auto country = bin.input_upper(c.user.country(), 3);
@@ -987,12 +986,12 @@ NewUserItemResult DoCountry(NewUserContext& c) {
     }
   }
   cln_nu();
-  bout << "|#2" << c.user.country() << wwiv::endl;
+  bout.print("|#2{}\r\n", c.user.country());
   return NewUserItemResult::success;
 }
 
 NewUserItemResult DoZipCode(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) ZIP or Postal Code      : ";
+  bout.print("|#1{c}|#9) ZIP or Postal Code      : ", c.letter);
   bout.SavePosition();
   if (c.user.zip_code().empty() && c.first) {
     bool ok = false;
@@ -1012,12 +1011,12 @@ NewUserItemResult DoZipCode(NewUserContext& c) {
     } while (!ok && !a()->sess().hangup());
   }
   cln_nu();
-  bout << "|#2" << c.user.zip_code() << wwiv::endl;
+  bout.print("|#2{}\r\n", c.user.zip_code());
   return NewUserItemResult::success;
 }
 
 NewUserItemResult DoStreet(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) Street Address          : ";
+  bout.print("|#1{c}|#9) Street Address          : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -1030,13 +1029,12 @@ NewUserItemResult DoStreet(NewUserContext& c) {
     BackPrint("I'm sorry, you must enter your street address.", 6, 20, 1000);
   }
   cln_nu();
-  bout << "|#2" << c.user.street();
-  bout.nl();
+  bout.print("|#2{}\r\n", c.user.street());
   return NewUserItemResult::success;
 }
 
 NewUserItemResult DoCityState(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) City                    : ";
+  bout.print("|#1{c}|#9) City                    : ", c.letter);
   bout.SavePosition();
   if (c.user.city().empty() && c.first) {
     bool ok = false;
@@ -1050,13 +1048,13 @@ NewUserItemResult DoCityState(NewUserContext& c) {
     c.user.city(properize(c.user.city()));
   }
   cln_nu();
-  bout << "|#2" << c.user.city() << wwiv::endl;
+  bout.print("|#2{}\r\n", c.user.city());
   return NewUserItemResult::success;
 }
 
 NewUserItemResult DoState(NewUserContext& c) {
 
-  bout << "|#1" << c.letter << "|#9) State                   : ";
+  bout.print("|#1{c}|#9) State                   : ", c.letter);
   bout.SavePosition();
   if (c.user.state().empty() && c.first) {
     bool ok = false;
@@ -1072,12 +1070,12 @@ NewUserItemResult DoState(NewUserContext& c) {
 
   
   cln_nu();
-  bout << "|#2" << c.user.state() << wwiv::endl;
+  bout.print("|#2{}\r\n", c.user.state());
   return NewUserItemResult::success;
 }
 
 NewUserItemResult DoEmailAddress(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) Internet Mail Address   : ";
+  bout.print("|#1{c}|#9) Internet Mail Address   : ", c.letter);
   bout.SavePosition();
   bool done = false;
   while (!done && c.first) {
@@ -1092,12 +1090,12 @@ NewUserItemResult DoEmailAddress(NewUserContext& c) {
     }
   }
   cln_nu();
-  bout << "|#2" << c.user.email_address() << wwiv::endl;
+  bout.print("|#2{}\r\n", c.user.email_address());
   return NewUserItemResult::success;
 }
 
 NewUserItemResult DoVoicePhone(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) Voice Phone             : ";
+  bout.print("|#1{c}|#9) Voice Phone             : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -1113,13 +1111,12 @@ NewUserItemResult DoVoicePhone(NewUserContext& c) {
     BackPrint("I'm sorry, you can't use that phone number.", 6, 20, 1000);
   }
   cln_nu();
-  bout << "|#2" << c.user.voice_phone();
-  bout.nl();
+  bout.print("|#2{}\r\n", c.user.voice_phone());
   return NewUserItemResult::success;
 }
 
 NewUserItemResult DoDataPhone(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) Data Phone              : ";
+  bout.print("|#1{c}|#9) Data Phone              : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -1135,13 +1132,12 @@ NewUserItemResult DoDataPhone(NewUserContext& c) {
     BackPrint("I'm sorry, you can't use that phone number.", 6, 20, 1000);
   }
   cln_nu();
-  bout << "|#2" << c.user.data_phone();
-  bout.nl();
+  bout.print("|#2{}\r\n", c.user.data_phone());
   return NewUserItemResult::success;
 }
 
 NewUserItemResult DoCallsign(NewUserContext& c) {
-  bout << "|#1" << c.letter << "|#9) Callsign                : ";
+  bout.print("|#1{c}|#9) Callsign                : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -1153,7 +1149,7 @@ NewUserItemResult DoCallsign(NewUserContext& c) {
     cln_nu();
   }
   cln_nu();
-  bout << "|#2" << c.user.callsign() << wwiv::endl;
+  bout.print("|#2{}\r\n", c.user.callsign());
   return NewUserItemResult::success;
 }
 
@@ -1162,7 +1158,7 @@ NewUserItemResult DoComputerType(NewUserContext& c) {
 
   std::string computer_type = c.user.computer_type() >= 0 ? ctypes(c.user.computer_type()) : "Unknown";
   if (c.user.computer_type() >= 0 || !c.first) {
-    bout << "|#1" << c.letter << "|#9) Computer Type           : |#2" << computer_type << wwiv::endl;
+    bout.print("|#1{c}|#9) Computer Type           : |#2{}\r\n", c.letter, computer_type);
     return NewUserItemResult::no_change;
   }
   bool ok = true;
@@ -1171,7 +1167,7 @@ NewUserItemResult DoComputerType(NewUserContext& c) {
     bout.litebar("Known computer types: ");
     int i = 0;
     for (i = 1; !ctypes(i).empty(); i++) {
-      bout << i << ". " << ctypes(i) << wwiv::endl;
+      bout.print("{}. {}\r\n", i, ctypes(i));
     }
     bout.nl();
     bout.puts("|#9Enter your computer type, or the closest to it (ie, Compaq -> IBM).\r\n");
@@ -1340,7 +1336,7 @@ void newuser() {
   bout.nl();
   bout.pausescr();
   bout.cls();
-  bout << "|#5Create a new user account on |#2" << a()->config()->system_name() << "|#5? ";
+  bout.print("|#5Create a new user account on |#2{}|#5? ", a()->config()->system_name());
   if (!bin.noyes()) {
     bout.puts("|#6Sorry the system does not meet your needs!\r\n");
     a()->Hangup();

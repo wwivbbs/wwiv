@@ -185,25 +185,21 @@ void build_qwk_packet() {
 
   bout.cls();
   if (!qwk_info.abort) {
-    bout << "|#7\xDA" << std::string(4, '\xC4') << '\xC2'
-         << std::string(52, '\xC4') << '\xC2'
-         << std::string(9, '\xC4') << '\xC2'
-         << std::string(8, '\xC4') << '\xBF' << wwiv::endl;
+    bout.print("|#7\xDA{}'\xC2{}'\xC2{}'\xC2{}\xBF\r\n", std::string(4, '\xC4'),
+               std::string(52, '\xC4'), std::string(9, '\xC4'), std::string(8, '\xC4'));
   }
 
   bin.checka(&qwk_info.abort);
 
   if (!qwk_info.abort) {
-    bout << "|#7\xB3|#2Sub |#7\xB3|#3Sub Name" << std::string(44, ' ') << "|#7\xB3|#8Total    |#7\xB3|#5New     |#7\xB3" << wwiv::endl;
+    bout.print("|#7\xB3|#2Sub |#7\xB3|#3Sub Name{}|#7\xB3|#8Total    |#7\xB3|#5New     |#7\xB3\r\n", std::string(44, ' '));
   }
 
   bin.checka(&qwk_info.abort);
 
   if (!qwk_info.abort) {
-    bout << "|#7" << "\xC3" << std::string(4, '\xC4')
-         << '\xC5' << std::string(52, '\xC4') 
-         << '\xC5' << std::string(9, '\xC4') 
-         << '\xC5' << std::string(8, '\xC4') << '\xB4' << wwiv::endl;
+    bout.print("|#7\xC3{}\xC5{}\xC5{}\xC5{}\xB4\r\n", std::string(4, '\xC4'),
+               std::string(52, '\xC4'), std::string(9, '\xC4'), std::string(8, '\xC4'));
   }
 
   bool msgs_ok = true;
@@ -214,10 +210,8 @@ void build_qwk_packet() {
     }
   }
 
-  bout << "|#7\xC3" << std::string(4, '\xC4') << '\xC5'
-       << std::string(52, '\xC4') << '\xC5'
-       << std::string(9, '\xC4') << '\xC5'
-       << std::string(8, '\xC4') << '\xB4' << wwiv::endl;
+  bout.print("|#7\xC3{}\xC5{}\xC5{}\xC5{}\xB4\r\n", std::string(4, '\xC4'), std::string(52, '\xC4'),
+             std::string(9, '\xC4'), std::string(8, '\xC4'));
   bout.nl(2);
 
   if (qwk_info.abort) {

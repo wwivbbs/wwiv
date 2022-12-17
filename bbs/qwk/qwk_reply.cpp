@@ -229,7 +229,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     if (!a()->current_sub().nets.empty()) {
       bout.puts("|#9On Networks: |#5");
       for (const auto& xnp : a()->current_sub().nets) {
-        bout << a()->nets()[xnp.net_num].name << " ";
+        bout.print("{} ", a()->nets()[xnp.net_num].name);
       }
       bout.nl();
     }
@@ -483,8 +483,8 @@ void upload_reply_packet() {
     if (a()->sess().incom()) {
       qwk_receive_file(rep_path.string(), &rec, a()->user()->data.qwk_protocol);
     } else {
-      bout << "|#5Please copy the REP file to the following directory: " << wwiv::endl;
-      bout << "|#2" << a()->sess().dirs().qwk_directory() << wwiv::endl;
+      bout.pl("|#5Please copy the REP file to the following directory: ");
+      bout.print("|#2{}\r\n", a()->sess().dirs().qwk_directory().string());
       bout.pausescr();
     }
 

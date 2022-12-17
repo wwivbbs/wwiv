@@ -345,7 +345,8 @@ static void display_title_new(const std::vector<std::string>& lines, const FullS
   } else {
     bout.puts("|16|#0 ");
   }
-  bout << pad_to_ignore_colors(l, fs.screen_width() - 1) << "|#0";
+  bout.puts(pad_to_ignore_colors(l, fs.screen_width() - 1));
+  bout.puts("|#0");
 }
 
 static void display_titles_new(const std::vector<std::string>& lines, const FullScreenView& fs,
@@ -526,7 +527,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
         }
         case 'J': {
           fs.ClearCommandLine();
-          bout << "Enter Message Number (1-" << num_msgs_in_area << ") :";
+          bout.print("Enter Message Number (1-{}) :", num_msgs_in_area);
           msgnum = bin.input_number(msgnum, 1, num_msgs_in_area, false);
 
           ReadMessageResult result;
@@ -546,7 +547,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
           fs.ClearMessageArea();
           if (!bout.printfile(TITLE_FSED_NOEXT)) {
             fs.ClearCommandLine();
-            bout << "|#6Unable to find file: " << TITLE_FSED_NOEXT;
+            bout.print("|#6Unable to find file: {}", TITLE_FSED_NOEXT);
             bout.pausescr();
             fs.ClearCommandLine();
           } else {
@@ -580,9 +581,9 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
     return;
   }
 
-  bout << "|#7" << static_cast<unsigned char>(198)
-       << std::string(a()->user()->screen_width() - 3, static_cast<unsigned char>(205))
-       << static_cast<unsigned char>(181) << "\r\n";
+  bout.print("|#7{}{}{}\r\n", static_cast<unsigned char>(198),
+             std::string(a()->user()->screen_width() - 3, static_cast<unsigned char>(205)),
+             static_cast<unsigned char>(181));
   const auto num_title_lines = std::max<int>(a()->sess().num_screen_lines() - 6, 1);
   auto i = 0;
   while (!abort && ++i <= num_title_lines) {
@@ -593,9 +594,9 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
       abort = true;
     }
   }
-  bout << "|#7" << static_cast<unsigned char>(198)
-       << std::string(a()->user()->screen_width() - 3, static_cast<unsigned char>(205))
-       << static_cast<unsigned char>(181) << "\r\n";
+  bout.print("|#7{}{}{}\r\n", static_cast<unsigned char>(198),
+             std::string(a()->user()->screen_width() - 3, static_cast<unsigned char>(205)),
+             static_cast<unsigned char>(181));
 }
 
 static void HandleMessageDownload(int msgnum) {
@@ -619,7 +620,7 @@ static void HandleMessageDownload(int msgnum) {
     bool bFileAbortStatus;
     bool bStatus;
     send_file(f.string(), &bStatus, &bFileAbortStatus, f.string(), -1, b.length());
-    bout << "|#1Message download... |#2" << (bStatus ? "successful" : "unsuccessful");
+    bout.print("|#1Message download... |#2{}", bStatus ? "successful" : "unsuccessful");
     if (bStatus) {
       sysoplog("Downloaded message");
     }
@@ -633,7 +634,7 @@ void HandleMessageMove(int& msg_num) {
     tmp_disable_conf(true);
     bout.nl();
     do {
-      bout << "|#5(|#2Q|#5=|#2Quit|#5) Move to which sub? ";
+      bout.puts("|#5(|#2Q|#5=|#2Quit|#5) Move to which sub? ");
       ss1 = mmkey(MMKeyAreaType::subs);
       if (ss1[0] == '?') {
         old_sublist();
@@ -649,7 +650,7 @@ void HandleMessageMove(int& msg_num) {
       if (ss1 == a()->usub[i1].keys) {
         temp_sub_num = i1;
         bout.nl();
-        bout << "|#9Copying to " << a()->subs().sub(a()->usub[temp_sub_num].subnum).name << wwiv::endl;
+        bout.print("|#9Copying to {}\r\n", a()->subs().sub(a()->usub[temp_sub_num].subnum).name);
         ok = true;
       }
     }
@@ -772,7 +773,7 @@ static void HandleMessageDelete(int& msg_num) {
     return;
   }
 
-  bout << "|#5Delete message #" << msg_num << ". Are you sure?";
+  bout.print("|#5Delete message #{}. Are you sure?", msg_num);
   if (!bin.noyes()) {
     return;
   }
@@ -803,7 +804,7 @@ static void HandleMessageDelete(int& msg_num) {
       tu.messages_posted(tu.messages_posted() - num_credits);
     }
     bout.nl();
-    bout << "|#7Post credit removed = " << num_credits << wwiv::endl;
+    bout.print("|#7Post credit removed = {}\r\n", num_credits);
     tu.deleted_posts(tu.deleted_posts() + 1);
     a()->users()->writeuser(&tu, p2.owneruser);
     a()->UpdateTopScreen();
@@ -883,14 +884,14 @@ static void HandleTogglePendingNet(int msg_num, int& val) {
 
 static void HandleRemoveFromNewScan() {
   const auto subname = a()->subs().sub(a()->current_user_sub().subnum).name;
-  bout << "\r\n|#5Remove '" << subname << "' from your Q-Scan? ";
+  bout.print("\r\n|#5Remove '{}' from your Q-Scan? ", subname);
   if (bin.yesno()) {
     a()->sess().qsc_q[a()->current_user_sub().subnum / 32] ^=
         (1L << (a()->current_user_sub().subnum % 32));
     return;
   }
 
-  bout << "\r\n|#9Mark messages in '" << subname << "' as read? ";
+  bout.print("\r\n|#9Mark messages in '{}' as read? ", subname);
   if (bin.yesno()) {
     const auto status = a()->status_manager()->get_status();
     a()->sess().qsc_p[a()->current_user_sub().subnum] = status->qscanptr() - 1L;
@@ -914,8 +915,8 @@ static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& 
   bin.resetnsp();
   const auto read_prompt = GetScanReadPrompts(msgnum);
   bout.nl();
+  bout.puts(read_prompt);
   char szUserInput[81];
-  bout << read_prompt;
   bin.input(szUserInput, 5, true);
   resynch(&msgnum, nullptr);
   while (szUserInput[0] == 32) {
@@ -1071,7 +1072,7 @@ static void network_validate() {
     }
 
     bout.nl();
-    bout << nNumMsgsSent << " messages sent.";
+    bout.print("{} messages sent.", nNumMsgsSent);
     bout.nl(2);
   }
 }
@@ -1081,7 +1082,7 @@ static bool query_post() {
   if (!a()->user()->restrict_post() &&
       a()->user()->posts_today() < a()->config()->sl(a()->sess().effective_sl()).posts &&
       wwiv::bbs::check_acs(a()->current_sub().post_acs)) {
-    bout << "|#5Post on " << a()->current_sub().name << " (|#2Y/N/Q|#5) ? ";
+    bout.print("|#5Post on {} (|#2Y/N/Q|#5) ? ", a()->current_sub().name);
     a()->sess().clear_irt();
     clear_quotes(a()->sess());
     const auto q = bin.ynq();
@@ -1139,7 +1140,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
     } break;
     case ReadMessageOption::JUMP_TO_MSG: {
       const auto max_msgnum = a()->GetNumMessagesInCurrentMessageArea();
-      bout << "Enter Message Number (1-" << max_msgnum << ") :";
+      bout.print("Enter Message Number (1-{}) :", max_msgnum);
       msgnum = bin.input_number(msgnum, 0, max_msgnum, false);
       if (msgnum < 1) {
         done = true;

@@ -150,13 +150,12 @@ static void do_callout(const Network& net, int sn) {
   }
 
   const auto cmd = StrCat(CreateNetworkBinary("network"), " -n", sn, " .", a()->net_num());
-  bout << "|#7Calling out to: |#2" << csne->name << " - " << net.name << " @" << sn << wwiv::endl;
+  bout.print("|#7Calling out to: |#2{} - {} @{}\r\n", csne->name, net.name, sn);
   if (contact_rec->bytes_waiting() > 0) {
-    bout << "|#7Amount pending: |#2" << bytes_to_k(contact_rec->bytes_waiting()) << "k"
-         << wwiv::endl;
+    bout.print("|#7Amount pending: |#2{}k\r\n", bytes_to_k(contact_rec->bytes_waiting()));
   }
-  bout << "|#7Commandline is: |#2" << cmd << wwiv::endl
-       << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
+  bout.print("|#7Commandline is: |#2{}\r\n", cmd);
+  bout.print("|#7{}|#0...\r\n", std::string(80, '\xCD'));
   wwiv::bbs::CommandLine cl(cmd);
   ExecuteExternalProgram(cl, EFLAG_NETPROG | EFLAG_NOHUP);
   a()->status_manager()->reload_status();

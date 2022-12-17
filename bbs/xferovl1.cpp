@@ -79,21 +79,21 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
 
   bool ii = !sss->empty();
   int i4 = 0;
-  bout << "File Name: " << dest << wwiv::endl;
+  bout.print("File Name: {}\r\n", dest);
   do {
     if (ii) {
       bout.nl();
       if (okfsed() && a()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
-        bout << "|#5Modify the extended description? ";
+        bout.puts("|#5Modify the extended description? ");
       } else {
-        bout << "|#5Enter a new extended description? ";
+        bout.puts("|#5Enter a new extended description? ");
       }
       if (!bin.yesno()) {
         return;
       }
     } else {
       bout.nl();
-      bout << "|#5Enter an extended description? ";
+      bout.puts("|#5Enter an extended description? ");
       if (!bin.yesno()) {
         return;
       }
@@ -128,8 +128,8 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
       sss->clear();
       i = 1;
       bout.nl();
-      bout << "Enter up to  " << a()->max_extend_lines << " lines, "
-          << 78 - INDENTION << " chars each.\r\n";
+      bout.print("Enter up to  {} lines, {} chars each.\r\n", a()->max_extend_lines,
+                 78 - INDENTION);
       bout.nl();
       s[0] = '\0';
       const int nSavedScreenSize = a()->user()->screen_width();
@@ -137,7 +137,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
         a()->user()->screen_width(76 - INDENTION);
       }
       do {
-        bout << "|#2" << i << ": |#0";
+        bout.print("|#2{}: |#0", i);
         s1[0] = '\0';
         const auto allow_previous = i4 > 0;
         while (inli(s1, s, 90, true, allow_previous, false, true)) {
@@ -145,7 +145,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
             --i;
           }
           sprintf(s1, "%d:", i);
-          bout << "|#2" << s1;
+          bout.print("|#2{}", s1);
           i2 = 0;
           i4 -= 2;
           do {
@@ -177,7 +177,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
       while (i++ < a()->max_extend_lines && s1[0]);
       a()->user()->screen_width(nSavedScreenSize);
     }
-    bout << "|#5Is this what you want? ";
+    bout.puts("|#5Is this what you want? ");
     i = !bin.yesno();
     if (i) {
       sss->clear();
@@ -246,7 +246,7 @@ bool get_file_idz(FileRecord& fr, const directory_t& dir) {
   }
   const auto& diz_fn = o.value();
   bout.nl();
-  bout << "|#9Reading in |#2" << diz_fn.filename() << "|#9 as extended description...";
+  bout.print("|#9Reading in |#2{}|#9 as extended description...", diz_fn.filename().string());
   const auto old_ext = a()->current_file_area()->ReadExtendedDescriptionAsString(fr).value_or("");
 
   const DizParser dp(a()->HasConfigFlag(OP_FLAGS_IDZ_DESC));
@@ -268,7 +268,7 @@ bool get_file_idz(FileRecord& fr, const directory_t& dir) {
     VLOG(1) << "Failed to parse DIZ: " << diz_fn;
   }
 
-  bout << "Done!\r\n";
+  bout.puts("Done!\r\n");
   return true;
 }
 
@@ -331,12 +331,11 @@ void tag_it() {
   long fs = 0;
 
   if (a()->batch().size() >= a()->max_batch) {
-    bout << "|#6No room left in batch queue.";
+    bout.puts("|#6No room left in batch queue.");
     bin.getkey();
     return;
   }
-  bout << "|#2Which file(s) (1-" << a()->filelist.size()
-      << ", *=All, 0=Quit)? ";
+  bout.print("|#2Which file(s) (1-{}, *=All, 0=Quit)? ", a()->filelist.size());
   auto s3 = bin.input(30, true);
   if (!s3.empty() && s3.front() == '*') {
     s3.clear();
@@ -347,7 +346,7 @@ void tag_it() {
         break;
       }
     }
-    bout << "\r\n|#2Tagging: |#4" << s3 << wwiv::endl;
+    bout.print("\r\n|#2Tagging: |#4{}\r\n", s3);
   }
   for (int i2 = 0; i2 < wwiv::strings::ssize(s3); i2++) {
     auto s1 = s3.substr(i2);
@@ -371,11 +370,11 @@ void tag_it() {
     if (!s1.empty() && i >= 0 && i < size_int(a()->filelist)) {
       auto& f = a()->filelist[i];
       if (a()->batch().contains_file(f.u.filename)) {
-        bout << "|#6" << f.u.filename << " is already in the batch queue.\r\n";
+        bout.print("|#6{} is already in the batch queue.\r\n", f.u.filename);
         bad = true;
       }
       if (a()->batch().size() >= a()->max_batch) {
-        bout << "|#6Batch file limit of " << a()->max_batch << " has been reached.\r\n";
+        bout.print("|#6Batch file limit of {} has been reached.\r\n", a()->max_batch);
         bad = true;
       }
       if (a()->config()->req_ratio() > 0.0001f &&
@@ -397,7 +396,7 @@ void tag_it() {
         }
         File fp(s);
         if (!fp.Open(File::modeBinary | File::modeReadOnly)) {
-          bout << "|#6The file " << FileName(f.u.filename) << " is not there.\r\n";
+          bout.print("|#6The file {} is not there.\r\n", FileName(f.u.filename).unaligned_filename());
           bad = true;
         } else {
           fs = fp.length();
@@ -407,17 +406,17 @@ void tag_it() {
       if (!bad) {
         const auto t = time_to_transfer(a()->modem_speed_,fs).count();
         if (nsl() <= a()->batch().dl_time_in_secs() + t) {
-          bout << "|#6Not enough time left in queue for " << f.u.filename << ".\r\n";
+          bout.print("|#6Not enough time left in queue for {}.\r\n", f.u.filename);
           bad = true;
         }
       }
       if (!bad) {
         BatchEntry b(f.u.filename, f.directory, fs, true);
         a()->batch().AddBatch(std::move(b));
-        bout << "|#1" << f.u.filename << " added to batch queue.\r\n";
+        bout.print("|#1{} added to batch queue.\r\n", f.u.filename);
       }
     } else {
-      bout << "|#6Bad file number " << i + 1 << wwiv::endl;
+      bout.print("|#6Bad file number {}\r\n", i + 1);
     }
     bout.clear_lines_listed();
   }
@@ -433,7 +432,7 @@ static char fancy_prompt(const char* pszPrompt, const char* pszAcceptChars) {
   const auto s3 = StrCat(pszAcceptChars," \r");
   a()->tleft(true);
   if (okansi()) {
-    bout << s1;
+    bout.puts(s1);
     ch = onek_ncr(s3);
     bout.Left(i1);
     for (int i = 0; i < i1; i++) {
@@ -441,7 +440,7 @@ static char fancy_prompt(const char* pszPrompt, const char* pszAcceptChars) {
     }
     bout.Left(i1);
   } else {
-    bout << s2;
+    bout.puts(s2);
     ch = onek_ncr(s3);
     for (auto i = 0; i < i1; i++) {
       bout.bs();
@@ -536,7 +535,7 @@ void tag_files(bool& need_title) {
       tag_it();
       break;
     case 'V': {
-      bout << "|#2Which file (1-|#2" << a()->filelist.size() << ")? ";
+      bout.print("|#2Which file (1-|#2{})? ", a()->filelist.size());
       auto s = bin.input(2, true);
       int i = to_number<int>(s) - 1;
       if (!s.empty() && i >= 0 && i < size_int(a()->filelist)) {
@@ -550,7 +549,7 @@ void tag_files(bool& need_title) {
           }
         }
         if (!File::Exists(s1)) {
-          bout << "|#6File not there.\r\n";
+          bout.puts("|#6File not there.\r\n");
           bout.pausescr();
           break;
         }
@@ -581,7 +580,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
   const auto t = time_to_transfer(a()->modem_speed_,fs).count();
 
   if (nsl() <= a()->batch().dl_time_in_secs() + t) {
-    bout << "|#6 Insufficient time remaining... press any key.";
+    bout.puts("|#6 Insufficient time remaining... press any key.");
     bin.getkey();
   } else {
     if (dn == -1) {
@@ -604,7 +603,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
         const auto dest = FilePath(a()->sess().dirs().temp_directory(), ufn);
         if (!File::Exists(dest)) {
           if (!File::Copy(src, dest)) {
-            bout << "|#6 file unavailable... press any key.";
+            bout.puts("|#6 file unavailable... press any key.");
             bin.getkey();
           }
           bout.backline();
@@ -613,24 +612,23 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
       } else {
         auto f = FilePath(a()->dirs()[dn].path, ufn);
         if (!File::Exists(f) && !so()) {
-          bout << "\r";
+          bout.puts("\r");
           bout.clreol();
-          bout << "|#6 file unavailable... press any key.";
+          bout.puts("|#6 file unavailable... press any key.");
           bin.getkey();
-          bout << "\r";
+          bout.puts("\r");
           bout.clreol();
           return 0;
         }
       }
       const BatchEntry b(aligned_file_name, dn, fs, true);
-      bout << "\r";
+      bout.puts("\r");
       const auto bt = ctim(b.time(a()->modem_speed_));
       bout.printf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
                            a()->batch().size() + 1,
                            b.aligned_filename(), b.len(), bt, a()->dirs()[b.dir()].name);
       a()->batch().AddBatch(b);
-      bout << "\r";
-      bout << "|#5    Continue search? ";
+      bout.puts("\r|#5    Continue search? ");
       ch = onek_ncr("YN\r");
       if (to_upper_case<char>(ch) == 'N') {
         return -3;
@@ -700,11 +698,14 @@ void download() {
   bout.litebar(StrCat(a()->config()->system_name(), " Batch Downloads"));
   do {
     if (!i) {
-      bout << "|#2Enter files, one per line, wildcards okay.  [Space] aborts a search.\r\n";
+      bout.puts("|#2Enter files, one per line, wildcards okay.  [Space] aborts a search.\r\n");
       bout.nl();
-      bout << "|#1 #  File Name    Size    Time      Directory\r\n";
-      bout <<
-          "|#7\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\r\n";
+      bout.puts("|#1 #  File Name    Size    Time      Directory\r\n");
+      bout.puts(
+          "|#7\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 "
+          "\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 "
+          "\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4"
+          "\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\r\n");
     }
     if (i < size_int(a()->batch().entry)) {
       const auto& b = a()->batch().entry[i];
@@ -733,7 +734,7 @@ void download() {
           if (rtn == 0) {
             if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
               bout.backline();
-              bout << " |#5Search all conferences? ";
+              bout.puts(" |#5Search all conferences? ");
               const auto ch = onek_ncr("YN\r");
               if (ch == '\r' || to_upper_case<char>(ch) == 'Y') {
                 tmp_disable_conf(true);
@@ -743,16 +744,16 @@ void download() {
             bout.backline();
             auto s1 = fmt::sprintf("%3d %s", a()->batch().size() + 1, s);
             bout.Color(1);
-            bout << s1;
+            bout.puts(s1);
             foundany = 0;
             int dn = 0;
             while (dn < size_int(a()->udir)) {
               count++;
               bout.Color(color);
               if (count == NUM_DOTS) {
-                bout << "\r";
+                bout.puts("\r");
                 bout.Color(color);
-                bout << s1;
+                bout.puts(s1);
                 color++;
                 count = 0;
                 if (color == 4) {
@@ -772,7 +773,7 @@ void download() {
               tmp_disable_conf(false);
             }
             if (!foundany) {
-              bout << "|#6 File not found... press any key.";
+              bout.puts("|#6 File not found... press any key.");
               bin.getkey();
               bout.backline();
               ok = false;
@@ -798,12 +799,12 @@ void download() {
 
   bout.nl();
   if (!ratio_ok()) {
-    bout << "\r\nSorry, your ratio is too low.\r\n\n";
+    bout.puts("\r\nSorry, your ratio is too low.\r\n\n");
     return;
   }
   bout.nl();
-  bout << "|#1Files in Batch Queue   : |#2" << a()->batch().size() << wwiv::endl;
-  bout << "|#1Estimated Download Time: |#2" << ctim(a()->batch().dl_time_in_secs()) << wwiv::endl;
+  bout.print("|#1Files in Batch Queue   : |#2{}\r\n", a()->batch().size());
+  bout.print("|#1Estimated Download Time: |#2{}\r\n", ctim(a()->batch().dl_time_in_secs()));
   bout.nl();
   rtn = batchdl(3);
   if (rtn) {
@@ -813,7 +814,7 @@ void download() {
   if (a()->batch().empty()) {
     return;
   }
-  bout << "|#5Hang up after transfer? ";
+  bout.puts("|#5Hang up after transfer? ");
   const bool had = bin.yesno();
   const int ip = get_protocol(xfertype::xf_down_batch);
   if (ip > 0) {
@@ -839,7 +840,7 @@ void download() {
     }
     if (!had) {
       bout.nl();
-      bout << "Your ratio is now: " << a()->user()->ratio() << wwiv::endl;
+      bout.print("Your ratio is now: {}\r\n", a()->user()->ratio());
     }
   }
 }
@@ -848,11 +849,11 @@ void endlist(int mode) {
   // if mode == 1, list files
   // if mode == 2, new files
   if (a()->filelist.empty()) {
-    bout << "\r";
+    bout.puts("\r");
     if (mode == 1) {
-      bout << "|#3No matching files found.\r\n\n";
+      bout.puts("|#3No matching files found.\r\n\n");
     } else {
-      bout << "\r|#1No new files found.\r\n\n";
+      bout.puts("\r|#1No new files found.\r\n\n");
     }
     return;
   }
@@ -862,8 +863,8 @@ void endlist(int mode) {
     return;
   }
   bout.Color(FRAME_COLOR);
-  bout << "\r" << std::string(78, '-') << wwiv::endl;
-  bout << "\r|#9Files listed: |#2 " << a()->filelist.size();
+  bout.print("\r{}\r\n", std::string(78, '-'));
+  bout.print("\r|#9Files listed: |#2 {}", a()->filelist.size());
 }
 
 // TODO(rushfan): Move to datetime.h? either in bbs or core?
@@ -897,10 +898,10 @@ static std::optional<DateTime> mmddyy_to_mdyo(std::string s) {
 void SetNewFileScanDate() {
   bout.nl();
   const auto current_dt = DateTime::from_daten(a()->sess().nscandate());
-  bout << "|#9Current limiting date: |#2" << current_dt.to_string("%m/%d/%Y") << wwiv::endl;
+  bout.print("|#9Current limiting date: |#2{}\r\n", current_dt.to_string("%m/%d/%Y"));
   bout.nl();
-  bout << "|#9Enter new limiting date in the following format:\r\n";
-  bout << "|#1 MM/DD/YYYY\r\n|#7:";
+  bout.puts("|#9Enter new limiting date in the following format:\r\n");
+  bout.puts("|#1 MM/DD/YYYY\r\n|#7:");
   bout.mpl(8);
   const auto ag = bin.input_date_mmddyyyy("");
   bout.nl();
@@ -911,7 +912,7 @@ void SetNewFileScanDate() {
       a()->sess().nscandate(dt.to_daten_t());
 
       // Display the new nscan date
-      bout << "|#9New Limiting Date: |#2" << dt.to_string("%m/%d/%Y") << "\r\n";
+      bout.print("|#9New Limiting Date: |#2{}\r\n", dt.to_string("%m/%d/%Y"));
 
       // Hack to make sure the date covers everything since we had to increment the hour by one
       // to show the right date on some versions of MSVC
@@ -936,18 +937,18 @@ void removefilesnotthere(int dn, int* autodel) {
       candidate_fn = fmt::sprintf("|#2%s :|#1 %-40.40s", f.aligned_filename(), f.description());
       if (!*autodel) {
         bout.backline();
-        bout << candidate_fn;
+        bout.puts(candidate_fn.string());
         bout.nl();
-        bout << "|#5Remove Entry (Yes/No/Quit/All) : ";
+        bout.puts("|#5Remove Entry (Yes/No/Quit/All) : ");
         ch = onek_ncr("QYNA");
       } else {
         bout.nl();
-        bout << "|#1Removing entry " << candidate_fn;
+        bout.print("|#1Removing entry {}", candidate_fn.string());
         ch = 'Y';
       }
       if (ch == 'Y' || ch == 'A') {
         if (ch == 'A') {
-          bout << "ll";
+          bout.puts("ll");
           *autodel = 1;
         }
         sysoplog(fmt::format("- '{}' Removed from {}", f, a()->dirs()[dn].name));
@@ -977,17 +978,17 @@ void removenotthere() {
   TempDisablePause disable_pause(bout);
   int autodel = 0;
   bout.nl();
-  bout << "|#5Remove N/A files in all directories? ";
+  bout.puts("|#5Remove N/A files in all directories? ");
   if (bin.yesno()) {
     for (auto i = 0; i < size_int(a()->udir) && !bout.localIO()->KeyPressed(); i++) {
       bout.nl();
-      bout << "|#1Removing N/A|#0 in " << a()->dirs()[a()->udir[i].subnum].name;
+      bout.print("|#1Removing N/A|#0 in {}", a()->dirs()[a()->udir[i].subnum].name);
       bout.nl(2);
       removefilesnotthere(a()->udir[i].subnum, &autodel);
     }
   } else {
     bout.nl();
-    bout << "Removing N/A|#0 in " << a()->dirs()[a()->current_user_dir().subnum].name;
+    bout.print("Removing N/A|#0 in {}", a()->dirs()[a()->current_user_dir().subnum].name);
     bout.nl(2);
     removefilesnotthere(a()->current_user_dir().subnum, &autodel);
   }

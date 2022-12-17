@@ -123,7 +123,7 @@ char Input::getkey(bool allow_extended_input) {
       }
       if (diff > tv) {
         bout.nl();
-        bout << "Call back later when you are there.\r\n";
+        bout.puts("Call back later when you are there.\r\n");
         bus().invoke<HangupEvent>();
       }
     }
@@ -401,7 +401,7 @@ int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<dou
     }
     if (diff > tv) {
       bout.nl();
-      bout << "Call back later when you are there.\r\n";
+      bout.puts("Call back later when you are there.\r\n");
       bus().invoke<HangupEvent>();
       return 0;
     }

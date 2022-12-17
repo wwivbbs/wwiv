@@ -329,7 +329,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       // Print NetLogs
       if (a_->current_net().sysnum > 0 || !a_->nets().empty()) {
         io->GotoXY(2, 23);
-        bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
+        bout.puts("|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ");
         const auto netdat_num = onek("Q012");
         switch (netdat_num) {
         case '0':
@@ -350,7 +350,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       // [ESC] Quit the BBS
     case ESC:
       io->GotoXY(2, 23);
-      bout << "|#7Exit the BBS? ";
+      bout.puts("|#7Exit the BBS? ");
       if (bin.yesno()) {
         return std::make_tuple(wfc_events_t::exit, -1);
       }
@@ -395,7 +395,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     case 'K': {
       Clear();
       a_->sess().user_num(1);
-      bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
+      bout.puts("|#1Send any Text File in Email:\r\n\n|#2Filename: ");
       auto buffer = bin.input_path(50);
       LoadFileIntoWorkspace(a()->context(), buffer, false);
       send_email();
@@ -425,7 +425,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     case 'O': {
       Clear();
       write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-      bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
+      bout.puts("\r\n|#1Edit any Text File: \r\n\n|#2Filename: ");
       const auto current_dir_slash = File::EnsureTrailingSlash(File::current_directory());
       auto net_filename = bin.input_path(current_dir_slash, 50);
       if (!net_filename.empty()) {
@@ -513,7 +513,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
 
 std::tuple<local_logon_t, int> WFC::LocalLogon() {
   bout.localIO()->GotoXY(2, 23);
-  bout << "|#9Log on to the BBS?";
+  bout.puts("|#9Log on to the BBS?");
   auto d = steady_clock::now();
   // TODO(rushfan): use wwiv::os::wait_for
   while (!bout.localIO()->KeyPressed() && (steady_clock::now() - d < minutes(1))) {
@@ -530,7 +530,7 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
   switch (ch) {
   case 'Y': {
     bout.localIO()->Puts(YesNoString(true));
-    bout << wwiv::endl;
+    bout.nl();
     return std::make_tuple(local_logon_t::prompt, -1);
   }
   case 0:

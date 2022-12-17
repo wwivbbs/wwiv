@@ -141,7 +141,7 @@ static void build_header() {
     header += "Description";
   }
   StringJustify(&header, 79, ' ', JustificationType::LEFT);
-  bout << "|23|01" << header << wwiv::endl;
+  bout.print("|23|01{}\r\n", header);
 
   header.clear();
   if (a()->user()->data.lp_options & cfl_date_uploaded) {
@@ -153,12 +153,12 @@ static void build_header() {
   if (!header.empty()) {
     StringJustify(&header, desc_pos + ssize(header), ' ', JustificationType::RIGHT);
     StringJustify(&header, 79, ' ', JustificationType::LEFT);
-    bout << "|23|01" << header << wwiv::endl;
+    bout.print("|23|01{}\r\n", header);
   }
 }
 
 static void printtitle_plus_old() {
-  bout << "|16|15" << std::string(79, '\xDC') << wwiv::endl;
+  bout.print("|16|15{}\r\n", std::string(79, '\xDC'));
 
   const auto buf =
       fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
@@ -170,8 +170,7 @@ static void printtitle_plus_old() {
     build_header();
   }
 
-  bout << "|16|08" << std::string(79, '\xDF') << wwiv::endl;
-  bout.Color(0);
+  bout.print("|16|08{}\r\n|#0", std::string(79, '\xDF'));
 }
 
 void printtitle_plus() {
@@ -208,13 +207,12 @@ void print_searching(search_record* search_rec) {
   bout.cls();
 
   if (search_rec->search.size() > 3) {
-    bout << "|#9Search keywords : |#2" << search_rec->search;
+    bout.print("|#9Search keywords : |#2{}", search_rec->search);
     bout.nl(2);
   }
   bout.puts("|#9<Space> aborts  : ");
   bout.cls();
-  bout.printf(" |17|15%-40.40s|16|#0\r",
-                       a()->dirs()[a()->current_user_dir().subnum].name);
+  bout.printf(" |17|15%-40.40s|16|#0\r", a()->dirs()[a()->current_user_dir().subnum].name);
 }
 
 static void catch_divide_by_zero(int signum) {
@@ -429,7 +427,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     if (a()->user()->data.lp_options & cfl_date_uploaded) {
       StringJustify(&file_information, ssize(file_information) + width, ' ',
                     JustificationType::RIGHT);
-      bout << file_information;
+      bout.puts(file_information);
       bout.nl();
       ++numl;
     }
@@ -440,7 +438,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
   if (!buffer.empty()) {
     StringJustify(&file_information, ssize(file_information) + width, ' ',
                   JustificationType::RIGHT);
-    bout << file_information;
+    bout.puts(file_information);
     bout.nl();
     ++numl;
   }
@@ -487,16 +485,16 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
 void show_fileinfo(uploadsrec* u) {
   bout.cls();
   bout.Color(7);
-  bout << std::string(78, '\xCD');
+  bout.puts(std::string(78, '\xCD'));
   bout.nl();
-  bout << "  |#9Filename    : |#2" << u->filename << wwiv::endl;
-  bout << "  |#9Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
+  bout.print("  |#9Filename    : |#2{}\r\n", u->filename);
+  bout.print("  |#9Uploaded on : |#2{} by |#2{}\r\n", u->date, u->upby);
   if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
-    bout << "  |#9Newest file : |#2" << u->actualdate << wwiv::endl;
+    bout.print("  |#9Newest file : |#2{}\r\n", u->actualdate);
   }
-  bout << "  |#9Size        : |#2" << humanize(u->numbytes) << wwiv::endl;
-  bout << "  |#9Downloads   : |#2" << u->numdloads << "|#9" << wwiv::endl;
-  bout << "  |#9Description : |#2" << u->description << wwiv::endl;
+  bout.print("  |#9Size        : |#2{}\r\n", humanize(u->numbytes));
+  bout.print("  |#9Downloads   : |#2{}\r\n", u->numdloads);
+  bout.print("  |#9Description : |#2{}\r\n", u->description);
   print_extended(u->filename, 255, 16, Color::YELLOW, nullptr);
   bout.Color(7);
   bout.puts(std::string(78, '\xCD'));
@@ -816,7 +814,7 @@ short SelectColor(int which) {
   }
   bout.nl();
   bout.SystemColor(nc);
-  bout << DescribeColorCode(nc);
+  bout.puts(DescribeColorCode(nc));
   bout.Color(0);
   bout.nl();
 
@@ -1470,18 +1468,15 @@ LP_SEARCH_HELP:
     }
     bout.GotoXY(1, 15);
 
-    bout << "|#9A)|#2 Filename (wildcards) :|#2 " << sr->filemask << wwiv::endl;
-    bout << "|#9B)|#2 Text (no wildcards)  :|#2 " << sr->search << wwiv::endl;
+    bout.print("|#9A)|#2 Filename (wildcards) :|#2 {}\r\n", sr->filemask);
+    bout.print("|#9B)|#2 Text (no wildcards)  :|#2 {}\r\n", sr->search);
     const auto dir_name = stripcolors(a()->dirs()[a()->current_user_dir().subnum].name);
-    bout << "|#9C)|#2 Which Directories    :|#2 "
-         << (sr->alldirs == THIS_DIR ? dir_name : sr->alldirs == ALL_DIRS ? "All dirs" : "Dirs in NSCAN")
-         << wwiv::endl;
+    bout.print("|#9C)|#2 Which Directories    :|#2 {}\r\n", 
+               sr->alldirs == THIS_DIR ? dir_name : sr->alldirs == ALL_DIRS ? "All dirs" : "Dirs in NSCAN");
     const auto conf_name =
         stripcolors(a()->uconfdir[a()->sess().current_user_dir_conf_num()].conf_name);
-    bout << "|#9D)|#2 Which Conferences    :|#2 " << (all_conf ? "All Conferences" : conf_name) <<
-        wwiv::endl;
-    bout << "|#9E)|#2 Extended Description :|#2 " << (sr->search_extended ? "Yes" : "No ") <<
-        wwiv::endl;
+    bout.print("|#9D)|#2 Which Conferences    :|#2 {}\r\n", all_conf ? "All Conferences" : conf_name);
+    bout.print("|#9E)|#2 Extended Description :|#2 {}\r\n", sr->search_extended ? "Yes" : "No ");
     bout.nl();
     bout.puts("|15Select item to change |#2<CR>|15 to start search |#2Q=Quit|15:|#0 ");
 
@@ -1499,13 +1494,13 @@ LP_SEARCH_HELP:
             if (contains(sr->filemask, '.')) {
               sysoplog(fmt::format("Filespec: {}", sr->filemask));
             } else {
-              bout << "|#6Invalid filename: " << sr->filemask << wwiv::endl;
+              bout.print("|#6Invalid filename: {}\r\n", sr->filemask);
               bout.pausescr();
               sr->filemask[0] = '\0';
             }
           }
         } else {
-          bout << "|#6Invalid filespec: " << sr->filemask << wwiv::endl;
+          bout.print("|#6Invalid filespec: {}\r\n", sr->filemask);
           bout.pausescr();
           sr->filemask[0] = 0;
         }

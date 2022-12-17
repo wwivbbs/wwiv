@@ -60,7 +60,7 @@ static void set_question(int ii) {
   votingrec v{};
   voting_response vr{};
 
-  bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
+  bout.puts("|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ");
   const auto question = bin.input_text(75);
   to_char_array(v.question, question);
   v.numanswers = 0;
@@ -72,16 +72,16 @@ static void set_question(int ii) {
   }
   if (question.empty()) {
     bout.nl();
-    bout << "|#6Delete Question #" << ii + 1 << ", Are you sure? ";
+    bout.print("|#6Delete Question #{}, Are you sure? ", ii+1);
     if (!bin.yesno()) {
       return;
     }
   } else {
     bout.nl();
-    bout << "|#5Enter answer choices, Enter a blank line when finished.";
+    bout.puts("|#5Enter answer choices, Enter a blank line when finished.");
     bout.nl(2);
     while (v.numanswers < 19) {
-      bout << "|#2" << v.numanswers + 1 << "|#7: ";
+      bout.print("|#2{}|#7: ", v.numanswers + 1);
       auto response = bin.input_text(63);
       to_char_array(vr.response, response);
       vr.numresponses = 0;
@@ -128,7 +128,7 @@ void ivotes() {
   do {
     print_quests();
     bout.nl();
-    bout << "|#2Which (Q=Quit) ? ";
+    bout.puts("|#2Which (Q=Quit) ? ");
     std::string questionum = bin.input(2);
     if (questionum == "Q") {
       done = true;
@@ -170,7 +170,7 @@ void voteprint() {
     votingDat.Read(&v, sizeof(votingrec));
     votingDat.Close();
     if (v.numanswers) {
-      bout << v.question;
+      bout.puts(v.question);
       bout.nl();
       std::ostringstream text;
       text << "\r\n" << v.question << "\r\n";

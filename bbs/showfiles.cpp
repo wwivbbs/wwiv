@@ -59,7 +59,7 @@ void show_files(const char *file_name, const char *directory_name) {
     if (bout.wherex() > a()->user()->screen_width() - 15) {
       bout.nl();
     }
-    bout.puts(full_pathname);
+    bout.puts(full_pathname.string());
   }
 
   bout.nl();

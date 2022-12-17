@@ -212,7 +212,7 @@ void post(const PostData& post_data) {
           bout.puts("|#9, ");
         }
         const auto& n = a()->nets()[a()->current_sub().nets[i].net_num];
-        bout << "|#2" << n.name << "|#1(" << net_type_to_string(n.type) << ")";
+        bout.print("|#2{}|#1({})", n.name, net_type_to_string(n.type));
       }
       bout.puts(".\r\n\n");
     }
@@ -324,7 +324,7 @@ void post(const PostData& post_data) {
 
   a()->UpdateTopScreen();
   sysoplog(fmt::format("+ '{}' posted on {}", p.title, a()->current_sub().name));
-  bout << "Posted on " << a()->current_sub().name << wwiv::endl;
+  bout.print("Posted on {}\r\n", a()->current_sub().name);
   if (!a()->current_sub().nets.empty()) {
     a()->user()->posts_net(a()->user()->posts_net() + 1);
     if (!(p.status & status_pending_net)) {
@@ -402,8 +402,7 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
     a()->set_current_user_sub_num(start_subnum);
 
     if (!iscan(a()->current_user_sub_num())) {
-      bout << "\r\n\003"
-              "6A file required is in use by another instance. Try again later.\r\n";
+      bout.puts("\r\n|#6A file required is in use by another instance. Try again later.\r\n");
       return;
     }
     memory_last_read = a()->sess().qsc_p[sub_number];
@@ -426,11 +425,11 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
     }
 
     a()->set_current_user_sub_num(old_subnum);
-    bout << "|#1< " << a()->current_sub().name << " Q-Scan Done >";
+    bout.print("|#1< {} Q-Scan Done >", a()->current_sub().name);
     num_lines = 4;
   } else if (!a()->sess().forcescansub()) {
     // No need to display this if we're in a forced nscan for this sub.
-    bout << "|#1< Nothing new on " << a()->subs().sub(sub_number).name;
+    bout.print("|#1< Nothing new on {}", a()->subs().sub(sub_number).name);
   }
   bout.clreol();
   bout.nl();
@@ -481,8 +480,7 @@ void ScanMessageTitles() {
   if (a()->GetNumMessagesInCurrentMessageArea() == 0) {
     return;
   }
-  bout << "|#9Start listing at (|#21|#9-|#2" << a()->GetNumMessagesInCurrentMessageArea()
-       << "|#9): ";
+  bout.print("|#9Start listing at (|#21|#9-|#2{}|#9): ", a()->GetNumMessagesInCurrentMessageArea());
   const auto r =
       bin.input_number_hotkey(1, {'Q', 'S'}, 1, a()->GetNumMessagesInCurrentMessageArea(), false);
   if (auto nextsub = false; r.key == 'S') {
@@ -502,7 +500,7 @@ void remove_post() {
     return;
   }
   bool any = false, abort = false;
-  bout << "\r\n\nPosts by you on " << a()->current_sub().name << "\r\n\n";
+  bout.print("\r\n\nPosts by you on {}\r\n\r\n", a()->current_sub().name);
   for (int j = 1; j <= a()->GetNumMessagesInCurrentMessageArea() && !abort; j++) {
     if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == a()->sess().user_num()) {
       any = true;

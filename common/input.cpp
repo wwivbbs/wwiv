@@ -233,7 +233,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
   }
   if (!orig_text.empty()) {
     to_char_array(szTemp, orig_text);
-    bout << szTemp;
+    bout.puts(szTemp);
     bout.RestorePosition();
     bout.SavePosition();
     pos = nLength = strings::ssize(szTemp);
@@ -324,13 +324,13 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
             for (int i = pos; i < nLength; i++) {
               bout.bputch(szTemp[i]);
             }
-            bout << input_background_char;
+            bout.bputch(input_background_char);
           }
         } else {
           bout.RestorePosition();
           bout.SavePosition();
           bout.Right(pos - 1);
-          bout << input_background_char;
+          bout.bputch(input_background_char);
           pos = --nLength;
           // ReSharper disable once CppRedundantParentheses
           if ((mode == InputMode::DATE && (pos == 2 || pos == 5)) ||
@@ -338,7 +338,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
             bout.RestorePosition();
             bout.SavePosition();
             bout.Right(pos - 1);
-            bout << input_background_char;
+            bout.bputch(input_background_char);
             pos = --nLength;
           }
         }
@@ -385,7 +385,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
           bout.RestorePosition();
           bout.SavePosition();
           bout.Right(pos);
-          bout << &szTemp[pos];
+          bout.puts(&szTemp[pos]);
         }
         if (mode == InputMode::PHONE && (pos == 3 || pos == 7)) {
           bout.bputch(dash);
@@ -396,7 +396,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
           bout.RestorePosition();
           bout.SavePosition();
           bout.Right(pos);
-          bout << &szTemp[pos];
+          bout.puts(&szTemp[pos]);
         }
         // ReSharper disable once CppRedundantParentheses
         if ((mode == InputMode::DATE && c != slash) || (mode == InputMode::PHONE && c != dash) ||
@@ -417,7 +417,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
             bout.RestorePosition();
             bout.SavePosition();
             bout.Right(pos);
-            bout << &szTemp[pos];
+            bout.puts(&szTemp[pos]);
           }
         }
       }
@@ -650,7 +650,7 @@ std::string Input::input_password_minimal(int max_length) {
 
 std::string Input::input_password(const std::string& prompt_text, int max_length) {
   if (!prompt_text.empty()) {
-    bout << prompt_text;
+    bout.puts(prompt_text);
   }
   return input_password_minimal(max_length);
 }

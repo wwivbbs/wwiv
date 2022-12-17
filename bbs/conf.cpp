@@ -139,12 +139,12 @@ void jump_conf(ConferenceType conftype) {
     if (bin.checka())
       break;
     const auto ac = uc.key.key();
-    bout << "|#2" << ac << "|#7)|#1 " << stripcolors(uc.conf_name) << "\r\n";
+    bout.print("|#2{}|#7)|#1 {}\r\n", ac, stripcolors(uc.conf_name));
     allowable.push_back(ac);
   }
 
   bout.nl();
-  bout << "|#2Select [" << allowable.substr(1) << ", <space> to quit]: ";
+  bout.print("|#2Select [{}, <space> to quit]: ", allowable.substr(1));
   const auto ch = onek(allowable);
   if (ch == ' ') {
     return;
@@ -277,9 +277,9 @@ static void modify_conf(Conference& conf, char key) {
     bout.cls();
     bout.litebar("Edit Conference");
 
-    bout << "|#9A) Key  : |#2" << c.key.key() << wwiv::endl;
-    bout << "|#9B) Name : |#2" << c.conf_name << wwiv::endl;
-    bout << "|#9C) ACS  : |#2" << c.acs << wwiv::endl;
+    bout.print("|#9A) Key  : |#2{}\r\n", c.key.key());
+    bout.print("|#9B) Name : |#2{}\r\n", c.conf_name);
+    bout.print("|#9C) ACS  : |#2{}\r\n", c.acs);
     bout.nl();
 
     bout.puts("|#7(|#2Q|#7=|#1Quit|#7) Conference Edit [|#1A|#7-|#1C|#7] : ");
@@ -462,7 +462,7 @@ std::optional<char> select_conf(const std::string& prompt_text, Conference& conf
   while (!a()->sess().hangup()) {
     if (!prompt_text.empty()) {
       bout.nl();
-      bout << "|#1" << prompt_text;
+      bout.print("|#1{}", prompt_text);
     }
     auto key = onek(allowed, true);
     if (key == ' ' || key == '\r' || key == '\n' || key == ESC) {
