@@ -306,8 +306,8 @@ static bool AddBBSListEntry(std::vector<BbsListEntry>& entries) {
 static char ShowBBSListMenuAndGetChoice() {
   bout.nl();
   if (so()) {
-    bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, "
-            "(|#1N|#9)et : ";
+    bout.puts("|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd,"
+              " (|#1D|#9)elete, (|#1N|#9)et : ");
     return onek("QRNAD");
   }
   bout.puts("|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ");

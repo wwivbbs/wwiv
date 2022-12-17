@@ -205,15 +205,15 @@ void multi_instance() {
   bout.nl();
   const auto num = num_instances();
   if (num < 1) {
-    bout << "|#6Couldn't find instance data file.\r\n";
+    bout.puts("|#6Couldn't find instance data file.\r\n");
     return;
   }
 
   bout.printf("|#5Node |#1%-35.35s |#2%-37.37s\r\n", "User Name", "Activity");
-  bout << "==== " << std::string(35, '=') << " " << std::string(37, '=') << "\r\n";
+  bout.print("==== {} {}\r\n", std::string(35, '='), std::string(37, '='));
 
   for (int inst = 1; inst <= num; inst++) {
-    bout << make_inst_str(inst, INST_FORMAT_LIST) << "\r\n";
+    bout.pl(make_inst_str(inst, INST_FORMAT_LIST));
   }
 }
 

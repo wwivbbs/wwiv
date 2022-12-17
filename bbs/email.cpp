@@ -103,9 +103,9 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
   }
   auto current_user = userRecord.forward_usernum();
   if (current_user == -1 || current_user == std::numeric_limits<decltype(current_user)>::max()) {
-    bout << "Mailbox Closed.\r\n";
+    bout.puts("Mailbox Closed.\r\n");
     if (so()) {
-      bout << "(Forcing)\r\n";
+      bout.puts("(Forcing)\r\n");
     } else {
       *pUserNumber = 0;
       *pSystemNumber = 0;
@@ -131,9 +131,9 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
     }
     ss[current_user] = true;
     if (userRecord.mailbox_closed()) {
-      bout << "Mailbox Closed.\r\n";
+      bout.puts("Mailbox Closed.\r\n");
       if (so()) {
-        bout << "(Forcing)\r\n";
+        bout.puts("(Forcing)\r\n");
         *pUserNumber = current_user;
         *pSystemNumber = 0;
       } else {
@@ -217,7 +217,7 @@ void sendout_email(EmailData& data) {
         --i;
         file_email->Seek(i * sizeof(mailrec), File::Whence::begin);
         if (auto i1 = file_email->Read(&messageRecord, sizeof(mailrec)); i1 == -1) {
-          bout << "|#6DIDN'T READ WRITE!\r\n";
+          bout.puts("|#6DIDN'T READ WRITE!\r\n");
         }
       }
       if (messageRecord.tosys || messageRecord.touser) {
@@ -229,7 +229,7 @@ void sendout_email(EmailData& data) {
     auto bytes_written = file_email->Write(&m, sizeof(mailrec));
     file_email->Close();
     if (bytes_written == -1) {
-      bout << "|#6DIDN'T SAVE RIGHT!\r\n";
+      bout.puts("|#6DIDN'T SAVE RIGHT!\r\n");
     }
   } else {
     auto o = readfile(&m.msg, "email"); 
@@ -305,7 +305,7 @@ void sendout_email(EmailData& data) {
         && a()->sess().effective_sl() >= a()->config()->validated_sl()
         && userRecord.forward_systemnum() == 0
         && !data.silent_mode) {
-      bout << "|#5Attach a file to this message? ";
+      bout.puts("|#5Attach a file to this message? ");
       if (bin.yesno()) {
         attach_file(1);
       }
@@ -340,14 +340,14 @@ void sendout_email(EmailData& data) {
   });
   if (!data.silent_mode) {
     bout.Color(3);
-    bout << logMessage;
+    bout.puts(logMessage);
     bout.nl();
   }
 }
 
 bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
   if (system_number != 0 && a()->current_net().sysnum == 0) {
-    bout << "\r\nSorry, this system is not a part of WWIVnet.\r\n\n";
+    bout.puts("\r\nSorry, this system is not a part of WWIVnet.\r\n\n");
     return false;
   }
   if (system_number == 0) {
@@ -363,21 +363,21 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
          userRecord.email_waiting() > a()->config()->max_waiting()) ||
         userRecord.email_waiting() > 200) {
       if (!bForceit) {
-        bout << "\r\nMailbox full.\r\n";
+        bout.puts("\r\nMailbox full.\r\n");
         return false;
       }
     }
     if (userRecord.deleted()) {
-      bout << "\r\nDeleted user.\r\n\n";
+      bout.puts("\r\nDeleted user.\r\n\n");
       return false;
     }
   } else {
     if (!valid_system(system_number)) {
-      bout << "\r\nUnknown system number.\r\n\n";
+      bout.puts("\r\nUnknown system number.\r\n\n");
       return false;
     }
     if (a()->user()->restrict_net()) {
-      bout << "\r\nYou can't send mail off the system.\r\n";
+      bout.puts("\r\nYou can't send mail off the system.\r\n");
       return false;
     }
   }
@@ -387,11 +387,11 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
          ((user_number != 1 || system_number != 0) &&
           (a()->user()->email_today() >= a()->config()->sl(a()->sess().effective_sl()).emails)))
         && !cs()) {
-      bout << "\r\nToo much mail sent today.\r\n\n";
+      bout.puts("\r\nToo much mail sent today.\r\n\n");
       return false;
     }
     if (a()->user()->restrict_email() && user_number != 1) {
-      bout << "\r\nYou can't send mail.\r\n\n";
+      bout.puts("\r\nYou can't send mail.\r\n\n");
       return false;
     }
   }
@@ -412,7 +412,7 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
   auto cc = false, bcc = false;
 
   if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
-    bout << "\r\nSorry, not enough disk space left.\r\n\n";
+    bout.puts("\r\nSorry, not enough disk space left.\r\n\n");
     return;
   }
   bout.nl();
@@ -420,9 +420,9 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
     if (system_number == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
       destination = read_inet_addr(user_number);
     }
-    bout << "\r\nMail Forwarded.\r\n\n";
+    bout.puts("\r\nMail Forwarded.\r\n\n");
     if (user_number == 0 && system_number == 0) {
-      bout << "Forwarded to unknown user.\r\n";
+      bout.puts("Forwarded to unknown user.\r\n");
       return;
     }
   }
@@ -461,7 +461,7 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
       try {
         auto addr = fido::get_address_from_single_line(destination);
         if (!addr.has_value()) {
-          bout << "Bad FTN Address: " << destination;
+          bout.print("Bad FTN Address: {}", destination);
           return;
         }
         if (auto & net = a()->mutable_current_net(); net.try_load_nodelist()) {
@@ -477,13 +477,13 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
             }
           }
         } else {
-          bout << "Unable to validate FTN address against nodelist." << wwiv::endl;
+          bout.pl("Unable to validate FTN address against nodelist.");
           sysoplog("WARNING: Unable to validate FTN address against nodelist.");
           sysoplog(fmt::format("Nodelist base: {} does not exist in netdir: {}",
                                     net.fido.nodelist_base, net.dir.string()));
         }
       } catch (const fido::bad_fidonet_address& e) {
-        bout << "Bad FTN Address: " << destination << "; error: " << e.what();
+        bout.print("Bad FTN Address: {}; error: {}", destination, e.what());
         return;
       }
     } else {
@@ -492,7 +492,7 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
           username_system_net_as_string(user_number, a()->net_email_name, system_number, netname);
     }
   }
-  bout << "|#9E-mailing:      |#2" << destination;
+  bout.print("|#9E-mailing:      |#2{}", destination);
   if (system_number != 0) {
     bout.print(" |#9(|#1{}|#9)", a()->current_net().name); 
   }
@@ -511,11 +511,11 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
   if (system_number != 0) {
     i = 0;
     anony = 0;
-    bout << "|#9Name of system: |#2" << destination_bbs_name << wwiv::endl;
+    bout.print("|#9Name of system: |#2{}\r\n", destination_bbs_name);
     if (a()->current_net().type == network_type_t::wwivnet) {
       bout.nl();
       CHECK(csne.has_value());
-      bout << "|#9Number of hops: |#2" << csne->numhops << wwiv::endl;
+      bout.print("|#9Number of hops: |#2{}\r\n", csne->numhops);
       bout.nl();
     }
   }
@@ -548,7 +548,7 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
 
   if (a()->IsCarbonCopyEnabled()) {
     bout.nl();
-    bout << "|#9Copy this mail to others? ";
+    bout.puts("|#9Copy this mail to others? ");
     nNumUsers = 0;
     if (bin.yesno()) {
       bool done = false;
@@ -559,7 +559,7 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
       carbon_copy[nNumUsers].net_num = a()->net_num();
       nNumUsers++;
       do {
-        bout << "|#9Enter Address (blank to end) : ";
+        bout.puts("|#9Enter Address (blank to end) : ");
         std::string emailAddress = bin.input(75);
         if (emailAddress.empty()) {
           done = true;
@@ -575,12 +575,12 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
           cc = true;
         }
         if (nNumUsers == 20) {
-          bout << "|#6Maximum number of addresses reached!";
+          bout.puts("|#6Maximum number of addresses reached!");
           done = true;
         }
       } while (!done);
       if (cc) {
-        bout << "|#9Show Recipients in message? ";
+        bout.puts("|#9Show Recipients in message? ");
         bcc = !bin.yesno();
       }
     }
@@ -671,7 +671,7 @@ void imail(const std::string& title, uint16_t user_number, uint16_t system_numbe
   bool fwdm = false;
 
   if (ForwardMessage(&user_number, &system_number)) {
-    bout << "Mail forwarded.\r\n";
+    bout.puts("Mail forwarded.\r\n");
     fwdm = true;
   }
 
@@ -687,7 +687,7 @@ void imail(const std::string& title, uint16_t user_number, uint16_t system_numbe
   bool doit = true;
   if (system_number == 0) {
     if (auto user = a()->users()->readuser(user_number, UserManager::mask::non_deleted)) {
-      bout << "|#5E-mail " << user->name_and_number() << "? ";
+      bout.print("|#5E-mail {}? ", user->name_and_number());
       if (!bin.yesno()) {
         doit = false;
       }
@@ -696,9 +696,9 @@ void imail(const std::string& title, uint16_t user_number, uint16_t system_numbe
     }
   } else {
     if (fwdm) {
-      bout << "|#5E-mail " << internet_email_address << "? ";
+      bout.print("|#5E-mail {}? ", internet_email_address);
     } else {
-      bout << "|#5E-mail User " << user_number << " @" << system_number << " ? ";
+      bout.print("|#5E-mail User {} @{}? ", user_number, system_number);
     }
     if (!bin.yesno()) {
       doit = false;
@@ -783,7 +783,7 @@ std::string fixup_user_entered_email(const std::string& user_input) {
       if (wwiv::stl::contains(inner, '/') && !contains(user_input, FTN_FAKE_OUTBOUND_ADDRESS)) {
         // At least need a FTN address.
         return StrCat(user_input, " ", FTN_FAKE_OUTBOUND_ADDRESS);
-        //bout << "\r\n|#9Sending to FTN Address: |#2" << inner << wwiv::endl;
+        //bout.print("\r\n|#9Sending to FTN Address: |#2{}\r\n", inner);
       }
     }
   }

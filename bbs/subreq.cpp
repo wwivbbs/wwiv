@@ -44,7 +44,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static void maybe_netmail(subboard_network_data_t* ni, bool bAdd) {
-  bout << "|#5Send email request to the host now? ";
+  bout.puts("|#5Send email request to the host now? ");
   if (bin.yesno()) {
     auto title = StrCat("Sub type ", ni->stype);
     if (bAdd) {
@@ -67,7 +67,7 @@ static bool display_sub_categories(const Network& net) {
     return false;
   }
   bout.nl();
-  bout << "Available sub categories are:\r\n";
+  bout.puts("Available sub categories are:\r\n");
   auto abort = false;
   std::string s;
   while (!abort && ff.ReadLine(&s)) {
@@ -197,11 +197,11 @@ static int find_hostfor(const Network& net, const std::string& type, short* ui,
         }
       } else {
         bout.nl();
-        bout << "Type: " << type << wwiv::endl;
-        bout << "Host: " << h << wwiv::endl;
-        bout << "Sub : " << ss << wwiv::endl;
+        bout.print("Type: {}\r\n", type);
+        bout.print("Host: {}\r\n", h);
+        bout.print("Sub : {}\r\n", ss);
         bout.nl();
-        bout << "|#5Is this the sub you want? ";
+        bout.puts("|#5Is this the sub you want? ");
         if (bin.yesno()) {
           done = true;
           *ui = h;
@@ -233,7 +233,7 @@ void sub_xtr_del(int n, int nn, int f) {
     const auto ok = find_hostfor(net, xn.stype, &xn.host, nullptr, &opt);
     if (ok) {
       if (opt & OPTION_AUTO) {
-        bout << "|#5Attempt automated drop request? ";
+        bout.puts("|#5Attempt automated drop request? ");
         if (bin.yesno()) {
           sub_req(main_type_sub_drop_req, xn.host, xn.stype, net);
         }
@@ -241,7 +241,7 @@ void sub_xtr_del(int n, int nn, int f) {
         maybe_netmail(&xn, false);
       }
     } else {
-      bout << "|#5Attempt automated drop request? ";
+      bout.puts("|#5Attempt automated drop request? ");
       if (bin.yesno()) {
         sub_req(main_type_sub_drop_req, xn.host, xn.stype, net);
       } else {
@@ -281,10 +281,10 @@ bool sub_xtr_add(int n, int nn) {
         auto odci = (ii + 1) / 10;
         odc.insert(static_cast<char>(odci + '0'));
       }
-      bout << "(" << ii + 1 << ") " << a()->nets()[ii].name << wwiv::endl;
+      bout.print("({}) {}\r\n", ii + 1, a()->nets()[ii].name);
     }
-    bout << "Q. Quit\r\n\n";
-    bout << "|#2Which network (number): ";
+    bout.puts("Q. Quit\r\n\n");
+    bout.puts("|#2Which network (number): ");
     if (wwiv::stl::ssize(a()->nets()) < 9) {
       auto ch = onek(onx);
       if (ch == 'Q') {
@@ -310,10 +310,10 @@ bool sub_xtr_add(int n, int nn) {
   bout.nl();
   auto stype_len = 7;
   if (net.type == network_type_t::ftn) {
-    bout << "|#2What echomail area: ";
+    bout.puts("|#2What echomail area: ");
     stype_len = 40;
   } else {
-    bout << "|#2What sub type? ";
+    bout.puts("|#2What sub type? ");
   }
   xnp.stype = bin.input(stype_len, true);
   if (xnp.stype.empty()) {
@@ -323,7 +323,7 @@ bool sub_xtr_add(int n, int nn) {
   bool is_hosting = false;
   if (net.type == network_type_t::wwivnet || net.type == network_type_t::internet ||
       net.type == network_type_t::news) {
-    bout << "|#5Will you be hosting the sub? ";
+    bout.puts("|#5Will you be hosting the sub? ");
     is_hosting = bin.yesno();
   }
 
@@ -334,19 +334,19 @@ bool sub_xtr_add(int n, int nn) {
       file.Close();
     }
 
-    bout << "|#5Allow auto add/drop requests? ";
+    bout.puts("|#5Allow auto add/drop requests? ");
     if (bin.noyes()) {
       xnp.flags |= XTRA_NET_AUTO_ADDDROP;
     }
 
-    bout << "|#5Make this sub public (in subs.lst)?";
+    bout.puts("|#5Make this sub public (in subs.lst)?");
     if (bin.noyes()) {
       xnp.flags |= XTRA_NET_AUTO_INFO;
       if (display_sub_categories(net)) {
         auto gc = 0;
         while (!gc) {
           bout.nl();
-          bout << "|#2Which category is this sub in (0 for unknown/misc)? ";
+          bout.puts("|#2Which category is this sub in (0 for unknown/misc)? ");
           auto s = bin.input(3);
           auto i = to_number<uint16_t>(s);
           if (i || s == "0") {
@@ -363,7 +363,7 @@ bool sub_xtr_add(int n, int nn) {
             if (s == "0") {
               gc = 1;
             } else if (!xnp.category) {
-              bout << "Illegal/invalid category.\r\n\n";
+              bout.puts("Illegal/invalid category.\r\n\n");
             }
           } else {
             if (s.size() == 1 && s.front() == '?') {
@@ -384,13 +384,13 @@ bool sub_xtr_add(int n, int nn) {
     do {
       a()->CheckForHangup();
       bout.nl();
-      bout << "|#2Which FTN system (address) is the host? ";
+      bout.puts("|#2Which FTN system (address) is the host? ");
       const auto host = bin.input_text(20);
       try {
         fido::FidoAddress a(host);
         addresses.insert(a);
         if (!WriteFidoSubcriberFile(sub_file_name, addresses)) {
-          bout << "ERROR: Unable to add host to subscriber file";
+          bout.puts("ERROR: Unable to add host to subscriber file");
         }
         done = true;
       } catch (const fido::bad_fidonet_address& e) {
@@ -405,7 +405,7 @@ bool sub_xtr_add(int n, int nn) {
 
     if (!ok) {
       bout.nl();
-      bout << "|#2Which system (number) is the host? ";
+      bout.puts("|#2Which system (number) is the host? ");
       bin.input(description, 6);
       xnp.host = to_number<uint16_t>(description);
       description[0] = '\0';
@@ -426,7 +426,7 @@ bool sub_xtr_add(int n, int nn) {
           }
           bout.nl();
           if (opt & OPTION_AUTO) {
-            bout << "|#5Attempt automated add request? ";
+            bout.puts("|#5Attempt automated add request? ");
             if (bin.yesno()) {
               sub_req(main_type_sub_add_req, xnp.host, xnp.stype, net);
             }
@@ -435,7 +435,7 @@ bool sub_xtr_add(int n, int nn) {
           }
         } else {
           bout.nl();
-          bout << "|#5Attempt automated add request? ";
+          bout.puts("|#5Attempt automated add request? ");
           auto bTryAutoAddReq = bin.yesno();
           if (bTryAutoAddReq) {
             sub_req(main_type_sub_add_req, xnp.host, xnp.stype, net);
@@ -445,7 +445,7 @@ bool sub_xtr_add(int n, int nn) {
         }
       } else {
         bout.nl();
-        bout << "The host is not listed in the network.\r\n";
+        bout.puts("The host is not listed in the network.\r\n");
         bout.pausescr();
       }
     }

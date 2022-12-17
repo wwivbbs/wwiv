@@ -145,8 +145,8 @@ static char ShowAMsgMenuAndGetInput() {
   }
 
   if (cs()) {
-    bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite, (|#2L|#9)ock, "
-            "(|#2D|#9)el, (|#2U|#9)nlock : ";
+    bout.puts("|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite, (|#2L|#9)ock, "
+              "(|#2D|#9)el, (|#2U|#9)nlock : ");
     return onek("QRWALDU", true);
   }
   if (bCanWrite) {

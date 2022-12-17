@@ -357,9 +357,10 @@ static void gfile_sec(int sn) {
   bool done = false;
   while (!done && !a()->sess().hangup()) {
     a()->tleft(true);
-    bout << "|#9Current G|#1-|#9File Section |#1: |#5" << section.name << "|#0\r\n";
-    bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << size_int(g) <<
-                       "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
+    bout.print("|#9Current G|#1-|#9File Section |#1: |#5{}\r\n|#0\r\n", section.name);
+    bout.print("|#9Which G|#1-|#9File |#1(|#21|#1-|#2{}|#1), |#1(|#2Q|#1=|#9Quit|#1, "
+               "|#2?|#1=|#9Relist|#1) : |#5",
+               size_int(g));
     std::string ss = mmkey(odc);
     i = to_number<int>(ss);
     if (ss == "Q") {
@@ -377,20 +378,20 @@ static void gfile_sec(int sn) {
       }
     } else if (ss == "R" && so()) {
       bout.nl();
-      bout << "|#2G-file number to delete? ";
+      bout.puts("|#2G-file number to delete? ");
       std::string ss1 = mmkey(odc);
       i = to_number<int>(ss1);
       if (i > 0 && i <= nf) {
-        bout << "|#9Remove " << g[i - 1].description << "|#1? |#5";
+        bout.print("|#9Remove {}|#1? |#5", g[i - 1].description);
         if (bin.yesno()) {
-          bout << "|#5Erase file too? ";
+          bout.puts("|#5Erase file too? ");
           if (bin.yesno()) {
             const auto file_name = FilePath(section.filename, g[i - 1].filename);
             File::Remove(FilePath(a()->config()->gfilesdir(), file_name));
           }
           erase_at(g, i-1);
           a()->gfiles().Save();
-          bout << "\r\nDeleted.\r\n\n";
+          bout.puts("\r\nDeleted.\r\n\n");
         }
       }
     } else if (ss == "?") {
@@ -408,13 +409,13 @@ static void gfile_sec(int sn) {
     } else if (ss == "D") {
       bool done1 = false;
       while (!done1 && !a()->sess().hangup()) {
-        bout << "|#9Download which G|#1-|#9file |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist) : |#5";
+        bout.puts("|#9Download which G|#1-|#9file |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist) : |#5");
         ss = mmkey(odc);
         i2 = to_number<int>(ss);
         abort = false;
         if (ss == "?") {
           list_gfiles(section);
-          bout << "|#9Current G|#1-|#9File Section |#1: |#5" << section.name << wwiv::endl;
+          bout.print("|#9Current G|#1-|#9File Section |#1: |#5{}\r\n", section.name);
         } else if (ss == "Q") {
           list_gfiles(section);
           done1 = true;
@@ -423,7 +424,7 @@ static void gfile_sec(int sn) {
             auto file_name = FilePath(section.filename, g[i2 - 1].filename);
             File file(FilePath(a()->config()->datadir(), file_name));
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
-              bout << "|#6File not found : [" << file << "]";
+              bout.print("|#6File not found : [{}]", file.full_pathname());
             } else {
               auto file_size = file.length();
               file.Close();
@@ -439,7 +440,7 @@ static void gfile_sec(int sn) {
                 done1 = true;
               }
               bout.nl();
-              bout << s1;
+              bout.puts(s1);
               bout.nl();
               sysoplog(s1);
             }
@@ -484,15 +485,16 @@ void gfiles() {
     current_section++;
   }
   if (nmap == 0) {
-    bout << "\r\nNo G-file sections available.\r\n\n";
+    bout.puts("\r\nNo G-file sections available.\r\n\n");
     return;
   }
   list_sec(map);
   while (!done && !a()->sess().hangup()) {
     a()->tleft(true);
-    bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
-    bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap <<
-                       "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
+    bout.puts("|#9G|#1-|#9Files Main Menu|#0\r\n");
+    bout.print("|#9Which Section |#1(|#21|#1-|#2{}"
+               "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5",
+               nmap);
     std::string ss = mmkey(odc);
     if (ss == "Q") {
       done = true;
@@ -503,7 +505,7 @@ void gfiles() {
       bool bIsSectionFull = false;
       for (int i = 0; i < nmap && !bIsSectionFull; i++) {
         bout.nl();
-        bout << "Now loading files for " << a()->gfiles()[map[i]].name << "\r\n\n";
+        bout.print("Now loading files for {}\r\n\r\n", a()->gfiles()[map[i]].name);
         bIsSectionFull = fill_sec(map[i]);
       }
     } else {

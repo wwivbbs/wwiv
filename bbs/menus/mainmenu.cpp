@@ -313,7 +313,7 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
     }
     const auto save_mci = bout.mci_enabled();
     bout.enable_mci();
-    bout << prompt_;
+    bout.puts(prompt_);
     bout.set_mci_enabled(save_mci);
     // Do actions on enter.
 

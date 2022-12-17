@@ -255,7 +255,7 @@ void change_colors() {
       } else {
         os << DisplayColorName((a()->user()->bwcolor(1) >> 4) & 0x07);
       }
-      bout << os.str();
+      bout.puts(os.str());
       bout.nl(2);
     }
     for (int i = 0; i < 10; i++) {
@@ -295,7 +295,7 @@ void change_colors() {
         break;
       }
       os << DescribeColorCode(a()->user()->color(i));
-      bout << os.str();
+      bout.puts(os.str());
       bout.nl();
     }
     bout.puts("\r\n|#9[|#2R|#9]eset Colors to Default Values, [|#2Q|#9]uit\r\n");
@@ -353,7 +353,7 @@ void change_colors() {
 
       bout.nl(2);
       bout.SystemColor(nc);
-      bout << DescribeColorCode(nc);
+      bout.puts(DescribeColorCode(nc));
       bout.Color(0);
       bout.nl(2);
       bout.puts("|#8Is this OK? ");
@@ -692,9 +692,9 @@ void modify_mailbox() {
 }
 
 void change_optional_lines() {
-  bout << "|#9You may specify your optional lines value from 0-10,\r\n"
-       << "|#20 |#9being all, |#210 |#9being none.\r\n"
-       << "|#2What value? ";
+  bout.puts("|#9You may specify your optional lines value from 0-10,\r\n"
+            "|#20 |#9being all, |#210 |#9being none.\r\n"
+            "|#2What value? ");
   if (const auto r = bin.input_number_hotkey(a()->user()->optional_val(), {'Q'}, 0, 10);
       r.key != 'Q') {
     a()->user()->optional_val(r.num);
@@ -858,7 +858,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
                  type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
   bout.Color(7);
-  bout << std::string(79, '\xC4');
+  bout.puts(std::string(79, '\xC4'));
   bout.nl();
 
   const auto max_lines = GetMaxLinesToShowForScanPlus();
@@ -875,9 +875,9 @@ static void list_config_scan_plus(int first, int *amount, int type) {
       }
       if (*amount >= max_lines) {
         bout.GotoXY(40, 3 + *amount - max_lines);
-        bout << s;
+        bout.puts(s);
       } else {
-        bout << s;
+        bout.puts(s);
         bout.nl();
       }
       ++*amount;
@@ -896,9 +896,9 @@ static void list_config_scan_plus(int first, int *amount, int type) {
       }
       if (*amount >= max_lines) {
         bout.GotoXY(40, 3 + *amount - max_lines);
-        bout << s;
+        bout.puts(s);
       } else {
-        bout << s;
+        bout.puts(s);
         bout.nl();
       }
       ++*amount;

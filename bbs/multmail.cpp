@@ -344,7 +344,7 @@ void slash_e() {
         if (sss) {
           *sss = 0;
         }
-        bout << s;
+        bout.puts(s);
         bout.nl();
       }
 

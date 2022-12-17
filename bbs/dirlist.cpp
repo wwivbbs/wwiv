@@ -76,7 +76,7 @@ void dirlist(int mode) {
           }
           bout.litebar(s);
           DisplayHorizontalBar(78, 7);
-          bout << "|#2 Dir Qscan?     Directory Name                          Total Files\r\n";
+          bout.puts("|#2 Dir Qscan?     Directory Name                          Total Files\r\n");
           DisplayHorizontalBar(78, 7);
         }
         ++nd;

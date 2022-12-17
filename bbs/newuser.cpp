@@ -91,13 +91,13 @@ void input_phone() {
   std::string phoneNumber;
   do {
     bout.nl();
-    bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
+    bout.puts("|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:");
     phoneNumber = bin.input_phonenumber(a()->user()->voice_phone(), 12);
     
     ok = valid_phone(phoneNumber);
     if (!ok) {
       bout.nl();
-      bout << "|#6Please enter a valid phone number in the correct format.\r\n";
+      bout.puts("|#6Please enter a valid phone number in the correct format.\r\n");
     }
   } while (!ok && !a()->sess().hangup());
   if (!a()->sess().hangup()) {
@@ -109,7 +109,7 @@ void input_dataphone() {
   bool ok = true;
   do {
     bout.nl();
-    bout << "|#9Enter your DATA phone no. in the form. \r\n";
+    bout.puts("|#9Enter your DATA phone no. in the form. \r\n");
     bout << "|#9 ###-###-#### - Press Enter to use [" << a()->user()->voice_phone() << "].\r\n";
     std::string data_phone_number = bin.input_phonenumber(a()->user()->data_phone(), 12);
     if (data_phone_number[0] == '\0') {
@@ -121,7 +121,7 @@ void input_dataphone() {
       a()->user()->data_phone(data_phone_number);
     } else {
       bout.nl();
-      bout << "|#6Please enter a valid phone number in the correct format.\r\n";
+      bout.puts("|#6Please enter a valid phone number in the correct format.\r\n");
     }
   } while (!ok && !a()->sess().hangup());
 }
@@ -150,9 +150,9 @@ void input_name() {
   do {
     bout.nl();
     if (!(a()->config()->sysconfig_flags() & sysconfig_allow_alias)) {
-      bout << "|#3Enter your FULL REAL name.\r\n";
+      bout.puts("|#3Enter your FULL REAL name.\r\n");
     } else {
-      bout << "|#3Enter your full name, or your alias.\r\n";
+      bout.puts("|#3Enter your full name, or your alias.\r\n");
     }
     std::string temp_local_name = bin.input_upper(a()->user()->name(), 30);
     ok = check_name(temp_local_name);
@@ -160,7 +160,7 @@ void input_name() {
       a()->user()->set_name(temp_local_name);
     } else {
       bout.nl();
-      bout << "|#6I'm sorry, you can't use that name.\r\n";
+      bout.puts("|#6I'm sorry, you can't use that name.\r\n");
       ++count;
       if (count == 3) {
         hang_it_up();
@@ -174,11 +174,11 @@ void input_realname() {
   if (a()->config()->sysconfig_flags() & sysconfig_allow_alias) {
     do {
       bout.nl();
-      bout << "|#3Enter your FULL real name.\r\n";
+      bout.puts("|#3Enter your FULL real name.\r\n");
       std::string temp_local_name = bin.input_proper(a()->user()->real_name(), 30);
       if (temp_local_name.empty()) {
         bout.nl();
-        bout << "|#6Sorry, you must enter your FULL real name.\r\n";
+        bout.puts("|#6Sorry, you must enter your FULL real name.\r\n");
       } else {
         a()->user()->real_name(temp_local_name);
       }
@@ -188,7 +188,7 @@ void input_realname() {
 
 void input_callsign() {
   bout.nl();
-  bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
+  bout.puts(" |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:");
   const auto s = bin.input_upper(a()->user()->callsign(), 6);
   a()->user()->callsign(s);
 }
@@ -221,12 +221,12 @@ void input_street() {
   std::string street;
   do {
     bout.nl();
-    bout << "|#3Enter your street address.\r\n";
+    bout.puts("|#3Enter your street address.\r\n");
     street = bin.input_proper(a()->user()->street(), 30);
 
     if (street.empty()) {
       bout.nl();
-      bout << "|#6I'm sorry, you must enter your street address.\r\n";
+      bout.puts("|#6I'm sorry, you must enter your street address.\r\n");
     }
   } while (street.empty() && !a()->sess().hangup());
   if (!a()->sess().hangup()) {
@@ -238,12 +238,12 @@ void input_city() {
   std::string city;
   do {
     bout.nl();
-    bout << "|#3Enter your city (i.e San Francisco). \r\n";
+    bout.puts("|#3Enter your city (i.e San Francisco). \r\n");
     city = bin.input_proper(a()->user()->city(), 30);
 
     if (city.empty()) {
       bout.nl();
-      bout << "|#6I'm sorry, you must enter your city.\r\n";
+      bout.puts("|#6I'm sorry, you must enter your city.\r\n");
     }
   } while (city.empty() && !a()->sess().hangup());
   a()->user()->city(city);
@@ -254,16 +254,16 @@ void input_state() {
   do {
     bout.nl();
     if (iequals(a()->user()->country(), "CAN")) {
-      bout << "|#3Enter your province (i.e. QC).\r\n";
+      bout.puts("|#3Enter your province (i.e. QC).\r\n");
     } else {
-      bout << "|#3Enter your state (i.e. CA). \r\n";
+      bout.puts("|#3Enter your state (i.e. CA). \r\n");
     }
-    bout << "|#2:";
+    bout.puts("|#2:");
     state = bin.input_upper(2);
 
     if (state.empty()) {
       bout.nl();
-      bout << "|#6I'm sorry, you must enter your state or province.\r\n";
+      bout.puts("|#6I'm sorry, you must enter your state or province.\r\n");
     }
   } while (state.empty() && (!a()->sess().hangup()));
   a()->user()->state(state);
@@ -273,8 +273,8 @@ void input_country() {
   std::string country;
   do {
     bout.nl();
-    bout << "|#9Enter your country.  Hit Enter for \"|#1USA|#9\"\r\n";
-    bout << "|#7: ";
+    bout.puts("|#9Enter your country.  Hit Enter for \"|#1USA|#9\"\r\n");
+    bout.puts("|#7: ");
     country = bin.input_upper(3);
     if (country.empty()) {
       country = "USA";
@@ -289,18 +289,18 @@ void input_zipcode() {
     int len = 7;
     bout.nl();
     if (iequals(a()->user()->country(), "USA")) {
-      bout << "|#3Enter your zipcode as #####-#### \r\n";
+      bout.puts("|#3Enter your zipcode as #####-#### \r\n");
       len = 10;
     } else {
-      bout << "|#3Enter your postal code as L#L-#L#\r\n";
+      bout.puts("|#3Enter your postal code as L#L-#L#\r\n");
       len = 7;
     }
-    bout << "|#2:";
+    bout.puts("|#2:");
     zipcode = bin.input_upper(len);
 
     if (zipcode.empty()) {
       bout.nl();
-      bout << "|#6I'm sorry, you must enter your zipcode.\r\n";
+      bout.puts("|#6I'm sorry, you must enter your zipcode.\r\n");
     }
   } while (zipcode.empty() && (!a()->sess().hangup()));
   a()->user()->zip_code(zipcode);
@@ -308,7 +308,7 @@ void input_zipcode() {
 
 void input_sex() {
   bout.nl();
-  bout << "|#2Your gender (M,F) :";
+  bout.puts("|#2Your gender (M,F) :");
   a()->user()->gender(onek("MF"));
 }
 
@@ -320,13 +320,13 @@ void input_age(User* u) {
   do {
     bout.nl();
     y = (dt.year() - 30) / 100;
-    bout << "|#2Year you were born: ";
+    bout.puts("|#2Year you were born: ");
     y = bin.input_number<int>(y, 1900, static_cast<int>(dt.year() - 30));
   } while (!a()->sess().hangup() && y < 1905);
 
   do {
     bout.nl();
-    bout << "|#2Month you were born (1-12) : ";
+    bout.puts("|#2Month you were born (1-12) : ");
     m = bin.input_number<int>(u->birthday_month(), 1, 12);
   } while (!a()->sess().hangup() && (m > 12 || m < 1));
 
@@ -341,7 +341,7 @@ void input_age(User* u) {
       days_in_month[2] = 28;
     }
     bout.nl();
-    bout << "|#2Day of month you were born (1-31) : ";
+    bout.puts("|#2Day of month you were born (1-31) : ");
     d = bin.input_number<int>(u->birthday_mday(), 1, days_in_month.at(m));
   } while (!a()->sess().hangup() && (d > 31 || d < 1));
   u->birthday_mdy(m, d, y);
@@ -354,14 +354,14 @@ void input_comptype() {
   bool ok = true;
   do {
     bout.nl();
-    bout << "Known computer types:\r\n\n";
+    bout.puts("Known computer types:\r\n\n");
     int i = 0;
     for (i = 1; !ctypes(i).empty(); i++) {
       bout << i << ". " << ctypes(i) << wwiv::endl;
     }
     bout.nl();
-    bout << "|#3Enter your computer type, or the closest to it (ie, Compaq -> IBM).\r\n";
-    bout << "|#2:";
+    bout.puts("|#3Enter your computer type, or the closest to it (ie, Compaq -> IBM).\r\n");
+    bout.puts("|#2:");
     ct = bin.input_number(1, 1, i, false);
     ok = true;
     if (ct < 1 || ct > i) {
@@ -397,9 +397,9 @@ void input_screensize() {
   }
 
   bout.nl();
-  bout << "|#9How wide is your screen : ";
+  bout.puts("|#9How wide is your screen : ");
   const auto x = bin.input_number(a()->user()->screen_width(), 40, 160, true);
-  bout << "|#9How tall is your screen : ";
+  bout.puts("|#9How tall is your screen : ");
   const auto y = bin.input_number(a()->user()->screen_lines(), 20, 100, true);
   a()->user()->screen_width(x);
   a()->user()->screen_lines(y);
@@ -426,14 +426,14 @@ void input_pw(User* pUser) {
     if (!CheckPasswordComplexity(pUser, password)) {
       ok = false;
       bout.nl(2);
-      bout << "Invalid password.  Try again.\r\n\n";
+      bout.puts("Invalid password.  Try again.\r\n\n");
     }
   } while (!ok && !a()->sess().hangup());
 
   if (ok) {
     pUser->password(password);
   } else {
-    bout << "Password not changed.\r\n";
+    bout.puts("Password not changed.\r\n");
   }
 }
 
@@ -442,27 +442,27 @@ void input_ansistat() {
   a()->user()->clear_flag(User::status_color);
   bout.nl();
   if (check_ansi() == 1) {
-    bout << "ANSI graphics support detected.  Use it? ";
+    bout.puts("ANSI graphics support detected.  Use it? ");
   } else {
-    bout << "[0;34;3mTEST[C";
-    bout << "[0;30;45mTEST[C";
-    bout << "[0;1;31;44mTEST[C";
-    bout << "[0;32;7mTEST[C";
-    bout << "[0;1;5;33;46mTEST[C";
-    bout << "[0;4mTEST[0m\r\n";
-    bout << "Is the above line colored, italicized, bold, inversed, or blinking? ";
+    bout.puts("[0;34;3mTEST[C");
+    bout.puts("[0;30;45mTEST[C");
+    bout.puts("[0;1;31;44mTEST[C");
+    bout.puts("[0;32;7mTEST[C");
+    bout.puts("[0;1;5;33;46mTEST[C");
+    bout.puts("[0;4mTEST[0m\r\n");
+    bout.puts("Is the above line colored, italicized, bold, inversed, or blinking? ");
   }
   if (bin.noyes()) {
     a()->user()->set_flag(User::flag_ansi);
     bout.nl();
-    bout << "|#5Do you want color? ";
+    bout.puts("|#5Do you want color? ");
     if (bin.noyes()) {
       a()->user()->set_flag(User::status_color);
       a()->user()->set_flag(User::extraColor);
     } else {
       color_list();
       bout.nl();
-      bout << "|#2Monochrome base color (<C/R>=7)? ";
+      bout.puts("|#2Monochrome base color (<C/R>=7)? ");
       char ch = onek("\r123456789");
       if (ch == '\r') {
         ch = '7';
@@ -583,7 +583,7 @@ bool CanCreateNewUserAccountHere() {
 
   if (a()->config()->closed_system()) {
     bout.nl(2);
-    bout << "I'm sorry, but the system is currently closed, and not accepting new users.\r\n\n";
+    bout.puts("I'm sorry, but the system is currently closed, and not accepting new users.\r\n\n");
     return false;
   }
 
@@ -617,10 +617,10 @@ void DoNewUserASV() {
   if (a()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) && a()->asv.sl > a()->config()->newuser_sl() &&
       a()->asv.sl < 90) {
     bout.nl();
-    bout << "|#5Are you currently a WWIV SysOp? ";
+    bout.puts("|#5Are you currently a WWIV SysOp? ");
     if (bin.yesno()) {
       bout.nl();
-      bout << "|#5Please enter your BBS name and number.\r\n";
+      bout.puts("|#5Please enter your BBS name and number.\r\n");
       const auto note = bin.input_text(60);
       a()->user()->note(note);
       a()->user()->sl(a()->asv.sl);
@@ -692,8 +692,8 @@ void VerifyNewUserPassword() {
     bout << "|#9Your User Number: |#2" << a()->sess().user_num() << wwiv::endl;
     bout << "|#9Your Password:    |#2" << a()->user()->password() << wwiv::endl;
     bout.nl(1);
-    bout << "|#9Please write down this information, and enter your password for verification.\r\n";
-    bout << "|#9You will need to know this password in order to change it to something else.\r\n\n";
+    bout.puts("|#9Please write down this information, and enter your password for verification.\r\n");
+    bout.puts("|#9You will need to know this password in order to change it to something else.\r\n\n");
     const auto password = bin.input_password(bout.lang().value("PW_PROMPT"), 8);
     if (password == a()->user()->password()) {
       ok = true;
@@ -825,7 +825,7 @@ bool check_zip(const std::string& zipcode, int mode) {
         a()->user()->country("USA");
       } else {
         bout.nl();
-        bout << "|#6My records show differently.\r\n\n";
+        bout.puts("|#6My records show differently.\r\n\n");
         ok = false;
       }
     } else {
@@ -1174,8 +1174,8 @@ NewUserItemResult DoComputerType(NewUserContext& c) {
       bout << i << ". " << ctypes(i) << wwiv::endl;
     }
     bout.nl();
-    bout << "|#9Enter your computer type, or the closest to it (ie, Compaq -> IBM).\r\n";
-    bout << "|#9: ";
+    bout.puts("|#9Enter your computer type, or the closest to it (ie, Compaq -> IBM).\r\n");
+    bout.puts("|#9: ");
     ct = bin.input_number(1, 1, i, false);
     ok = true;
     if (ct < 1 || ct > i) {
@@ -1278,7 +1278,7 @@ void NewUserDataEntry(const newuser_config_t& nc) {
       continue;
     }
     bout.nl();
-    bout << "|#5Item to change or [|#2Q|#5] to Quit : |#0";
+    bout.puts("|#5Item to change or [|#2Q|#5] to Quit : |#0");
     std::string allowed("Q");
     for (auto cc = 'A'; cc <= letter; cc++) {
       allowed.push_back(cc);
@@ -1342,7 +1342,7 @@ void newuser() {
   bout.cls();
   bout << "|#5Create a new user account on |#2" << a()->config()->system_name() << "|#5? ";
   if (!bin.noyes()) {
-    bout << "|#6Sorry the system does not meet your needs!\r\n";
+    bout.puts("|#6Sorry the system does not meet your needs!\r\n");
     a()->Hangup();
     return;
   }
@@ -1352,7 +1352,7 @@ void newuser() {
 
   bout.nl(4);
   bout.print("Random password: \"{}\"\r\n\r\n", a()->user()->password());
-  bout << "|#5Do you want a different password (Y/N)? ";
+  bout.puts("|#5Do you want a different password (Y/N)? ");
   if (bin.yesno()) {
     input_pw(a()->user());
   }
@@ -1363,11 +1363,11 @@ void newuser() {
     return;
   }
   bout.nl();
-  bout << "Please wait...\r\n\n";
+  bout.puts("Please wait...\r\n\n");
   const auto usernum = find_new_usernum(a()->user(), a()->sess().qsc);
   if (usernum <= 0) {
     bout.nl();
-    bout << "|#6Error creating user account.\r\n\n";
+    bout.puts("|#6Error creating user account.\r\n\n");
     a()->Hangup();
     return;
   }

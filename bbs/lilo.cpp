@@ -641,9 +641,9 @@ static void DisplayLastNetInfo() {
   bout.nl(2);
   bout.puts("|#5                      Most Recent Network Activity|#0");
   bout.nl(2);
-  bout << "|#2  Date        Time      Sent    Recd    Connection       BBS" << wwiv::endl;
+  bout.pl("|#2  Date        Time      Sent    Recd    Connection       BBS");
   const auto bar = okansi() ? static_cast<char>('\xCD') : '=';
-  bout << "|#7" << std::string(79, bar) << wwiv::endl;
+  bout.print("|#7{}\r\n", std::string(79, bar));
   for (const auto& line : lines) {
     bout.pl(line);
     if (bin.checka()) {

@@ -183,7 +183,7 @@ static void modify_chain(ssize_t chain_num) {
     const auto launch_from = YesNoStringList(c.dir == chain_exec_dir_t::temp, "Temp/Node Directory",
                                              "BBS Root Directory");
     if (c.exec_mode == chain_exec_mode_t::netfoss) {
-      bout << "|#9F) Launch From  : |08Temp/Node Directory" << wwiv::endl;
+      bout.pl("|#9F) Launch From  : |08Temp/Node Directory");
     } else {
       bout.print("|#9F) Launch From  : |#2{}\r\n",launch_from);
     }
@@ -194,7 +194,7 @@ static void modify_chain(ssize_t chain_num) {
     list_chain_sponsors(c.regby, 'J');
 #ifdef _WIN32
   if (c.exec_mode == chain_exec_mode_t::netfoss || c.exec_mode == chain_exec_mode_t::fossil) {
-    bout << "|#9K) Local CP437  : |08Yes" << wwiv::endl;
+    bout.pl("|#9K) Local CP437  : |08Yes");
   } else {
     bout.print("|#9K) Local CP437  : |#2{}\r\n", YesNoString(c.local_console_cp437));
   }

@@ -258,7 +258,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         if (nSyncMode & CONST_SBBSFOS_DOSOUT_MODE) {
           // For some reason this doesn't write twice locally, so it works pretty well.
           szReadBuffer[nBufferPtr] = '\0';
-          bout << szReadBuffer;
+          bout.puts(szReadBuffer);
 
           // ExpandWWIVHeartCodes( szReadBuffer );
           // int nNumWritten = bout.remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );

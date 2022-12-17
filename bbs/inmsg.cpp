@@ -100,7 +100,7 @@ static void GetMessageTitle(MessageEditorData& data) {
       bout.mpl(60);
     }
     if (!data.title.empty()) {
-      bout << data.title;
+      bout.puts(data.title);
       return;
     }
     auto irt = a()->sess().irt();
@@ -122,7 +122,7 @@ static void GetMessageTitle(MessageEditorData& data) {
         s1.resize(60);
       }
       if (!data.silent_mode && !force_title) {
-        bout << s1;
+        bout.puts(s1);
         ch = bin.getkey();
         if (ch == 10) {
           ch = bin.getkey();
@@ -176,7 +176,7 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
   if (a()->user()->screen_width() < 80) {
     header.resize(a()->user()->screen_width());
   }
-  bout << header;
+  bout.puts(header);
   bout.nl();
 
   std::string current_line;
@@ -295,7 +295,7 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
         }
       } else if (cmd == "/TI") {
         check_message_size = false;
-        bout << "|#1Subj|#7: |#2" ;
+        bout.puts("|#1Subj|#7: |#2");
         data.title = bin.input_text(60);
         bout.puts("Continue...\r\n\n");
       }
