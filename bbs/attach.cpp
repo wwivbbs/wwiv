@@ -53,7 +53,7 @@ void attach_file(int mode) {
   bool bDirectionForward = true;
   auto pFileEmail(OpenEmailFile(true));
   if (!pFileEmail->IsOpen()) {
-    bout << "\r\nNo mail.\r\n";
+    bout.puts("\r\nNo mail.\r\n");
     pFileEmail->Close();
     return;
   }
@@ -87,7 +87,7 @@ void attach_file(int mode) {
         done1 = false;
         bout.nl();
         if (m.tosys == 0) {
-          bout << "|#1  To|#7: |#2";
+          bout.puts("|#1  To|#7: |#2");
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) &&
               (a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_email_anony) == 0) {
             bout << ">UNKNOWN<";
@@ -210,7 +210,8 @@ void attach_file(int mode) {
                   if (!found && !file_to_attach.empty()) {
                     full_pathname = FilePath(a()->GetAttachmentDirectory(), stripfn(file_to_attach)).string();
                     bout.nl();
-                    bout << "|#5" << file_to_attach << "? ";
+                    bout.Color(5);
+                    bout.print("{}?",file_to_attach);
                     if (!bin.yesno()) {
                       found = true;
                     }

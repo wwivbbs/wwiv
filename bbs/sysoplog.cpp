@@ -47,7 +47,7 @@ std::string sysoplog_filename(const std::string& d) {
 /*
 * Returns instance (temporary) sysop log filename in s.
 */
-std::string GetTemporaryInstanceLogFileName() {
+std::string instance_sysoplog_filename() {
   return fmt::sprintf("inst-%3.3u.log", a()->sess().instance_number());
 }
 
@@ -55,7 +55,7 @@ std::string GetTemporaryInstanceLogFileName() {
 * Copies temporary/instance sysop log to primary sysop log file.
 */
 void catsl() {
-  const auto templog_fn = FilePath(a()->config()->gfilesdir(), GetTemporaryInstanceLogFileName());
+  const auto templog_fn = FilePath(a()->config()->gfilesdir(), instance_sysoplog_filename());
   if (!File::Exists(templog_fn)) {
     return;
   }
@@ -88,7 +88,7 @@ void AddLineToSysopLogImpl(log_cmd_t cmd, const std::string& text) {
     return;
   }
   const static auto s_sysoplog_filename =
-      FilePath(a()->config()->gfilesdir(), GetTemporaryInstanceLogFileName());
+      FilePath(a()->config()->gfilesdir(), instance_sysoplog_filename());
 
   switch (cmd) {
   case log_cmd_t::log_string: {  // Write line to sysop log

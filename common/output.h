@@ -183,6 +183,13 @@ public:
    */
   int puts(const std::string& text);
 
+  /**
+   * This function outputs a string of characters to the screen (and remotely if applicable) 
+   * and follows with a newline.  The com port is also checked first to see if a remote user 
+   * has hung up.  Returns the number of characters displayed.
+   */
+  int pl(const std::string& text);
+
   // Prints an abort-able string (contained in *text). Returns 1 in *abort if the
   // string was aborted, else *abort should be zero.
   int bpla(const std::string& text, bool* abort);

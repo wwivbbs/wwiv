@@ -146,8 +146,8 @@ static std::optional<int> query_network(const std::vector<NetworkAndName>& nets)
     bout << "|#2" << nn << "|#9) " << v.net.name << " (|#1" << v.system_name << "|#9)\r\n";
     ++nn;
   }
-  bout << "|#2Q|#9) Quit\r\n\n";
-  bout << "|#5(|#2Q|#5=|#1Quit|#5) Which network (number): ";
+  bout.puts("|#2Q|#9) Quit\r\n\n");
+  bout.puts("|#5(|#2Q|#5=|#1Quit|#5) Which network (number): ");
   if (nets.size() < 9) {
     const char ch = onek(onx);
     if (ch == 'Q') {
@@ -279,7 +279,7 @@ std::tuple<uint16_t, uint16_t> parse_email_info(const std::string& email_address
         return parse_internet_email_info(email);
       }
       if (system_number == INTERNET_NEWS_FAKE_OUTBOUND_NODE) {
-        bout << "|#6NNTP is not supported yet." << wwiv::endl;
+        bout.pl("|#6NNTP is not supported yet.");
         return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
       }
       return parse_wwivnet_email_info(email, system_number, network_name);

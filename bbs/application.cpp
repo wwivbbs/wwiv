@@ -349,7 +349,7 @@ void Application::tleft(bool check_for_timeout) {
   // Check for timeout 1st.
   if (check_for_timeout && sess().IsUserOnline()) {
     if (nsln == 0) {
-      bout << "\r\nTime expired.\r\n\n";
+      bout.puts("\r\nTime expired.\r\n\n");
       a()->Hangup();
     }
     return;
@@ -461,7 +461,7 @@ void Application::handle_sysop_key(uint8_t key) {
         a()->Hangup(hangup_type_t::sysop_forced);
         } break;
       case CF5: /* Ctrl-F5 */
-        bout << "\r\nCall back later when you are there.\r\n\n";
+        bout.puts("\r\nCall back later when you are there.\r\n\n");
         bout.remoteIO()->disconnect();
         a()->Hangup(hangup_type_t::sysop_forced);
         break;
@@ -530,11 +530,11 @@ void Application::DisplaySysopWorkingIndicator(bool displayWait) {
   if (displayWait) {
     if (okansi()) {
       const auto nSavedAttribute = bout.curatr();
-      bout.SystemColor(user()->color(3));
-      bout << waitString << "\x1b[" << nNumPrintableChars << "D";
+      bout.Color(3);
+      bout.print("{}\x1b[{}D", waitString, nNumPrintableChars);
       bout.SystemColor(nSavedAttribute);
     } else {
-      bout << waitString;
+      bout.puts(waitString);
     }
   } else {
     if (okansi()) {

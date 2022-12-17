@@ -50,7 +50,7 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
     if (debug == acs_debug_t::local) {
       LOG(INFO) << l;
     } else if (debug == acs_debug_t::remote) {
-      bout << l << endl;
+      bout.pl(l);
     }
   }
 
@@ -68,13 +68,13 @@ bool validate_acs(const std::string& expression, acs_debug_t debug) {
   if (debug == acs_debug_t::local) {
     LOG(INFO) << ex_what;
   } else if (debug == acs_debug_t::remote) {
-    bout << ex_what << wwiv::endl;
+    bout.pl(ex_what);
   }
   for (const auto& l : debug_info) {
     if (debug == acs_debug_t::local) {
       LOG(INFO) << l;
     } else if (debug == acs_debug_t::remote) {
-      bout << l << endl;
+      bout.pl(l);
     }
   }
   return false;

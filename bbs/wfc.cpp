@@ -454,8 +454,8 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       break;
     case 'T': {
       if (a()->terminal_command.empty()) {
-        bout << "Terminal Command not specified. " << wwiv::endl
-             << " Please set TERMINAL_CMD in wwiv.ini" << wwiv::endl;
+        bout.pl("Terminal Command not specified. ");
+        bout.pl(" Please set TERMINAL_CMD in wwiv.ini");
         bin.getkey();
         break;
       }
@@ -483,7 +483,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     case 'W': {
       Clear();
       write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-      bout << "|#1Edit " << a()->config()->gfilesdir() << "<filename>: \r\n";
+      bout.print("|#1Edit {}<filename>: \r\n", a()->config()->gfilesdir());
       text_edit();
     } break;
     // Print Yesterday's Log

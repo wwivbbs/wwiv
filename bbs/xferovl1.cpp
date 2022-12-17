@@ -460,7 +460,8 @@ void tag_files(bool& need_title) {
   }
   bout.clear_lines_listed();
   bout.Color(FRAME_COLOR);
-  bout << "\r" << std::string(78, '-') << wwiv::endl;
+  bout.puts("\r");
+  bout.pl(std::string(78, '-'));
 
   auto done = false;
   while (!done && !a()->sess().hangup()) {
@@ -492,7 +493,7 @@ void tag_files(bool& need_title) {
       break;
     case 'E': {
       bout.clear_lines_listed();
-      bout << "|#9Which file (1-" << a()->filelist.size() << ")? ";
+      bout.print("|#9Which file (1-{})?", a()->filelist.size());
       auto s = bin.input(2, true);
       const auto i = to_number<int>(s) - 1;
       if (!s.empty() && i >= 0 && i < size_int(a()->filelist)) {

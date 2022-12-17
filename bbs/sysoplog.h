@@ -19,10 +19,9 @@
 #define __INCLUDED_SYSOPLOG_H__
 
 #include <string>
-#include <sstream>
 
 std::string sysoplog_filename(const std::string& date);
-std::string GetTemporaryInstanceLogFileName();
+std::string instance_sysoplog_filename();
 void catsl();
 void sysopchar(const std::string& text);
 void sysoplog(bool indent, const std::string& text);

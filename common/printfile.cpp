@@ -247,7 +247,7 @@ bool Output::printfile(const std::string& data, bool abortable, bool force_pause
  */
 bool Output::print_help_file(const std::string& filename) {
   if (!printfile(filename)) {
-    bout << "No help available.  File '" << filename << "' does not exist.\r\n";
+    bout.print("No help available.  File '{}' does not exist.\r\n", filename);
     return false;
   }
   return true;

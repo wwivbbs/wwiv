@@ -264,9 +264,9 @@ std::vector<std::string> query_quote_lines(wwiv::common::SessionContext& ctx) {
     }
 
     if (start_line == end_line) {
-      bout << "|#5Quote line " << start_line << "? ";
+      bout.print("|#5Quote line {}? ", start_line);
     } else {
-      bout << "|#5Quote lines " << start_line << "-" << end_line << "? ";
+      bout.print("|#5Quote lines {}={}? ", start_line, end_line);
     }
     if (!bin.noyes()) {
       return {};

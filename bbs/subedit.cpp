@@ -114,7 +114,7 @@ static void DisplayNetInfo(size_t nSubNum) {
     const auto auto_info_text =
         (sn.category) ? fmt::format(" Auto-Info({})", sn.category) : " Auto-Info";
     if (ssize(a()->nets()) <= sn.net_num) {
-      bout << "      |#6No network exists at number: " << sn.net_num << " to display. \r\n";
+      bout.print("      |#6No network exists at number: {} to display. \r\n", sn.net_num);
       continue;
     }
     const auto& net = a()->nets()[sn.net_num];
@@ -158,31 +158,28 @@ static void modify_sub(int n) {
   do {
     bout.cls();
     bout.litebar(StrCat("Editing Message Sub #", n));
-    bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
-    bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
-    bout << "|#9C) Key        : |#2" << GetKey(r) << wwiv::endl;
-    bout << "|#9D) Read ACS   : |#2" << r.read_acs << wwiv::endl;
-    bout << "|#9E) Post ACS   : |#2" << r.post_acs << wwiv::endl;
-    bout << "|#9F) Anony      : |#2" << GetAnon(r) << wwiv::endl;
-    bout << "|#9H) Max Msgs   : |#2" << r.maxmsgs << wwiv::endl;
-    bout << "|#9J) Net info   : |#2";
+    bout.print("|#9A) Name       : |#2{}\r\n", r.name);
+    bout.print("|#9B) Filename   : |#2{}\r\n", r.filename);
+    bout.print("|#9C) Key        : |#2{}\r\n", GetKey(r));
+    bout.print("|#9D) Read ACS   : |#2{}\r\n", r.read_acs);
+    bout.print("|#9E) Post ACS   : |#2{}\r\n", r.post_acs);
+    bout.print("|#9F) Anony      : |#2{}\r\n", GetAnon(r));
+    bout.print("|#9H) Max Msgs   : |#2{}\r\n", r.maxmsgs);
+    bout.puts("|#9J) Net info   : |#2");
     DisplayNetInfo(n);
 
-    bout << "|#9K) Storage typ: |#2" << static_cast<int>(r.storage_type) << wwiv::endl;
-    bout << "|#9L) Val network: |#2" << YesNoString((r.anony & anony_val_net) ? true : false)
-         << wwiv::endl;
-    bout << "|#9M) Req ANSI   : |#2" << YesNoString((r.anony & anony_ansi_only) ? true : false)
-         << wwiv::endl;
-    bout << "|#9N) Disable tag: |#2" << YesNoString((r.anony & anony_no_tag) ? true : false)
-         << wwiv::endl;
-    bout << "|#9O) Description: |#2"
-         << ((!a()->subs().sub(n).desc.empty()) ? a()->subs().sub(n).desc : "None.") << wwiv::endl;
-    bout << "|#9P) Disable FS:  |#2" << YesNoString((r.anony & anony_no_fullscreen) ? true : false)
-         << wwiv::endl;
-    bout << "|#9   Conferences: |#2" << r.conf.to_string() << wwiv::endl;
+    bout.print("|#9K) Storage typ: |#2{}\r\n", static_cast<int>(r.storage_type));
+    bout.print("|#9L) Val network: |#2{}\r\n", YesNoString((r.anony & anony_val_net) ? true : false));
+    bout.print("|#9M) Req ANSI   : |#2{}\r\n",
+               YesNoString((r.anony & anony_ansi_only) ? true : false));
+    bout.print("|#9N) Disable tag: |#2{}\r\n", YesNoString((r.anony & anony_no_tag) ? true : false));
+    bout.print("|#9O) Description: |#2{}\r\n",
+               ((!a()->subs().sub(n).desc.empty()) ? a()->subs().sub(n).desc : "None."));
+    bout.print("|#9P) Disable FS:  |#2{}\r\n",
+               YesNoString((r.anony & anony_no_fullscreen) ? true : false));
+    bout.print("|#9   Conferences: |#2{}\r\n", r.conf.to_string());
     bout.nl();
-    bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) "
-            ": ";
+    bout.puts("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ");
     auto ch = onek("QABCDEFGHIJKLMNOP[]", true);
     bout.nl();
     switch (ch) {

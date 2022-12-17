@@ -80,7 +80,7 @@ void read_automessage() {
   while (autoMessageFile.ReadLine(&line) && line_number++ < 10) {
     StringTrim(&line);
     bout.Color(9);
-    bout << "|#9" << line << wwiv::endl;
+    bout.pl(line);
   }
   bout.nl();
 }

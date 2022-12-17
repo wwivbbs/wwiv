@@ -352,6 +352,12 @@ static int pipecode_int(T& it, const T end, int num_chars) {
   return to_number<int>(s);
 }
 
+int Output::pl(const std::string& text) {
+  const auto ret = puts(text);
+  nl();
+  return ret;
+}
+
 int Output::puts(const std::string& text) {
   core::bus().invoke<CheckForHangupEvent>();
   if (text.empty() || sess().hangup()) {
@@ -361,16 +367,15 @@ int Output::puts(const std::string& text) {
 
   auto it = std::cbegin(text);
   const auto fin = std::cend(text);
-  const auto start_time = std::chrono::system_clock::now();
+  const auto start_time = system_clock::now();
   auto num_written = 0;
   const auto cps = sess().bps() / 10;
   while (it != fin) {
     if (cps > 0) {
-      while (std::chrono::duration_cast<std::chrono::milliseconds>(
-                 std::chrono::system_clock::now() - start_time)
-                 .count() < (num_written * 1000 / cps)) {
+      while (duration_cast<milliseconds>(system_clock::now() - start_time).count() <
+             (num_written * 1000 / cps)) {
         flush();
-        os::sleep_for(std::chrono::milliseconds(10));
+        os::sleep_for(milliseconds(10));
       }
     }
 
@@ -480,7 +485,7 @@ int Output::str(const std::string& key) {
   return puts(format_str);
 }
 
-void Output::back_puts(const std::string& text, int color, std::chrono::duration<double> char_dly, std::chrono::duration<double> string_dly) {
+void Output::back_puts(const std::string& text, int color, duration<double> char_dly, duration<double> string_dly) {
   Color(color);
   sleep_for(char_dly);
   for (const auto ch : text) {

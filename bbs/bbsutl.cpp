@@ -148,9 +148,9 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
             if (clear_previous_line) {
               bout.clear_whole_line();
             }
-            bout << "\x1b[1A";
+            bout.puts("\x1b[1A");
           } else {
-            bout << "[*> Previous Line <*]\r\n";
+            bout.puts("[*> Previous Line <*]\r\n");
           }
           return true;
         }

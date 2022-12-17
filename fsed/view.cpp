@@ -139,10 +139,10 @@ void FsedView::draw_header() {
   const auto oldcuratr = bout_.curatr();
   bout_.cls();
   const auto to = data_.to_name.empty() ? "All" : data_.to_name;
-  bout_ << "|#7From: |#2" << data_.from_name << wwiv::endl;
-  bout_ << "|#7To:   |#2" << to << wwiv::endl;
-  bout_ << "|#7Area: |#2" << data_.sub_name << wwiv::endl;
-  bout_ << "|#7" << (file_ ? "File: " : "Subj: ") << "|#2" << data_.title << wwiv::endl;
+  bout_.print("|#7From: |#2{}\r\n", data_.from_name);
+  bout_.print("|#7To:   |#2{}\r\n", to);
+  bout_.print("|#7Area: |#2{}\r\n", data_.sub_name);
+  bout_.print("|#7{}|#2{}\r\n", (file_ ? "File: " : "Subj: "), data_.title);
 
   bout_.SystemColor(oldcuratr);
 }

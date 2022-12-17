@@ -100,9 +100,9 @@ static void sub_req(uint16_t main_type, int tosys, const std::string& stype,
 
   bout.nl();
   if (main_type == main_type_sub_add_req) {
-    bout << "Automated add request sent to @" << tosys << wwiv::endl;
+    bout.print("Automated add request sent to @{}\r\n",tosys);
   } else {
-    bout << "Automated drop request sent to @" << tosys << wwiv::endl;
+    bout.print("Automated drop request sent to @{}\r\n", tosys);
   }
   bout.pausescr();
 }

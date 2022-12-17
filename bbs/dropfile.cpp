@@ -507,7 +507,7 @@ std::string create_chain_file() {
         u.real_name(), u.callsign(), u.age(),
         u.gender(), u.gold(), u.laston(),
         u.screen_width(), u.screen_lines(), u.sl()));
-    const auto temporary_log_filename = GetTemporaryInstanceLogFileName();
+    const auto temporary_log_filename = instance_sysoplog_filename();
     const auto gfilesdir = a()->config()->gfilesdir();
     file.Write(fmt::sprintf("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n", cs(), so(), okansi(),
                             a()->sess().incom(), nsl(), gfilesdir, a()->config()->datadir(),
