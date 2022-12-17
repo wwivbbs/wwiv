@@ -64,7 +64,7 @@ using namespace wwiv::strings;
 void DisplayHorizontalBar(int width, int color) {
   const auto ch = (okansi()) ? '\xC4' : '-';
   bout.Color(color);
-  bout << std::string(width, ch);
+  bout.puts(std::string(width, ch));
   bout.nl();
 }
 
@@ -245,7 +245,7 @@ void feedback(bool bNewUserFeedback) {
       a()->users()->readuser(&user, i);
       if ((user.sl() == 255 || a()->config()->sl(user.sl()).ability & ability_cosysop) &&
           !user.deleted()) {
-        bout << "|#2" << i << "|#7)|#1 " << a()->names()->UserName(i) << wwiv::endl;
+        bout.print("|#2{}|#7)|#1 {}\r\n", i, a()->names()->UserName(i));
         onek_str[i1++] = static_cast<char>('0' + i);
       }
     }

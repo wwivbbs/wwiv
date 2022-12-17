@@ -39,7 +39,7 @@ void HopSub() {
   } else {
     bout.nl();
   }
-  bout << "|#9Enter name or partial name of sub to hop to:\r\n:";
+  bout.puts("|#9Enter name or partial name of sub to hop to:\r\n:");
   if (okansi()) {
     bout.newline = false;
   }
@@ -69,7 +69,7 @@ void HopSub() {
         if (!okansi()) {
           bout.nl();
         }
-        bout << "|#5Do you mean \"" << a()->subs().sub(a()->usub[i].subnum).name << "\" (Y/N/Q)? ";
+        bout.print("|#5Do you mean \"{}\" (Y/N/Q)? ", a()->subs().sub(a()->usub[i].subnum).name);
         const auto ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
@@ -107,7 +107,7 @@ void HopDir() {
   } else {
     bout.nl();
   }
-  bout << "|#9Enter name or partial name of dir to hop to:\r\n:";
+  bout.puts("|#9Enter name or partial name of dir to hop to:\r\n:");
   if (okansi()) {
     bout.newline = false;
   }

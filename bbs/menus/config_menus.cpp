@@ -53,8 +53,8 @@ static std::map<int, menu_set_t> ListMenuDirs() {
   std::map<int, menu_set_t> result;
 
   bout.nl();
-  bout << "|#1Available Menus Sets" << wwiv::endl
-       << "|#9============================" << wwiv::endl;
+  bout.pl("|#1Available Menus Sets");
+  bout.pl("|#9============================");
 
   int num = 1;
   const auto menu_directory = a()->config()->menudir();
@@ -113,7 +113,7 @@ void ConfigUserMenuSet(const std::string& data) {
   const auto r = ListMenuDirs();
   if (r.size() == 1) {
     if (const auto m = std::begin(r)->second; ValidateMenuSet(m.name)) {
-      bout << "|#5You are currently using the only available menuset.\r\n\r\n";
+      bout.puts("|#5You are currently using the only available menuset.\r\n\r\n");
       SetMenuSet(m);
       bout.pausescr();
       return;
@@ -122,10 +122,10 @@ void ConfigUserMenuSet(const std::string& data) {
 
   while (!done) {
     bout.nl();
-    bout << "|#11|#9) Menuset      :|#2 " << a()->user()->menu_set() << wwiv::endl;
-    bout << "|#12|#9) Use hot keys :|#2 " << (a()->user()->hotkeys() ? "Yes" : "No ") << wwiv::endl;
+    bout.print("|#11|#9) Menuset      :|#2 {}\r\n", a()->user()->menu_set());
+    bout.print("|#12|#9) Use hot keys :|#2 {}\r\n", (a()->user()->hotkeys() ? "Yes" : "No "));
     bout.nl();
-    bout << "|#9(|#2Q|#9=|#1Quit|#9) : ";
+    bout.puts("|#9(|#2Q|#9=|#1Quit|#9) : ");
     const auto chKey = onek("Q12?");
 
     switch (chKey) {
@@ -134,19 +134,19 @@ void ConfigUserMenuSet(const std::string& data) {
       break;
     case '1': {
       bout.nl(2);
-      bout << "|#9Enter the menu set to use : ";
+      bout.puts("|#9Enter the menu set to use : ");
       auto sel = bin.input_number<int>(1, 1, r.size(), false);
       if (const auto m = r.at(sel); ValidateMenuSet(m.name)) {
         bout.nl();
         bout.print("|#9Menu Set : |#2{:<8.8} :  |#1{}|#0\r\n", m.name, m.description);
-        bout << "|#5Use this menu set? ";
+        bout.puts("|#5Use this menu set? ");
         if (bin.noyes()) {
           SetMenuSet(m);
           break;
         }
       }
       bout.nl();
-      bout << "|#6That menu set does not exists. Resetting to the default menu set." << wwiv::endl;
+      bout.pl("|#6That menu set does not exists. Resetting to the default menu set.");
       bout.pausescr();
       if (a()->user()->menu_set().empty()) {
         MenuSet56 wwiv_menu(FilePath(a()->config()->menudir(), "wwiv"));

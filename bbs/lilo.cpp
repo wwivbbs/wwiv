@@ -118,9 +118,9 @@ bool IsPhoneNumberUSAFormat(User *pUser) {
 }
 
 static int GetAnsiStatusAndShowWelcomeScreen() {
-  bout << "\r\nWWIV " << full_version() << wwiv::endl;
-  bout << "Copyright (c) 1998-2022, WWIV Software Services." << wwiv::endl;
-  bout << "All Rights Reserved." << wwiv::endl;
+  bout.print("\r\nWWIV {}\r\n", full_version());
+  bout.pl("Copyright (c) 1998-2022, WWIV Software Services.");
+  bout.pl("All Rights Reserved.");
 
   const auto ans = check_ansi();
   if (ans > 0) {
@@ -142,21 +142,21 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
     return 0;
   }
 
-  bout << "Searching...";
+  bout.puts("Searching...");
   auto abort = false;
   auto current_count = 0;
   for (const auto& n : a()->names()->names_vector()) {
     if (a()->sess().hangup() || abort) { break; }
     if (++current_count % 25 == 0) {
       // changed from 15 since computers are faster now-a-days
-      bout << ".";
+      bout.puts(".");
     }
     const auto current_user = n.number;
     a()->ReadCurrentUser(current_user);
     
     if (const auto temp_user_name = ToStringUpperCase(a()->user()->real_name());
         temp_user_name == user_name && !a()->user()->deleted()) {
-      bout << "|#5Do you mean " << a()->names()->UserName(n.number) << "? ";
+      bout.print("|#5Do you mean {}? ", a()->names()->UserName(n.number));
       if (bin.yesno()) {
         return current_user;
       }
@@ -168,14 +168,14 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
 
 static int ShowLoginAndGetUserNumber(const std::string& remote_username) {
   bout.nl();
-  // bout << "Enter number or name or 'NEW'\r\nNN: ";
+  // bout.puts("Enter number or name or 'NEW'\r\nNN: ");
   bout.str("NN_PROMPT");
 
   std::string user_name;
   if (remote_username.empty()) {
     user_name = bin.input_upper(30);
   } else {
-    bout << remote_username << wwiv::endl;
+    bout.pl(remote_username);
     user_name = remote_username;
   }
   StringTrim(&user_name);
@@ -212,7 +212,7 @@ bool VerifyPhoneNumber() {
   auto phone_number = bin.input_password("PH: ###-###-", 4);
   if (phone_number != a()->user()->voice_phone().substr(8)) {
     if (phone_number.length() == 4 && phone_number[3] == '-') {
-      bout << "\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n";
+      bout.puts("\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n");
     }
     return false;
   }
@@ -238,7 +238,7 @@ static bool VerifySysopPassword() {
 static void DoFailedLoginAttempt() {
   a()->user()->increment_illegal_logons();
   a()->WriteCurrentUser();
-  bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
+  bout.puts("\r\n\aILLEGAL LOGON\a\r\n\n");
 
   sysoplog(false, "");
   sysoplog(false, fmt::format("### ILLEGAL LOGON for {}", a()->user()->name_and_number()));
@@ -256,13 +256,13 @@ static void LeaveBadPasswordFeedback(int ans) {
   } else {
     a()->user()->clear_flag(User::flag_ansi);
   }
-  bout << "|#6Too many logon attempts!!\r\n\n";
-  bout << "|#9Would you like to leave Feedback to " << a()->config()->sysop_name() << "? ";
+  bout.puts("|#6Too many logon attempts!!\r\n\n");
+  bout.print("|#9Would you like to leave Feedback to {}? ", a()->config()->sysop_name());
   if (!bin.yesno()) {
     return;
   }
   bout.nl();
-  bout << "What is your NAME or HANDLE? ";
+  bout.puts("What is your NAME or HANDLE? ");
   const auto temp_name = bin.input_proper("", 31);
   if (temp_name.empty()) {
     return;
@@ -296,7 +296,7 @@ static void CheckCallRestrictions() {
       date() == a()->user()->laston() &&
       a()->user()->ontoday() > 0) {
     bout.nl();
-    bout << "|#6Sorry, you can only logon once per day.\r\n";
+    bout.puts("|#6Sorry, you can only logon once per day.\r\n");
     a()->Hangup();
   }
 }
@@ -312,9 +312,9 @@ static void logon_guest() {
   std::string userName, reason;
   auto count = 0;
   do {
-    bout << "\r\n|#5Enter your real name : ";
+    bout.puts("\r\n|#5Enter your real name : ");
     userName = bin.input_upper(25);
-    bout << "\r\n|#5Purpose of your call?\r\n";
+    bout.puts("\r\n|#5Purpose of your call?\r\n");
     reason = bin.input_text(79);
     if (!userName.empty() && !reason.empty()) {
       break;
@@ -349,7 +349,7 @@ void getuser() {
   const auto& ip = bout.remoteIO()->remote_info().address;
   const auto& hostname = bout.remoteIO()->remote_info().address_name;
   if (!ip.empty()) {
-    bout << "Client Address: " << hostname << " (" << ip << ")" << wwiv::endl;
+    bout.print("Client Address: {} ({})\r\n", hostname, ip);
     bout.nl();
   }
   write_inst(INST_LOC_GETUSER, 0, INST_FLAGS_NONE);
@@ -374,8 +374,7 @@ void getuser() {
       read_qscn(a()->sess().user_num(), a()->sess().qsc, false);
       if (const auto instance_number = user_online(a()->sess().user_num());
           instance_number && a()->user()->sl() < 255) {
-        bout << "\r\n|#6You are already online on instance " << instance_number.value()
-             << "!\r\n\n";
+        bout.print("\r\n|#6You are already online on instance {}!\r\n\n", instance_number.value());
         continue;
       }
       ok = true;
@@ -406,7 +405,7 @@ void getuser() {
       }
     } else if (usernum == 0) {
       bout.nl();
-      bout << "|#6Unknown user.\r\n";
+      bout.puts("|#6Unknown user.\r\n");
       a()->sess().user_num(static_cast<uint16_t>(usernum));
     } else if (usernum == -1) {
       write_inst(INST_LOC_NEWUSER, 0, INST_FLAGS_NONE);
@@ -538,19 +537,19 @@ static void UpdateLastOnFile() {
       }
       if (needs_header) {
         bout.nl(2);
-        bout << "|#1Last few callers|#7: |#0";
+        bout.puts("|#1Last few callers|#7: |#0");
         bout.nl(2);
         if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
             a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
-          bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Speed    ##" << wwiv::endl;
+          bout.pl("|#2Number Name/Handle               Time  Date  City            ST Cty Speed    ##");
         } else {
-          bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##" << wwiv::endl;
+          bout.pl("|#2Number Name/Handle               Language   Time  Date  Speed                ##");
         }
         const auto hz = okansi() ? '\xCD' : '=';
-        bout << "|#7" << std::string(79, hz) << wwiv::endl;
+        bout.print("|#7{}\r\n", std::string(79, hz));
         needs_header = false;
       }
-      bout << line << wwiv::endl;
+      bout.pl(line);
       if (bin.checka()) {
         break;
       }
@@ -640,13 +639,13 @@ static void DisplayLastNetInfo() {
     return;
   }
   bout.nl(2);
-  bout << "|#5                      Most Recent Network Activity|#0";
+  bout.puts("|#5                      Most Recent Network Activity|#0");
   bout.nl(2);
   bout << "|#2  Date        Time      Sent    Recd    Connection       BBS" << wwiv::endl;
   const auto bar = okansi() ? static_cast<char>('\xCD') : '=';
   bout << "|#7" << std::string(79, bar) << wwiv::endl;
   for (const auto& line : lines) {
-    bout << line << wwiv::endl;
+    bout.pl(line);
     if (bin.checka()) {
       break;
     }
@@ -659,7 +658,7 @@ static void CheckAndUpdateUserInfo() {
   const auto& nc = a()->config()->newuser_config();
 
   if (nc.use_birthday == newuser_item_type_t::required && a()->user()->birthday_year() == 0) {
-    bout << "\r\nPlease enter the following information:\r\n";
+    bout.puts("\r\nPlease enter the following information:\r\n");
     do {
       bout.nl();
       input_age(a()->user());
@@ -701,49 +700,43 @@ static void DisplayUserLoginInformation() {
   bout.nl();
 
   const auto username_num = a()->user()->name_and_number();
-  bout << "|#9Name/Handle|#0....... |#2" << username_num << wwiv::endl;
-  bout << "|#9Internet Address|#0.. |#2";
+  bout.print("|#9Name/Handle|#0....... |#2{}\r\n", username_num);
+  bout.puts("|#9Internet Address|#0.. |#2");
   if (check_inet_addr(a()->user()->email_address())) {
-    bout << a()->user()->email_address() << wwiv::endl;
+    bout.pl(a()->user()->email_address());
   } else {
-    bout << "None.\r\n";
+    bout.puts("None.\r\n");
   }
   if (const auto la = a()->user()->last_address(); !la.empty()) {
-    bout << "|#9Last IP Address|#0... |#2" << la << wwiv::endl;
+    bout.print("|#9Last IP Address|#0... |#2{}\r\n", la.to_string());
   }
 
-  bout << "|#9Time allowed on|#0... |#2" << (nsl() + 30) / SECONDS_PER_MINUTE << wwiv::endl;
+  bout.print("|#9Time allowed on|#0... |#2{}\r\n", (nsl() + 30) / SECONDS_PER_MINUTE);
   if (a()->user()->illegal_logons() > 0) {
-    bout << "|#9Illegal logons|#0.... |#2" << a()->user()->illegal_logons() << wwiv::endl;
+    bout.print("|#9Illegal logons|#0.... |#2{}\r\n", a()->user()->illegal_logons());
   }
   if (a()->user()->email_waiting() > 0) {
-    bout << "|#9Mail waiting|#0...... |#2" << a()->user()->email_waiting() << wwiv::endl;
+    bout.print("|#9Mail waiting|#0...... |#2{}\r\n", a()->user()->email_waiting());
   }
   if (a()->user()->ontoday() == 1) {
-    bout << "|#9Date last on|#0...... |#2" << a()->user()->laston() << wwiv::endl;
+    bout.print("|#9Date last on|#0...... |#2{}\r\n", a()->user()->laston());
   } else {
-    bout << "|#9Times on today|#0.... |#2" << a()->user()->ontoday() << wwiv::endl;
+    bout.print("|#9Times on today|#0.... |#2{}\r\n", a()->user()->ontoday());
   }
-  bout << "|#9Sysop currently|#0... |#2";
-  if (sysop2()) {
-    bout << "Available\r\n";
-  } else {
-    bout << "NOT Available\r\n";
-  }
-
-  bout << "|#9System is|#0......... |#2WWIV " << full_version() << "  " << wwiv::endl;
+  bout.print("|#9Sysop currently|#0... |#2{}\r\n", (sysop2() ? "Available" : "NOT Available"));
+  bout.print("|#9System is|#0......... |#2WWIV {}\r\n", full_version());
 
   /////////////////////////////////////////////////////////////////////////
   a()->status_manager()->reload_status();
   const auto screen_width = a()->user()->screen_width() - 19;
   int width = 0;
-  bout << "|#9Networks|#0.......... ";
+  bout.puts("|#9Networks|#0.......... ");
   for (const auto& n : a()->nets().networks()) {
     const auto s = to_string(n);
     const auto len = size_without_colors(s);
     if (width + len >= screen_width) {
       bout.nl();
-      bout << "|#0.................. ";
+      bout.puts("|#0.................. ");
       width = 0;
     }
     bout.puts(s);
@@ -751,61 +744,55 @@ static void DisplayUserLoginInformation() {
   }
   bout.nl();
 
-  bout << "|#9Host OS|#0........... |#2" << os_version_string() << wwiv::endl;
-  bout << "|#9Instance|#0.......... |#2" << a()->sess().instance_number() << "\r\n\n";
+  bout.print("|#9Host OS|#0........... |#2{}\r\n", os_version_string());
+  bout.print("|#9Instance|#0.......... |#2{}\r\n\r\n", a()->sess().instance_number());
   if (a()->user()->forward_usernum()) {
     if (a()->user()->forward_systemnum() != 0) {
       set_net_num(a()->user()->forward_netnum());
       if (!valid_system(a()->user()->forward_systemnum())) {
         a()->user()->clear_mailbox_forward();
-        bout << "Forwarded to unknown system; forwarding reset.\r\n";
+        bout.puts("Forwarded to unknown system; forwarding reset.\r\n");
       } else {
-        bout << "Mail set to be forwarded to ";
+        bout.puts("Mail set to be forwarded to ");
         if (wwiv::stl::ssize(a()->nets()) > 1) {
-          bout << "#" << a()->user()->forward_usernum()
-               << " @"
-               << a()->user()->forward_systemnum()
-               << "." << a()->network_name() << "."
-               << wwiv::endl;
+          bout.print("#{} @{}.{}.\r\n", a()->user()->forward_usernum(),
+                     a()->user()->forward_systemnum(), a()->network_name());
         } else {
-          bout << "#" << a()->user()->forward_usernum() << " @"
-               << a()->user()->forward_systemnum() << "." << wwiv::endl;
+          bout.print("#{} @{}.\r\n", a()->user()->forward_usernum(),
+                     a()->user()->forward_systemnum());
         }
       }
     } else {
       if (a()->user()->mailbox_closed()) {
-        bout << "Your mailbox is closed.\r\n\n";
+        bout.puts("Your mailbox is closed.\r\n\n");
       } else {
-        bout << "Mail set to be forwarded to #" 
-             << a()->user()->forward_usernum() << wwiv::endl;
+        bout.print("Mail set to be forwarded to #{}\r\n", a()->user()->forward_usernum());
       }
     }
   } else if (a()->user()->forward_systemnum() != 0) {
     const auto internet_addr = read_inet_addr(a()->sess().user_num());
-    bout << "Mail forwarded to Internet " << internet_addr << ".\r\n";
+    bout.print("Mail forwarded to Internet {}.\r\n", internet_addr);
   }
   if (a()->sess().IsTimeOnlineLimited()) {
-    bout << "\r\n|#3Your on-line time is limited by an external event.\r\n\n";
+    bout.puts("\r\n|#3Your on-line time is limited by an external event.\r\n\n");
   }
 }
 
 static void LoginCheckForNewMail() {
-  bout << "|#9Scanning for new mail... ";
+  bout.puts("|#9Scanning for new mail... ");
   if (a()->user()->email_waiting() > 0) {
     const auto messages = check_new_mail(a()->sess().user_num());
     if (messages) {
-      bout << "|#9You have |#2" << messages 
-           << "|#9 new message(s).\r\n\r\n"
-           << "|#9Read your mail now? ";
+      bout.print("|#9You have |#2{}|#9 new message(s).\r\n\r\n|#9Read your mail now? ", messages);
       if (bin.noyes()) {
         readmail(true);
       }
     } else {
-      bout << "|#9You have |#2" << a()->user()->email_waiting() 
-           << "|#9 old message(s) in your mailbox.\r\n";
+      bout.print("|#9You have |#2{}|#9 old message(s) in your mailbox.\r\n",
+                 a()->user()->email_waiting());
     }
   } else {
-    bout << " |#9No mail found.\r\n";
+    bout.puts(" |#9No mail found.\r\n");
   }
 }
 
@@ -833,7 +820,7 @@ static void CheckUserForVotingBooth() {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && a()->user()->votes(i) == 0) {
         bout.nl();
-        bout << "|#9You haven't voted yet.\r\n";
+        bout.puts("|#9You haven't voted yet.\r\n");
         return;
       }
     }
@@ -917,7 +904,7 @@ void logon() {
   // New Message Scan
   auto done_newscan_all = false;
   if (a()->IsNewScanAtLogin()) {
-    bout << "\r\n|#5Scan All Message Areas For New Messages? ";
+    bout.puts("\r\n|#5Scan All Message Areas For New Messages? ");
     if (bin.yesno()) {
       wwiv::bbs::menus::NewMsgsAllConfs();
       done_newscan_all = true;

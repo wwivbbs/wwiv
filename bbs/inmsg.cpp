@@ -74,13 +74,13 @@ static bool GetMessageToName(MessageEditorData& data) {
   const auto saved_newline = bout.newline;
   for (const auto& xnp : a()->current_sub().nets) {
     if (a()->nets()[xnp.net_num].type == network_type_t::ftn && !data.is_email()) {
-      bout << "|#2To   : ";
+      bout.puts("|#2To   : ");
       bout.newline = false;
       const auto to_name = bin.input_text("All", 40);
       bout.newline = saved_newline;
       if (to_name.empty()) {
         data.to_name = "All";
-        bout << "|#4All\r\n";
+        bout.puts("|#4All\r\n");
         bout.Color(0);
       } else {
         data.to_name = to_name;
@@ -96,7 +96,7 @@ static void GetMessageTitle(MessageEditorData& data) {
   auto force_title = !data.title.empty();
   if (okansi()) {
     if (!data.silent_mode) {
-      bout << "|#2Title: ";
+      bout.puts("|#2Title: ");
       bout.mpl(60);
     }
     if (!data.title.empty()) {
@@ -133,11 +133,11 @@ static void GetMessageTitle(MessageEditorData& data) {
       }
       force_title = false;
       if (ch != RETURN) {
-        bout << "\r";
+        bout.puts("\r");
         if (ch == SPACE || ch == ESC) {
           ch = '\0';
         }
-        bout << "|#2Title: ";
+        bout.puts("|#2Title: ");
         bout.mpl(60);
         auto rollover_line = fmt::sprintf("%c", ch);
         inli(&s1, &rollover_line, 60, true, false);
@@ -153,8 +153,8 @@ static void GetMessageTitle(MessageEditorData& data) {
     if (data.silent_mode || force_title) {
       data.title = a()->sess().irt();
     } else {
-      bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
-      bout << "Title: ";
+      bout.puts("       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n");
+      bout.puts("Title: ");
       data.title = bin.input_text(60);
     }
   }
@@ -165,11 +165,11 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
   auto curli = 0;
 
   bout.nl(2);
-  bout << "|#9Enter message now, you can use |#2" << maxli << "|#9 lines.\r\n";
-  bout << "|#9Colors: ^P-0\003""11\003""22\003""33\003""44\003""55\003""66\003""77\003""88\003""99\003""0";
+  bout.print("|#9Enter message now, you can use |#2{}|#9 lines.\r\n", maxli);
+  bout.puts("|#9Colors: ^P-0\003""11\003""22\003""33\003""44\003""55\003""66\003""77\003""88\003""99\003""0");
   bout.nl();
-  bout << "|#9Enter |#2/S|#9 at the start of a blank line to save your email.\r\n";
-  bout << "|#9Enter |#2/Q|#9 to quote previous message, |#2/HELP|#9 for other editor commands.\r\n";
+  bout.puts("|#9Enter |#2/S|#9 at the start of a blank line to save your email.\r\n");
+  bout.puts("|#9Enter |#2/Q|#9 to quote previous message, |#2/HELP|#9 for other editor commands.\r\n");
 
   bout.Color(7);
   std::string header = "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]";
@@ -258,7 +258,7 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
         }
         if (!okansi() || next) {
           bout.nl();
-          bout << "Continue...\r\n";
+          bout.puts("Continue...\r\n");
         }
       } else if (cmd == "/ES" ||
                  cmd == "/S") {
@@ -284,20 +284,20 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
       } else if (cmd == "/CLR") {
         check_message_size = false;
         curli = 0;
-        bout << "Message cleared... Start over...\r\n\n";
+        bout.puts("Message cleared... Start over...\r\n\n");
       } else if (cmd == "/RL") {
         check_message_size = false;
         if (curli) {
           curli--;
-          bout << "Replace:\r\n";
+          bout.puts("Replace:\r\n");
         } else {
-          bout << "Nothing to replace.\r\n";
+          bout.puts("Nothing to replace.\r\n");
         }
       } else if (cmd == "/TI") {
         check_message_size = false;
         bout << "|#1Subj|#7: |#2" ;
         data.title = bin.input_text(60);
-        bout << "Continue...\r\n\n";
+        bout.puts("Continue...\r\n\n");
       }
       if (cmd.length() > 3) {
         cmd.resize(3);
@@ -317,7 +317,7 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
           auto temp = lin.at(last_line);
           StringReplace(&temp, old_string, new_string);
           lin[last_line] = temp;
-          bout << "Last line:\r\n" << lin.at(last_line) << "\r\nContinue...\r\n";
+          bout.print("Last line:\r\n{}\r\nContinue...\r\n", lin.at(last_line));
         }
         check_message_size = false;
       }
@@ -334,12 +334,12 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
       // Since we added the line, let's move forward.
       curli++;
       if (curli == maxli + 1) {
-        bout << "\r\n-= No more lines, last line lost =-\r\n/S to save\r\n\n";
+        bout.puts("\r\n-= No more lines, last line lost =-\r\n/S to save\r\n\n");
         curli--;
       } else if (curli == maxli) {
-        bout << "-= Message limit reached, /S to save =-\r\n";
+        bout.puts("-= Message limit reached, /S to save =-\r\n");
       } else if (curli + 5 == maxli) {
-        bout << "-= 5 lines left =-\r\n";
+        bout.puts("-= 5 lines left =-\r\n");
       }
     }
   }
@@ -489,7 +489,7 @@ static void GetMessageAnonStatus(bool *real_name, uint8_t *anony, int setanon) {
     } else {
       bout.Left(80);
       bout.clreol();
-      bout << "|#5Anonymous? ";
+      bout.puts("|#5Anonymous? ");
       if (bin.yesno()) {
         *anony = anony_sender;
       } else {
@@ -499,10 +499,10 @@ static void GetMessageAnonStatus(bool *real_name, uint8_t *anony, int setanon) {
     break;
   case anony_enable_dear_abby: {
     bout.nl();
-    bout << "1. " << a()->user()->name_and_number() << wwiv::endl;
-    bout << "2. Abby\r\n";
-    bout << "3. Problemed Person\r\n\n";
-    bout << "|#5Which? ";
+    bout.print("1. {}\r\n", a()->user()->name_and_number());
+    bout.puts("2. Abby\r\n");
+    bout.puts("3. Problemed Person\r\n\n");
+    bout.puts("|#5Which? ");
     char chx = onek("\r123");
     switch (chx) {
     case '\r':
@@ -571,14 +571,14 @@ bool inmsg(MessageEditorData& data) {
       bout.nl();
     }
   } else {
-    bout << "|#2To   : ";
+    bout.puts("|#2To   : ");
     bout.mpl(40);
-    bout << data.to_name << "\r\n";
+    bout.pl(data.to_name);
   }
 
   GetMessageTitle(data);
   if (data.title.empty() && data.need_title) {
-    bout << "|#6Aborted.\r\n";
+    bout.puts("|#6Aborted.\r\n");
     return false;
   }
 
@@ -606,7 +606,7 @@ bool inmsg(MessageEditorData& data) {
     save_message = File::Exists(exted_filename);
     if (save_message) {
       if (!data.silent_mode) {
-        bout << "Reading in file...\r\n";
+        bout.puts("Reading in file...\r\n");
       }
       TextFile editor_file(exted_filename, "r");
       lin = editor_file.ReadFileIntoVector();
@@ -614,7 +614,7 @@ bool inmsg(MessageEditorData& data) {
   }
 
   if (!save_message) {
-    bout << "|#6Aborted.\r\n";
+    bout.puts("|#6Aborted.\r\n");
     return false;
   }
   bout.backline();

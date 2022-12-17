@@ -109,7 +109,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_
     bout.nl();
 
     if (show_title) {
-      bout << "Directory  : " << dir.name << wwiv::endl;
+      bout.print("Directory  : {}\r\n", dir.name);
     }
     bOkToDL = printfileinfo(&f.u(), dir);
 
@@ -163,7 +163,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_
         a()->UpdateTopScreen();
       }
     } else {
-      bout << "\r\n\nNot enough time left to D/L.\r\n";
+      bout.puts("\r\n\nNot enough time left to D/L.\r\n");
     }
     if (abort) {
       ok = false;
@@ -207,10 +207,10 @@ static bool ValidateDoorAccess(int door_number) {
   if (auto inst = find_instance_by_loc(INST_LOC_CHAINS, door_number + 1); inst != 0) {
     const auto inuse_msg = fmt::format("|#2Chain '{}' is in use on instance {}.  ", c.description, inst);
     if (!c.multi_user) {
-      bout << inuse_msg << " Try again later.\r\n";
+      bout.print("{} Try again later.\r\n", inuse_msg);
       return false;
     }
-    bout << inuse_msg << " Care to join in? ";
+    bout.print("{} Care to join in? ", inuse_msg);
     if (!bin.yesno()) {
       return false;
     }
@@ -243,7 +243,7 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
 /* End of run door section */
 /* ----------------------- */
 void ChangeSubNumber() {
-  bout << "|#7Select Sub number : |#0";
+  bout.puts("|#7Select Sub number : |#0");
 
   const auto s = mmkey(MMKeyAreaType::subs);
   for (auto i = 0; i < size_int(a()->usub); i++) {
@@ -256,7 +256,7 @@ void ChangeSubNumber() {
 void ChangeDirNumber() {
   auto done = false;
   while (!done && !a()->sess().hangup()) {
-    bout << "|#7Select Dir number : |#0";
+    bout.puts("|#7Select Dir number : |#0");
 
     const auto s = mmkey(MMKeyAreaType::dirs);
 

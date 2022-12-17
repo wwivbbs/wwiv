@@ -279,7 +279,7 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
   }
   if (!check_acs(menu().acs)) {
     sysoplog("Insufficient ACS for menu.");
-    bout << "|#6Insufficient ACS for menu: " << menu().title << endl;
+    bout.print("|#6Insufficient ACS for menu: {}\r\n", menu().title);
     return std::make_tuple(menu_run_result_t::error, "");
   }
   if (!CheckMenuPassword(menu().password)) {
@@ -324,7 +324,7 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
       const auto& mi = omi.value();
       if (!check_acs(mi.acs)) {
         sysoplog(fmt::format("Insufficient ACS for menu item: {}", mi.item_key));
-        bout << "|#6Insufficient ACS for menu item: " << mi.item_key << endl;
+        bout.print("|#6Insufficient ACS for menu item: {}\r\n", mi.item_key);
         continue;
       }
       VLOG(1) << "Command is: " << cmd << "; " << mi.item_key << endl;
@@ -360,7 +360,7 @@ void Menu::GenerateMenu(menu_type_t typ) {
     if (bin.checka()) {
       break;
     }
-    bout << l << endl;    
+    bout.pl(l);
   }
   menu_displayed_ = true;
 }
