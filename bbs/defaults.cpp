@@ -65,22 +65,22 @@ static const int STOP_LIST = 0;
 static const int MAX_SCREEN_LINES_TO_SHOW = 24;
 
 void select_editor() {
-  bout << "|#10|#9) Line Editor\r\n";
+  bout.puts("|#10|#9) Line Editor\r\n");
   if (okansi() && a()->IsUseInternalFsed()) {
-    bout << "|#1A|#9) Full-Screen Editor\r\n";
+    bout.puts("|#1A|#9) Full-Screen Editor\r\n");
   }
   for (auto i = 0; i < size_int(a()->editors); i++) {
-    bout << "|#1" << i + 1 << "|#9) " << a()->editors[i].description << wwiv::endl;
+    bout.print("|#1{}|#9) {}\r\n", i+1, a()->editors[i].description);
   }
   std::set<char> keys;
   keys.insert('Q');
   bout.nl();
-  bout << "|#9Which editor (|#1";
+  bout.puts("|#9Which editor (|#1");
   if (okansi() && a()->IsUseInternalFsed()) {
     keys.insert('A');
-    bout << "A|#9, |#1";
+    bout.puts("A|#9, |#1");
   }
-  bout << "1-" << a()->editors.size() << ", |#9(Q=No Change) ? ";
+  bout.print("1-{}, |#9(Q=No Change) ? ", a()->editors.size());
   const auto cur_editor = a()->user()->default_editor();
   const auto k = bin.input_number_hotkey(cur_editor != 0xff ? cur_editor : 0, keys, 0,
                                          size_int(a()->editors), false);
@@ -150,39 +150,38 @@ static void print_cur_stat() {
       editor_name = a()->editors[editor_num - 1].description;
     }
     bout.print("|#19|#9) Message editor    : |#2{:<16} ", editor_name); 
-    bout << "|#1A|#9) Extended colors   : |#2" << YesNoString(a()->user()->extra_color()) << wwiv::endl;
+    bout.print("|#1A|#9) Extended colors   : |#2{}\r\n", YesNoString(a()->user()->extra_color()));
   } else {
-    bout << "|#17|#9) Update macros" << wwiv::endl;
+    bout.pl("|#17|#9) Update macros");
   }
 
-  const auto internet_email_address = 
+  const auto inet_addr =
       ((a()->user()->email_address().empty()) ? "None." : a()->user()->email_address());
   bout.print("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->optional_val());
-  bout << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->use_conference()) << wwiv::endl;
+  bout.print("|#1C|#9) Conferencing      : |#2{}\r\n", YesNoString(a()->user()->use_conference()));
   bout.print("|#1D|#9) Show Hidden Lines : |#2{:<16} ", YesNoString(a()->user()->has_flag(User::msg_show_controlcodes)));
   if (a()->fullscreen_read_prompt()) {
-    bout << "|#1G|#9) Message Reader    : |#2" << (a()->user()->has_flag(User::fullScreenReader) ? "Full-Screen" : "Traditional") << wwiv::endl;;
+    bout.print("|#1G|#9) Message Reader    : |#2{}\r\n",
+               (a()->user()->has_flag(User::fullScreenReader) ? "Full-Screen" : "Traditional"));
   }
-  bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
-  bout << "|#1K|#9) Configure Menus" << wwiv::endl;
+  bout.print("|#1I|#9) Internet Address  : |#2{}\r\n", inet_addr);
+  bout.pl("|#1K|#9) Configure Menus");
   if (num_instances() > 1) {
     bout.print("|#1M|#9) Allow user msgs   : |#2{:<16} |#1N|#9) Configure QWK", YesNoString(!a()->user()->ignore_msgs()));
   }
   bout.nl();
   bout.print("|#1S|#9) Cls Between Msgs? : |#2{:<16} ",
                       YesNoString(a()->user()->clear_screen()));
-  bout << "|#1T|#9) 12hr or 24hr clock: |#2" << (a()->user()->twentyfour_clock() ? "24hr" : "12hr")
-       << wwiv::endl;
+  bout.print("|#1T|#9) 12hr or 24hr clock: |#2{}\r\n", (a()->user()->twentyfour_clock() ? "24hr" : "12hr"));
 
   std::string wwiv_regnum = "(None)";
   if (a()->user()->wwiv_regnum()) {
     wwiv_regnum = std::to_string(a()->user()->wwiv_regnum());
   }
-  bout.print("|#1U|#9) Use Msg AutoQuote : |#2{:<16} ",
-                      YesNoString(a()->user()->auto_quote()));
-  bout << "|#1W|#9) WWIV reg num      : |#2" << wwiv_regnum << wwiv::endl;
+  bout.print("|#1U|#9) Use Msg AutoQuote : |#2{:<16} ", YesNoString(a()->user()->auto_quote()));
+  bout.print("|#1W|#9) WWIV reg num      : |#2{}\r\n", wwiv_regnum);
 
-  bout << "|#1Q|#9) Quit to main menu\r\n";
+  bout.pl("|#1Q|#9) Quit to main menu");
 }
 
 static std::string DisplayColorName(int c) {
@@ -230,7 +229,7 @@ void color_list() {
   bout.nl(2);
   for (int i = 0; i < 8; i++) {
     bout.SystemColor(static_cast<unsigned char>((i == 0) ? 0x70 : i));
-    bout << i << ". " << DisplayColorName(static_cast<char>(i)) << "|#0" << wwiv::endl;
+    bout.print("{}. {}|#0\r\n", i, DisplayColorName(static_cast<char>(i)));
   }
 }
 
@@ -246,7 +245,7 @@ void change_colors() {
   bout.nl();
   do {
     bout.cls();
-    bout << "|#5Customize Colors:";
+    bout.puts("|#5Customize Colors:");
     bout.nl(2);
     if (!a()->user()->color()) {
       std::ostringstream os;
@@ -299,8 +298,8 @@ void change_colors() {
       bout << os.str();
       bout.nl();
     }
-    bout << "\r\n|#9[|#2R|#9]eset Colors to Default Values, [|#2Q|#9]uit\r\n";
-    bout << "|#9Enter Color Number to Modify (|#20|#9-|#29|#9,|#2R|#9,|#2Q|#9): ";
+    bout.puts("\r\n|#9[|#2R|#9]eset Colors to Default Values, [|#2Q|#9]uit\r\n");
+    bout.puts("|#9Enter Color Number to Modify (|#20|#9-|#29|#9,|#2R|#9,|#2Q|#9): ");
     char ch = onek("RQ0123456789", true);
     if (ch == 'Q') {
       done = true;
@@ -313,13 +312,13 @@ void change_colors() {
         color_list();
         bout.Color(0);
         bout.nl();
-        bout << "|#9(Q=Quit) Foreground? ";
+        bout.puts("|#9(Q=Quit) Foreground? ");
         ch = onek("Q01234567");
         if (ch == 'Q') {
           continue;
         }
         nc = static_cast<uint8_t>(ch - '0');
-        bout << "|#9(Q=Quit) Background? ";
+        bout.puts("|#9(Q=Quit) Background? ");
         ch = onek("Q01234567");
         if (ch == 'Q') {
           continue;
@@ -327,7 +326,7 @@ void change_colors() {
         nc = static_cast<uint8_t>(nc | ((ch - '0') << 4));
       } else {
         bout.nl();
-        bout << "|#9Inversed? ";
+        bout.puts("|#9Inversed? ");
         if (bin.yesno()) {
           if ((a()->user()->bwcolor(1) & 0x70) == 0) {
             nc = static_cast<uint8_t>(0 | ((a()->user()->bwcolor(1) & 0x07) << 4));
@@ -342,12 +341,12 @@ void change_colors() {
           }
         }
       }
-      bout << "|#9Bold? ";
+      bout.puts("|#9Bold? ");
       if (bin.yesno()) {
         nc |= 0x08;
       }
 
-      bout << "|#9Blinking? ";
+      bout.puts("|#9Blinking? ");
       if (bin.yesno()) {
         nc |= 0x80;
       }
@@ -357,16 +356,16 @@ void change_colors() {
       bout << DescribeColorCode(nc);
       bout.Color(0);
       bout.nl(2);
-      bout << "|#8Is this OK? ";
+      bout.puts("|#8Is this OK? ");
       if (bin.yesno()) {
-        bout << "\r\nColor saved.\r\n\n";
+        bout.puts("\r\nColor saved.\r\n\n");
         if (a()->user()->color()) {
           a()->user()->color(color_num, nc);
         } else {
           a()->user()->bwcolor(color_num, nc);
         }
       } else {
-        bout << "\r\nNot saved, then.\r\n\n";
+        bout.puts("\r\nNot saved, then.\r\n\n");
       }
     }
   } while (!done && !a()->sess().hangup());
@@ -374,7 +373,7 @@ void change_colors() {
 
 void l_config_qscan() {
   bool abort = false;
-  bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
+  bout.puts("\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n");
   for (size_t i = 0; i < a()->usub.size() && !abort; i++) {
     const auto ch =
         (a()->sess().qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) ? '*'
@@ -402,13 +401,13 @@ void config_qscan() {
     if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
       std::string conf_list{" "};
       auto abort = false;
-      bout << "\r\nSelect Conference: \r\n\n";
+      bout.puts("\r\nSelect Conference: \r\n\n");
       for (const auto& c : a()->uconfsub) {
         bout.bpla(fmt::format("{}) {}", c.key.key(), stripcolors(c.conf_name)), &abort);
         conf_list.push_back(c.key.key());
       }
       bout.nl();
-      bout << "Select [" << conf_list.substr(1) << ", <space> to quit]: ";
+      bout.print("Select [{}, <space> to quit]: ", conf_list.substr(1));
       ch = onek(conf_list);
     } else {
       ch = '-';
@@ -430,7 +429,7 @@ void config_qscan() {
       done = false;
       do {
         bout.nl();
-        bout << "|#2Enter message base number (|#1C=Clr All, Q=Quit, S=Set All|#2): ";
+        bout.puts("|#2Enter message base number (|#1C=Clr All, Q=Quit, S=Set All|#2): ");
         std::string s = mmkey(MMKeyAreaType::subs);
         if (!s.empty()) {
           for (size_t i = 0; i < a()->usub.size(); i++) {
@@ -498,7 +497,7 @@ static void list_macro(const std::string& s) {
 static void macroedit(char *macro_text) {
   *macro_text = '\0';
   bout.nl();
-  bout << "|#5Enter your macro, press |#7[|#1CTRL-Z|#7]|#5 when finished.\r\n\n";
+  bout.puts("|#5Enter your macro, press |#7[|#1CTRL-Z|#7]|#5 when finished.\r\n\n");
   bin.okskey(false);
   bout.Color(0);
   bool done = false;
@@ -550,7 +549,7 @@ static void macroedit(char *macro_text) {
   bin.okskey(true);
   bout.Color(0);
   bout.nl();
-  bout << "|#9Is this okay? ";
+  bout.puts("|#9Is this okay? ");
   if (!bin.yesno()) {
     *macro_text = '\0';
   }
@@ -562,16 +561,16 @@ void change_macros() {
 
   do {
     bout.bputch(CL);
-    bout << "|#4Macro A: \r\n";
+    bout.puts("|#4Macro A: \r\n");
     list_macro(a()->user()->macro(2));
     bout.nl();
-    bout << "|#4Macro D: \r\n";
+    bout.puts("|#4Macro D: \r\n");
     list_macro(a()->user()->macro(0));
     bout.nl();
-    bout << "|#4Macro F: \r\n";
+    bout.puts("|#4Macro F: \r\n");
     list_macro(a()->user()->macro(1));
     bout.nl(2);
-    bout << "|#9Macro to edit or Q:uit (A,D,F,Q) : |#0";
+    bout.puts("|#9Macro to edit or Q:uit (A,D,F,Q) : |#0");
     ch = onek("QADF");
     szMacro[0] = 0;
     switch (ch) {
@@ -602,7 +601,7 @@ void change_macros() {
 
 void change_password() {
   bout.nl();
-  bout << "|#9Change password? ";
+  bout.puts("|#9Change password? ");
   if (!bin.yesno()) {
     return;
   }
@@ -610,7 +609,7 @@ void change_password() {
   bout.nl();
   std::string password = bin.input_password("|#9You must now enter your current password.\r\n|#7: ", 8);
   if (password != a()->user()->password()) {
-    bout << "\r\nIncorrect.\r\n\n";
+    bout.puts("\r\nIncorrect.\r\n\n");
     return;
   }
   bout.nl(2);
@@ -620,28 +619,28 @@ void change_password() {
   if (password == password2) {
     if (password2.length() < 3) {
       bout.nl();
-      bout << "|#6Password must be 3-8 characters long.\r\n|#6Password was not changed.\r\n\n";
+      bout.puts("|#6Password must be 3-8 characters long.\r\n|#6Password was not changed.\r\n\n");
     } else {
       a()->user()->password(password);
-      bout << "\r\n|#1Password changed.\r\n\n";
+      bout.puts("\r\n|#1Password changed.\r\n\n");
       sysoplog("Changed Password.");
     }
   } else {
-    bout << "\r\n|#6VERIFY FAILED.\r\n|#6Password not changed.\r\n\n";
+    bout.puts("\r\n|#6VERIFY FAILED.\r\n|#6Password not changed.\r\n\n");
   }
 }
 
 void modify_mailbox() {
   bout.nl();
-  bout << "|#9Do you want to close your mailbox? ";
+  bout.puts("|#9Do you want to close your mailbox? ");
   if (bin.yesno()) {
-    bout << "|#5Are you sure? ";
+    bout.puts("|#5Are you sure? ");
     if (bin.yesno()) {
       a()->user()->close_mailbox();
       return;
     }
   }
-  bout << "|#5Do you want to forward your mail? ";
+  bout.puts("|#5Do you want to forward your mail? ");
   if (!bin.yesno()) {
     a()->user()->clear_mailbox_forward();
     return;
@@ -649,22 +648,22 @@ void modify_mailbox() {
   
   if (const auto network_number = getnetnum_by_type(network_type_t::internet); network_number != -1) {
     a()->set_net_num(network_number);
-    bout << "|#5Do you want to forward to your Internet address? ";
+    bout.puts("|#5Do you want to forward to your Internet address? ");
     if (bin.yesno()) {
-      bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
+      bout.puts("|#3Enter the Internet E-Mail Address.\r\n|#9:");
       if (const auto entered_address = bin.input_text(a()->user()->email_address(), 75);
           check_inet_addr(entered_address)) {
         a()->user()->email_address(entered_address);
         a()->user()->forward_netnum(network_number);
         a()->user()->forward_systemnum(INTERNET_EMAIL_FAKE_OUTBOUND_NODE);
-        bout << "\r\nSaved.\r\n\n";
+        bout.puts("\r\nSaved.\r\n\n");
       }
       return;
     }
   }
 
   bout.nl();
-  bout << "|#2Forward to? ";
+  bout.puts("|#2Forward to? ");
   const auto entered_forward_to = bin.input_upper(40);
 
   auto [tu, ts] = parse_email_info(entered_forward_to);
@@ -674,10 +673,10 @@ void modify_mailbox() {
     a()->user()->forward_netnum(a()->net_num());
     if (a()->user()->forward_usernum() == 0) {
       a()->user()->clear_mailbox_forward();
-      bout << "\r\nCan't forward to a user name, must use user number.\r\n\n";
+      bout.puts("\r\nCan't forward to a user name, must use user number.\r\n\n");
     }
   } else if (a()->user()->forward_usernum() == a()->sess().user_num()) {
-    bout << "\r\nCan't forward to yourself.\r\n\n";
+    bout.puts("\r\nCan't forward to yourself.\r\n\n");
     a()->user()->forward_usernum(0);
   }
 
@@ -685,9 +684,9 @@ void modify_mailbox() {
   if (a()->user()->forward_usernum() == 0
       && a()->user()->forward_systemnum() == 0) {
     a()->user()->forward_netnum(0);
-    bout << "Forwarding reset.";
+    bout.puts("Forwarding reset.");
   } else {
-    bout << "Saved.";
+    bout.puts("Saved.");
   }
   bout.nl(2);
 }
@@ -703,7 +702,7 @@ void change_optional_lines() {
 }
 
 void enter_regnum() {
-  bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
+  bout.puts("|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:");
   const auto regnum = bin.input_number(a()->user()->wwiv_regnum());
   a()->user()->wwiv_regnum(regnum);
   changedsl();
@@ -711,16 +710,16 @@ void enter_regnum() {
 
 void change_email_address() {
   bout.nl();
-  bout << "|#9Enter your Internet mailing address.\r\n|#7:";
+  bout.puts("|#9Enter your Internet mailing address.\r\n|#7:");
   if (const auto address = bin.input_text(65); !address.empty()) {
     if (check_inet_addr(address)) {
       a()->user()->email_address(address);
     } else {
-      bout << "\r\n|#6Invalid address format.\r\n\n";
+      bout.puts("\r\n|#6Invalid address format.\r\n\n");
       bout.pausescr();
     }
   } else {
-    bout << "|#5Delete Internet address? ";
+    bout.puts("|#5Delete Internet address? ");
     if (bin.yesno()) {
       a()->user()->email_address("");
     }
@@ -736,7 +735,7 @@ void defaults(bool& need_menu_reload) {
       return;
     }
     bout.nl();
-    bout << "|#9Defaults: ";
+    bout.puts("|#9Defaults: ");
     std::string allowable = "Q?1234567BCDIKMNTUW";
     if (okansi()) {
       allowable.append("89AS");
@@ -918,7 +917,7 @@ static void drawscan(int filepos, bool tagged) {
   }
 
   bout.SystemColor(static_cast<uint8_t>(wwiv::sdk::Color::BLACK) + (static_cast<uint8_t>(wwiv::sdk::Color::CYAN) << 4));
-  bout << "[" << (tagged ? '\xFE' : ' ') << "]";
+  bout.print("[{c}]", (tagged ? '\xFE' : ' '));
   bout.SystemColor(static_cast<uint8_t>(wwiv::sdk::Color::YELLOW) + (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
 
   if (filepos >= max_lines) {

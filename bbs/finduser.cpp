@@ -90,7 +90,7 @@ int finduser1(const std::string& searchString) {
       continue;
     }
 
-    bout << "|#5Do you mean " << a()->names()->UserName(n.number) << " (Y/N/Q)? ";
+    bout.print("|#5Do you mean {} (Y/N/Q)? ", a()->names()->UserName(n.number));
     const auto ch = bin.ynq();
     if (ch == 'Y') {
       return n.number;

@@ -143,7 +143,7 @@ static std::optional<int> query_network(const std::vector<NetworkAndName>& nets)
     } else {
       odc.insert(static_cast<char>(nn / 10));
     }
-    bout << "|#2" << nn << "|#9) " << v.net.name << " (|#1" << v.system_name << "|#9)\r\n";
+    bout.print("|#2{}|#9) {} (|#1{}|#9)\r\n", nn, v.net.name, v.system_name);
     ++nn;
   }
   bout.puts("|#2Q|#9) Quit\r\n\n");
@@ -176,7 +176,7 @@ static std::tuple<uint16_t, uint16_t> parse_internet_email_info(const std::strin
       return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(INTERNET_EMAIL_FAKE_OUTBOUND_NODE));
     }
   }
-  bout << "Unknown user.\r\n";
+  bout.puts("Unknown user.\r\n");
   return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
 }
 
@@ -204,7 +204,7 @@ std::tuple<uint16_t, uint16_t> parse_local_email_info(const std::string& email) 
   if (iequals(email, "SYSOP")) {
     return std::make_tuple(static_cast<uint16_t>(1), static_cast<uint16_t>(0));
   }
-  bout << "Unknown user.\r\n";
+  bout.puts("Unknown user.\r\n");
   return std::make_tuple(static_cast<uint16_t>(0), static_cast<uint16_t>(0));
 }
 

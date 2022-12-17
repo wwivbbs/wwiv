@@ -43,13 +43,13 @@ static void PrintTime() {
   bout.Color(0);
   bout.nl(2);
   const auto dt = DateTime::now();
-  bout << "|#2" << dt.to_string() << wwiv::endl;
+  bout.print("|#2{}\r\n", dt.to_string());
   if (a()->sess().IsUserOnline()) {
     const auto time_on = std::chrono::system_clock::now() - a()->sess().system_logon_time();
     const auto seconds_on =
         static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time_on).count());
-    bout << "|#9Time on   = |#1" << ctim(seconds_on) << wwiv::endl;
-    bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
+    bout.print("|#9Time on   = |#1{}\r\n", ctim(seconds_on));
+    bout.print("|#9Time left = |#1{}\r\n", ctim(nsl()));
   }
   bout.nl();
   bout.RestoreCurrentLine(line);

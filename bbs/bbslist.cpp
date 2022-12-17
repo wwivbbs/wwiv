@@ -192,13 +192,13 @@ void delete_bbslist() {
   LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
 
   if (entries.empty()) {
-    bout << "|#6You can not delete an entry when the list is empty." << wwiv::endl;
+    bout.pl("|#6You can not delete an entry when the list is empty.");
     bout.pausescr();
     return;
   }
 
   ReadBBSList(entries);
-  bout << "|#9(|#2Q|#9=|#1Quit|#9) Enter Entry Number to Delete: ";
+  bout.puts("|#9(|#2Q|#9=|#1Quit|#9) Enter Entry Number to Delete: ");
   const auto r = bin.input_number_hotkey(1, {'Q'}, 1, 9999, false);
   if (r.key == 'Q' || r.num == 0) {
     return;
@@ -206,7 +206,7 @@ void delete_bbslist() {
   for (auto b = std::begin(entries); b != std::end(entries); ++b) {
     if (b->id == r.num) {
       entries.erase(b);
-      bout << "|10Entry deleted." << wwiv::endl;
+      bout.pl("|10Entry deleted.");
       SaveToJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
       return;
     }
@@ -244,14 +244,14 @@ static bool IsBBSPhoneNumberUnique(const std::string& phoneNumber, const std::ve
 
 static bool AddBBSListEntry(std::vector<BbsListEntry>& entries) {
   bout.nl();
-  bout << "|#9Does this BBS have a modem line? (y/N) : ";
+  bout.puts("|#9Does this BBS have a modem line? (y/N) : ");
   const auto has_pots = bin.noyes();
-  bout << "|#9Is this BBS telnettable? (Y/n)         : ";
+  bout.puts("|#9Is this BBS telnettable? (Y/n)         : ");
   const auto has_telnet = bin.yesno();
 
   if (!has_telnet && !has_pots) {
     bout.nl();
-    bout << "|#6Either a modem or telnet connection is required." << wwiv::endl;
+    bout.pl("|#6Either a modem or telnet connection is required.");
     bout.pausescr();
     return false;
   }
@@ -259,22 +259,22 @@ static bool AddBBSListEntry(std::vector<BbsListEntry>& entries) {
   bout.nl();
   BbsListEntry entry = {};
   if (has_pots) {
-    bout << "|#9Enter the Modem Number   : ";
+    bout.puts("|#9Enter the Modem Number   : ");
     const auto phone_number = bin.input_phonenumber("", 12);
     bout.nl();
     if (!IsBBSPhoneNumberValid(phone_number)) {
-      bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
+      bout.puts("\r\n|#6 Error: Please enter number in correct format.\r\n\n");
       return false;
     }
     if (!IsBBSPhoneNumberUnique(phone_number, entries)) {
-      bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
+      bout.puts("|#6Sorry, It's already in the BBS list.\r\n\n\n");
       return false;
     }
     entry.addresses.push_back({"modem", phone_number});
   }
 
   if (has_telnet) {
-    bout << "|#9Enter the Telnet Address : ";
+    bout.puts("|#9Enter the Telnet Address : ");
     const auto telnet_address = bin.input_text("", 50);
     bout.nl();
     if (!telnet_address.empty()) {
@@ -282,22 +282,22 @@ static bool AddBBSListEntry(std::vector<BbsListEntry>& entries) {
     }
   }
 
-  bout << "|#9Enter the BBS Name       : ";
+  bout.puts("|#9Enter the BBS Name       : ");
   entry.name = bin.input_text("", 50);
   bout.nl();
-  bout << "|#9Enter BBS Type (ex. WWIV): ";
+  bout.puts("|#9Enter BBS Type (ex. WWIV): ");
   entry.software = bin.input_upper("WWIV", 12);
   bout.nl();
-  bout << "|#9Enter the BBS Location   : ";
+  bout.puts("|#9Enter the BBS Location   : ");
   entry.location = bin.input_upper("", 50);
   bout.nl();
-  bout << "|#9Enter the Sysop Name     : ";
+  bout.puts("|#9Enter the Sysop Name     : ");
   entry.sysop_name = bin.input_text("", 50);
   bout.nl(2);
-  bout << "|#5Is this information correct? ";
+  bout.puts("|#5Is this information correct? ");
   if (bin.yesno()) {
     entries.emplace_back(entry);
-    bout << "\r\n|#3This entry will be added to BBS list.\r\n";
+    bout.puts("\r\n|#3This entry will be added to BBS list.\r\n");
     return true;
   }
   return false;
@@ -310,7 +310,7 @@ static char ShowBBSListMenuAndGetChoice() {
             "(|#1N|#9)et : ";
     return onek("QRNAD");
   }
-  bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
+  bout.puts("|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ");
   return onek("QRNA");
 }
 
@@ -318,11 +318,11 @@ void add_bbslist() {
   std::vector<BbsListEntry> entries;
   LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
   if (a()->sess().effective_sl() <= 10) {
-    bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
+    bout.puts("\r\n\nYou must be a validated user to add to the BBS list.\r\n\n");
     return;
   }
   if (a()->user()->restrict_automessage()) {
-    bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
+    bout.puts("\r\n\nYou can not add to the BBS list.\r\n\n\n");
     return;
   }
   if (AddBBSListEntry(entries)) {

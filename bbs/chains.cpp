@@ -116,7 +116,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     }
   } else {
     bout.litebar(StrCat(a()->config()->system_name(), " Online Programs"));
-    bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
+    bout.puts("|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n");
     for (auto i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
       bout.puts(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains->at(map[i]).description), &abort, &next);
       i++;
@@ -130,7 +130,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
         }
       }
     }
-    bout << "|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
+    bout.puts("|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9\r\n");
   }
 }
 
@@ -138,13 +138,13 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
 void run_chain(int chain_num) {
   const auto& c = a()->chains->at(chain_num);
   if (auto inst = find_instance_by_loc(INST_LOC_CHAINS, chain_num + 1); inst != 0) {
-    const auto message =
-        fmt::format("|#2Chain {} is in use on instance {}.  ", c.description, inst);
+    const auto h =
+        fmt::format("|#2Chain {} is in use on instance {}. ", c.description, inst);
     if (!c.multi_user) {
-      bout << message << "Try again later.\r\n";
+      bout.print("{} Try again later.\r\n", h);
       return;
     }
-    bout << message << "Care to join in? ";
+    bout.print("{} Care to join in? ", h);
     if (!bin.yesno()) {
       return;
     }
@@ -204,7 +204,7 @@ void do_chains() {
     }
   }
   if (mapp == 0) {
-    bout << "\r\n\n|#5Sorry, no external programs available.\r\n";
+    bout.puts("\r\n\n|#5Sorry, no external programs available.\r\n");
     return;
   }
 
@@ -215,11 +215,11 @@ void do_chains() {
     show_chains(&mapp, map);
     a()->tleft(true);
     bout.nl();
-    bout << "|#5Which Chain (1-" << mapp << ", Q=Quit, ";
+    bout.print("|#5Which Chain (1-{}, Q=Quit, ", mapp);
     if (so()) {
-      bout << "*=ChainEdit, ";
+      bout.puts("*=ChainEdit, ");
     }
-    bout << "?=List): ";
+    bout.puts("?=List): ");
 
     if (mapp < 100) {
       ss = mmkey(odc);
@@ -227,7 +227,7 @@ void do_chains() {
       ss = bin.input_upper(3);
     }
     if (const auto chain_num = to_number<int>(ss); chain_num > 0 && chain_num <= mapp) {
-      bout << "\r\n|#6Please wait...\r\n";
+      bout.puts("\r\n|#6Please wait...\r\n");
       run_chain(map[chain_num - 1]);
     } else if (ss == "Q") {
       done = true;

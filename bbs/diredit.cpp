@@ -88,7 +88,7 @@ std::optional<Network> select_network() {
     }
   }
 
-  bout << "|#5Networks: " << wwiv::endl;
+  bout.pl("|#5Networks: ");
   for (const auto& n : nets) {
     bout << "|#1" << n.first << "|#9) |#2" << n.second.name << wwiv::endl;
   }

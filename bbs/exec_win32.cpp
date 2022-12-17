@@ -563,7 +563,7 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
         ssm(1) << "NetFoss is not installed properly.";
         LOG(ERROR) << "Failed to create NF.BAT for command: " << working_cmdline;
         bout.nl(2);
-        bout << "|#6Please tell the SysOp to install NetFoss properly." << wwiv::endl;
+        bout.pl("|#6Please tell the SysOp to install NetFoss properly.");
         bout.nl(2);
         bout.pausescr();
         return false;

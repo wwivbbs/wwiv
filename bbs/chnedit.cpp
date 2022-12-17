@@ -62,26 +62,26 @@ static void showchains() {
 }
 
 void ShowChainCommandLineHelp() {
-  bout << "|#2Macro Value\r\n";
-  bout << "|#7===== ===============================================================\r\n";
-  bout << "|#1  %% |#9 A single '%' Character\r\n";
-  bout << "|#1  %1 |#9 CHAIN.TXT full pathname (legacy parameter)\r\n";
-  bout << "|#1  %A |#9 CALLINFO.BBS full pathname \r\n";
-  bout << "|#1  %C |#9 CHAIN.TXT full pathname \r\n";
-  bout << "|#1  %D |#9 DORIFOx.DEF full pathname \r\n";
-  bout << "|#1  %E |#9 DOOR32.SYS full pathname \r\n";
-  bout << "|#1  %H |#9 Socket Handle \r\n";
-  bout << "|#1  %I |#9 TEMP directory for the instance \r\n";
-  bout << "|#1  %K |#9 GFiles Comment File For Archives\r\n";
-  bout << "|#1  %M |#9 Modem Baud Rate\r\n";
-  bout << "|#1  %N |#9 Node (Instance) number\r\n";
-  bout << "|#1  %O |#9 PCBOARD.SYS full pathname\r\n";
-  bout << "|#1  %P |#9 ComPort Number\r\n";
-  bout << "|#1  %R |#9 DOOR.SYS Full Pathname\r\n";
-  bout << "|#1  %S |#9 Com Port Baud Rate\r\n";
-  bout << "|#1  %T |#9 Minutes Remaining\r\n";
-  bout << "|#1  %U |#9 Users Handle (primary name)\r\n";
-  bout << "|#1  %Z |#9Socket port/path '12345' or '/wwiv/bbs/e/1/scratch/wwiv.sock'\r\n";
+  bout.puts("|#2Macro Value\r\n");
+  bout.puts("|#7===== ===============================================================\r\n");
+  bout.puts("|#1  %% |#9 A single '%' Character\r\n");
+  bout.puts("|#1  %1 |#9 CHAIN.TXT full pathname (legacy parameter)\r\n");
+  bout.puts("|#1  %A |#9 CALLINFO.BBS full pathname \r\n");
+  bout.puts("|#1  %C |#9 CHAIN.TXT full pathname \r\n");
+  bout.puts("|#1  %D |#9 DORIFOx.DEF full pathname \r\n");
+  bout.puts("|#1  %E |#9 DOOR32.SYS full pathname \r\n");
+  bout.puts("|#1  %H |#9 Socket Handle \r\n");
+  bout.puts("|#1  %I |#9 TEMP directory for the instance \r\n");
+  bout.puts("|#1  %K |#9 GFiles Comment File For Archives\r\n");
+  bout.puts("|#1  %M |#9 Modem Baud Rate\r\n");
+  bout.puts("|#1  %N |#9 Node (Instance) number\r\n");
+  bout.puts("|#1  %O |#9 PCBOARD.SYS full pathname\r\n");
+  bout.puts("|#1  %P |#9 ComPort Number\r\n");
+  bout.puts("|#1  %R |#9 DOOR.SYS Full Pathname\r\n");
+  bout.puts("|#1  %S |#9 Com Port Baud Rate\r\n");
+  bout.puts("|#1  %T |#9 Minutes Remaining\r\n");
+  bout.puts("|#1  %U |#9 Users Handle (primary name)\r\n");
+  bout.puts("|#1  %Z |#9Socket port/path '12345' or '/wwiv/bbs/e/1/scratch/wwiv.sock'\r\n");
   bout.nl();
 }
 
@@ -92,9 +92,9 @@ static std::string YesNoStringList(bool b, const std::string& yes, const std::st
 static void list_chain_sponsors(const std::set<short> sponsors, char letter) {
   if (sponsors.empty()) {
     if (letter) {
-      bout << "|#9" << letter << ") ";
+      bout.print("|#9{c}) ", letter);
     }
-    bout << "Registered by: |#2AVAILABLE" << wwiv::endl;
+    bout.pl("Registered by: |#2AVAILABLE");
     return;
   }
 
@@ -104,14 +104,14 @@ static void list_chain_sponsors(const std::set<short> sponsors, char letter) {
     if (const auto user = a()->users()->readuser(r)) {
       if (first) {
         if (letter) {
-          bout << "|#9" << letter << ") ";
+          bout.print("|#9{c}) ", letter);
         }
-        bout << "Registered by: |#2";
+        bout.puts("Registered by: |#2");
       } else {
-        bout << second << "|#2";
+        bout.print("{}|#2", second);
       }
       first = false;
-      bout << user->name_and_number() << wwiv::endl;
+      bout.pl(user->name_and_number());
     }  
   }
 }
@@ -123,13 +123,13 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
     bout.litebar(fmt::format("Editing Chain #{}", chain_num));
     list_chain_sponsors(c.regby, 0);
     bout.nl();
-    bout << "|#9(A)dd, (R)emove, (Q)uit: Which (A,R,Q) ? ";
+    bout.puts("|#9(A)dd, (R)emove, (Q)uit: Which (A,R,Q) ? ");
     switch (const auto ch = onek("QARQ", true); ch) {
     case 'Q':
       return;
     case 'A': {
       if (c.regby.size() > 5) {
-        bout << "|#6Only 5 sponsors allowed." << wwiv::endl;
+        bout.pl("|#6Only 5 sponsors allowed.");
         bout.pausescr();
         break;
       }
@@ -175,33 +175,33 @@ static void modify_chain(ssize_t chain_num) {
     bout.cls();
     bout.litebar(fmt::format("Editing Chain #{}", chain_num));
 
-    bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
-    bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
-    bout << "|#9C) ACS          : |#2" << c.acs << wwiv::endl;
-    bout << "|#9D) ANSI         : |#2" << (c.ansi ? "|#2Required" : "|#5Optional") << wwiv::endl;
-    bout << "|#9E) Exec Mode    : |#2" << chain_exec_mode_to_string(c.exec_mode) << wwiv::endl;
+    bout.print("|#9A) Description  : |#2{}\r\n", c.description);
+    bout.print("|#9B) Filename     : |#2{}\r\n", c.filename);
+    bout.print("|#9C) ACS          : |#2{}\r\n", c.acs);
+    bout.print("|#9D) ANSI         : |#2{}\r\n", (c.ansi ? "|#2Required" : "|#5Optional"));
+    bout.print("|#9E) Exec Mode    : |#2{}\r\n", chain_exec_mode_to_string(c.exec_mode));
     const auto launch_from = YesNoStringList(c.dir == chain_exec_dir_t::temp, "Temp/Node Directory",
                                              "BBS Root Directory");
     if (c.exec_mode == chain_exec_mode_t::netfoss) {
       bout << "|#9F) Launch From  : |08Temp/Node Directory" << wwiv::endl;
     } else {
-      bout << "|#9F) Launch From  : |#2" << launch_from << wwiv::endl;
+      bout.print("|#9F) Launch From  : |#2{}\r\n",launch_from);
     }
-    bout << "|#9G) Local only   : |#2" << YesNoString(c.local_only) << wwiv::endl;
-    bout << "|#9H) Multi user   : |#2" << YesNoString(c.multi_user) << wwiv::endl;
-    bout << "|#9I) Usage        : |#2" << c.usage << wwiv::endl;
+    bout.print("|#9G) Local only   : |#2{}\r\n", YesNoString(c.local_only));
+    bout.print("|#9H) Multi user   : |#2{}\r\n", YesNoString(c.multi_user));
+    bout.print("|#9I) Usage        : |#2{}\r\n", c.usage);
     std::string allowed = "QABCDEFGHIKL[]";
     list_chain_sponsors(c.regby, 'J');
 #ifdef _WIN32
   if (c.exec_mode == chain_exec_mode_t::netfoss || c.exec_mode == chain_exec_mode_t::fossil) {
     bout << "|#9K) Local CP437  : |08Yes" << wwiv::endl;
   } else {
-    bout << "|#9K) Local CP437  : |#2" << YesNoString(c.local_console_cp437) << wwiv::endl;
+    bout.print("|#9K) Local CP437  : |#2{}\r\n", YesNoString(c.local_console_cp437));
   }
 #endif
-    bout << "|#9L) Pause after  : |#2" << YesNoString(c.pause) << wwiv::endl;
+    bout.print("|#9L) Pause after  : |#2{}\r\n", YesNoString(c.pause));
     bout.nl();
-    bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1JL|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
+    bout.puts("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1JL|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ");
     allowed.push_back('J');
     const auto ch = onek(allowed, true);
     switch (ch) {
@@ -224,7 +224,7 @@ static void modify_chain(ssize_t chain_num) {
       break;
     case 'A': {
       bout.nl();
-      bout << "|#7New Description? ";
+      bout.puts("|#7New Description? ");
       auto descr = bin.input_text(c.description, 40);
       if (!descr.empty()) {
         c.description = descr;
@@ -233,7 +233,7 @@ static void modify_chain(ssize_t chain_num) {
     case 'B': {
       bout.cls();
       ShowChainCommandLineHelp();
-      bout << "\r\n|#9Enter Command Line.\r\n|#7:";
+      bout.puts("\r\n|#9Enter Command Line.\r\n|#7:");
       c.filename = bin.input_cmdline(c.filename, 79);
     } break;
     case 'C': {
@@ -286,7 +286,7 @@ static void modify_chain(ssize_t chain_num) {
       break;
     case 'I': {
       bout.nl();
-      bout << "|#5Times Run : ";
+      bout.puts("|#5Times Run : ");
       c.usage = bin.input_number(c.usage);
     } break;
     case 'J':
@@ -330,7 +330,7 @@ void chainedit() {
   auto done = false;
   do {
     bout.nl();
-    bout << "|#7Chains: (D)elete, (I)nsert, (M)odify, (Q)uit, ? : ";
+    bout.puts("|#7Chains: (D)elete, (I)nsert, (M)odify, (Q)uit, ? : ");
     const auto ch = onek("QDIM?");
     switch (ch) {
     case '?':
@@ -341,7 +341,7 @@ void chainedit() {
       break;
     case 'M': {
       bout.nl();
-      bout << "|#2(Q=Quit) Chain number? ";
+      bout.puts("|#2(Q=Quit) Chain number? ");
       auto r = bin.input_number_hotkey(0, {'Q'}, 0, size_int(a()->chains->chains()), false);
       if (r.key != 'Q' && r.num < size_int(a()->chains->chains())) {
         modify_chain(r.num);
@@ -350,7 +350,7 @@ void chainedit() {
     case 'I': {
       if (a()->chains->chains().size() < a()->max_chains) {
         bout.nl();
-        bout << "|#2(Q=Quit) Insert before which chain ('$' for end) : ";
+        bout.puts("|#2(Q=Quit) Insert before which chain ('$' for end) : ");
         auto r = bin.input_number_hotkey(0, {'$', 'Q'}, 0, size_int(a()->chains->chains()), false);
         if (r.key == 'Q') {
           break;
@@ -363,14 +363,14 @@ void chainedit() {
     } break;
     case 'D': {
       bout.nl();
-      bout << "|#2(Q=Quit) Delete which chain? ";
+      bout.puts("|#2(Q=Quit) Delete which chain? ");
       auto r = bin.input_number_hotkey(0, {'$', 'Q'}, 0, size_int(a()->chains->chains()), false);
       if (r.key == 'Q') {
         break;
       }
       if (r.num >= 0 && r.num < size_int(a()->chains->chains())) {
         bout.nl();
-        bout << "|#5Delete " << a()->chains->at(r.num).description << "? ";
+        bout.print("|#5Delete {}? ", a()->chains->at(r.num).description);
         if (bin.yesno()) {
           delete_chain(r.num);
         }

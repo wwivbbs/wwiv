@@ -81,34 +81,34 @@ void YourInfo() {
   bout.cls();
   bout.litebar("Your User Information");
   bout.nl();
-  bout << "|#9Your name      : |#2" << a()->user()->name_and_number() << wwiv::endl;
-  bout << "|#9Phone number   : |#2" << a()->user()->voice_phone() << wwiv::endl;
+  bout.print("|#9Your name      : |#2{}\r\n", a()->user()->name_and_number());
+  bout.print("|#9Phone number   : |#2{}\r\n", a()->user()->voice_phone());
   if (a()->user()->email_waiting() > 0) {
-    bout << "|#9Mail Waiting   : |#2" << a()->user()->email_waiting() << wwiv::endl;
+    bout.print("|#9Mail Waiting   : |#2{}\r\n", a()->user()->email_waiting());
   }
-  bout << "|#9Security Level : |#2" << a()->user()->sl() << wwiv::endl;
+  bout.print("|#9Security Level : |#2{}\r\n", a()->user()->sl());
   if (a()->sess().effective_sl() != a()->user()->sl()) {
-    bout << "|#1 (temporarily |#2" << a()->sess().effective_sl() << "|#1)";
+    bout.print("|#1 (temporarily |#2{}|#1)", a()->sess().effective_sl());
   }
   bout.nl();
-  bout << "|#9Transfer SL    : |#2" << a()->user()->dsl() << wwiv::endl;
-  bout << "|#9Date Last On   : |#2" << a()->user()->laston() << wwiv::endl;
-  bout << "|#9Times on       : |#2" << a()->user()->logons() << wwiv::endl;
-  bout << "|#9On today       : |#2" << a()->user()->ontoday() << wwiv::endl;
-  bout << "|#9Messages posted: |#2" << a()->user()->messages_posted() << wwiv::endl;
-  const auto total_mail_sent = a()->user()->email_sent() + a()->user()->feedback_sent() +
-                         a()->user()->email_net();
-  bout << "|#9E-mail sent    : |#2" << total_mail_sent << wwiv::endl;
+  bout.print("|#9Transfer SL    : |#2{}\r\n", a()->user()->dsl());
+  bout.print("|#9Date Last On   : |#2{}\r\n", a()->user()->laston());
+  bout.print("|#9Times on       : |#2{}\r\n", a()->user()->logons());
+  bout.print("|#9On today       : |#2{}\r\n", a()->user()->ontoday());
+  bout.print("|#9Messages posted: |#2{}\r\n", a()->user()->messages_posted());
+  const auto total_mail_sent =
+      a()->user()->email_sent() + a()->user()->feedback_sent() + a()->user()->email_net();
+  bout.print("|#9E-mail sent    : |#2{}\r\n", total_mail_sent);
   const auto minutes_used =
       duration_cast<minutes>(a()->user()->timeon()  + a()->sess().duration_used_this_session()).count();
-  bout << "|#9Time spent on  : |#2" << minutes_used << " |#9Minutes" << wwiv::endl;
+  bout.print("|#9Time spent on  : |#2{} |#9Minutes\r\n", minutes_used);
 
   // Transfer Area Statistics
-  bout << "|#9Uploads        : |#2" << a()->user()->uk() << "|#9k in|#2 "
-       << a()->user()->uploaded() << " |#9files" << wwiv::endl;
-  bout << "|#9Downloads      : |#2" << a()->user()->dk() << "|#9k in|#2 "
-       << a()->user()->downloaded() << " |#9files" << wwiv::endl;
-  bout << "|#9Transfer Ratio : |#2" << a()->user()->ratio() << wwiv::endl;
+  bout.print("|#9Uploads        : |#2{}|#9k in|#2 {} |#9files\r\n", a()->user()->uk(),
+             a()->user()->uploaded());
+  bout.print("|#9Downloads      : |#2{}|#9k in|#2 {} |#9files\r\n", a()->user()->dk(),
+             a()->user()->downloaded());
+  bout.print("|#9Transfer Ratio : |#2{}\r\n", a()->user()->ratio());
   bout.nl();
   bout.pausescr();
 }
@@ -131,22 +131,22 @@ void upload_post() {
   File file(FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG));
   const auto max_bytes = 250 * static_cast<File::size_type>(GetMaxMessageLinesAllowed());
 
-  bout << "\r\nYou may now upload a message, max bytes: " << max_bytes << wwiv::endl << wwiv::endl;
+  bout.print("\r\nYou may now upload a message, max bytes: {}\r\n\r\n", max_bytes);
   auto i = 0;
   receive_file(file.full_pathname(), &i, INPUT_MSG, -1);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
     const auto file_size = file.length();
     if (file_size > max_bytes) {
-      bout << "\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n";
+      bout.puts("\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n");
       file.Close();
       File::Remove(file.path());
     } else {
       file.Close();
       use_workspace = true;
-      bout << "\r\n|#7* |#1Message uploaded.  The next post or email will contain that text.\r\n\n";
+      bout.puts("\r\n|#7* |#1Message uploaded.  The next post or email will contain that text.\r\n\n");
     }
   } else {
-    bout << "\r\n|#3Nothing saved.\r\n\n";
+    bout.puts("\r\n|#3Nothing saved.\r\n\n");
   }
 }
 
@@ -157,7 +157,7 @@ void send_email() {
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
   a()->sess().clear_irt();
 
-  bout << "\r\n\n|#9Enter user name or number:\r\n:";
+  bout.puts("\r\n\n|#9Enter user name or number:\r\n:");
   const auto username = fixup_user_entered_email(bin.input_text(75));
 
   auto [user_number, system_number] = parse_email_info(username);
@@ -178,10 +178,10 @@ void edit_confs() {
   while (!a()->sess().hangup()) {
     bout.cls();
     bout.litebar("Conference Editor");
-    bout << "|#5Edit Which Conferences:\r\n\n";
-    bout << "|#21|#9)|#1 Subs\r\n";
-    bout << "|#22|#9)|#1 Dirs\r\n";
-    bout << "\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ";
+    bout.puts("|#5Edit Which Conferences:\r\n\n");
+    bout.puts("|#21|#9)|#1 Subs\r\n");
+    bout.puts("|#22|#9)|#1 Dirs\r\n");
+    bout.puts("\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ");
     const auto ch = onek("Q12", true);
     switch (ch) {
     case '1':
@@ -253,7 +253,7 @@ void feedback(bool bNewUserFeedback) {
     onek_str[i1++] = key_quit;
     onek_str[i1] = '\0';
     bout.nl();
-    bout << "|#1Feedback to (" << onek_str << "): ";
+    bout.print("|#1Feedback to ({}): ", onek_str);
     ch = onek(onek_str, true);
     if (ch == key_quit) {
       return;
@@ -271,7 +271,7 @@ void feedback(bool bNewUserFeedback) {
  */
 void text_edit() {
   bout.nl();
-  bout << "|#9Enter Filename: ";
+  bout.puts("|#9Enter Filename: ");
   const auto filename = bin.input_filename(12);
   if (filename.find(".log") != std::string::npos || !okfn(filename)) {
     return;
