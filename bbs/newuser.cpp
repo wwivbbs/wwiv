@@ -1303,7 +1303,7 @@ void NewUserDataEntry(const newuser_config_t& nc) {
 }
 
 void newuser() {
-  sysoplog(false);
+  sysoplog(false, "");
   const auto t = times();
   const auto f = fulldate();
   sysoplog(false, fmt::format("*** NEW USER {}   {}    {} ({})", f, t, a()->GetCurrentSpeed(),
