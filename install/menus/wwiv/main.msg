@@ -12,7 +12,7 @@
 |#7º|#2>|#0, |#2]|#0 or |#2+|#1>|#0 Advance 1 Sub|#7  ³|#2X|#1>|#0 Toggle Xpert Mode|#7  ³|#2T|#1>|#0 Transfer Section|#7      º
 |#7º|#2<|#0, |#2[|#2 or |#2-|#1>|#0 Retreat 1 Sub|#7  ³|#2Y|#1>|#0 Your Information|#7   ³|#2.|#1>|#0 On-Line Programs|#7      º
 |#7º|#2}|#1>|#0 Advance 1 Conference|#7   ³|#2CTRL Y|#1>|#0 Toggle Pause|#7  ³|#2$|#1>|#0 Use Time Bank|#7         º
-|#7º|#2{|#1>|#0 Retreat 1 Conference|#7   ³                 |#7     ³                    |#7     º
+|#7º|#2{|#1>|#0 Retreat 1 Conference|#7   ³|#2QWK|#1> |#0QWK Offline Mail |#7³                    |#7     º
 |#7º|#2H|#1>|#0 Hop to Another Sub|#7     ³|#2                  |#7    ³|#2              |#7           º
 |#7ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶
 |#7º|#2W|#1>|#0 WWIV Slash Menu                              |#2Ctrl T|#1>|#0 Time left On-Line|#7  º
