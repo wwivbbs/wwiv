@@ -353,7 +353,7 @@ int get_protocol(xfertype xt) {
       prompt = fmt::format("Protocol (?=list, <C/R>={}) : ", dname);
     }
 
-    bout << "|#7" << prompt;
+    bout.print("|#7{}", prompt);
     if (const auto ch = onek(avail.allowed_keys); ch != '?') {
       return avail.protocol_for_key(ch).value_or(-1);
     }
@@ -409,7 +409,7 @@ void maybe_internal(const std::filesystem::path& path, bool* xferred, double* pe
     return;
   }
   if (!a()->sess().incom()) {
-    bout << "Would use internal " << prot_name(prot) << wwiv::endl;
+    bout.print("Would use internal {}\r\n", prot_name(prot));
     return;
   }
 
@@ -465,7 +465,7 @@ void send_file(const std::filesystem::path& path, bool* sent, bool* abort, const
     LOG(ERROR) << "Failed to align filename: " << sfn;
     *abort = true;
     bout.nl();
-    bout << "Internal Error: " << "Failed to align filename: " << sfn;
+    bout.print("Internal Error: Failed to align filename: {}", sfn);
     return;
   }
   if (a()->batch().contains_file(opt.value())) {
@@ -519,8 +519,7 @@ void send_file(const std::filesystem::path& path, bool* sent, bool* abort, const
             a()->batch().AddBatch(b);
             bout.nl(2);
             bout.puts("File added to batch queue.\r\n");
-            bout << "Batch: Files - " << a()->batch().size()
-                 << "  Time - " << ctim(a()->batch().dl_time_in_secs()) << "\r\n\n";
+            bout.print("Batch: Files - {}  Time - {}\r\n\r\n", a()->batch().size(), ctim(a()->batch().dl_time_in_secs()));
             *sent = false;
             *abort = false;
           }
@@ -573,7 +572,7 @@ void receive_file(const std::filesystem::path& path, int* received, const std::s
         a()->batch().AddBatch(b);
         bout.nl();
         bout.puts("File added to batch queue.\r\n\n");
-        bout << "Batch upload: files - " << a()->batch().numbatchul() << "\r\n\n";
+        bout.print("Batch upload: files - {}\r\n\r\n", a()->batch().numbatchul());
       }
     } else {
       bout.nl();

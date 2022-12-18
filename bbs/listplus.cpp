@@ -857,63 +857,63 @@ static void update_user_config_screen(uploadsrec* u, int which) {
     bout.SystemColor(lpo & cfl_fname ? color_selected : color_notselected);
     bout.puts("\xFE ");
     bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[0]];
+    bout.puts(lp_color_list[lpc[0]]);
   }
   if (which < 1 || which == 2) {
     bout.GotoXY(37, 5);
     bout.SystemColor(lpo & cfl_extension ? color_selected : color_notselected);
     bout.puts("\xFE ");
     bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[1]];
+    bout.puts(lp_color_list[lpc[1]]);
   }
   if (which < 1 || which == 3) {
     bout.GotoXY(37, 6);
     bout.SystemColor(lpo & cfl_dloads ? color_selected : color_notselected);
     bout.puts("\xFE ");
     bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[2]];
+    bout.puts(lp_color_list[lpc[2]]);
   }
   if (which < 1 || which == 4) {
     bout.GotoXY(37, 7);
     bout.SystemColor(lpo & cfl_kbytes ? color_selected : color_notselected);
     bout.puts("\xFE ");
     bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[3]];
+    bout.puts(lp_color_list[lpc[3]]);
   }
   if (which < 1 || which == 5) {
     bout.GotoXY(37, 8);
     bout.SystemColor(lpo & cfl_description ? color_selected : color_notselected);
     bout.puts("\xFE ");
     bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[10]];
+    bout.puts(lp_color_list[lpc[10]]);
   }
   if (which < 1 || which == 6) {
     bout.GotoXY(37, 9);
     bout.SystemColor(lpo & cfl_date_uploaded ? color_selected : color_notselected);
     bout.puts("\xFE ");
     bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[4]];
+    bout.puts(lp_color_list[lpc[4]]);
   }
   if (which < 1 || which == 7) {
     bout.GotoXY(37, 10);
     bout.SystemColor(lpo & cfl_file_points ? color_selected : color_notselected);
     bout.puts("\xFE ");
     bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[5]];
+    bout.puts(lp_color_list[lpc[5]]);
   }
   if (which < 1 || which == 8) {
     bout.GotoXY(37, 11);
     bout.SystemColor(lpo & cfl_days_old ? color_selected : color_notselected);
     bout.puts("\xFE ");
     bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[6]];
+    bout.puts(lp_color_list[lpc[6]]);
   }
   if (which < 1 || which == 9) {
     bout.GotoXY(37, 12);
     bout.SystemColor(lpo & cfl_upby ? color_selected : color_notselected);
     bout.puts("\xFE ");
     bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[7]];
+    bout.puts(lp_color_list[lpc[7]]);
   }
   if (which < 1 || which == 10) {
     bout.GotoXY(37, 13);
@@ -1282,7 +1282,7 @@ static int move_filename(const std::string& file_name, int dn) {
     char ch = 'Y';
     if (bulk_move) {
       bout.Color(1);
-      bout << YesNoString(true);
+      bout.puts(YesNoString(true));
       bout.nl();
     } else {
       ch = bin.ynq();

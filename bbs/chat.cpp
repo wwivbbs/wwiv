@@ -495,7 +495,7 @@ void ch_whisper(const std::string& message, char* color_string, int node) {
   }
   send_inst_str(node, text);
   if (auto ou = a()->users()->readuser(ir.user_number())) {
-    bout << "|#1[|#9Message sent only to " << ou.value().name() << "|#1]\r\n";
+    bout.print("|#1[|#9Message sent only to {}|#1]\r\n", ou.value().name());
   }
 }
 
@@ -560,7 +560,7 @@ void page_user(int loc) {
   bout.nl();
   while ((i < 1 || i > num_instances()) && !a()->sess().hangup()) {
     a()->CheckForHangup();
-    bout << "|#2Which instance would you like to page? (1-" << num_instances() << ", Q): ";
+    bout.print("|#2Which instance would you like to page? (1-{}, Q): ", num_instances());
     auto s = bin.input(2);
     if (!s.empty() && s.front() == 'Q') {
       return;
@@ -573,7 +573,7 @@ void page_user(int loc) {
   }
   const auto ir = a()->instances().at(i);
   if (!ir.online() || (!so() && ir.invisible())) {
-    bout << "|#1[|#9There is no user on instance " << i << " |#1]\r\n";
+    bout.print("|#1[|#9There is no user on instance {}|#1]\r\n", i);
     return;
   }
   if (!ir.available() && !so()) {
@@ -693,7 +693,7 @@ void exec_action(const char* message, char* color_string, int loc, int nact) {
   } else {
     sprintf(tmsg, actions[nact]->singular, a()->user()->GetName());
   }
-  bout << actions[nact]->toprint << wwiv::endl;
+  bout.pl(actions[nact]->toprint);
   sprintf(final, "%s%s", color_string, tmsg);
   if (!ok) {
     out_msg(final, loc);
@@ -721,18 +721,18 @@ void action_help(int num) {
 
   strcpy(ac, "|#6[USER]|#1");
   strcpy(rec, "|#6[RECIPIENT]|#1");
-  bout << "\r\n|#5Word:|#1 " << actions[num]->aword << wwiv::endl;
-  bout << "|#5To user:|#1 " << actions[num]->toprint << wwiv::endl;
+  bout.print("\r\n|#5Word:|#1 {}\r\n", actions[num]->aword);
+  bout.print("|#5To user:|#1 {}\r\n", actions[num]->toprint);
   sprintf(buffer, actions[num]->toperson, ac);
-  bout << "|#5To recipient:|#1 " << buffer << wwiv::endl;
+  bout.print("|#5To recipient:|#1 {}\r\n", buffer);
   sprintf(buffer, actions[num]->toall, ac, rec);
-  bout << "|#5To everyone else:|#1 " << buffer << wwiv::endl;
+  bout.print("|#5To everyone else:|#1 {}\r\n", buffer);
   if (actions[num]->r == 1) {
     bout.puts("|#5This action requires a recipient.\n\r\n");
     return;
   }
   sprintf(buffer, actions[num]->singular, ac);
-  bout << "|#5Used singular:|#1 " << buffer << wwiv::endl;
+  bout.print("|#5Used singular:|#1 {}\r\n", buffer);
   bout.puts("|#5This action does not require a recipient.\n\r\n");
 }
 
@@ -770,7 +770,7 @@ void list_channels() {
   }
 
   for (tl = 1; tl <= 10; tl++) {
-    bout << "|#1" << tl << " |#7-|#9 " << channels[tl].name << wwiv::endl;
+    bout.print("|#1{} |#7-|#9 {}\r\n", tl, channels[tl].name);
     if (!check[tl]) {
       continue;
     }
@@ -788,7 +788,7 @@ void list_channels() {
         if (!first) {
           bout.puts("|#7and ");
         }
-        bout << "|#1" << u.value().name() << " ";
+        bout.print("|#1{} ", u.value().name());
         first = false;
       }
     }
@@ -854,9 +854,10 @@ bool check_ch(int ch) {
   char szMessage[80];
 
   if (static_cast<int>(a()->user()->sl()) < channels[ch].sl && !so()) {
-    bout << "\r\n|#9A security level of |#1" << channels[ch].sl
-         << "|#9 is required to access this channel.\r\n";
-    bout << "|#9Your security level is |#1" << a()->user()->sl() << "|#9.\r\n";
+    bout.print("\r\n|#9A security level of |#1{}"
+               "|#9 is required to access this channel.\r\n",
+               channels[ch].sl);
+    bout.print("|#9Your security level is |#1{}|#9.\r\n", a()->user()->sl());
     return false;
   }
   if (channels[ch].ar != '0') {
@@ -883,13 +884,11 @@ bool check_ch(int ch) {
     return false;
   }
   if (a()->user()->age() < channels[ch].min_age && a()->user()->sl() < g_nChatOpSecLvl) {
-    bout << "\r\n|#9You must be |#1" << channels[ch].min_age
-         << "|#9 or older to enter this channel.\r\n";
+    bout.print("\r\n|#9You must be |#1{}|#9 or older to enter this channel.\r\n", channels[ch].min_age);
     return false;
   }
   if (a()->user()->age() > channels[ch].max_age && a()->user()->sl() < g_nChatOpSecLvl) {
-    bout << "\r\n|#9You must be |#1" << channels[ch].max_age
-         << "|#9 or younger to enter this channel.\r\n";
+    bout.print("\r\n|#9You must be |#1{}|#9 or younger to enter this channel.\r\n", channels[ch].max_age);
     return false;
   }
   return true;

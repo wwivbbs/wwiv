@@ -219,7 +219,7 @@ std::string get_wildlist(const std::string& orig_file_mask) {
   }
   bout.nl();
   if (i == 1) {
-    bout << "One file found: " << f->name << wwiv::endl;
+    bout.print("One file found: {}\r\n", f->name);
     bout.puts("Use this file? ");
     if (bin.yesno()) {
       return pszPath;

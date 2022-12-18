@@ -75,19 +75,19 @@ static std::optional<std::string> ReadBasicFile(const std::filesystem::path& pat
                                                 const std::string& script_name) {
     if (script_name.find("..") != std::string::npos) {
     LOG(ERROR) << "Invalid script name: " << script_name;
-    script_out() << "|#6Invalid script name: " << script_name << "\r\n";
+    script_out().print("|#6Invalid script name: {}\r\n", script_name);
     return std::nullopt;
   }
 
   if (!File::Exists(path)) {
     LOG(ERROR) << "Unable to locate script: " << path;
-    script_out() << "|#6Unable to locate script: " << script_name << "\r\n";
+    script_out().print("|#6Unable to locate script: {}\r\n", script_name);
     return std::nullopt;
   }
   TextFile file(path, "r");
   if (!file) {
     LOG(ERROR) << "Unable to read script: " << path;
-    script_out() << "|#6Unable to read script: " << script_name << "\r\n";
+    script_out().print("|#6Unable to read script: {}\r\n", script_name);
     return std::nullopt;
   }
   const auto lines = file.ReadFileIntoString();
@@ -230,7 +230,7 @@ bool Basic::RegisterDefaultNamespaces() {
 bool Basic::RunScript(const std::string& module, const std::string& text) {
 
   if (!config_.scripting_enabled()) {
-    bout_ << "WWIVbasic scripting is not enabled on this system.";
+    bout_.puts("WWIVbasic scripting is not enabled on this system.");
     return false;
   }
   script_userdata_->module = module;
@@ -259,7 +259,7 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
 bool Basic::RunScript(const std::string& script_name) {
   const auto path = FilePath(config_.scriptdir(), script_name);
   if (!File::Exists(path)) {
-    bout_ << "|#6Unable to locate script: " << script_name;
+    bout_.print("|#6Unable to locate script: {}", script_name);
     return false;
   }
 

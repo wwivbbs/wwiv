@@ -97,7 +97,7 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
       }
       // The sleep_for used to be a wait_sec_or_hit( 1 )
       sleep_for(milliseconds(500));
-      bout << "\r\nUpload " << file_name << " to which dir? <CR>=0 ?=List \r\n";
+      bout.print("\r\nUpload {} to which dir? <CR>=0 ?=List \r\n", file_name);
       bin.input(temp, 5, true);
       StringTrim(temp);
       if (temp[0] == '?') {
@@ -167,7 +167,7 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
     if (!ok) {
       bout.nl();
       bout.puts("Sorry, all uploads to this directory must be archived.  Supported types are:\r\n");
-      bout << s1;
+      bout.puts(s1);
       bout.nl(2);
 
       t2u_error(file_name, "Unsupported archive");
@@ -211,9 +211,9 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
   while (!done && !a()->sess().hangup() && !file_id_avail) {
     bout.cls();
     bout.nl();
-    bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
-    bout << "   |#1Filename    |01: |#7" << file_name << wwiv::endl;
-    bout << "|#2A|#7] |#1Description |01: |#7" << f.description() << wwiv::endl;
+    bout.print("|#1Upload going to |#7{}\r\n\n", d.name);
+    bout.print("   |#1Filename    |01: |#7{}\r\n", file_name);
+    bout.print("|#2A|#7] |#1Description |01: |#7{}\r\n", f.description());
     bout.puts("|#2B|#7] |#1Modify extended description\r\n\n");
     print_extended(f.aligned_filename(), 10, -1, Color::YELLOW, nullptr);
     bout.puts("|#2<|#7CR|#2> |#1to continue, |#7Q|#1 to abort upload: ");

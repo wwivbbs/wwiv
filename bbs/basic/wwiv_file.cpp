@@ -106,7 +106,7 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
     mb_check(mb_pop_value(bas, l, &arg));
     // arg should be coll.
     if (arg.type != MB_DT_LIST) {
-      *sd->out << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
+      sd->out->puts("|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n");
       return MB_FUNC_WARNING;
     }
 

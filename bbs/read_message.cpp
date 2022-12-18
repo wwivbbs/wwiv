@@ -403,10 +403,10 @@ static int legacy_display_header_text(Type2MessageData& msg) {
     bout.nl();
     num_header_lines++;
   }
-  bout << "|#9Date|#7: |#1" << msg.date << wwiv::endl;
+  bout.print("|#9Date|#7: |#1{}\r\n", msg.date);
   num_header_lines++;
   if (!msg.to_user_name.empty()) {
-    bout << "  |#9To|#7: |#1" << msg.to_user_name << wwiv::endl;
+    bout.print("  |#9To|#7: |#1{}\r\n", msg.to_user_name);
     num_header_lines++;
   }
   bout.print("|#9Subj|#7: |#{}{}\r\n", a()->GetMessageColor(), msg.title);
@@ -645,7 +645,8 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
       }
     }
     bout.Color(0);
-    bout << (had_ansi ? "|16" : "|#0") << l;
+    bout.puts(had_ansi ? "|16" : "|#0");
+    bout.puts(l);
     bout.clreol();
   }
 }
@@ -797,7 +798,7 @@ static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData&
           fs.ClearMessageArea();
           if (!bout.print_help_file(MBFSED_NOEXT)) {
             fs.ClearCommandLine();
-            bout << "|#6Unable to find file: " << MBFSED_NOEXT;
+            bout.print("|#6Unable to find file: ", MBFSED_NOEXT);
           } else {
             fs.ClearCommandLine();
           }
@@ -806,7 +807,7 @@ static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData&
             fs.ClearMessageArea();
             if (!bout.print_help_file(MBFSED_SYSOP_NOEXT)) {
               fs.ClearCommandLine();
-              bout << "|#6Unable to find file: " << MBFSED_SYSOP_NOEXT;
+              bout.print("|#6Unable to find file: ", MBFSED_SYSOP_NOEXT);
             }
           }
           fs.ClearCommandLine();

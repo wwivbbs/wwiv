@@ -73,7 +73,7 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
 
   if (const auto file = FilePath(dir_path, FileName(u->filename)); !File::Exists(file)) {
     sysoplog(fmt::format("File \"{}\" to {} deleted by UL event.", u->filename, a()->dirs()[directory_num].name));
-    bout << u->filename << " was deleted by the upload event.\r\n";
+    bout.print("{} was deleted by the upload event.\r\n", u->filename);
     return false;
   }
   return true;
@@ -142,16 +142,16 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
 
   auto return_code = 0;
   if (File::Exists(full_pathname) && opt_cmd.has_value()) {
-    bout << "\r\n\nArchive listing for " << file_name << "\r\n\n";
+    bout.print("\r\n\nArchive listing for {}\r\n\n", file_name);
     if (const auto cmd = opt_cmd.value(); cmd.internal) {
       auto o = wwiv::sdk::files::list_archive(full_pathname);
       if (!o) {
-        bout << "Unable to view archive: '" << full_pathname << "'.";
+        bout.print("Unable to view archive: '{}'.", full_pathname.string());
         return 1;
       }
       const auto& files = o.value();
-      bout << "|#2CompSize     Size   Date   Time  CRC-32   File Name" << wwiv::endl;
-      bout << "|#7======== -------- ======== ----- ======== ----------------------------------" << wwiv::endl;
+      bout.pl("|#2CompSize     Size   Date   Time  CRC-32   File Name");
+      bout.pl("|#7======== -------- ======== ----- ======== ----------------------------------");
       int line_num = 0;
       for (const auto& f : files) {
         const auto dt = DateTime::from_time_t(f.dt);
@@ -159,14 +159,14 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
         auto t = dt.to_string("%I:%M");
         auto line = fmt::format("{:>8} {:>8} {:<8} {:<5} {:>08x} {}", f.compress_size,
                                 f.uncompress_size, d, t, f.crc32, f.filename);
-        bout << ((++line_num % 2) ? "|#9" : "|#1") << line << wwiv::endl;
+        bout.print("{}{}\r\n", (++line_num % 2) ? "|#9" : "|#1", line);
       }
     } else {
       wwiv::bbs::CommandLine cl(cmd.cmd);
       return_code = ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_ARCH_L));
     }
   } else {
-    bout << "\r\nUnknown archive: " << file_name << "\r\n";
+    bout.print("\r\nUnknown archive: {}\r\n", file_name);
   }
   bout.nl();
 
@@ -263,18 +263,15 @@ void printinfo(uploadsrec* u, bool *abort) {
 
 void printtitle(bool *abort) {
   bout.Color(FRAME_COLOR);
-  bout << "\r" << std::string(78, '-') << wwiv::endl;
+  bout.print("\r{}\r\n", std::string(78, '-'));
 
   bin.checka(abort);
   bout.Color(2);
-  bout << "\r"
-    << a()->dirs()[a()->current_user_dir().subnum].name
-    << " - #" << a()->current_user_dir().keys << ", "
-    << a()->current_file_area()->number_of_files() << " files."
-    << wwiv::endl;
+  bout.print("\r{} - #{}, {} files.\r\n", a()->dirs()[a()->current_user_dir().subnum].name,
+             a()->current_user_dir().keys, a()->current_file_area()->number_of_files());
 
   bout.Color(FRAME_COLOR);
-  bout << "\r" << std::string(78, '-') << wwiv::endl;
+  bout.print("\r{}\r\n", std::string(78, '-'));
 }
 std::string file_mask() {
   return file_mask("|#2File mask: ");
@@ -283,7 +280,7 @@ std::string file_mask() {
 std::string file_mask(const std::string& prompt) {
   if (!prompt.empty()) {
     bout.nl();
-    bout << prompt;
+    bout.puts(prompt);
   }
   auto s = bin.input(12);
   if (s.empty()) {
@@ -516,16 +513,16 @@ static long xfer_time_in_seconds(long b) {
 
 int printfileinfo(const uploadsrec* u, const wwiv::sdk::files::directory_t& dir) {
   const auto d = xfer_time_in_seconds(u->numbytes);
-  bout << "|#9Filename:    |#2" << FileName(u->filename) << wwiv::endl;
-  bout << "|#9Description: |#2" << u->description << wwiv::endl;
-  bout << "|#9File size:   |#2" << humanize(u->numbytes) << wwiv::endl;
-  bout << "|#9Apprx. time: |#2" << ctim(d) << wwiv::endl;
-  bout << "|#9Uploaded on: |#2" << u->date << wwiv::endl;
+  bout.print("|#9Filename:    |#2{}\r\n", FileName(u->filename).unaligned_filename());
+  bout.print("|#9Description: |#2{}\r\n", u->description);
+  bout.print("|#9File size:   |#2{}\r\n", humanize(u->numbytes));
+  bout.print("|#9Apprx. time: |#2{}\r\n", ctim(d));
+  bout.print("|#9Uploaded on: |#2{}\r\n", u->date);
   if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
-    bout << "|#9File date:  |#2 " << u->actualdate << wwiv::endl;
+    bout.print("|#9File date:  |#2 {}\r\n", u->actualdate);
   }
-  bout << "|#9Uploaded by: |#2" << u->upby << wwiv::endl;
-  bout << "|#9Times D/L'd: |#2" << u->numdloads << wwiv::endl;
+  bout.print("|#9Uploaded by: |#2{}\r\n", u->upby);
+  bout.print("|#9Times D/L'd: |#2{}\r\n", u->numdloads);
   bout.nl();
   if (u->mask & mask_extended) {
     bout.puts("|#9Extended Description: \r\n");

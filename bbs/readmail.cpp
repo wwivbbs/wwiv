@@ -90,12 +90,12 @@ static void purgemail(std::vector<tmpmailrec>& mloc, int mw, int* curmail, mailr
   } else {
     bout.puts("|#5Delete all mail to you from ");
     if (m1->fromsys) {
-      bout << "#" << m1->fromuser << " @" << m1->fromsys << "? ";
+      bout.print("#{} @{}? ", m1->fromuser, m1->fromsys);
     } else {
       if (m1->fromuser == 65535) {
         bout.puts("Networks? ");
       } else {
-        bout << "#" << m1->fromuser << "? ";
+        bout.print("#{}? ", m1->fromuser);
       }
     }
   }
@@ -110,7 +110,7 @@ static void purgemail(std::vector<tmpmailrec>& mloc, int mw, int* curmail, mailr
         pFileEmail->Read(&m, sizeof(mailrec));
         if (same_email(mloc[i], m)) {
           if (m.fromuser == m1->fromuser && m.fromsys == m1->fromsys) {
-            bout << "Deleting mail msg #" << i + 1 << wwiv::endl;
+            bout.print("Deleting mail msg #{}\r\n", i + 1);
             delmail(*pFileEmail, mloc[i].index);
             mloc[i].index = -1;
             if (*curmail == i) {
@@ -237,12 +237,12 @@ static void add_netsubscriber(const Network& net, int network_number, int system
   const auto fn = FilePath(net.dir, StrCat("n", subtype, ".net"));
   if (!File::Exists(fn)) {
     bout.nl();
-    bout << "|#6Subscriber file not found: " << fn << wwiv::endl;
+    bout.print("|#6Subscriber file not found: {}\r\n", fn.string());
     return;
   }
   bout.nl();
   if (system_number) {
-    bout << "Add @" << system_number << "." << net.name << " to subtype " << subtype << "? ";
+    bout.print("Add @{}.{} to subtype {}?", system_number, net.name, subtype);
   }
   if (!system_number || !bin.noyes()) {
     bout.puts("|#2System Number: ");
@@ -252,7 +252,7 @@ static void add_netsubscriber(const Network& net, int network_number, int system
     }
     system_number = to_number<int>(s);
     if (!valid_system(system_number)) {
-      bout << "@" << system_number << " is not a valid system in " << net.name << ".\r\n\n";
+      bout.print("@{} is not a valid system in {}.\r\n\r\n", system_number, net.name);
       return;
     }
   }
@@ -296,8 +296,7 @@ void delete_attachment(unsigned long daten, int forceit) {
         if (delfile) {
           File::Remove(FilePath(a()->GetAttachmentDirectory(), fsr.filename));
         } else {
-          bout << "\r\nOrphaned attach " << fsr.filename << " remains in "
-               << a()->GetAttachmentDirectory() << wwiv::endl;
+          bout.print("\r\nOrphaned attach '{}' remains in '{}'\r\n", fsr.filename, a()->GetAttachmentDirectory());
           bout.pausescr();
         }
       } else {
@@ -406,7 +405,7 @@ void readmail(bool newmail_only) {
     curmail = 0;
   } else {
     bout.puts("\r\n\n|#2You have mail from:\r\n");
-    bout << "|#9" << std::string(a()->user()->screen_width() - 1, '-') << wwiv::endl;
+    bout.print("|#9{}\r\n", std::string(a()->user()->screen_width() - 1, '-'));
     for (auto i = 0; i < mw && !abort; i++) {
       if (!read_same_email(mloc, mw, i, m, false, 0)) {
         continue;
@@ -423,8 +422,9 @@ void readmail(bool newmail_only) {
                       from_name(m, net, sl, nn), stripcolors(m.title));
       bout.bpla(current_line, &abort);
     }
-    bout << "|#9" << std::string(a()->user()->screen_width() - 1, '-') << wwiv::endl;
-    bout.puts("|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ");
+    bout.print("|#9{}\r\n", std::string(a()->user()->screen_width() - 1, '-'));
+    bout.puts("|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n");
+    bout.puts("|#9Enter message number: ");
     const auto res = bin.input_number_hotkey(curmail + 1, {'Q'}, curmail + 1, mw, true);
     if (res.key == 'Q') { 
       return;
@@ -517,12 +517,12 @@ void readmail(bool newmail_only) {
             if (m.daten == static_cast<uint32_t>(fsr.id)) {
               found = true;
               if (File::Exists(FilePath(a()->GetAttachmentDirectory(), fsr.filename))) {
-                bout << "'T' to download attached file \"" << fsr.filename << "\" (" << fsr.numbytes
-                     << " bytes).\r\n";
+                bout.print("'T' to download attached file \"{}\" ({} bytes).\r\n", fsr.filename,
+                           fsr.numbytes);
                 attach_exists = true;
               } else {
-                bout << "Attached file \"" << fsr.filename << "\" (" << fsr.numbytes
-                     << " bytes) is missing!\r\n";
+                bout.print("Attached file \"{} ({} bytes) is missing!\r\n", fsr.filename,
+                           fsr.numbytes);
               }
             }
             if (!found) {
@@ -686,7 +686,7 @@ void readmail(bool newmail_only) {
         }
       } break;
       case 'G': {
-        bout << "|#2Go to which (1-" << mw << ") ? |#0";
+        bout.print("|#2Go to which (1-{}) ? |#0", mw);
         auto user_input = bin.input(3);
         i1 = to_number<int>(user_input);
         if (i1 > 0 && i1 <= mw) {
@@ -908,7 +908,7 @@ void readmail(bool newmail_only) {
               fwd_email_name = a()->names()->UserName(un, a()->current_net().sysnum);
             }
             if (ok_to_mail(un, sn, false)) {
-              bout << "|#5Forward to " << fwd_email_name << "? ";
+              bout.print("|#5Forward to {}? ", fwd_email_name);
               if (bin.yesno()) {
                 auto file = OpenEmailFile(true);
                 if (!file->IsOpen()) {

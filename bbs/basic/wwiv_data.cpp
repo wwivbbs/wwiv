@@ -153,7 +153,7 @@ bool RegisterNamespaceData(mb_interpreter_t* basi) {
       mb_check(mb_pop_value(bas, l, &arg));
       // arg should be coll.
       if (arg.type != MB_DT_LIST) {
-        *d->out << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
+        d->out->puts("|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n");
         return MB_FUNC_WARNING;
       }
       int count = 0;
@@ -170,7 +170,7 @@ bool RegisterNamespaceData(mb_interpreter_t* basi) {
       }
 
       if (!SaveData(d, scope, data)) {
-        *d->out << "#6Error saving data.\r\n";
+        d->out->puts("#6Error saving data.\r\n");
       }
     }
     mb_check(mb_attempt_close_bracket(bas, l));
@@ -195,7 +195,7 @@ bool RegisterNamespaceData(mb_interpreter_t* basi) {
       mb_check(mb_pop_value(bas, l, &arg));
       // arg should be coll.
       if (arg.type != MB_DT_LIST) {
-        *sd->out << "|#6Error: Only loading a LIST is currently supported. (not DICT)\r\n";
+        sd->out->puts("|#6Error: Only loading a LIST is currently supported. (not DICT)\r\n");
         return MB_FUNC_WARNING;
       }
 

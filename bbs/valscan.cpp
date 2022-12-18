@@ -74,7 +74,7 @@ void valscan() {
     bout.nl();
     bout.Color(2);
     bout.clreol();
-    bout << "{{ ValScanning " << a()->current_sub().name << " }}\r\n";
+    bout.print("{{ ValScanning {} }}\r\n", a()->current_sub().name);
     bout.clear_lines_listed();
     bout.clreol();
 
@@ -88,8 +88,8 @@ void valscan() {
           bool next;
           int val;
           read_post(i, &next, &val);
-          bout << "|#4[|#4Subboard: " << a()->current_sub().name << "|#1]\r\n";
-          bout <<  "|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2";
+          bout.print("|#4[|#4Subboard: {}|#1]\r\n", a()->current_sub().name);
+          bout.puts("|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2");
           char ch = onek("QDVMR");
           switch (ch) {
           case 'Q':
@@ -107,7 +107,7 @@ void valscan() {
             close_sub();
             send_net_post(p1, a()->current_sub());
             bout.nl();
-            bout << "|#7Message sent.\r\n\n";
+            bout.puts("|#7Message sent.\r\n\n");
           }
           break;
           case 'M':
@@ -120,7 +120,7 @@ void valscan() {
               p1->status &= ~status_pending_net;
               write_post(i, p1);
               bout.nl();
-              bout << "|#9Not set for net pending now.\r\n\n";
+              bout.puts("|#9Not set for net pending now.\r\n\n");
             }
             break;
           case 'D':
@@ -137,7 +137,7 @@ void valscan() {
                   if (!tu.deleted()) {
                     if (date_to_daten(tu.firston()) < p2.daten) {
                       bout.nl();
-                      bout << "|#2Remove how many posts credit? ";
+                      bout.puts("|#2Remove how many posts credit? ");
                       char szNumCredits[ 11 ];
                       bin.input(szNumCredits, 3, true);
                       int num_post_credits = 1;
@@ -149,7 +149,7 @@ void valscan() {
                         tu.messages_posted(tu.messages_posted() - static_cast<uint16_t>(num_post_credits));
                       }
                       bout.nl();
-                      bout << "|#3Post credit removed = " << num_post_credits << wwiv::endl;
+                      bout.print("|#3Post credit removed = {}\r\n", num_post_credits);
                       tu.deleted_posts(tu.deleted_posts() + 1);
                       a()->users()->writeuser(&tu, p2.owneruser);
                       a()->UpdateTopScreen();

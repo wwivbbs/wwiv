@@ -205,7 +205,8 @@ public:
    */
   int puts(const std::string& text, bool* abort, bool* next);
 
-  template <typename T> Output& operator<<(T const& value) {
+#if 0
+template <typename T> Output& operator<<(T const& value) {
     std::ostringstream ss;
     ss << value;
     puts(ss.str());
@@ -218,6 +219,7 @@ public:
     puts(ss.str());
     return *this;
   }
+#endif
 
   template <class... Args> int printf(const char* format_str, Args&&... args) {
     // Process arguments

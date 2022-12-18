@@ -78,31 +78,31 @@ void prstatus() {
   a()->status_manager()->reload_status();
   bout.cls();
   if (!a()->config()->newuser_password().empty()) {
-    bout << "|#9New User Pass   : " << a()->config()->newuser_password() << wwiv::endl;
+    bout.print("|#9New User Pass   : {}\r\n", a()->config()->newuser_password());
   }
-  bout << "|#9Board is        : " << (a()->config()->closed_system() ? "Closed" : "Open") << wwiv::endl;
+  bout.print("|#9Board is        : {}\r\n", a()->config()->closed_system() ? "Closed" : "Open");
 
   const auto status = a()->status_manager()->get_status();
   const auto t = times();
-  bout << "|#9Number Users    : |#2" << status->num_users() << wwiv::endl;
-  bout << "|#9Number Calls    : |#2" << status->caller_num() << wwiv::endl;
-  bout << "|#9Last Date       : |#2" << status->last_date() << wwiv::endl;
-  bout << "|#9Time            : |#2" << t.c_str() << wwiv::endl;
-  bout << "|#9Active Today    : |#2" << status->active_today_minutes() << wwiv::endl;
-  bout << "|#9Calls Today     : |#2" << status->calls_today() << wwiv::endl;
-  bout << "|#9Net Posts Today : |#2" << (status->msgs_today() - status->localposts()) << wwiv::endl;
-  bout << "|#9Local Post Today: |#2" << status->localposts() << wwiv::endl;
-  bout << "|#9E Sent Today    : |#2" << status->email_today() << wwiv::endl;
-  bout << "|#9F Sent Today    : |#2" << status->feedback_today() << wwiv::endl;
-  bout << "|#9Uploads Today   : |#2" << status->uploads_today() << wwiv::endl;
+  bout.print("|#9Number Users    : |#2{}\r\n", status->num_users());
+  bout.print("|#9Number Calls    : |#2{}\r\n", status->caller_num());
+  bout.print("|#9Last Date       : |#2{}\r\n", status->last_date());
+  bout.print("|#9Time            : |#2{}\r\n", t);
+  bout.print("|#9Active Today    : |#2{}\r\n", status->active_today_minutes());
+  bout.print("|#9Calls Today     : |#2{}\r\n", status->calls_today());
+  bout.print("|#9Net Posts Today : |#2{}\r\n", status->msgs_today() - status->localposts());
+  bout.print("|#9Local Post Today: |#2{}\r\n", status->localposts());
+  bout.print("|#9E Sent Today    : |#2{}\r\n", status->email_today());
+  bout.print("|#9F Sent Today    : |#2{}\r\n", status->feedback_today());
+  bout.print("|#9Uploads Today   : |#2{}\r\n", status->uploads_today());
 
   auto feedback_waiting = 0;
   if (const auto sysop = a()->users()->readuser(1)) {
     feedback_waiting = sysop->email_waiting();
   }
-  bout << "|#9Feedback Waiting: |#2" << feedback_waiting << wwiv::endl;
-  bout << "|#9Sysop           : |#2" << ((sysop2()) ? "Available" : "NOT Available") << wwiv::endl;
-  bout << "|#9Q-Scan Pointer  : |#2" << status->qscanptr() << wwiv::endl;
+  bout.print("|#9Feedback Waiting: |#2{}\r\n", feedback_waiting);
+  bout.print("|#9Sysop           : |#2{}\r\n", sysop2() ? "Available" : "NOT Available");
+  bout.print("|#9Q-Scan Pointer  : |#2{}\r\n", status->qscanptr());
 
   if (num_instances() > 1) {
     multi_instance();
@@ -123,14 +123,14 @@ static bool valuser_delete(int user_number) {
 }
 
 static void valuser_manual(User& user) {
-  bout << "|#9SL  : |#2" << user.sl() << wwiv::endl;
+  bout.print("|#9SL  : |#2{}\r\n", user.sl());
   if (user.sl() < a()->sess().effective_sl()) {
     bout.puts("|#9New : ");
     const auto sl = bin.input_number(user.sl(), 0, 255);
     user.sl(sl);
   }
   bout.nl();
-  bout << "|#9DSL : |#2" << user.dsl() << wwiv::endl;
+  bout.print("|#9DSL : |#2{}\r\n", user.dsl());
   if (user.dsl() < a()->user()->dsl()) {
     bout.puts("|#9New ? ");
     const auto dsl = bin.input_number(user.dsl(), 0, 255);
@@ -140,7 +140,7 @@ static void valuser_manual(User& user) {
   if (auto allowed_ar = word_to_arstr(a()->user()->ar_int(), ""); !allowed_ar.empty()) {
     allowed_ar.push_back(RETURN);
     do {
-      bout << "|#9AR  : |#2" << word_to_arstr(user.ar_int(), "") << wwiv::endl;
+      bout.print("|#9AR  : |#2{}\r\n", word_to_arstr(user.ar_int(), ""));
       bout.puts("|#9Togl? ");
       const auto ch_ar = onek(allowed_ar);
       if (ch_ar == RETURN) {
@@ -154,7 +154,7 @@ static void valuser_manual(User& user) {
   if (auto allowed_dar = word_to_arstr(a()->user()->dar_int(), ""); !allowed_dar.empty()) {
     allowed_dar.push_back(RETURN);
     do {
-      bout << "|#9DAR : |#2" << word_to_arstr(user.dar_int(), "") << wwiv::endl;
+      bout.print("|#9DAR : |#2{}\r\n", word_to_arstr(user.dar_int(), ""));
       bout.puts("|#9Togl? ");
       const auto ch_dar = onek(allowed_dar);
       if (ch_dar == RETURN) {
@@ -175,8 +175,8 @@ static void valuser_manual(User& user) {
     for (auto i = 0; i <= 15; i++) {
       user_rs.push_back(user.has_restrict(1 << i) ? restrict_string[i] : ' ');
     }
-    bout << "      |#2" << restrict_string << wwiv::endl;
-    bout << "|#9Rstr: |#2" << user_rs << wwiv::endl;
+    bout.print("      |#2{}\r\n", restrict_string);
+    bout.print("|#9Rstr: |#2{}\r\n", user_rs);
     bout.puts("|#9Togl? ");
     const auto ch = onek(allowed);
     if (ch != RETURN && ch != SPACE && ch != '?') {
@@ -247,24 +247,24 @@ void valuser(int user_number) {
     bout.litebar("WWIV Quick User Validation");
     bout.nl();
     const auto unn = a()->names()->UserName(user_number);
-    bout << "|#9Name: |#2" << unn << wwiv::endl;
+    bout.print("|#9Name: |#2{}\r\n", unn);
     if (a()->config()->newuser_config().use_real_name != newuser_item_type_t::unused) {
-      bout << "|#9RN  : |#2" << user.real_name() << wwiv::endl;
+      bout.print("|#9RN  : |#2{}\r\n", user.real_name());
     }
     if (a()->config()->newuser_config().use_voice_phone != newuser_item_type_t::unused) {
-      bout << "|#9PH  : |#2" << user.voice_phone() << wwiv::endl;
+      bout.print("|#9PH  : |#2{}\r\n", user.voice_phone());
     }
     if (a()->config()->newuser_config().use_birthday != newuser_item_type_t::unused) {
-      bout << "|#9Age : |#2" << user.age() << " " << user.gender() << wwiv::endl;
+      bout.print("|#9Age : |#2{} {}\r\n", user.age(), user.gender());
     }
     if (a()->config()->newuser_config().use_computer_type != newuser_item_type_t::unused) {
-      bout << "|#9Comp: |#2" << ctypes(user.computer_type()) << wwiv::endl;
+      bout.print("|#9Comp: |#2{}\r\n", ctypes(user.computer_type()));
     }
     if (user.note().empty()) {
-      bout << "|#9Note: |#2" << user.note() << wwiv::endl;
+      bout.print("|#9Note: |#2{}\r\n", user.note());
     }
-    bout << "|#9SL  : |#2" << user.sl() << wwiv::endl;
-    bout << "|#9DSL : |#2" << user.sl() << wwiv::endl;
+    bout.print("|#9SL  : |#2{}\r\n", user.sl());
+    bout.print("|#9DSL : |#2{}\r\n", user.sl());
     bout.nl(2);
     bout.puts("|#9(|#2Q|#9=|#1Quit|#9) (|#2D|#9)elete, (|#2M|#9)anual, (|#2A|#9)utoval : ");
     switch (onek("ADMQ", true)) { 
@@ -286,7 +286,7 @@ void valuser(int user_number) {
       return;
     }
     if (!a()->users()->writeuser(&user, user_number)) {
-      bout << "|#6Error writing user #" << user_number << wwiv::endl;
+      bout.print("|#6Error writing user #{}\r\n", user_number);
       bout.pausescr();
     }
   }
@@ -313,7 +313,7 @@ bool print_wwivnet_net_listing(const Network& net) {
 
     bout.cls();
     bout.nl();
-    bout << "|#9Network|#2: |#1" << net.name << wwiv::endl;
+    bout.print("|#9Network|#2: |#1{}\r\n", net.name);
     bout.nl();
 
     bout.puts("|#21|#9) List All\r\n");
@@ -419,7 +419,7 @@ bool print_wwivnet_net_listing(const Network& net) {
 
     auto bbslist = BbsListNet::ReadBbsDataNet(net.dir);
     if (bbslist.empty()) {
-      bout << "|#6Error opening bbsdata.net in " << net.dir << wwiv::endl;
+      bout.print("|#6Error opening bbsdata.net in {}\r\n", net.dir.string());
       bout.pausescr();
       continue;
     }
@@ -557,7 +557,7 @@ bool print_wwivnet_net_listing(const Network& net) {
     }
     if (!abort && slist) {
       bout.nl();
-      bout << "|#1Systems Listed |#7: |#2" << slist;
+      bout.print("|#1Systems Listed |#7: |#2{}", slist);
     }
     bout.nl(2);
     bout.pausescr();
@@ -572,7 +572,7 @@ static bool print_ftn_net_listing(Network& net) {
 
   bout.cls();
   bout.nl();
-  bout << "|#9Network|#2: |#1" << net.name << wwiv::endl;
+  bout.print("|#9Network|#2: |#1{}\r\n", net.name);
   bout.nl();
 
   bout.puts("|#21|#9) List All\r\n");
@@ -632,7 +632,7 @@ static bool print_ftn_net_listing(Network& net) {
   }
   if (!abort) {
     bout.nl();
-    bout << "|#9Systems Listed |#7: |#2" << count;
+    bout.print("|#9Systems Listed |#7: |#2{}", count);
   }
   bout.nl(2);
   bout.pausescr();
@@ -677,7 +677,7 @@ void query_print_net_listing(bool force_pause) {
           const int odci = (i + 1) / 10;
           odc.insert(static_cast<char>(odci + '0'));
         }
-        bout << "|#2" << i + 1 << "|#9)|#1 " << a()->nets()[i].name << wwiv::endl;
+        bout.print("|#2{}|#9)|#1 {}\r\n", i + 1, a()->nets()[i].name);
       }
       bout.puts("|#2Q|#9)|#1 Quit\r\n\n");
       bout.puts("|#9Which network? |#2");
@@ -736,11 +736,11 @@ void mailr() {
         const auto unn = a()->names()->UserName(m.touser);
         bout.puts("|#9  To|#7: ");
         bout.Color(a()->GetMessageColor());
-        bout << unn << wwiv::endl;
+        bout.pl(unn);
         set_net_num(network_number_from(&m));
         bout.puts("|#9Subj|#7: ");
         bout.Color(a()->GetMessageColor());
-        bout << m.title << wwiv::endl;
+        bout.pl(m.title);
         if (m.status & status_file) {
           File attachDat(FilePath(a()->config()->datadir(), ATTACH_DAT));
           if (attachDat.Open(File::modeReadOnly | File::modeBinary)) {
@@ -748,7 +748,7 @@ void mailr() {
             auto lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
             while (lAttachFileSize > 0 && !found) {
               if (m.daten == static_cast<uint32_t>(fsr.id)) {
-                bout << "|#9Filename.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0\r\n";
+                bout.print("|#9Filename.... |#2{} ({} bytes)|#0\r\n", fsr.filename, fsr.numbytes);
                 found = true;
               }
               if (!found) {

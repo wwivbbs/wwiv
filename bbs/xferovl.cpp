@@ -180,7 +180,7 @@ void sortdir(int directory_num, int type) {
 void sort_all(int type) {
   tmp_disable_conf(true);
   for (auto i = 0; i < wwiv::stl::size_int(a()->udir) && !bout.localIO()->KeyPressed(); i++) {
-    bout << "\r\n|#1Sorting " << a()->dirs()[a()->udir[i].subnum].name << wwiv::endl;
+    bout.print("\r\n|#1Sorting {}\r\n", a()->dirs()[a()->udir[i].subnum].name);
     sortdir(i, type);
   }
   tmp_disable_conf(false);
@@ -300,7 +300,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
   f.set_filename(temp_filename);
   f.u().ownerusr = static_cast<uint16_t>(a()->sess().user_num());
   if (!(d.mask & mask_cdrom) && !check_ul_event(directory_num, &f.u())) {
-    bout << file_name << " was deleted by upload event.\r\n";
+    bout.print("{} was deleted by upload event.\r\n", file_name);
   } else {
     const auto unaligned_filename = files::unalign(file_name);
     const auto full_path = FilePath(d.path, unaligned_filename);
@@ -308,9 +308,9 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     File fileUpload(full_path);
     if (!fileUpload.Open(File::modeBinary | File::modeReadOnly)) {
       if (!description.empty()) {
-        bout << "ERR: " << unaligned_filename << ":" << description << wwiv::endl;
+        bout.print("ERR: {}:{}\r\n", unaligned_filename, description);
       } else {
-        bout << "|#1" << unaligned_filename << " does not exist." << wwiv::endl;
+        bout.print("|#1{} does not exist.\r\n", unaligned_filename);
       }
       return true;
     }
@@ -328,11 +328,11 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     }
     bout.nl();
 
-    bout << "|#9File name   : |#2" << f << wwiv::endl;
-    bout << "|#9File size   : |#2" << humanize(f.numbytes()) << wwiv::endl;
+    bout.print("|#9File name   : |#2{}\r\n", f);
+    bout.print("|#9File size   : |#2{}\r\n", humanize(f.numbytes()));
     if (!description.empty()) {
       f.set_description(description);
-      bout << "|#1 Description: " << f.description() << wwiv::endl;
+      bout.print("|#1 Description: {}\r\n", f.description());
     } else {
       bout.puts("|#9Enter a description for this file.\r\n|#7: ");
       auto desc = bin.input_text(58);
@@ -422,7 +422,7 @@ void upload_files(const std::string& file_name, int directory_num, int type) {
     file.reset(new TextFile(default_fn, "r"));
   }
   if (!file->IsOpen()) {
-    bout << file_name << ": not found.\r\n";
+    bout.print("{}: not found.\r\n", file_name);
   } else {
     while (ok && file->ReadLine(s, 250)) {
       if (s[0] < SPACE) {
@@ -547,7 +547,7 @@ void relist() {
 
   bout.cls();
   bout.clear_lines_listed();
-  bout << std::string(78, '-') << wwiv::endl;
+  bout.pl(std::string(78, '-'));
   for (size_t i = 0; i < a()->filelist.size() && !abort; i++) {
     const auto& f = a()->filelist[i];
     files::FileName fn(f.u.filename);
@@ -562,7 +562,8 @@ void relist() {
     bout.bpla(bd, &abort);
   }
   bout.Color(FRAME_COLOR);
-  bout << "\r" << std::string(78, '-') << wwiv::endl;
+  bout.bputch('\r');
+  bout.pl(std::string(78, '-'));
   bout.clear_lines_listed();
 }
 
@@ -667,7 +668,7 @@ static void config_nscan() {
         s1.push_back(conf.key.key());
       }
       bout.nl();
-      bout << " Select [" << s1.substr(1) << ", <space> to quit]: ";
+      bout.print(" Select [{}, <space> to quit]: ", s1.substr(1));
       ch = onek(s1);
     } else {
       ch = '-';
@@ -734,10 +735,10 @@ void xfer_defaults() {
     bout.cls();
     bout.puts("|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n");
     bout.puts("|#7[|#22|#7]|#1 Set Default Protocol.\r\n");
-    bout << "|#7[|#23|#7]|#1 New-Scan Transfer after Message Base ("
-        << YesNoString(a()->user()->newscan_files()) << ").\r\n";
-    bout << "|#7[|#24|#7]|#1 Number of lines of extended description to print ["
-        << a()->user()->GetNumExtended() << " line(s)].\r\n";
+    bout.print("|#7[|#23|#7]|#1 New-Scan Transfer after Message Base ({}).\r\n",
+               YesNoString(a()->user()->newscan_files()));
+    bout.print("|#7[|#24|#7]|#1 Number of lines of extended description to print [{} line(s)].\r\n",
+               a()->user()->GetNumExtended());
     const std::string onek_options = "Q12345";
     bout.puts("|#7[|#2Q|#7]|#1 Quit.\r\n\n");
     bout.puts("|#5Which? ");
@@ -763,9 +764,8 @@ void xfer_defaults() {
     case '4':
       bout.nl(2);
       bout.puts("|#9How many lines of an extended description\r\n");
-      bout << "|#9do you want to see when listing files (|#20-" << a()->max_extend_lines
-          << "|#7)\r\n";
-      bout << "|#9Current # lines: |#2" << a()->user()->GetNumExtended() << wwiv::endl;
+      bout.print("|#9do you want to see when listing files (|#20-{}|#7)\r\n", a()->max_extend_lines);
+      bout.print("|#9Current # lines: |#2{}\r\n", a()->user()->GetNumExtended());
       bout.puts("|#7: ");
       bin.input(s, 3);
       if (s[0]) {
@@ -819,7 +819,8 @@ void finddescription() {
     // remove pts=1 to search only marked directories
     if (pts && !abort) {
       count++;
-      bout << static_cast<char>(3) << color << ".";
+      bout.Color(color);
+      bout.bputch('.');
       if (count == NUM_DOTS) {
         bout.puts("\r|#2Searching ");
         color++;
