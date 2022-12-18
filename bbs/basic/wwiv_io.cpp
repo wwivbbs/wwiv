@@ -34,13 +34,25 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi) {
     return mb_push_string(bas, l, BasicStrDup("wwiv.io"));
   });
 
+  // Replaced by OUTSTR, but left ofr compatbility
   mb_register_func(basi, "PUTS", [](struct mb_interpreter_t* bas, void** l) -> int {
     const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      sd->out->puts(arg);
+      sd->out->outstr(arg);
+    }
+    return mb_attempt_close_bracket(bas, l);
+  });
+
+  mb_register_func(basi, "OUTSTR", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* sd = get_wwiv_script_userdata(bas);
+    mb_check(mb_attempt_open_bracket(bas, l));
+    while (mb_has_arg(bas, l)) {
+      char* arg = nullptr;
+      mb_check(mb_pop_string(bas, l, &arg));
+      sd->out->outstr(arg);
     }
     return mb_attempt_close_bracket(bas, l);
   });
@@ -51,7 +63,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi) {
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      sd->out->puts(arg);
+      sd->out->outstr(arg);
       sd->out->nl();
     }
     mb_check(mb_attempt_close_bracket(bas, l));
@@ -116,7 +128,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi) {
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      sd->out->puts(arg);
+      sd->out->outstr(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     const auto ret = bin.yesno();
@@ -130,7 +142,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi) {
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      sd->out->puts(arg);
+      sd->out->outstr(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     const auto ret = bin.noyes();

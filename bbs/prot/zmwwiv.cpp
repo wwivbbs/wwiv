@@ -255,7 +255,7 @@ void ZIFlush(ZModem* info) {
   zmodemlog("ZIFlush\n");
   bout.remoteIO()->purgeIn();
   //sleep_for(milliseconds(100));
-  // puts( "ZIFlush" );
+  // outstr( "ZIFlush" );
   // if( connectionType == ConnectionSerial )
   //  SerialFlush( 0 );
 }

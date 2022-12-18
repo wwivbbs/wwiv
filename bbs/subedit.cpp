@@ -64,7 +64,7 @@ static std::string boarddata(size_t n, const subboard_t& r) {
 static void showsubs() {
   bout.cls();
   auto abort = false;
-  bout.puts("|#7(|#1Message Areas Editor|#7) Enter Substring: ");
+  bout.outstr("|#7(|#1Message Areas Editor|#7) Enter Substring: ");
   const auto substring = bin.input(20, true);
   bout.cls();
   bout.bpla("|#2NN   Name                                  FN       MSGS  SUBTYPE      CONF", &abort);
@@ -103,11 +103,11 @@ static std::string GetAnon(const subboard_t& r) {
 
 static void DisplayNetInfo(size_t nSubNum) {
   if (a()->subs().sub(nSubNum).nets.empty()) {
-    bout.puts("|#2Not networked.\r\n");
+    bout.outstr("|#2Not networked.\r\n");
     return;
   }
 
-  bout.puts("\r\n|#9      Network      Host         Type                  Scrb   Flags\r\n");
+  bout.outstr("\r\n|#9      Network      Host         Type                  Scrb   Flags\r\n");
   int i = 0;
   const auto& nets = a()->subs().sub(nSubNum).nets;
   for (const auto& sn : nets) {
@@ -165,7 +165,7 @@ static void modify_sub(int n) {
     bout.print("|#9E) Post ACS   : |#2{}\r\n", r.post_acs);
     bout.print("|#9F) Anony      : |#2{}\r\n", GetAnon(r));
     bout.print("|#9H) Max Msgs   : |#2{}\r\n", r.maxmsgs);
-    bout.puts("|#9J) Net info   : |#2");
+    bout.outstr("|#9J) Net info   : |#2");
     DisplayNetInfo(n);
 
     bout.print("|#9K) Storage typ: |#2{}\r\n", static_cast<int>(r.storage_type));
@@ -179,7 +179,7 @@ static void modify_sub(int n) {
                YesNoString((r.anony & anony_no_fullscreen) ? true : false));
     bout.print("|#9   Conferences: |#2{}\r\n", r.conf.to_string());
     bout.nl();
-    bout.puts("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ");
+    bout.outstr("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ");
     auto ch = onek("QABCDEFGHIJKLMNOP[]", true);
     bout.nl();
     switch (ch) {
@@ -201,14 +201,14 @@ static void modify_sub(int n) {
       r = a()->subs().sub(n);
       break;
     case 'A': {
-      bout.puts("|#2New name? ");
+      bout.outstr("|#2New name? ");
       auto new_name = bin.input_text(r.name, 40);
       if (!new_name.empty()) {
         r.name = new_name;
       }
     } break;
     case 'B': {
-      bout.puts("|#2New base filename (e.g. 'GENERAL')? ");
+      bout.outstr("|#2New base filename (e.g. 'GENERAL')? ");
       auto new_fn = bin.input_filename(r.filename, 8);
       if (new_fn.empty() || contains(new_fn, '.') || new_fn == r.filename) {
         break;
@@ -239,7 +239,7 @@ static void modify_sub(int n) {
       if (!File::Exists(new_sub_fullpath) && !File::Exists(new_msg_fullpath) &&
           new_fn != "NONAME" && old_subname != "NONAME") {
         bout.nl();
-        bout.puts("|#7Rename current data files (.SUB/.DAT)? ");
+        bout.outstr("|#7Rename current data files (.SUB/.DAT)? ");
         if (bin.yesno()) {
           File::Rename(old_sub_fullpath, new_sub_fullpath);
           File::Rename(old_msg_fullpath, new_msg_fullpath);
@@ -248,7 +248,7 @@ static void modify_sub(int n) {
     } break;
     case 'C': {
       bout.nl();
-      bout.puts("|#2New Key (space = none) ? ");
+      bout.outstr("|#2New Key (space = none) ? ");
       auto ch2 = onek("@%^&()_=\\|;:'\",` ");
       r.key = (ch2 == SPACE) ? '\0' : ch2;
     } break;
@@ -263,7 +263,7 @@ static void modify_sub(int n) {
     case 'F': {
       std::string allowed("NYDFR");
       bout.nl();
-      bout.puts("|#2New Anony (Y,N,D,F,R) ? ");
+      bout.outstr("|#2New Anony (Y,N,D,F,R) ? ");
       const auto Y = YesNoString(true)[0];
       const auto N = YesNoString(false)[0];
       allowed.push_back(Y);
@@ -294,7 +294,7 @@ static void modify_sub(int n) {
     } break;
     case 'H': {
       bout.nl();
-      bout.puts("|#2New Max Msgs? ");
+      bout.outstr("|#2New Max Msgs? ");
       r.maxmsgs = bin.input_number(r.maxmsgs);
     } break;
     case 'J': {
@@ -306,7 +306,7 @@ static void modify_sub(int n) {
       auto ch2 = 'A';
       if (!r.nets.empty()) {
         bout.nl();
-        bout.puts("|#2A)dd, D)elete, or M)odify net reference (Q=Quit)? ");
+        bout.outstr("|#2A)dd, D)elete, or M)odify net reference (Q=Quit)? ");
         ch2 = onek("QAMD");
       }
 
@@ -324,9 +324,9 @@ static void modify_sub(int n) {
       } else if (ch2 == 'D' || ch2 == 'M') {
         bout.nl();
         if (ch2 == 'D') {
-          bout.puts("|#2Delete which (a-");
+          bout.outstr("|#2Delete which (a-");
         } else {
-          bout.puts("|#2Modify which (a-");
+          bout.outstr("|#2Modify which (a-");
         }
         bout.print("{:c}), <space>=Quit? ", static_cast<char>('a' + a()->subs().sub(n).nets.size() - 1));
         std::string charstring;
@@ -353,13 +353,13 @@ static void modify_sub(int n) {
     } break;
     case 'K': {
       bout.nl();
-      //bout.puts("|#2New Storage Type ( 2 ) ? ");
+      //bout.outstr("|#2New Storage Type ( 2 ) ? ");
       //auto new_type = bin.input_number<uint8_t>(r.storage_type, 2, 2);
       r.storage_type = 2;
     } break;
     case 'L':
       bout.nl();
-      bout.puts("|#5Require sysop validation for network posts? ");
+      bout.outstr("|#5Require sysop validation for network posts? ");
       r.anony &= ~anony_val_net;
       if (bin.yesno()) {
         r.anony |= anony_val_net;
@@ -367,7 +367,7 @@ static void modify_sub(int n) {
       break;
     case 'M':
       bout.nl();
-      bout.puts("|#5Require ANSI to read this sub? ");
+      bout.outstr("|#5Require ANSI to read this sub? ");
       r.anony &= ~anony_ansi_only;
       if (bin.yesno()) {
         r.anony |= anony_ansi_only;
@@ -375,7 +375,7 @@ static void modify_sub(int n) {
       break;
     case 'N':
       bout.nl();
-      bout.puts("|#5Disable tag lines for this sub? ");
+      bout.outstr("|#5Disable tag lines for this sub? ");
       r.anony &= ~anony_no_tag;
       if (bin.yesno()) {
         r.anony |= anony_no_tag;
@@ -383,12 +383,12 @@ static void modify_sub(int n) {
       break;
     case 'O': {
       bout.nl();
-      bout.puts("|#2Enter new Description : \r\n|#7:");
+      bout.outstr("|#2Enter new Description : \r\n|#7:");
       a()->subs().sub(n).desc = bin.input_text(a()->subs().sub(n).desc, 60);
     } break;
     case 'P':
       bout.nl();
-      bout.puts("|#5Disable the Full Screen Reader for this sub? ");
+      bout.outstr("|#5Disable the Full Screen Reader for this sub? ");
       r.anony &= ~anony_no_fullscreen;
       if (bin.yesno()) {
         r.anony |= anony_no_fullscreen;
@@ -563,7 +563,7 @@ void boardedit() {
   a()->status_manager()->reload_status();
   do {
     bout.nl();
-    bout.puts("|#9(|#2Q|#9)uit (|#2D|#9)elete, (|#2I|#9)nsert, (|#2M|#9)odify, (|#2S|#9)wapSubs, (|#2C|#9)onferences : ");
+    bout.outstr("|#9(|#2Q|#9)uit (|#2D|#9)elete, (|#2I|#9)nsert, (|#2M|#9)odify, (|#2S|#9)wapSubs, (|#2C|#9)onferences : ");
     switch (const auto ch = onek("QSDIMC?"); ch) {
     case '?':
       showsubs();
@@ -576,7 +576,7 @@ void boardedit() {
       break;
     case 'M': {
       bout.nl();
-      bout.puts("|#2Sub number? ");
+      bout.outstr("|#2Sub number? ");
       const int subnum = bin.input_number(-1, 0, size_int(a()->subs().subs()) - 1, false);
       if (subnum >= 0) {
         modify_sub(subnum);
@@ -585,13 +585,13 @@ void boardedit() {
     case 'S': {
       if (a()->subs().subs().size() < a()->config()->max_subs()) {
         bout.nl();
-        bout.puts("|#2Take sub number? ");
+        bout.outstr("|#2Take sub number? ");
         auto subnum1 = bin.input_number(-1, 0, size_int(a()->subs().subs()) - 1, false);
         if (subnum1 <= 0) {
           break;
         }
         bout.nl();
-        bout.puts("|#2And move before sub number? ");
+        bout.outstr("|#2And move before sub number? ");
         const auto subnum2 = bin.input_number(-1, 1, size_int(a()->subs().subs()) - 1, false);
         if (subnum2 <= 0) {
           break;
@@ -601,13 +601,13 @@ void boardedit() {
           subnum1++;
         }
         write_qscn(a()->sess().user_num(), a()->sess().qsc, true);
-        bout.puts("|#1Moving sub now...Please wait...");
+        bout.outstr("|#1Moving sub now...Please wait...");
         insert_sub(subnum2);
         swap_subs(subnum1, subnum2);
         delete_sub(subnum1);
         showsubs();
       } else {
-        bout.puts("\r\nYou must increase the number of subs in WWIVconfig first.\r\n");
+        bout.outstr("\r\nYou must increase the number of subs in WWIVconfig first.\r\n");
       }
     } break;
     case 'I': {
@@ -615,7 +615,7 @@ void boardedit() {
         break;
       }
       bout.nl();
-      bout.puts("|#2Insert before which sub ('Q' to quit, '$' for end) : ");
+      bout.outstr("|#2Insert before which sub ('Q' to quit, '$' for end) : ");
       auto r = bin.input_number_hotkey(-1, {'Q', '$'}, 0, size_int(a()->subs().subs()), false);
       int subnum;
       if (r.key == 'Q') {
@@ -642,7 +642,7 @@ void boardedit() {
     } break;
     case 'D': {
       bout.nl();
-      bout.puts("|#2Delete which sub? ");
+      bout.outstr("|#2Delete which sub? ");
       const int subnum = bin.input_number(-1, 0, size_int(a()->subs().subs()) - 1, false);
       if (subnum >= 0) {
         bout.nl();
@@ -651,7 +651,7 @@ void boardedit() {
           const auto fn = a()->subs().sub(subnum).filename;
           delete_sub(subnum);
           bout.nl();
-          bout.puts("|#5Delete data files (including messages) for sub also? ");
+          bout.outstr("|#5Delete data files (including messages) for sub also? ");
           if (bin.yesno()) {
             File::Remove(FilePath(a()->config()->datadir(), StrCat(fn, ".sub")));
             File::Remove(FilePath(a()->config()->msgsdir(), StrCat(fn, ".dat")));

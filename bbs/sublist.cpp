@@ -52,7 +52,7 @@ void old_sublist() {
   if (okconf(a()->user())) {
     if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
       bout.nl();
-      bout.puts("|#2A)ll conferences, Q)uit, <space> for current conference: ");
+      bout.outstr("|#2A)ll conferences, Q)uit, <space> for current conference: ");
       const auto ch = onek("Q A");
       bout.nl();
       switch (ch) {
@@ -185,7 +185,7 @@ void SubList() {
   if (okconf(a()->user())) {
     if (a()->uconfsub.size() > 1) {
       bout.nl();
-      bout.puts("|#2A)ll conferences, Q)uit, <space> for current conference: ");
+      bout.outstr("|#2A)ll conferences, Q)uit, <space> for current conference: ");
       ch = onek("Q A");
       bout.nl();
       switch (ch) {
@@ -228,7 +228,7 @@ void SubList() {
           }
           bout.litebar(s);
           DisplayHorizontalBar(78, 7);
-          bout.puts("|#2 Sub   Scan   Net/Local   Sub Name                                 Old   New\r\n");
+          bout.outstr("|#2 Sub   Scan   Net/Local   Sub Name                                 Old   New\r\n");
           DisplayHorizontalBar(78, 7);
         }
         ++ns;
@@ -267,7 +267,7 @@ void SubList() {
                            i1 + 1, yns, net_info, subname_color, a()->subs().sub(a()->usub[i1].subnum).name,
                            a()->GetNumMessagesInCurrentMessageArea(), num_new_posts ? '6' : '3',
                            num_new_posts);
-        bout.puts(sdf, &abort, &next);
+        bout.outstr(sdf, &abort, &next);
         bout.nl();
         auto lastp = i1++;
         if (bout.lines_listed() >= a()->sess().num_screen_lines() - 2) {

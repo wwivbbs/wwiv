@@ -66,7 +66,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
       } else {
         if (a()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
           if (!bHandledMessage && bAskToSaveMsgs) {
-            bout.puts("|#5Would you like to save this notification? ");
+            bout.outstr("|#5Would you like to save this notification? ");
             bHandledMessage = !bin.yesno();
           }
         } else {

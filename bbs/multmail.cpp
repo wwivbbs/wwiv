@@ -57,7 +57,7 @@ void multimail(int *pnUserNumber, int numu) {
 
   if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
     bout.nl();
-    bout.puts("Sorry, not enough disk space left.\r\n\n");
+    bout.outstr("Sorry, not enough disk space left.\r\n\n");
     return;
   }
   bout.nl();
@@ -66,7 +66,7 @@ void multimail(int *pnUserNumber, int numu) {
   if (a()->config()->sl(a()->sess().effective_sl()).ability & ability_email_anony) {
     data.anonymous_flag = anony_enable_anony;
   }
-  bout.puts("|#5Show all recipients in mail? ");
+  bout.outstr("|#5Show all recipients in mail? ");
   bool show_all = bin.yesno();
   int j = 0;
   auto s1 = fmt::sprintf("\003""6CC: \003""1");
@@ -84,7 +84,7 @@ void multimail(int *pnUserNumber, int numu) {
   savefile(data.text, &m.msg, data.aux);
   strcpy(m.title, data.title.c_str());
 
-  bout.puts("Mail sent to:\r\n");
+  bout.outstr("Mail sent to:\r\n");
   sysoplog("Multi-Mail to:");
 
   lineadd(&m.msg, "\003""7----", "email");
@@ -102,7 +102,7 @@ void multimail(int *pnUserNumber, int numu) {
       continue;
     }
     if (user.deleted()) {
-      bout.puts("User deleted, not sent.\r\n");
+      bout.outstr("User deleted, not sent.\r\n");
       pnUserNumber[cv] = -1;
       continue;
     }
@@ -123,7 +123,7 @@ void multimail(int *pnUserNumber, int numu) {
       }
     });
     sysoplog(s);
-    bout.puts(s);
+    bout.outstr(s);
     bout.nl();
     if (show_all) {
       const std::string pnunn2 = a()->names()->UserName(pnUserNumber[cv]);
@@ -165,7 +165,7 @@ void multimail(int *pnUserNumber, int numu) {
       pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::Whence::begin);
       auto i1 = pFileEmail->Read(&m1, sizeof(mailrec));
       if (i1 == -1) {
-        bout.puts("|#6DIDN'T READ WRITE!\r\n");
+        bout.outstr("|#6DIDN'T READ WRITE!\r\n");
       }
     }
     if ((m1.tosys) || (m1.touser)) {
@@ -207,7 +207,7 @@ int oneuser() {
       s[i] = upcase(s[i]);
     }
   } else {
-    bout.puts("|#2>");
+    bout.outstr("|#2>");
     bin.input(s, 40);
   }
   auto user_number_int = finduser1(s);
@@ -219,23 +219,23 @@ int oneuser() {
   }
   if (user_number_int <= 0) {
     bout.nl();
-    bout.puts("Unknown user.\r\n\n");
+    bout.outstr("Unknown user.\r\n\n");
     return 0;
   }
   uint16_t user_number = static_cast<uint16_t>(user_number_int);
   uint16_t system_number = 0;
   if (ForwardMessage(&user_number, &system_number)) {
     bout.nl();
-    bout.puts("Forwarded.\r\n\n");
+    bout.outstr("Forwarded.\r\n\n");
     if (system_number) {
-      bout.puts("Forwarded to another system.\r\n");
-      bout.puts("Can't send multi-mail to another system.\r\n\n");
+      bout.outstr("Forwarded to another system.\r\n");
+      bout.outstr("Can't send multi-mail to another system.\r\n\n");
       return 0;
     }
   }
   if (user_number == 0) {
     bout.nl();
-    bout.puts("Unknown user.\r\n\n");
+    bout.outstr("Unknown user.\r\n\n");
     return 0;
   }
   a()->users()->readuser(&user, user_number);
@@ -243,12 +243,12 @@ int oneuser() {
       ((user.sl() != 255) && (user.email_waiting() > a()->config()->max_waiting())) ||
       (user.email_waiting() > 200)) {
     bout.nl();
-    bout.puts("Mailbox full.\r\n\n");
+    bout.outstr("Mailbox full.\r\n\n");
     return 0;
   }
   if (user.deleted()) {
     bout.nl();
-    bout.puts("Deleted user.\r\n\n");
+    bout.outstr("Deleted user.\r\n\n");
     return 0;
   }
   bout.print("     -> {}\r\n", a()->names()->UserName(user_number));
@@ -272,7 +272,7 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
         for (int i1 = 0; i1 < *numu; i1++) {
           if (pnUserNumber[i1] == i) {
             bout.nl();
-            bout.puts("Already in list, not added.\r\n\n");
+            bout.outstr("Already in list, not added.\r\n\n");
             i = 0;
           }
           if (i) {
@@ -284,7 +284,7 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
   }
   if (*numu == maxu) {
     bout.nl();
-    bout.puts("List full.\r\n\n");
+    bout.outstr("List full.\r\n\n");
   }
 }
 
@@ -298,24 +298,24 @@ void slash_e() {
   mml_started = 0;
   if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
     bout.nl();
-    bout.puts("Sorry, not enough disk space left.\r\n\n");
+    bout.outstr("Sorry, not enough disk space left.\r\n\n");
     return;
   }
   if (((a()->user()->feedback_today() >= 10) ||
        (a()->user()->email_today() >= a()->config()->sl(a()->sess().effective_sl()).emails))
       && (!cs())) {
-    bout.puts("Too much mail sent today.\r\n\n");
+    bout.outstr("Too much mail sent today.\r\n\n");
     return;
   }
   if (a()->user()->restrict_email()) {
-    bout.puts("You can't send mail.\r\n");
+    bout.outstr("You can't send mail.\r\n");
     return;
   }
   auto done = false;
   numu = 0;
   do {
     bout.nl(2);
-    bout.puts("|#2Multi-Mail: A,M,D,L,E,Q,? : ");
+    bout.outstr("|#2Multi-Mail: A,M,D,L,E,Q,? : ");
     switch (char ch = onek("QAMDEL?"); ch) {
     case '?':
       bout.printfile(MMAIL_NOEXT);
@@ -325,7 +325,7 @@ void slash_e() {
       break;
     case 'A':
       bout.nl();
-      bout.puts("Enter names/numbers for users, one per line, max 20.\r\n\n");
+      bout.outstr("Enter names/numbers for users, one per line, max 20.\r\n\n");
       mml_s = nullptr;
       add_list(user_number, &numu, MAX_LIST, so());
       break;
@@ -333,29 +333,29 @@ void slash_e() {
       FindFiles ff(FilePath(a()->config()->datadir(), "*.mml"), FindFiles::FindFilesType::any);
       if (ff.empty()) {
         bout.nl();
-        bout.puts("No mailing lists available.\r\n\n");
+        bout.outstr("No mailing lists available.\r\n\n");
         break;
       }
       bout.nl();
-      bout.puts("Available mailing lists:\r\n\n");
+      bout.outstr("Available mailing lists:\r\n\n");
       for (const auto& f : ff) {
         to_char_array(s, f.name);
         sss = strchr(s, '.');
         if (sss) {
           *sss = 0;
         }
-        bout.puts(s);
+        bout.outstr(s);
         bout.nl();
       }
 
       bout.nl();
-      bout.puts("|#2Which? ");
+      bout.outstr("|#2Which? ");
       bin.input(s, 8);
 
       File fileMailList(FilePath(a()->config()->datadir(), s));
       if (!fileMailList.Open(File::modeBinary | File::modeReadOnly)) {
         bout.nl();
-        bout.puts("Unknown mailing list.\r\n\n");
+        bout.outstr("Unknown mailing list.\r\n\n");
       } else {
         auto i1 = fileMailList.length();
         mml_s = static_cast<char *>(BbsAllocA(i1 + 10L));
@@ -375,7 +375,7 @@ void slash_e() {
     case 'E':
       if (!numu) {
         bout.nl();
-        bout.puts("Need to specify some users first - use A or M\r\n\n");
+        bout.outstr("Need to specify some users first - use A or M\r\n\n");
       } else {
         multimail(user_number, numu);
         done = true;
@@ -384,7 +384,7 @@ void slash_e() {
     case 'D':
       if (numu) {
         bout.nl();
-        bout.puts("|#2Delete which? ");
+        bout.outstr("|#2Delete which? ");
         bin.input(s, 2);
         i = to_number<int>(s);
         if ((i > 0) && (i <= numu)) {

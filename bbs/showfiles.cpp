@@ -59,11 +59,11 @@ void show_files(const char *file_name, const char *directory_name) {
     if (bout.wherex() > a()->user()->screen_width() - 15) {
       bout.nl();
     }
-    bout.puts(full_pathname.string());
+    bout.outstr(full_pathname.string());
   }
 
   bout.nl();
   bout.Color(7);
-  bout.puts(std::string(a()->user()->screen_width() - 1, c));
+  bout.outstr(std::string(a()->user()->screen_width() - 1, c));
   bout.nl(2);
 }

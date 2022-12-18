@@ -57,11 +57,11 @@ void kill_old_email() {
   User user;
   filestatusrec fsr{};
 
-  bout.puts("|#5List mail starting at most recent? ");
+  bout.outstr("|#5List mail starting at most recent? ");
   bool forward = bin.yesno();
   auto pFileEmail(OpenEmailFile(false));
   if (!pFileEmail->IsOpen()) {
-    bout.puts("\r\nNo mail.\r\n");
+    bout.outstr("\r\nNo mail.\r\n");
     return;
   }
   auto max = static_cast<int>(pFileEmail->length() / sizeof(mailrec));
@@ -93,7 +93,7 @@ void kill_old_email() {
       bool done1 = false;
       do {
         bout.nl();
-        bout.puts("|#1  To|#9: ");
+        bout.outstr("|#1  To|#9: ");
         bout.Color(a()->GetMessageColor());
 
         if (m.tosys == 0) {
@@ -103,7 +103,7 @@ void kill_old_email() {
               && ((a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_email_anony) == 0)) {
             tempName = ">UNKNOWN<";
           }
-          bout.puts(tempName);
+          bout.outstr(tempName);
           bout.nl();
         } else {
           bout.print("#{} @{}\r\n", m.tosys, m.tosys);
@@ -111,7 +111,7 @@ void kill_old_email() {
         bout.printf("|#1Subj|#9: |#%d%60.60s\r\n", a()->GetMessageColor(), m.title);
         time_t lCurrentTime = time(nullptr);
         int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / SECONDS_PER_DAY);
-        bout.puts("|#1Sent|#9: ");
+        bout.outstr("|#1Sent|#9: ");
         bout.Color(a()->GetMessageColor());
         bout.print("{} days ago\r\n", nDaysAgo);
         if (m.status & status_file) {
@@ -130,15 +130,15 @@ void kill_old_email() {
               }
             }
             if (!found) {
-              bout.puts("|#1Filename|#0.... |#2Unknown or missing|#0\r\n");
+              bout.outstr("|#1Filename|#0.... |#2Unknown or missing|#0\r\n");
             }
             fileAttach.Close();
           } else {
-            bout.puts("|#1Filename|#0.... |#2Unknown or missing|#0\r\n");
+            bout.outstr("|#1Filename|#0.... |#2Unknown or missing|#0\r\n");
           }
         }
         bout.nl();
-        bout.puts("|#9(R)ead, (D)elete, (N)ext, (Q)uit : ");
+        bout.outstr("|#9(R)ead, (D)elete, (N)ext, (Q)uit : ");
         switch (char ch = onek("QRDN"); ch) {
         case 'Q':
           done1   = true;
@@ -183,15 +183,15 @@ void kill_old_email() {
             }
             bout.nl();
             if (found) {
-              bout.puts("Mail and file deleted.\r\n\n");
+              bout.outstr("Mail and file deleted.\r\n\n");
               sysoplog(fmt::format("Deleted mail and attached file: {}", fsr.filename));
             } else {
-              bout.puts("Mail deleted.\r\n\n");
+              bout.outstr("Mail deleted.\r\n\n");
               const std::string username_num = a()->names()->UserName(m1.touser);
               sysoplog(fmt::format("Deleted mail sent to {}", username_num));
             }
           } else {
-            bout.puts("Mail file changed; try again.\r\n");
+            bout.outstr("Mail file changed; try again.\r\n");
           }
           delete_email_file->Close();
         }
@@ -224,24 +224,24 @@ void list_users(int mode) {
   std::string find_text;
 
   if (a()->current_user_sub().subnum == -1 && mode == LIST_USERS_MESSAGE_AREA) {
-    bout.puts("\r\n|#6No Message Sub Available!\r\n\n");
+    bout.outstr("\r\n|#6No Message Sub Available!\r\n\n");
     return;
   }
   if (a()->current_user_dir().subnum == -1 && mode == LIST_USERS_FILE_AREA) {
-    bout.puts("\r\n|#6 No Dirs Available.\r\n\n");
+    bout.outstr("\r\n|#6 No Dirs Available.\r\n\n");
     return;
   }
 
   auto snum = a()->sess().user_num();
 
   bout.nl();
-  bout.puts("|#5Sort by user number? ");
+  bout.outstr("|#5Sort by user number? ");
   bool bSortByUserNumber = bin.yesno();
   bout.nl();
-  bout.puts("|#5Search for a name or city? ");
+  bout.outstr("|#5Search for a name or city? ");
   if (bin.yesno()) {
     bout.nl();
-    bout.puts("|#5Enter text to find: ");
+    bout.outstr("|#5Enter text to find: ");
     find_text = bin.input_upper(10);
   }
 
@@ -272,10 +272,10 @@ void list_users(int mode) {
     if (ncnm > 5) {
       count++;
       bout.Color(color);
-      bout.puts(".");
+      bout.outstr(".");
       if (count == NUM_DOTS) {
-        bout.puts("\r", &abort, &next);
-        bout.puts("|#2Searching ", &abort, &next);
+        bout.outstr("\r", &abort, &next);
+        bout.outstr("|#2Searching ", &abort, &next);
         color++;
         count = 0;
         if (color == 4) {
@@ -294,13 +294,13 @@ void list_users(int mode) {
       } else {
         int i1;
         for (i1 = 0; i1 < 78; i1++) {
-          bout.bputch(45);
+          bout.outchr(45);
         }
         bout.nl();
         bout.print("|#5{}", title_line);
         bout.nl();
         for (i1 = 0; i1 < 78; i1++) {
-          bout.bputch(45);
+          bout.outchr(45);
         }
         bout.nl();
       }
@@ -365,7 +365,7 @@ void list_users(int mode) {
         bout.Color(FRAME_COLOR);
         bout.bpla("\xD4\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBE",
             &abort);
-        bout.puts("|#1[Enter] to continue or Q=Quit : ");
+        bout.outstr("|#1[Enter] to continue or Q=Quit : ");
         switch (auto ch = onek("Q\r "); ch) {
         case 'Q':
           abort = true;
@@ -404,7 +404,7 @@ void time_bank() {
 
   bout.nl();
   if (!wwiv::bbs::check_acs("user.validated == true")) {
-    bout.puts("|#6You must be validated to access the timebank.\r\n");
+    bout.outstr("|#6You must be validated to access the timebank.\r\n");
     return;
   }
   if (a()->user()->banktime_minutes() > a()->config()->sl(a()->sess().effective_sl()).time_per_logon) {
@@ -420,21 +420,21 @@ void time_bank() {
   bool done = false;
   do {
     bout.cls();
-    bout.puts("|#5WWIV TimeBank\r\n");
+    bout.outstr("|#5WWIV TimeBank\r\n");
     bout.nl();
-    bout.puts("|#2D|#9)eposit Time\r\n");
-    bout.puts("|#2W|#9)ithdraw Time\r\n");
-    bout.puts("|#2Q|#9)uit\r\n");
+    bout.outstr("|#2D|#9)eposit Time\r\n");
+    bout.outstr("|#2W|#9)ithdraw Time\r\n");
+    bout.outstr("|#2Q|#9)uit\r\n");
     bout.nl();
     bout.print("|#9Balance:   |#2{}|#9 minutes\r\n", a()->user()->banktime_minutes());
     bout.print("|#9Time Left: |#2{}|#9 minutes\r\n", static_cast<int>(nsl() / 60));
     bout.nl();
-    bout.puts("|#9(|#2Q|#9=|#1Quit|#9) [|#2Time Bank|#9] Enter Command: |#2");
+    bout.outstr("|#9(|#2Q|#9=|#1Quit|#9) [|#2Time Bank|#9] Enter Command: |#2");
     bout.mpl(1);
     switch (char c = onek("QDW"); c) {
     case 'D': {
       bout.nl();
-      bout.puts("|#1Deposit how many minutes: ");
+      bout.outstr("|#1Deposit how many minutes: ");
       bin.input(s, 3, true);
       auto i = to_number<int>(s);
       if (i > 0) {
@@ -457,7 +457,7 @@ void time_bank() {
       if (a()->user()->banktime_minutes() == 0) {
         break;
       }
-      bout.puts("|#1Withdraw How Many Minutes: ");
+      bout.outstr("|#1Withdraw How Many Minutes: ");
       bin.input(s, 3, true);
       auto i = to_number<int>(s);
       if (i > 0) {

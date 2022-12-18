@@ -106,7 +106,7 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
     mb_check(mb_pop_value(bas, l, &arg));
     // arg should be coll.
     if (arg.type != MB_DT_LIST) {
-      sd->out->puts("|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n");
+      sd->out->outstr("|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n");
       return MB_FUNC_WARNING;
     }
 
@@ -117,7 +117,7 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
       const auto idx = wwiv_mb_make_int(current_count++);
       const auto ret = mb_set_coll(bas, l, arg, idx, val);
       if (ret != MB_FUNC_OK) {
-        sd->out->puts("[oops] ");
+        sd->out->outstr("[oops] ");
       }
     }
 

@@ -378,20 +378,20 @@ static void gfile_sec(int sn) {
       }
     } else if (ss == "R" && so()) {
       bout.nl();
-      bout.puts("|#2G-file number to delete? ");
+      bout.outstr("|#2G-file number to delete? ");
       std::string ss1 = mmkey(odc);
       i = to_number<int>(ss1);
       if (i > 0 && i <= nf) {
         bout.print("|#9Remove {}|#1? |#5", g[i - 1].description);
         if (bin.yesno()) {
-          bout.puts("|#5Erase file too? ");
+          bout.outstr("|#5Erase file too? ");
           if (bin.yesno()) {
             const auto file_name = FilePath(section.filename, g[i - 1].filename);
             File::Remove(FilePath(a()->config()->gfilesdir(), file_name));
           }
           erase_at(g, i-1);
           a()->gfiles().Save();
-          bout.puts("\r\nDeleted.\r\n\n");
+          bout.outstr("\r\nDeleted.\r\n\n");
         }
       }
     } else if (ss == "?") {
@@ -409,7 +409,7 @@ static void gfile_sec(int sn) {
     } else if (ss == "D") {
       bool done1 = false;
       while (!done1 && !a()->sess().hangup()) {
-        bout.puts("|#9Download which G|#1-|#9file |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist) : |#5");
+        bout.outstr("|#9Download which G|#1-|#9file |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist) : |#5");
         ss = mmkey(odc);
         i2 = to_number<int>(ss);
         abort = false;
@@ -440,7 +440,7 @@ static void gfile_sec(int sn) {
                 done1 = true;
               }
               bout.nl();
-              bout.puts(s1);
+              bout.outstr(s1);
               bout.nl();
               sysoplog(s1);
             }
@@ -485,13 +485,13 @@ void gfiles() {
     current_section++;
   }
   if (nmap == 0) {
-    bout.puts("\r\nNo G-file sections available.\r\n\n");
+    bout.outstr("\r\nNo G-file sections available.\r\n\n");
     return;
   }
   list_sec(map);
   while (!done && !a()->sess().hangup()) {
     a()->tleft(true);
-    bout.puts("|#9G|#1-|#9Files Main Menu|#0\r\n");
+    bout.outstr("|#9G|#1-|#9Files Main Menu|#0\r\n");
     bout.print("|#9Which Section |#1(|#21|#1-|#2{}"
                "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5",
                nmap);

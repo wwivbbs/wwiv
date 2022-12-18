@@ -73,7 +73,7 @@ void modify_sec(int n) {
     bout.print("|#9C) ACS       : |#2{}\r\n", r.acs);
     bout.print("|#9D) Max Files : |#2{}\r\n", r.maxfiles);
     bout.nl();
-    bout.puts("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1F,|#1[|#7,|#1]|#7) : ");
+    bout.outstr("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1F,|#1[|#7,|#1]|#7) : ");
     const auto ch = onek("QABCD[]", true);
     switch (ch) {
     case 'Q':
@@ -95,31 +95,31 @@ void modify_sec(int n) {
       break;
     case 'A': {
       bout.nl();
-      bout.puts("|#2New name? ");
+      bout.outstr("|#2New name? ");
       r.name = bin.input_text(r.name, 40);
     } break;
     case 'B': {
       bout.nl();
       if (File::Exists(FilePath(a()->config()->gfilesdir(), r.filename))) {
-        bout.puts("\r\nThere is currently a directory for this g-file section.\r\n");
-        bout.puts("If you change the filename, the directory will still be there.\r\n\n");
+        bout.outstr("\r\nThere is currently a directory for this g-file section.\r\n");
+        bout.outstr("If you change the filename, the directory will still be there.\r\n\n");
       }
       bout.nl();
-      bout.puts("|#2New filename? ");
+      bout.outstr("|#2New filename? ");
       auto fname = bin.input_filename(r.filename, 20);
       if (!fname.empty()) {
         r.filename = fname;
         if (!File::Exists(FilePath(a()->config()->gfilesdir(), r.filename))) {
           bout.nl();
-          bout.puts("|#5Create directory for this section? ");
+          bout.outstr("|#5Create directory for this section? ");
           if (bin.yesno()) {
             File dir(FilePath(a()->config()->gfilesdir(), r.filename));
             File::mkdirs(dir);
           } else {
-            bout.puts("\r\nYou will have to create the directory manually, then.\r\n\n");
+            bout.outstr("\r\nYou will have to create the directory manually, then.\r\n\n");
           }
         } else {
-          bout.puts("\r\nA directory already exists under this filename.\r\n\n");
+          bout.outstr("\r\nA directory already exists under this filename.\r\n\n");
         }
         bout.pausescr();
       }
@@ -130,7 +130,7 @@ void modify_sec(int n) {
     } break;
     case 'D': {
       bout.nl();
-      bout.puts("|#1Max 99 files/section.\r\n|#2New max files? ");
+      bout.outstr("|#1Max 99 files/section.\r\n|#2New max files? ");
       r.maxfiles = bin.input_number(r.maxfiles, 0, 999, true);
     } break;
     }
@@ -163,7 +163,7 @@ void gfileedit() {
   auto done = false;
   do {
     bout.nl();
-    bout.puts("|#2G-files: D:elete, I:nsert, M:odify, Q:uit, ? : ");
+    bout.outstr("|#2G-files: D:elete, I:nsert, M:odify, Q:uit, ? : ");
     const auto ch = onek("QDIM?");
     switch (ch) {
     case '?':
@@ -174,7 +174,7 @@ void gfileedit() {
       break;
     case 'M': {
       bout.nl();
-      bout.puts("|#2Section number? ");
+      bout.outstr("|#2Section number? ");
       std::set<char> q{'Q', 27, '\r'};
       const auto t = bin.input_number_hotkey(0, q, 0, size_int(a()->gfiles()), false);
       if (!t.key) {      
@@ -184,7 +184,7 @@ void gfileedit() {
     case 'I': {
       if (size_int(a()->gfiles()) < a()->max_gfilesec) {
         bout.nl();
-        bout.puts("|#2Insert before which section? ");
+        bout.outstr("|#2Insert before which section? ");
         std::set<char> q{'Q', 27, '\r'};
         const auto t = bin.input_number_hotkey(0, q, 0, size_int(a()->gfiles()), false);
         if (!t.key) {
@@ -194,7 +194,7 @@ void gfileedit() {
       } break;
     case 'D': {
       bout.nl();
-      bout.puts("|#2Delete which section? ");
+      bout.outstr("|#2Delete which section? ");
       std::set<char> q{'Q', 27, '\r'};
       const auto t = bin.input_number_hotkey(0, q, 0, size_int(a()->gfiles()), false);
       if (!t.key) {
@@ -234,7 +234,7 @@ bool fill_sec(int sn) {
     bout.print("|#2{} : ", f.name);
     auto s1s = bin.input_text(60);
     if (s1s.empty()) {
-      bout.puts("|#6Aborted.\r\n");
+      bout.outstr("|#6Aborted.\r\n");
       return false;
     }
     gfile_t g1{};
@@ -245,7 +245,7 @@ bool fill_sec(int sn) {
   }
 
   if (nf >= a()->gfiles().dir(sn).maxfiles) {
-    bout.puts("Section full.\r\n");
+    bout.outstr("Section full.\r\n");
   }
   a()->gfiles().Save();
   a()->status_manager()->Run([&](Status& status) {

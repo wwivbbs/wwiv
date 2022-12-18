@@ -113,7 +113,7 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
     if (ch >= SPACE) {
       if (bout.wherex() < (a()->user()->screen_width() - 1) && cp < nMaxLen) {
         buffer[cp++] = ch;
-        bout.bputch(ch);
+        bout.outchr(ch);
         if (bout.wherex() == (a()->user()->screen_width() - 1)) {
           done = true;
         }
@@ -137,7 +137,7 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
           } else {
             if (buffer[cp - 1] == BACKSPACE) {
               cp--;
-              bout.bputch(SPACE);
+              bout.outchr(SPACE);
             } else {
               cp--;
               bout.bs();
@@ -148,9 +148,9 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
             if (clear_previous_line) {
               bout.clear_whole_line();
             }
-            bout.puts("\x1b[1A");
+            bout.outstr("\x1b[1A");
           } else {
-            bout.puts("[*> Previous Line <*]\r\n");
+            bout.outstr("[*> Previous Line <*]\r\n");
           }
           return true;
         }
@@ -170,7 +170,7 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
               bout.Color(0);
             } else if (buffer[cp - 1] == BACKSPACE) {
               cp--;
-              bout.bputch(SPACE);
+              bout.outchr(SPACE);
             } else {
               cp--;
               bout.bs();
@@ -180,7 +180,7 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
         break;
       case CN:                            // Ctrl-N
         if (bout.wherex() && cp < nMaxLen) {
-          bout.bputch(BACKSPACE);
+          bout.outchr(BACKSPACE);
           buffer[cp++] = BACKSPACE;
         }
         break;
@@ -197,9 +197,9 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
               buffer[cp++] = CO;
               buffer[cp++] = CO;
               buffer[cp++] = ch;
-              bout.bputch('\xf');
-              bout.bputch('\xf');
-              bout.bputch(ch);
+              bout.outchr('\xf');
+              bout.outchr('\xf');
+              bout.outchr(ch);
             }
           }
         }
@@ -211,7 +211,7 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
           charsNeeded = 5 - ((bout.wherex() + 1) % 5);
           for (auto j = 0; j < charsNeeded; j++) {
             buffer[cp++] = SPACE;
-            bout.bputch(SPACE);
+            bout.outchr(SPACE);
           }
         }
       }
@@ -233,10 +233,10 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
         && lastwordstart != (cp - 1)) {
       const auto lastwordlen = cp - lastwordstart - 1;
       for (std::string::size_type j = 0; j < lastwordlen; j++) {
-        bout.bputch(BACKSPACE);
+        bout.outchr(BACKSPACE);
       }
       for (std::string::size_type j = 0; j < lastwordlen; j++) {
-        bout.bputch(SPACE);
+        bout.outchr(SPACE);
       }
       for (std::string::size_type j = 0; j < lastwordlen; j++) {
         rollover[j] = buffer[cp - lastwordlen + j];

@@ -191,7 +191,7 @@ bool FsedCommands::AddAll() {
   add(FsedCommand(fsed_command_id::backspace, "backspace",
                   [&](FsedModel& ed, FsedView& view, FsedState&) -> bool {
                     ed.bs();
-                    view.bputch(ed.curline().wwiv_color(), ed.current_cell().ch);
+                    view.outchr(ed.curline().wwiv_color(), ed.current_cell().ch);
                     return true;
                   }));
   add(FsedCommand(fsed_command_id::toggle_insovr, "toggle_insovr",

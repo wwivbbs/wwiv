@@ -226,7 +226,7 @@ void display_message_text(const std::string& text, bool* next) {
     if (printit || ansi || line_len_ptr >= 80) {
       if (centre && ctrld != -1) {
         const auto spaces_to_center = (a()->user()->screen_width() - bout.wherex() - line_len_ptr) / 2;
-        bout.puts(std::string(spaces_to_center, ' '), &abort, next);
+        bout.outstr(std::string(spaces_to_center, ' '), &abort, next);
       }
       if (!s.empty()) {
         if (ctrld != -1) {
@@ -234,10 +234,10 @@ void display_message_text(const std::string& text, bool* next) {
               !centre && !ansi) {
             bout.nl();
           }
-          bout.puts(s, &abort, next);
+          bout.outstr(s, &abort, next);
           if (ctrla && !s.empty() && s.back() != SPACE && !ansi) {
             if (bout.wherex() < static_cast<int>(a()->user()->screen_width()) - 1) {
-              bout.bputch(SPACE);
+              bout.outchr(SPACE);
             } 
             bout.nl();
             bin.checka(&abort, next);
@@ -383,7 +383,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
     bout.print("|#9 Sub|#7: |#{}{:<35.35}", a()->GetMessageColor(), msg.message_area);
     if (a()->user()->screen_width() >= 78) {
-      bout.puts(" ");
+      bout.outstr(" ");
     } else {
       bout.nl();
       num_header_lines++;
@@ -398,7 +398,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
 
   bout.print("|#9From|#7: |#1{:<35.35}", msg.from_user_name);
   if (a()->user()->screen_width() >= 78) {
-    bout.puts(" ");
+    bout.outstr(" ");
   } else {
     bout.nl();
     num_header_lines++;
@@ -415,7 +415,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
   if (!msg.from_sys_name.empty()) {
     bout.print("|#9 Sys|#7: |#1{:<35.35}", msg.from_sys_name);
     if (a()->user()->screen_width() >= 78) {
-      bout.puts(" ");
+      bout.outstr(" ");
     } else {
       bout.nl();
       num_header_lines++;
@@ -427,32 +427,32 @@ static int legacy_display_header_text(Type2MessageData& msg) {
   }
 
   if (!msg.flags.empty()) {
-    bout.puts("|#9Info|#7: |#1");
+    bout.outstr("|#9Info|#7: |#1");
     for (const auto& f : msg.flags) {
       switch (f) {
       case MessageFlags::FORCED:
-        bout.puts("|13[FORCED] ");
+        bout.outstr("|13[FORCED] ");
         break;
       case MessageFlags::NOT_NETWORK_VALIDATED:
-        bout.puts("|12[Not Network Validated] ");
+        bout.outstr("|12[Not Network Validated] ");
         break;
       case MessageFlags::NOT_VALIDATED:
-        bout.puts("|12<<< NOT VALIDATED >>>");
+        bout.outstr("|12<<< NOT VALIDATED >>>");
         break;
       case MessageFlags::PERMANENT:
-        bout.puts("|13[Permanent] ");
+        bout.outstr("|13[Permanent] ");
         break;
       case MessageFlags::LOCAL:
-        bout.puts("|10[Local] ");
+        bout.outstr("|10[Local] ");
         break;
       case MessageFlags::FTN:
-        bout.puts("|10[Fido] ");
+        bout.outstr("|10[Fido] ");
         break;
       case MessageFlags::PRIVATE:
-        bout.puts("|10[Pvt] ");
+        bout.outstr("|10[Pvt] ");
         break;
       case MessageFlags::WWIVNET:
-        bout.puts("|10[WWIVnet] ");
+        bout.outstr("|10[WWIVnet] ");
         break;
       }
     }
@@ -645,8 +645,8 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
       }
     }
     bout.Color(0);
-    bout.puts(had_ansi ? "|16" : "|#0");
-    bout.puts(l);
+    bout.outstr(had_ansi ? "|16" : "|#0");
+    bout.outstr(l);
     bout.clreol();
   }
 }

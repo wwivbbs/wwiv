@@ -49,7 +49,7 @@ public:
   void redraw(const FsedModel& ed);
   void draw_bottom_bar(const FsedModel& ed);
   [[nodiscard]] int bgetch(FsedModel& ed);
-  void bputch(int color, char ch);
+  void outchr(int color, char ch);
   void cls();
   void Color(int c);
   [[nodiscard]] int top_line() const override { return top_line_; }

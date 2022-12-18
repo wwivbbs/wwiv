@@ -139,9 +139,9 @@ static void vote_question(int i, int ii) {
   } else {
     message +=  "No Comment";
   }
-  bout.puts(message);
+  bout.outstr(message);
   bout.nl(2);
-  bout.puts("|#5Change it? ");
+  bout.outstr("|#5Change it? ");
   if (!bin.yesno()) {
     return;
   }
@@ -213,15 +213,15 @@ void vote() {
   voteFile.Close();
 
   if (mapp == 0) {
-    bout.puts("\r\n\n|#6No voting questions currently.\r\n\n");
+    bout.outstr("\r\n\n|#6No voting questions currently.\r\n\n");
     return;
   }
   bool done = false;
   do {
     print_quest(mapp, &map[0]);
     bout.nl();
-    bout.puts("|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ");
-    bout.puts("|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ");
+    bout.outstr("|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ");
+    bout.outstr("|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ");
     bout.mpl(2);
     std::string answer= mmkey(odc);
     int nQuestionNum = to_number<int>(answer);

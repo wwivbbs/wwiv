@@ -201,7 +201,7 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
   const auto start_time = system_clock::now();
   auto num_written = 0;
   for (const auto& s : v) {
-    num_written += bout.puts(s);
+    num_written += bout.outstr(s);
     bout.nl();
     // If this is an ANSI file, then don't pause
     // (since we may be moving around

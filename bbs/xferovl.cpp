@@ -65,7 +65,7 @@ void move_file() {
   dliscan();
   int nCurRecNum = recno(fm);
   if (nCurRecNum < 0) {
-    bout.puts("\r\nFile not found.\r\n");
+    bout.outstr("\r\nFile not found.\r\n");
     return;
   }
   bool done = false;
@@ -78,7 +78,7 @@ void move_file() {
     bout.nl();
     printfileinfo(&f.u(), dir);
     bout.nl();
-    bout.puts("|#5Move this (Y/N/Q)? ");
+    bout.outstr("|#5Move this (Y/N/Q)? ");
     const auto ch = bin.ynq();
     std::filesystem::path src_fn;
     if (ch == 'Q') {
@@ -88,7 +88,7 @@ void move_file() {
       std::string ss;
       do {
         bout.nl(2);
-        bout.puts("|#2To which directory? ");
+        bout.outstr("|#2To which directory? ");
         ss = mmkey(MMKeyAreaType::dirs);
         if (ss[0] == '?') {
           dirlist(1);
@@ -110,16 +110,16 @@ void move_file() {
         dliscan1(d1);
         if (recno(f.aligned_filename()) > 0) {
           ok = false;
-          bout.puts("\r\nFilename already in use in that directory.\r\n");
+          bout.outstr("\r\nFilename already in use in that directory.\r\n");
         }
         if (a()->current_file_area()->number_of_files() >= a()->dirs()[d1].maxfiles) {
           ok = false;
-          bout.puts("\r\nToo many files in that directory.\r\n");
+          bout.outstr("\r\nToo many files in that directory.\r\n");
         }
         if (File::freespace_for_path(a()->dirs()[d1].path) <
             static_cast<long>(f.numbytes() / 1024L) + 3) {
           ok = false;
-          bout.puts("\r\nNot enough disk space to move it.\r\n");
+          bout.outstr("\r\nNot enough disk space to move it.\r\n");
         }
         dliscan();
       } else {
@@ -129,7 +129,7 @@ void move_file() {
       ok = false;
     }
     if (ok && !done) {
-      bout.puts("|#5Reset upload time for file? ");
+      bout.outstr("|#5Reset upload time for file? ");
       if (bin.yesno()) {
         f.set_date(DateTime::now());
       }
@@ -147,7 +147,7 @@ void move_file() {
       if (src_fn != dest_fn && File::Exists(src_fn)) {
         File::Rename(src_fn, dest_fn);
       }
-      bout.puts("\r\nFile moved.\r\n");
+      bout.outstr("\r\nFile moved.\r\n");
     }
     dliscan();
     nCurRecNum = nrecno(fm, nCurrentPos);
@@ -188,7 +188,7 @@ void sort_all(int type) {
 
 void rename_file() {
   bout.nl(2);
-  bout.puts("|#2File to rename: ");
+  bout.outstr("|#2File to rename: ");
   auto s = bin.input(12);
   if (s.empty()) {
     return;
@@ -208,7 +208,7 @@ void rename_file() {
     bout.nl();
     printfileinfo(&f.u(), dir);
     bout.nl();
-    bout.puts("|#5Change info for this file (Y/N/Q)? ");
+    bout.outstr("|#5Change info for this file (Y/N/Q)? ");
     const char ch = bin.ynq();
     if (ch == 'Q') {
       break;
@@ -218,7 +218,7 @@ void rename_file() {
       continue;
     }
     bout.nl();
-    bout.puts("|#2New filename? ");
+    bout.outstr("|#2New filename? ");
     s = bin.input(12);
     if (!okfn(s)) {
       s.clear();
@@ -229,7 +229,7 @@ void rename_file() {
         const std::string p = dir.path;
         auto dest_fn = FilePath(p, s);
         if (File::Exists(dest_fn)) {
-          bout.puts("Filename already in use; not changed.\r\n");
+          bout.outstr("Filename already in use; not changed.\r\n");
         } else {
           File::Rename(FilePath(p, f), dest_fn);
           if (File::Exists(dest_fn)) {
@@ -242,12 +242,12 @@ void rename_file() {
             }
             f.set_filename(s);
           } else {
-            bout.puts("Bad filename.\r\n");
+            bout.outstr("Bad filename.\r\n");
           }
         }
       }
     }
-    bout.puts("\r\nNew description:\r\n|#2: ");
+    bout.outstr("\r\nNew description:\r\n|#2: ");
     auto* area = a()->current_file_area();
     auto desc = bin.input_text(58);
     if (!desc.empty()) {
@@ -255,11 +255,11 @@ void rename_file() {
     }
     auto ss = area->ReadExtendedDescriptionAsString(f).value_or("");
     bout.nl(2);
-    bout.puts("|#5Modify extended description? ");
+    bout.outstr("|#5Modify extended description? ");
     if (bin.yesno()) {
       bout.nl();
       if (!ss.empty()) {
-        bout.puts("|#5Delete it? ");
+        bout.outstr("|#5Delete it? ");
         if (bin.yesno()) {
           area->DeleteExtendedDescription(f, nCurRecNum);
           f.set_extended_description(false);
@@ -334,7 +334,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
       f.set_description(description);
       bout.print("|#1 Description: {}\r\n", f.description());
     } else {
-      bout.puts("|#9Enter a description for this file.\r\n|#7: ");
+      bout.outstr("|#9Enter a description for this file.\r\n|#7: ");
       auto desc = bin.input_text(58);
       f.set_description(desc);
     }
@@ -375,7 +375,7 @@ bool maybe_upload(const std::string& file_name, int directory_num, const std::st
         return false;
       }
       if (ch == YesNoString(false)[0]) {
-        bout.puts("|#5Delete it? ");
+        bout.outstr("|#5Delete it? ");
         if (bin.yesno()) {
           File::Remove(FilePath(a()->dirs()[directory_num].path, file_name));
         }
@@ -529,11 +529,11 @@ bool uploadall(int directory_num) {
     }
   }
   if (aborted) {
-    bout.puts("|#6Aborted.\r\n");
+    bout.outstr("|#6Aborted.\r\n");
     return false;
   }
   if (a()->current_file_area()->number_of_files() >= dir.maxfiles) {
-    bout.puts("directory full.\r\n");
+    bout.outstr("directory full.\r\n");
   }
   return true;
 }
@@ -554,7 +554,7 @@ void relist() {
     const auto s =
         fmt::format("|#{}{:<2} |#1{}", a()->batch().contains_file(f.u.filename) ? 6 : 0, i + 1,
           fn.aligned_filename());
-    bout.puts(s, &abort, &next);
+    bout.outstr(s, &abort, &next);
 
     const auto width = a()->user()->screen_width() - 28;
     const auto bd = fmt::format(" |#2{:>5} |#2{:>5} |#1{}", 
@@ -562,7 +562,7 @@ void relist() {
     bout.bpla(bd, &abort);
   }
   bout.Color(FRAME_COLOR);
-  bout.bputch('\r');
+  bout.outchr('\r');
   bout.pl(std::string(78, '-'));
   bout.clear_lines_listed();
 }
@@ -573,16 +573,16 @@ void relist() {
 void edit_database() {
   do {
     bout.nl();
-    bout.puts("|#2A|#7)|#9 Add to ALLOW.DAT\r\n");
-    bout.puts("|#2R|#7)|#9 Remove from ALLOW.DAT\r\n");
-    bout.puts("|#2Q|#7)|#9 Quit\r\n");
+    bout.outstr("|#2A|#7)|#9 Add to ALLOW.DAT\r\n");
+    bout.outstr("|#2R|#7)|#9 Remove from ALLOW.DAT\r\n");
+    bout.outstr("|#2Q|#7)|#9 Quit\r\n");
     bout.nl();
-    bout.puts("|#7Select: ");
+    bout.outstr("|#7Select: ");
     const auto ch = onek("QAR");
     switch (ch) {
     case 'A': {
       bout.nl();
-      bout.puts("|#2Filename: ");
+      bout.outstr("|#2Filename: ");
       auto s = bin.input(12, true);
       if (!s.empty()) {
         add_to_file_database(s);
@@ -590,7 +590,7 @@ void edit_database() {
     } break;
     case 'R': {
       bout.nl();
-      bout.puts("|#2Filename: ");
+      bout.outstr("|#2Filename: ");
       auto s = bin.input(12, true);
       if (!s.empty()) {
         remove_from_file_database(s);
@@ -631,7 +631,7 @@ bool is_uploadable(const std::string& file_name) {
 static void l_config_nscan() {
   bool abort = false;
   bout.nl();
-  bout.puts("|#9Directories to new-scan marked with '|#2*|#9'\r\n\n");
+  bout.outstr("|#9Directories to new-scan marked with '|#2*|#9'\r\n\n");
   for (auto i = 0; i < wwiv::stl::size_int(a()->udir) && !abort; i++) {
     const int i1 = a()->udir[i].subnum;
     std::string s{"  "};
@@ -660,7 +660,7 @@ static void config_nscan() {
       abort = false;
       std::string s1 = " ";
       bout.nl();
-      bout.puts("Select Conference: \r\n\n");
+      bout.outstr("Select Conference: \r\n\n");
       for (auto i = 0; i < wwiv::stl::size_int(a()->uconfdir) && !abort; i++) {
         const auto& conf = a()->uconfdir[i];
         const auto s2 = fmt::format("{}) {}", conf.key.key(), stripcolors(conf.conf_name));
@@ -689,7 +689,7 @@ static void config_nscan() {
       bool done = false;
       do {
         bout.nl();
-        bout.puts("|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0");
+        bout.outstr("|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0");
         auto s = mmkey(MMKeyAreaType::dirs);
         if (s[0]) {
           for (auto i = 0; i < wwiv::stl::size_int(a()->udir); i++) {
@@ -733,15 +733,15 @@ void xfer_defaults() {
 
   do {
     bout.cls();
-    bout.puts("|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n");
-    bout.puts("|#7[|#22|#7]|#1 Set Default Protocol.\r\n");
+    bout.outstr("|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n");
+    bout.outstr("|#7[|#22|#7]|#1 Set Default Protocol.\r\n");
     bout.print("|#7[|#23|#7]|#1 New-Scan Transfer after Message Base ({}).\r\n",
                YesNoString(a()->user()->newscan_files()));
     bout.print("|#7[|#24|#7]|#1 Number of lines of extended description to print [{} line(s)].\r\n",
                a()->user()->GetNumExtended());
     const std::string onek_options = "Q12345";
-    bout.puts("|#7[|#2Q|#7]|#1 Quit.\r\n\n");
-    bout.puts("|#5Which? ");
+    bout.outstr("|#7[|#2Q|#7]|#1 Quit.\r\n\n");
+    bout.outstr("|#5Which? ");
     char ch = onek(onek_options);
     switch (ch) {
     case 'Q':
@@ -752,7 +752,7 @@ void xfer_defaults() {
       break;
     case '2':
       bout.nl(2);
-      bout.puts("|#9Enter your default protocol, |#20|#9 for none.\r\n\n");
+      bout.outstr("|#9Enter your default protocol, |#20|#9 for none.\r\n\n");
       i = get_protocol(xfertype::xf_down);
       if (i >= 0) {
         a()->user()->default_protocol(i);
@@ -763,10 +763,10 @@ void xfer_defaults() {
       break;
     case '4':
       bout.nl(2);
-      bout.puts("|#9How many lines of an extended description\r\n");
+      bout.outstr("|#9How many lines of an extended description\r\n");
       bout.print("|#9do you want to see when listing files (|#20-{}|#7)\r\n", a()->max_extend_lines);
       bout.print("|#9Current # lines: |#2{}\r\n", a()->user()->GetNumExtended());
-      bout.puts("|#7: ");
+      bout.outstr("|#7: ");
       bin.input(s, 3);
       if (s[0]) {
         i = to_number<int>(s);
@@ -789,14 +789,14 @@ void finddescription() {
   bout.nl();
   bool ac = false;
   if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
-    bout.puts("|#5All conferences? ");
+    bout.outstr("|#5All conferences? ");
     ac = bin.yesno();
     if (ac) {
       tmp_disable_conf(true);
     }
   }
-  bout.puts("\r\nFind description -\r\n\n");
-  bout.puts("Enter string to search for in file description:\r\n:");
+  bout.outstr("\r\nFind description -\r\n\n");
+  bout.outstr("Enter string to search for in file description:\r\n:");
   const auto search_string = bin.input(58);
   if (search_string.empty()) {
     tmp_disable_conf(false);
@@ -806,7 +806,7 @@ void finddescription() {
   auto abort = false;
   auto count = 0;
   auto color = 3;
-  bout.puts("\r|#2Searching ");
+  bout.outstr("\r|#2Searching ");
   bout.clear_lines_listed();
   for (auto i = 0; i < wwiv::stl::size_int(a()->udir) && !abort && !a()->sess().hangup(); i++) {
     const auto ii1 = a()->udir[i].subnum;
@@ -820,9 +820,9 @@ void finddescription() {
     if (pts && !abort) {
       count++;
       bout.Color(color);
-      bout.bputch('.');
+      bout.outchr('.');
       if (count == NUM_DOTS) {
-        bout.puts("\r|#2Searching ");
+        bout.outstr("\r|#2Searching ");
         color++;
         count = 0;
         if (color == 4) {
@@ -866,7 +866,7 @@ void finddescription() {
 
 void arc_l() {
   bout.nl();
-  bout.puts("|#2File for listing: ");
+  bout.outstr("|#2File for listing: ");
   auto file_spec = bin.input(12);
   if (file_spec.find('.') == std::string::npos) {
     file_spec += ".*";

@@ -142,14 +142,14 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
     return 0;
   }
 
-  bout.puts("Searching...");
+  bout.outstr("Searching...");
   auto abort = false;
   auto current_count = 0;
   for (const auto& n : a()->names()->names_vector()) {
     if (a()->sess().hangup() || abort) { break; }
     if (++current_count % 25 == 0) {
       // changed from 15 since computers are faster now-a-days
-      bout.puts(".");
+      bout.outstr(".");
     }
     const auto current_user = n.number;
     a()->ReadCurrentUser(current_user);
@@ -168,7 +168,7 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
 
 static int ShowLoginAndGetUserNumber(const std::string& remote_username) {
   bout.nl();
-  // bout.puts("Enter number or name or 'NEW'\r\nNN: ");
+  // bout.outstr("Enter number or name or 'NEW'\r\nNN: ");
   bout.str("NN_PROMPT");
 
   std::string user_name;
@@ -212,7 +212,7 @@ bool VerifyPhoneNumber() {
   auto phone_number = bin.input_password("PH: ###-###-", 4);
   if (phone_number != a()->user()->voice_phone().substr(8)) {
     if (phone_number.length() == 4 && phone_number[3] == '-') {
-      bout.puts("\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n");
+      bout.outstr("\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n");
     }
     return false;
   }
@@ -238,7 +238,7 @@ static bool VerifySysopPassword() {
 static void DoFailedLoginAttempt() {
   a()->user()->increment_illegal_logons();
   a()->WriteCurrentUser();
-  bout.puts("\r\n\aILLEGAL LOGON\a\r\n\n");
+  bout.outstr("\r\n\aILLEGAL LOGON\a\r\n\n");
 
   sysoplog(false, "");
   sysoplog(false, fmt::format("### ILLEGAL LOGON for {}", a()->user()->name_and_number()));
@@ -256,13 +256,13 @@ static void LeaveBadPasswordFeedback(int ans) {
   } else {
     a()->user()->clear_flag(User::flag_ansi);
   }
-  bout.puts("|#6Too many logon attempts!!\r\n\n");
+  bout.outstr("|#6Too many logon attempts!!\r\n\n");
   bout.print("|#9Would you like to leave Feedback to {}? ", a()->config()->sysop_name());
   if (!bin.yesno()) {
     return;
   }
   bout.nl();
-  bout.puts("What is your NAME or HANDLE? ");
+  bout.outstr("What is your NAME or HANDLE? ");
   const auto temp_name = bin.input_proper("", 31);
   if (temp_name.empty()) {
     return;
@@ -296,7 +296,7 @@ static void CheckCallRestrictions() {
       date() == a()->user()->laston() &&
       a()->user()->ontoday() > 0) {
     bout.nl();
-    bout.puts("|#6Sorry, you can only logon once per day.\r\n");
+    bout.outstr("|#6Sorry, you can only logon once per day.\r\n");
     a()->Hangup();
   }
 }
@@ -312,9 +312,9 @@ static void logon_guest() {
   std::string userName, reason;
   auto count = 0;
   do {
-    bout.puts("\r\n|#5Enter your real name : ");
+    bout.outstr("\r\n|#5Enter your real name : ");
     userName = bin.input_upper(25);
-    bout.puts("\r\n|#5Purpose of your call?\r\n");
+    bout.outstr("\r\n|#5Purpose of your call?\r\n");
     reason = bin.input_text(79);
     if (!userName.empty() && !reason.empty()) {
       break;
@@ -405,7 +405,7 @@ void getuser() {
       }
     } else if (usernum == 0) {
       bout.nl();
-      bout.puts("|#6Unknown user.\r\n");
+      bout.outstr("|#6Unknown user.\r\n");
       a()->sess().user_num(static_cast<uint16_t>(usernum));
     } else if (usernum == -1) {
       write_inst(INST_LOC_NEWUSER, 0, INST_FLAGS_NONE);
@@ -537,7 +537,7 @@ static void UpdateLastOnFile() {
       }
       if (needs_header) {
         bout.nl(2);
-        bout.puts("|#1Last few callers|#7: |#0");
+        bout.outstr("|#1Last few callers|#7: |#0");
         bout.nl(2);
         if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
             a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
@@ -639,7 +639,7 @@ static void DisplayLastNetInfo() {
     return;
   }
   bout.nl(2);
-  bout.puts("|#5                      Most Recent Network Activity|#0");
+  bout.outstr("|#5                      Most Recent Network Activity|#0");
   bout.nl(2);
   bout.pl("|#2  Date        Time      Sent    Recd    Connection       BBS");
   const auto bar = okansi() ? static_cast<char>('\xCD') : '=';
@@ -658,7 +658,7 @@ static void CheckAndUpdateUserInfo() {
   const auto& nc = a()->config()->newuser_config();
 
   if (nc.use_birthday == newuser_item_type_t::required && a()->user()->birthday_year() == 0) {
-    bout.puts("\r\nPlease enter the following information:\r\n");
+    bout.outstr("\r\nPlease enter the following information:\r\n");
     do {
       bout.nl();
       input_age(a()->user());
@@ -701,11 +701,11 @@ static void DisplayUserLoginInformation() {
 
   const auto username_num = a()->user()->name_and_number();
   bout.print("|#9Name/Handle|#0....... |#2{}\r\n", username_num);
-  bout.puts("|#9Internet Address|#0.. |#2");
+  bout.outstr("|#9Internet Address|#0.. |#2");
   if (check_inet_addr(a()->user()->email_address())) {
     bout.pl(a()->user()->email_address());
   } else {
-    bout.puts("None.\r\n");
+    bout.outstr("None.\r\n");
   }
   if (const auto la = a()->user()->last_address(); !la.empty()) {
     bout.print("|#9Last IP Address|#0... |#2{}\r\n", la.to_string());
@@ -730,16 +730,16 @@ static void DisplayUserLoginInformation() {
   a()->status_manager()->reload_status();
   const auto screen_width = a()->user()->screen_width() - 19;
   int width = 0;
-  bout.puts("|#9Networks|#0.......... ");
+  bout.outstr("|#9Networks|#0.......... ");
   for (const auto& n : a()->nets().networks()) {
     const auto s = to_string(n);
     const auto len = size_without_colors(s);
     if (width + len >= screen_width) {
       bout.nl();
-      bout.puts("|#0.................. ");
+      bout.outstr("|#0.................. ");
       width = 0;
     }
-    bout.puts(s);
+    bout.outstr(s);
     width += len;
   }
   bout.nl();
@@ -751,9 +751,9 @@ static void DisplayUserLoginInformation() {
       set_net_num(a()->user()->forward_netnum());
       if (!valid_system(a()->user()->forward_systemnum())) {
         a()->user()->clear_mailbox_forward();
-        bout.puts("Forwarded to unknown system; forwarding reset.\r\n");
+        bout.outstr("Forwarded to unknown system; forwarding reset.\r\n");
       } else {
-        bout.puts("Mail set to be forwarded to ");
+        bout.outstr("Mail set to be forwarded to ");
         if (wwiv::stl::ssize(a()->nets()) > 1) {
           bout.print("#{} @{}.{}.\r\n", a()->user()->forward_usernum(),
                      a()->user()->forward_systemnum(), a()->network_name());
@@ -764,7 +764,7 @@ static void DisplayUserLoginInformation() {
       }
     } else {
       if (a()->user()->mailbox_closed()) {
-        bout.puts("Your mailbox is closed.\r\n\n");
+        bout.outstr("Your mailbox is closed.\r\n\n");
       } else {
         bout.print("Mail set to be forwarded to #{}\r\n", a()->user()->forward_usernum());
       }
@@ -774,12 +774,12 @@ static void DisplayUserLoginInformation() {
     bout.print("Mail forwarded to Internet {}.\r\n", internet_addr);
   }
   if (a()->sess().IsTimeOnlineLimited()) {
-    bout.puts("\r\n|#3Your on-line time is limited by an external event.\r\n\n");
+    bout.outstr("\r\n|#3Your on-line time is limited by an external event.\r\n\n");
   }
 }
 
 static void LoginCheckForNewMail() {
-  bout.puts("|#9Scanning for new mail... ");
+  bout.outstr("|#9Scanning for new mail... ");
   if (a()->user()->email_waiting() > 0) {
     const auto messages = check_new_mail(a()->sess().user_num());
     if (messages) {
@@ -792,7 +792,7 @@ static void LoginCheckForNewMail() {
                  a()->user()->email_waiting());
     }
   } else {
-    bout.puts(" |#9No mail found.\r\n");
+    bout.outstr(" |#9No mail found.\r\n");
   }
 }
 
@@ -820,7 +820,7 @@ static void CheckUserForVotingBooth() {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && a()->user()->votes(i) == 0) {
         bout.nl();
-        bout.puts("|#9You haven't voted yet.\r\n");
+        bout.outstr("|#9You haven't voted yet.\r\n");
         return;
       }
     }
@@ -904,7 +904,7 @@ void logon() {
   // New Message Scan
   auto done_newscan_all = false;
   if (a()->IsNewScanAtLogin()) {
-    bout.puts("\r\n|#5Scan All Message Areas For New Messages? ");
+    bout.outstr("\r\n|#5Scan All Message Areas For New Messages? ");
     if (bin.yesno()) {
       wwiv::bbs::menus::NewMsgsAllConfs();
       done_newscan_all = true;

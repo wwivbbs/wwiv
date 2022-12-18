@@ -161,7 +161,7 @@ void build_qwk_packet() {
   qwk_info.file = std::make_unique<DataFile<qwk_record>>(filename, filemode);
 
   if (!qwk_info.file->ok()) {
-    bout.puts("Open error");
+    bout.outstr("Open error");
     sysoplog("Couldn't open MESSAGES.DAT");
     return;
   }
@@ -216,7 +216,7 @@ void build_qwk_packet() {
 
   if (qwk_info.abort) {
     bout.Color(1);
-    bout.puts("Abort everything? (NO=Download what I have gathered)");
+    bout.outstr("Abort everything? (NO=Download what I have gathered)");
     if (!bin.yesno()) {
       qwk_info.abort = false;
     }
@@ -297,7 +297,7 @@ void qwk_gather_sub(uint16_t bn, qwk_state* qwk_info) {
     const auto subinfo = fmt::sprintf("|#7\xB3|#9%-4d|#7\xB3|#1%-52s|#7\xB3 |#2%-8d|#7\xB3|#3%-8d|#7\xB3",
                                       bn + 1, thissub, a()->GetNumMessagesInCurrentMessageArea(),
                                       a()->GetNumMessagesInCurrentMessageArea() - i + 1);
-    bout.puts(subinfo);
+    bout.outstr(subinfo);
     bout.nl();
 
     bin.checka(&qwk_info->abort);
@@ -501,7 +501,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
   int cur = 0;
   if (m.message_text.empty() && m.title.empty()) {
     // TODO(rushfan): Really read_type2_message should return an std::optional<Type2MessageData>
-    bout.puts("File not found.");
+    bout.outstr("File not found.");
     bout.nl();
     return;
   }
@@ -567,7 +567,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
 
   if (!qwk_info->file->Write(&qwk_info->qwk_rec)) {
     qwk_info->abort = true; // Must be out of disk space
-    bout.puts("Write error");
+    bout.outstr("Write error");
     bout.pausescr();
   }
 
@@ -669,7 +669,7 @@ void finish_qwk(qwk_state *qwk_info) {
 
   auto qwk_cfg = read_qwk_cfg(*a()->config());
   if (!a()->user()->data.qwk_leave_bulletin) {
-    bout.puts("Grabbing hello/news/goodbye text files...");
+    bout.outstr("Grabbing hello/news/goodbye text files...");
 
     if (!qwk_cfg.hello.empty()) {
       auto parem1 = FilePath(a()->config()->gfilesdir(), qwk_cfg.hello);
@@ -722,7 +722,7 @@ void finish_qwk(qwk_state *qwk_info) {
 
     File qwk_file_to_send_file(qwk_file_to_send);
     if (!File::Exists(qwk_file_to_send)){
-      bout.puts("No such file.");
+      bout.outstr("No such file.");
       bout.nl();
       qwk_info->abort = true;
       return;
@@ -730,7 +730,7 @@ void finish_qwk(qwk_state *qwk_info) {
     numbytes = qwk_file_to_send_file.length();
 
     if (numbytes == 0L) {
-      bout.puts("File has nothing in it.");
+      bout.outstr("File has nothing in it.");
       qwk_info->abort = true;
       return;
     }
@@ -745,9 +745,9 @@ void finish_qwk(qwk_state *qwk_info) {
       } else {
         bout.nl();
         bout.Color(2);
-        bout.puts("Packet was not successful...");
+        bout.outstr("Packet was not successful...");
         bout.Color(1);
-        bout.puts("Try transfer again?");
+        bout.outstr("Try transfer again?");
 
         if (!bin.noyes()) {
           done = true;
@@ -764,7 +764,7 @@ void finish_qwk(qwk_state *qwk_info) {
     }
   } else while (!done && !a()->sess().hangup() && !qwk_info->abort) {
     bout.Color(2);
-    bout.puts("Move to what dir? ");
+    bout.outstr("Move to what dir? ");
     bout.mpl(60);
     auto new_dir = StringTrim(bin.input_path(60));
     if (new_dir.empty()) {
@@ -774,7 +774,7 @@ void finish_qwk(qwk_state *qwk_info) {
     const auto nfile = FilePath(new_dir, qwkname);
 
     if (File::Exists(nfile)) {
-      bout.puts("|#5File Exists. Would you like to overrite it?");
+      bout.outstr("|#5File Exists. Would you like to overrite it?");
       if (bin.yesno()) {
         File::Remove(nfile);
       }
@@ -782,7 +782,7 @@ void finish_qwk(qwk_state *qwk_info) {
 
     auto ofile = FilePath(a()->sess().dirs().qwk_directory(), qwkname);
     if (!replacefile(ofile.string(), nfile.string())) {
-      bout.puts("|#6Unable to copy file\r\n|#5Would you like to try again?");
+      bout.outstr("|#6Unable to copy file\r\n|#5Would you like to try again?");
       if (!bin.noyes()) {
         qwk_info->abort = true;
         done = true;

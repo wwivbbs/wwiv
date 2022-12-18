@@ -78,7 +78,7 @@ std::string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
       }
     } while ((ch <= ' ' || ch > 126) && !a()->sess().hangup());
     ch = upcase(ch);
-    bout.bputch(ch);
+    bout.outchr(ch);
     if (ch == RETURN) {
       cmd1.clear();
     } else {
@@ -112,7 +112,7 @@ std::string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
         cp--;
       } else {
         cmd1.push_back(ch);
-        bout.bputch(ch);
+        bout.outchr(ch);
         cp++;
         if (ch == '/' && cmd1[0] == '/') {
           bout.newline = true;

@@ -76,7 +76,7 @@ void dirlist(int mode) {
           }
           bout.litebar(s);
           DisplayHorizontalBar(78, 7);
-          bout.puts("|#2 Dir Qscan?     Directory Name                          Total Files\r\n");
+          bout.outstr("|#2 Dir Qscan?     Directory Name                          Total Files\r\n");
           DisplayHorizontalBar(78, 7);
         }
         ++nd;
@@ -101,9 +101,9 @@ void dirlist(int mode) {
                            dir.name, a()->current_file_area()->number_of_files());
         }
         if (okansi()) {
-          bout.puts(s, &abort, &next);
+          bout.outstr(s, &abort, &next);
         } else {
-          bout.puts(stripcolors(s), &abort, &next);
+          bout.outstr(stripcolors(s), &abort, &next);
         }
         int lastp = i1++;
         bout.nl();

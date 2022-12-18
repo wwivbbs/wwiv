@@ -427,18 +427,18 @@ PipeEval::PipeEval(Context& context) : context_(context) {
     }
     const auto text = a.at(0).lexeme;
     const auto color = to_number<int>(a.at(1).lexeme);
-    bout.spin_puts(text, color);
+    bout.spin_outstr(text, color);
     return {};
   });
   fn_map_.try_emplace("backprint", [](Context&, const std::vector<pipe_expr_token_t>& a) -> std::string {
     if (a.size() < 4) {
       return {};
     }
-    const auto text = a.at(0).lexeme;
+    const auto& text = a.at(0).lexeme;
     const auto color = to_number<int>(a.at(1).lexeme);
     const auto char_delay = std::chrono::milliseconds(to_number<int>(a.at(2).lexeme));
     const auto str_delay = std::chrono::milliseconds(to_number<int>(a.at(3).lexeme));
-    bout.back_puts(text, color, char_delay, str_delay);
+    bout.back_outstr(text, color, char_delay, str_delay);
     return {};
   });
   fn_map_.try_emplace("rainbow", [](Context&, const std::vector<pipe_expr_token_t>& a) -> std::string {

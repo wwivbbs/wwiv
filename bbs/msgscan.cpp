@@ -124,14 +124,14 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
   if (post->status & status_post_new_net) {
     set_net_num(post->network.network_msg.net_number);
     if (post->network.network_msg.net_number == static_cast<uint8_t>(-1)) {
-      bout.puts("|#6Deleted network.\r\n");
+      bout.outstr("|#6Deleted network.\r\n");
       return;
     }
   }
 
   if (user_input[0] == 'O' && (so() || lcs())) {
     show_files("*.frm", a()->config()->gfilesdir().c_str());
-    bout.puts("|#2Which form letter: ");
+    bout.outstr("|#2Which form letter: ");
     auto fn = bin.input_filename("", 8);
     if (fn.empty()) {
       return;
@@ -147,10 +147,10 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     }
   } else if (user_input[0] == '@') {
     bout.nl();
-    bout.puts("|#21|#7]|#9 Reply to Different Address\r\n");
-    bout.puts("|#22|#7]|#9 Forward Message\r\n");
+    bout.outstr("|#21|#7]|#9 Reply to Different Address\r\n");
+    bout.outstr("|#22|#7]|#9 Forward Message\r\n");
     bout.nl();
-    bout.puts("|#7(Q=Quit) Select [1,2] : ");
+    bout.outstr("|#7(Q=Quit) Select [1,2] : ");
     switch (auto ch_reply = onek("Q12\r", true); ch_reply) {
     case '\r':
     case 'Q':
@@ -158,7 +158,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
       break;
     case '1': {
       bout.nl();
-      bout.puts("|#9Enter user name or number:\r\n:");
+      bout.outstr("|#9Enter user name or number:\r\n:");
       const auto un_nn = fixup_user_entered_email(bin.input(75, true));
       if (auto [un, sy] = parse_email_info(un_nn); un || sy) {
         email("", un, sy, false, 0);
@@ -178,7 +178,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
         }
         File fileExtract(filename);
         if (!fileExtract.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
-          bout.puts("|#6Could not open file for writing.\r\n");
+          bout.outstr("|#6Could not open file for writing.\r\n");
         } else {
           if (fileExtract.length() > 0) {
             fileExtract.Seek(-1L, File::Whence::end);
@@ -197,7 +197,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
           fileExtract.Close();
         }
         bout.nl();
-        bout.puts("|#5Allow editing? ");
+        bout.outstr("|#5Allow editing? ");
         if (bin.yesno()) {
           bout.nl();
           LoadFileIntoWorkspace(a()->context(), filename, false);
@@ -341,12 +341,12 @@ static void display_title_new(const std::vector<std::string>& lines, const FullS
   bout.GotoXY(1, i + fs.lines_start());
   const auto& l = lines.at(i);
   if (selected) {
-    bout.puts("|17|12>");
+    bout.outstr("|17|12>");
   } else {
-    bout.puts("|16|#0 ");
+    bout.outstr("|16|#0 ");
   }
-  bout.puts(pad_to_ignore_colors(l, fs.screen_width() - 1));
-  bout.puts("|#0");
+  bout.outstr(pad_to_ignore_colors(l, fs.screen_width() - 1));
+  bout.outstr("|#0");
 }
 
 static void display_titles_new(const std::vector<std::string>& lines, const FullScreenView& fs,
@@ -606,8 +606,8 @@ static void HandleMessageDownload(int msgnum) {
       return;
     }
     const auto& b = o.value();
-    bout.puts("|#1Message Download -\r\n\n");
-    bout.puts("|#2Filename to use? ");
+    bout.outstr("|#1Message Download -\r\n\n");
+    bout.outstr("|#2Filename to use? ");
     const auto filename = bin.input_filename(12);
     if (!okfn(filename)) {
       return;
@@ -634,7 +634,7 @@ void HandleMessageMove(int& msg_num) {
     tmp_disable_conf(true);
     bout.nl();
     do {
-      bout.puts("|#5(|#2Q|#5=|#2Quit|#5) Move to which sub? ");
+      bout.outstr("|#5(|#2Q|#5=|#2Quit|#5) Move to which sub? ");
       ss1 = mmkey(MMKeyAreaType::subs);
       if (ss1[0] == '?') {
         old_sublist();
@@ -657,7 +657,7 @@ void HandleMessageMove(int& msg_num) {
     if (temp_sub_num != -1) {
       if (!wwiv::bbs::check_acs(a()->subs().sub(a()->usub[temp_sub_num].subnum).post_acs)) {
         bout.nl();
-        bout.puts("Sorry, you don't have post access on that sub.\r\n\n");
+        bout.outstr("Sorry, you don't have post access on that sub.\r\n\n");
         temp_sub_num = -1;
       }
     }
@@ -668,7 +668,7 @@ void HandleMessageMove(int& msg_num) {
       auto p1 = p2;
       auto b = readfile(&(p2.msg), (a()->current_sub().filename)).value_or("");
       bout.nl();
-      bout.puts("|#5Delete original post? ");
+      bout.outstr("|#5Delete original post? ");
       if (bin.yesno()) {
         delete_message(msg_num);
         if (msg_num > 1) {
@@ -708,7 +708,7 @@ void HandleMessageMove(int& msg_num) {
       tmp_disable_conf(false);
       iscan(a()->current_user_sub_num());
       bout.nl();
-      bout.puts("|#9Message moved.\r\n\n");
+      bout.outstr("|#9Message moved.\r\n\n");
       resynch(&msg_num, &p1);
     } else {
       tmp_disable_conf(false);
@@ -721,13 +721,13 @@ static void HandleMessageLoad() {
     return;
   }
   bout.nl();
-  bout.puts("|#2Filename: ");
+  bout.outstr("|#2Filename: ");
   const auto fn = bin.input_path(50);
   if (fn.empty()) {
     return;
   }
   bout.nl();
-  bout.puts("|#5Allow editing? ");
+  bout.outstr("|#5Allow editing? ");
   const auto no_edit_allowed = !bin.yesno();
   bout.nl();
   LoadFileIntoWorkspace(a()->context(), fn, no_edit_allowed);
@@ -797,7 +797,7 @@ static void HandleMessageDelete(int& msg_num) {
   }
   if (date_to_daten(tu.firston()) < p2.daten) {
     bout.nl();
-    bout.puts("|#2Remove how many posts credit? ");
+    bout.outstr("|#2Remove how many posts credit? ");
     unsigned short num_credits =
         bin.input_number<uint16_t>(0, 0, static_cast<uint16_t>(tu.messages_posted()));
     if (num_credits != 0) {
@@ -840,7 +840,7 @@ static void HandleValUser(int msg_num) {
   } else if (cs() && msg_num > 0 &&
              msg_num <= a()->GetNumMessagesInCurrentMessageArea()) {
     bout.nl();
-    bout.puts("|#6Post from another system.\r\n\n");
+    bout.outstr("|#6Post from another system.\r\n\n");
   }
 }
 
@@ -854,9 +854,9 @@ static void HandleToggleAutoPurge(int msg_num) {
     write_post(msg_num, p3);
     bout.nl();
     if (p3->status & status_no_delete) {
-      bout.puts("|#9Message will |#6NOT|#9 be auto-purged.\r\n");
+      bout.outstr("|#9Message will |#6NOT|#9 be auto-purged.\r\n");
     } else {
-      bout.puts("|#9Message |#2CAN|#9 now be auto-purged.\r\n");
+      bout.outstr("|#9Message |#2CAN|#9 now be auto-purged.\r\n");
     }
     bout.nl();
   }
@@ -874,9 +874,9 @@ static void HandleTogglePendingNet(int msg_num, int& val) {
     bout.nl();
     if (p3->status & status_pending_net) {
       val |= 2;
-      bout.puts("|#9Will be sent out on net now.\r\n");
+      bout.outstr("|#9Will be sent out on net now.\r\n");
     } else {
-      bout.puts("|#9Not set for net pending now.\r\n");
+      bout.outstr("|#9Not set for net pending now.\r\n");
     }
     bout.nl();
   }
@@ -906,7 +906,7 @@ static void HandleToggleUnAnonymous(int msg_num) {
     p3->anony = 0;
     write_post(msg_num, p3);
     bout.nl();
-    bout.puts("|#9Message is not anonymous now.\r\n");
+    bout.outstr("|#9Message is not anonymous now.\r\n");
   }
 }
 
@@ -915,7 +915,7 @@ static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& 
   bin.resetnsp();
   const auto read_prompt = GetScanReadPrompts(msgnum);
   bout.nl();
-  bout.puts(read_prompt);
+  bout.outstr(read_prompt);
   char szUserInput[81];
   bin.input(szUserInput, 5, true);
   resynch(&msgnum, nullptr);
@@ -1037,7 +1037,7 @@ static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& 
 
 static void validate() {
   bout.nl();
-  bout.puts("|#5Validate messages here? ");
+  bout.outstr("|#5Validate messages here? ");
   if (bin.noyes()) {
     wwiv::bbs::OpenSub opened_sub(true);
     for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea(); i++) {
@@ -1052,7 +1052,7 @@ static void validate() {
 
 static void network_validate() {
   bout.nl();
-  bout.puts("|#5Network validate here? ");
+  bout.outstr("|#5Network validate here? ");
   if (bin.yesno()) {
     int nNumMsgsSent = 0;
     std::vector<postrec> to_validate;
@@ -1092,7 +1092,7 @@ static bool query_post() {
     }
     return q == 'N';
   }
-  bout.puts("|#5Move to the next sub?");
+  bout.outstr("|#5Move to the next sub?");
   return bin.noyes();
 }
 
@@ -1227,7 +1227,7 @@ void scan(int msg_num, MsgScanOption scan_option, bool& nextsub, bool title_scan
   iscan(a()->current_user_sub_num());
   if (a()->sess().GetCurrentReadMessageArea() < 0) {
     bout.nl();
-    bout.puts("No subs available.\r\n\n");
+    bout.outstr("No subs available.\r\n\n");
     return;
   }
 

@@ -30,7 +30,7 @@ protected:
   virtual int Puts(std::string s) {
     auto count = 0;
     for (const auto& c : s) {
-      count += bout.bputch(c);
+      count += bout.outchr(c);
     }
     return count;
   }
@@ -39,7 +39,7 @@ protected:
 };
 
 TEST_F(BPutchTest, SingleLetter) {
-  EXPECT_EQ(1, bout.bputch('A'));
+  EXPECT_EQ(1, bout.outchr('A'));
   EXPECT_STREQ("A", helper.io()->captured().c_str());
 }
 

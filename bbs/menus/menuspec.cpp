@@ -163,7 +163,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_
         a()->UpdateTopScreen();
       }
     } else {
-      bout.puts("\r\n\nNot enough time left to D/L.\r\n");
+      bout.outstr("\r\n\nNot enough time left to D/L.\r\n");
     }
     if (abort) {
       ok = false;
@@ -243,7 +243,7 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
 /* End of run door section */
 /* ----------------------- */
 void ChangeSubNumber() {
-  bout.puts("|#7Select Sub number : |#0");
+  bout.outstr("|#7Select Sub number : |#0");
 
   const auto s = mmkey(MMKeyAreaType::subs);
   for (auto i = 0; i < size_int(a()->usub); i++) {
@@ -256,7 +256,7 @@ void ChangeSubNumber() {
 void ChangeDirNumber() {
   auto done = false;
   while (!done && !a()->sess().hangup()) {
-    bout.puts("|#7Select Dir number : |#0");
+    bout.outstr("|#7Select Dir number : |#0");
 
     const auto s = mmkey(MMKeyAreaType::dirs);
 

@@ -44,7 +44,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static void maybe_netmail(subboard_network_data_t* ni, bool bAdd) {
-  bout.puts("|#5Send email request to the host now? ");
+  bout.outstr("|#5Send email request to the host now? ");
   if (bin.yesno()) {
     auto title = StrCat("Sub type ", ni->stype);
     if (bAdd) {
@@ -67,7 +67,7 @@ static bool display_sub_categories(const Network& net) {
     return false;
   }
   bout.nl();
-  bout.puts("Available sub categories are:\r\n");
+  bout.outstr("Available sub categories are:\r\n");
   auto abort = false;
   std::string s;
   while (!abort && ff.ReadLine(&s)) {
@@ -201,7 +201,7 @@ static int find_hostfor(const Network& net, const std::string& type, short* ui,
         bout.print("Host: {}\r\n", h);
         bout.print("Sub : {}\r\n", ss);
         bout.nl();
-        bout.puts("|#5Is this the sub you want? ");
+        bout.outstr("|#5Is this the sub you want? ");
         if (bin.yesno()) {
           done = true;
           *ui = h;
@@ -233,7 +233,7 @@ void sub_xtr_del(int n, int nn, int f) {
     const auto ok = find_hostfor(net, xn.stype, &xn.host, nullptr, &opt);
     if (ok) {
       if (opt & OPTION_AUTO) {
-        bout.puts("|#5Attempt automated drop request? ");
+        bout.outstr("|#5Attempt automated drop request? ");
         if (bin.yesno()) {
           sub_req(main_type_sub_drop_req, xn.host, xn.stype, net);
         }
@@ -241,7 +241,7 @@ void sub_xtr_del(int n, int nn, int f) {
         maybe_netmail(&xn, false);
       }
     } else {
-      bout.puts("|#5Attempt automated drop request? ");
+      bout.outstr("|#5Attempt automated drop request? ");
       if (bin.yesno()) {
         sub_req(main_type_sub_drop_req, xn.host, xn.stype, net);
       } else {
@@ -283,8 +283,8 @@ bool sub_xtr_add(int n, int nn) {
       }
       bout.print("({}) {}\r\n", ii + 1, a()->nets()[ii].name);
     }
-    bout.puts("Q. Quit\r\n\n");
-    bout.puts("|#2Which network (number): ");
+    bout.outstr("Q. Quit\r\n\n");
+    bout.outstr("|#2Which network (number): ");
     if (wwiv::stl::ssize(a()->nets()) < 9) {
       auto ch = onek(onx);
       if (ch == 'Q') {
@@ -310,10 +310,10 @@ bool sub_xtr_add(int n, int nn) {
   bout.nl();
   auto stype_len = 7;
   if (net.type == network_type_t::ftn) {
-    bout.puts("|#2What echomail area: ");
+    bout.outstr("|#2What echomail area: ");
     stype_len = 40;
   } else {
-    bout.puts("|#2What sub type? ");
+    bout.outstr("|#2What sub type? ");
   }
   xnp.stype = bin.input(stype_len, true);
   if (xnp.stype.empty()) {
@@ -323,7 +323,7 @@ bool sub_xtr_add(int n, int nn) {
   bool is_hosting = false;
   if (net.type == network_type_t::wwivnet || net.type == network_type_t::internet ||
       net.type == network_type_t::news) {
-    bout.puts("|#5Will you be hosting the sub? ");
+    bout.outstr("|#5Will you be hosting the sub? ");
     is_hosting = bin.yesno();
   }
 
@@ -334,19 +334,19 @@ bool sub_xtr_add(int n, int nn) {
       file.Close();
     }
 
-    bout.puts("|#5Allow auto add/drop requests? ");
+    bout.outstr("|#5Allow auto add/drop requests? ");
     if (bin.noyes()) {
       xnp.flags |= XTRA_NET_AUTO_ADDDROP;
     }
 
-    bout.puts("|#5Make this sub public (in subs.lst)?");
+    bout.outstr("|#5Make this sub public (in subs.lst)?");
     if (bin.noyes()) {
       xnp.flags |= XTRA_NET_AUTO_INFO;
       if (display_sub_categories(net)) {
         auto gc = 0;
         while (!gc) {
           bout.nl();
-          bout.puts("|#2Which category is this sub in (0 for unknown/misc)? ");
+          bout.outstr("|#2Which category is this sub in (0 for unknown/misc)? ");
           auto s = bin.input(3);
           auto i = to_number<uint16_t>(s);
           if (i || s == "0") {
@@ -363,7 +363,7 @@ bool sub_xtr_add(int n, int nn) {
             if (s == "0") {
               gc = 1;
             } else if (!xnp.category) {
-              bout.puts("Illegal/invalid category.\r\n\n");
+              bout.outstr("Illegal/invalid category.\r\n\n");
             }
           } else {
             if (s.size() == 1 && s.front() == '?') {
@@ -384,13 +384,13 @@ bool sub_xtr_add(int n, int nn) {
     do {
       a()->CheckForHangup();
       bout.nl();
-      bout.puts("|#2Which FTN system (address) is the host? ");
+      bout.outstr("|#2Which FTN system (address) is the host? ");
       const auto host = bin.input_text(20);
       try {
         fido::FidoAddress a(host);
         addresses.insert(a);
         if (!WriteFidoSubcriberFile(sub_file_name, addresses)) {
-          bout.puts("ERROR: Unable to add host to subscriber file");
+          bout.outstr("ERROR: Unable to add host to subscriber file");
         }
         done = true;
       } catch (const fido::bad_fidonet_address& e) {
@@ -405,7 +405,7 @@ bool sub_xtr_add(int n, int nn) {
 
     if (!ok) {
       bout.nl();
-      bout.puts("|#2Which system (number) is the host? ");
+      bout.outstr("|#2Which system (number) is the host? ");
       bin.input(description, 6);
       xnp.host = to_number<uint16_t>(description);
       description[0] = '\0';
@@ -426,7 +426,7 @@ bool sub_xtr_add(int n, int nn) {
           }
           bout.nl();
           if (opt & OPTION_AUTO) {
-            bout.puts("|#5Attempt automated add request? ");
+            bout.outstr("|#5Attempt automated add request? ");
             if (bin.yesno()) {
               sub_req(main_type_sub_add_req, xnp.host, xnp.stype, net);
             }
@@ -435,7 +435,7 @@ bool sub_xtr_add(int n, int nn) {
           }
         } else {
           bout.nl();
-          bout.puts("|#5Attempt automated add request? ");
+          bout.outstr("|#5Attempt automated add request? ");
           auto bTryAutoAddReq = bin.yesno();
           if (bTryAutoAddReq) {
             sub_req(main_type_sub_add_req, xnp.host, xnp.stype, net);
@@ -445,7 +445,7 @@ bool sub_xtr_add(int n, int nn) {
         }
       } else {
         bout.nl();
-        bout.puts("The host is not listed in the network.\r\n");
+        bout.outstr("The host is not listed in the network.\r\n");
         bout.pausescr();
       }
     }

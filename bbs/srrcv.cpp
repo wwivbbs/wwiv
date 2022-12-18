@@ -173,7 +173,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
 
   File file(file_name);
   if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
-    bout.puts("\r\n\nDOS error - Can't create file.\r\n\n");
+    bout.outstr("\r\n\nDOS error - Can't create file.\r\n\n");
     *received = false;
     return;
   }
@@ -182,7 +182,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
   time_t filedatetime = 0L;
   unsigned int bn = 1;
   bool done = false;
-  bout.puts("\r\n-=> Ready to receive, Ctrl+X to abort.\r\n");
+  bout.outstr("\r\n-=> Ready to receive, Ctrl+X to abort.\r\n");
   int nOldXPos = bout.localIO()->WhereX();
   int nOldYPos = bout.localIO()->WhereY();
   bout.localIO()->PutsXY(52, 0, "\xB3 Filename :               ");

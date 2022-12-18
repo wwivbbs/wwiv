@@ -94,7 +94,7 @@ static void handle_inst_msg(const instance_message_t& ih) {
     const auto from_user_name = a()->names()->UserName(ih.from_user);
     bout.printf("|#1%.12s (%d)|#0> |#2", from_user_name, ih.from_instance);
   } else {
-    bout.puts("|#6[SYSTEM ANNOUNCEMENT] |#7> |#2");
+    bout.outstr("|#6[SYSTEM ANNOUNCEMENT] |#7> |#2");
   }
   bout.pl(ih.message);
   bout.nl();

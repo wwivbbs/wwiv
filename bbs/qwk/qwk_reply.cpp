@@ -133,7 +133,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 
       while (!done5 && !a()->sess().hangup()) {
         bout.nl();
-        bout.puts("Then which sub?  ?=List  Q=Don't Post :");
+        bout.outstr("Then which sub?  ?=List  Q=Don't Post :");
         auto substr = bin.input(3);
 
         StringTrim(&substr);
@@ -155,7 +155,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 
     if (sub >= size_int(a()->usub) || sub < 0) {
       bout.Color(5);
-      bout.puts("Sub out of range");
+      bout.outstr("Sub out of range");
 
       ++pass;
       continue;
@@ -166,7 +166,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     while (!a()->sess().hangup()) {
       if (!qwk_iscan_literal(a()->current_user_sub_num())) {
         bout.nl();
-        bout.puts("MSG file is busy on another instance, try again?");
+        bout.outstr("MSG file is busy on another instance, try again?");
         if (!bin.noyes()) {
           ++pass;
           continue;
@@ -178,7 +178,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 
     if (a()->sess().GetCurrentReadMessageArea() < 0) {
       bout.Color(5);
-      bout.puts("Sub out of range");
+      bout.outstr("Sub out of range");
 
       ++pass;
       continue;
@@ -190,7 +190,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     // User is restricted from posting
     if (a()->user()->restrict_post() || a()->user()->data.posttoday >= ss.posts) {
       bout.nl();
-      bout.puts("Too many messages posted today.");
+      bout.outstr("Too many messages posted today.");
       bout.nl();
 
       ++pass;
@@ -200,7 +200,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     // User doesn't have enough sl to post on sub
     if (!check_acs(a()->current_sub().post_acs)) {
       bout.nl();
-      bout.puts("You can't post here.");
+      bout.outstr("You can't post here.");
       bout.nl();
       ++pass;
       continue;
@@ -213,7 +213,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 
       if (a()->user()->restrict_net()) {
         bout.nl();
-        bout.puts("You can't post on networked sub-boards.");
+        bout.outstr("You can't post on networked sub-boards.");
         bout.nl();
         ++pass;
         continue;
@@ -221,13 +221,13 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     }
 
     bout.cls();
-    bout.puts("|#5Posting New Message.\r\n\n");
+    bout.outstr("|#5Posting New Message.\r\n\n");
     bout.print("|#9Title      : |#2{}\r\n", title);
     bout.print("|#9To         : |#2{}\r\n", to.empty() ? "All" : to);
     bout.print("|#9Area       : |#2{}\r\n", stripcolors(a()->current_sub().name));
 
     if (!a()->current_sub().nets.empty()) {
-      bout.puts("|#9On Networks: |#5");
+      bout.outstr("|#9On Networks: |#5");
       for (const auto& xnp : a()->current_sub().nets) {
         bout.print("{} ", a()->nets()[xnp.net_num].name);
       }
@@ -235,7 +235,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     }
 
     bout.nl();
-    bout.puts("|#5Correct? ");
+    bout.outstr("|#5Correct? ");
 
     if (bin.noyes()) {
       done = true;
@@ -262,7 +262,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 
       if (f == -1) {
         bout.nl();
-        bout.puts("MSG file is busy on another instance, try again?");
+        bout.outstr("MSG file is busy on another instance, try again?");
         if (!bin.noyes()) {
           return;
         }
@@ -274,7 +274,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     // Anonymous
     uint8_t an = 0;
     if (an) {
-      bout.puts("|#5Anonymous?");
+      bout.outstr("|#5Anonymous?");
       an = bin.yesno() ? 1 : 0;
     }
     bout.nl();
@@ -358,7 +358,7 @@ static void process_reply_dat(const std::string& name) {
 
   DataFile<qwk_record> file(name, File::modeReadOnly| File::modeBinary);
   if (!file) {
-    bout.puts("|#6Can't open packet.");
+    bout.outstr("|#6Can't open packet.");
     bout.pausescr();
     return;
   }
@@ -399,7 +399,7 @@ static void process_reply_dat(const std::string& name) {
       bout.print("|#9Message '|#2{}|#9' is marked |#3PRIVATE\r\n", title);
       bout.printf("|#9It is addressed to |#2%s", to);
       bout.nl(2);
-      bout.puts("|#5Route into E-Mail? ");
+      bout.outstr("|#5Route into E-Mail? ");
       if (bin.noyes()) {
         to_email = true;
       }
@@ -428,7 +428,7 @@ static void process_reply_dat(const std::string& name) {
         bout.printf("|#12|#9) |#2%s", to_from_msg_opt.value());
         bout.nl(2);
 
-        bout.puts("|#5Which address is correct? ");
+        bout.outstr("|#5Which address is correct? ");
         const int x = onek("12", true);
 
         if (x == '2') {
@@ -442,7 +442,7 @@ static void process_reply_dat(const std::string& name) {
     } else if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
       // Not enough disk space
       bout.nl();
-      bout.puts("Sorry, not enough disk space left.");
+      bout.outstr("Sorry, not enough disk space left.");
       bout.pausescr();
     } else {
       qwk_post_text(text, to, title, to_number<int16_t>(tosub) - 1);
@@ -474,7 +474,7 @@ void upload_reply_packet() {
   bout.litebar("Upload QWK Reply Packet");
   bout.nl();
   bout.print("|#9QWK Reply Packet must be named: \"|#2{}|#9\"\r\n", rep_name);
-  bout.puts("|#5Would you like to upload a QWK Reply Packet? ");
+  bout.outstr("|#5Would you like to upload a QWK Reply Packet? ");
   const auto rep_path = FilePath(a()->sess().dirs().qwk_directory(), rep_name);
 
   const auto do_it = bin.yesno();

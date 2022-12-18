@@ -49,8 +49,7 @@ void FsedView::gotoxy(const FsedModel& ed) {
 }
 
 void FsedView::ClearCommandLine() { 
-    fs_.PutsCommandLine("|#9(|#2ESC|#9=Menu/Help) ");
-}
+    fs_.PutsCommandLine("|#9(|#2ESC|#9=Menu/Help) "); }
 
 void FsedView::macro(Context& ctx, int cc) {
   if (!ctx.session_context().okmacro() || bin.charbufferpointer_) {
@@ -72,7 +71,7 @@ void FsedView::draw_current_line(FsedModel& ed, int previous_line) {
     const auto py = previous_line - top_line() + fs_.lines_start();
     bout_.GotoXY(0, py);
     if (previous_line < size_int(ed)) {
-      bout_.puts(ed.line(previous_line).to_colored_text(-1));
+      bout_.outstr(ed.line(previous_line).to_colored_text(-1));
     }
     bout_.clreol();
   }
@@ -84,7 +83,7 @@ void FsedView::draw_current_line(FsedModel& ed, int previous_line) {
     // Draw char by char for the current line so we don't display
     // color codes where we are editing.
     bout_.Color(c.wwiv_color);
-    bout_.bputch(c.ch);
+    bout_.outchr(c.ch);
   }
   bout_.clreol();
   gotoxy(ed);
@@ -115,10 +114,10 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
           last_color = c.wwiv_color;
           bout_.Color(c.wwiv_color);
         }
-        bout_.bputch(c.ch);
+        bout_.outchr(c.ch);
       }
     } else {
-      bout_.puts(rl.to_colored_text(-1));
+      bout_.outstr(rl.to_colored_text(-1));
     }
     bout_.clreol();
   }
@@ -217,9 +216,9 @@ int FsedView::bgetch(FsedModel& ed) {
   });
 }
 
-void FsedView::bputch(int color, char ch) {
+void FsedView::outchr(int color, char ch) {
   bout_.Color(color);
-  bout_.bputch(ch);
+  bout_.outchr(ch);
 }
 
 void FsedView::cls() { bout_.cls(); }

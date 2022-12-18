@@ -84,16 +84,16 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
     if (ii) {
       bout.nl();
       if (okfsed() && a()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
-        bout.puts("|#5Modify the extended description? ");
+        bout.outstr("|#5Modify the extended description? ");
       } else {
-        bout.puts("|#5Enter a new extended description? ");
+        bout.outstr("|#5Enter a new extended description? ");
       }
       if (!bin.yesno()) {
         return;
       }
     } else {
       bout.nl();
-      bout.puts("|#5Enter an extended description? ");
+      bout.outstr("|#5Enter an extended description? ");
       if (!bin.yesno()) {
         return;
       }
@@ -177,7 +177,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
       while (i++ < a()->max_extend_lines && s1[0]);
       a()->user()->screen_width(nSavedScreenSize);
     }
-    bout.puts("|#5Is this what you want? ");
+    bout.outstr("|#5Is this what you want? ");
     i = !bin.yesno();
     if (i) {
       sss->clear();
@@ -268,7 +268,7 @@ bool get_file_idz(FileRecord& fr, const directory_t& dir) {
     VLOG(1) << "Failed to parse DIZ: " << diz_fn;
   }
 
-  bout.puts("Done!\r\n");
+  bout.outstr("Done!\r\n");
   return true;
 }
 
@@ -331,7 +331,7 @@ void tag_it() {
   long fs = 0;
 
   if (a()->batch().size() >= a()->max_batch) {
-    bout.puts("|#6No room left in batch queue.");
+    bout.outstr("|#6No room left in batch queue.");
     bin.getkey();
     return;
   }
@@ -432,15 +432,15 @@ static char fancy_prompt(const char* pszPrompt, const char* pszAcceptChars) {
   const auto s3 = StrCat(pszAcceptChars," \r");
   a()->tleft(true);
   if (okansi()) {
-    bout.puts(s1);
+    bout.outstr(s1);
     ch = onek_ncr(s3);
     bout.Left(i1);
     for (int i = 0; i < i1; i++) {
-      bout.bputch(' ');
+      bout.outchr(' ');
     }
     bout.Left(i1);
   } else {
-    bout.puts(s2);
+    bout.outstr(s2);
     ch = onek_ncr(s3);
     for (auto i = 0; i < i1; i++) {
       bout.bs();
@@ -459,7 +459,7 @@ void tag_files(bool& need_title) {
   }
   bout.clear_lines_listed();
   bout.Color(FRAME_COLOR);
-  bout.puts("\r");
+  bout.outstr("\r");
   bout.pl(std::string(78, '-'));
 
   auto done = false;
@@ -549,7 +549,7 @@ void tag_files(bool& need_title) {
           }
         }
         if (!File::Exists(s1)) {
-          bout.puts("|#6File not there.\r\n");
+          bout.outstr("|#6File not there.\r\n");
           bout.pausescr();
           break;
         }
@@ -580,7 +580,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
   const auto t = time_to_transfer(a()->modem_speed_,fs).count();
 
   if (nsl() <= a()->batch().dl_time_in_secs() + t) {
-    bout.puts("|#6 Insufficient time remaining... press any key.");
+    bout.outstr("|#6 Insufficient time remaining... press any key.");
     bin.getkey();
   } else {
     if (dn == -1) {
@@ -603,7 +603,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
         const auto dest = FilePath(a()->sess().dirs().temp_directory(), ufn);
         if (!File::Exists(dest)) {
           if (!File::Copy(src, dest)) {
-            bout.puts("|#6 file unavailable... press any key.");
+            bout.outstr("|#6 file unavailable... press any key.");
             bin.getkey();
           }
           bout.backline();
@@ -612,23 +612,23 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
       } else {
         auto f = FilePath(a()->dirs()[dn].path, ufn);
         if (!File::Exists(f) && !so()) {
-          bout.puts("\r");
+          bout.outstr("\r");
           bout.clreol();
-          bout.puts("|#6 file unavailable... press any key.");
+          bout.outstr("|#6 file unavailable... press any key.");
           bin.getkey();
-          bout.puts("\r");
+          bout.outstr("\r");
           bout.clreol();
           return 0;
         }
       }
       const BatchEntry b(aligned_file_name, dn, fs, true);
-      bout.puts("\r");
+      bout.outstr("\r");
       const auto bt = ctim(b.time(a()->modem_speed_));
       bout.printf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
                            a()->batch().size() + 1,
                            b.aligned_filename(), b.len(), bt, a()->dirs()[b.dir()].name);
       a()->batch().AddBatch(b);
-      bout.puts("\r|#5    Continue search? ");
+      bout.outstr("\r|#5    Continue search? ");
       ch = onek_ncr("YN\r");
       if (to_upper_case<char>(ch) == 'N') {
         return -3;
@@ -698,10 +698,10 @@ void download() {
   bout.litebar(StrCat(a()->config()->system_name(), " Batch Downloads"));
   do {
     if (!i) {
-      bout.puts("|#2Enter files, one per line, wildcards okay.  [Space] aborts a search.\r\n");
+      bout.outstr("|#2Enter files, one per line, wildcards okay.  [Space] aborts a search.\r\n");
       bout.nl();
-      bout.puts("|#1 #  File Name    Size    Time      Directory\r\n");
-      bout.puts(
+      bout.outstr("|#1 #  File Name    Size    Time      Directory\r\n");
+      bout.outstr(
           "|#7\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 "
           "\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 "
           "\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4"
@@ -734,7 +734,7 @@ void download() {
           if (rtn == 0) {
             if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
               bout.backline();
-              bout.puts(" |#5Search all conferences? ");
+              bout.outstr(" |#5Search all conferences? ");
               const auto ch = onek_ncr("YN\r");
               if (ch == '\r' || to_upper_case<char>(ch) == 'Y') {
                 tmp_disable_conf(true);
@@ -744,16 +744,16 @@ void download() {
             bout.backline();
             auto s1 = fmt::sprintf("%3d %s", a()->batch().size() + 1, s);
             bout.Color(1);
-            bout.puts(s1);
+            bout.outstr(s1);
             foundany = 0;
             int dn = 0;
             while (dn < size_int(a()->udir)) {
               count++;
               bout.Color(color);
               if (count == NUM_DOTS) {
-                bout.puts("\r");
+                bout.outstr("\r");
                 bout.Color(color);
-                bout.puts(s1);
+                bout.outstr(s1);
                 color++;
                 count = 0;
                 if (color == 4) {
@@ -773,7 +773,7 @@ void download() {
               tmp_disable_conf(false);
             }
             if (!foundany) {
-              bout.puts("|#6 File not found... press any key.");
+              bout.outstr("|#6 File not found... press any key.");
               bin.getkey();
               bout.backline();
               ok = false;
@@ -799,7 +799,7 @@ void download() {
 
   bout.nl();
   if (!ratio_ok()) {
-    bout.puts("\r\nSorry, your ratio is too low.\r\n\n");
+    bout.outstr("\r\nSorry, your ratio is too low.\r\n\n");
     return;
   }
   bout.nl();
@@ -814,7 +814,7 @@ void download() {
   if (a()->batch().empty()) {
     return;
   }
-  bout.puts("|#5Hang up after transfer? ");
+  bout.outstr("|#5Hang up after transfer? ");
   const bool had = bin.yesno();
   const int ip = get_protocol(xfertype::xf_down_batch);
   if (ip > 0) {
@@ -849,11 +849,11 @@ void endlist(int mode) {
   // if mode == 1, list files
   // if mode == 2, new files
   if (a()->filelist.empty()) {
-    bout.puts("\r");
+    bout.outstr("\r");
     if (mode == 1) {
-      bout.puts("|#3No matching files found.\r\n\n");
+      bout.outstr("|#3No matching files found.\r\n\n");
     } else {
-      bout.puts("\r|#1No new files found.\r\n\n");
+      bout.outstr("\r|#1No new files found.\r\n\n");
     }
     return;
   }
@@ -900,8 +900,8 @@ void SetNewFileScanDate() {
   const auto current_dt = DateTime::from_daten(a()->sess().nscandate());
   bout.print("|#9Current limiting date: |#2{}\r\n", current_dt.to_string("%m/%d/%Y"));
   bout.nl();
-  bout.puts("|#9Enter new limiting date in the following format:\r\n");
-  bout.puts("|#1 MM/DD/YYYY\r\n|#7:");
+  bout.outstr("|#9Enter new limiting date in the following format:\r\n");
+  bout.outstr("|#1 MM/DD/YYYY\r\n|#7:");
   bout.mpl(8);
   const auto ag = bin.input_date_mmddyyyy("");
   bout.nl();
@@ -937,9 +937,9 @@ void removefilesnotthere(int dn, int* autodel) {
       candidate_fn = fmt::sprintf("|#2%s :|#1 %-40.40s", f.aligned_filename(), f.description());
       if (!*autodel) {
         bout.backline();
-        bout.puts(candidate_fn.string());
+        bout.outstr(candidate_fn.string());
         bout.nl();
-        bout.puts("|#5Remove Entry (Yes/No/Quit/All) : ");
+        bout.outstr("|#5Remove Entry (Yes/No/Quit/All) : ");
         ch = onek_ncr("QYNA");
       } else {
         bout.nl();
@@ -948,7 +948,7 @@ void removefilesnotthere(int dn, int* autodel) {
       }
       if (ch == 'Y' || ch == 'A') {
         if (ch == 'A') {
-          bout.puts("ll");
+          bout.outstr("ll");
           *autodel = 1;
         }
         sysoplog(fmt::format("- '{}' Removed from {}", f, a()->dirs()[dn].name));
@@ -978,7 +978,7 @@ void removenotthere() {
   TempDisablePause disable_pause(bout);
   int autodel = 0;
   bout.nl();
-  bout.puts("|#5Remove N/A files in all directories? ");
+  bout.outstr("|#5Remove N/A files in all directories? ");
   if (bin.yesno()) {
     for (auto i = 0; i < size_int(a()->udir) && !bout.localIO()->KeyPressed(); i++) {
       bout.nl();

@@ -51,15 +51,15 @@ void normalupload(int dn) {
   dliscan1(d);
   if (a()->current_file_area()->number_of_files() >= d.maxfiles) {
     bout.nl(3);
-    bout.puts("This directory is currently full.\r\n\n");
+    bout.outstr("This directory is currently full.\r\n\n");
     return;
   }
   if (d.mask & mask_no_uploads && !dcs()) {
     bout.nl(2);
-    bout.puts("Uploads are not allowed to this directory.\r\n\n");
+    bout.outstr("Uploads are not allowed to this directory.\r\n\n");
     return;
   }
-  bout.puts("|#9Filename: ");
+  bout.outstr("|#9Filename: ");
   auto input_fn = bin.input(12);
   if (!okfn(input_fn)) {
     input_fn.clear();
@@ -67,14 +67,14 @@ void normalupload(int dn) {
     if (!is_uploadable(input_fn)) {
       if (so()) {
         bout.nl();
-        bout.puts("|#5In filename database - add anyway? ");
+        bout.outstr("|#5In filename database - add anyway? ");
         if (!bin.yesno()) {
           input_fn.clear();
         }
       } else {
         input_fn.clear();
         bout.nl();
-        bout.puts("|#6File either already here or unwanted.\r\n");
+        bout.outstr("|#6File either already here or unwanted.\r\n");
       }
     }
   }
@@ -119,7 +119,7 @@ void normalupload(int dn) {
   if (a()->batch().contains_file(f.filename())) {
     ok = 0;
     bout.nl();
-    bout.puts("That file is already in the batch queue.\r\n\n");
+    bout.outstr("That file is already in the batch queue.\r\n\n");
   } else {
     if (!wwiv::strings::iequals(input_fn, "        .   ")) {
       bout.print("|#5Upload '{}' to {}? ", input_fn, d.name);
@@ -135,28 +135,28 @@ void normalupload(int dn) {
       if (dcs()) {
         xfer = false;
         bout.nl(2);
-        bout.puts("File already exists.\r\n|#5Add to database anyway? ");
+        bout.outstr("File already exists.\r\n|#5Add to database anyway? ");
         if (!bin.yesno()) {
           ok = 0;
         }
       } else {
         bout.nl(2);
-        bout.puts("That file is already here.\r\n\n");
+        bout.outstr("That file is already here.\r\n\n");
         ok = 0;
       }
     } else if (!a()->sess().incom()) {
       bout.nl();
-      bout.puts("File isn't already there.\r\nCan't upload locally.\r\n\n");
+      bout.outstr("File isn't already there.\r\nCan't upload locally.\r\n\n");
       ok = 0;
     }
     if (d.mask & mask_PD && ok) {
       bout.nl();
-      bout.puts("|#5Is this program PD/Shareware? ");
+      bout.outstr("|#5Is this program PD/Shareware? ");
       if (!bin.yesno()) {
         bout.nl();
-        bout.puts("This directory is for Public Domain/\r\nShareware programs ONLY.  Please do not\r\n");
-        bout.puts("upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n");
-        bout.puts("the sysop.\r\n\n");
+        bout.outstr("This directory is for Public Domain/\r\nShareware programs ONLY.  Please do not\r\n");
+        bout.outstr("upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n");
+        bout.outstr("the sysop.\r\n\n");
         const auto message = fmt::format("Wanted to upload \"{}\"", f);
         sysoplog(fmt::format("*** ASS-PTS: 5, Reason: [{}]", message));
         a()->user()->increment_ass_points(5);
@@ -167,7 +167,7 @@ void normalupload(int dn) {
     }
     if (ok) {
       bout.nl();
-      bout.puts("Please enter a one line description.\r\n:");
+      bout.outstr("Please enter a one line description.\r\n:");
       auto desc = bin.input_text(58);
       f.set_description(desc);
       bout.nl();
@@ -191,7 +191,7 @@ void normalupload(int dn) {
           if (!file.Open(File::modeBinary | File::modeReadOnly)) {
             ok = 0;
             bout.nl(2);
-            bout.puts("OS error - File not found: \r\n");
+            bout.outstr("OS error - File not found: \r\n");
             LOG(ERROR) << "OS error - File not found: " << receive_fn.string();
             if (f.mask(mask_extended)) {
               a()->current_file_area()->DeleteExtendedDescription(f.filename());
@@ -199,7 +199,7 @@ void normalupload(int dn) {
           }
           if (ok && !a()->upload_cmd.empty()) {
             file.Close();
-            bout.puts("Please wait...\r\n");
+            bout.outstr("Please wait...\r\n");
             if (!check_ul_event(dn, &f.u())) {
               if (f.mask(mask_extended)) {
                 a()->current_file_area()->DeleteExtendedDescription(f.filename());
@@ -242,7 +242,7 @@ void normalupload(int dn) {
         }
       } else {
         bout.nl(2);
-        bout.puts("File transmission aborted.\r\n\n");
+        bout.outstr("File transmission aborted.\r\n\n");
         if (f.mask(mask_extended)) {
           a()->current_file_area()->DeleteExtendedDescription(f.filename());
         }

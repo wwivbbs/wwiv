@@ -349,7 +349,7 @@ void Application::tleft(bool check_for_timeout) {
   // Check for timeout 1st.
   if (check_for_timeout && sess().IsUserOnline()) {
     if (nsln == 0) {
-      bout.puts("\r\nTime expired.\r\n\n");
+      bout.outstr("\r\nTime expired.\r\n\n");
       a()->Hangup();
     }
     return;
@@ -455,13 +455,13 @@ void Application::handle_sysop_key(uint8_t key) {
         std::uniform_int_distribution dist_len{10, 30};
         std::uniform_int_distribution dist{1, 256};
         for (auto i = 0; i < dist_len(e); i++) {
-          bout.bputch(static_cast<char>(dist(e) & 0xff));
+          bout.outchr(static_cast<char>(dist(e) & 0xff));
         }
         bout.remoteIO()->disconnect();
         a()->Hangup(hangup_type_t::sysop_forced);
         } break;
       case CF5: /* Ctrl-F5 */
-        bout.puts("\r\nCall back later when you are there.\r\n\n");
+        bout.outstr("\r\nCall back later when you are there.\r\n\n");
         bout.remoteIO()->disconnect();
         a()->Hangup(hangup_type_t::sysop_forced);
         break;
@@ -534,12 +534,12 @@ void Application::DisplaySysopWorkingIndicator(bool displayWait) {
       bout.print("{}\x1b[{}D", waitString, nNumPrintableChars);
       bout.SystemColor(nSavedAttribute);
     } else {
-      bout.puts(waitString);
+      bout.outstr(waitString);
     }
   } else {
     if (okansi()) {
       for (unsigned int j = 0; j < nNumPrintableChars; j++) {
-        bout.bputch(' ');
+        bout.outchr(' ');
       }
       bout.Left(nNumPrintableChars);
     } else {

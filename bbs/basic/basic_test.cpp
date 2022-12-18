@@ -179,8 +179,8 @@ TEST_F(BasicTest, Smoke) {
 }
 
 TEST_F(BasicTest, Smoke_Fail) {
-  // There is no puts function.
-  ASSERT_FALSE(RunScript("puts \"Hello World\""));
+  // There is no outstr( function.
+  ASSERT_FALSE(RunScript("outstr( \"Hello World\""));
 
   EXPECT_EQ("", StringTrim(helper.io()->captured()));
 }
@@ -250,8 +250,8 @@ TEST_F(BasicTest, WWIV_IO_PrintFile_DoesNotExist) {
   EXPECT_EQ("", helper.io()->captured());
 }
 
-TEST_F(BasicTest, WWIV_IO_Puts) {
-  ASSERT_TRUE(RunScript("wwiv.io.puts(\"Hello World\")"));
+TEST_F(BasicTest, WWIV_IO_Outstr) {
+  ASSERT_TRUE(RunScript("wwiv.io.outstr((\"Hello World\")"));
 
   EXPECT_EQ("Hello World", helper.io()->captured());
 }

@@ -64,7 +64,7 @@ using namespace wwiv::strings;
 void DisplayHorizontalBar(int width, int color) {
   const auto ch = (okansi()) ? '\xC4' : '-';
   bout.Color(color);
-  bout.puts(std::string(width, ch));
+  bout.outstr(std::string(width, ch));
   bout.nl();
 }
 
@@ -137,16 +137,16 @@ void upload_post() {
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
     const auto file_size = file.length();
     if (file_size > max_bytes) {
-      bout.puts("\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n");
+      bout.outstr("\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n");
       file.Close();
       File::Remove(file.path());
     } else {
       file.Close();
       use_workspace = true;
-      bout.puts("\r\n|#7* |#1Message uploaded.  The next post or email will contain that text.\r\n\n");
+      bout.outstr("\r\n|#7* |#1Message uploaded.  The next post or email will contain that text.\r\n\n");
     }
   } else {
-    bout.puts("\r\n|#3Nothing saved.\r\n\n");
+    bout.outstr("\r\n|#3Nothing saved.\r\n\n");
   }
 }
 
@@ -157,7 +157,7 @@ void send_email() {
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
   a()->sess().clear_irt();
 
-  bout.puts("\r\n\n|#9Enter user name or number:\r\n:");
+  bout.outstr("\r\n\n|#9Enter user name or number:\r\n:");
   const auto username = fixup_user_entered_email(bin.input_text(75));
 
   auto [user_number, system_number] = parse_email_info(username);
@@ -178,10 +178,10 @@ void edit_confs() {
   while (!a()->sess().hangup()) {
     bout.cls();
     bout.litebar("Conference Editor");
-    bout.puts("|#5Edit Which Conferences:\r\n\n");
-    bout.puts("|#21|#9)|#1 Subs\r\n");
-    bout.puts("|#22|#9)|#1 Dirs\r\n");
-    bout.puts("\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ");
+    bout.outstr("|#5Edit Which Conferences:\r\n\n");
+    bout.outstr("|#21|#9)|#1 Subs\r\n");
+    bout.outstr("|#22|#9)|#1 Dirs\r\n");
+    bout.outstr("\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ");
     const auto ch = onek("Q12", true);
     switch (ch) {
     case '1':
@@ -271,7 +271,7 @@ void feedback(bool bNewUserFeedback) {
  */
 void text_edit() {
   bout.nl();
-  bout.puts("|#9Enter Filename: ");
+  bout.outstr("|#9Enter Filename: ");
   const auto filename = bin.input_filename(12);
   if (filename.find(".log") != std::string::npos || !okfn(filename)) {
     return;

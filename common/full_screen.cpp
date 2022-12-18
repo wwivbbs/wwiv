@@ -58,7 +58,7 @@ FullScreenView::~FullScreenView() {
 
 void FullScreenView::PrintTimeoutWarning(int) {
   bout_.GotoXY(1, command_line_);
-  bout_.puts("|12Press space if you are still there.");
+  bout_.outstr("|12Press space if you are still there.");
   bout_.clreol();
 }
 
@@ -70,7 +70,7 @@ void FullScreenView::ClearCommandLine() {
 
 void FullScreenView::PutsCommandLine(const std::string& text) {
   bout_.GotoXY(1, command_line_);
-  bout_.puts(text);
+  bout_.outstr(text);
   bout_.clreol();
 }
 

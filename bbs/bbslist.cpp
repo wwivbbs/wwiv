@@ -198,7 +198,7 @@ void delete_bbslist() {
   }
 
   ReadBBSList(entries);
-  bout.puts("|#9(|#2Q|#9=|#1Quit|#9) Enter Entry Number to Delete: ");
+  bout.outstr("|#9(|#2Q|#9=|#1Quit|#9) Enter Entry Number to Delete: ");
   const auto r = bin.input_number_hotkey(1, {'Q'}, 1, 9999, false);
   if (r.key == 'Q' || r.num == 0) {
     return;
@@ -244,9 +244,9 @@ static bool IsBBSPhoneNumberUnique(const std::string& phoneNumber, const std::ve
 
 static bool AddBBSListEntry(std::vector<BbsListEntry>& entries) {
   bout.nl();
-  bout.puts("|#9Does this BBS have a modem line? (y/N) : ");
+  bout.outstr("|#9Does this BBS have a modem line? (y/N) : ");
   const auto has_pots = bin.noyes();
-  bout.puts("|#9Is this BBS telnettable? (Y/n)         : ");
+  bout.outstr("|#9Is this BBS telnettable? (Y/n)         : ");
   const auto has_telnet = bin.yesno();
 
   if (!has_telnet && !has_pots) {
@@ -259,22 +259,22 @@ static bool AddBBSListEntry(std::vector<BbsListEntry>& entries) {
   bout.nl();
   BbsListEntry entry = {};
   if (has_pots) {
-    bout.puts("|#9Enter the Modem Number   : ");
+    bout.outstr("|#9Enter the Modem Number   : ");
     const auto phone_number = bin.input_phonenumber("", 12);
     bout.nl();
     if (!IsBBSPhoneNumberValid(phone_number)) {
-      bout.puts("\r\n|#6 Error: Please enter number in correct format.\r\n\n");
+      bout.outstr("\r\n|#6 Error: Please enter number in correct format.\r\n\n");
       return false;
     }
     if (!IsBBSPhoneNumberUnique(phone_number, entries)) {
-      bout.puts("|#6Sorry, It's already in the BBS list.\r\n\n\n");
+      bout.outstr("|#6Sorry, It's already in the BBS list.\r\n\n\n");
       return false;
     }
     entry.addresses.push_back({"modem", phone_number});
   }
 
   if (has_telnet) {
-    bout.puts("|#9Enter the Telnet Address : ");
+    bout.outstr("|#9Enter the Telnet Address : ");
     const auto telnet_address = bin.input_text("", 50);
     bout.nl();
     if (!telnet_address.empty()) {
@@ -282,22 +282,22 @@ static bool AddBBSListEntry(std::vector<BbsListEntry>& entries) {
     }
   }
 
-  bout.puts("|#9Enter the BBS Name       : ");
+  bout.outstr("|#9Enter the BBS Name       : ");
   entry.name = bin.input_text("", 50);
   bout.nl();
-  bout.puts("|#9Enter BBS Type (ex. WWIV): ");
+  bout.outstr("|#9Enter BBS Type (ex. WWIV): ");
   entry.software = bin.input_upper("WWIV", 12);
   bout.nl();
-  bout.puts("|#9Enter the BBS Location   : ");
+  bout.outstr("|#9Enter the BBS Location   : ");
   entry.location = bin.input_upper("", 50);
   bout.nl();
-  bout.puts("|#9Enter the Sysop Name     : ");
+  bout.outstr("|#9Enter the Sysop Name     : ");
   entry.sysop_name = bin.input_text("", 50);
   bout.nl(2);
-  bout.puts("|#5Is this information correct? ");
+  bout.outstr("|#5Is this information correct? ");
   if (bin.yesno()) {
     entries.emplace_back(entry);
-    bout.puts("\r\n|#3This entry will be added to BBS list.\r\n");
+    bout.outstr("\r\n|#3This entry will be added to BBS list.\r\n");
     return true;
   }
   return false;
@@ -306,11 +306,11 @@ static bool AddBBSListEntry(std::vector<BbsListEntry>& entries) {
 static char ShowBBSListMenuAndGetChoice() {
   bout.nl();
   if (so()) {
-    bout.puts("|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd,"
+    bout.outstr("|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd,"
               " (|#1D|#9)elete, (|#1N|#9)et : ");
     return onek("QRNAD");
   }
-  bout.puts("|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ");
+  bout.outstr("|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ");
   return onek("QRNA");
 }
 
@@ -318,11 +318,11 @@ void add_bbslist() {
   std::vector<BbsListEntry> entries;
   LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
   if (a()->sess().effective_sl() <= 10) {
-    bout.puts("\r\n\nYou must be a validated user to add to the BBS list.\r\n\n");
+    bout.outstr("\r\n\nYou must be a validated user to add to the BBS list.\r\n\n");
     return;
   }
   if (a()->user()->restrict_automessage()) {
-    bout.puts("\r\n\nYou can not add to the BBS list.\r\n\n\n");
+    bout.outstr("\r\n\nYou can not add to the BBS list.\r\n\n\n");
     return;
   }
   if (AddBBSListEntry(entries)) {

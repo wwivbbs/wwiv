@@ -177,14 +177,14 @@ public:
   void do_movement(const Interpreted& r);
 
   /**
-   * This function outputs a string of characters to the screen (and remotely
+   * This function outoutstr a string of characters to the screen (and remotely
    * if applicable).  The com port is also checked first to see if a remote
    * user has hung up.  Returns the number of characters displayed.
    */
-  int puts(const std::string& text);
+  int outstr(const std::string& text);
 
   /**
-   * This function outputs a string of characters to the screen (and remotely if applicable) 
+   * This function outoutstr a string of characters to the screen (and remotely if applicable) 
    * and follows with a newline.  The com port is also checked first to see if a remote user 
    * has hung up.  Returns the number of characters displayed.
    */
@@ -197,29 +197,29 @@ public:
   /**
    * Displays s which checking for abort and next
    * @see checka
-   * Note: bout.puts means "Output String And Next".
+   * Note: bout.outstr means "Output String And Next".
    *
    * @param text The text to display
    * @param abort The abort flag (Output Parameter)
    * @param next The next flag (Output Parameter)
    */
-  int puts(const std::string& text, bool* abort, bool* next);
+  int outstr(const std::string& text, bool* abort, bool* next);
 
   template <class... Args> int printf(const char* format_str, Args&&... args) {
     // Process arguments
-    return puts(fmt::sprintf(format_str, std::forward<Args>(args)...));
+    return outstr(fmt::sprintf(format_str, std::forward<Args>(args)...));
   }
 
   template <typename... Args> int print(const char* format_str, Args&&... args) {
     // Process arguments
     try {
-      return puts(fmt::format(format_str, args...));
+      return outstr(fmt::format(format_str, args...));
     } catch (const fmt::format_error& e) {
       LOG(ERROR) << "caught fmt::format_error" << e.what();
       LOG(ERROR) << "fmt::format_error original string: '" << format_str << "'";
       DLOG(FATAL) << "bout.print crash";
     }
-    return puts(format_str);
+    return outstr(format_str);
   }
 
   /**
@@ -233,7 +233,7 @@ public:
    * | / - \ | - \ - /
    * {@endcode}
    */
-  void spin_puts(const std::string& text, int color);
+  void spin_outstr(const std::string& text, int color);
 
 /**
  * This function prints out a string, with a user-specifiable delay between
@@ -245,14 +245,14 @@ public:
  * <p>
  * Example:
  * <p>
- * back_puts("This is an example.", 3, 20ms, 500ms);
+ * back_outstr("This is an example.", 3, 20ms, 500ms);
  *
  * @param text  The string to print
  * @param color The color of the string
  * @param char_dly Delay between each character, in milliseconds
  * @param string_dly Delay between completion of string and backspacing
  */
-  void back_puts(const std::string& text, int color, std::chrono::duration<double> char_dly, std::chrono::duration<double> string_dly);
+  void back_outstr(const std::string& text, int color, std::chrono::duration<double> char_dly, std::chrono::duration<double> string_dly);
 
   /**
    * Displays the text using a rainbow effect, cycling through the 1st 8 colors.
@@ -269,12 +269,12 @@ public:
     if (!map.empty()) {
       context().add_context_variable("", map);
     }
-    const int r = puts(format_str);
+    const int r = outstr(format_str);
     context().remove_context_variable("");
     return r;
   }
 
-  int bputch(char c, bool use_buffer = false);
+  int outchr(char c, bool use_buffer = false);
 
   /**
    * Writes any remaining buffered text remotely.
@@ -370,7 +370,7 @@ private:
   // in pause.cpp
   void pausescr_noansi();
 
-  std::string bputch_buffer_;
+  std::string outchr_buffer_;
   std::vector<std::pair<char, uint8_t>> current_line_;
   int x_{0};
   // Means we need to reset the color before displaying our

@@ -97,14 +97,14 @@ void Output::SetLocalIO(LocalIO* local_io) {
 
 void Output::Color(int wwiv_color) {
   const auto saved_x{x_};
-  puts(MakeColor(wwiv_color));
+  outstr(MakeColor(wwiv_color));
   x_ = saved_x;
 }
 
 void Output::ResetColors() {
   const auto saved_x{x_};
   // ANSI Clear Attributes String
-  puts("\x1b[0m");
+  outstr("\x1b[0m");
   x_ = saved_x;
 }
 
@@ -112,7 +112,7 @@ void Output::GotoXY(int x, int y) {
   if (okansi(user())) {
     // Don't get Y get too big or mTelnet will not be happy
     y = std::min<int>(y, sess().num_screen_lines());
-    puts(StrCat("\x1b[", y, ";", x, "H"));
+    outstr(StrCat("\x1b[", y, ";", x, "H"));
   }
   x_ = x;
 }
@@ -127,7 +127,7 @@ void Output::Up(int num) {
     ss << num;
   }
   ss << "A";
-  puts(ss.str());
+  outstr(ss.str());
 }
 
 void Output::Down(int num) {
@@ -140,7 +140,7 @@ void Output::Down(int num) {
     ss << num;
   }
   ss << "B";
-  puts(ss.str());
+  outstr(ss.str());
 }
 
 void Output::Left(int num) {
@@ -154,7 +154,7 @@ void Output::Left(int num) {
     ss << num;
   }
   ss << "D";
-  puts(ss.str());
+  outstr(ss.str());
   x_ = std::max<int>(0, saved_x - num);
 }
 
@@ -169,17 +169,17 @@ void Output::Right(int num) {
     ss << num;
   }
   ss << "C";
-  puts(ss.str());
+  outstr(ss.str());
   x_ = std::max<int>(0, saved_x + num);
 
 }
 
 void Output::SavePosition() {
-  puts("\x1b[s");
+  outstr("\x1b[s");
 }
 
 void Output::RestorePosition() {
-  puts("\x1b[u");
+  outstr("\x1b[u");
 }
 
 void Output::nl(int num_lines) {
@@ -187,7 +187,7 @@ void Output::nl(int num_lines) {
     return;
   }
   for (auto i = 0; i < num_lines; i++) {
-    puts("\r\n");
+    outstr("\r\n");
     core::bus().invoke(ProcessInstanceMessages{});
   }
   x_ = 1;
@@ -196,10 +196,10 @@ void Output::nl(int num_lines) {
 void Output::bs() {
   if (okansi(user())) {
     Left(1);
-    bputch(' ');
+    outchr(' ');
     Left(1);
   } else {
-    puts("\b \b");
+    outstr("\b \b");
   }
 }
 
@@ -209,7 +209,7 @@ void Output::SystemColor(wwiv::sdk::Color c) {
 }
 
 void Output::SystemColor(int c) {
-  puts(MakeSystemColor(c));
+  outstr(MakeSystemColor(c));
 }
 
 std::string Output::MakeColor(int wwiv_color) {
@@ -236,7 +236,7 @@ std::string Output::MakeSystemColor(sdk::Color color) const {
 void Output::litebar(const std::string& msg) {
   const auto len = user().screen_width() - 2;
   if (okansi(user())) {
-    puts(fmt::format("|17|15 {:<{}}|#0\r\n\n", msg, len));
+    outstr(fmt::format("|17|15 {:<{}}|#0\r\n\n", msg, len));
   }
   else {
     print("|#5 {}|#0\r\n\n", msg);
@@ -245,7 +245,7 @@ void Output::litebar(const std::string& msg) {
 
 void Output::backline() {
   Color(0);
-  bputch(SPACE);
+  outchr(SPACE);
   for (auto i = wherex() + 1; i >= 0; i--) {
     this->bs();
   }
@@ -258,10 +258,10 @@ void Output::cls() {
   // Adding color 0 so previous color would not be picked up. #1245
   Color(0);  
   if (okansi(user())) {
-    puts("\x1b[2J");
+    outstr("\x1b[2J");
     GotoXY(1, 1);
   } else {
-    bputch(CL);
+    outchr(CL);
   }
   clear_lines_listed();
 }
@@ -273,7 +273,7 @@ void Output::clreol(int ct) {
   const auto saved_x{x_};
   if (okansi(user())) {
     if (ct == 0) {
-      puts("\x1b[K");
+      outstr("\x1b[K");
     } else {
       print("\x1b[{}K", ct);
     }
@@ -282,7 +282,7 @@ void Output::clreol(int ct) {
 }
 
 void Output::clear_whole_line() {
-  bputch('\r');
+  outchr('\r');
   clreol();
 }
 
@@ -291,25 +291,25 @@ void Output::mpl(int length) {
     return;
   }
   Color(4);
-  puts(std::string(length, ' '));
+  outstr(std::string(length, ' '));
   Left(length);
 }
 
 int Output::PutsXY(int x, int y, const std::string& text) {
   GotoXY(x, y);
-  return puts(text);
+  return outstr(text);
 }
 
 int Output::PutsXYSC(int x, int y, int a, const std::string& text) {
   GotoXY(x, y);
   SystemColor(a);
-  return puts(text);
+  return outstr(text);
 }
 
 int Output::PutsXYA(int x, int y, int color, const std::string& text) {
   GotoXY(x, y);
   Color(color);
-  return puts(text);
+  return outstr(text);
 }
 
 void Output::do_movement(const Interpreted& r) {
@@ -353,12 +353,12 @@ static int pipecode_int(T& it, const T end, int num_chars) {
 }
 
 int Output::pl(const std::string& text) {
-  const auto ret = puts(text);
+  const auto ret = outstr(text);
   nl();
   return ret;
 }
 
-int Output::puts(const std::string& text) {
+int Output::outstr(const std::string& text) {
   core::bus().invoke<CheckForHangupEvent>();
   if (text.empty() || sess().hangup()) {
     return 0;
@@ -383,7 +383,7 @@ int Output::puts(const std::string& text) {
     if (*it == '|') {
       ++it;
       if (it == fin) {
-        num_written += bputch('|', true);
+        num_written += outchr('|', true);
         break;
       }
       if (std::isdigit(*it)) {
@@ -398,10 +398,10 @@ int Output::puts(const std::string& text) {
         if (auto r = ctx.interpret(it, fin); r.cmd == interpreted_cmd_t::text) {
           // Don't use bout here since we can loop.
           if (r.needs_reinterpreting) {
-            num_written += puts(r.text);
+            num_written += outstr(r.text);
           } else {
             for (const auto rich : r.text) {
-              num_written += bputch(rich, true);
+              num_written += outchr(rich, true);
             }
           }
         } else if (r.cmd == interpreted_cmd_t::movement) {
@@ -412,13 +412,13 @@ int Output::puts(const std::string& text) {
         const auto color = pipecode_int(it, fin, 1);
         Color(color);
       } else {
-        num_written += bputch('|', true);
+        num_written += outchr('|', true);
       }
     }
     else if (*it == CC) {
       ++it;
       if (it == fin) {
-        num_written += bputch(CC, true);
+        num_written += outchr(CC, true);
         break;
       }
       if (const unsigned char c = *it++; c >= SPACE && c <= 126) {
@@ -428,21 +428,21 @@ int Output::puts(const std::string& text) {
     else if (*it == CO) {
       ++it;
       if (it == fin) {
-        num_written += bputch(CO, true);
+        num_written += outchr(CO, true);
         break;
       }
       ++it;
       if (it == fin) {
-        num_written += bputch(CO, true);
+        num_written += outchr(CO, true);
         break;
       }
       auto s = ctx.interpret_macro_char(*it++);
-      num_written += puts(s);
+      num_written += outstr(s);
     } else if (it == fin) { 
       break; 
     }
     else { 
-      num_written += bputch(*it++, true);
+      num_written += outchr(*it++, true);
     }
   }
 
@@ -454,7 +454,7 @@ int Output::puts(const std::string& text) {
 // it consistent.
 int Output::bpla(const std::string& text, bool *abort) {
   bool dummy;
-  const auto ret = puts(text, abort, &dummy);
+  const auto ret = outstr(text, abort, &dummy);
   if (!bin.checka(abort, &dummy)) {
     nl();
   }
@@ -462,12 +462,12 @@ int Output::bpla(const std::string& text, bool *abort) {
 }
 
 // This one doesn't do a newline. (used to be osan)
-int Output::puts(const std::string& text, bool *abort, bool *next) {
+int Output::outstr(const std::string& text, bool *abort, bool *next) {
   core::bus().invoke<CheckForHangupEvent>();
   if (bin.checka(abort, next)) {
     return 0;
   }
-  return puts(text);
+  return outstr(text);
 }
 
 void Output::move_up_if_newline(int num_lines) {
@@ -482,14 +482,14 @@ void Output::move_up_if_newline(int num_lines) {
 int Output::str(const std::string& key) {
   // Process arguments
   const auto format_str = lang().value(key);
-  return puts(format_str);
+  return outstr(format_str);
 }
 
-void Output::back_puts(const std::string& text, int color, duration<double> char_dly, duration<double> string_dly) {
+void Output::back_outstr(const std::string& text, int color, duration<double> char_dly, duration<double> string_dly) {
   Color(color);
   sleep_for(char_dly);
   for (const auto ch : text) {
-    bputch(ch);
+    outchr(ch);
     sleep_for(char_dly);
   }
 
@@ -504,44 +504,44 @@ void Output::rainbow(const std::string& text) {
   int c = 0;
   for (char ch : text) {
     Color(c++);
-    bputch(ch, true);
+    outchr(ch, true);
     c %= 8;
   }
   flush();
 }
 
-void Output::spin_puts(const std::string& text, int color) {
+void Output::spin_outstr(const std::string& text, int color) {
   if (!okansi(user())) {
-    puts(text);
+    outstr(text);
     return;
   }
   Color(color);
   const auto dly = milliseconds(30);
   for (const auto ch : text) {
     sleep_for(dly);
-    bputch('/', false);
+    outchr('/', false);
     Left(1);
     sleep_for(dly);
-    bputch('-', false);
+    outchr('-', false);
     Left(1);
     sleep_for(dly);
-    bputch('\\', false);
+    outchr('\\', false);
     Left(1);
     sleep_for(dly);
-    bputch('|', false);
+    outchr('|', false);
     Left(1);
     sleep_for(dly);
-    bputch(ch);
+    outchr(ch);
   }
 }
 
 /**
- * This function outputs one character to the screen, and if output to the
+ * This function outoutstr one character to the screen, and if output to the
  * com port is enabled, the character is output there too.  ANSI graphics
  * are also trapped here, and the ansi function is called to execute the
  * ANSI codes
  */
-int Output::bputch(char c, bool use_buffer) {
+int Output::outchr(char c, bool use_buffer) {
   int displayed = 0;
 
   if (c == SOFTRETURN && needs_color_reset_at_newline_) {
@@ -563,7 +563,7 @@ int Output::bputch(char c, bool use_buffer) {
   if (c == TAB) {
     const auto screen_pos = wherex();
     for (auto i = screen_pos; i < (((screen_pos / 8) + 1) * 8); i++) {
-      displayed += bputch(SPACE);
+      displayed += outchr(SPACE);
     }
   } else {
     displayed = 1;
@@ -614,7 +614,7 @@ int Output::bputch(char c, bool use_buffer) {
 }
 
 
-/* This function outputs a string to the com port.  This is mainly used
+/* This function outoutstr a string to the com port.  This is mainly used
  * for modem commands
  */
 void Output::rputs(const std::string& text) {
@@ -625,9 +625,9 @@ void Output::rputs(const std::string& text) {
 }
 
 void Output::flush() {
-  if (!bputch_buffer_.empty()) {
-    remoteIO()->write(bputch_buffer_.c_str(), stl::size_int(bputch_buffer_));
-    bputch_buffer_.clear();
+  if (!outchr_buffer_.empty()) {
+    remoteIO()->write(outchr_buffer_.c_str(), stl::size_int(outchr_buffer_));
+    outchr_buffer_.clear();
   }
 }
 
@@ -636,15 +636,15 @@ void Output::rputch(char ch, bool use_buffer_) {
     return;
   }
   if (use_buffer_) {
-    if (bputch_buffer_.size() > 1024) {
+    if (outchr_buffer_.size() > 1024) {
       flush();
     }
-    bputch_buffer_.push_back(ch);
-  } else if (!bputch_buffer_.empty()) {
+    outchr_buffer_.push_back(ch);
+  } else if (!outchr_buffer_.empty()) {
     // If we have stuff in the buffer, and now are asked
     // to send an unbuffered character, we must send the
     // contents of the buffer 1st.
-    bputch_buffer_.push_back(ch);
+    outchr_buffer_.push_back(ch);
     flush();
   }
   else {

@@ -17,7 +17,7 @@ wwiv.module_name()
 wwiv.io.module_name()
 PRINT "You are running version: " + wwiv.version()
 
-'wwiv.io.puts("What is your name? ")
+'wwiv.io.outstr("What is your name? ")
 'name = wwiv.io.gets(41)
 'PRINT "Hello: " + name
 

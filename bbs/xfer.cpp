@@ -240,7 +240,7 @@ void printinfo(uploadsrec* u, bool *abort) {
     const FileName fn(u->filename);
     const auto s = fmt::format("\r|#{}{:<2} |#1{} ", a()->batch().contains_file(u->filename) ? 6 : 0,
                                size_int(a()->filelist), fn.aligned_filename());
-    bout.puts(s, abort, &next);
+    bout.outstr(s, abort, &next);
   }
 
   auto size = humanize(u->numbytes);
@@ -280,7 +280,7 @@ std::string file_mask() {
 std::string file_mask(const std::string& prompt) {
   if (!prompt.empty()) {
     bout.nl();
-    bout.puts(prompt);
+    bout.outstr(prompt);
   }
   auto s = bin.input(12);
   if (s.empty()) {
@@ -370,7 +370,7 @@ void nscanall() {
 
   if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
     bout.nl();
-    bout.puts("|#5All conferences? ");
+    bout.outstr("|#5All conferences? ");
     scan_all_confs = bin.yesno();
     bout.nl();
     if (scan_all_confs) {
@@ -389,13 +389,13 @@ void nscanall() {
   bool abort = false;
   int count = 0;
   int color = 3;
-  bout.puts("\r|#2Searching ");
+  bout.outstr("\r|#2Searching ");
   for (uint16_t i = 0; i < size_int(a()->udir) && !abort; i++) {
     count++;
     bout.Color(color);
-    bout.puts(".");
+    bout.outstr(".");
     if (count >= NUM_DOTS) {
-      bout.puts("\r|#2Searching ");
+      bout.outstr("\r|#2Searching ");
       color++;
       count = 0;
       if (color == 4) {
@@ -426,7 +426,7 @@ void searchall() {
   bool bScanAllConfs = false;
   if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
     bout.nl();
-    bout.puts("|#5All conferences? ");
+    bout.outstr("|#5All conferences? ");
     bScanAllConfs = bin.yesno();
     bout.nl();
     if (bScanAllConfs) {
@@ -436,10 +436,10 @@ void searchall() {
   auto abort = false;
   const auto old_cur_dir = a()->current_user_dir_num();
   bout.nl(2);
-  bout.puts("Search all directories.\r\n");
+  bout.outstr("Search all directories.\r\n");
   const auto filemask = file_mask();
   bout.nl();
-  bout.puts("|#2Searching ");
+  bout.outstr("|#2Searching ");
   bout.clear_lines_listed();
   int count = 0;
   int color = 3;
@@ -452,9 +452,9 @@ void searchall() {
     if (bIsDirMarked) {
       count++;
       bout.Color(color);
-      bout.puts(".");
+      bout.outstr(".");
       if (count >= NUM_DOTS) {
-        bout.puts("\r|#2Searching ");
+        bout.outstr("\r|#2Searching ");
         color++;
         count = 0;
         if (color == 4) {
@@ -525,18 +525,18 @@ int printfileinfo(const uploadsrec* u, const wwiv::sdk::files::directory_t& dir)
   bout.print("|#9Times D/L'd: |#2{}\r\n", u->numdloads);
   bout.nl();
   if (u->mask & mask_extended) {
-    bout.puts("|#9Extended Description: \r\n");
+    bout.outstr("|#9Extended Description: \r\n");
     print_extended(u->filename, 255, -1, wwiv::sdk::Color::YELLOW, nullptr);
 
   }
 
   if (dir.mask & mask_cdrom) {
     bout.nl();
-    bout.puts("|#3CD ROM DRIVE\r\n");
+    bout.outstr("|#3CD ROM DRIVE\r\n");
   } else {
     if (const auto dir_path = File::absolute(a()->bbspath(), dir.path);
         !File::Exists(FilePath(dir_path, FileName(u->filename)))) {
-      bout.puts("\r\n-=>FILE NOT THERE<=-\r\n\n");
+      bout.outstr("\r\n-=>FILE NOT THERE<=-\r\n\n");
       return -1;
     }
   }

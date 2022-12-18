@@ -84,7 +84,7 @@ static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
     bout.SavePosition();
     bout.mpl(max_length_for_number(maxv));
     bout.Color(ok ? 4 : 6);
-    bout.puts(std::to_string(result));
+    bout.outstr(std::to_string(result));
   }
   return ok;
 }
@@ -226,14 +226,14 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
   if (auto_mpl) {
     bout.Color(4);
     for (auto i = 0; i < max_length; i++) {
-      bout.bputch(input_background_char);
+      bout.outchr(input_background_char);
     }
     bout.RestorePosition();
     bout.SavePosition();
   }
   if (!orig_text.empty()) {
     to_char_array(szTemp, orig_text);
-    bout.puts(szTemp);
+    bout.outstr(szTemp);
     bout.RestorePosition();
     bout.SavePosition();
     pos = nLength = strings::ssize(szTemp);
@@ -258,7 +258,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
           bout.RestorePosition();
           bout.SavePosition();
           bout.Right(nLength);
-          bout.bputch(input_background_char);
+          bout.outchr(input_background_char);
         }
         nLength = pos = szTemp[0] = 0;
       }
@@ -304,9 +304,9 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
       }
       nLength--;
       for (auto i = pos; i < nLength; i++) {
-        bout.bputch(szTemp[i]);
+        bout.outchr(szTemp[i]);
       }
-      bout.bputch(input_background_char);
+      bout.outchr(input_background_char);
       break;
     // Backspace (0x08)
     case BACKSPACE:
@@ -322,15 +322,15 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
             bout.SavePosition();
             bout.Right(pos);
             for (int i = pos; i < nLength; i++) {
-              bout.bputch(szTemp[i]);
+              bout.outchr(szTemp[i]);
             }
-            bout.bputch(input_background_char);
+            bout.outchr(input_background_char);
           }
         } else {
           bout.RestorePosition();
           bout.SavePosition();
           bout.Right(pos - 1);
-          bout.bputch(input_background_char);
+          bout.outchr(input_background_char);
           pos = --nLength;
           // ReSharper disable once CppRedundantParentheses
           if ((mode == InputMode::DATE && (pos == 2 || pos == 5)) ||
@@ -338,7 +338,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
             bout.RestorePosition();
             bout.SavePosition();
             bout.Right(pos - 1);
-            bout.bputch(input_background_char);
+            bout.outchr(input_background_char);
             pos = --nLength;
           }
         }
@@ -377,7 +377,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
           }
         }
         if (mode == InputMode::DATE && (pos == 2 || pos == 5)) {
-          bout.bputch(slash);
+          bout.outchr(slash);
           for (auto i = nLength++; i >= pos; i--) {
             szTemp[i + 1] = szTemp[i];
           }
@@ -385,10 +385,10 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
           bout.RestorePosition();
           bout.SavePosition();
           bout.Right(pos);
-          bout.puts(&szTemp[pos]);
+          bout.outstr(&szTemp[pos]);
         }
         if (mode == InputMode::PHONE && (pos == 3 || pos == 7)) {
-          bout.bputch(dash);
+          bout.outchr(dash);
           for (auto i = nLength++; i >= pos; i--) {
             szTemp[i + 1] = szTemp[i];
           }
@@ -396,20 +396,20 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
           bout.RestorePosition();
           bout.SavePosition();
           bout.Right(pos);
-          bout.puts(&szTemp[pos]);
+          bout.outstr(&szTemp[pos]);
         }
         // ReSharper disable once CppRedundantParentheses
         if ((mode == InputMode::DATE && c != slash) || (mode == InputMode::PHONE && c != dash) ||
         // ReSharper disable once CppRedundantParentheses
             (mode != InputMode::DATE && mode != InputMode::PHONE && c != 0)) {
           if (!insert || pos == nLength) {
-            bout.bputch(static_cast<char>(c));
+            bout.outchr(static_cast<char>(c));
             szTemp[pos++] = static_cast<char>(c);
             if (pos > nLength) {
               nLength++;
             }
           } else {
-            bout.bputch(static_cast<char>(c));
+            bout.outchr(static_cast<char>(c));
             for (auto i = nLength++; i >= pos; i--) {
               szTemp[i + 1] = szTemp[i];
             }
@@ -417,7 +417,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
             bout.RestorePosition();
             bout.SavePosition();
             bout.Right(pos);
-            bout.puts(&szTemp[pos]);
+            bout.outstr(&szTemp[pos]);
           }
         }
       }
@@ -519,7 +519,7 @@ void Input::input1(char* out_text, int max_length, InputMode lc, bool crend, boo
         }
         if (curpos < max_length && chCurrent) {
           out_text[curpos++] = chCurrent;
-          bout.bputch(chCurrent);
+          bout.outchr(chCurrent);
         }
       } else {
         switch (chCurrent) {
@@ -605,7 +605,7 @@ std::string Input::input_password_minimal(int max_length) {
       ch = upcase(ch);
       if (ssize(pw) < max_length && ch) {
         pw.push_back(ch);
-        bout.bputch(mask_char);
+        bout.outchr(mask_char);
       }
       continue;
     }
@@ -650,7 +650,7 @@ std::string Input::input_password_minimal(int max_length) {
 
 std::string Input::input_password(const std::string& prompt_text, int max_length) {
   if (!prompt_text.empty()) {
-    bout.puts(prompt_text);
+    bout.outstr(prompt_text);
   }
   return input_password_minimal(max_length);
 }
@@ -681,7 +681,7 @@ input_result_t<int64_t> Input::input_number_or_key_raw(int64_t cur, int64_t minv
       // digit
       if (ssize(text) < max_length && ch) {
         text.push_back(ch);
-        bout.bputch(ch);
+        bout.outchr(ch);
         result = to_number<int64_t>(text);
         last_ok = colorize(last_ok, result, minv, maxv);
       }
@@ -818,7 +818,7 @@ std::optional<ScreenPos> Input::screen_size() {
   bout.SavePosition();
   // Use puts so the local ansi interpretation will work.
   // This should position it one past the end.
-  bout.puts("\x1b[999;999H");
+  bout.outstr("\x1b[999;999H");
   auto pos = remoteIO()->screen_position();
   bout.RestorePosition();
   if (!pos) {

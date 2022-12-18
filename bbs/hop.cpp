@@ -39,7 +39,7 @@ void HopSub() {
   } else {
     bout.nl();
   }
-  bout.puts("|#9Enter name or partial name of sub to hop to:\r\n:");
+  bout.outstr("|#9Enter name or partial name of sub to hop to:\r\n:");
   if (okansi()) {
     bout.newline = false;
   }
@@ -107,7 +107,7 @@ void HopDir() {
   } else {
     bout.nl();
   }
-  bout.puts("|#9Enter name or partial name of dir to hop to:\r\n:");
+  bout.outstr("|#9Enter name or partial name of dir to hop to:\r\n:");
   if (okansi()) {
     bout.newline = false;
   }

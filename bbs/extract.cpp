@@ -35,7 +35,7 @@ using namespace wwiv::strings;
 static std::optional<std::string> get_extract_dir() {
   bout.print_help_file(MEXTRACT_NOEXT);
   do {
-    bout.puts("|#5(Q=Quit) Which (D,G,T) ? ");
+    bout.outstr("|#5(Q=Quit) Which (D,G,T) ? ");
     switch (const auto ch1 = onek("QGDT?"); ch1) {
     case 'G':
       return a()->sess().dirs().gfiles_directory();
@@ -64,7 +64,7 @@ void extract_out(const std::string& text, const std::string& title) {
   std::filesystem::path path;
   std::string mode = "wt";
   do {
-    bout.puts("|#2Save under what filename? ");
+    bout.outstr("|#2Save under what filename? ");
     const auto fn = bin.input_filename(50);
     if (fn.empty()) {
       return;
@@ -74,8 +74,8 @@ void extract_out(const std::string& text, const std::string& title) {
     if (!File::Exists(path)) {
       break;
     }
-    bout.puts("\r\nFilename already in use.\r\n\n");
-    bout.puts("|#0O|#1)verwrite, |#0A|#1)ppend, |#0N|#1)ew name, |#0Q|#1)uit? |#0");
+    bout.outstr("\r\nFilename already in use.\r\n\n");
+    bout.outstr("|#0O|#1)verwrite, |#0A|#1)ppend, |#0N|#1)ew name, |#0Q|#1)uit? |#0");
     switch (const auto ch1 = onek("QOAN"); ch1) {
     case 'N':
       continue;
@@ -99,7 +99,7 @@ void extract_out(const std::string& text, const std::string& title) {
   }
   TextFile file(path, mode);
   if (!file) {
-    bout.puts("|#6Could not open file for writing.\r\n");
+    bout.outstr("|#6Could not open file for writing.\r\n");
     return;
   }
   file.WriteLine(title);

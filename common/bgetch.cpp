@@ -56,7 +56,7 @@ bool Output::RestoreCurrentLine(const SavedLine& line) {
   }
   for (const auto& c : line.line) {
     SystemColor(c.second);
-    bputch(c.first, true);
+    outchr(c.first, true);
   }
   flush();
   SystemColor(line.color);
@@ -119,11 +119,11 @@ char Input::getkey(bool allow_extended_input) {
       auto diff = dd - time_lastchar_pressed;
       if (diff > tv1 && !beepyet) {
         beepyet = true;
-        bout.bputch(CG);
+        bout.outchr(CG);
       }
       if (diff > tv) {
         bout.nl();
-        bout.puts("Call back later when you are there.\r\n");
+        bout.outstr("Call back later when you are there.\r\n");
         bus().invoke<HangupEvent>();
       }
     }
@@ -396,12 +396,12 @@ int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<dou
     auto diff = dd - time_lastchar_pressed;
     if (diff > tv1 && !beepyet) {
       beepyet = true;
-      bout.bputch(CG);
+      bout.outchr(CG);
       cb(bgetch_timeout_status_t::WARNING, 60);
     }
     if (diff > tv) {
       bout.nl();
-      bout.puts("Call back later when you are there.\r\n");
+      bout.outstr("Call back later when you are there.\r\n");
       bus().invoke<HangupEvent>();
       return 0;
     }

@@ -242,9 +242,9 @@ void OnlineUserEditor() {
 }
 
 void BackPrint(const std::string& strText, int nColorCode, int nCharDelay, int nStringDelay) {
-  bout.back_puts(strText, nColorCode, milliseconds(nCharDelay), milliseconds(nStringDelay));
+  bout.back_outstr(strText, nColorCode, milliseconds(nCharDelay), milliseconds(nStringDelay));
 }
 
 void SpinPuts(const std::string& strText, int color) {
-  bout.spin_puts(strText, color);
+  bout.spin_outstr(strText, color);
 }

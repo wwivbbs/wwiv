@@ -87,7 +87,7 @@ static bool okansi(const User& user) { return user.ansi(); }
 void Output::pausescr_noansi() {
   const auto str_pause = bout.lang().value("PAUSE", "|#3More? [Y/n/c]"); 
   const auto stripped_size = ssize(stripcolors(str_pause));
-  puts(str_pause);
+  outstr(str_pause);
   GetKeyForPause();
   for (auto i = 0; i < stripped_size; i++) {
     bs();
@@ -114,7 +114,7 @@ void Output::pausescr() {
 
   const auto stripped_size = ssize(stripcolors(str_pause));
   const auto com_freeze = sess().incom();
-  puts(str_pause);
+  outstr(str_pause);
   Left(stripped_size);
   SystemColor(saved_curatr);
 
@@ -131,17 +131,17 @@ void Output::pausescr() {
         if (!warned) {
           warned = true;
           // Strip the colors and display the pause prompt all red here.
-          bputch(CG);
+          outchr(CG);
           SystemColor(user().color(6));
-          puts(stripcolors(str_pause));
+          outstr(stripcolors(str_pause));
           Left(stripped_size);
           SystemColor(saved_curatr);
         }
       } else {
         if (ttotal > 180) {
-          bputch(CG);
+          outchr(CG);
           for (auto i3 = 0; i3 < stripped_size; i3++) {
-            bputch(' ');
+            outchr(' ');
           }
           Left(stripped_size);
           SystemColor(saved_curatr);
@@ -154,7 +154,7 @@ void Output::pausescr() {
     ch = GetKeyForPause();
   } while (!ch && !sess().hangup());
   for (int i3 = 0; i3 < stripped_size; i3++) {
-    bputch(' ');
+    outchr(' ');
   }
   Left(stripped_size);
   SystemColor(saved_curatr);

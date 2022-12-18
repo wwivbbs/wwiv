@@ -205,7 +205,7 @@ void multi_instance() {
   bout.nl();
   const auto num = num_instances();
   if (num < 1) {
-    bout.puts("|#6Couldn't find instance data file.\r\n");
+    bout.outstr("|#6Couldn't find instance data file.\r\n");
     return;
   }
 

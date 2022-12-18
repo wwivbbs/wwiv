@@ -197,7 +197,7 @@ std::optional<std::string> readfile(const messagerec* msg, const std::string& fi
     current_section = gat[current_section];
   }
   if (message_length == 0) {
-    bout.puts("\r\nNo message found.\r\n\n");
+    bout.outstr("\r\nNo message found.\r\n\n");
     return std::nullopt;
   }
 

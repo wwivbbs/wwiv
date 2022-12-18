@@ -52,14 +52,14 @@ static int my_print(struct mb_interpreter_t *, const char* fmt, ...) {
   vsnprintf(buf, sizeof(buf), fmt, argptr);  // NOLINT(clang-diagnostic-format-nonliteral)
   va_end(argptr);
 
-  script_out().puts(buf);
+  script_out().outstr(buf);
   script_out().nl();
   return MB_FUNC_OK;
 }
 
 static int my_input(struct mb_interpreter_t*, const char* prompt, char* buf, int size) {
   if (prompt && *prompt) {
-    script_out().puts(prompt);
+    script_out().outstr(prompt);
   }
   const auto v = script_in().input_text("", size);
   strcpy(buf, v.c_str());
@@ -230,7 +230,7 @@ bool Basic::RegisterDefaultNamespaces() {
 bool Basic::RunScript(const std::string& module, const std::string& text) {
 
   if (!config_.scripting_enabled()) {
-    bout_.puts("WWIVbasic scripting is not enabled on this system.");
+    bout_.outstr("WWIVbasic scripting is not enabled on this system.");
     return false;
   }
   script_userdata_->module = module;

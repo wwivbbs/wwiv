@@ -89,7 +89,7 @@ void valscan() {
           int val;
           read_post(i, &next, &val);
           bout.print("|#4[|#4Subboard: {}|#1]\r\n", a()->current_sub().name);
-          bout.puts("|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2");
+          bout.outstr("|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2");
           char ch = onek("QDVMR");
           switch (ch) {
           case 'Q':
@@ -107,7 +107,7 @@ void valscan() {
             close_sub();
             send_net_post(p1, a()->current_sub());
             bout.nl();
-            bout.puts("|#7Message sent.\r\n\n");
+            bout.outstr("|#7Message sent.\r\n\n");
           }
           break;
           case 'M':
@@ -120,7 +120,7 @@ void valscan() {
               p1->status &= ~status_pending_net;
               write_post(i, p1);
               bout.nl();
-              bout.puts("|#9Not set for net pending now.\r\n\n");
+              bout.outstr("|#9Not set for net pending now.\r\n\n");
             }
             break;
           case 'D':
@@ -137,7 +137,7 @@ void valscan() {
                   if (!tu.deleted()) {
                     if (date_to_daten(tu.firston()) < p2.daten) {
                       bout.nl();
-                      bout.puts("|#2Remove how many posts credit? ");
+                      bout.outstr("|#2Remove how many posts credit? ");
                       char szNumCredits[ 11 ];
                       bin.input(szNumCredits, 3, true);
                       int num_post_credits = 1;

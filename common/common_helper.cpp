@@ -82,7 +82,7 @@ void CommonHelper::SetUp() {
 
   // Reset the color attribute to 7 between tests.
   bout.curatr(7);
-  // We need this true so our bputch tests can capture remote.
+  // We need this true so our outchr tests can capture remote.
   sess().outcom(true);
   sess().ok_modem_stuff(true);
 }

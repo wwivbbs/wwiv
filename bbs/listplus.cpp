@@ -210,7 +210,7 @@ void print_searching(search_record* search_rec) {
     bout.print("|#9Search keywords : |#2{}", search_rec->search);
     bout.nl(2);
   }
-  bout.puts("|#9<Space> aborts  : ");
+  bout.outstr("|#9<Space> aborts  : ");
   bout.cls();
   bout.printf(" |17|15%-40.40s|16|#0\r", a()->dirs()[a()->current_user_dir().subnum].name);
 }
@@ -267,7 +267,7 @@ int lp_add_batch(const std::string& file_name, int dn, int fs) {
 
   if (a()->batch().size() >= a()->max_batch) {
     bout.GotoXY(1, a()->user()->screen_lines() - 1);
-    bout.puts("No room left in batch queue.\r\n");
+    bout.outstr("No room left in batch queue.\r\n");
     bout.pausescr();
   } else if (!ratio_ok()) {
     bout.pausescr();
@@ -275,12 +275,12 @@ int lp_add_batch(const std::string& file_name, int dn, int fs) {
     if (nsl() <= a()->batch().dl_time_in_secs() + time_to_transfer(a()->modem_speed_, fs).count() &&
         !so()) {
       bout.GotoXY(1, a()->user()->screen_lines() - 1);
-      bout.puts("Not enough time left in queue.\r\n");
+      bout.outstr("Not enough time left in queue.\r\n");
       bout.pausescr();
     } else {
       if (dn == -1) {
         bout.GotoXY(1, a()->user()->screen_lines() - 1);
-        bout.puts("Can't add temporary file to batch queue.\r\n");
+        bout.outstr("Can't add temporary file to batch queue.\r\n");
         bout.pausescr();
       } else {
         a()->batch().AddBatch({file_name, dn, fs, true});
@@ -374,7 +374,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
 
   auto fi = trim_to_size_ignore_colors(file_information, will_fit);
   fi += "\r\n";
-  bout.puts(fi);
+  bout.outstr(fi);
   numl++;
 
   if (extdesc_pos > 0) {
@@ -407,7 +407,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
       bout.nl();
       ++numl;
     } else {
-      bout.bputch('\r');
+      bout.outchr('\r');
     }
   }
   file_information.clear();
@@ -427,7 +427,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     if (a()->user()->data.lp_options & cfl_date_uploaded) {
       StringJustify(&file_information, ssize(file_information) + width, ' ',
                     JustificationType::RIGHT);
-      bout.puts(file_information);
+      bout.outstr(file_information);
       bout.nl();
       ++numl;
     }
@@ -438,7 +438,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
   if (!buffer.empty()) {
     StringJustify(&file_information, ssize(file_information) + width, ' ',
                   JustificationType::RIGHT);
-    bout.puts(file_information);
+    bout.outstr(file_information);
     bout.nl();
     ++numl;
   }
@@ -460,7 +460,7 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
     colorize_foundtext(&ss, search_rec, static_cast<uint8_t>(color));
   }
   if (indent > -1 && indent != 16) {
-    bout.puts("  |#9Extended Description:\n\r");
+    bout.outstr("  |#9Extended Description:\n\r");
   }
   const auto lines = SplitString(ss, "\n", false);
   auto numl = std::min<int>(size_int(lines), numlist);
@@ -471,7 +471,7 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
       l.resize(will_fit);
     }
     bout.SystemColor(static_cast<uint8_t>(color));
-    bout.puts(lines.at(i));
+    bout.outstr(lines.at(i));
     bout.nl();
   }
   bout.Color(0);
@@ -485,7 +485,7 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
 void show_fileinfo(uploadsrec* u) {
   bout.cls();
   bout.Color(7);
-  bout.puts(std::string(78, '\xCD'));
+  bout.outstr(std::string(78, '\xCD'));
   bout.nl();
   bout.print("  |#9Filename    : |#2{}\r\n", u->filename);
   bout.print("  |#9Uploaded on : |#2{} by |#2{}\r\n", u->date, u->upby);
@@ -497,7 +497,7 @@ void show_fileinfo(uploadsrec* u) {
   bout.print("  |#9Description : |#2{}\r\n", u->description);
   print_extended(u->filename, 255, 16, Color::YELLOW, nullptr);
   bout.Color(7);
-  bout.puts(std::string(78, '\xCD'));
+  bout.outstr(std::string(78, '\xCD'));
   bout.nl();
   bout.pausescr();
 }
@@ -731,11 +731,11 @@ void sysop_configure() {
       }
       } break;
     case 'J':
-      bout.puts("Enter max amount of lines to show (0=disabled) ");
+      bout.outstr("Enter max amount of lines to show (0=disabled) ");
       lp_config.max_screen_lines_to_show = bin.input_number(lp_config.max_screen_lines_to_show, 0, 20, true);
       break;
     case 'K':
-      bout.puts("Enter minimum extended description lines to show ");
+      bout.outstr("Enter minimum extended description lines to show ");
       lp_config.show_at_least_extended = bin.input_number(lp_config.show_at_least_extended, 0, 20, true);
       break;
     case 'L':
@@ -774,18 +774,18 @@ short SelectColor(int which) {
     color_list();
     bout.Color(0);
     bout.nl();
-    bout.puts("|#2Foreground? ");
+    bout.outstr("|#2Foreground? ");
     unsigned char ch = onek("01234567");
     nc = ch - '0';
 
     if (which == 2) {
-      bout.puts("|#2Background? ");
+      bout.outstr("|#2Background? ");
       ch = onek("01234567");
       nc |= (ch - '0') << 4;
     }
   } else {
     bout.nl();
-    bout.puts("|#5Inversed? ");
+    bout.outstr("|#5Inversed? ");
     if (bin.yesno()) {
       if ((a()->user()->bwcolor(1) & 0x70) == 0) {
         nc = (a()->user()->bwcolor(1) & 0x07) << 4;
@@ -801,24 +801,24 @@ short SelectColor(int which) {
     }
   }
 
-  bout.puts("|#5Intensified? ");
+  bout.outstr("|#5Intensified? ");
   if (bin.yesno()) {
     nc |= 0x08;
   }
 
   if (which == 2) {
-    bout.puts("|#5Blinking? ");
+    bout.outstr("|#5Blinking? ");
     if (bin.yesno()) {
       nc |= 0x80;
     }
   }
   bout.nl();
   bout.SystemColor(nc);
-  bout.puts(DescribeColorCode(nc));
+  bout.outstr(DescribeColorCode(nc));
   bout.Color(0);
   bout.nl();
 
-  bout.puts("|#5Is this OK? ");
+  bout.outstr("|#5Is this OK? ");
   if (bin.yesno()) {
     return nc;
   }
@@ -855,70 +855,70 @@ static void update_user_config_screen(uploadsrec* u, int which) {
   if (which < 1 || which == 1) {
     bout.GotoXY(37, 4);
     bout.SystemColor(lpo & cfl_fname ? color_selected : color_notselected);
-    bout.puts("\xFE ");
+    bout.outstr("\xFE ");
     bout.SystemColor(color_colortext);
-    bout.puts(lp_color_list[lpc[0]]);
+    bout.outstr(lp_color_list[lpc[0]]);
   }
   if (which < 1 || which == 2) {
     bout.GotoXY(37, 5);
     bout.SystemColor(lpo & cfl_extension ? color_selected : color_notselected);
-    bout.puts("\xFE ");
+    bout.outstr("\xFE ");
     bout.SystemColor(color_colortext);
-    bout.puts(lp_color_list[lpc[1]]);
+    bout.outstr(lp_color_list[lpc[1]]);
   }
   if (which < 1 || which == 3) {
     bout.GotoXY(37, 6);
     bout.SystemColor(lpo & cfl_dloads ? color_selected : color_notselected);
-    bout.puts("\xFE ");
+    bout.outstr("\xFE ");
     bout.SystemColor(color_colortext);
-    bout.puts(lp_color_list[lpc[2]]);
+    bout.outstr(lp_color_list[lpc[2]]);
   }
   if (which < 1 || which == 4) {
     bout.GotoXY(37, 7);
     bout.SystemColor(lpo & cfl_kbytes ? color_selected : color_notselected);
-    bout.puts("\xFE ");
+    bout.outstr("\xFE ");
     bout.SystemColor(color_colortext);
-    bout.puts(lp_color_list[lpc[3]]);
+    bout.outstr(lp_color_list[lpc[3]]);
   }
   if (which < 1 || which == 5) {
     bout.GotoXY(37, 8);
     bout.SystemColor(lpo & cfl_description ? color_selected : color_notselected);
-    bout.puts("\xFE ");
+    bout.outstr("\xFE ");
     bout.SystemColor(color_colortext);
-    bout.puts(lp_color_list[lpc[10]]);
+    bout.outstr(lp_color_list[lpc[10]]);
   }
   if (which < 1 || which == 6) {
     bout.GotoXY(37, 9);
     bout.SystemColor(lpo & cfl_date_uploaded ? color_selected : color_notselected);
-    bout.puts("\xFE ");
+    bout.outstr("\xFE ");
     bout.SystemColor(color_colortext);
-    bout.puts(lp_color_list[lpc[4]]);
+    bout.outstr(lp_color_list[lpc[4]]);
   }
   if (which < 1 || which == 7) {
     bout.GotoXY(37, 10);
     bout.SystemColor(lpo & cfl_file_points ? color_selected : color_notselected);
-    bout.puts("\xFE ");
+    bout.outstr("\xFE ");
     bout.SystemColor(color_colortext);
-    bout.puts(lp_color_list[lpc[5]]);
+    bout.outstr(lp_color_list[lpc[5]]);
   }
   if (which < 1 || which == 8) {
     bout.GotoXY(37, 11);
     bout.SystemColor(lpo & cfl_days_old ? color_selected : color_notselected);
-    bout.puts("\xFE ");
+    bout.outstr("\xFE ");
     bout.SystemColor(color_colortext);
-    bout.puts(lp_color_list[lpc[6]]);
+    bout.outstr(lp_color_list[lpc[6]]);
   }
   if (which < 1 || which == 9) {
     bout.GotoXY(37, 12);
     bout.SystemColor(lpo & cfl_upby ? color_selected : color_notselected);
-    bout.puts("\xFE ");
+    bout.outstr("\xFE ");
     bout.SystemColor(color_colortext);
-    bout.puts(lp_color_list[lpc[7]]);
+    bout.outstr(lp_color_list[lpc[7]]);
   }
   if (which < 1 || which == 10) {
     bout.GotoXY(37, 13);
     bout.SystemColor(lpo & cfl_header ? color_selected : color_notselected);
-    bout.puts("\xFE ");
+    bout.outstr("\xFE ");
     bout.SystemColor(color_colortext);
   }
   bout.SystemColor(Color::YELLOW);
@@ -1098,7 +1098,7 @@ static int rename_filename(const std::string& file_name, int dn) {
     bout.nl();
     printfileinfo(&f.u(), dir);
     bout.nl();
-    bout.puts("|#5Change info for this file (Y/N/Q)? ");
+    bout.outstr("|#5Change info for this file (Y/N/Q)? ");
     char ch = bin.ynq();
     if (ch == 'Q') {
       ret = 0;
@@ -1109,7 +1109,7 @@ static int rename_filename(const std::string& file_name, int dn) {
       continue;
     }
     bout.nl();
-    bout.puts("|#2New filename? ");
+    bout.outstr("|#2New filename? ");
     auto new_filename = bin.input(12);
     if (!okfn(new_filename)) {
       new_filename.clear();
@@ -1120,7 +1120,7 @@ static int rename_filename(const std::string& file_name, int dn) {
         files::FileName nfn(new_filename);
         auto new_fn = FilePath(a()->dirs()[dn].path, nfn);
         if (File::Exists(new_fn)) {
-          bout.puts("Filename already in use; not changed.\r\n");
+          bout.outstr("Filename already in use; not changed.\r\n");
         } else {
           auto old_fn = FilePath(a()->dirs()[dn].path, f);
           File::Rename(old_fn, new_fn);
@@ -1134,24 +1134,24 @@ static int rename_filename(const std::string& file_name, int dn) {
             f.set_filename(new_filename);
             f.set_extended_description(!ss.empty());
           } else {
-            bout.puts("Bad filename.\r\n");
+            bout.outstr("Bad filename.\r\n");
           }
         }
       }
     }
     bout.nl();
-    bout.puts("New description:\r\n|#2: ");
+    bout.outstr("New description:\r\n|#2: ");
     auto desc = bin.input_text(f.u().description, 58);
     if (!desc.empty()) {
       f.set_description(desc);
     }
     auto ss = area->ReadExtendedDescriptionAsString(f).value_or(std::string());
     bout.nl(2);
-    bout.puts("|#5Modify extended description? ");
+    bout.outstr("|#5Modify extended description? ");
     if (bin.yesno()) {
       bout.nl();
       if (!ss.empty()) {
-        bout.puts("|#5Delete it? ");
+        bout.outstr("|#5Delete it? ");
         if (bin.yesno()) {
           area->DeleteExtendedDescription(f, current_file_position);
           f.set_extended_description(false);
@@ -1207,7 +1207,7 @@ static int remove_filename(const std::string& file_name, int dn) {
     if (dcs() || f.u().ownersys == 0 && f.u().ownerusr == a()->sess().user_num()) {
       bout.nl();
       printfileinfo(&f.u(), dir);
-      bout.puts("|#9Remove (|#2Y/N/Q|#9) |#0: |#2");
+      bout.outstr("|#9Remove (|#2Y/N/Q|#9) |#0: |#2");
       char ch = bin.ynq();
       if (ch == 'Q') {
         ret = 0;
@@ -1216,13 +1216,13 @@ static int remove_filename(const std::string& file_name, int dn) {
         rdlp = true;
         bool rm = false;
         if (dcs()) {
-          bout.puts("|#5Delete file too? ");
+          bout.outstr("|#5Delete file too? ");
           rm = bin.yesno();
           if (rm && f.u().ownersys == 0) {
-            bout.puts("|#5Remove DL points? ");
+            bout.outstr("|#5Remove DL points? ");
             rdlp = bin.yesno();
           }
-          bout.puts("|#5Remove from ALLOW.DAT? ");
+          bout.outstr("|#5Remove from ALLOW.DAT? ");
           if (bin.yesno()) {
             remove_from_file_database(fn);
           }
@@ -1261,7 +1261,7 @@ static int move_filename(const std::string& file_name, int dn) {
   dliscan1(dn);
   int nRecNum = recno(move_fn);
   if (nRecNum < 0) {
-    bout.puts("\r\nFile not found.\r\n");
+    bout.outstr("\r\nFile not found.\r\n");
     return ret;
   }
   bool done = false;
@@ -1278,11 +1278,11 @@ static int move_filename(const std::string& file_name, int dn) {
     bout.nl();
     printfileinfo(&f.u(), dir);
     bout.nl();
-    bout.puts("|#5Move this (Y/N/Q)? ");
+    bout.outstr("|#5Move this (Y/N/Q)? ");
     char ch = 'Y';
     if (bulk_move) {
       bout.Color(1);
-      bout.puts(YesNoString(true));
+      bout.outstr(YesNoString(true));
       bout.nl();
     } else {
       ch = bin.ynq();
@@ -1296,7 +1296,7 @@ static int move_filename(const std::string& file_name, int dn) {
         std::string ss;
         do {
           bout.nl(2);
-          bout.puts("|#2To which directory? ");
+          bout.outstr("|#2To which directory? ");
           ss = mmkey(MMKeyAreaType::dirs);
           if (ss[0] == '?') {
             dirlist(1);
@@ -1315,7 +1315,7 @@ static int move_filename(const std::string& file_name, int dn) {
         }
 
         if (a()->batch().size() > 1) {
-          bout.puts("|#5Move all tagged files? ");
+          bout.outstr("|#5Move all tagged files? ");
           if (bin.yesno()) {
             bulk_move = 1;
             bulk_dir = nDestDirNum;
@@ -1332,16 +1332,16 @@ static int move_filename(const std::string& file_name, int dn) {
         if (recno(f.aligned_filename()) > 0) {
           ok = false;
           bout.nl();
-          bout.puts("Filename already in use in that directory.\r\n");
+          bout.outstr("Filename already in use in that directory.\r\n");
         }
         if (a()->current_file_area()->number_of_files() >= a()->dirs()[nDestDirNum].maxfiles) {
           ok = false;
-          bout.puts("\r\nToo many files in that directory.\r\n");
+          bout.outstr("\r\nToo many files in that directory.\r\n");
         }
         if (File::freespace_for_path(a()->dirs()[nDestDirNum].path) <
             static_cast<long>(f.numbytes() / 1024L) + 3) {
           ok = false;
-          bout.puts("\r\nNot enough disk space to move it.\r\n");
+          bout.outstr("\r\nNot enough disk space to move it.\r\n");
         }
         dliscan();
       } else {
@@ -1352,7 +1352,7 @@ static int move_filename(const std::string& file_name, int dn) {
     }
     if (ok && !done) {
       if (!bulk_move) {
-        bout.puts("|#5Reset upload time for file? ");
+        bout.outstr("|#5Reset upload time for file? ");
         if (bin.yesno()) {
           f.set_date(DateTime::now());
         }
@@ -1382,7 +1382,7 @@ static int move_filename(const std::string& file_name, int dn) {
       if (src_fn != dest_fn && File::Exists(src_fn)) {
         File::Rename(src_fn, dest_fn);
       }
-      bout.puts("\r\nFile moved.\r\n");
+      bout.outstr("\r\nFile moved.\r\n");
     }
     dliscan();
     nRecNum = nrecno(move_fn, cp);
@@ -1478,13 +1478,13 @@ LP_SEARCH_HELP:
     bout.print("|#9D)|#2 Which Conferences    :|#2 {}\r\n", all_conf ? "All Conferences" : conf_name);
     bout.print("|#9E)|#2 Extended Description :|#2 {}\r\n", sr->search_extended ? "Yes" : "No ");
     bout.nl();
-    bout.puts("|15Select item to change |#2<CR>|15 to start search |#2Q=Quit|15:|#0 ");
+    bout.outstr("|15Select item to change |#2<CR>|15 to start search |#2Q=Quit|15:|#0 ");
 
     x = onek("QABCDE\r?");
 
     switch (x) {
     case 'A':
-      bout.puts("Filename (wildcards okay) : ");
+      bout.outstr("Filename (wildcards okay) : ");
       sr->filemask = bin.input(12, true);
       if (sr->filemask[0]) {
         if (okfn(sr->filemask)) {
@@ -1508,7 +1508,7 @@ LP_SEARCH_HELP:
       break;
 
     case 'B':
-      bout.puts("Keyword(s) : ");
+      bout.outstr("Keyword(s) : ");
       sr->search = bin.input_upper(60);
       if (sr->search[0]) {
         sysoplog(StrCat("Keyword: ", sr->search));
@@ -1621,7 +1621,7 @@ int lp_try_to_download(const std::string& file_mask, int dn) {
 void download_plus(const std::string& file_name) {
   if (a()->batch().numbatchdl() != 0) {
     bout.nl();
-    bout.puts("|#2Download files in your batch queue (|#1Y/n|#2)? ");
+    bout.outstr("|#2Download files in your batch queue (|#1Y/n|#2)? ");
     if (bin.noyes()) {
       batchdl(1);
       return;
@@ -1637,19 +1637,19 @@ void download_plus(const std::string& file_name) {
   }
   fn = aligns(fn);
   if (lp_try_to_download(fn, a()->current_user_dir().subnum) == 0) {
-    bout.puts("\r\nSearching all directories.\r\n\n");
+    bout.outstr("\r\nSearching all directories.\r\n\n");
     auto dn = 0;
     auto count = 0;
     auto color = 3;
     foundany = 0;
-    bout.puts("\r|#2Searching ");
+    bout.outstr("\r|#2Searching ");
     while (dn < a()->dirs().size()) {
       count++;
       bout.Color(color);
-      bout.puts(".");
+      bout.outstr(".");
       if (count == NUM_DOTS) {
-        bout.puts("\r");
-        bout.puts("|#2Searching ");
+        bout.outstr("\r");
+        bout.outstr("|#2Searching ");
         color++;
         count = 0;
         if (color == 4) {
@@ -1665,7 +1665,7 @@ void download_plus(const std::string& file_name) {
       dn++;
     }
     if (!foundany) {
-      bout.puts("File not found.\r\n\n");
+      bout.outstr("File not found.\r\n\n");
     }
   }
 }
@@ -1675,13 +1675,13 @@ void request_file(const std::string& file_name) {
   bout.nl();
 
   bout.printfile(LPFREQ_NOEXT);
-  bout.puts("|#2File missing.  Request it? ");
+  bout.outstr("|#2File missing.  Request it? ");
 
   if (bin.noyes()) {
     ssm(1) << a()->user()->name() << " is requesting file " << file_name;
-    bout.puts("File request sent\r\n");
+    bout.outstr("File request sent\r\n");
   } else {
-    bout.puts("File request NOT sent\r\n");
+    bout.outstr("File request NOT sent\r\n");
   }
   bout.pausescr();
 }

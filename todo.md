@@ -14,7 +14,7 @@
   search:
     bout << (".+");
   replace:
-    bout.puts($1);
+    bout.outstr($1);
 
 
 # Things to add to fix.

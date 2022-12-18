@@ -54,7 +54,7 @@ find_message_result_t FindNextMessageAgain(int msgno) {
     if (!(tmp_msgnum % 5)) {
       bout.printf("%5.5d", tmp_msgnum);
       for (auto i1 = 0; i1 < 5; i1++) {
-        bout.puts("\b");
+        bout.outstr("\b");
       }
       if (!(tmp_msgnum % 100)) {
         a()->tleft(true);
@@ -83,13 +83,13 @@ find_message_result_t FindNextMessage(int msgno) {
     search_string = last_search_string;
   }
   bout.nl();
-  bout.puts("|#1Backwards or Forwards? ");
+  bout.outstr("|#1Backwards or Forwards? ");
   const auto ch = onek("QBF\r");
   if (ch == 'Q') {
     return {false, -1};
   }
   bout.nl();
-  bout.puts("|#1Searching -> |#2");
+  bout.outstr("|#1Searching -> |#2");
 
   // Store search direction and limit
   const auto search_forward = ch != '-' && ch != 'B';

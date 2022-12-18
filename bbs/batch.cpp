@@ -286,8 +286,8 @@ static void bihangup() {
   bout.dump();
   const auto batch_lastchar = steady_clock::now();
   auto nextbeep = seconds(1);
-  bout.puts("\r\n|#2Automatic disconnect in progress.\r\n");
-  bout.puts("|#2Press 'H' to Hangup, or any other key to return to system.\r\n");
+  bout.outstr("\r\n|#2Automatic disconnect in progress.\r\n");
+  bout.outstr("|#2Press 'H' to Hangup, or any other key to return to system.\r\n");
 
   while (!bin.bkbhit() && !a()->sess().hangup()) {
     const auto dd = steady_clock::now();
@@ -296,12 +296,12 @@ static void bihangup() {
       nextbeep += seconds(1);
       const auto left = 10 - static_cast<int>(duration_cast<seconds>(elapsed).count());
       bout.Color(hangup_color(left));
-      bout.puts("\r");
-      bout.puts(std::to_string(left));
+      bout.outstr("\r");
+      bout.outstr(std::to_string(left));
     }
     if (dd - batch_lastchar > seconds(10)) {
       bout.nl();
-      bout.puts("Thank you for calling.");
+      bout.outstr("Thank you for calling.");
       bout.nl();
       bout.remoteIO()->disconnect();
       a()->Hangup();
@@ -328,7 +328,7 @@ void zmbatchdl(bool bHangupAfterDl) {
   }
   sysoplog(message);
   bout.nl();
-  bout.puts(message);
+  bout.outstr(message);
   bout.nl(2);
 
   bool bRatioBad = false;
@@ -381,7 +381,7 @@ void zmbatchdl(bool bHangupAfterDl) {
   while (ok && !a()->sess().hangup() && size_int(a()->batch().entry) > cur && !bRatioBad);
 
   if (bRatioBad) {
-    bout.puts("\r\nYour ratio is too low to continue the transfer.\r\n\n\n");
+    bout.outstr("\r\nYour ratio is too low to continue the transfer.\r\n\n\n");
   }
   if (bHangupAfterDl) {
     bihangup();
@@ -459,7 +459,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   }
   sysoplog(message);
   bout.nl();
-  bout.puts(message);
+  bout.outstr(message);
   bout.nl(2);
 
   bool bRatioBad = false;
@@ -512,7 +512,7 @@ void ymbatchdl(bool bHangupAfterDl) {
     end_ymodem_batch();
   }
   if (bRatioBad) {
-    bout.puts("\r\nYour ratio is too low to continue the transfer.\r\n\n");
+    bout.outstr("\r\nYour ratio is too low to continue the transfer.\r\n\n");
   }
   if (bHangupAfterDl) {
     bihangup();
@@ -622,7 +622,7 @@ static void run_cmd(const std::string& orig_commandline, const std::string& down
     if (bHangupAfterDl) {
       bihangup();
     } else {
-      bout.puts("\r\n|#9Please wait...\r\n\n");
+      bout.outstr("\r\n|#9Please wait...\r\n\n");
     }
     ProcessDSZLogFile(a()->dsz_logfile_name_);
     a()->UpdateTopScreen();
@@ -645,7 +645,7 @@ void dszbatchdl(bool bHangupAfterDl, const std::string& command_line, const std:
   }
   sysoplog(download_log_entry);
   bout.nl();
-  bout.puts(download_log_entry);
+  bout.outstr(download_log_entry);
   bout.nl(2);
 
   write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
@@ -661,7 +661,7 @@ static void dszbatchul(bool bHangupAfterDl, char* command_line, const std::strin
   }
   sysoplog(download_log_entry);
   bout.nl();
-  bout.puts(download_log_entry);
+  bout.outstr(download_log_entry);
   bout.nl(2);
 
   write_inst(INST_LOC_UPLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
@@ -682,11 +682,11 @@ int batchdl(int mode) {
     case 3:
       bout.nl();
       if (mode == 3) {
-        bout.puts("|#7[|#2L|#7]|#1ist Files, |#7[|#2C|#7]|#1lear Queue, |#7[|#2R|#7]|#1emove File, "
+        bout.outstr("|#7[|#2L|#7]|#1ist Files, |#7[|#2C|#7]|#1lear Queue, |#7[|#2R|#7]|#1emove File, "
                   "|#7[|#2Q|#7]|#1uit or |#7[|#2D|#7]|#1ownload : |#0");
         ch = onek("QLRDC\r");
       } else {
-        bout.puts("|#9Batch: L,R,Q,C,D,U,? : ");
+        bout.outstr("|#9Batch: L,R,Q,C,D,U,? : ");
         ch = onek("Q?CLRDU");
       }
       break;
@@ -714,7 +714,7 @@ int batchdl(int mode) {
       break;
     case 'R': {
       bout.nl();
-      bout.puts("|#9Remove which? ");
+      bout.outstr("|#9Remove which? ");
       std::string s = bin.input(4);
       auto i = to_number<int>(s);
       if (i > 0 && i <= size_int(a()->batch().entry)) {
@@ -722,17 +722,17 @@ int batchdl(int mode) {
         a()->batch().delbatch(i - 1);
       }
       if (a()->batch().empty()) {
-        bout.puts("\r\nBatch queue empty.\r\n\n");
+        bout.outstr("\r\nBatch queue empty.\r\n\n");
         done = true;
       }
     }
     break;
     case 'C':
-      bout.puts("|#5Clear queue? ");
+      bout.outstr("|#5Clear queue? ");
       if (bin.yesno()) {
         for (const auto& b : a()->batch().entry) { didnt_upload(b); }
         a()->batch().entry.clear();
-        bout.puts("Queue cleared.\r\n");
+        bout.outstr("Queue cleared.\r\n");
         if (mode == 3) {
           return 1;
         }
@@ -742,7 +742,7 @@ int batchdl(int mode) {
     case 'U': {
       if (mode != 3) {
         bout.nl();
-        bout.puts("|#5Hang up after transfer? ");
+        bout.outstr("|#5Hang up after transfer? ");
         const auto hangup_after_dl = bin.yesno();
         bout.nl(2);
         int i = get_protocol(xfertype::xf_up_batch);
@@ -761,17 +761,17 @@ int batchdl(int mode) {
     case 13:
       if (mode != 3) {
         if (a()->batch().numbatchdl() == 0) {
-          bout.puts("\r\nNothing in batch download queue.\r\n\n");
+          bout.outstr("\r\nNothing in batch download queue.\r\n\n");
           done = true;
           break;
         }
         bout.nl();
         if (!ratio_ok()) {
-          bout.puts("\r\nSorry, your ratio is too low.\r\n\n");
+          bout.outstr("\r\nSorry, your ratio is too low.\r\n\n");
           done = true;
           break;
         }
-        bout.puts("|#5Hang up after transfer? ");
+        bout.outstr("|#5Hang up after transfer? ");
         const auto hangup_after_dl = bin.yesno();
         bout.nl();
         int i = get_protocol(xfertype::xf_down_batch);
@@ -808,7 +808,7 @@ void upload(int dn) {
   dliscan1(d);
   const long free_space = File::freespace_for_path(d.path);
   if (free_space < 100) {
-    bout.puts("\r\nNot enough disk space to upload here.\r\n\n");
+    bout.outstr("\r\nNot enough disk space to upload here.\r\n\n");
     return;
   }
   listbatch();
@@ -818,10 +818,10 @@ void upload(int dn) {
 
   bool done = false;
   do {
-    bout.puts("|#2B|#7) |#1Blind batch upload\r\n");
-    bout.puts("|#2N|#7) |#1Normal upload\r\n");
-    bout.puts("|#2Q|#7) |#1Quit\r\n\n");
-    bout.puts("|#2Which |#7(|#2B,n,q,?|#7)|#1: ");
+    bout.outstr("|#2B|#7) |#1Blind batch upload\r\n");
+    bout.outstr("|#2N|#7) |#1Normal upload\r\n");
+    bout.outstr("|#2Q|#7) |#1Quit\r\n\n");
+    bout.outstr("|#2Which |#7(|#2B,n,q,?|#7)|#1: ");
 
     const char key = onek("QB\rN?");
     switch (key) {
@@ -838,7 +838,7 @@ void upload(int dn) {
       done = true;
       break;
     case '?':
-      bout.puts("This is help?");
+      bout.outstr("This is help?");
       bout.nl();
       bout.pausescr();
       done = false;

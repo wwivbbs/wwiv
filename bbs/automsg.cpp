@@ -58,7 +58,7 @@ void read_automessage() {
   TextFile autoMessageFile(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "rt");
   std::string line;
   if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine(&line)) {
-    bout.puts("|#3No auto-message.\r\n");
+    bout.outstr("|#3No auto-message.\r\n");
     bout.nl();
     return;
   }
@@ -91,19 +91,19 @@ void read_automessage() {
 void write_automessage() {
   write_inst(INST_LOC_AMSG, 0, INST_FLAGS_NONE);
   if (is_automessage_locked()) {
-    bout.puts("\r\n|#3Message is locked.\r\n\n");
+    bout.outstr("\r\n|#3Message is locked.\r\n\n");
     bout.pausescr();
     return;
   }
   if (a()->user()->restrict_automessage()) {
-    bout.puts("\r\n|#6Not allowed to write to automessage (RESTRICT).\r\n\n");
+    bout.outstr("\r\n|#6Not allowed to write to automessage (RESTRICT).\r\n\n");
     bout.pausescr();
     return;
   }
   std::vector<std::string> lines;
   std::string rollOver;
 
-  bout.puts("\r\n|#9Enter auto-message. Max 5 lines. Colors allowed:|#0\r\n\n");
+  bout.outstr("\r\n|#9Enter auto-message. Max 5 lines. Colors allowed:|#0\r\n\n");
   for (int i = 0; i < 5; i++) {
     bout.print("|#7{}:|#0", i + 1);
     std::string line;
@@ -114,11 +114,11 @@ void write_automessage() {
   bout.nl();
   bool bAnonStatus = false;
   if (a()->config()->sl(a()->sess().effective_sl()).ability & ability_post_anony) {
-    bout.puts("|#9Anonymous? ");
+    bout.outstr("|#9Anonymous? ");
     bAnonStatus = bin.yesno();
   }
 
-  bout.puts("|#9Is this OK? ");
+  bout.outstr("|#9Is this OK? ");
   if (bin.yesno()) {
     a()->status_manager()->Run([bAnonStatus](Status& s) {
       s.automessage_anon(bAnonStatus);
@@ -133,7 +133,7 @@ void write_automessage() {
       file.WriteLine(line);
       sysoplog(true, line);
     }
-    bout.puts("\r\n|#5Auto-message saved.\r\n\n");
+    bout.outstr("\r\n|#5Auto-message saved.\r\n\n");
     file.Close();
   }
 }
@@ -145,15 +145,15 @@ static char ShowAMsgMenuAndGetInput() {
   }
 
   if (cs()) {
-    bout.puts("|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite, (|#2L|#9)ock, "
+    bout.outstr("|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite, (|#2L|#9)ock, "
               "(|#2D|#9)el, (|#2U|#9)nlock : ");
     return onek("QRWALDU", true);
   }
   if (bCanWrite) {
-    bout.puts("|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite : ");
+    bout.outstr("|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite : ");
     return onek("QRWA", true);
   }
-  bout.puts("|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply : ");
+  bout.outstr("|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply : ");
   return onek("QRA", true);
 }
 
@@ -168,11 +168,11 @@ void email_automessage_author() {
 
 void delete_automessage() {
   if (!cs()) {
-    bout.puts("|#6Unauthorized.\r\n");
+    bout.outstr("|#6Unauthorized.\r\n");
     return;
   }
   write_inst(INST_LOC_AMSG, 0, INST_FLAGS_NONE);
-  bout.puts("\r\n|#3Delete Auto-message, Are you sure? ");
+  bout.outstr("\r\n|#3Delete Auto-message, Are you sure? ");
   if (bin.yesno()) {
     const auto file = FilePath(a()->config()->gfilesdir(), AUTO_MSG);
     File::Remove(file);
@@ -182,16 +182,16 @@ void delete_automessage() {
 
 void lock_automessage() {
   if (!cs()) {
-    bout.puts("|#6Unauthorized.\r\n");
+    bout.outstr("|#6Unauthorized.\r\n");
     return;
   }
   write_inst(INST_LOC_AMSG, 0, INST_FLAGS_NONE);
   const auto lock_file = FilePath(a()->config()->gfilesdir(), LOCKAUTO_MSG);
   if (File::Exists(lock_file)) {
-    bout.puts("\r\n|#3Message is already locked.\r\n\n");
+    bout.outstr("\r\n|#3Message is already locked.\r\n\n");
     return;
   }
-  bout.puts("|#9Do you want to lock the Auto-message? ");
+  bout.outstr("|#9Do you want to lock the Auto-message? ");
   if (bin.yesno()) {
     /////////////////////////////////////////////////////////
     // This makes a file in your GFILES dir 1 bytes long,
@@ -206,15 +206,15 @@ void lock_automessage() {
 
 void unlock_automessage() {
   if (!cs()) {
-    bout.puts("|#6Unauthorized.\r\n");
+    bout.outstr("|#6Unauthorized.\r\n");
     return;
   }
   write_inst(INST_LOC_AMSG, 0, INST_FLAGS_NONE);
   const auto lock_file = FilePath(a()->config()->gfilesdir(), LOCKAUTO_MSG);
   if (!File::Exists(lock_file)) {
-    bout.puts("Message not locked.\r\n");
+    bout.outstr("Message not locked.\r\n");
   } else {
-    bout.puts("|#5Unlock message? ");
+    bout.outstr("|#5Unlock message? ");
     if (bin.yesno()) {
       File::Remove(lock_file);
     }

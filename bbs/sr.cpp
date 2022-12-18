@@ -97,7 +97,7 @@ int extern_prot(int num, const std::filesystem::path& path, bool bSending) {
 
   if (bSending) {
     bout.nl();
-    bout.puts("-=> Beginning file transmission, Ctrl+X to abort.\r\n");
+    bout.outstr("-=> Beginning file transmission, Ctrl+X to abort.\r\n");
     if (num < 0) {
       strcpy(s1, a()->over_intern[(-num) - 1].sendfn);
     } else {
@@ -105,7 +105,7 @@ int extern_prot(int num, const std::filesystem::path& path, bool bSending) {
     }
   } else {
     bout.nl();
-    bout.puts("-=> Ready to receive, Ctrl+X to abort.\r\n");
+    bout.outstr("-=> Ready to receive, Ctrl+X to abort.\r\n");
     if (num < 0) {
       strcpy(s1, a()->over_intern[(-num) - 1].receivefn);
     } else {
@@ -330,9 +330,9 @@ public:
 };
 
 bool show_protocols(const std::vector<AvailableProtocol>& prots) {
-  bout.puts("|#1Available Protocols:\r\n\n");
-  bout.puts("|#9[|#2Q|#9] |#9Abort Transfer(s)\r\n");
-  bout.puts("|#9[|#20|#9] |#9Don't Transfer\r\n");
+  bout.outstr("|#1Available Protocols:\r\n\n");
+  bout.outstr("|#9[|#2Q|#9] |#9Abort Transfer(s)\r\n");
+  bout.outstr("|#9[|#20|#9] |#9Don't Transfer\r\n");
 
   for (const auto& p : prots) {
     bout.print("|#9[|#2{}|#9] |#9{}\r\n", p.key, p.name);
@@ -374,7 +374,7 @@ void ascii_send(const std::filesystem::path& path, bool* sent, double* percent) 
       auto buffer_pos = 0;
       while (!a()->sess().hangup() && !abort && buffer_pos < num_read) {
         a()->CheckForHangup();
-        bout.bputch(b[buffer_pos++]);
+        bout.outchr(b[buffer_pos++]);
         bin.checka(&abort);
       }
       total_bytes += buffer_pos;
@@ -391,7 +391,7 @@ void ascii_send(const std::filesystem::path& path, bool* sent, double* percent) 
     *percent = static_cast<double>(total_bytes) / static_cast<double>(file_size);
   } else {
     bout.nl();
-    bout.puts("File not found.\r\n\n");
+    bout.outstr("File not found.\r\n\n");
     *sent = false;
     *percent = 0.0;
   }
@@ -472,7 +472,7 @@ void send_file(const std::filesystem::path& path, bool* sent, bool* abort, const
     *sent = false;
     if (nProtocol > 0) {
       bout.nl();
-      bout.puts("That file is already in the batch queue.\r\n\n");
+      bout.outstr("That file is already in the batch queue.\r\n\n");
     } else if (nProtocol == -1) {
       *abort = true;
     }
@@ -498,27 +498,27 @@ void send_file(const std::filesystem::path& path, bool* sent, bool* abort, const
       ok = true;
       if (a()->batch().size() >= a()->max_batch) {
         bout.nl();
-        bout.puts("No room left in batch queue.\r\n\n");
+        bout.outstr("No room left in batch queue.\r\n\n");
         *sent = false;
         *abort = false;
       } else {
         if (nsl() <=
             a()->batch().dl_time_in_secs() + time_to_transfer(fs, a()->modem_speed_).count()) {
           bout.nl();
-          bout.puts("Not enough time left in queue.\r\n\n");
+          bout.outstr("Not enough time left in queue.\r\n\n");
           *sent = false;
           *abort = false;
         } else {
           if (dn == -1) {
             bout.nl();
-            bout.puts("Can't add temporary file to batch queue.\r\n\n");
+            bout.outstr("Can't add temporary file to batch queue.\r\n\n");
             *sent = false;
             *abort = false;
           } else {
             const BatchEntry b(sfn, dn, fs, true);
             a()->batch().AddBatch(b);
             bout.nl(2);
-            bout.puts("File added to batch queue.\r\n");
+            bout.outstr("File added to batch queue.\r\n");
             bout.print("Batch: Files - {}  Time - {}\r\n\r\n", a()->batch().size(), ctim(a()->batch().dl_time_in_secs()));
             *sent = false;
             *abort = false;
@@ -564,19 +564,19 @@ void receive_file(const std::filesystem::path& path, int* received, const std::s
     if (dn != -1) {
       if (a()->batch().size() >= a()->max_batch) {
         bout.nl();
-        bout.puts("No room left in batch queue.\r\n\n");
+        bout.outstr("No room left in batch queue.\r\n\n");
         *received = 0;
       } else {
         *received = 2;
         const BatchEntry b(sfn, dn, 0, false);
         a()->batch().AddBatch(b);
         bout.nl();
-        bout.puts("File added to batch queue.\r\n\n");
+        bout.outstr("File added to batch queue.\r\n\n");
         bout.print("Batch upload: files - {}\r\n\r\n", a()->batch().numbatchul());
       }
     } else {
       bout.nl();
-      bout.puts("Can't batch upload that.\r\n\n");
+      bout.outstr("Can't batch upload that.\r\n\n");
     }
     break;
   default:

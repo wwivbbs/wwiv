@@ -43,44 +43,44 @@ def PipeColor(c)
   return "|07"
 enddef
 
-def EnterOneLiner() 
-  puts("|15 1:White|01 2:DkBlue|10 3:Green|12 4:Red|13 5:Purple|07 6:Gray|11 7:Cyan|14 8:Yellow|09 9:Blue")
-  nl()
-  puts("What Color? ")
+def EnterOneLiner()
+outstr("|15 1:White|01 2:DkBlue|10 3:Green|12 4:Red|13 5:Purple|07 6:Gray|11 7:Cyan|14 8:Yellow|09 9:Blue")
+nl()
+outstr("What Color? ")
 
-  color = getkey()
-  nl()
-  colorcode = ASC(LEFT(color, 1)) - ASC("0")
-  pipecode = PipeColor(colorcode)
-  puts("|10Enter Your One Liner:")
-  nl()
-  puts("|#9: ")
-  s = gets(72)
+color = getkey()
+nl()
+colorcode = ASC(LEFT(color, 1)) - ASC("0")
+pipecode = PipeColor(colorcode)
+outstr("|10Enter Your One Liner:")
+nl()
+outstr("|#9: ")
+s = gets(72)
 
-  wwiv.io.puts("|10Anonymous? ")
-  an = wwiv.io.ny()
-  If an Then
-    name = "Anonymous"
-  Else
+wwiv.io.outstr("|10Anonymous? ")
+an = wwiv.io.ny()
+If an Then
+name = "Anonymous"
+Else
 namepart = wwiv.interpret("N")
 number = wwiv.interpret("#")
 name = namepart + " #" + number
-  EndIf
-  Return pipecode + name + " - " + s
+End If
+Return pipecode + name + " - " + s
 Enddef
 
 def Main()
-  l = list()
-  wwiv.data.load("GLOBAL", l)
-  done = False
-  cls()
-  While True
-    wwiv.io.printfile("oneliner");
+l = list()
+wwiv.data.load("GLOBAL", l)
+done = False
+cls()
+While True
+wwiv.io.printfile("oneliner");
 	PrintList(l)
-	nl()
-	puts("|#9Would you like to add an oneliner? ")
+nl()
+outstr("|#9Would you like to add an oneliner? ")
 
-	If Not yn() Then
+If Not yn() Then
 	  Return
 	EndIf
     s = EnterOneLiner()

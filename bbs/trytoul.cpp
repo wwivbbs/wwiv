@@ -114,7 +114,7 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
         dliscan1(a()->udir[x].subnum);
         d = a()->dirs()[dn];
         if (d.mask & mask_no_uploads && !dcs()) {
-          bout.puts("Can't upload there...\r\n");
+          bout.outstr("Can't upload there...\r\n");
           bout.pausescr();
         } else {
           dn = a()->udir[x].subnum;
@@ -137,7 +137,7 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
   if (!is_uploadable(file_name)) {
     if (so()) {
       bout.nl();
-      bout.puts("|#5In filename database - add anyway? ");
+      bout.outstr("|#5In filename database - add anyway? ");
       if (!bin.yesno()) {
         t2u_error(file_name, "|#6File either already here or unwanted.");
         return 1;
@@ -166,8 +166,8 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
     }
     if (!ok) {
       bout.nl();
-      bout.puts("Sorry, all uploads to this directory must be archived.  Supported types are:\r\n");
-      bout.puts(s1);
+      bout.outstr("Sorry, all uploads to this directory must be archived.  Supported types are:\r\n");
+      bout.outstr(s1);
       bout.nl(2);
 
       t2u_error(file_name, "Unsupported archive");
@@ -185,7 +185,7 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
   if (File::Exists(FilePath(dir_path, files::unalign(aligned_file_name)))) {
     if (dcs()) {
       bout.nl(2);
-      bout.puts("File already exists.\r\n|#5Add to database anyway? ");
+      bout.outstr("File already exists.\r\n|#5Add to database anyway? ");
       if (bin.yesno() == 0) {
         t2u_error(file_name, "That file is already here.");
         return 1;
@@ -214,13 +214,13 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
     bout.print("|#1Upload going to |#7{}\r\n\n", d.name);
     bout.print("   |#1Filename    |01: |#7{}\r\n", file_name);
     bout.print("|#2A|#7] |#1Description |01: |#7{}\r\n", f.description());
-    bout.puts("|#2B|#7] |#1Modify extended description\r\n\n");
+    bout.outstr("|#2B|#7] |#1Modify extended description\r\n\n");
     print_extended(f.aligned_filename(), 10, -1, Color::YELLOW, nullptr);
-    bout.puts("|#2<|#7CR|#2> |#1to continue, |#7Q|#1 to abort upload: ");
+    bout.outstr("|#2<|#7CR|#2> |#1to continue, |#7Q|#1 to abort upload: ");
     key = onek("\rQABC", true);
     switch (key) {
     case 'Q':
-      bout.puts("Are you sure, file will be lost? ");
+      bout.outstr("Are you sure, file will be lost? ");
       if (bin.yesno()) {
         t2u_error(file_name, "Changed mind");
         // move file back to batch dir
@@ -231,7 +231,7 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
 
     case 'A': {
       bout.nl();
-      bout.puts("Please enter a one line description.\r\n:");
+      bout.outstr("Please enter a one line description.\r\n:");
       auto desc = bin.input_text(58);
       f.set_description(desc);
     } break;
@@ -241,11 +241,11 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
       auto* area = a()->current_file_area();
       bout.nl();
       auto ss = area->ReadExtendedDescriptionAsString(f).value_or("");
-      bout.puts("|#5Modify extended description? ");
+      bout.outstr("|#5Modify extended description? ");
       if (bin.yesno()) {
         bout.nl();
         if (!ss.empty()) {
-          bout.puts("|#5Delete it? ");
+          bout.outstr("|#5Delete it? ");
           if (bin.yesno()) {
             area->DeleteExtendedDescription(f.filename());
             f.set_mask(mask_extended, false);
@@ -292,7 +292,7 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
   }
   if (!a()->upload_cmd.empty()) {
     file.Close();
-    bout.puts("Please wait...\r\n");
+    bout.outstr("Please wait...\r\n");
     if (!check_ul_event(dn, &f.u())) {
       if (f.mask(mask_extended)) {
         a()->current_file_area()->DeleteExtendedDescription(f.filename());
@@ -342,7 +342,7 @@ int try_to_ul(const std::string& file_name) {
   const auto dest_dir = FilePath(a()->config()->dloadsdir(), "TRY2UL");
   File::mkdirs(dest_dir);
 
-  bout.puts("|#2Your file had problems, it is being moved to a special dir for sysop review\r\n");
+  bout.outstr("|#2Your file had problems, it is being moved to a special dir for sysop review\r\n");
 
   sysoplog(fmt::format("Failed to upload {}, moving to TRY2UL dir", file_name));
 

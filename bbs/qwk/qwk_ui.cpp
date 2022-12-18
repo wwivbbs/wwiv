@@ -39,10 +39,10 @@ int select_qwk_archiver(qwk_state* qwk_info, int ask) {
   std::string allowed = "Q\r";
 
   bout.nl(2);
-  bout.puts("|#5Select an archiver");
+  bout.outstr("|#5Select an archiver");
   bout.nl();
   if (ask) {
-    bout.puts("|#20|#9) Ask each time\r\n");
+    bout.outstr("|#20|#9) Ask each time\r\n");
   }
   auto num = 0;
   for (const auto& arc : a()->arcs) {
@@ -54,7 +54,7 @@ int select_qwk_archiver(qwk_state* qwk_info, int ask) {
     }
   }
   bout.nl();
-  bout.puts("|#7(|#1Q=Quit|#7,|#1<CR>=1|#7) Enter # :");
+  bout.outstr("|#7(|#1Q=Quit|#7,|#1<CR>=1|#7) Enter # :");
 
   if (ask) {
     allowed.push_back('0');
@@ -120,7 +120,7 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
 
   while (!a()->sess().hangup()) {
     bout.nl();
-    bout.puts("Add - Delete - ? List - Quit");
+    bout.outstr("Add - Delete - ? List - Quit");
     bout.mpl(1);
 
     const int key = onek("Q\rAD?");
@@ -131,7 +131,7 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
       return;
     case 'D': {
       bout.nl();
-      bout.puts("Which one?");
+      bout.outstr("Which one?");
       bout.mpl(2);
 
       bin.input(s, 2);
@@ -143,21 +143,21 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
     } break;
     case 'A': {
       bout.nl();
-      bout.puts("Enter complete path to Bulletin");
+      bout.outstr("Enter complete path to Bulletin");
       bin.input(s, 80);
 
       if (!core::File::Exists(s)) {
-        bout.puts("File doesn't exist, continue?");
+        bout.outstr("File doesn't exist, continue?");
         if (!bin.yesno()) {
           break;
         }
       }
 
-      bout.puts("Now enter its bulletin name, in the format BLT-????.???");
+      bout.outstr("Now enter its bulletin name, in the format BLT-????.???");
       bin.input(t, BNAME_SIZE);
 
       if (strncasecmp(t, "BLT-", 4) != 0) {
-        bout.puts("Improper format");
+        bout.outstr("Improper format");
         break;
       }
 
@@ -180,9 +180,9 @@ void modify_bulletins(sdk::qwk_config& qwk_cfg) {
 
 bool get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
   bout.nl();
-  bout.puts("|#9(0=Unlimited) Most messages you want per sub? ");
+  bout.outstr("|#9(0=Unlimited) Most messages you want per sub? ");
   *max_per_sub = bin.input_number(*max_per_sub);
-  bout.puts("|#9(0=Unlimited) Most messages per packet?       ");
+  bout.outstr("|#9(0=Unlimited) Most messages per packet?       ");
   *qwk_max_msgs = bin.input_number(*qwk_max_msgs);
   return true;
 }

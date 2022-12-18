@@ -68,9 +68,9 @@ void qwk_menu() {
     }
     bout.nl();
     if (so()) {
-      bout.puts("|#7(|#1*|#7=|#2Sysop Menu|#7,|#1Q|#7=|#2Quit|#7) |#1C|#7, |#1D|#7, |#1U|#7: ");
+      bout.outstr("|#7(|#1*|#7=|#2Sysop Menu|#7,|#1Q|#7=|#2Quit|#7) |#1C|#7, |#1D|#7, |#1U|#7: ");
     } else {
-      bout.puts("|#7(|#1Q|#7=|#2Quit|#7) |#1C|#7, |#1D|#7, |#1U|#7: ");
+      bout.outstr("|#7(|#1Q|#7=|#2Quit|#7) |#1C|#7, |#1D|#7, |#1U|#7: ");
     }
 
     switch (const auto key = onek(allowed, true); key) {
@@ -106,12 +106,12 @@ void qwk_nscan() {
   ;
 
   bout.Color(3);
-  bout.puts("Building NEWFILES.DAT");
+  bout.outstr("Building NEWFILES.DAT");
 
   sprintf(s, "%s%s", a()->sess().dirs().qwk_directory().c_str(), "NEWFILES.DAT");
   newfile = open(s, O_BINARY | O_RDWR | O_TRUNC | O_CREAT, S_IREAD | S_IWRITE;
   if (newfile < 1) {
-    bout.puts("Open Error");
+    bout.outstr("Open Error");
     return;
   }
 
@@ -121,8 +121,8 @@ void qwk_nscan() {
 
     bout.printf("%d.", color);
     if (count >= DOTS) {
-      bout.puts("\r");
-      bout.puts("Searching");
+      bout.outstr("\r");
+      bout.outstr("Searching");
       color++;
       count = 0;
       if (color == 4) {
@@ -268,7 +268,7 @@ void qwk_config_user() {
     bout.print("|#1K|#9) Max Messages To Include   : |#2{}\r\n", qwk_current_text(10));
     bout.pl("|#1Q|#9) Done");
     bout.nl(2);
-    bout.puts("|#9Select: ");
+    bout.outstr("|#9Select: ");
     int key = onek("QABCDEFGHIJK", true);
 
     if (key == 'Q') {
@@ -354,12 +354,12 @@ void qwk_config_sysop() {
     bout.print("|#26|#9) Modify Bulletins ({})\r\n", c.bulletins.size());
     bout.print("|#2Q|#9) Quit\r\n");
     bout.nl();
-    bout.puts("|#9Selection? ");
+    bout.outstr("|#9Selection? ");
 
     const int x = onek("Q123456\r\n");
     if (x == '1' || x == '2' || x == '3') {
       bout.nl();
-      bout.puts("|#9Enter New Filename:");
+      bout.outstr("|#9Enter New Filename:");
       bout.mpl(12);
     }
 
@@ -378,7 +378,7 @@ void qwk_config_sysop() {
       write_qwk_cfg(*a()->config(), c);
       bout.nl();
       bout.print("|#9 Current Packet Name:  |#1{}\r\n", sn);
-      bout.puts("|#9Enter new packet name: ");
+      bout.outstr("|#9Enter new packet name: ");
       bout.mpl(8);
       sn = bin.input_text(sn, 8);
       if (!sn.empty()) {
@@ -388,7 +388,7 @@ void qwk_config_sysop() {
     } break;
 
     case '5': {
-      bout.puts("|#9(|#10=Unlimited|#9) Enter max messages per packet: ");
+      bout.outstr("|#9(|#10=Unlimited|#9) Enter max messages per packet: ");
       bout.mpl(5);
       c.max_msgs = bin.input_number(c.max_msgs, 0, 65535, true);
     } break;
