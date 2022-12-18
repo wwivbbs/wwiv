@@ -92,7 +92,7 @@ static std::string YesNoStringList(bool b, const std::string& yes, const std::st
 static void list_chain_sponsors(const std::set<short> sponsors, char letter) {
   if (sponsors.empty()) {
     if (letter) {
-      bout.print("|#9{c}) ", letter);
+      bout.print("|#9{:c}) ", letter);
     }
     bout.pl("Registered by: |#2AVAILABLE");
     return;
@@ -104,7 +104,7 @@ static void list_chain_sponsors(const std::set<short> sponsors, char letter) {
     if (const auto user = a()->users()->readuser(r)) {
       if (first) {
         if (letter) {
-          bout.print("|#9{c}) ", letter);
+          bout.print("|#9{:c}) ", letter);
         }
         bout.puts("Registered by: |#2");
       } else {

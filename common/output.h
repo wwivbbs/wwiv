@@ -205,22 +205,6 @@ public:
    */
   int puts(const std::string& text, bool* abort, bool* next);
 
-#if 0
-template <typename T> Output& operator<<(T const& value) {
-    std::ostringstream ss;
-    ss << value;
-    puts(ss.str());
-    return *this;
-  }
-
-  Output& operator<<(ENDL_TYPE_O* value) {
-    std::ostringstream ss;
-    ss << value;
-    puts(ss.str());
-    return *this;
-  }
-#endif
-
   template <class... Args> int printf(const char* format_str, Args&&... args) {
     // Process arguments
     return puts(fmt::sprintf(format_str, std::forward<Args>(args)...));
@@ -228,7 +212,14 @@ template <typename T> Output& operator<<(T const& value) {
 
   template <typename... Args> int print(const char* format_str, Args&&... args) {
     // Process arguments
-    return puts(fmt::format(format_str, args...));
+    try {
+      return puts(fmt::format(format_str, args...));
+    } catch (const fmt::format_error& e) {
+      LOG(ERROR) << "caught fmt::format_error" << e.what();
+      LOG(ERROR) << "fmt::format_error original string: '" << format_str << "'";
+      DLOG(FATAL) << "bout.print crash";
+    }
+    return puts(format_str);
   }
 
   /**

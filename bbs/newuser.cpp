@@ -880,7 +880,7 @@ public:
 };
 
 NewUserItemResult DoNameOrHandle(NewUserContext& c) {
-  bout.print("|#1{c}|#9) Name (alias or real)    : ", c.letter);
+  bout.print("|#1{:c}|#9) Name (alias or real)    : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -899,7 +899,7 @@ NewUserItemResult DoNameOrHandle(NewUserContext& c) {
 }
 
 NewUserItemResult DoRealName(NewUserContext& c) {
-  bout.print("|#1{c}|#9) Real Name               : ", c.letter);
+  bout.print("|#1{:c}|#9) Real Name               : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -918,7 +918,7 @@ NewUserItemResult DoRealName(NewUserContext& c) {
 }
 
 NewUserItemResult DoBirthDay(NewUserContext& c) {
-  bout.print("|#1{c}|#9) Birth Date (MM/DD/YYYY) : ", c.letter);
+  bout.print("|#1{:c}|#9) Birth Date (MM/DD/YYYY) : ", c.letter);
   bout.SavePosition();
   if (c.user.age() == 0 && c.first) {
     bool ok = false;
@@ -963,7 +963,7 @@ NewUserItemResult DoBirthDay(NewUserContext& c) {
 
 // TODO(rushfan): This needs updating, maybe add option to quit, system defined items?
 NewUserItemResult DoGender(NewUserContext& c) {
-  bout.print("|#1{c}|#9) Sex (Gender)            : ", c.letter);
+  bout.print("|#1{:c}|#9) Sex (Gender)            : ", c.letter);
   bout.SavePosition();
   if (c.user.gender() != 'M' && c.user.gender() != 'F') {
     bout.mpl(1);
@@ -975,7 +975,7 @@ NewUserItemResult DoGender(NewUserContext& c) {
 }
 
 NewUserItemResult DoCountry(NewUserContext& c) {
-  bout.print("|#1{c}|#9) Country                 : ", c.letter);
+  bout.print("|#1{:c}|#9) Country                 : ", c.letter);
   bout.SavePosition();
   if (c.first) {
     auto country = bin.input_upper(c.user.country(), 3);
@@ -991,7 +991,7 @@ NewUserItemResult DoCountry(NewUserContext& c) {
 }
 
 NewUserItemResult DoZipCode(NewUserContext& c) {
-  bout.print("|#1{c}|#9) ZIP or Postal Code      : ", c.letter);
+  bout.print("|#1{:c}|#9) ZIP or Postal Code      : ", c.letter);
   bout.SavePosition();
   if (c.user.zip_code().empty() && c.first) {
     bool ok = false;
@@ -1016,7 +1016,7 @@ NewUserItemResult DoZipCode(NewUserContext& c) {
 }
 
 NewUserItemResult DoStreet(NewUserContext& c) {
-  bout.print("|#1{c}|#9) Street Address          : ", c.letter);
+  bout.print("|#1{:c}|#9) Street Address          : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -1034,7 +1034,7 @@ NewUserItemResult DoStreet(NewUserContext& c) {
 }
 
 NewUserItemResult DoCityState(NewUserContext& c) {
-  bout.print("|#1{c}|#9) City                    : ", c.letter);
+  bout.print("|#1{:c}|#9) City                    : ", c.letter);
   bout.SavePosition();
   if (c.user.city().empty() && c.first) {
     bool ok = false;
@@ -1054,7 +1054,7 @@ NewUserItemResult DoCityState(NewUserContext& c) {
 
 NewUserItemResult DoState(NewUserContext& c) {
 
-  bout.print("|#1{c}|#9) State                   : ", c.letter);
+  bout.print("|#1{:c}|#9) State                   : ", c.letter);
   bout.SavePosition();
   if (c.user.state().empty() && c.first) {
     bool ok = false;
@@ -1075,7 +1075,7 @@ NewUserItemResult DoState(NewUserContext& c) {
 }
 
 NewUserItemResult DoEmailAddress(NewUserContext& c) {
-  bout.print("|#1{c}|#9) Internet Mail Address   : ", c.letter);
+  bout.print("|#1{:c}|#9) Internet Mail Address   : ", c.letter);
   bout.SavePosition();
   bool done = false;
   while (!done && c.first) {
@@ -1095,7 +1095,7 @@ NewUserItemResult DoEmailAddress(NewUserContext& c) {
 }
 
 NewUserItemResult DoVoicePhone(NewUserContext& c) {
-  bout.print("|#1{c}|#9) Voice Phone             : ", c.letter);
+  bout.print("|#1{:c}|#9) Voice Phone             : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -1116,7 +1116,7 @@ NewUserItemResult DoVoicePhone(NewUserContext& c) {
 }
 
 NewUserItemResult DoDataPhone(NewUserContext& c) {
-  bout.print("|#1{c}|#9) Data Phone              : ", c.letter);
+  bout.print("|#1{:c}|#9) Data Phone              : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -1137,7 +1137,7 @@ NewUserItemResult DoDataPhone(NewUserContext& c) {
 }
 
 NewUserItemResult DoCallsign(NewUserContext& c) {
-  bout.print("|#1{c}|#9) Callsign                : ", c.letter);
+  bout.print("|#1{:c}|#9) Callsign                : ", c.letter);
   bout.SavePosition();
   while (!a()->sess().hangup() && c.first) {
     bout.SavePosition();
@@ -1158,7 +1158,7 @@ NewUserItemResult DoComputerType(NewUserContext& c) {
 
   std::string computer_type = c.user.computer_type() >= 0 ? ctypes(c.user.computer_type()) : "Unknown";
   if (c.user.computer_type() >= 0 || !c.first) {
-    bout.print("|#1{c}|#9) Computer Type           : |#2{}\r\n", c.letter, computer_type);
+    bout.print("|#1{:c}|#9) Computer Type           : |#2{}\r\n", c.letter, computer_type);
     return NewUserItemResult::no_change;
   }
   bool ok = true;

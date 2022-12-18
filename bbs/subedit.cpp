@@ -328,7 +328,7 @@ static void modify_sub(int n) {
         } else {
           bout.puts("|#2Modify which (a-");
         }
-        bout.print("{c}), <space>=Quit? ", static_cast<char>('a' + a()->subs().sub(n).nets.size() - 1));
+        bout.print("{:c}), <space>=Quit? ", static_cast<char>('a' + a()->subs().sub(n).nets.size() - 1));
         std::string charstring;
         for (size_t i = 0; i < a()->subs().sub(n).nets.size(); i++) {
           charstring.push_back(static_cast<char>('A' + i));
