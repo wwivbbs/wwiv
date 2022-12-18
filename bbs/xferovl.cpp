@@ -561,7 +561,7 @@ void relist() {
       humanize(f.u.numbytes), f.u.numdloads, trim_to_size_ignore_colors(f.u.description, width));
     bout.bpla(bd, &abort);
   }
-  bout.Color(FRAME_COLOR);
+  bout.ansic(FRAME_COLOR);
   bout.outchr('\r');
   bout.pl(std::string(78, '-'));
   bout.clear_lines_listed();
@@ -819,7 +819,7 @@ void finddescription() {
     // remove pts=1 to search only marked directories
     if (pts && !abort) {
       count++;
-      bout.Color(color);
+      bout.ansic(color);
       bout.outchr('.');
       if (count == NUM_DOTS) {
         bout.outstr("\r|#2Searching ");

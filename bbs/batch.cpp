@@ -295,7 +295,7 @@ static void bihangup() {
     if (elapsed > nextbeep) {
       nextbeep += seconds(1);
       const auto left = 10 - static_cast<int>(duration_cast<seconds>(elapsed).count());
-      bout.Color(hangup_color(left));
+      bout.ansic(hangup_color(left));
       bout.outstr("\r");
       bout.outstr(std::to_string(left));
     }

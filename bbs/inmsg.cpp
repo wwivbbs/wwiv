@@ -81,7 +81,7 @@ static bool GetMessageToName(MessageEditorData& data) {
       if (to_name.empty()) {
         data.to_name = "All";
         bout.outstr("|#4All\r\n");
-        bout.Color(0);
+        bout.ansic(0);
       } else {
         data.to_name = to_name;
       }
@@ -171,7 +171,7 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
   bout.outstr("|#9Enter |#2/S|#9 at the start of a blank line to save your email.\r\n");
   bout.outstr("|#9Enter |#2/Q|#9 to quote previous message, |#2/HELP|#9 for other editor commands.\r\n");
 
-  bout.Color(7);
+  bout.ansic(7);
   std::string header = "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]";
   if (a()->user()->screen_width() < 80) {
     header.resize(a()->user()->screen_width());

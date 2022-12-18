@@ -95,7 +95,7 @@ void Output::SetLocalIO(LocalIO* local_io) {
   });
 }
 
-void Output::Color(int wwiv_color) {
+void Output::ansic(int wwiv_color) {
   const auto saved_x{x_};
   outstr(MakeColor(wwiv_color));
   x_ = saved_x;
@@ -108,7 +108,7 @@ void Output::ResetColors() {
   x_ = saved_x;
 }
 
-void Output::GotoXY(int x, int y) {
+void Output::goxy(int x, int y) {
   if (okansi(user())) {
     // Don't get Y get too big or mTelnet will not be happy
     y = std::min<int>(y, sess().num_screen_lines());
@@ -204,11 +204,11 @@ void Output::bs() {
 }
 
 
-void Output::SystemColor(wwiv::sdk::Color c) {
-  SystemColor(static_cast<uint8_t>(c));
+void Output::setc(wwiv::sdk::Color c) {
+  setc(static_cast<uint8_t>(c));
 }
 
-void Output::SystemColor(int c) {
+void Output::setc(int c) {
   outstr(MakeSystemColor(c));
 }
 
@@ -244,7 +244,7 @@ void Output::litebar(const std::string& msg) {
 }
 
 void Output::backline() {
-  Color(0);
+  ansic(0);
   outchr(SPACE);
   for (auto i = wherex() + 1; i >= 0; i--) {
     this->bs();
@@ -256,10 +256,10 @@ void Output::backline() {
  */
 void Output::cls() {
   // Adding color 0 so previous color would not be picked up. #1245
-  Color(0);  
+  ansic(0);  
   if (okansi(user())) {
     outstr("\x1b[2J");
-    GotoXY(1, 1);
+    goxy(1, 1);
   } else {
     outchr(CL);
   }
@@ -290,25 +290,25 @@ void Output::mpl(int length) {
   if (!okansi(user())) {
     return;
   }
-  Color(4);
+  ansic(4);
   outstr(std::string(length, ' '));
   Left(length);
 }
 
 int Output::PutsXY(int x, int y, const std::string& text) {
-  GotoXY(x, y);
+  goxy(x, y);
   return outstr(text);
 }
 
 int Output::PutsXYSC(int x, int y, int a, const std::string& text) {
-  GotoXY(x, y);
-  SystemColor(a);
+  goxy(x, y);
+  setc(a);
   return outstr(text);
 }
 
 int Output::PutsXYA(int x, int y, int color, const std::string& text) {
-  GotoXY(x, y);
-  Color(color);
+  goxy(x, y);
+  ansic(color);
   return outstr(text);
 }
 
@@ -326,7 +326,7 @@ void Output::do_movement(const Interpreted& r) {
     Down(r.down);
   }
   if (r.x != -1 && r.y != -1) {
-    GotoXY(r.x, r.y);
+    goxy(r.x, r.y);
   }
   if (r.clreol) {
     clreol();
@@ -388,11 +388,11 @@ int Output::outstr(const std::string& text) {
       }
       if (std::isdigit(*it)) {
         if (const auto color = pipecode_int(it, fin, 2); color < 16) {
-          SystemColor(color | (curatr() & 0xf0));
+          setc(color | (curatr() & 0xf0));
         } else {
           const auto bg = static_cast<uint8_t>(color << 4);
           const uint8_t fg = curatr() & 0x0f;
-          SystemColor(bg | fg);
+          setc(bg | fg);
         }
       } else if (*it == '@' || *it == '{' || *it == '[') {
         if (auto r = ctx.interpret(it, fin); r.cmd == interpreted_cmd_t::text) {
@@ -410,7 +410,7 @@ int Output::outstr(const std::string& text) {
       } else if (*it == '#') {
         ++it;
         const auto color = pipecode_int(it, fin, 1);
-        Color(color);
+        ansic(color);
       } else {
         num_written += outchr('|', true);
       }
@@ -422,7 +422,7 @@ int Output::outstr(const std::string& text) {
         break;
       }
       if (const unsigned char c = *it++; c >= SPACE && c <= 126) {
-        Color(c-'0');
+        ansic(c-'0');
       }
     }
     else if (*it == CO) {
@@ -486,7 +486,7 @@ int Output::str(const std::string& key) {
 }
 
 void Output::back_outstr(const std::string& text, int color, duration<double> char_dly, duration<double> string_dly) {
-  Color(color);
+  ansic(color);
   sleep_for(char_dly);
   for (const auto ch : text) {
     outchr(ch);
@@ -503,7 +503,7 @@ void Output::back_outstr(const std::string& text, int color, duration<double> ch
 void Output::rainbow(const std::string& text) {
   int c = 0;
   for (char ch : text) {
-    Color(c++);
+    ansic(c++);
     outchr(ch, true);
     c %= 8;
   }
@@ -515,7 +515,7 @@ void Output::spin_outstr(const std::string& text, int color) {
     outstr(text);
     return;
   }
-  Color(color);
+  ansic(color);
   const auto dly = milliseconds(30);
   for (const auto ch : text) {
     sleep_for(dly);
@@ -545,7 +545,7 @@ int Output::outchr(char c, bool use_buffer) {
   int displayed = 0;
 
   if (c == SOFTRETURN && needs_color_reset_at_newline_) {
-    Color(0);
+    ansic(0);
     needs_color_reset_at_newline_ = false;
   }
 

@@ -530,9 +530,9 @@ void Application::DisplaySysopWorkingIndicator(bool displayWait) {
   if (displayWait) {
     if (okansi()) {
       const auto nSavedAttribute = bout.curatr();
-      bout.Color(3);
+      bout.ansic(3);
       bout.print("{}\x1b[{}D", waitString, nNumPrintableChars);
-      bout.SystemColor(nSavedAttribute);
+      bout.setc(nSavedAttribute);
     } else {
       bout.outstr(waitString);
     }

@@ -83,7 +83,7 @@ static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
     bout.RestorePosition();
     bout.SavePosition();
     bout.mpl(max_length_for_number(maxv));
-    bout.Color(ok ? 4 : 6);
+    bout.ansic(ok ? 4 : 6);
     bout.outstr(std::to_string(result));
   }
   return ok;
@@ -117,7 +117,7 @@ static void print_yn(bool yes) {
 bool Input::yesno() {
   char ch = 0;
 
-  bout.Color(1);
+  bout.ansic(1);
   while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoKey(true) &&
          ch != YesNoKey(false) && ch != RETURN)
     ;
@@ -139,7 +139,7 @@ bool Input::yesno() {
 bool Input::noyes() {
   char ch = 0;
 
-  bout.Color(1);
+  bout.ansic(1);
   while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoKey(true) &&
          ch != YesNoKey(false) && ch != RETURN)
     ;
@@ -158,7 +158,7 @@ bool Input::noyes() {
 char Input::ynq() {
   char ch = 0;
 
-  bout.Color(1);
+  bout.ansic(1);
   const auto key_quit = bout.lang().value("KEY_QUIT", "Q").front();
   while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoKey(true) &&
          ch != YesNoKey(false) && ch != key_quit && ch != RETURN) {
@@ -224,7 +224,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
 
   bout.SavePosition();
   if (auto_mpl) {
-    bout.Color(4);
+    bout.ansic(4);
     for (auto i = 0; i < max_length; i++) {
       bout.outchr(input_background_char);
     }
@@ -435,7 +435,7 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
   localIO()->topdata(saved_topdata);
   localIO()->SetTopLine(saved_topline);
 
-  bout.Color(0);
+  bout.ansic(0);
   bout.nl();
 }
 

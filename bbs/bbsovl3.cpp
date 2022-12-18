@@ -95,9 +95,9 @@ void ListAllColors() {
     if ((i % 26) == 0) {
       bout.nl();
     }
-    bout.SystemColor(i);
+    bout.setc(i);
     bout.printf("%3d", i);
   }
-  bout.Color(0);
+  bout.ansic(0);
   bout.nl();
 }

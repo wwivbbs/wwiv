@@ -40,7 +40,7 @@ using namespace wwiv::strings;
 static void PrintTime() {
   const auto line = bout.SaveCurrentLine();
 
-  bout.Color(0);
+  bout.ansic(0);
   bout.nl(2);
   const auto dt = DateTime::now();
   bout.print("|#2{}\r\n", dt.to_string());

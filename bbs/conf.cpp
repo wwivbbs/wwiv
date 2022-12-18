@@ -436,7 +436,7 @@ void list_confs(Conference& conf, bool list_subs) {
     for (const auto& sub : a()->subs().subs()) {
       if (sub.conf.contains(cp.key.key())) {
         const auto ll = fmt::format("   \xC3\xC4\xC4\xC4 |#9Sub #{:<3} : {}", subnum, sub.name);
-        bout.Color(7);
+        bout.ansic(7);
         bout.bpla(ll, &abort);
       }
       ++subnum;

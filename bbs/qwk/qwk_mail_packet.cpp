@@ -215,7 +215,7 @@ void build_qwk_packet() {
   bout.nl(2);
 
   if (qwk_info.abort) {
-    bout.Color(1);
+    bout.ansic(1);
     bout.outstr("Abort everything? (NO=Download what I have gathered)");
     if (!bin.yesno()) {
       qwk_info.abort = false;
@@ -320,7 +320,7 @@ void qwk_gather_sub(uint16_t bn, qwk_state* qwk_info) {
     a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()] = status->qscanptr() - 1;
     a()->set_current_user_sub_num(os);
   } 
-  bout.Color(0);
+  bout.ansic(0);
 }
 
 void qwk_start_read(int msgnum, qwk_state *qwk_info) {
@@ -445,7 +445,7 @@ static std::string make_qwk_ready(const std::string& text, const std::string& ad
       temp.append(ansi_string);
 
       pos += 2;
-      bout.SystemColor(save_curatr);
+      bout.setc(save_curatr);
     } else if (a()->user()->data.qwk_keep_routing == false && x == 4 && text[pos + 1] == '0') {
       if (text[pos + 1] == 0) {
         ++pos;
@@ -744,9 +744,9 @@ void finish_qwk(qwk_state *qwk_info) {
         done = true;
       } else {
         bout.nl();
-        bout.Color(2);
+        bout.ansic(2);
         bout.outstr("Packet was not successful...");
-        bout.Color(1);
+        bout.ansic(1);
         bout.outstr("Try transfer again?");
 
         if (!bin.noyes()) {
@@ -763,7 +763,7 @@ void finish_qwk(qwk_state *qwk_info) {
       }
     }
   } else while (!done && !a()->sess().hangup() && !qwk_info->abort) {
-    bout.Color(2);
+    bout.ansic(2);
     bout.outstr("Move to what dir? ");
     bout.mpl(60);
     auto new_dir = StringTrim(bin.input_path(60));

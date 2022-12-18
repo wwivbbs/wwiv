@@ -57,33 +57,33 @@ FullScreenView::~FullScreenView() {
 }
 
 void FullScreenView::PrintTimeoutWarning(int) {
-  bout_.GotoXY(1, command_line_);
+  bout_.goxy(1, command_line_);
   bout_.outstr("|12Press space if you are still there.");
   bout_.clreol();
 }
 
 void FullScreenView::ClearCommandLine() {
-  bout_.GotoXY(1, command_line_);
+  bout_.goxy(1, command_line_);
   bout_.clreol();
-  bout_.GotoXY(1, command_line_);
+  bout_.goxy(1, command_line_);
 }
 
 void FullScreenView::PutsCommandLine(const std::string& text) {
-  bout_.GotoXY(1, command_line_);
+  bout_.goxy(1, command_line_);
   bout_.outstr(text);
   bout_.clreol();
 }
 
 void FullScreenView::ClearMessageArea() {
   for (int y = lines_start_; y < lines_end_; y++) {
-    bout_.GotoXY(1, y);
+    bout_.goxy(1, y);
     bout_.clreol();
   }
-  bout_.GotoXY(1, lines_start_);
+  bout_.goxy(1, lines_start_);
 }
 
 void FullScreenView::DrawTopBar() {
-  bout_.GotoXY(1, num_header_lines_ + 1);
+  bout_.goxy(1, num_header_lines_ + 1);
   bout_.print("|#7{:c}{}{:c}", static_cast<unsigned char>(198),
               std::string(std::max<int>(40, screen_width_) - 2, static_cast<unsigned char>(205)),
               static_cast<unsigned char>(181));
@@ -91,9 +91,9 @@ void FullScreenView::DrawTopBar() {
 
 void FullScreenView::DrawBottomBar(const std::string& text) {
   const auto y = screen_length_ - 1;
-  bout_.GotoXY(1, y);
+  bout_.goxy(1, y);
   const auto saved_color = bout.curatr();
-  auto at_exit = finally([=] { bout.SystemColor(saved_color); });
+  auto at_exit = finally([=] { bout.setc(saved_color); });
 
   bout_.print("|09{:c}{}{:c}", static_cast<unsigned char>(198),
               std::string(screen_width_ - 2, static_cast<unsigned char>(205)),
@@ -104,12 +104,12 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
   }
 
   const auto x = screen_width_ - 10 - ssize(text);
-  bout_.GotoXY(x, y);
+  bout_.goxy(x, y);
   bout_.print("|09{:c}|17|14 {} |16|09{:c}", static_cast<unsigned char>(181), text,
               static_cast<unsigned char>(198));
 }
 
-void FullScreenView::GotoContentAreaTop() { bout_.GotoXY(1, num_header_lines_ + 2); }
+void FullScreenView::GotoContentAreaTop() { bout_.goxy(1, num_header_lines_ + 2); }
 
 int FullScreenView::bgetch() {
   return bin.bgetch_event(Input::numlock_status_t::NUMBERS,

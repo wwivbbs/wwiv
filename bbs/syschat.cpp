@@ -199,7 +199,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
     ch = bin.getkey();
     if (bin.IsLastKeyLocal()) {
       if (bout.localIO()->WhereY() == 11) {
-        bout.GotoXY(1, 12);
+        bout.goxy(1, 12);
         for (auto screencount = 0; screencount < a()->user()->screen_width(); screencount++) {
           s2[screencount] = '\xCD';
         }
@@ -219,29 +219,29 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
           sprintf(s2, "\x1b[%d;%dH", cntr, 1);
           bout.outstr(s2);
           if (cntr >= 0 && cntr < 5) {
-            bout.Color(1);
+            bout.ansic(1);
             bout.outstr(side0[cntr + 6]);
           }
           bout.clreol();
           s2[0] = 0;
         }
-        bout.GotoXY(1, 5);
+        bout.goxy(1, 5);
         s2[0] = 0;
       } else if (bout.localIO()->WhereY() > 11) {
         wwiv_x2 = (bout.localIO()->WhereX() + 1);
         wwiv_y2 = (bout.localIO()->WhereY() + 1);
-        bout.GotoXY(wwiv_x1, wwiv_y1);
+        bout.goxy(wwiv_x1, wwiv_y1);
         s2[0] = 0;
       }
       side = 0;
-      bout.Color(1);
+      bout.ansic(1);
     } else {
       if (bout.localIO()->WhereY() >= 23) {
         for (int cntr = 13; cntr < 25; cntr++) {
           sprintf(s2, "\x1b[%d;%dH", cntr, 1);
           bout.outstr(s2);
           if ((cntr >= 13) && (cntr < 17)) {
-            bout.Color(5);
+            bout.ansic(5);
             bout.outstr(side1[cntr - 7]);
           }
           bout.clreol();
@@ -258,7 +258,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
         s2[0] = 0;
       }
       side = 1;
-      bout.Color(5);
+      bout.ansic(5);
     }
     if (cm != chatting_t::none && a()->sess().chatting() == chatting_t::none) {
       ch = RETURN;
@@ -276,7 +276,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
               sprintf(s2, "\x1b[%d;%dH", cntr, 1);
               bout.outstr(s2);
               if ((cntr >= 0) && (cntr < 6)) {
-                bout.Color(1);
+                bout.ansic(1);
                 bout.outstr(side0[cntr + 6]);
                 wwiv_y1 = bout.localIO()->WhereY() + 1;
                 wwiv_x1 = bout.localIO()->WhereX() + 1;
@@ -309,7 +309,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
               sprintf(s2, "\x1b[%d;%dH", cntr, 1);
               bout.outstr(s2);
               if (cntr >= 13 && cntr < 18) {
-                bout.Color(5);
+                bout.ansic(5);
                 bout.outstr(side1[cntr - 7]);
                 wwiv_y2 = bout.localIO()->WhereY() + 1;
                 wwiv_x2 = bout.localIO()->WhereX() + 1;
@@ -350,7 +350,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
           if (cp0) {
             if (side0[bout.localIO()->WhereY()][cp0 - 2] == 3) {
               cp0 -= 2;
-              bout.Color(0);
+              bout.ansic(0);
             } else if (side0[bout.localIO()->WhereY()][cp0 - 1] == 8) {
               cp0--;
               bout.outchr(SPACE);
@@ -362,7 +362,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
         } else if (cp1) {
           if (side1[bout.localIO()->WhereY() - 13][cp1 - 2] == CC) {
             cp1 -= 2;
-            bout.Color(0);
+            bout.ansic(0);
           } else if (side1[bout.localIO()->WhereY() - 13][cp1 - 1] == BACKSPACE) {
             cp1--;
             bout.outchr(SPACE);
@@ -381,7 +381,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
             cp1 = 0;
           }
         }
-        bout.Color(0);
+        bout.ansic(0);
         break;
       case CW: /* Ctrl-W */
         if (side == 0) {
@@ -389,7 +389,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
             do {
               if (side0[bout.localIO()->WhereY()][cp0 - 2] == CC) {
                 cp0 -= 2;
-                bout.Color(0);
+                bout.ansic(0);
               } else if (side0[bout.localIO()->WhereY()][cp0 - 1] == BACKSPACE) {
                 cp0--;
                 bout.outchr(SPACE);
@@ -406,7 +406,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
             do {
               if (side1[bout.localIO()->WhereY() - 13][cp1 - 2] == CC) {
                 cp1 -= 2;
-                bout.Color(0);
+                bout.ansic(0);
               } else if (side1[bout.localIO()->WhereY() - 13][cp1 - 1] == BACKSPACE) {
                 cp1--;
                 bout.outchr(SPACE);
@@ -438,7 +438,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
             if ((ch >= SPACE) && (ch <= 126)) {
               side0[bout.localIO()->WhereY()][cp0++] = CC;
               side0[bout.localIO()->WhereY()][cp0++] = ch;
-              bout.Color(ch - 48);
+              bout.ansic(ch - 48);
             }
           }
         } else {
@@ -447,7 +447,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
             if ((ch >= SPACE) && (ch <= 126)) {
               side1[bout.localIO()->WhereY() - 13][cp1++] = CC;
               side1[bout.localIO()->WhereY() - 13][cp1++] = ch;
-              bout.Color(ch - 48);
+              bout.ansic(ch - 48);
             }
           }
         }
@@ -577,11 +577,11 @@ void chat1(const char* chat_line, bool two_way) {
     bout.cls();
     wwiv_x2 = 1;
     wwiv_y2 = 13;
-    bout.GotoXY(1, 1);
+    bout.goxy(1, 1);
     wwiv_x1 = bout.localIO()->WhereX();
     wwiv_y1 = bout.localIO()->WhereY();
-    bout.GotoXY(1, 12);
-    bout.Color(7);
+    bout.goxy(1, 12);
+    bout.ansic(7);
     for (auto screencount = 0; screencount < a()->user()->screen_width(); screencount++) {
       bout.outchr('\xCD', true);
     }
@@ -589,9 +589,9 @@ void chat1(const char* chat_line, bool two_way) {
     const auto unn = a()->user()->name_and_number();
     const auto s = fmt::format("|#4 {} chatting with {} ", sysop_name, unn);
     const auto x = a()->user()->screen_width() - wwiv::stl::size_int(stripcolors(s)) / 2;
-    bout.GotoXY(std::max<int>(x, 0), 12);
+    bout.goxy(std::max<int>(x, 0), 12);
     bout.outstr(s);
-    bout.GotoXY(1, 1);
+    bout.goxy(1, 1);
   }
   bout.print("|#7{}'s here...", sysop_name);
   bout.nl(2);
@@ -641,7 +641,7 @@ void chat1(const char* chat_line, bool two_way) {
     delete[] side1;
     side1 = nullptr;
   }
-  bout.Color(0);
+  bout.ansic(0);
 
   if (two_way) {
     bout.cls();

@@ -154,7 +154,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     }
 
     if (sub >= size_int(a()->usub) || sub < 0) {
-      bout.Color(5);
+      bout.ansic(5);
       bout.outstr("Sub out of range");
 
       ++pass;
@@ -177,7 +177,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     }
 
     if (a()->sess().GetCurrentReadMessageArea() < 0) {
-      bout.Color(5);
+      bout.ansic(5);
       bout.outstr("Sub out of range");
 
       ++pass;

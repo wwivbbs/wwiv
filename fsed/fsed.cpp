@@ -124,7 +124,7 @@ bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
   // Draw the initial contents of the file.
   ed.invalidate_to_eof(0);
   // Draw the bottom bar once to start with.
-  view->Color(0);
+  view->ansic(0);
   view->draw_bottom_bar(ed);
   fs.GotoContentAreaTop();
   FsedState state{};

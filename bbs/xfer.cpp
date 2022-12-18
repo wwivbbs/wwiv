@@ -262,15 +262,15 @@ void printinfo(uploadsrec* u, bool *abort) {
 }
 
 void printtitle(bool *abort) {
-  bout.Color(FRAME_COLOR);
+  bout.ansic(FRAME_COLOR);
   bout.print("\r{}\r\n", std::string(78, '-'));
 
   bin.checka(abort);
-  bout.Color(2);
+  bout.ansic(2);
   bout.print("\r{} - #{}, {} files.\r\n", a()->dirs()[a()->current_user_dir().subnum].name,
              a()->current_user_dir().keys, a()->current_file_area()->number_of_files());
 
-  bout.Color(FRAME_COLOR);
+  bout.ansic(FRAME_COLOR);
   bout.print("\r{}\r\n", std::string(78, '-'));
 }
 std::string file_mask() {
@@ -392,7 +392,7 @@ void nscanall() {
   bout.outstr("\r|#2Searching ");
   for (uint16_t i = 0; i < size_int(a()->udir) && !abort; i++) {
     count++;
-    bout.Color(color);
+    bout.ansic(color);
     bout.outstr(".");
     if (count >= NUM_DOTS) {
       bout.outstr("\r|#2Searching ");
@@ -451,7 +451,7 @@ void searchall() {
     // remove bIsDirMarked=true to search only marked directories
     if (bIsDirMarked) {
       count++;
-      bout.Color(color);
+      bout.ansic(color);
       bout.outstr(".");
       if (count >= NUM_DOTS) {
         bout.outstr("\r|#2Searching ");

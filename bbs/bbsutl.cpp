@@ -105,7 +105,7 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
   do {
     ch = bin.getkey();
     if (two_color) {
-      bout.Color(bin.IsLastKeyLocal() ? 1 : 0);
+      bout.ansic(bin.IsLastKeyLocal() ? 1 : 0);
     }
     if (cm != chatting_t::none && a()->sess().chatting() == chatting_t::none) {
         ch = RETURN;
@@ -133,7 +133,7 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
         if (cp) {
           if (buffer[cp - 2] == CC) {
             cp -= 2;
-            bout.Color(0);
+            bout.ansic(0);
           } else {
             if (buffer[cp - 1] == BACKSPACE) {
               cp--;
@@ -160,14 +160,14 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
           bout.bs();
           cp = 0;
         }
-        bout.Color(0);
+        bout.ansic(0);
         break;
       case CW:                            // Ctrl-W
         if (cp) {
           do {
             if (buffer[cp - 2] == CC) {
               cp -= 2;
-              bout.Color(0);
+              bout.ansic(0);
             } else if (buffer[cp - 1] == BACKSPACE) {
               cp--;
               bout.outchr(SPACE);
@@ -190,7 +190,7 @@ bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool add
           if (ch >= SPACE && ch <= 126) {
             buffer[cp++] = CC;
             buffer[cp++] = ch;
-            bout.Color(ch - '0');
+            bout.ansic(ch - '0');
           } else if (ch == CP && cp < nMaxLen - 2) {
             ch = bin.getkey();
             if (ch != CP) {

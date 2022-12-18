@@ -105,7 +105,7 @@ void qwk_nscan() {
   char s[201];
   ;
 
-  bout.Color(3);
+  bout.ansic(3);
   bout.outstr("Building NEWFILES.DAT");
 
   sprintf(s, "%s%s", a()->sess().dirs().qwk_directory().c_str(), "NEWFILES.DAT");

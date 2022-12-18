@@ -72,7 +72,7 @@ void valscan() {
     }
 
     bout.nl();
-    bout.Color(2);
+    bout.ansic(2);
     bout.clreol();
     bout.print("{{ ValScanning {} }}\r\n", a()->current_sub().name);
     bout.clear_lines_listed();

@@ -338,7 +338,7 @@ static std::vector<std::string> CreateMessageTitleVector(MessageArea* area, int 
 
 static void display_title_new(const std::vector<std::string>& lines, const FullScreenView& fs,
                               int i, bool selected) {
-  bout.GotoXY(1, i + fs.lines_start());
+  bout.goxy(1, i + fs.lines_start());
   const auto& l = lines.at(i);
   if (selected) {
     bout.outstr("|17|12>");
@@ -417,7 +417,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
 
     if (last_selected != selected) {
       // Do this for all cases, even if need_redraw isn' true.
-      bout.GotoXY(1, fs.lines_start() + selected - (window_top - window_top_min) + window_top_min);
+      bout.goxy(1, fs.lines_start() + selected - (window_top - window_top_min) + window_top_min);
       fs.DrawBottomBar(StrCat("Selected: ", selected));
       last_selected = selected;
     }
@@ -1270,7 +1270,7 @@ void scan(int msg_num, MsgScanOption scan_option, bool& nextsub, bool title_scan
           a()->sess().incom(old_incom);
         }
       }
-      bout.Color(0);
+      bout.ansic(0);
       bout.nl();
       if (next) {
         ++msg_num;

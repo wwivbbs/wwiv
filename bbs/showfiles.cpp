@@ -63,7 +63,7 @@ void show_files(const char *file_name, const char *directory_name) {
   }
 
   bout.nl();
-  bout.Color(7);
+  bout.ansic(7);
   bout.outstr(std::string(a()->user()->screen_width() - 1, c));
   bout.nl(2);
 }

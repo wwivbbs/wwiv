@@ -51,7 +51,7 @@ public:
   [[nodiscard]] int bgetch(FsedModel& ed);
   void outchr(int color, char ch);
   void cls();
-  void Color(int c);
+  void ansic(int c);
   [[nodiscard]] int top_line() const override { return top_line_; }
   void set_top_line(int l) override { top_line_ = l; }
   void gotoxy(const FsedModel& ed) override;

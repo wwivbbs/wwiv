@@ -79,7 +79,7 @@ void read_automessage() {
   auto line_number = 0;
   while (autoMessageFile.ReadLine(&line) && line_number++ < 10) {
     StringTrim(&line);
-    bout.Color(9);
+    bout.ansic(9);
     bout.pl(line);
   }
   bout.nl();

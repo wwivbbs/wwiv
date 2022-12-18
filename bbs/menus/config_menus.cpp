@@ -71,7 +71,7 @@ static std::map<int, menu_set_t> ListMenuDirs() {
     ++num;
   }
   bout.nl();
-  bout.Color(0);
+  bout.ansic(0);
   return result;
 }
 

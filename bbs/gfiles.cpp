@@ -76,7 +76,7 @@ static void gfl_hdr(int which) {
     }
   }
   bout.bpla(s, &abort);
-  bout.Color(0);
+  bout.ansic(0);
   if (okansi()) {
     if (which) {
       s = StrCat("|#7\xB3|#2 # |#7\xB3", s1, "|#1 Name ", s3, "|#7\xB3|#9Size|#7\xB3|#2 # |#7\xB3", s1, "|#1 Name ", s3, "|#7\xB3|#9Size|#7\xB3");
@@ -91,7 +91,7 @@ static void gfl_hdr(int which) {
     }
   }
   bout.bpla(s, &abort);
-  bout.Color(0);
+  bout.ansic(0);
   if (okansi()) {
     if (which) {
       s = StrCat("|#7\xC3\xC4\xC4\xC4\xC5", s2, "\xC5\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC5", s2, "\xC5\xC4\xC4\xC4\xC4\xB4");
@@ -107,7 +107,7 @@ static void gfl_hdr(int which) {
     }
   }
   bout.bpla(s, &abort);
-  bout.Color(0);
+  bout.ansic(0);
 }
 
 static void list_sec(std::vector<int> map) {
@@ -151,7 +151,7 @@ static void list_sec(std::vector<int> map) {
       s = fmt::sprintf("|%3s|%-34s|%3s|%-33s|", lnum, s4, rnum, s5);
     }
     bout.bpla(s, &abort);
-    bout.Color(0);
+    bout.ansic(0);
     i++;
     if (i2 > 10) {
       i2 = 0;
@@ -165,7 +165,7 @@ static void list_sec(std::vector<int> map) {
         s1 = fmt::sprintf("+---+%s-----+--------+%s-o-%s-o---+", s2, s3, t);
       }
       bout.bpla(s1, &abort);
-      bout.Color(0);
+      bout.ansic(0);
       bout.nl();
       bout.pausescr();
       gfl_hdr(1);
@@ -182,7 +182,7 @@ static void list_sec(std::vector<int> map) {
         s1 = fmt::sprintf("+---+%s-----+---+%s----+", s2, s2);
       }
       bout.bpla(s1, &abort);
-      bout.Color(0);
+      bout.ansic(0);
 
       std::string padding61(61, ' ');
       if (okansi()) {
@@ -191,7 +191,7 @@ static void list_sec(std::vector<int> map) {
         s1 = fmt::sprintf("|  G)G-File Edit%s|", padding61);
       }
       bout.bpla(s1, &abort);
-      bout.Color(0);
+      bout.ansic(0);
       if (okansi()) {
         s1 = fmt::sprintf("|#7\xC0\xC4\xC4\xC4\xC4%"
                           "s\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#"
@@ -201,7 +201,7 @@ static void list_sec(std::vector<int> map) {
         s1 = fmt::sprintf("+----%s----------------%so-%s-o---+", s2, s7, t);
       }
       bout.bpla(s1, &abort);
-      bout.Color(0);
+      bout.ansic(0);
     } else {
       std::string s1;
       if (okansi()) {
@@ -214,10 +214,10 @@ static void list_sec(std::vector<int> map) {
         s1 = fmt::sprintf("+---+%s-----+---------------------+%so-%s-o---+", s2, s3, t);
       }
       bout.bpla(s1, &abort);
-      bout.Color(0);
+      bout.ansic(0);
     }
   }
-  bout.Color(0);
+  bout.ansic(0);
   bout.nl();
 }
 
@@ -281,7 +281,7 @@ static void list_gfiles(const gfile_dir_t& g) {
       s = fmt::sprintf("|%3s|%-29s|%4s|%3s|%-29s|%4s|", lnum, s4, lsize, rnum, s5, rsize);
     }
     bout.bpla(s, &abort);
-    bout.Color(0);
+    bout.ansic(0);
     i++;
     if (i2 > 10) {
       i2 = 0;
@@ -294,7 +294,7 @@ static void list_gfiles(const gfile_dir_t& g) {
         s1 = fmt::sprintf("+---+%s+----+---+%s-o-%s-o-+----+", s2, s3, t);
       }
       bout.bpla(s1, &abort);
-      bout.Color(0);
+      bout.ansic(0);
       bout.nl();
       bout.pausescr();
       gfl_hdr(1);
@@ -309,13 +309,13 @@ static void list_gfiles(const gfile_dir_t& g) {
       s = fmt::sprintf("+---+%s+----+---+%s+----+", s2, s2);
     }
     bout.bpla(s, &abort);
-    bout.Color(0);
+    bout.ansic(0);
     if (so()) {
       std::string s1 = okansi()
         ? "|#7\xB3 |#1A|#7)|#2Add a G-File  |#1D|#7)|#2Download a G-file  |#1E|#7)|#2Edit this section  |#1R|#7)|#2Remove a G-File |#7\xB3"
         : "| A)Add a G-File  D)Download a G-file  E)Edit this section  R)Remove a G-File |";
       bout.bpla(s1, &abort);
-      bout.Color(0);
+      bout.ansic(0);
     } else {
       std::string s1;
       if (okansi()) {
@@ -324,7 +324,7 @@ static void list_gfiles(const gfile_dir_t& g) {
         s1 = StrCat("|  D  Download a G-file", std::string(55, ' '), "|");
       }
       bout.bpla(s1, &abort);
-      bout.Color(0);
+      bout.ansic(0);
     }
   }
   std::string s1;
@@ -338,7 +338,7 @@ static void list_gfiles(const gfile_dir_t& g) {
         s2, s3, t);
   }
   bout.bpla(s1, &abort);
-  bout.Color(0);
+  bout.ansic(0);
   bout.nl();
 }
 

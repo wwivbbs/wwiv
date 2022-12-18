@@ -210,7 +210,7 @@ void attach_file(int mode) {
                   if (!found && !file_to_attach.empty()) {
                     full_pathname = FilePath(a()->GetAttachmentDirectory(), stripfn(file_to_attach)).string();
                     bout.nl();
-                    bout.Color(5);
+                    bout.ansic(5);
                     bout.print("{}?",file_to_attach);
                     if (!bin.yesno()) {
                       found = true;

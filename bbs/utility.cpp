@@ -248,29 +248,29 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const std::vector<std::string>& 
     }
 
     int x = 0;
-    bout.SystemColor(smc->normal_menu_item);
+    bout.setc(smc->normal_menu_item);
 
     for (const auto& menu_item : menu_items) {
       if (a()->sess().hangup()) {
         break;
       }
-      bout.GotoXY(positions[x], ypos);
+      bout.goxy(positions[x], ypos);
 
       if (*menu_pos == x) {
-        bout.SystemColor(smc->current_highlight);
+        bout.setc(smc->current_highlight);
         bout.outchr(menu_item[0]);
-        bout.SystemColor(smc->current_menu_item);
+        bout.setc(smc->current_menu_item);
         bout.outstr(menu_item.substr(1));
       } else {
-        bout.SystemColor(smc->normal_highlight);
+        bout.setc(smc->normal_highlight);
         bout.outchr(menu_item[0]);
-        bout.SystemColor(smc->normal_menu_item);
+        bout.setc(smc->normal_menu_item);
         bout.outstr(menu_item.substr(1));
       }
       ++x;
     }
   }
-  bout.SystemColor(smc->normal_menu_item);
+  bout.setc(smc->normal_menu_item);
 
   while (!a()->sess().hangup()) {
     const auto event = bin.bgetch_event(wwiv::common::Input::numlock_status_t::NOTNUMBERS);
@@ -279,18 +279,18 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const std::vector<std::string>& 
       for (const auto& menu_item : menu_items) {
         if (event == to_upper_case<int>(menu_item[0]) ||
             event == to_lower_case<int>(menu_item[0])) {
-          bout.GotoXY(positions[*menu_pos], ypos);
-          bout.SystemColor(smc->normal_highlight);
+          bout.goxy(positions[*menu_pos], ypos);
+          bout.setc(smc->normal_highlight);
           bout.outchr(menu_items[*menu_pos][0]);
-          bout.SystemColor(smc->normal_menu_item);
+          bout.setc(smc->normal_menu_item);
           bout.outstr(menu_items[*menu_pos].substr(1));
           *menu_pos = x;
-          bout.SystemColor(smc->current_highlight);
-          bout.GotoXY(positions[*menu_pos], ypos);
+          bout.setc(smc->current_highlight);
+          bout.goxy(positions[*menu_pos], ypos);
           bout.outchr(menu_items[*menu_pos][0]);
-          bout.SystemColor(smc->current_menu_item);
+          bout.setc(smc->current_menu_item);
           bout.outstr(menu_items[*menu_pos].substr(1));
-          bout.GotoXY(positions[*menu_pos], ypos);
+          bout.goxy(positions[*menu_pos], ypos);
           return EXECUTE;
         }
         ++x;
@@ -299,41 +299,41 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const std::vector<std::string>& 
     }
     switch (event) {
     case COMMAND_LEFT:
-      bout.GotoXY(positions[*menu_pos], ypos);
-      bout.SystemColor(smc->normal_highlight);
+      bout.goxy(positions[*menu_pos], ypos);
+      bout.setc(smc->normal_highlight);
       bout.outchr(menu_items[*menu_pos][0]);
-      bout.SystemColor(smc->normal_menu_item);
+      bout.setc(smc->normal_menu_item);
       bout.outstr(menu_items[*menu_pos].substr(1));
       if (!*menu_pos) {
         *menu_pos = wwiv::stl::size_int(menu_items) - 1;
       } else {
         --*menu_pos;
       }
-      bout.SystemColor(smc->current_highlight);
-      bout.GotoXY(positions[*menu_pos], ypos);
+      bout.setc(smc->current_highlight);
+      bout.goxy(positions[*menu_pos], ypos);
       bout.outchr(menu_items[*menu_pos][0]);
-      bout.SystemColor(smc->current_menu_item);
+      bout.setc(smc->current_menu_item);
       bout.outstr(menu_items[*menu_pos].substr(1));
-      bout.GotoXY(positions[*menu_pos], ypos);
+      bout.goxy(positions[*menu_pos], ypos);
       break;
 
     case COMMAND_RIGHT:
-      bout.GotoXY(positions[*menu_pos], ypos);
-      bout.SystemColor(smc->normal_highlight);
+      bout.goxy(positions[*menu_pos], ypos);
+      bout.setc(smc->normal_highlight);
       bout.outchr(menu_items[*menu_pos][0]);
-      bout.SystemColor(smc->normal_menu_item);
+      bout.setc(smc->normal_menu_item);
       bout.outstr(menu_items[*menu_pos].substr(1));
       if (*menu_pos == static_cast<int>(menu_items.size() - 1)) {
         *menu_pos = 0;
       } else {
         ++*menu_pos;
       }
-      bout.SystemColor(smc->current_highlight);
-      bout.GotoXY(positions[*menu_pos], ypos);
+      bout.setc(smc->current_highlight);
+      bout.goxy(positions[*menu_pos], ypos);
       bout.outchr(menu_items[*menu_pos][0]);
-      bout.SystemColor(smc->current_menu_item);
+      bout.setc(smc->current_menu_item);
       bout.outstr(menu_items[*menu_pos].substr(1));
-      bout.GotoXY(positions[*menu_pos], ypos);
+      bout.goxy(positions[*menu_pos], ypos);
       break;
     default:
       return event;

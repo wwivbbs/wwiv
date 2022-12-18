@@ -84,13 +84,13 @@ public:
    * This sets the current color (both locally and remotely) to that
    * specified (in WWIV format).
    */
-  void Color(int wwiv_color);
+  void ansic(int wwiv_color);
 
   /** Resets all ANSI color attributes back to the default gray on black. */
   void ResetColors();
 
   /** Moves the cursor position to x, y.  Note this is 1 based, not 0. */
-  void GotoXY(int x, int y);
+  void goxy(int x, int y);
   void Up(int num);
   void Down(int num);
   void Left(int num);
@@ -104,12 +104,12 @@ public:
    * This sets the current color (both locally and remotely) to that
    * specified (in IBM format).
    */
-  void SystemColor(int c);
+  void setc(int c);
   /**
    * This sets the current color (both locally and remotely) to that
    * specified (in IBM format).
    */
-  void SystemColor(wwiv::sdk::Color color);
+  void setc(wwiv::sdk::Color color);
   [[nodiscard]] std::string MakeColor(int wwiv_color);
   [[nodiscard]] std::string MakeSystemColor(int c) const;
   [[nodiscard]] std::string MakeSystemColor(sdk::Color color) const;

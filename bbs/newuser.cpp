@@ -854,7 +854,7 @@ void noabort(const char* file_name) {
 
 static void cln_nu() {
   bout.RestorePosition();
-  bout.Color(0);
+  bout.ansic(0);
   bout.clreol();
 }
 

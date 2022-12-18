@@ -63,7 +63,7 @@ using namespace wwiv::strings;
  */
 void DisplayHorizontalBar(int width, int color) {
   const auto ch = (okansi()) ? '\xC4' : '-';
-  bout.Color(color);
+  bout.ansic(color);
   bout.outstr(std::string(width, ch));
   bout.nl();
 }

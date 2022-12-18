@@ -212,7 +212,7 @@ void chat_room() {
     if (inst_msg_waiting()) {
       process_inst_msgs(); 
     }
-    bout.Color(1);
+    bout.ansic(1);
     bout.outstr(szColorString);
     a()->tleft(true);
     a()->sess().chatline(false);

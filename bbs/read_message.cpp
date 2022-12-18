@@ -271,7 +271,7 @@ void display_message_text(const std::string& text, bool* next) {
   if (!abort && !s.empty()) {
     bout.pl(s);
   }
-  bout.Color(0);
+  bout.ansic(0);
   bout.nl();
   if (ansi && bout.localIO()->topdata() != LocalIO::topdata_t::none &&
       a()->sess().IsUserOnline()) {
@@ -559,7 +559,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg, bool a
   const auto screen_width = a()->user()->screen_width();
   const auto screen_length = a()->user()->screen_lines() - 1;
 
-  bout.SystemColor(oldcuratr);
+  bout.setc(oldcuratr);
   return FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
 }
 
@@ -626,7 +626,7 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
     if (i >= size_int(lines)) {
       break;
     }
-    bout.GotoXY(1, i - start + lines_start);
+    bout.goxy(1, i - start + lines_start);
     auto l = lines.at(i);
     if (l.find("\x1b[") != std::string::npos) {
       had_ansi = true;
@@ -644,7 +644,7 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
         l = StrCat(std::string((screen_width - stripcolors(l).size()) / 2, ' '), l.substr(1));
       }
     }
-    bout.Color(0);
+    bout.ansic(0);
     bout.outstr(had_ansi ? "|16" : "|#0");
     bout.outstr(l);
     bout.clreol();
@@ -658,7 +658,7 @@ static std::string percent_read(int start, int end) {
 
 static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData& msg, char an, bool* next) {
   // Reset the color before displaying a message.
-  bout.SystemColor(7);
+  bout.setc(7);
   bout.clear_ansi_movement_occurred();
   *next = false;
   bout.set_mci_enabled(an != 0);
@@ -685,7 +685,7 @@ static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData&
     a()->CheckForHangup();
 
     if (dirty) {
-      bout.Color(0);
+      bout.ansic(0);
       display_message_text_new(lines, start, fs.message_height(), fs.screen_width(),
                                fs.lines_start());
       dirty = false;

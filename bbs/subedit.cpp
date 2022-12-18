@@ -333,7 +333,7 @@ static void modify_sub(int n) {
         for (size_t i = 0; i < a()->subs().sub(n).nets.size(); i++) {
           charstring.push_back(static_cast<char>('A' + i));
         }
-        bout.Color(0);
+        bout.ansic(0);
         auto ch3 = onek(charstring);
         if (ch3 != ' ') {
           int i = ch3 - 'A';

@@ -735,11 +735,11 @@ void mailr() {
         a()->users()->readuser(&user, m.touser);
         const auto unn = a()->names()->UserName(m.touser);
         bout.outstr("|#9  To|#7: ");
-        bout.Color(a()->GetMessageColor());
+        bout.ansic(a()->GetMessageColor());
         bout.pl(unn);
         set_net_num(network_number_from(&m));
         bout.outstr("|#9Subj|#7: ");
-        bout.Color(a()->GetMessageColor());
+        bout.ansic(a()->GetMessageColor());
         bout.pl(m.title);
         if (m.status & status_file) {
           File attachDat(FilePath(a()->config()->datadir(), ATTACH_DAT));

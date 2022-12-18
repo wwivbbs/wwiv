@@ -78,7 +78,7 @@ static bool print_question(int i, int ii) {
 
   bout.cls();
   bout.bpla(fmt::format("|#5Voting question #{}", i), &abort);
-  bout.Color(1);
+  bout.ansic(1);
   bout.bpla(v.question, &abort);
   bout.nl();
   int t = 0;

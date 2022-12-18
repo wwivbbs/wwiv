@@ -56,7 +56,7 @@ extern bool ext_is_on;
 static void drawfile(int filepos, int filenum) {
   bout.clear_lines_listed();
   bout.PutsXYSC(4, filepos + first_file_pos(), lp_config.current_file_color, fmt::format("{:>3}|#0", filenum));
-  bout.GotoXY(4, filepos + first_file_pos());
+  bout.goxy(4, filepos + first_file_pos());
 }
 
 static void undrawfile(int filepos, int filenum) {
@@ -206,7 +206,7 @@ int listfiles_plus_function(int type) {
                 int command = side_menu(&menu_pos, redraw, menu_items, 2, max_lines + first_file_pos() + 1, &smc);
                 redraw = true;
                 bulk_move = 0;
-                bout.Color(0);
+                bout.ansic(0);
                 if (do_sysop_command(command)) {
                   menu_done = true;
                   amount = lines = matches = 0;
@@ -314,7 +314,7 @@ ADD_OR_REMOVE_BATCH:
                                        file_recs[file_pos].numbytes);
                         }
                       }
-                      bout.GotoXY(1, first_file_pos() + vert_pos[file_pos]);
+                      bout.goxy(1, first_file_pos() + vert_pos[file_pos]);
                       bout.printf(
                           "|%02d %c ", lp_config.tagged_color,
                           a()->batch().contains_file(file_recs[file_pos].filename) ? '\xFE' : ' ');

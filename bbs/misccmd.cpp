@@ -94,7 +94,7 @@ void kill_old_email() {
       do {
         bout.nl();
         bout.outstr("|#1  To|#9: ");
-        bout.Color(a()->GetMessageColor());
+        bout.ansic(a()->GetMessageColor());
 
         if (m.tosys == 0) {
           a()->users()->readuser(&user, m.touser);
@@ -112,7 +112,7 @@ void kill_old_email() {
         time_t lCurrentTime = time(nullptr);
         int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / SECONDS_PER_DAY);
         bout.outstr("|#1Sent|#9: ");
-        bout.Color(a()->GetMessageColor());
+        bout.ansic(a()->GetMessageColor());
         bout.print("{} days ago\r\n", nDaysAgo);
         if (m.status & status_file) {
           File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
@@ -271,7 +271,7 @@ void list_users(int mode) {
     a()->sess().user_num(0);
     if (ncnm > 5) {
       count++;
-      bout.Color(color);
+      bout.ansic(color);
       bout.outstr(".");
       if (count == NUM_DOTS) {
         bout.outstr("\r", &abort, &next);
@@ -304,7 +304,7 @@ void list_users(int mode) {
         }
         bout.nl();
       }
-      bout.Color(FRAME_COLOR);
+      bout.ansic(FRAME_COLOR);
       bout.bpla("\xD5\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xB8",
           &abort);
       found = false;
@@ -362,7 +362,7 @@ void list_users(int mode) {
       if (p == static_cast<int>(a()->user()->screen_lines()) - 6) {
         //bout.backline();
         bout.clreol();
-        bout.Color(FRAME_COLOR);
+        bout.ansic(FRAME_COLOR);
         bout.bpla("\xD4\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBE",
             &abort);
         bout.outstr("|#1[Enter] to continue or Q=Quit : ");
@@ -383,7 +383,7 @@ void list_users(int mode) {
   }
   //bout.backline();
   bout.clreol();
-  bout.Color(FRAME_COLOR);
+  bout.ansic(FRAME_COLOR);
   bout.bpla("\xD4\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBE",
       &abort);
   if (!abort) {

@@ -458,7 +458,7 @@ void tag_files(bool& need_title) {
     return;
   }
   bout.clear_lines_listed();
-  bout.Color(FRAME_COLOR);
+  bout.ansic(FRAME_COLOR);
   bout.outstr("\r");
   bout.pl(std::string(78, '-'));
 
@@ -720,7 +720,7 @@ void download() {
         ok = true;
         bout.backline();
         bout.printf("|#2%3d ", a()->batch().size() + 1);
-        bout.Color(1);
+        bout.ansic(1);
         const bool onl = bout.newline;
         bout.newline = false;
         auto s = bin.input(12);
@@ -743,16 +743,16 @@ void download() {
             }
             bout.backline();
             auto s1 = fmt::sprintf("%3d %s", a()->batch().size() + 1, s);
-            bout.Color(1);
+            bout.ansic(1);
             bout.outstr(s1);
             foundany = 0;
             int dn = 0;
             while (dn < size_int(a()->udir)) {
               count++;
-              bout.Color(color);
+              bout.ansic(color);
               if (count == NUM_DOTS) {
                 bout.outstr("\r");
-                bout.Color(color);
+                bout.ansic(color);
                 bout.outstr(s1);
                 color++;
                 count = 0;
@@ -862,7 +862,7 @@ void endlist(int mode) {
     tag_files(need_title);
     return;
   }
-  bout.Color(FRAME_COLOR);
+  bout.ansic(FRAME_COLOR);
   bout.print("\r{}\r\n", std::string(78, '-'));
   bout.print("\r|#9Files listed: |#2 {}", a()->filelist.size());
 }

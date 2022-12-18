@@ -184,7 +184,7 @@ void printtitle_plus() {
                     a()->dirs()[a()->current_user_dir().subnum].name,
                     a()->current_file_area()->number_of_files());
     bout.litebar(fmt::format("{:<54} Space=Tag/?=Help", buf));
-    bout.Color(0);
+    bout.ansic(0);
   }
 }
 
@@ -236,8 +236,8 @@ int listfiles_plus(int type) {
   const int r = listfiles_plus_function(type);
   // Stop trailing bits left on screen.
   bout.cls();
-  bout.Color(0);
-  bout.GotoXY(1, a()->user()->screen_lines() - 3);
+  bout.ansic(0);
+  bout.goxy(1, a()->user()->screen_lines() - 3);
   bout.nl(3);
 
   bout.clear_lines_listed();
@@ -266,7 +266,7 @@ int lp_add_batch(const std::string& file_name, int dn, int fs) {
   }
 
   if (a()->batch().size() >= a()->max_batch) {
-    bout.GotoXY(1, a()->user()->screen_lines() - 1);
+    bout.goxy(1, a()->user()->screen_lines() - 1);
     bout.outstr("No room left in batch queue.\r\n");
     bout.pausescr();
   } else if (!ratio_ok()) {
@@ -274,12 +274,12 @@ int lp_add_batch(const std::string& file_name, int dn, int fs) {
   } else {
     if (nsl() <= a()->batch().dl_time_in_secs() + time_to_transfer(a()->modem_speed_, fs).count() &&
         !so()) {
-      bout.GotoXY(1, a()->user()->screen_lines() - 1);
+      bout.goxy(1, a()->user()->screen_lines() - 1);
       bout.outstr("Not enough time left in queue.\r\n");
       bout.pausescr();
     } else {
       if (dn == -1) {
-        bout.GotoXY(1, a()->user()->screen_lines() - 1);
+        bout.goxy(1, a()->user()->screen_lines() - 1);
         bout.outstr("Can't add temporary file to batch queue.\r\n");
         bout.pausescr();
       } else {
@@ -470,11 +470,11 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
     if (ssize(l) > will_fit) {
       l.resize(will_fit);
     }
-    bout.SystemColor(static_cast<uint8_t>(color));
+    bout.setc(static_cast<uint8_t>(color));
     bout.outstr(lines.at(i));
     bout.nl();
   }
-  bout.Color(0);
+  bout.ansic(0);
   if (bout.wherex()) {
     bout.nl();
     ++numl;
@@ -484,7 +484,7 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
 
 void show_fileinfo(uploadsrec* u) {
   bout.cls();
-  bout.Color(7);
+  bout.ansic(7);
   bout.outstr(std::string(78, '\xCD'));
   bout.nl();
   bout.print("  |#9Filename    : |#2{}\r\n", u->filename);
@@ -496,7 +496,7 @@ void show_fileinfo(uploadsrec* u) {
   bout.print("  |#9Downloads   : |#2{}\r\n", u->numdloads);
   bout.print("  |#9Description : |#2{}\r\n", u->description);
   print_extended(u->filename, 255, 16, Color::YELLOW, nullptr);
-  bout.Color(7);
+  bout.ansic(7);
   bout.outstr(std::string(78, '\xCD'));
   bout.nl();
   bout.pausescr();
@@ -659,7 +659,7 @@ void sysop_configure() {
     bout.PutsXYSC(77, 2, lp_config.normal_menu_item, fmt::sprintf("%3d", lp_config.normal_menu_item));
     bout.PutsXYSC(38, 3, lp_config.current_highlight, fmt::sprintf("%3d", lp_config.current_highlight));
     bout.PutsXYSC(77, 3, lp_config.current_menu_item, fmt::sprintf("%3d", lp_config.current_menu_item));
-    bout.Color(0);
+    bout.ansic(0);
     bout.PutsXY(38, 6, fmt::sprintf("|%02d%2d", lp_config.tagged_color, lp_config.tagged_color));
     bout.PutsXY(77, 6, fmt::sprintf("|%02d%2d", lp_config.file_num_color, lp_config.file_num_color));
     bout.PutsXY(38, 7, fmt::sprintf("|%02d%2d", lp_config.found_fore_color, lp_config.found_fore_color));
@@ -670,7 +670,7 @@ void sysop_configure() {
     bout.PutsXY(74, 14, fmt::sprintf("|#4%s", lp_config.request_file ? _on_ : _off_));
     bout.PutsXY(74, 15, fmt::sprintf("|#4%s", lp_config.search_extended_on ? _on_ : _off_));
     bout.PutsXY(74, 16, fmt::sprintf("|#4%s", lp_config.edit_enable ? _on_ : _off_));
-    bout.Color(0);
+    bout.ansic(0);
     bout.PutsXY(29, 14, fmt::sprintf("|#4%s", lp_config.no_configuration ? _on_ : _off_));
     bout.PutsXY(29, 15, fmt::sprintf("|#4%s", lp_config.colorize_found_text ? _on_ : _off_));
     bout.PutsXY(29, 16, fmt::sprintf("|#4%s", lp_config.simple_search ? _on_ : _off_));
@@ -772,7 +772,7 @@ short SelectColor(int which) {
 
   if (a()->user()->color()) {
     color_list();
-    bout.Color(0);
+    bout.ansic(0);
     bout.nl();
     bout.outstr("|#2Foreground? ");
     unsigned char ch = onek("01234567");
@@ -813,9 +813,9 @@ short SelectColor(int which) {
     }
   }
   bout.nl();
-  bout.SystemColor(nc);
+  bout.setc(nc);
   bout.outstr(DescribeColorCode(nc));
-  bout.Color(0);
+  bout.ansic(0);
   bout.nl();
 
   bout.outstr("|#5Is this OK? ");
@@ -853,85 +853,85 @@ static void update_user_config_screen(uploadsrec* u, int which) {
   auto& lpc = a()->user()->data.lp_colors;
 
   if (which < 1 || which == 1) {
-    bout.GotoXY(37, 4);
-    bout.SystemColor(lpo & cfl_fname ? color_selected : color_notselected);
+    bout.goxy(37, 4);
+    bout.setc(lpo & cfl_fname ? color_selected : color_notselected);
     bout.outstr("\xFE ");
-    bout.SystemColor(color_colortext);
+    bout.setc(color_colortext);
     bout.outstr(lp_color_list[lpc[0]]);
   }
   if (which < 1 || which == 2) {
-    bout.GotoXY(37, 5);
-    bout.SystemColor(lpo & cfl_extension ? color_selected : color_notselected);
+    bout.goxy(37, 5);
+    bout.setc(lpo & cfl_extension ? color_selected : color_notselected);
     bout.outstr("\xFE ");
-    bout.SystemColor(color_colortext);
+    bout.setc(color_colortext);
     bout.outstr(lp_color_list[lpc[1]]);
   }
   if (which < 1 || which == 3) {
-    bout.GotoXY(37, 6);
-    bout.SystemColor(lpo & cfl_dloads ? color_selected : color_notselected);
+    bout.goxy(37, 6);
+    bout.setc(lpo & cfl_dloads ? color_selected : color_notselected);
     bout.outstr("\xFE ");
-    bout.SystemColor(color_colortext);
+    bout.setc(color_colortext);
     bout.outstr(lp_color_list[lpc[2]]);
   }
   if (which < 1 || which == 4) {
-    bout.GotoXY(37, 7);
-    bout.SystemColor(lpo & cfl_kbytes ? color_selected : color_notselected);
+    bout.goxy(37, 7);
+    bout.setc(lpo & cfl_kbytes ? color_selected : color_notselected);
     bout.outstr("\xFE ");
-    bout.SystemColor(color_colortext);
+    bout.setc(color_colortext);
     bout.outstr(lp_color_list[lpc[3]]);
   }
   if (which < 1 || which == 5) {
-    bout.GotoXY(37, 8);
-    bout.SystemColor(lpo & cfl_description ? color_selected : color_notselected);
+    bout.goxy(37, 8);
+    bout.setc(lpo & cfl_description ? color_selected : color_notselected);
     bout.outstr("\xFE ");
-    bout.SystemColor(color_colortext);
+    bout.setc(color_colortext);
     bout.outstr(lp_color_list[lpc[10]]);
   }
   if (which < 1 || which == 6) {
-    bout.GotoXY(37, 9);
-    bout.SystemColor(lpo & cfl_date_uploaded ? color_selected : color_notselected);
+    bout.goxy(37, 9);
+    bout.setc(lpo & cfl_date_uploaded ? color_selected : color_notselected);
     bout.outstr("\xFE ");
-    bout.SystemColor(color_colortext);
+    bout.setc(color_colortext);
     bout.outstr(lp_color_list[lpc[4]]);
   }
   if (which < 1 || which == 7) {
-    bout.GotoXY(37, 10);
-    bout.SystemColor(lpo & cfl_file_points ? color_selected : color_notselected);
+    bout.goxy(37, 10);
+    bout.setc(lpo & cfl_file_points ? color_selected : color_notselected);
     bout.outstr("\xFE ");
-    bout.SystemColor(color_colortext);
+    bout.setc(color_colortext);
     bout.outstr(lp_color_list[lpc[5]]);
   }
   if (which < 1 || which == 8) {
-    bout.GotoXY(37, 11);
-    bout.SystemColor(lpo & cfl_days_old ? color_selected : color_notselected);
+    bout.goxy(37, 11);
+    bout.setc(lpo & cfl_days_old ? color_selected : color_notselected);
     bout.outstr("\xFE ");
-    bout.SystemColor(color_colortext);
+    bout.setc(color_colortext);
     bout.outstr(lp_color_list[lpc[6]]);
   }
   if (which < 1 || which == 9) {
-    bout.GotoXY(37, 12);
-    bout.SystemColor(lpo & cfl_upby ? color_selected : color_notselected);
+    bout.goxy(37, 12);
+    bout.setc(lpo & cfl_upby ? color_selected : color_notselected);
     bout.outstr("\xFE ");
-    bout.SystemColor(color_colortext);
+    bout.setc(color_colortext);
     bout.outstr(lp_color_list[lpc[7]]);
   }
   if (which < 1 || which == 10) {
-    bout.GotoXY(37, 13);
-    bout.SystemColor(lpo & cfl_header ? color_selected : color_notselected);
+    bout.goxy(37, 13);
+    bout.setc(lpo & cfl_header ? color_selected : color_notselected);
     bout.outstr("\xFE ");
-    bout.SystemColor(color_colortext);
+    bout.setc(color_colortext);
   }
-  bout.SystemColor(Color::YELLOW);
-  bout.GotoXY(1, 21);
+  bout.setc(Color::YELLOW);
+  bout.goxy(1, 21);
   bout.clreol();
   bout.nl();
   bout.clreol();
-  bout.GotoXY(1, 21);
+  bout.goxy(1, 21);
 
   search_record sr{};
   printinfo_plus(u, 1, 1, 30, &sr);
-  bout.GotoXY(30, 17);
-  bout.SystemColor(Color::YELLOW);
+  bout.goxy(30, 17);
+  bout.setc(Color::YELLOW);
   bout.bs();
 }
 
@@ -1281,7 +1281,7 @@ static int move_filename(const std::string& file_name, int dn) {
     bout.outstr("|#5Move this (Y/N/Q)? ");
     char ch = 'Y';
     if (bulk_move) {
-      bout.Color(1);
+      bout.ansic(1);
       bout.outstr(YesNoString(true));
       bout.nl();
     } else {
@@ -1461,12 +1461,12 @@ LP_SEARCH_HELP:
   auto done = false;
   char x{0};
   while (!done) {
-    bout.GotoXY(1, 15);
+    bout.goxy(1, 15);
     for (auto i = 0; i < 9; i++) {
-      bout.GotoXY(1, 15 + i);
+      bout.goxy(1, 15 + i);
       bout.clreol();
     }
-    bout.GotoXY(1, 15);
+    bout.goxy(1, 15);
 
     bout.print("|#9A)|#2 Filename (wildcards) :|#2 {}\r\n", sr->filemask);
     bout.print("|#9B)|#2 Text (no wildcards)  :|#2 {}\r\n", sr->search);
@@ -1645,7 +1645,7 @@ void download_plus(const std::string& file_name) {
     bout.outstr("\r|#2Searching ");
     while (dn < a()->dirs().size()) {
       count++;
-      bout.Color(color);
+      bout.ansic(color);
       bout.outstr(".");
       if (count == NUM_DOTS) {
         bout.outstr("\r");

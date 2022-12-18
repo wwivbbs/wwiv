@@ -128,7 +128,7 @@ void qwk_gather_email(qwk_state* qwk_info) {
     return;
   }
 
-  bout.Color(7);
+  bout.ansic(7);
   bout.outstr("Gathering Email");
 
   auto curmail = 0;
@@ -254,13 +254,13 @@ void qwk_email_text(const char* text, char* title, char* to) {
     }
 
     bout.cls();
-    bout.Color(2);
+    bout.ansic(2);
     bout.print("Sending to: {}", send_to_name);
     bout.nl();
-    bout.Color(2);
+    bout.ansic(2);
     bout.print("Titled    : {}", title);
     bout.nl(2);
-    bout.Color(5);
+    bout.ansic(5);
     bout.outstr("Correct? ");
 
     if (!bin.yesno()) {
@@ -277,7 +277,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
       return;
     }
 
-    bout.Color(8);
+    bout.ansic(8);
 
     EmailData email;
     email.title = title;

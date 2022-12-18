@@ -339,7 +339,7 @@ void sendout_email(EmailData& data) {
     }
   });
   if (!data.silent_mode) {
-    bout.Color(3);
+    bout.ansic(3);
     bout.outstr(logMessage);
     bout.nl();
   }

@@ -228,7 +228,7 @@ std::string DescribeColorCode(int nColorCode) {
 void color_list() {
   bout.nl(2);
   for (int i = 0; i < 8; i++) {
-    bout.SystemColor(static_cast<unsigned char>((i == 0) ? 0x70 : i));
+    bout.setc(static_cast<unsigned char>((i == 0) ? 0x70 : i));
     bout.print("{}. {}|#0\r\n", i, DisplayColorName(static_cast<char>(i)));
   }
 }
@@ -260,7 +260,7 @@ void change_colors() {
     }
     for (int i = 0; i < 10; i++) {
       std::ostringstream os;
-      bout.Color(i);
+      bout.ansic(i);
       os << i << ".";
       switch (i) {
       case 0:
@@ -310,7 +310,7 @@ void change_colors() {
       const int color_num = ch - '0';
       if (a()->user()->color()) {
         color_list();
-        bout.Color(0);
+        bout.ansic(0);
         bout.nl();
         bout.outstr("|#9(Q=Quit) Foreground? ");
         ch = onek("Q01234567");
@@ -352,9 +352,9 @@ void change_colors() {
       }
 
       bout.nl(2);
-      bout.SystemColor(nc);
+      bout.setc(nc);
       bout.outstr(DescribeColorCode(nc));
-      bout.Color(0);
+      bout.ansic(0);
       bout.nl(2);
       bout.outstr("|#8Is this OK? ");
       if (bin.yesno()) {
@@ -473,7 +473,7 @@ static void list_macro(const std::string& s) {
       bout.outchr(macro_text[i]);
     } else {
       if (macro_text[i] == 16) {
-        bout.Color(macro_text[++i] - 48);
+        bout.ansic(macro_text[++i] - 48);
       } else {
         switch (macro_text[i]) {
         case RETURN:
@@ -499,7 +499,7 @@ static void macroedit(char *macro_text) {
   bout.nl();
   bout.outstr("|#5Enter your macro, press |#7[|#1CTRL-Z|#7]|#5 when finished.\r\n\n");
   bin.okskey(false);
-  bout.Color(0);
+  bout.ansic(0);
   bool done = false;
   int i = 0;
   bool toggle = false;
@@ -523,22 +523,22 @@ static void macroedit(char *macro_text) {
       break;
     case RETURN:
       macro_text[i++] = ch;
-      bout.Color(0);
+      bout.ansic(0);
       bout.outchr('|');
-      bout.Color(textclr);
+      bout.ansic(textclr);
       break;
     case TAB:
       macro_text[i++] = ch;
-      bout.Color(0);
+      bout.ansic(0);
       bout.outchr('\xF9') ;
-      bout.Color(textclr);
+      bout.ansic(textclr);
       break;
     default:
       macro_text[i++] = ch;
       if (toggle) {
         toggle = false;
         textclr = ch - 48;
-        bout.Color(textclr);
+        bout.ansic(textclr);
       } else {
         bout.outchr(ch);
       }
@@ -547,7 +547,7 @@ static void macroedit(char *macro_text) {
     macro_text[i + 1] = 0;
   } while (!done && i < 80 && !a()->sess().hangup());
   bin.okskey(true);
-  bout.Color(0);
+  bout.ansic(0);
   bout.nl();
   bout.outstr("|#9Is this okay? ");
   if (!bin.yesno()) {
@@ -857,7 +857,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
     bout.printf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                  type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
-  bout.Color(7);
+  bout.ansic(7);
   bout.outstr(std::string(79, '\xC4'));
   bout.nl();
 
@@ -874,7 +874,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
         s.resize(44);
       }
       if (*amount >= max_lines) {
-        bout.GotoXY(40, 3 + *amount - max_lines);
+        bout.goxy(40, 3 + *amount - max_lines);
         bout.outstr(s);
       } else {
         bout.outstr(s);
@@ -895,7 +895,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
         s.resize(44);
       }
       if (*amount >= max_lines) {
-        bout.GotoXY(40, 3 + *amount - max_lines);
+        bout.goxy(40, 3 + *amount - max_lines);
         bout.outstr(s);
       } else {
         bout.outstr(s);
@@ -911,19 +911,19 @@ static void list_config_scan_plus(int first, int *amount, int type) {
 static void drawscan(int filepos, bool tagged) {
   const auto max_lines = GetMaxLinesToShowForScanPlus();
   if (filepos >= max_lines) {
-    bout.GotoXY(40, 3 + filepos - max_lines);
+    bout.goxy(40, 3 + filepos - max_lines);
   } else {
-    bout.GotoXY(1, filepos + 3);
+    bout.goxy(1, filepos + 3);
   }
 
-  bout.SystemColor(static_cast<uint8_t>(wwiv::sdk::Color::BLACK) + (static_cast<uint8_t>(wwiv::sdk::Color::CYAN) << 4));
+  bout.setc(static_cast<uint8_t>(wwiv::sdk::Color::BLACK) + (static_cast<uint8_t>(wwiv::sdk::Color::CYAN) << 4));
   bout.print("[{:c}]", tagged ? '\xFE' : ' ');
-  bout.SystemColor(static_cast<uint8_t>(wwiv::sdk::Color::YELLOW) + (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
+  bout.setc(static_cast<uint8_t>(wwiv::sdk::Color::YELLOW) + (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
 
   if (filepos >= max_lines) {
-    bout.GotoXY(41, 3 + filepos - max_lines);
+    bout.goxy(41, 3 + filepos - max_lines);
   } else {
-    bout.GotoXY(2, filepos + 3);
+    bout.goxy(2, filepos + 3);
   }
 }
 
@@ -931,9 +931,9 @@ static void undrawscan(int filepos, long tagged) {
   const auto max_lines = GetMaxLinesToShowForScanPlus();
 
   if (filepos >= max_lines) {
-    bout.GotoXY(40, 3 + filepos - max_lines);
+    bout.goxy(40, 3 + filepos - max_lines);
   } else {
-    bout.GotoXY(1, filepos + 3);
+    bout.goxy(1, filepos + 3);
   }
   bout.printf("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
 }
@@ -1006,7 +1006,7 @@ void config_scan_plus(int type) {
                           a()->user()->screen_lines() - STOP_LIST, &smc);
       bout.clear_lines_listed();
       redraw = true;
-      bout.Color(0);
+      bout.ansic(0);
       if (do_sysop_command(command)) {
         menu_done = true;
         amount = 0;

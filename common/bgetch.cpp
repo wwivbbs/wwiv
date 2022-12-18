@@ -55,11 +55,11 @@ bool Output::RestoreCurrentLine(const SavedLine& line) {
     nl();
   }
   for (const auto& c : line.line) {
-    SystemColor(c.second);
+    setc(c.second);
     outchr(c.first, true);
   }
   flush();
-  SystemColor(line.color);
+  setc(line.color);
 
   return true;
 }
@@ -173,7 +173,7 @@ static char HandleControlKey(const char c, const SessionContext& context, wwiv::
     break;
   case CU: { // CTRL-U
     const auto line = bout.SaveCurrentLine();
-    bout.Color(0);
+    bout.ansic(0);
     bout.nl(2);
     bus().invoke<DisplayMultiInstanceStatus>();
     bout.nl();

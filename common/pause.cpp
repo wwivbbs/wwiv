@@ -116,7 +116,7 @@ void Output::pausescr() {
   const auto com_freeze = sess().incom();
   outstr(str_pause);
   Left(stripped_size);
-  SystemColor(saved_curatr);
+  setc(saved_curatr);
 
   const auto tstart = time_t_now();
 
@@ -132,10 +132,10 @@ void Output::pausescr() {
           warned = true;
           // Strip the colors and display the pause prompt all red here.
           outchr(CG);
-          SystemColor(user().color(6));
+          setc(user().color(6));
           outstr(stripcolors(str_pause));
           Left(stripped_size);
-          SystemColor(saved_curatr);
+          setc(saved_curatr);
         }
       } else {
         if (ttotal > 180) {
@@ -144,7 +144,7 @@ void Output::pausescr() {
             outchr(' ');
           }
           Left(stripped_size);
-          SystemColor(saved_curatr);
+          setc(saved_curatr);
           return;
         }
       }
@@ -157,7 +157,7 @@ void Output::pausescr() {
     outchr(' ');
   }
   Left(stripped_size);
-  SystemColor(saved_curatr);
+  setc(saved_curatr);
 
   if (!com_freeze) {
     sess().incom(false);
