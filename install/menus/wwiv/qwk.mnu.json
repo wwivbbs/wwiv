@@ -1,20 +1,20 @@
 {
     "version": 1,
     "menu": {
-        "cls": false,
+        "cls": true,
         "num_action": "none",
         "logging_action": "none",
         "help_type": "always",
         "generated_menu": {
-            "num_cols": 3,
+            "num_cols": 1,
             "color_title": "|#4",
             "color_item_key": "|#2",
-            "color_item_text": "|#0",
-            "color_item_braces": "|#1",
+            "color_item_text": "|#9",
+            "color_item_braces": "|#9",
             "show_empty_text": false,
             "num_newlines_at_end": 1
         },
-        "title": "QWK Menu",
+        "title": "|[2J|#4QWK Menu|[K|#0",
         "acs": "user.sl >= 10",
         "password": "",
         "enter_actions": [],
