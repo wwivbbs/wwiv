@@ -60,14 +60,13 @@ using namespace wwiv::os;
 pid_t bbs_pid = 0;
 extern char **environ;
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 extern std::atomic<bool> need_to_exit;
 extern std::atomic<bool> need_to_reload_config;
 
-} // namespace wwivd
-} // namespace wwiv
+} // namespace wwiv::wwivd
+
 using namespace wwiv::wwivd;
 
 void signal_handler(int mysignal) {

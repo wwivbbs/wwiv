@@ -34,7 +34,7 @@ namespace wwiv::core {
  * Example:
  *   vector<mailrec> emails;
  *   DataFile<mailrec> f(FilePath("/opt/wwiv/bbs/data", "email.dat"));
- *   if (!f) { LOG(FATAL) << "email.dat does not exist!" << endl; }
+ *   if (!f) { LOG(FATAL) << "email.dat does not exist!; }
  *   if (!f.ReadVector(emails) { LOG(FATAL) << "unable to load email.dat"; }
  *   // No need to close f since when f goes out of scope it'll close automatically.
  */

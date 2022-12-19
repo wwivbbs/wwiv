@@ -32,11 +32,6 @@ struct mb_interpreter_t;
 namespace wwiv::bbs::basic {
 
 char* BasicStrDup(std::string_view s);
-void set_script_out(common::Output* o);
-void set_script_in(common::Input* o);
-
-common::Input& script_in();
-common::Output& script_out();
 
 enum class file_location_t { GFILES, MENUS, TEMP, BBS };
 enum class chain_type_t { DOOR32, STDIO, FOSSIL, NETFOSS };

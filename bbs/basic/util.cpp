@@ -28,31 +28,9 @@ namespace wwiv::bbs::basic {
 
 using namespace wwiv::common;
 
-static Output* script_out_{nullptr};
-
-Output& script_out() { 
-  CHECK_NOTNULL(script_out_);
-  return *script_out_; 
-}
-
 BasicScriptState::BasicScriptState(std::string d, std::string s, Context* c, Input* i,
                                    Output* o)
     : datadir(std::move(d)), script_dir(std::move(s)), ctx(c), in(i), out(o), module("none") {}
-
-void set_script_out(Output* o) { 
-  script_out_ = o; 
-}
-
-static Input* script_in_{nullptr};
-
-Input& script_in() {
-  CHECK_NOTNULL(script_in_);
-  return *script_in_;
-}
-
-void set_script_in(Input* o) { 
-  script_in_ = o;
-}
 
 char* BasicStrDup(std::string_view s) { 
   return mb_memdup(s.data(), s.size() + 1);

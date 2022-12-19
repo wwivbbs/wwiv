@@ -389,17 +389,6 @@ private:
 
 } // namespace wwiv::common 
 
-/**
- * This is wwiv::endl, notice it does not flush the buffer afterwards.
- */
-namespace wwiv {
-template <class charT, class traits>
-std::basic_ostream<charT, traits>& endl(std::basic_ostream<charT, traits>& strm) {
-  strm.write("\r\n", 2);
-  return strm;
-}
-} // namespace wwiv
-
 // Extern for everyone else.
 extern wwiv::common::Output bout;
 

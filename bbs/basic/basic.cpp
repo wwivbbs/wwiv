@@ -44,7 +44,7 @@ using namespace wwiv::strings;
 
 namespace wwiv::bbs::basic {
 
-static int my_print(struct mb_interpreter_t *, const char* fmt, ...) {
+static int my_print(struct mb_interpreter_t* bas, const char* fmt, ...) {
   char buf[1024];
 
   va_list argptr;
@@ -52,16 +52,18 @@ static int my_print(struct mb_interpreter_t *, const char* fmt, ...) {
   vsnprintf(buf, sizeof(buf), fmt, argptr);  // NOLINT(clang-diagnostic-format-nonliteral)
   va_end(argptr);
 
-  script_out().outstr(buf);
-  script_out().nl();
+  const auto* d = get_wwiv_script_userdata(bas);
+  d->out->outstr(buf);
+  d->out->nl();
   return MB_FUNC_OK;
 }
 
-static int my_input(struct mb_interpreter_t*, const char* prompt, char* buf, int size) {
+static int my_input(struct mb_interpreter_t* bas, const char* prompt, char* buf, int size) {
+  const auto* d = get_wwiv_script_userdata(bas);
   if (prompt && *prompt) {
-    script_out().outstr(prompt);
+    d->out->outstr(prompt);
   }
-  const auto v = script_in().input_text("", size);
+  const auto v = d->in->input_text("", size);
   strcpy(buf, v.c_str());
   return stl::size_int(v);
 }
@@ -71,23 +73,24 @@ static bool RegisterMyBasicGlobals() {
   return true;
 }
 
-static std::optional<std::string> ReadBasicFile(const std::filesystem::path& path,
+static std::optional<std::string> ReadBasicFile(wwiv::common::Output& out,
+                                                const std::filesystem::path& path,
                                                 const std::string& script_name) {
     if (script_name.find("..") != std::string::npos) {
     LOG(ERROR) << "Invalid script name: " << script_name;
-    script_out().print("|#6Invalid script name: {}\r\n", script_name);
+    out.print("|#6Invalid script name: {}\r\n", script_name);
     return std::nullopt;
   }
 
   if (!File::Exists(path)) {
     LOG(ERROR) << "Unable to locate script: " << path;
-    script_out().print("|#6Unable to locate script: {}\r\n", script_name);
+    out.print("|#6Unable to locate script: {}\r\n", script_name);
     return std::nullopt;
   }
   TextFile file(path, "r");
   if (!file) {
     LOG(ERROR) << "Unable to read script: " << path;
-    script_out().print("|#6Unable to read script: {}\r\n", script_name);
+    out.print("|#6Unable to read script: {}\r\n", script_name);
     return std::nullopt;
   }
   const auto lines = file.ReadFileIntoString();
@@ -97,7 +100,7 @@ static std::optional<std::string> ReadBasicFile(const std::filesystem::path& pat
 static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
   const auto* d = get_wwiv_script_userdata(bas);
   const auto path = FilePath(d->script_dir, script_name);
-  auto o = ReadBasicFile(path, script_name);
+  const auto o = ReadBasicFile(*d->out, path, script_name);
   if (!o) {
     return false;
   }
@@ -243,8 +246,6 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
 
   static std::mutex script_mutex;
   std::lock_guard<std::mutex> guard(script_mutex);
-  set_script_out(&bout_);
-  set_script_in(&bin_);
   const auto ret = mb_run(bas_, false);
   mb_close(&bas_);
 
@@ -263,7 +264,7 @@ bool Basic::RunScript(const std::string& script_name) {
     return false;
   }
 
-  auto o = ReadBasicFile(path, script_name);
+  const auto o = ReadBasicFile(bout_, path, script_name);
   if (!o) {
     return false;
   }

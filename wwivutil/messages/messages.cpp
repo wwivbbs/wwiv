@@ -96,7 +96,7 @@ bool BaseMessagesSubCommand::CreateMessageApiMap(const std::string& basename) {
   // We try to open or create the sub later.
 
   //if (!apis_[sub_.storage_type]->Exist(sub_)) {
-  //  clog << "Message area: '" << sub_.filename << "' does not exist." << endl;
+  //  clog << "Message area: '" << sub_.filename << "' does not exist." << std::endl;
   //  return false;
   //}
   return true;

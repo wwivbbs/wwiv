@@ -6,15 +6,6 @@
 * make a SideMenu class so we don't need statics in side_menu method.
 * redo readmail(...) It's a friggin mess.
 * make nightly event or fix check for mail forwarded to a deleted user, and then fix that.
-* Remove wwiv::endl, just replace it with "\r\n"
-* Get rid of the chevron hell, ideally bout, out, etc doesn't take a stream you just call
-  puts, print, printf, etc on it.  No more IOstreams nonsense. That sounded good in 1998 but not in 2022
-
-  regex to use: (note, this does not work with multiple embedded << )
-  search:
-    bout << (".+");
-  replace:
-    bout.outstr($1);
 
 
 # Things to add to fix.

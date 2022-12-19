@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
       // Process switch
       char schar = (char)toupper(*(arg+1));
       const char* sval = (arg+2);
-      // cerr << "Switch: " <<  schar << "; value: '" << sval << "'" << endl;
+      // cerr << "Switch: " <<  schar << "; value: '" << sval << "'" << std::endl;
       switch (schar) {
       case 'N': {
 	      // Node number

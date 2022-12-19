@@ -261,7 +261,7 @@ std::tuple<menu_command_action_t, std::string>
 Menu::ExecuteActions(const std::vector<menu_action_56_t>& actions) {
   for (const auto& action : actions) {
     auto [a, d] = ExecuteAction(action);
-    VLOG(1) << "Action: " << action.cmd << "; " << action.data << endl;
+    VLOG(1) << "Action: " << action.cmd << "; " << action.data;
     if (a == menu_command_action_t::push_menu) {
       return std::make_tuple(menu_command_action_t::push_menu, d);
     }
@@ -327,7 +327,7 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
         bout.print("|#6Insufficient ACS for menu item: {}\r\n", mi.item_key);
         continue;
       }
-      VLOG(1) << "Command is: " << cmd << "; " << mi.item_key << endl;
+      VLOG(1) << "Command is: " << cmd << "; " << mi.item_key;
       log_command(menu().logging_action, mi);
       auto [action, d] = ExecuteActions(mi.actions);
       if (action == menu_command_action_t::push_menu) {
