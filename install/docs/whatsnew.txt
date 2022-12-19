@@ -15,6 +15,59 @@ Legend (starting with 5.3)
     so that you don't overwrite any files (or use winmerge or meld
     to compare new changes)
 
+What's New in WWIV 5.8.0 (2022)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* A couple of renames to make terms make more sense
+    * PacketFileReader -> NetMailFile (This is how the net tech docs calls it)
+    * Packet -> NetPacket (since each stored message is a wwivnet packet, not the container)
+* Start to use NetMailFile vs. read_packet
+* Fix issue of pause missing in chains.json. (#1475)
+* Fix Unable to change password in Defaults menu. (#1483)
+* Clear FSED Flag if the caller disables ANSI. (#1484)
+  - thanks to xenos for the fix
+* Make CL345 compile on GCC versions >10, at least 11
+* Update cl345 to us sched_yield vs. pthread_yield
+  Newer linux distributions with newer glibc may not have
+  pthread_yield anymore since it's been deprecated forever.
+* Fix WFC cosmetic issues (#1485)
+* Fix Network3 crashing repeatedly. (#1481)
+* default to ZIP if we can't determine the archiver to use for networkf
++ Start of support for lnet. It's now part of the 5.8 build
+* Set the default value when inputting the email message to read properly. (#1478)
+* Only set a dir if there is one to set. (#1482)
+* Mark messages deleted in network2 when processing local.net (#1488)
+! Update docs to use pull --recurse
+  * Please be sure to pull new builds using --recurse
+* fix some vs2022 analysis warnings
+* Modernize how cmake sets warning levels (makes MSVC warnings cleaner)
+* ScopeExit should act like GSL final_act/finally (#1375)
+* WWIV source no longer using iosteams for displaying user text.  Additionally
+  adter almost 23 years, many function names on the Output class (bout) have been
+  renamed back to the 4.x naming.
+  * Color -> ansic
+  * SetColor -> setc
+  * GotoXY -> goxy
+  * bputch ->outchr
+  * puts -> outstr
+  * puts + \r\n -> pl
+  * make sysoplog(...) back into a function and not a class for iostreams
+  * format -> print (print is new, but matches std::print and is a better name
+    than format)
+* default wwiv main menu is missing //QWK (#1492)
+* //QWK menu for sysop doesn't list (*) config menu (#1493)
+* wwivutil subs import  - update nSUBNAME.net when using import (#1495)
+
+
+What's New in WWIV 5.8.0 (2021)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Use vcpkg for dependencies where possible vs. git submodules
+* Added SleepFor to the Clock class
+* Don't use u8string anywhere since it's a shipwreck (c++20 pre-work)
+* Remove EMPTY_FIDO_ADDRESS and use std::optional more.
+* Add Config into SdkHelper so it can be more easily used in SDK tests.
+* Use SOCKET and INVALID_SOCKET consistently everywhere.
+
+
 
 What's New in WWIV 5.7.2 (2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
