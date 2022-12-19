@@ -22,6 +22,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/subxtr.h"
+#include "sdk/net/subscribers.h"
 #include <iostream>
 #include <sstream>
 
@@ -108,6 +109,7 @@ int SubsImportCommand::Execute() {
   prototype.storage_type = ini.value<uint8_t>("storage_type", 2);
 
   sdk::subboard_network_data_t net{};
+  const sdk::fido::FidoAddress uplink(ini.value<std::string>("uplink"));
   auto net_num = ini.value<int16_t>("net_num", 0);
   net.net_num = net_num;
   net.host = FTN_FAKE_OUTBOUND_NODE;
@@ -149,6 +151,11 @@ int SubsImportCommand::Execute() {
       new_sub.filename = ToStringLowerCase(b.tag);
       new_sub.name = b.desc;
       subs.add(new_sub);
+
+      // Create nECHOTAG_NAME.net file.
+      const auto& subnet = config()->networks().at(net.net_num);
+      auto subscriberfile = FilePath(subnet.dir, fmt::format("n{}.net", b.tag));
+      wwiv::sdk::WriteFidoSubcriberFile(subscriberfile, {uplink});
     }
   }
 
