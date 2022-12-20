@@ -27,6 +27,7 @@ set(COMMON_SOURCES
   "ansi/localio_screen.cpp"
   "ansi/vscreen.cpp"
   "conf/conf.cpp"
+  "fido/backbone.cpp"
   "fido/fido_address.cpp"
   "fido/fido_callout.cpp"
   "fido/fido_directories.cpp"

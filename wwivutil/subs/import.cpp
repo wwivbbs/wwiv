@@ -22,45 +22,19 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/subxtr.h"
+#include "sdk/fido/backbone.h"
 #include "sdk/net/subscribers.h"
 #include <iostream>
 #include <sstream>
 
 using namespace wwiv::core;
+using namespace wwiv::sdk::fido;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 namespace wwiv::wwivutil {
 
-struct backbone_t {
-  std::string tag;
-  std::string desc;
-};
 
-std::vector<backbone_t> ParseBackboneFile(const std::filesystem::path& file) {
-  TextFile f(file, "rt");
-  if (!f) {
-    return {};
-  }
-  const auto lines = f.ReadFileIntoVector();
-  std::vector<backbone_t> out;
-
-  for (const auto& line : lines) {
-    if (line.empty() || line.front() == ';') {
-      continue;
-    }
-    const auto idx = line.find_first_of(" \t");
-    if (idx == std::string::npos) {
-      continue;
-    }
-    backbone_t b{};
-    b.tag = StringTrim(line.substr(0, idx));
-    b.desc = StringTrim(line.substr(idx +1));
-    out.emplace_back(b);
-  }
-
-  return out;
-}
 
 std::string SubsImportCommand::GetUsage() const {
 return R"(
@@ -129,29 +103,11 @@ int SubsImportCommand::Execute() {
     return 1;
   }
 
-  //
-  // From here down we assume backbone filename, net, etc are all set
-  //
-
   IniFile ini(defaults_fn, {"backbone"});
   if (!ini.IsOpen()) {
     std::cout << "Unable to open INI file: " << defaults_fn << std::endl;
     return 1;
   }
-
-  sdk::subboard_t prototype{};
-  prototype.post_acs = ini.value<std::string>("post_acs", "user.sl >= 20");
-  prototype.read_acs = ini.value<std::string>("read_acs", "user.sl >= 10");
-  prototype.maxmsgs = ini.value<uint16_t>("maxmsgs", 5000);
-  prototype.storage_type = ini.value<uint8_t>("storage_type", 2);
-
-  sdk::subboard_network_data_t netdata{};
-  const sdk::fido::FidoAddress uplink(ini.value<std::string>("uplink"));
-  netdata.net_num = net_num;
-
-  netdata.host = FTN_FAKE_OUTBOUND_NODE;
-  netdata.ftn_uplinks.emplace(sdk::fido::FidoAddress(ini.value<std::string>("uplink")));
-  prototype.nets.emplace_back(netdata);
 
   auto backbone_echos = ParseBackboneFile(backbone_filename);
   if (backbone_echos.empty()) {
@@ -159,37 +115,13 @@ int SubsImportCommand::Execute() {
     return 0;
   }
 
+  //
+  // From here down we assume backbone filename, net, etc are all set
+  //
 
-  // Build list of existing echos for this network.
-  std::unordered_set<std::string> existing_echos;
-  for (const auto& sub : subs.subs()) {
-    for (const auto& n : sub.nets) {
-      if (n.net_num == net_num) {
-        existing_echos.insert(n.stype);
-      }
-    }
-  }
+  auto r = ImportSubsFromBackbone(subs, net, net_num, ini, backbone_echos);
 
-  auto subs_dirty = false;
-  for (const auto& b : backbone_echos) {
-    if (!stl::contains(existing_echos, b.tag)) {
-      // Add it.
-      LOG(INFO) << "Echo tag: " << b.tag << " does not already exist.";
-      subs_dirty = true;
-      auto new_sub{prototype};
-      new_sub.nets.front().stype = b.tag;
-      new_sub.filename = ToStringLowerCase(b.tag);
-      new_sub.name = b.desc;
-      subs.add(new_sub);
-
-      // Create nECHOTAG_NAME.net file.
-      const auto& subnet = config()->networks().at(netdata.net_num);
-      auto subscriberfile = FilePath(subnet.dir, fmt::format("n{}.net", b.tag));
-      wwiv::sdk::WriteFidoSubcriberFile(subscriberfile, {uplink});
-    }
-  }
-
-  if (subs_dirty) {
+  if (r.success && r.subs_dirty) {
     if (!subs.Save()) {
       LOG(ERROR) << "Error Saving subs.dat";
     }
