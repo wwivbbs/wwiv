@@ -103,7 +103,7 @@ int SubsImportCommand::Execute() {
     return 1;
   }
 
-  IniFile ini(defaults_fn, {"backbone"});
+  IniFile ini(defaults_fn, "backbone");
   if (!ini.IsOpen()) {
     std::cout << "Unable to open INI file: " << defaults_fn << std::endl;
     return 1;

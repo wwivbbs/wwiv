@@ -165,7 +165,7 @@ void chat_room() {
   char szMessageSent[80], szFromMessage[50];
   strcpy(szMessageSent, "|#1[|#9Message Sent|#1]\r\n");
   strcpy(szFromMessage, "|#9From %.12s|#1: %s%s");
-  IniFile ini(FilePath(a()->bbspath(), CHAT_INI), {"CHAT"});
+  IniFile ini(FilePath(a()->bbspath(), CHAT_INI), "CHAT");
   if (ini.IsOpen()) {
     g_nChatOpSecLvl = ini.value<int>("CHATOP_SL");
     bShowPrompt = ini.value<bool>("CH_PROMPT");

@@ -24,6 +24,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace wwiv::core {
@@ -36,10 +37,10 @@ struct ini_flags_type {
 
 class IniFile final {
 public:
-  IniFile(std::filesystem::path filename, std::initializer_list<const char*> sections);
-  IniFile(std::filesystem::path path,
-          std::initializer_list<const std::string> sections);
   // Constructor/Destructor
+  IniFile(std::filesystem::path filename, std::string_view section);
+  IniFile(std::filesystem::path filename, std::string_view section0, std::string_view section1);
+  IniFile(std::filesystem::path filename, std::initializer_list<std::string_view> sections);
   ~IniFile();
 
   // Member functions

@@ -118,20 +118,16 @@ static bool ParseIniFile(const std::filesystem::path& filename, std::map<std::st
   return true;
 }
 
-IniFile::IniFile(std::filesystem::path filename,
-                 const std::initializer_list<const char*> sections)
-  : path_(std::move(filename)) {
-  // Can't use initializer_list to go from const string -> vector<string>
-  // and can't use vector<const string>
-  for (const auto& s : sections) {
-    sections_.emplace_back(s);
-  }
-  open_ = ParseIniFile(path_, data_);
-}
+IniFile::IniFile(std::filesystem::path filename, std::string_view section)
+    : IniFile(filename, {section}) {}
 
-IniFile::IniFile(std::filesystem::path path,
-                 const std::initializer_list<const std::string> sections)
-  : path_(std::move(path)) {
+IniFile::IniFile(std::filesystem::path filename, std::string_view section0,
+                 std::string_view section1)
+    : IniFile(filename, {section0, section1}) {}
+
+IniFile::IniFile(std::filesystem::path filename,
+                 const std::initializer_list<std::string_view> sections)
+  : path_(std::move(filename)) {
   // Can't use initializer_list to go from const string -> vector<string>
   // and can't use vector<const string>
   for (const auto& s : sections) {

@@ -607,7 +607,7 @@ bool CanCreateNewUserAccountHere() {
 
 void DoNewUserASV() {
   IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
-              {StrCat("WWIV-", a()->sess().instance_number()), INI_TAG});
+              StrCat("WWIV-", a()->sess().instance_number()), INI_TAG);
   if (!ini.IsOpen()) {
     return;
   }

@@ -97,6 +97,7 @@ set(test_sources
   "ansi/ansi_test.cpp"
   "ansi/framebuffer_test.cpp"
   "ansi/makeansi_test.cpp"
+  "fido/backbone_test.cpp"
   "fido/fido_address_test.cpp"
   "fido/fido_packets_test.cpp"
   "fido/fido_util_test.cpp"

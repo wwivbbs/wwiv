@@ -492,7 +492,7 @@ static bool UseMinimalNewUserInfo(IniFile& ini) {
 // This is the first one of 5.7
 bool convert_to_v6(UIWindow* window, Config& config) {
   ShowBanner(window, "Updating to 5.7+ v6 format...");
-  IniFile ini(FilePath(config.root_directory(), WWIV_INI), {INI_TAG});
+  IniFile ini(FilePath(config.root_directory(), WWIV_INI), INI_TAG);
   auto minimal = true;
   int num_instances = 8;
   std::string temp_directory = "e/%n/temp";

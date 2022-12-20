@@ -115,7 +115,7 @@ NetworkF::NetworkF(const sdk::BbsDirectories& bbsdirs, const networkf_options_t&
       fido_callout_(bbsdirs.root_directory(), opts.max_backups, net_),
       netdat_(bbsdirs.gfilesdir(), bbsdirs.logdir(), net_, opts.net_cmd, clock_),
       dirs_(bbsdirs.root_directory(), net_), opts_(opts), datadir_(bbsdirs.datadir()) {
-  const IniFile ini(FilePath(bbsdirs.root_directory(), WWIV_INI), {"WWIV"});
+  const IniFile ini(FilePath(bbsdirs.root_directory(), WWIV_INI), "WWIV");
   if (ini.IsOpen()) {
     // pull out new user colors
     for (auto i = 0; i < 10; i++) {

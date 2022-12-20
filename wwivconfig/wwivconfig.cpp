@@ -65,7 +65,7 @@ using namespace wwiv::strings;
 using namespace wwiv::wwivconfig::convert;
 
 static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const std::string& bbsdir) {
-  IniFile oini(WWIV_INI, {"WWIV"});
+  IniFile oini(WWIV_INI, "WWIV");
   auto num_instances = oini.value("NUM_INSTANCES", 4);
 
   std::vector<legacy_configovrrec_424_t> config_ovr_data;

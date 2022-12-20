@@ -885,7 +885,7 @@ void auto_purge() {
   int skipsl = 0;
   {
     IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
-                {StrCat("WWIV-", a()->sess().instance_number()), INI_TAG});
+                StrCat("WWIV-", a()->sess().instance_number()), INI_TAG);
     if (ini.IsOpen()) {
       days = ini.value<int>("AUTO_USER_PURGE");
       skipsl = ini.value<int>("NO_PURGE_SL");

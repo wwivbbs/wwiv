@@ -47,7 +47,7 @@ namespace wwiv::wwivfsed {
 FsedConfig::FsedConfig(const CommandLine& cmdline) 
   : root_(cmdline.program_path().parent_path()), help_path_(FilePath(root_, "gfiles")) {
   auto path = FilePath(root_, "wwivfsed.ini");
-  IniFile ini(path, {"WWIVFSED"});
+  IniFile ini(path, "WWIVFSED");
   if (ini.IsOpen()) {
     VLOG(1) << "Using wwivfsed.ini: '" << path.string() << "'";
     auto bt = ini.value<std::string>("bbs_type", "wwiv");

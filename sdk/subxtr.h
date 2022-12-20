@@ -104,7 +104,8 @@ struct subboard_52_t {
 
 class Subs final {
 public:
-  Subs(std::string datadir, const std::vector<net::Network>& net_networks, int max_backups = 0);
+  Subs(std::filesystem::path datadir, const std::vector<net::Network>& net_networks,
+       int max_backups = 0);
   ~Subs();
 
   bool LoadLegacy();
@@ -130,12 +131,15 @@ public:
   bool erase(int n);
   [[nodiscard]] int size() const { return stl::size_int(subs_); }
 
-  static bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<subboard_t>& entries);
-  static bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const std::vector<subboard_t>& entries);
-
+  static bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
+                           std::vector<subboard_t>& entries);
 
 private:
-  const std::string datadir_;
+
+  static bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename,
+                         const std::vector<subboard_t>& entries);
+
+  const std::filesystem::path datadir_;
   const std::vector<net::Network> net_networks_;
   const int max_backups_;
   std::vector<subboard_t> subs_;

@@ -45,13 +45,14 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk {
 
-bool read_subs_xtr(const std::string& datadir, const std::vector<Network>& net_networks,
+bool read_subs_xtr(const std::filesystem::path& datadir, const std::vector<Network>& net_networks,
                    const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs);
-bool write_subs_xtr(const std::string& datadir, const std::vector<Network>& net_networks,
+bool write_subs_xtr(const std::filesystem::path& datadir, const std::vector<Network>& net_networks,
                     const std::vector<xtrasubsrec>& xsubs, int max_backups);
 
-std::vector<subboardrec_422_t> read_subs(const std::string &datadir);
-bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards);
+std::vector<subboardrec_422_t> read_subs(const std::filesystem::path& datadir);
+bool write_subs(const std::filesystem::path& datadir,
+                const std::vector<subboardrec_422_t>& subboards);
 
 
 bool Subs::LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
@@ -106,7 +107,8 @@ bool ParseXSubsLine(const std::vector<Network>& net_networks, const std::string&
   return true;
 }
 
-bool read_subs_xtr(const std::string& datadir, const std::vector<Network>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs) {
+bool read_subs_xtr(const std::filesystem::path& datadir, const std::vector<Network>& net_networks,
+                   const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs) {
   // Clear the existing xsubs.
   xsubs.clear();
   // add default constructed xtrasubsrec entries
@@ -162,7 +164,7 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<Network>& net_n
   return true;
 }
 
-bool write_subs_xtr(const std::string& datadir, const std::vector<Network>& net_networks,
+bool write_subs_xtr(const std::filesystem::path& datadir, const std::vector<Network>& net_networks,
                     const std::vector<xtrasubsrec>& xsubs, int max_backups) {
   // Backup subs.xtr
   const auto sx = FilePath(datadir, SUBS_XTR);
@@ -193,7 +195,7 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<Network>& net_
   return true;
 }
 
-std::vector<subboardrec_422_t> read_subs(const std::string &datadir) {
+std::vector<subboardrec_422_t> read_subs(const std::filesystem::path &datadir) {
   DataFile<subboardrec_422_t> file(FilePath(datadir, SUBS_DAT));
   if (!file) {
     // TODO(rushfan): Figure out why this caused link errors. What's missing?
@@ -207,7 +209,8 @@ std::vector<subboardrec_422_t> read_subs(const std::string &datadir) {
   return subboards;
 }
 
-bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards) {
+bool write_subs(const std::filesystem::path& datadir,
+                const std::vector<subboardrec_422_t>& subboards) {
   DataFile<subboardrec_422_t> subsfile(FilePath(datadir, SUBS_DAT),
                                        File::modeBinary | File::modeReadWrite |
                                            File::modeCreateFile | File::modeTruncate,
@@ -221,7 +224,7 @@ bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>
 
 // Classes
 
-Subs::Subs(std::string datadir, const std::vector<Network>& net_networks, int max_backups)
+Subs::Subs(std::filesystem::path datadir, const std::vector<Network>& net_networks, int max_backups)
   : datadir_(std::move(datadir)), net_networks_(net_networks), max_backups_(max_backups) {};
 
 Subs::~Subs() = default;
@@ -337,7 +340,7 @@ bool Subs::Save() {
   backup_file(FilePath(datadir_, SUBS_JSON), max_backups_);
 
   // Save subs.
-  return SaveToJSON(datadir_, SUBS_JSON, subs_);
+  return Subs::SaveToJSON(datadir_, SUBS_JSON, subs_);
 }
 
 bool Subs::insert(int n, subboard_t r) {

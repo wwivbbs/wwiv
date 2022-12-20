@@ -33,13 +33,17 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
+// Made visible for testing
 namespace wwiv::sdk {
 
-bool read_subs_xtr(const std::string& datadir, const std::vector<Network>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs);
-bool write_subs_xtr(const std::string& datadir, const std::vector<Network>& net_networks, const std::vector<xtrasubsrec>& xsubs, int);
+bool read_subs_xtr(const std::filesystem::path& datadir, const std::vector<Network>& net_networks,
+                   const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs);
+bool write_subs_xtr(const std::filesystem::path& datadir, const std::vector<Network>& net_networks,
+                    const std::vector<xtrasubsrec>& xsubs, int);
 
-std::vector<subboardrec_422_t> read_subs(const std::string &datadir);
-bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards);
+std::vector<subboardrec_422_t> read_subs(const std::filesystem::path& datadir);
+bool write_subs(const std::filesystem::path& datadir,
+                const std::vector<subboardrec_422_t>& subboards);
 
 }
 

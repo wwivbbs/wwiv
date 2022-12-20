@@ -393,7 +393,7 @@ bool Application::ReadConfig() {
   user_manager_ = std::make_unique<UserManager>(*config_);
   statusMgr = std::make_unique<StatusMgr>(config_->datadir(), StatusManagerCallback);
 
-  IniFile ini(FilePath(bbspath(), WWIV_INI), {StrCat("WWIV-", sess().instance_number()), INI_TAG});
+  IniFile ini(FilePath(bbspath(), WWIV_INI), StrCat("WWIV-", sess().instance_number()), INI_TAG);
   if (!ini.IsOpen()) {
     LOG(ERROR) << "Unable to read WWIV.INI.";
     return false;

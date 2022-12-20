@@ -54,7 +54,7 @@ std::string ctypes(int num) {
     "Other",
   };
 
-  const IniFile iniFile(FilePath(a()->bbspath(), WWIV_INI), {"CTYPES"});
+  const IniFile iniFile(FilePath(a()->bbspath(), WWIV_INI), "CTYPES");
   if (iniFile.IsOpen()) {
     return iniFile.value<std::string>(fmt::format("COMP_TYPE[{}]", num + 1));
   }
