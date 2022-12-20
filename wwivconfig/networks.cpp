@@ -143,9 +143,9 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
 // Base item of an editable value, this class does not use templates.
 class FidoNetworkConfigSubDialog : public SubDialog<Network> {
 public:
-  FidoNetworkConfigSubDialog(const Config& config, std::filesystem::path bbsdir,
+  FidoNetworkConfigSubDialog(const Config& config, std::filesystem::path netdir,
                              Network& d)
-      : SubDialog(config, d), netdir_(std::move(bbsdir)) {}
+      : SubDialog(config, d), netdir_(std::move(netdir)) {}
   ~FidoNetworkConfigSubDialog() override = default;
 
   void RunSubDialog(CursesWindow* window) override {
@@ -164,6 +164,10 @@ public:
     items.add(new Label("Nodelist Base:"),
               new StringEditItem<std::string&>(MAX_STRING_LEN, n->nodelist_base, EditLineMode::ALL),
       "Base filename for the nodelist without path or extension. (e.g. FSXNET)", 1, y);
+    ++y;
+    items.add(new Label("Backbone File:"),
+              new StringEditItem<std::string&>(MAX_STRING_LEN, n->backbone_filename, EditLineMode::ALL),
+              "Filename of ECHOLIST in BACKBONE.NA format (e.g. FSXNET.NA)", 1, y);
     ++y;
     items.add(new Label("Inbound Dir:"),
               new StringFilePathItem(MAX_STRING_LEN, netdir_, n->inbound_dir), 1, y);
@@ -516,6 +520,11 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
             "Name of the network to use to display to bbs callers", 1, y);
   y++;
   items.add(new Label("Directory:"), new FileSystemFilePathItem(60, config.root_directory(), n.dir),
+            1, y);
+  y++;
+  items.add(new Label("Auto Add Subs:"), new BooleanEditItem(&n.settings.auto_add), 1, y);
+  y++;
+  items.add(new Label("Auto Add INI:"), new StringFilePathItem(60, n.dir, n.settings.auto_add_ini),
             1, y);
   y++;
 

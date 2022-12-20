@@ -204,6 +204,18 @@ struct fido_node_config_t {
 // ***************************************************************************************
 
 /**
+ * 5.8+ specific per-network settings.  
+ * 
+ * These are common across all network types.
+ */
+struct common_network_config_t {
+  // Should unrecognized network subs be automatically added
+  bool auto_add{false};
+  // Configuration INI file for automatically adding subs
+  std::string auto_add_ini;
+};
+
+/**
  * Fido specific per-network settings.
  */
 struct fido_network_config_t {
@@ -211,6 +223,8 @@ struct fido_network_config_t {
   std::string fido_address;
   // Your FTN nodelist base name (i.e. NODELiST)
   std::string nodelist_base;
+  // Your FTN network backbone.na file (i.e. FSXNET.NA)
+  std::string backbone_filename;
   // Fidonet mailer type {FLO, Attach}.
   // Only FLO is even close to being supported.
   fido_mailer_t mailer_type;
@@ -286,6 +300,8 @@ public:
   std::filesystem::path dir;
   /* system number */
   uint16_t sysnum{0};
+  /** Additional Common network settings */
+  common_network_config_t settings;
 
   // Used by FTN type nodes.
   fido_network_config_t fido{};

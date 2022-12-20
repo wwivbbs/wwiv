@@ -63,40 +63,77 @@ std::vector<backbone_t> ParseBackboneFile(const std::filesystem::path& file) {
 }
 
 std::string SubsImportCommand::GetUsage() const {
-  std::ostringstream ss;
-  ss << "Usage:   import  --format=[backbone] --defaults=<filename.ini> <subs filename>"
-     << std::endl;
-  return ss.str();
+return R"(
+Imports subs using the backbone file and values specified in the ini file
+specified in wwivconfig for the network or override using --defaults.
+
+Usage:   import --net=NN [--defaults=import.ini] [backbone.na]
+
+Example: wwivutil subs import --net=1
+
+  Sample import.ini:
+
+  [backbone]
+  post_acs = user.sl >= 20
+  read_acs = user.sl >= 10
+  maxmsgs = 5000
+  net_num = 2
+  uplink = 21:2/100
+
+)";
 }
 
 bool SubsImportCommand::AddSubCommands() {
-  add_argument({"format", 'f', "must be 'backbone'", "backbone"});
-  add_argument({"defaults", 'd', "Specify an ini file with defaults to use when creating new subs.", ""});
+  add_argument({"defaults", 'd', "Override the ini file with defaults to use when creating new subs.", ""});
+  add_argument({"net", "Network number to use (i.e. 0).", ""});
   return true;
 }
 
 int SubsImportCommand::Execute() {
-  const auto format = sarg("format");
-  if (format != "backbone") {
-    std::cout << "Format must be backbone. " << std::endl;
-    return 1;
-  }
-
   if (remaining().empty()) {
     std::cout << GetUsage() << std::endl;
     return 1;
   }
 
-  const auto defaults_fn = sarg("defaults");
+  auto defaults_fn = sarg("defaults");
+  int16_t net_num = 0;
+  if (!arg("net").as_string().empty()) {
+    // Use the network number on the commandline as an override.
+    net_num = iarg<int16_t>("net");
+  }
+  const auto& net = config()->networks().at(net_num);
+
+  if (defaults_fn.empty()) {
+    // If --defaults is empty, use the one from networks.json
+    defaults_fn = net.settings.auto_add_ini;
+  }
   if (defaults_fn.empty() || !core::File::Exists(defaults_fn)) {
     std::cout << "Defaults INI file: " << defaults_fn << " does not exist " << std::endl;
     std::cout << GetUsage() << std::endl;
     return 1;
   }
 
-  const auto& backbone_filename = remaining().front();
+  std::string backbone_filename;
+  if (net.type == network_type_t::ftn) {
+    backbone_filename = net.fido.backbone_filename;
+  }
+  if (!remaining().empty()) {
+    // Override the backbone filename
+    backbone_filename = remaining().front();
+  }
 
-  IniFile ini(defaults_fn, {format});
+  sdk::Subs subs(config()->config()->datadir(), config()->networks().networks(),
+                 config()->config()->max_backups());
+  if (!subs.Load()) {
+    std::cout << "Unable to load subs.json" << std::endl;
+    return 1;
+  }
+
+  //
+  // From here down we assume backbone filename, net, etc are all set
+  //
+
+  IniFile ini(defaults_fn, {"backbone"});
   if (!ini.IsOpen()) {
     std::cout << "Unable to open INI file: " << defaults_fn << std::endl;
     return 1;
@@ -108,13 +145,13 @@ int SubsImportCommand::Execute() {
   prototype.maxmsgs = ini.value<uint16_t>("maxmsgs", 5000);
   prototype.storage_type = ini.value<uint8_t>("storage_type", 2);
 
-  sdk::subboard_network_data_t net{};
+  sdk::subboard_network_data_t netdata{};
   const sdk::fido::FidoAddress uplink(ini.value<std::string>("uplink"));
-  auto net_num = ini.value<int16_t>("net_num", 0);
-  net.net_num = net_num;
-  net.host = FTN_FAKE_OUTBOUND_NODE;
-  net.ftn_uplinks.emplace(sdk::fido::FidoAddress(ini.value<std::string>("uplink")));
-  prototype.nets.emplace_back(net);
+  netdata.net_num = net_num;
+
+  netdata.host = FTN_FAKE_OUTBOUND_NODE;
+  netdata.ftn_uplinks.emplace(sdk::fido::FidoAddress(ini.value<std::string>("uplink")));
+  prototype.nets.emplace_back(netdata);
 
   auto backbone_echos = ParseBackboneFile(backbone_filename);
   if (backbone_echos.empty()) {
@@ -122,13 +159,6 @@ int SubsImportCommand::Execute() {
     return 0;
   }
 
-  sdk::Subs subs(config()->config()->datadir(),
-                 config()->networks().networks(),
-                 config()->config()->max_backups());
-  if (!subs.Load()) {
-    std::cout << "Unable to load subs.json" << std::endl;
-    return 1;
-  }
 
   // Build list of existing echos for this network.
   std::unordered_set<std::string> existing_echos;
@@ -153,7 +183,7 @@ int SubsImportCommand::Execute() {
       subs.add(new_sub);
 
       // Create nECHOTAG_NAME.net file.
-      const auto& subnet = config()->networks().at(net.net_num);
+      const auto& subnet = config()->networks().at(netdata.net_num);
       auto subscriberfile = FilePath(subnet.dir, fmt::format("n{}.net", b.tag));
       wwiv::sdk::WriteFidoSubcriberFile(subscriberfile, {uplink});
     }

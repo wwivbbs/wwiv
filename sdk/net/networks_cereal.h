@@ -141,6 +141,7 @@ template <class Archive>
 void load(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, fido_address);
   SERIALIZE(n, nodelist_base);
+  SERIALIZE(n, backbone_filename);
   SERIALIZE(n, mailer_type);
   SERIALIZE(n, transport);
   SERIALIZE(n, inbound_dir);
@@ -163,6 +164,7 @@ template <class Archive>
 void save(Archive & ar, const fido_network_config_t& n) {
   SERIALIZE(n, fido_address);
   SERIALIZE(n, nodelist_base);
+  SERIALIZE(n, backbone_filename);
   SERIALIZE(n, mailer_type);
   SERIALIZE(n, transport);
   SERIALIZE(n, inbound_dir);
@@ -181,14 +183,19 @@ void save(Archive & ar, const fido_network_config_t& n) {
   SERIALIZE(n, allow_any_pipe_codes);
 }
 
+template <class Archive> void serialize(Archive& ar, common_network_config_t& n) {
+  SERIALIZE(n, auto_add);
+  SERIALIZE(n, auto_add_ini);
+}
+
 // This has to be in the cereal or default to match Network which
 // is in the default namespace.
-template <class Archive>
-void serialize(Archive & ar, Network& n) {
+template <class Archive> void serialize(Archive& ar, Network& n) {
   SERIALIZE(n, type);
   SERIALIZE(n, name);
   SERIALIZE(n, dir);
   SERIALIZE(n, sysnum);
+  SERIALIZE(n, settings);
   // Serialize the Fido config
   if (n.type == network_type_t::ftn) {
     SERIALIZE(n, fido);
@@ -196,7 +203,7 @@ void serialize(Archive & ar, Network& n) {
   SERIALIZE(n, uuid);
 }
 
-}  // namespace cereal
+} // namespace cereal
 
 
 

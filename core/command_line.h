@@ -183,7 +183,8 @@ public:
   [[nodiscard]] CommandLineValue arg(const std::string& name) const;
   [[nodiscard]] bool contains_arg(const std::string& name) const noexcept;
   [[nodiscard]] std::string sarg(const std::string& name) const { return arg(name).as_string(); }
-  [[nodiscard]] int iarg(const std::string& name) const { return arg(name).as_int(); }
+  template<typename T = int>
+  [[nodiscard]] T iarg(const std::string& name) const { return static_cast<T>(arg(name).as_int()); }
   [[nodiscard]] bool barg(const std::string& name) const { return arg(name).as_bool(); }
   [[nodiscard]] bool help_requested() const { return barg("help"); }
   [[nodiscard]] const CommandLineCommand* command() const { return command_; }
