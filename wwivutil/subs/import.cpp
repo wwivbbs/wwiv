@@ -51,15 +51,16 @@ Example: wwivutil subs import --net=1
   post_acs = user.sl >= 20
   read_acs = user.sl >= 10
   maxmsgs = 5000
-  net_num = 2
   uplink = 21:2/100
 
 )";
 }
 
 bool SubsImportCommand::AddSubCommands() {
-  add_argument({"defaults", 'd', "Override the ini file with defaults to use when creating new subs.", ""});
+  add_argument({"backbone", 'b', "Override the backbone.na file defined in wwivconfig.", ""});
+  add_argument({"defaults", 'd', "Override the ini file defined in wwivconfig.", ""});
   add_argument({"net", "Network number to use (i.e. 0).", ""});
+
   return true;
 }
 
@@ -77,6 +78,11 @@ int SubsImportCommand::Execute() {
   }
   const auto& net = config()->networks().at(net_num);
 
+  if (net.type != network_type_t::ftn) {
+    std::cout << "Can only import subs for FTN network" << std::endl;
+    std::cout << GetUsage() << std::endl;
+  }
+
   if (defaults_fn.empty()) {
     // If --defaults is empty, use the one from networks.json
     defaults_fn = net.settings.auto_add_ini;
@@ -87,13 +93,15 @@ int SubsImportCommand::Execute() {
     return 1;
   }
 
-  std::string backbone_filename;
-  if (net.type == network_type_t::ftn) {
-    backbone_filename = net.fido.backbone_filename;
-  }
-  if (!remaining().empty()) {
+  std::filesystem::path backbone_filename = sarg("backbone");
+  if (!backbone_filename.empty()) {
     // Override the backbone filename
-    backbone_filename = remaining().front();
+    backbone_filename = FilePath(net.dir, net.fido.backbone_filename);
+  }
+  if (backbone_filename.empty() || !core::File::Exists(backbone_filename)) {
+    std::cout << "BACKBONE.NA file: " << backbone_filename << " does not exist " << std::endl;
+    std::cout << GetUsage() << std::endl;
+    return 1;
   }
 
   sdk::Subs subs(config()->config()->datadir(), config()->networks().networks(),

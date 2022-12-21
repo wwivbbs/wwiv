@@ -29,6 +29,7 @@
 #include "sdk/subxtr.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/net/packets.h"
+#include "sdk/fido/backbone.h"
 #include <iostream>
 #include <memory>
 #include <set>
@@ -40,6 +41,7 @@ using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::fido;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
@@ -65,6 +67,20 @@ static bool find_sub(const Subs& subs, int network_number, const std::string& ne
   return false;
 }
 
+// Creates a single element vector of the echotag's info from the backbone list
+static std::vector<backbone_t> single_echo_backbone_list(std::vector<backbone_t> backbone,
+                                                         std::string echotag) {
+  for (const auto& b : backbone) {
+    if (b.tag == echotag) {
+      return std::vector<backbone_t>{b};
+    }
+  }
+  backbone_t b{echotag, echotag};
+  LOG(WARNING) << "Could not find echotag: '" << echotag << "' in backbone file.";
+  return std::vector<backbone_t>{b};
+}
+
+
 // Alpha subtypes are seven characters -- the first must be a letter, but the rest can be any
 // character allowed in a DOS filename.This main_type covers both subscriber - to - host and
 // host - to - subscriber messages. Minor type is always zero(since it's ignored), and the
@@ -88,6 +104,26 @@ bool handle_inbound_post(Context& context, NetPacket& p) {
 
   subboard_t sub;
   if (!find_sub(context.subs, context.network_number, ppt.subtype(), sub)) {
+    if (context.net.settings.auto_add && context.net.type == network_type_t::ftn) {
+      // Only auto-add to FTN for now
+      IniFile ini(context.net.dir / context.net.settings.auto_add_ini, "backbone");
+      if (!ini.IsOpen()) {
+        LOG(ERROR) << "Unable to auto add subtype, INI file missing: "
+                   << context.net.settings.auto_add_ini;
+      } else {
+        const auto backbone_filename = FilePath(context.net.dir, context.net.fido.backbone_filename);
+        const auto backbone_echos = ParseBackboneFile(backbone_filename);
+        const auto echo = single_echo_backbone_list(backbone_echos, ppt.subtype());
+        const auto r = ImportSubsFromBackbone(
+            context.subs, context.net, static_cast<int16_t>(context.network_number), ini, echo);
+        if (r.subs_dirty && r.success) {
+          context.subs.Save();
+        } else if (!r.success) {
+          LOG(ERROR) << "    ! ERROR: Failed to auto add sub to subs.json; subtype: " << ppt.subtype();
+        }
+      }
+    }
+
     LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << ppt.subtype();
     LOG(INFO) << "      title: " << ppt.title() << "; writing to dead.net.";
     const auto msg = fmt::format("Unable to find message of subtype: '{}'; writing to dead.net", ppt.subtype());

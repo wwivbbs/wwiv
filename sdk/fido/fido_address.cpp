@@ -53,7 +53,8 @@ FidoAddress::FidoAddress(const std::string& address) {
   const auto has_domain = contains(address, '@');
 
   if (!has_net) {
-    throw bad_fidonet_address(StrCat("Missing Net or Node. Unable to parse address: ", address));
+    throw bad_fidonet_address(
+        StrCat("Missing Net or Node. Unable to parse address: '", address, "'"));
   }
   auto it = std::begin(address);
   if (has_zone) {
