@@ -30,6 +30,7 @@ public:
   int Run();
 
 private:
+  void pausescr();
   void dump_char(char ch);
   void show_help();
   void show_header(const net_header_rec& nh, int current, double percent);
@@ -37,6 +38,7 @@ private:
 
   const wwiv::net::NetworkCommandLine& net_cmdline_;
   wwiv::local::io::LocalIO* io{nullptr};
+  int curli_{0};
 };
 
 #endif // INCLUDED_NET_LNET_H

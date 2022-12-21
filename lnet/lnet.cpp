@@ -38,6 +38,7 @@
 #include <string>
 
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::net;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
@@ -45,12 +46,12 @@ using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 
 
-static wwiv::local::io::LocalIO* CreateLocalIO() {
+static LocalIO* CreateLocalIO() {
 #if defined(_WIN32) && !defined(WWIV_WIN32_CURSES_IO)
-  return new wwiv::local::io::Win32ConsoleIO();
+  return new Win32ConsoleIO();
 #else
   wwiv::local::ui::CursesIO::Init(fmt::sprintf("WWIV BBS %s", full_version()));
-  return new wwiv::local::io::CursesLocalIO(wwiv::local::ui::curses_out->GetMaxY(),
+  return new CursesLocalIO(wwiv::local::ui::curses_out->GetMaxY(),
                                             wwiv::local::ui::curses_out->GetMaxX());
 #endif
 }
@@ -104,6 +105,13 @@ void LNet::dump_char(char ch) {
   case 31:
     io->Format("[#{:d}]", ch);
     break;
+  case 10:
+    ++curli_;
+    io->Putch(ch);
+    if (curli_ > 24) {
+      pausescr();
+    }
+    break;
   default:
     io->Putch(ch);
     break;
@@ -126,6 +134,7 @@ R - Read message.
 D - Delete message.
 N - Next message.
 T - Re-Read message.
+W - Write message to new file.
 ] - 10 messages forward.
 } - 50 messages forward.
 ' - 500 messages forward
@@ -175,7 +184,16 @@ static int skip_messages(NetMailFile& file, int num_to_skip) {
   return skipped;
 }
 
-
+void LNet::pausescr() { 
+  auto saved = io->curatr(); 
+  io->curatr(13);
+  io->Puts("[PAUSE]");
+  io->GetChar();
+  io->Cr();
+  io->Lf();
+  io->curatr(saved);
+  curli_ = 0;
+}
 
 int LNet::Run() {
   const std::filesystem::path filename = net_cmdline_.cmdline().remaining().front();
@@ -257,12 +275,11 @@ int LNet::Run() {
         if (packet.nh.length) {
           io->Cr();
           io->Lf();
-          io->Lf();
+          ++curli_;
           for (const auto ch : packet.text()) {
             dump_char(ch);
           }
           io->Cr();
-          io->Lf();
           io->Lf();
         }
       } break;
@@ -271,6 +288,26 @@ int LNet::Run() {
         file.file().Seek(packet.offset(), wwiv::core::File::Whence::begin);
         --current;
         prompt_done = true;
+      } break;
+      case 'W': {
+        // Write message to new file.
+
+        // Back up.
+        file.file().Seek(packet.offset(), wwiv::core::File::Whence::begin);
+        --current;
+        prompt_done = true;
+        std::string fn;
+        io->Puts("Enter Filename: ");
+        const auto r = io->EditLine(fn, 12, AllowedKeys::ALL);
+        io->Cr();
+        io->Lf();
+        if (r == EditlineResult::ABORTED) {
+          io->Puts("Aborted");
+          break;
+        }
+        const auto dir = filename.parent_path();
+        write_wwivnet_packet(FilePath(dir, fn), packet);
+ 
       } break;
       }
     } // !prompt_done
