@@ -524,7 +524,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   y++;
   items.add(new Label("Auto Add Subs:"), new BooleanEditItem(&n.settings.auto_add), 1, y);
   y++;
-  items.add(new Label("Auto Add INI:"), new StringFilePathItem(60, n.dir, n.settings.auto_add_ini),
+  items.add(new Label("Auto Add INI:"), new StringFileNameItem(60, n.dir, n.settings.auto_add_ini),
             1, y);
   y++;
 

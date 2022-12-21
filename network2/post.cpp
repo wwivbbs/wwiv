@@ -80,6 +80,28 @@ static std::vector<backbone_t> single_echo_backbone_list(std::vector<backbone_t>
   return std::vector<backbone_t>{b};
 }
 
+static bool attempt_auto_add(Context& context, const ParsedNetPacketText& ppt) {
+  // Only auto-add to FTN for now
+  IniFile ini(context.net.dir / context.net.settings.auto_add_ini, "backbone");
+  if (!ini.IsOpen()) {
+    LOG(ERROR) << "Unable to auto add subtype, INI file missing: "
+               << context.net.settings.auto_add_ini;
+    return false;
+  }
+
+  const auto backbone_filename = FilePath(context.net.dir, context.net.fido.backbone_filename);
+  const auto backbone_echos = ParseBackboneFile(backbone_filename);
+  const auto echo = single_echo_backbone_list(backbone_echos, ppt.subtype());
+  const auto r = ImportSubsFromBackbone(context.subs, context.net,
+                                        static_cast<int16_t>(context.network_number), ini, echo);
+  if (r.subs_dirty && r.success) {
+    return context.subs.Save();
+  } 
+  if (!r.success) {
+    LOG(ERROR) << "    ! ERROR: Failed to auto add sub to subs.json; subtype: " << ppt.subtype();
+  }
+  return r.success;
+}
 
 // Alpha subtypes are seven characters -- the first must be a letter, but the rest can be any
 // character allowed in a DOS filename.This main_type covers both subscriber - to - host and
@@ -103,27 +125,21 @@ bool handle_inbound_post(Context& context, NetPacket& p) {
   }
 
   subboard_t sub;
-  if (!find_sub(context.subs, context.network_number, ppt.subtype(), sub)) {
-    if (context.net.settings.auto_add && context.net.type == network_type_t::ftn) {
-      // Only auto-add to FTN for now
-      IniFile ini(context.net.dir / context.net.settings.auto_add_ini, "backbone");
-      if (!ini.IsOpen()) {
-        LOG(ERROR) << "Unable to auto add subtype, INI file missing: "
-                   << context.net.settings.auto_add_ini;
-      } else {
-        const auto backbone_filename = FilePath(context.net.dir, context.net.fido.backbone_filename);
-        const auto backbone_echos = ParseBackboneFile(backbone_filename);
-        const auto echo = single_echo_backbone_list(backbone_echos, ppt.subtype());
-        const auto r = ImportSubsFromBackbone(
-            context.subs, context.net, static_cast<int16_t>(context.network_number), ini, echo);
-        if (r.subs_dirty && r.success) {
-          context.subs.Save();
-        } else if (!r.success) {
-          LOG(ERROR) << "    ! ERROR: Failed to auto add sub to subs.json; subtype: " << ppt.subtype();
-        }
-      }
+  const auto can_auto_add =
+      context.net.settings.auto_add && context.net.type == network_type_t::ftn;
+  auto found = find_sub(context.subs, context.network_number, ppt.subtype(), sub);
+  if (!found && can_auto_add) {
+    LOG(INFO) << "      Attempting to auto add area: " << ppt.subtype();
+    found = attempt_auto_add(context, ppt);
+    if (found) {
+      // Log that we added this both in log file and netdat.
+      const auto msg = fmt::format("Auto added sub for type: '{}'", ppt.subtype());
+      LOG(INFO) << "      " << msg;
+      context.netdat().add_message(NetDat::netdat_msgtype_t::normal, msg);
     }
+  }
 
+  if (!found) {
     LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << ppt.subtype();
     LOG(INFO) << "      title: " << ppt.title() << "; writing to dead.net.";
     const auto msg = fmt::format("Unable to find message of subtype: '{}'; writing to dead.net", ppt.subtype());
@@ -132,15 +148,12 @@ bool handle_inbound_post(Context& context, NetPacket& p) {
   }
 
   if (!context.api(sub.storage_type).Exist(sub)) {
-    LOG(INFO) << "WARNING Message area: '" << sub.filename << "' does not exist.";
-    LOG(INFO) << "WARNING Attempting to create it.";
-    // Since the area does not exist, let's create it automatically
-    // like WWIV always does.
-    auto created = context.api(sub.storage_type).Create(sub, -1);
+    // Since the area does not exist, let's create it automatically like WWIV always does.
+    const auto created = context.api(sub.storage_type).Create(sub, -1);
     if (!created) {
       const auto msg = fmt::format("Failed to create message area: '{}'; writing to dead.net", sub.filename);
       context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
-      LOG(INFO) << "    ! ERROR: Failed to create message area: '" << sub.filename
+      LOG(INFO) << "    ! ERROR: Failed to create subboard files for sub: '" << sub.filename
                 << "'; writing to dead.net.";
       return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
     }

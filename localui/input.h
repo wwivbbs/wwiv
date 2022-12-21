@@ -722,51 +722,6 @@ private:
   int field_width_{1};
 };
 
-class FilePathItem final : public EditItem<char*> {
-public:
-  FilePathItem(int maxsize, const std::string& base, char* data)
-      : EditItem<char*>(maxsize, data), base_(base) {
-    help_text_ = strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
-  }
-  FilePathItem() = delete;
-  FilePathItem(FilePathItem&) = delete;
-  FilePathItem(FilePathItem&&) = delete;
-  FilePathItem& operator=(const FilePathItem&) = delete;
-  FilePathItem& operator=(FilePathItem&&) = delete;
-  ~FilePathItem() override = default;
-
-  EditlineResult Run(CursesWindow* window) override {
-    window->GotoXY(this->x_, this->y_);
-    const auto p = core::File::FixPathSeparators(this->data_);
-    strcpy(this->data_, p.c_str());
-    const auto return_code =
-        editline(window, this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
-    trimstrpath(this->data_);
-
-    // Update what we display in case it changed.
-    DefaultDisplay(window);
-
-    const auto dir = core::File::absolute(this->base_, this->data_);
-    if (!core::File::Exists(dir)) {
-      const auto s1 = wwiv::strings::StrCat("The path '", this->data_, "' does not exist.");
-      if (dialog_yn(window, {s1, "Would you like to create it?"})) {
-        if (!core::File::mkdirs(dir)) {
-          messagebox(window, {"Unable to create directory: ", dir.string()});
-        }
-      }
-    }
-    return return_code;
-  }
-
-protected:
-  void DefaultDisplay(CursesWindow* window) const override {
-    window->SetColor(SchemeId::WINDOW_DATA);
-    DefaultDisplayString(window, data_);
-  }
-
-private:
-  const std::string base_;
-};
 
 class FileSystemFilePathItem final : public EditItem<std::filesystem::path&> {
 public:
@@ -852,6 +807,51 @@ public:
           messagebox(window, {"Unable to create directory: ", dir.string()});
         }
       }
+    }
+    return return_code;
+  }
+
+protected:
+  void DefaultDisplay(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
+    DefaultDisplayString(window, data_);
+  }
+
+private:
+  const std::filesystem::path base_;
+};
+
+
+/**
+ * EditItem for a filename. 
+ * 
+ * Will check and warn if the file at base/filename doesn't exist.
+ */
+class StringFileNameItem final : public EditItem<std::string&> {
+public:
+  StringFileNameItem(int maxsize, const std::filesystem::path& base, std::string& data)
+      : EditItem<std::string&>(maxsize, data), base_(base) {
+    help_text_ = strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
+  }
+  ~StringFileNameItem() override = default;
+
+  StringFileNameItem() = delete;
+  StringFileNameItem(StringFileNameItem const&) = delete;
+  StringFileNameItem(StringFileNameItem&&) = delete;
+  StringFileNameItem& operator=(StringFileNameItem const&) = delete;
+  StringFileNameItem& operator=(StringFileNameItem&&) = delete;
+
+  EditlineResult Run(CursesWindow* window) override {
+    window->GotoXY(this->x_, this->y_);
+    const auto return_code =
+        editline(window, &this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
+    strings::StringTrimEnd(&this->data_);
+    // Update what we display in case it changed.
+    DefaultDisplay(window);
+
+    const auto file = wwiv::core::File::absolute(this->base_, this->data_);
+    if (!wwiv::core::File::Exists(file)) {
+      messagebox(window, {"The filename does not exist: ", file.string()});
     }
     return return_code;
   }
