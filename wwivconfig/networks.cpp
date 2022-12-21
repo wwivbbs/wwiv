@@ -512,29 +512,21 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
 
   auto y = 1;
   EditItems items{};
-  items.add(new Label("Net Type:"), 1, y);
-  items.add(new Label(nettypes.at(static_cast<int>(n.type)).second), 2, y)
-      ->set_right_justified(false);
-  y++;
   items.add(new Label("Net Name:"), new StringEditItem<std::string&>(15, n.name, EditLineMode::ALL),
             "Name of the network to use to display to bbs callers", 1, y);
   y++;
   items.add(new Label("Directory:"), new FileSystemFilePathItem(60, config.root_directory(), n.dir),
             1, y);
   y++;
-  items.add(new Label("Auto Add Subs:"), new BooleanEditItem(&n.settings.auto_add), 1, y);
-  y++;
-  items.add(new Label("Auto Add INI:"), new StringFileNameItem(60, n.dir, n.settings.auto_add_ini),
-            1, y);
-  y++;
 
   const auto net_dir = File::absolute(config.root_directory(), n.dir);
   if (n.type == network_type_t::ftn) {
-    // skip over the node number
-    items.add(new Label("Node #:"), 1, y);
-    if (n.type == network_type_t::ftn) {
-      items.add(new Label("N/A"), 2, y)->set_right_justified(false);
-    }
+    items.add(new Label("Auto Add Subs:"), new BooleanEditItem(&n.settings.auto_add),
+              "When importing echomail, automatically add WWIV subs that don't exist", 1, y);
+    y++;
+    items.add(new Label("Auto Add INI:"),
+              new StringFileNameItem(60, n.dir, n.settings.auto_add_ini),
+              "INI file to use for defaults when automatically creating missing subs", 1, y);
     y++;
     items.add(new Label("Settings:"), new FidoNetworkConfigSubDialog(config, net_dir, n),
               "Edit settings for this network", 1, y);
@@ -551,7 +543,8 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
     y++;
   }
 
-  const auto title = StrCat("Network Configuration: ", n.name, " [.", nn, "]");
+  const auto title = fmt::format("Net: {} [.{}] ({})", n.name, nn,
+                                 StringTrim(nettypes.at(static_cast<int>(n.type)).second));
 
   items.relayout_items_and_labels();
   items.Run(title);
