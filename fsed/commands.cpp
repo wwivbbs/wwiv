@@ -238,20 +238,24 @@ std::optional<fsed_command_id> FsedCommands::get_command_id(int key) {
   return {key_it->second};
 }
 
+bool FsedCommands::InvokeCommand(fsed_command_id cmd_id, FsedModel& model, FsedView& view,
+                                 FsedState& state) {
+
+  if (auto cmd = get(cmd_id)) {
+    return cmd.value().Invoke(model, view, state);
+  }
+
+  // No command bound for this cmd_id.
+  LOG(WARNING) << "No command for command id: " << static_cast<int>(cmd_id);
+  return false;
+}
+
 bool FsedCommands::TryInterpretChar(int key, FsedModel& model, FsedView& view, FsedState& state) {
 
-  auto cmd_id = get_command_id(key);
-  if (!cmd_id) {
-    return false;
+  if (auto cmd_id = get_command_id(key)) {
+    return InvokeCommand(cmd_id.value(), model, view, state);
   }
-
-  auto cmd = get(cmd_id.value());
-  if (!cmd) {
-    // No command bound for this id.
-    LOG(WARNING) << "No command bound for command id: " << static_cast<int>(cmd_id.value());
-    return false;
-  }
-  return cmd.value().Invoke(model, view, state);
+  return false;
 }
 
 } // namespace

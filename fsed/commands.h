@@ -85,6 +85,13 @@ public:
   bool add(const FsedCommand& cmd);
 
   std::optional<fsed_command_id> get_command_id(int key);
+
+  /**
+   * Attempts to interpret a key by executing a command.  Returns
+   * true if executed as a command, false otherwise.
+   */
+  bool InvokeCommand(fsed_command_id cmdid, FsedModel& model, FsedView& view, FsedState& state);
+
   /**
    * Attempts to interpret a key by executing a command.  Returns
    * true if executed as a command, false otherwise.
