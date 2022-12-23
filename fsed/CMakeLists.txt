@@ -27,3 +27,15 @@ target_link_libraries(
 
 set_max_warnings(fsed)
 target_include_directories(fsed PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+if (WWIV_BUILD_TESTS)
+  add_executable(fsed_tests
+    "fsed_test_main.cpp"
+    "model_test.cpp"
+  )
+
+  include(GoogleTest)
+  target_link_libraries(fsed_tests fsed core_fixtures core common sdk GTest::gtest)
+  gtest_discover_tests(fsed_tests EXTRA_ARGS "--wwiv_testdata=${CMAKE_CURRENT_SOURCE_DIR}/testdata")
+  
+endif()

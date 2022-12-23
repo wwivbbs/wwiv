@@ -70,7 +70,7 @@ bool fsed(Context& ctx, const std::filesystem::path& path) {
   if (!f) {
     return false;
   }
-  for (const auto& l : ed.to_lines()) {
+  for (const auto& l : ed.to_lines(true)) {
     f.WriteLine(l);
   }
   return true;
@@ -96,7 +96,7 @@ bool fsed(Context& ctx, std::vector<std::string>& lin, int maxli, MessageEditorD
     return false;
   }
 
-  lin = ed.to_lines();
+  lin = ed.to_lines(true);
   return true;
 }
 

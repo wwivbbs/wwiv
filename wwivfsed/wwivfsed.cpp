@@ -231,7 +231,7 @@ bool FsedApplication::DoFsed() {
   if (!f) {
     return false;
   }
-  for (const auto& l : ed.to_lines()) {
+  for (const auto& l : ed.to_lines(config_->wrap())) {
     f.WriteLine(l);
   }
   return true;
@@ -270,8 +270,11 @@ int main(int argc, char** argv) {
   cmdline.add_argument({"socket_handle", 'H', "Socket Handle from BBS."});
   cmdline.add_argument(BooleanCommandLineArgument{"version", 'V', "Display version.", false});
   cmdline.add_argument(BooleanCommandLineArgument{"local", 'L', "Run the door locally.", false});
-  cmdline.add_argument(BooleanCommandLineArgument{"file", 'F', "Run locally to edit a file.", false});
-  cmdline.add_argument(BooleanCommandLineArgument{"pause", 'Z', "Pause to attach the debugger.", false});
+  cmdline.add_argument(
+      BooleanCommandLineArgument{"file", 'F', "Run locally to edit a file.", false});
+  cmdline.add_argument({"wrap", 'W', "Wrap lines using with 'wwiv' or 'none'.", "wwiv"});
+  cmdline.add_argument(
+      BooleanCommandLineArgument{"pause", 'Z', "Pause to attach the debugger.", false});
   cmdline.set_no_args_allowed(true);
 
   if (!cmdline.Parse()) {

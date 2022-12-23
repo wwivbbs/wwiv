@@ -85,21 +85,26 @@ public:
   void emplace_back(line_t&& n);
   // inserts a new line after curli.
   bool insert_line();
+
   // Inserts all of the lines into the editor at the current
   // position.  These lines may contain heart codes, or pipe
   // codes or both.
   bool insert_lines(std::vector<std::string>& lines);
+
   // deletes the current line.
   bool remove_line();
+
   /**
-   * Return the text as a vector of strings in WWIV format (meaning the last
-   * character is a \x1 if the line is wrapped.
+   * Return the text as a vector of strings
+   * If wrap is true then the text is wrapped in WWIV format, this means the
+   * last character is a \x1.
    */
-  std::vector<std::string> to_lines();
+  std::vector<std::string> to_lines(bool wrap);
 
   //
   // Character Operations
   //
+
   // Adds a char at the current position (cx, curli);
   editor_add_result_t add(char c);
   // deletes current character and shifts left rest
