@@ -37,6 +37,7 @@ public:
   [[nodiscard]] bool local() const noexcept { return local_; }
   [[nodiscard]] bool file() const noexcept { return file_; }
   [[nodiscard]] bool pause() const noexcept { return pause_; }
+  [[nodiscard]] bool wrap() const noexcept { return wrap_; }
   [[nodiscard]] const std::filesystem::path& root() const noexcept { return root_; }
   [[nodiscard]] std::filesystem::path help_path() const;  
   [[nodiscard]] std::filesystem::path file_path() const;
@@ -52,6 +53,7 @@ private:
   bool local_{false};
   bool file_{false};
   bool pause_{false};
+  bool wrap_{true};
   std::filesystem::path file_path_;
 };
 

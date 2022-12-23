@@ -469,18 +469,36 @@ void FsedModel::current_line_dirty(int previous_line) {
   }
 }
 
-std::vector<std::string> FsedModel::to_lines() {
+std::vector<std::string> FsedModel::to_lines(bool wrap) {
   std::vector<std::string> out;
+  std::string curline;
   for (const auto& l : lines_) {
-    auto t = l.to_colored_text(0);
-    StringTrimCRLF(&t);
-    if (l.wrapped()) {
-      // wwiv line wrapping character.
-      t.push_back('\x1');
+    if (!curline.empty() && curline.back() != ' ') {
+      curline.push_back(' ');
     }
-    out.emplace_back(t);
+    auto x = l.to_colored_text(0);
+    StringTrimCRLF(&x);
+    curline.append(x);
+    if (l.wrapped()) {
+      if (wrap) {
+        // wwiv line wrapping character.
+        curline.push_back('\x1');
+        out.emplace_back(curline);
+        curline.clear();
+        continue;
+      }
+      // else leave curline as the current line and the next iteration will append to it.
+    } else {
+      out.emplace_back(curline);
+      curline.clear();
+    }
   }
 
+  if (!curline.empty()) {
+    // Add last line if we have been building one up.
+    out.emplace_back(curline);
+    curline.clear();
+  }
   return out;
 }
 

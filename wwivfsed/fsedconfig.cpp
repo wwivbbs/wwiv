@@ -62,6 +62,7 @@ FsedConfig::FsedConfig(const CommandLine& cmdline)
   local_ = cmdline.barg("local");
   pause_ = cmdline.barg("pause");
   file_ = cmdline.barg("file");
+  wrap_ = cmdline.barg("wrap");
   if (file_) {
     // Always local if we're editing a file
     local_ = true;
