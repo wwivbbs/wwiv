@@ -170,7 +170,7 @@ static int System(const std::string& cmd) {
 
 static bool handle_new_external(Context& context, NetPacket& p) {
   if (!context.external_programs) {
-    load_external_programs(context, FilePath(context.net.dir, "eprogs.net"));
+    load_external_programs(context, FilePath(context.net.dir, EPROGS_NET));
   }
   if (!context.external_programs) {
     LOG(ERROR) << "    ! ERROR Unable to load eprogs.net; writing to dead.net";
