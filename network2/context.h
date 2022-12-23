@@ -29,7 +29,17 @@
 #include <vector>
 
 namespace wwiv::net::network2 {
-  
+ 
+/** 
+ * List of exes to use to invoke external programs when 
+ * main_type_new_external is encountered.
+ */
+struct external_programs_t {
+  std::string exe;
+  int low{-1};
+  int high{-1};
+};
+
 /** 
  * Context for data needed by network processing.
  */
@@ -63,6 +73,8 @@ public:
   bool verbose{false};
   bool subs_initialized{false};
   sdk::SSM ssm;
+  std::unique_ptr<std::vector<external_programs_t>> external_programs;
+  std::set<int> external_programs_saved;
 };
 
 } // namespace wwiv::net::network2

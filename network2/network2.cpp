@@ -131,6 +131,67 @@ static bool handle_net_info_file(Context& context, const Network& net, NetPacket
   return write_net_received_file(context, net, p, info);
 }
 
+static bool load_external_programs(Context& context, const std::filesystem::path& path) {
+  // go ahead and create the vector so we don't try this again
+  context.external_programs = std::make_unique<std::vector<external_programs_t>>();
+
+  TextFile f(path, "rt");
+  if (!f.IsOpen()) {
+    return false;
+  }
+
+  auto lines = f.ReadFileIntoVector();
+  if (lines.empty()) {
+    return false;
+  }
+  
+  // Create the external program list.
+  for (const auto& l : lines) {
+    auto parts = SplitString(l, " \t");
+    if (parts.size() != 3) {
+      VLOG(1) << "Skipping malformed line in eprogs.net: '" << l << "'";
+      continue;
+    }
+
+    external_programs_t e{};
+    e.exe = parts.at(0);
+    e.low = to_number<int>(parts.at(1));
+    e.high = to_number<int>(parts.at(2));
+    context.external_programs->emplace_back(e);
+  }
+  return true;
+}
+
+// cribbed from networkc
+static int System(const std::string& cmd) {
+  VLOG(1) << "Command: " << cmd;
+  return system(cmd.c_str());
+}
+
+static bool handle_new_external(Context& context, NetPacket& p) {
+  if (!context.external_programs) {
+    load_external_programs(context, FilePath(context.net.dir, "eprogs.net"));
+  }
+  if (!context.external_programs) {
+    LOG(ERROR) << "    ! ERROR Unable to load eprogs.net; writing to dead.net";
+    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
+  }
+  
+  auto m = p.nh.minor_type;
+  for (const auto& e : *context.external_programs) {
+    if (e.low <= m && m <= e.high) {
+      p.nh.list_len = 0;
+      p.list.clear();
+      const auto tempfn = fmt::format("temp{}.net", m);
+      if (write_wwivnet_packet(FilePath(context.net.dir, tempfn), p)) {
+        const auto exe = fmt::format("{}{} {} .{}", context.net.dir.string(), e.exe, tempfn, context.net.network_number());
+        System(exe);
+      }
+    }
+  }
+  return true;
+}
+
 static bool handle_sub_list(Context& context, NetPacket& p) {
   // Handle legacy type 9 main_type_sub_list (SUBS.LST)
   NetInfoFileInfo info{};
@@ -208,13 +269,14 @@ static bool handle_packet(Context& context, NetPacket& p) {
   case main_type_sub_list:
     return handle_sub_list(context, p);
 
+  // EPROGS.NET support
+  case main_type_new_external:
+    return handle_new_external(context, p);
   // Legacy numeric only post types.
   case main_type_post:
   case main_type_pre_post:
 
-  // EPROGS.NET support
   case main_type_external:
-  case main_type_new_external:
 
   // NetEdit.
   case main_type_net_edit:
