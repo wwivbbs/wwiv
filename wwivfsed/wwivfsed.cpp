@@ -272,7 +272,7 @@ int main(int argc, char** argv) {
   cmdline.add_argument(BooleanCommandLineArgument{"local", 'L', "Run the door locally.", false});
   cmdline.add_argument(
       BooleanCommandLineArgument{"file", 'F', "Run locally to edit a file.", false});
-  cmdline.add_argument(BooleanCommandLineArgument{"wrap", 'W', "Wrap lines using WWIV format (control-A) wrapping.", true});
+  cmdline.add_argument({"wrap", 'W', "Wrap lines using with 'wwiv' or 'none'.", "wwiv"});
   cmdline.add_argument(
       BooleanCommandLineArgument{"pause", 'Z', "Pause to attach the debugger.", false});
   cmdline.set_no_args_allowed(true);
