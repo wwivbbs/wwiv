@@ -108,39 +108,32 @@ static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name)
   return ret == MB_FUNC_OK;
 } 
 
-static void _on_error(struct mb_interpreter_t* s, mb_error_e e, const char* m, const char* f, int p,
+static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* msg, const char* func, int p,
                       unsigned short row, unsigned short col, int abort_code) {
   mb_unrefvar(s);
   mb_unrefvar(p);
 
-  if (e != SE_NO_ERR) {
-    if (f) {
-      if (e == SE_RN_REACHED_TO_WRONG_FUNCTION) {
-        printf(
-            "Error:\n    Line %d, Col %d in Func: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
-            row, col, f,
-            e, abort_code,
-            m
-            );
-      }
-      else {
-        printf(
-            "Error:\n    Line %d, Col %d in File: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
-            row, col, f,
-            e, e == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
-            m
-            );
-      }
-    }
-    else {
-      printf(
-          "Error:\n    Line %d, Col %d\n    Code %d, Abort Code %d\n    Message: %s.\n",
-          row, col,
-          e, e == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
-          m
-          );
-    }
+  if (err == SE_NO_ERR) {
+    // No erorr here.
+    return;
   }
+
+  if (!func) {
+    printf("Error:\n    Line %d, Col %d\n    Code %d, Abort Code %d\n    Message: %s.\n", row, col,
+           err, err == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code, msg);
+    return;
+  }
+
+  if (err == SE_RN_REACHED_TO_WRONG_FUNCTION) {
+    printf(
+        "Error:\n    Line %d, Col %d in Func: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
+        row, col, func, err, abort_code, msg);
+    return;
+  }
+  printf(
+      "Error:\n    Line %d, Col %d in File: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
+      row, col, func, err, err == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
+      msg);
 }
 
 static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int p, unsigned short row, unsigned short col) {
