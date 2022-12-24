@@ -44,9 +44,9 @@ private:
   int y_{0};
 };
 
-class FsedModelTest : public ::testing::Test {
+class FsedModelWithViewTest : public ::testing::Test {
 protected:
-  FsedModelTest() { 
+  FsedModelWithViewTest() { 
     view = std::make_shared<FakeView>();
     ed.set_view(view);
   }
@@ -71,7 +71,7 @@ protected:
   std::shared_ptr<FakeView> view;
 };
 
-TEST_F(FsedModelTest, AddSingle_Character) {
+TEST_F(FsedModelWithViewTest, AddSingle_Character) {
   ed.add('H');
   EXPECT_EQ(0, ed.cy);
   EXPECT_EQ(1, ed.cx);
@@ -79,7 +79,7 @@ TEST_F(FsedModelTest, AddSingle_Character) {
   EXPECT_EQ(1, wwiv::stl::ssize(ed));
 }
 
-TEST_F(FsedModelTest, AddSingleline) {
+TEST_F(FsedModelWithViewTest, AddSingleline) {
   const std::string line = "Hello World";
   add(line);
   EXPECT_EQ(0, ed.cy);
@@ -88,7 +88,7 @@ TEST_F(FsedModelTest, AddSingleline) {
   EXPECT_EQ(1, wwiv::stl::ssize(ed));
 }
 
-TEST_F(FsedModelTest, AddTwolines) {
+TEST_F(FsedModelWithViewTest, AddTwolines) {
   const std::string line = "Hello\nWorld";
   add(line);
   EXPECT_EQ(ssize(std::string("World")), ed.cx);
@@ -97,7 +97,7 @@ TEST_F(FsedModelTest, AddTwolines) {
   EXPECT_EQ(1, ed.cy);
 }
 
-TEST_F(FsedModelTest, SixLines) {
+TEST_F(FsedModelWithViewTest, SixLines) {
   const std::string line = "Hello\nWorld\nThis\nIs\nA\nTest\n";
   add(line);
   EXPECT_EQ(6, ed.curli);
@@ -105,7 +105,7 @@ TEST_F(FsedModelTest, SixLines) {
   EXPECT_EQ(6, ed.cy);
 }
 
-TEST_F(FsedModelTest, PageUp_NoScroll) {
+TEST_F(FsedModelWithViewTest, PageUp_NoScroll) {
   const std::string line = "Hello\nWorld\nThis\nIs\nA\nTest\n";
   add(line);
   ed.cursor_pgup();
@@ -114,7 +114,7 @@ TEST_F(FsedModelTest, PageUp_NoScroll) {
   EXPECT_EQ(0, ed.cy);
 }
 
-TEST_F(FsedModelTest, PageUp_Scroll) {
+TEST_F(FsedModelWithViewTest, PageUp_Scroll) {
   add_test_lines(100);
   EXPECT_EQ(100, ed.curli);
   EXPECT_EQ(10, ed.cy);
@@ -125,7 +125,7 @@ TEST_F(FsedModelTest, PageUp_Scroll) {
   EXPECT_EQ(90, ed.curli);
 }
 
-TEST_F(FsedModelTest, BackSpace_Color) {
+TEST_F(FsedModelWithViewTest, BackSpace_Color) {
   ed.curline().set_wwiv_color(2);
   add("a");
   // Still 2

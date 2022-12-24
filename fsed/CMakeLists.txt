@@ -32,6 +32,7 @@ if (WWIV_BUILD_TESTS)
   add_executable(fsed_tests
     "fsed_test_main.cpp"
     "model_test.cpp"
+    "fsed_model_test.cpp"
   )
 
   include(GoogleTest)

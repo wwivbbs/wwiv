@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_FILENAMES_H__
-#define __INCLUDED_FILENAMES_H__
+#ifndef INCLUDED_FILENAMES_H
+#define INCLUDED_FILENAMES_H
 
 #define ACCT_INI "acct.ini"
 #define ADDRESS_NET "address.net"
@@ -53,8 +53,6 @@ constexpr auto CHAINS_JSON = "chains.json";
 
 #define CHAT_INI "chat.ini"
 #define CHECK_NET "check.net"
-
-#define CMDPARAM_NOEXT "cmdparam"
 
 #define CONFIG_DAT "config.dat"
 #define CONFIG_JSON "config.json"
@@ -148,7 +146,6 @@ constexpr auto CHAINS_JSON = "chains.json";
 #define NEXTERN_DAT "nextern.dat"
 #define NINTERN_DAT "nintern.dat"
 #define NOFBACK_NOEXT "nofback"
-#define NNALL_NET "nnall.net"
 
 #define OFFLINE_NOEXT "offline"
 
@@ -202,8 +199,6 @@ constexpr auto CHAINS_JSON = "chains.json";
 #define WELCOME_MSG "welcome.msg"
 #define WFC_DAT "wfc.dat"
 #define WWIV_INI "wwiv.ini"
-#define WWIV_NET_NOEXT "wwiv_net"
-#define WWIV_NET_DAT "wwiv_net.dat"
 
 #define ZIPCITY_DIR "zip-city"
 #define ZLOG_DAT "zlog.dat"
@@ -211,4 +206,4 @@ constexpr auto CHAINS_JSON = "chains.json";
 
 #define FILENAME_DAT_EXTENSION ".dat"
 
-#endif  // __INCLUDED_FILENAMES_H__
+#endif  // INCLUDED_FILENAMES_H

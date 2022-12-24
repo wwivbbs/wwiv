@@ -207,7 +207,6 @@ if (WWIV_BUILD_TESTS)
       xfer_test.cpp
       basic/basic_test.cpp
       basic/util_test.cpp
-      fsed/fsed_model_test.cpp
     )
     add_executable(bbs_tests ${test_sources})
 
