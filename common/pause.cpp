@@ -79,6 +79,11 @@ char Output::GetKeyForPause() {
   default:
     break;
   }
+  // Hack - move this ot a new input method, we use it in a few places
+  // Clear inbound
+  while (remoteIO()->incoming()) {
+    remoteIO()->getW();
+  }
   return ch;
 }
 
