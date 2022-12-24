@@ -164,7 +164,7 @@ unsigned char RemoteSocketIO::getW() {
   std::lock_guard<std::mutex> lock(mu_);
   if (!queue_.empty()) {
     ch = queue_.front();
-    queue_.pop();
+    queue_.pop_front();
   }
   return static_cast<unsigned char>(ch);
 }
@@ -187,9 +187,7 @@ void RemoteSocketIO::purgeIn() {
   }
 
   std::lock_guard<std::mutex> lock(mu_);
-  while (!queue_.empty()) {
-    queue_.pop();
-  }
+  queue_.clear();
 }
 
 unsigned int RemoteSocketIO::read(char* buffer, unsigned int count) {
@@ -204,7 +202,7 @@ unsigned int RemoteSocketIO::read(char* buffer, unsigned int count) {
   std::lock_guard<std::mutex> lock(mu_);
   while (!queue_.empty() && num_read <= count) {
     const auto ch = queue_.front();
-    queue_.pop();
+    queue_.pop_front();
     *temp++ = ch;
     num_read++;
   }
@@ -393,9 +391,7 @@ void RemoteSocketIO::set_binary_mode(bool b) {
 
 std::optional<ScreenPos> RemoteSocketIO::screen_position() { 
   // Clear inbound
-  while (incoming()) {
-    getW();
-  }
+  purgeIn();
 
   write("\x1b[6n", 4);
 
@@ -495,14 +491,14 @@ void RemoteSocketIO::AddStringToInputBuffer(int start, int end, const char* buff
       } else {
         skip_next_ = false;
       }
-      queue_.push(c);
+      queue_.push_back(c);
     }
     return;
   }
   for (auto i = start; i < end; i++) {
     if (static_cast<unsigned char>(buffer[i]) == 255) {
       if ((i + 1) < end && static_cast<unsigned char>(buffer[i + 1]) == 255) {
-        queue_.push(buffer[i + 1]);
+        queue_.push_back(buffer[i + 1]);
         i++;
       } else if ((i + 2) < end) {
         HandleTelnetIAC(buffer[i + 1], buffer[i + 2]);
@@ -515,7 +511,7 @@ void RemoteSocketIO::AddStringToInputBuffer(int start, int end, const char* buff
       // This fixed the problem with CRT to a linux machine and then telnet from
       // that linux box to the bbs... Hopefully this will fix the Win9x built-in
       // telnet client as well as TetraTERM.
-      queue_.push(buffer[i]);
+      queue_.push_back(buffer[i]);
     }
   }
 }

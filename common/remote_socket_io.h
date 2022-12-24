@@ -25,7 +25,7 @@
 #include <atomic>
 #include <cstdint>
 #include <mutex>
-#include <queue>
+#include <deque>
 #include <thread>
 
 #if defined( _WIN32 )
@@ -84,7 +84,7 @@ class RemoteSocketIO final : public RemoteIO {
 
   // VisibleForTesting
   void AddStringToInputBuffer(int start, int end, const char* buffer);
-  std::queue<char>& queue() { return queue_; }
+  std::deque<char>& queue() { return queue_; }
 
   void set_binary_mode(bool b) override;
   std::optional<ScreenPos> screen_position() override;
@@ -93,7 +93,7 @@ private:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);
   void InboundTelnetProc();
 
-  std::queue<char> queue_;
+  std::deque<char> queue_;
   mutable std::mutex mu_;
   mutable std::mutex threads_started_mu_;
   SOCKET socket_{INVALID_SOCKET};

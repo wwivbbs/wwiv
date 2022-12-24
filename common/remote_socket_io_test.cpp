@@ -21,17 +21,18 @@
 #include "gtest/gtest.h"
 #include "common/remote_socket_io.h"
 
+#include <deque>
 #include <string>
 
 using namespace wwiv::common;
 using namespace testing;
 
-std::string DumpQueue(std::queue<char>& q) {
+std::string DumpQueue(std::deque<char>& q) {
   std::ostringstream ss;
   while (!q.empty()) {
     uint8_t c = q.front();
     ss << fmt::format("[{:x}]", c);
-    q.pop();
+    q.pop_front();
   }
   return ss.str();
 }

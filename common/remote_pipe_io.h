@@ -24,7 +24,7 @@
 #include <atomic>
 #include <cstdint>
 #include <mutex>
-#include <queue>
+#include <deque>
 #include <thread>
 
 namespace wwiv::common {
@@ -55,14 +55,14 @@ class RemotePipeIO final : public RemoteIO {
 
   // VisibleForTesting
   void AddStringToInputBuffer(int start, int end, const char* buffer);
-  std::queue<char>& queue() { return queue_; }
+  std::deque<char>& queue() { return queue_; }
 
 
 private:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);
   void PipeLoop();
 
-  std::queue<char> queue_;
+  std::deque<char> queue_;
   mutable std::mutex mu_;
   mutable std::mutex threads_started_mu_;
   core::Pipe data_pipe_;
