@@ -281,7 +281,15 @@ std::tuple<NetPacket, ReadNetPacketResponse> read_packet(wwiv::core::File& file,
 // back to the end_offset of the packet.
 bool delete_packet(wwiv::core::File& f, NetPacket& packet);
 
+/**
+ * Apends packet to a wwivnet file specified by path.
+ */
 bool write_wwivnet_packet(const std::filesystem::path& path, const NetPacket& packet);
+
+/**
+ * Apends packet to a wwivnet DEAD.NET file located in the dir directory.
+ */
+bool write_deadnet_packet(const std::filesystem::path& dir, NetPacket& packet);
 
 bool send_local_email(const Network& network, net_header_rec& nh, const std::string& text,
                       const std::string& byname, const std::string& title);

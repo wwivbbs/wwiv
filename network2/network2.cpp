@@ -87,7 +87,7 @@ static bool handle_ssm(Context& context, NetPacket& p) {
   if (!context.ssm.send_local(p.nh.touser, p.text())) {
     LOG(ERROR) << "    ! ERROR writing SSM: '" << p.nh.touser << "; text: '" << p.text()
                << "'; writing to dead.net";
-    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
+    return write_deadnet_packet(context.net.dir, p);
   }
 
   LOG(INFO) << "    + SSM  to: " << p.nh.touser << "; text: '" << p.text() << "'";
@@ -97,12 +97,12 @@ static bool handle_ssm(Context& context, NetPacket& p) {
 static bool write_net_received_file(Context& context, const Network& net, NetPacket& p, NetInfoFileInfo info) {
   if (!info.valid) {
     LOG(ERROR) << "    ! ERROR write_net_received_file: NetInfoFileInfo is not valid; writing to dead.net";
-    return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
+    return write_deadnet_packet(net.dir, p);
   }
 
   if (info.filename.empty()) {
     LOG(ERROR) << "    ! ERROR write_net_received_file: info.filename.empty(); writing to dead.net";
-    return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
+    return write_deadnet_packet(net.dir, p);
   }
   // we know the name.
   const auto fn = net.dir / info.filename;
@@ -110,7 +110,7 @@ static bool write_net_received_file(Context& context, const Network& net, NetPac
     const auto err = fmt::format("Received file '{}' already exists, and packet not set to overwrite.", fn.string());
     LOG(ERROR) << "    ! ERROR " << err << "; writing to dead.net";
     context.ssm.send_local(1, err);
-    return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
+    return write_deadnet_packet(net.dir, p);
   }
   context.ssm.send_local(1, StrCat("Received ", info.filename));
   File file(fn);
@@ -119,7 +119,7 @@ static bool write_net_received_file(Context& context, const Network& net, NetPac
     // We couldn't create or open the file.
     LOG(ERROR) << "    ! ERROR Unable to create or open file: '" << info.filename
                << "'; writing to dead.net";
-    return write_wwivnet_packet(FilePath(net.dir, DEAD_NET), p);
+    return write_deadnet_packet(net.dir, p);
   }
   file.Write(info.data);
   LOG(INFO) << "  + Got " << info.filename;
@@ -174,15 +174,14 @@ static bool handle_new_external(Context& context, NetPacket& p) {
   }
   if (!context.external_programs) {
     LOG(ERROR) << "    ! ERROR Unable to load eprogs.net; writing to dead.net";
-    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
+    return write_deadnet_packet(context.net.dir, p);
   }
   
-  auto m = p.nh.minor_type;
   for (const auto& e : *context.external_programs) {
-    if (e.low <= m && m <= e.high) {
+    if (e.low <= p.nh.minor_type && p.nh.minor_type <= e.high) {
       p.nh.list_len = 0;
       p.list.clear();
-      const auto tempfn = fmt::format("temp{}.net", m);
+      const auto tempfn = fmt::format("temp{}.net", p.nh.minor_type);
       if (write_wwivnet_packet(FilePath(context.net.dir, tempfn), p)) {
         const auto exe = fmt::format("{}{} {} .{}", context.net.dir.string(), e.exe, tempfn, context.net.network_number());
         System(exe);
@@ -289,7 +288,7 @@ static bool handle_packet(Context& context, NetPacket& p) {
   default:
     LOG(ERROR) << "    ! ERROR Writing message to dead.net for unhandled type: '"
                << main_type_name(p.nh.main_type) << "'; writing to dead.net";
-    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
+    return write_deadnet_packet(context.net.dir, p);
   }
 }
 

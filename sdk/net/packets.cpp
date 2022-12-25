@@ -39,8 +39,8 @@ bool send_local_email(const Network& network, net_header_rec& nh, const std::str
   return send_network_email(LOCAL_NET, network, nh, {}, text, byname, title);
 }
 
-bool send_network_email(const std::string& filename, const Network& network,
-                        net_header_rec& nh, const std::vector<uint16_t>& list, const std::string& text,
+bool send_network_email(const std::string& filename, const Network& network, net_header_rec& nh,
+                        const std::vector<uint16_t>& list, const std::string& text,
                         const std::string& byname, const std::string& title) {
 
   LOG(INFO) << "send_network_email: Writing type " << nh.main_type << "/" << nh.minor_type
@@ -66,7 +66,6 @@ bool delete_packet(File& f, NetPacket& packet) {
   }
   return false;
 }
-
 
 std::tuple<NetPacket, ReadNetPacketResponse> read_packet(File& f, bool process_de) {
   NetPacket packet{};
@@ -121,6 +120,15 @@ std::tuple<NetPacket, ReadNetPacketResponse> read_packet(File& f, bool process_d
   }
   packet.set_end_offset(f.current_position());
   return std::make_tuple(packet, ReadNetPacketResponse::OK);
+}
+
+bool write_deadnet_packet(const std::filesystem::path& dir, NetPacket& packet) {
+  const auto path = dir / DEAD_NET;
+
+  packet.nh.list_len = 0;
+  packet.list.clear();
+
+  return write_wwivnet_packet(path, packet);
 }
 
 bool write_wwivnet_packet(const std::filesystem::path& path, const NetPacket& p) {

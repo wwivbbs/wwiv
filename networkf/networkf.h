@@ -93,7 +93,7 @@ private:
    */
   std::optional<std::string> create_ftn_packet_and_bundle(const sdk::fido::FidoAddress& dest,
                                                           const sdk::fido::FidoAddress& route_to,
-                                                          const sdk::net::NetPacket& p);
+                                                          sdk::net::NetPacket& p);
 
   /** Create a FLO file, returning the name generated or nullopt */
   std::optional<std::string> CreateFloFile(const wwiv::sdk::fido::FidoAddress& dest,

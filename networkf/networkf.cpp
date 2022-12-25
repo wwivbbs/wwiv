@@ -681,12 +681,14 @@ std::optional<std::string> NetworkF::create_ftn_packet(const FidoAddress& dest,
 
 std::optional<std::string> NetworkF::create_ftn_packet_and_bundle(const FidoAddress& dest,
                                                                   const FidoAddress& route_to,
-                                                                  const NetPacket& p) {
+                                                                  NetPacket& p) {
   LOG(INFO) << "Creating packet for subscriber: " << dest << "; route_to: " << route_to;
+  // TODO(rushfan): Really this shouldn't go to dead.net since the wwivnet side exported it
+  // already, not really sure what to do here.
   auto fido_packet_name = create_ftn_packet(dest, route_to, p);
   if (!fido_packet_name) {
     LOG(ERROR) << "    ! ERROR Failed to create FTN packet; writing to dead.net";
-    write_wwivnet_packet(FilePath(net_.dir, DEAD_NET), p);
+    write_deadnet_packet(net_.dir, p);
     return std::nullopt;
   }
   LOG(INFO) << "Created packet: " << FilePath(dirs_.temp_outbound_dir(), fido_packet_name.value());
@@ -694,7 +696,7 @@ std::optional<std::string> NetworkF::create_ftn_packet_and_bundle(const FidoAddr
   const auto bundlename = create_ftn_bundle(route_to, fido_packet_name.value());
   if (!bundlename) {
     LOG(ERROR) << "    ! ERROR Failed to create FTN bundle; writing to dead.net";
-    write_wwivnet_packet(FilePath(net_.dir, DEAD_NET), p);
+    write_deadnet_packet(net_.dir, p);
     return std::nullopt;
   }
   return bundlename;
@@ -964,7 +966,7 @@ bool NetworkF::DoExport() {
       LOG(ERROR) << "    ! ERROR Unhandled type: '" << main_type_name(p.nh.main_type)
                  << "'; writing to dead.net";
       // Let's write it to dead.net_
-      if (!write_wwivnet_packet(FilePath(net_.dir, DEAD_NET), p)) {
+      if (!write_deadnet_packet(net_.dir, p)) {
         LOG(ERROR) << "Error writing to dead.net";
       }
     }

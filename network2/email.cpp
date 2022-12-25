@@ -84,7 +84,7 @@ bool handle_email_byname(Context& context, NetPacket& p) {
     // Not found.
     LOG(ERROR) << "    ! ERROR Received email to user: '" << to_name << "' who is not found on this system; writing to dead.net";
     // Write it to DEAD_NET
-    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
+    return write_deadnet_packet(context.net.dir, p);
   }
   
   p.set_text(text);
@@ -134,11 +134,11 @@ bool handle_email(Context& context,
   auto email = context.email_api().OpenEmail();
   if (!email) {
     LOG(ERROR) << "    ! ERROR creating email class; writing to dead.net";
-    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
+    return write_deadnet_packet(context.net.dir, p);
   }
   if (const auto added = email->AddMessage(d); !added) {
     LOG(ERROR) << "    ! ERROR adding email message; writing to dead.net";
-    return write_wwivnet_packet(FilePath(context.net.dir, DEAD_NET), p);
+    return write_deadnet_packet(context.net.dir, p);
   }
   User user;
   context.user_manager.readuser(&user, d.user_number);
