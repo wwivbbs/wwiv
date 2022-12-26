@@ -216,7 +216,7 @@ void build_qwk_packet() {
 
   if (qwk_info.abort) {
     bout.ansic(1);
-    bout.outstr("Abort everything? (NO=Download what I have gathered)");
+    bout.outstr("|#5Abort everything? |#2(|#1NO|#2=Download what I have gathered) ? ");
     if (!bin.yesno()) {
       qwk_info.abort = false;
     }
@@ -292,7 +292,7 @@ void qwk_gather_sub(uint16_t bn, qwk_state* qwk_info) {
     bout.clear_whole_line();      
 
     char thissub[81];
-    to_char_array(thissub, a()->current_sub().name);
+    to_char_array_trim(thissub, a()->current_sub().name);
     thissub[60] = 0;
     const auto subinfo = fmt::sprintf("|#7\xB3|#9%-4d|#7\xB3|#1%-52s|#7\xB3 |#2%-8d|#7\xB3|#3%-8d|#7\xB3",
                                       bn + 1, thissub, a()->GetNumMessagesInCurrentMessageArea(),
@@ -705,7 +705,7 @@ void finish_qwk(qwk_state *qwk_info) {
 
   if (!a()->user()->data.qwk_archive ||
       !a()->arcs[a()->user()->data.qwk_archive - 1].extension[0]) {
-    archiver = select_qwk_archiver(qwk_info, 0) - 1;
+    archiver = select_qwk_archiver(qwk_info->abort, false) - 1;
   } else {
     archiver = a()->user()->data.qwk_archive - 1;
   }
@@ -744,10 +744,8 @@ void finish_qwk(qwk_state *qwk_info) {
         done = true;
       } else {
         bout.nl();
-        bout.ansic(2);
-        bout.outstr("Packet was not successful...");
-        bout.ansic(1);
-        bout.outstr("Try transfer again?");
+        bout.outstr("|#6Packet was not successful... ");
+        bout.outstr("|#5Try transfer again?");
 
         if (!bin.noyes()) {
           done = true;
@@ -763,8 +761,7 @@ void finish_qwk(qwk_state *qwk_info) {
       }
     }
   } else while (!done && !a()->sess().hangup() && !qwk_info->abort) {
-    bout.ansic(2);
-    bout.outstr("Move to what dir? ");
+    bout.outstr("|#5Move to what dir? ");
     bout.mpl(60);
     auto new_dir = StringTrim(bin.input_path(60));
     if (new_dir.empty()) {

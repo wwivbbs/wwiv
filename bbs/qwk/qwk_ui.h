@@ -26,9 +26,16 @@
 namespace wwiv::bbs::qwk {
 
 std::string qwk_which_zip();
-int select_qwk_archiver(qwk_state* qwk_info, int ask);
+
+/**
+ * Gets the archiver # to use for QWK.  
+ * 
+ * If allow_ask_each_time, then add "ask each time" to the list.
+ * Also update "abort" if the caller enters (Q) to quit.
+ */
+int select_qwk_archiver(bool& abort, bool allow_ask_each_time);
+
 std::string qwk_which_protocol();
-unsigned short select_qwk_protocol(qwk_state *qwk_info);
 void modify_bulletins(sdk::qwk_config& qwk_cfg);
 bool get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub);
 

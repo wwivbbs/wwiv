@@ -35,14 +35,13 @@ using namespace wwiv::strings;
 namespace wwiv::bbs::qwk {
 
 
-int select_qwk_archiver(qwk_state* qwk_info, int ask) {
+int select_qwk_archiver(bool& abort, bool allow_ask_each_time) {
   std::string allowed = "Q\r";
 
   bout.nl(2);
-  bout.outstr("|#5Select an archiver");
-  bout.nl();
-  if (ask) {
-    bout.outstr("|#20|#9) Ask each time\r\n");
+  bout.pl("|#5Select an archiver");
+  if (allow_ask_each_time) {
+    bout.pl("|#20|#9) Ask each time");
   }
   auto num = 0;
   for (const auto& arc : a()->arcs) {
@@ -56,18 +55,20 @@ int select_qwk_archiver(qwk_state* qwk_info, int ask) {
   bout.nl();
   bout.outstr("|#7(|#1Q=Quit|#7,|#1<CR>=1|#7) Enter # :");
 
-  if (ask) {
+  if (allow_ask_each_time) {
     allowed.push_back('0');
   }
 
   const auto archiver = onek(allowed);
 
   if (archiver == '\r') {
+    // default/first archiver
     return 1;
   }
 
   if (archiver == 'Q') {
-    qwk_info->abort = true;
+    abort = true;
+    // 0 is none.
     return 0;
   }
   return archiver - '0';
@@ -105,15 +106,6 @@ std::string qwk_which_protocol() {
   }
   return prot;
 }
-
-unsigned short select_qwk_protocol(qwk_state *qwk_info) {
-  const auto protocol = get_protocol(xfertype::xf_down_temp);
-  if (protocol == -1) {
-    qwk_info->abort = true;
-  }
-  return static_cast<unsigned short>(protocol);
-}
-
 
 void modify_bulletins(sdk::qwk_config& qwk_cfg) {
   char s[101], t[101];

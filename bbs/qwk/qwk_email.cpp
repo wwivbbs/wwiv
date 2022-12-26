@@ -212,18 +212,16 @@ void qwk_email_text(const char* text, char* title, char* to) {
 
     if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
       bout.nl();
-      bout.outstr("Sorry, not enough disk space left.");
-      bout.nl();
+      bout.pl("Sorry, not enough disk space left.");
       bout.pausescr();
       return;
     }
 
     if (ForwardMessage(&un, &sy)) {
       bout.nl();
-      bout.outstr("Mail Forwarded.");
-      bout.nl();
+      bout.pl("Mail Forwarded.");
       if (un == 0 && sy == 0) {
-        bout.outstr("Forwarded to unknown user.");
+        bout.pl("Forwarded to unknown user.");
         bout.pausescr();
         return;
       }
@@ -249,19 +247,13 @@ void qwk_email_text(const char* text, char* title, char* to) {
     if (sy != 0 && csne.has_value()) {
       bout.nl();
       bout.print("Name of system: {}\r\n", csne->name);
-      bout.print("Number of hops: {}\r\n", csne->numhops);
-      bout.nl();
+      bout.print("Number of hops: {}\r\n\r\n", csne->numhops);
     }
 
     bout.cls();
-    bout.ansic(2);
-    bout.print("Sending to: {}", send_to_name);
-    bout.nl();
-    bout.ansic(2);
-    bout.print("Titled    : {}", title);
-    bout.nl(2);
-    bout.ansic(5);
-    bout.outstr("Correct? ");
+    bout.print("|#2Sending to: {}\r\n", send_to_name);
+    bout.print("|#2Titled    : {}\r\n\r\n", title);
+    bout.outstr("|#5Correct? ");
 
     if (!bin.yesno()) {
       return;

@@ -35,6 +35,7 @@
 #include "sdk/qwk_config.h"
 #include "sdk/vardec.h"
 
+#include <optional>
 #include <string>
 
 using namespace wwiv::bbs;
@@ -79,7 +80,7 @@ void qwk_menu() {
       break;
     case 'D':
       qwk_download();
-    break;
+      break;
     case 'Q':
       return;
     case 'U':
@@ -248,6 +249,14 @@ static std::string qwk_current_text(int pos) {
   }
 }
 
+static std::optional<unsigned short> select_qwk_protocol() {
+  const auto protocol = get_protocol(xfertype::xf_down_temp);
+  if (protocol == -1) {
+    return std::nullopt;
+  }
+  return static_cast<unsigned short>(protocol);
+}
+
 void qwk_config_user() {
   sysoplog("Config Options");
   bool done = false;
@@ -302,23 +311,20 @@ void qwk_config_user() {
       a()->user()->data.qwk_keep_routing = !a()->user()->data.qwk_keep_routing;
       break;
     case 8: {
-      qwk_state qj{};
-      memset(&qj, 0, sizeof(qwk_state));
+      bool abort{false};
       bout.cls();
 
-      const auto arcno = static_cast<unsigned short>(select_qwk_archiver(&qj, 1));
-      if (!qj.abort) {
+      const auto arcno = select_qwk_archiver(abort, true);
+      if (!abort) {
         a()->user()->data.qwk_archive = arcno;
       }
       break;
     }
     case 9: {
-      qwk_state qj{};
       bout.cls();
 
-      const auto arcno = select_qwk_protocol(&qj);
-      if (!qj.abort) {
-        a()->user()->data.qwk_protocol = arcno;
+      if (const auto arcno = select_qwk_protocol()) {
+        a()->user()->data.qwk_protocol = arcno.value();
       }
     } break;
     case 10: {
