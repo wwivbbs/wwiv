@@ -29,6 +29,12 @@ find_package(cereal CONFIG REQUIRED)
 MACRO_ENSURE_OUT_OF_SOURCE_BUILD()
 ENSURE_MINIMUM_COMPILER_VERSIONS()
 
+if(WWIV_ASAN_ENABLED)
+  string(REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}\n")
+  add_compile_options(-fsanitize=address)
+endif()
+
 if (WWIV_BUILD_TESTS)
   message (STATUS "WWIV_BUILD_TESTS is ON")
   find_package(GTest CONFIG REQUIRED)
