@@ -385,12 +385,22 @@ bool MessagesDumpCommand::AddSubCommands() {
 // ReSharper disable once CppMemberFunctionMayBeConst
 int MessagesDumpCommand::ExecuteImpl(MessageArea* area, const std::string& basename, int start, int end,
                                      bool all) {
-
-  const auto last_message = (end >= 0) ? end : area->number_of_messages();
-  std::cout << "Message Sub: '" << basename << "' has " << area->number_of_messages() << " messages."
-       << std::endl;
+  const auto total = area->number_of_messages();
+  if (start < 1) {
+    start = 1;
+  } else if (start > total) {
+    start = total;
+  }
+  if (end <= 0) {
+    end = total;
+  } else if (end < start) {
+    end = start;
+  } else if (end > total) {
+    end = total;
+  }
+  std::cout << "Message Sub: '" << basename << "' has " << total << " messages." << std::endl;
   std::cout << std::string(72, '-') << std::endl;
-  for (auto current = start; current <= last_message; current++) {
+  for (auto current = start; current <= end; current++) {
     const auto message = area->ReadMessage(current);
     if (!message) {
       std::cout << "#" << current << "  ERROR " << std::endl;
