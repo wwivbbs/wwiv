@@ -15,14 +15,15 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_CRC_H__
-#define __INCLUDED_BBS_CRC_H__
+#ifndef INCLUDED_BBS_CRC_H
+#define INCLUDED_BBS_CRC_H
 
 #include <cstddef>
+#include <cstdint>
 
 unsigned long int crc32buf(const char *buffer, std::size_t nLength);
 
 // used by old sr.cpp and friends.
-extern unsigned short crc;
+extern uint16_t crc;
 
-#endif  // __INCLUDED_BBS_CRC_H__
+#endif  // INCLUDED_BBS_CRC_H

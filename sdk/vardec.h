@@ -210,18 +210,18 @@ struct userrec {
   char res_gp[94];
 
   uint16_t qwk_max_msgs;
-  unsigned short int qwk_max_msgs_per_sub;
-  unsigned short int qwk_dont_scan_mail : 1;
-  unsigned short int qwk_delete_mail : 1;
-  unsigned short int qwk_dontsetnscan : 1;
-  unsigned short int qwk_remove_color : 1;
-  unsigned short int qwk_convert_color : 1;
-  unsigned short int qwk_archive : 3;
-  unsigned short int qwk_leave_bulletin : 1;
-  unsigned short int qwk_dontscanfiles : 1;
-  unsigned short int qwk_keep_routing : 1;
-  unsigned short int full_desc : 1;
-  unsigned short int qwk_protocol : 4;
+  uint16_t qwk_max_msgs_per_sub;
+  uint16_t qwk_dont_scan_mail : 1;
+  uint16_t qwk_delete_mail : 1;
+  uint16_t qwk_dontsetnscan : 1;
+  uint16_t qwk_remove_color : 1;
+  uint16_t qwk_convert_color : 1;
+  uint16_t qwk_archive : 3;
+  uint16_t qwk_leave_bulletin : 1;
+  uint16_t qwk_dontscanfiles : 1;
+  uint16_t qwk_keep_routing : 1;
+  uint16_t full_desc : 1;
+  uint16_t qwk_protocol : 4;
 };
 
 // SECLEV DATA FOR 1 SL

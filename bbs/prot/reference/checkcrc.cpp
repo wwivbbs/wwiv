@@ -98,7 +98,7 @@ static	int	addcrc(int data, int crc) ;
 
 main()
 {
-	u_short	crc16 ;
+  uint16_t crc16;
 	uint32_t	crc32 ;
 	int	i,j ;
 	uint32_t	k ;
@@ -186,8 +186,8 @@ main()
 static	int
 addcrc(int data, int crc)
 {
-	int	j ;
-	crc ^= (unsigned short) data<<8;
+  int j;
+  crc ^= (uint16_t)data << 8;
 	for(j=0; j<8; ++j) {
 	  if( crc & 0x8000 )
 	    crc = (crc<<1) ^ 0x1021;

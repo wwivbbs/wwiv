@@ -798,7 +798,7 @@ static void HandleMessageDelete(int& msg_num) {
   if (date_to_daten(tu.firston()) < p2.daten) {
     bout.nl();
     bout.outstr("|#2Remove how many posts credit? ");
-    unsigned short num_credits =
+    auto num_credits =
         bin.input_number<uint16_t>(0, 0, static_cast<uint16_t>(tu.messages_posted()));
     if (num_credits != 0) {
       tu.messages_posted(tu.messages_posted() - num_credits);

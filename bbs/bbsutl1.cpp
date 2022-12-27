@@ -209,9 +209,8 @@ std::tuple<uint16_t, uint16_t> parse_local_email_info(const std::string& email) 
 }
 
 
-std::tuple<unsigned short, unsigned short>
-parse_wwivnet_email_info(const std::string& email, int system_number,
-                         const std::string& network_name) {
+std::tuple<uint16_t, uint16_t> parse_wwivnet_email_info(const std::string& email, int system_number,
+                                                        const std::string& network_name) {
 
   auto user_number = to_number<int>(email);
   if (user_number == 0 && email.front() == '#') {

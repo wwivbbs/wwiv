@@ -850,7 +850,7 @@ int change_channels(int loc) {
 //   (SL, AR, Sex, Age, etc)
 
 bool check_ch(int ch) {
-  unsigned short c_ar;
+  uint16_t c_ar;
   char szMessage[80];
 
   if (static_cast<int>(a()->user()->sl()) < channels[ch].sl && !so()) {

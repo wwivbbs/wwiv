@@ -129,7 +129,7 @@ static void purgemail(std::vector<tmpmailrec>& mloc, int mw, int* curmail, mailr
 }
 
 static void resynch_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec* m, bool del,
-                          unsigned short stat) {
+                          uint16_t stat) {
   int i;
   mailrec m1{};
 

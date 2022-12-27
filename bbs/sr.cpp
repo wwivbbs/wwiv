@@ -59,7 +59,7 @@ unsigned char checksum = 0;
 void calc_CRC(unsigned char b) {
   checksum = checksum + b;
 
-  crc ^= (static_cast<unsigned short>(b) << 8);
+  crc ^= (static_cast<uint16_t>(b) << 8);
   for (auto i = 0; i < 8; i++) {
     if (crc & 0x8000) {
       crc = crc << 1;

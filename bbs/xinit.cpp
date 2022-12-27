@@ -97,7 +97,7 @@ void StatusManagerCallback(int i) {
   }
 }
 
-// Turns a string into a bit mapped unsigned short flag for use with ExecuteExternalProgram.
+// Turns a string into a bit mapped uint16_t flag for use with ExecuteExternalProgram.
 static uint32_t str2spawnopt(const std::string& s) {
   auto return_val = EFLAG_NONE;
   const auto ts = ToStringUpperCase(s);

@@ -108,8 +108,8 @@ static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name)
   return ret == MB_FUNC_OK;
 } 
 
-static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* msg, const char* func, int p,
-                      unsigned short row, unsigned short col, int abort_code) {
+static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* msg, const char* func,
+                      int p, uint16_t row, uint16_t col, int abort_code) {
   mb_unrefvar(s);
   mb_unrefvar(p);
 
@@ -136,7 +136,8 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* ms
       msg);
 }
 
-static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int p, unsigned short row, unsigned short col) {
+static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int p, uint16_t row,
+                       uint16_t col) {
   const std::string file = (f) ? f : "(null)";
   VLOG(2) << "p: " << p << "; f: " << file << "; row: " << row << "; col: " << col;
 
@@ -151,7 +152,7 @@ static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int 
 }
 
 static int _on_prev_stepped(struct mb_interpreter_t* s, void** l, const char* f, int p,
-                            unsigned short row, unsigned short col) {
+                            uint16_t row, uint16_t col) {
   mb_unrefvar(s);
   mb_unrefvar(l);
   mb_unrefvar(f);

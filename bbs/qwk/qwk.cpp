@@ -249,12 +249,12 @@ static std::string qwk_current_text(int pos) {
   }
 }
 
-static std::optional<unsigned short> select_qwk_protocol() {
+static std::optional<uint16_t> select_qwk_protocol() {
   const auto protocol = get_protocol(xfertype::xf_down_temp);
   if (protocol == -1) {
     return std::nullopt;
   }
-  return static_cast<unsigned short>(protocol);
+  return static_cast<uint16_t>(protocol);
 }
 
 void qwk_config_user() {
@@ -322,9 +322,8 @@ void qwk_config_user() {
     }
     case 9: {
       bout.cls();
-
-      if (const auto arcno = select_qwk_protocol()) {
-        a()->user()->data.qwk_protocol = arcno.value();
+      if (const auto prot = select_qwk_protocol()) {
+        a()->user()->data.qwk_protocol = prot.value();
       }
     } break;
     case 10: {

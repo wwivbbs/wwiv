@@ -82,7 +82,6 @@
 //
 #if defined(_WIN32)
 typedef unsigned char u_char;
-typedef unsigned short int u_short;
 #endif // _WIN32
 
 /* Internal State */

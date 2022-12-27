@@ -1,10 +1,12 @@
 /*	@(#)crctab.h 1.2 96/09/13	*/
 
+#include <cstdint>
+
 /*
  *  Crc calculation stuff.  See crctab.c
  */
 
-extern unsigned short crctab[256];
+extern uint16_t crctab[256];
 
 #define updcrc(cp, crc) (crctab[((crc >> 8) & 255)] ^ (crc << 8) ^ cp)
 
