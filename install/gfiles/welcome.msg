@@ -1,2 +1,11 @@
-This is welcome.msg.
-Edit to suit your needs.
+|#8unsortables
+|#8kona
+|#8wolf
+|#8jon
+|#8grace
+|#8mara*
+|#8metz
+|#8mona
+|#8sentry
+|#8tony
+|#8tomy
