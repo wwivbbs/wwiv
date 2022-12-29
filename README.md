@@ -1,6 +1,8 @@
 WWIV BBS
 ========
 
+bbs.sunfireforge.com
+
 WWIV is compiled with the following compilers:
   
 - MS Visual C++ 2019 Community Edition.
