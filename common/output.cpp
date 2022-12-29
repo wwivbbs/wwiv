@@ -604,7 +604,6 @@ int Output::outchr(char c, bool use_buffer) {
       if (const auto num_sclines = sess().num_screen_lines() - 1; ll >= num_sclines) {
         if (user().pause()) {
           bout.pausescr();
-          bout.pausescr();
         }
         bout.clear_lines_listed();   // change Build3
       }
