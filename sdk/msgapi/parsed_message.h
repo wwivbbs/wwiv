@@ -15,16 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_PARSED_MESSAGE_H__
-#define __INCLUDED_SDK_PARSED_MESSAGE_H__
+#ifndef INCLUDED_SDK_PARSED_MESSAGE_H
+#define INCLUDED_SDK_PARSED_MESSAGE_H
 
 #include <functional>
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 /**
  * Specifies how to return the text with respect to control lines,
@@ -92,8 +90,8 @@ public:
   ~WWIVParsedMessageText();
 };
 
-} // namespace msgapi
-} // namespace sdk
-} // namespace wwiv
+std::vector<std::string> split_wwiv_style_message_text(const std::string& s);
 
-#endif // __INCLUDED_SDK_PARSED_MESSAGE_H__
+} 
+
+#endif // INCLUDED_SDK_PARSED_MESSAGE_H

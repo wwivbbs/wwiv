@@ -574,7 +574,6 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
 
   // Now handle control chars, and optional lines.
   std::vector<std::string> lines;
-  std::string overflow;
   for (auto line : orig_lines) {
     if (line.empty()) {
       lines.emplace_back("");
@@ -597,13 +596,13 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
         continue;
       }
     }
-    // Not CD.  Check overflow.
+    // Not CD.
     lines.emplace_back(line);
   }
 
   // Finally render it to the frame buffer to interpret
   // heart codes, ansi, etc
-  FrameBuffer b{80};
+  FrameBuffer b(user.screen_width());
   Ansi ansi(&b, {}, 0x07);
   HeartAndPipeCodeFilter heart(&ansi, user.colors());
   for (auto& l : lines) {

@@ -237,8 +237,8 @@ void post(const PostData& post_data) {
   // Additions for MSGID reply.
   if (a()->current_net().type == network_type_t::ftn && !post_data.reply_to.text.empty()) {
     // We're handling a reply.
-    auto msgid = FtnMessageDupe::GetMessageIDFromWWIVText(post_data.reply_to.text);
-    if (!msgid.empty()) {
+    if (const auto msgid = FtnMessageDupe::GetMessageIDFromWWIVText(post_data.reply_to.text);
+        !msgid.empty()) {
       const auto address = a()->current_net().fido.fido_address;
       try {
         FidoAddress addr(address);

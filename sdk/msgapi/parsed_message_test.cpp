@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 #include "bbs/msgbase1.h"
 #include "core/datetime.h"
@@ -26,6 +27,7 @@
 #include "local_io/keycodes.h"
 #include "sdk/msgapi/parsed_message.h"
 
+using namespace testing;
 using namespace wwiv::core;
 using namespace wwiv::local::io;
 using namespace wwiv::strings;
@@ -33,12 +35,12 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::sdk::msgapi;
 
-static std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
-  auto temp(s);
-  temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
-  // Use SplitString(..., false) so we don't skip blank lines.
-  return SplitString(temp, "\r", false);
-}
+//static std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
+//  auto temp(s);
+//  temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
+//  // Use SplitString(..., false) so we don't skip blank lines.
+//  return SplitString(temp, "\r", false);
+//}
 
 class ParsedMessageTest : public ::testing::Test {
 protected:
@@ -264,4 +266,67 @@ J..
   style.reattribute_quotes = true;
   const auto lines = p.to_lines(style);
   EXPECT_EQ(34u, lines.size()) << JoinStrings(lines, "\n");
+}
+
+
+
+TEST(WWIVParsedMessageTest, ToLines_B1498) {
+  const std::string cz(1, static_cast<char>(CZ));
+  std::string raw =
+      R"(The majority of the storm was here in MD on Thursday night into Friday.  We[^A]
+went from 57 degrees at 1am Friday morning to 3 degrees Saturday morning.  Very[^A]
+high wind gusts and lots of rain, that changed to ice/snow for a bit, but[^A]
+didn't accumulate to anything.)";
+
+  const std::string expected = "RF> This is a long\x1|RF> line of text|RF> xxxx of the text|";
+  StringReplace(&raw, "\n", "\r\n");
+  const auto& text = StringReplace(&raw, "[^A]", "\x01");
+  const WWIVParsedMessageText p(text);
+  parsed_message_lines_style_t style{};
+  style.line_length = 79;
+  style.ctrl_lines = control_lines_t::control_lines;
+  style.add_wrapping_marker = false;
+  const auto lines = p.to_lines(style);
+  EXPECT_EQ(4u, lines.size());
+  EXPECT_THAT(lines[0],
+              Eq("The majority of the storm was here in MD on Thursday night into Friday.  We"))
+      << JoinStrings(lines, "\n");
+  EXPECT_THAT(lines[1],
+              Eq("went from 57 degrees at 1am Friday morning to 3 degrees Saturday morning.  Very"))
+      << JoinStrings(lines, "\n");
+  EXPECT_THAT(lines[2],
+              Eq("high wind gusts and lots of rain, that changed to ice/snow for a bit, but"))
+      << JoinStrings(lines, "\n");
+  EXPECT_THAT(lines[3], Eq("didn't accumulate to anything.")) << JoinStrings(lines, "\n");
+}
+
+TEST(WWIVParsedMessageTest, ToLines_B1498_120) {
+  const std::string cz(1, static_cast<char>(CZ));
+  std::string raw =
+      R"(The majority of the storm was here in MD on Thursday night into Friday.  We[^A]
+went from 57 degrees at 1am Friday morning to 3 degrees Saturday morning.  Very[^A]
+high wind gusts and lots of rain, that changed to ice/snow for a bit, but[^A]
+didn't accumulate to anything.)";
+
+  const std::string expected = "RF> This is a long\x1|RF> line of text|RF> xxxx of the text|";
+  StringReplace(&raw, "\n", "\r\n");
+  const auto& text = StringReplace(&raw, "[^A]", "\x01");
+  const WWIVParsedMessageText p(text);
+  parsed_message_lines_style_t style{};
+  style.line_length = 119;
+  style.ctrl_lines = control_lines_t::control_lines;
+  style.add_wrapping_marker = false;
+  const auto lines = p.to_lines(style);
+  EXPECT_EQ(3u, lines.size());
+  EXPECT_THAT(lines[0], Eq("The majority of the storm was here in MD on Thursday night into "
+                           "Friday.  We went from 57 degrees at 1am Friday morning"))
+      << JoinStrings(lines, "\n");
+  EXPECT_THAT(lines[1], Eq("to 3 degrees Saturday morning.  Very high wind gusts and lots of rain, "
+                           "that changed to ice/snow for a bit, but didn't"))
+      << JoinStrings(lines, "\n");
+  EXPECT_THAT(lines[2], Eq("accumulate to anything.")) << JoinStrings(lines, "\n");
+
+
+
+
 }
