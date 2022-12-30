@@ -18,8 +18,10 @@
 #ifndef INCLUDED_BBS_READ_MESSAGE_H
 #define INCLUDED_BBS_READ_MESSAGE_H
 
+#include <optional>
 #include <set>
 #include <string>
+#include "sdk/subxtr.h"
 
 struct messagerec;
 
@@ -53,14 +55,14 @@ struct Type2MessageData {
 
   // mailrec.anony flag.
   uint8_t message_anony{0};
-  // Any special flags from the subboard. So far only anony.no_fulscreen
-  uint8_t subboard_flags{0};
   bool use_msg_command_handler{true};
   bool email{false};
+  wwiv::sdk::subboard_t sub;
 };
 
-Type2MessageData read_type2_message(messagerec* msg, uint8_t an, bool readit,
-                                    const std::string& file_name, int from_sys_num, int from_user);
+std::optional<Type2MessageData> read_type2_message(messagerec* msg, uint8_t an, bool readit,
+                                                   const std::string& file_name, int from_sys_num,
+                                                   int from_user);
 
 
 enum class ReadMessageOption {

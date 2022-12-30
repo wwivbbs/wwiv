@@ -739,8 +739,12 @@ void HandleMessageReply(int& msg_num) {
     return;
   }
   const auto& cs = a()->current_sub();
-  auto m = read_type2_message(&p2.msg, p2.anony & 0x0f, true,
-                              cs.filename, p2.ownersys, p2.owneruser);
+  auto o =
+      read_type2_message(&p2.msg, p2.anony & 0x0f, true, cs.filename, p2.ownersys, p2.owneruser);
+  if (!o) {
+    return;
+  }
+  auto& m = o.value();
   m.title = p2.title;
 
   grab_quotes(m.raw_message_text, m.from_user_name, a()->context());
