@@ -763,7 +763,7 @@ void mailr() {
             bout.outstr("|#1Filename|#0.... |#2|#2File : Unknown or Missing|#0\r\n");
           }
         }
-        bool next;
+        bool next{false};
         int fake_msgno = -1;
         if (auto msg =
                 read_type2_message(&m.msg, m.anony & 0x0f, true, "email", m.fromsys, m.fromuser)) {

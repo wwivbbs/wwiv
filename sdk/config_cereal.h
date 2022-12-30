@@ -155,6 +155,7 @@ template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, script_flags);
 
   SERIALIZE(n, toggles);
+  SERIALIZE(n, colors);
 }
 
 

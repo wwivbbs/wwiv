@@ -632,12 +632,23 @@ static std::vector<std::string> split_wwiv_message(const std::string& message_te
 /**
  * returns the colorozed lined color by guessing the type of line.
  */
-static std::string get_line_color(Type2MessageData& msg, std::string& line) {
+static std::string get_line_color(std::string& line) {
   auto& colors = a()->config()->raw_config().colors.msg;
-  colors.tear_color = "|#5";
-  colors.origin_color = "|#5";
-  colors.quote_color = "|#1";
-  colors.text_color = "|#9";
+  if (colors.tear_color.empty()) {
+    colors.tear_color = "|#8";
+  }
+  if (colors.origin_color.empty()) {
+    colors.origin_color = "|#8";
+  }
+  if (colors.quote_color.empty()) {
+    colors.quote_color = "|#5";
+  }
+  if (colors.text_color.empty()) {
+    colors.text_color = "|#0";
+  }
+  if (colors.kludge_color.empty()) {
+    colors.kludge_color = "|08";
+  }
   if (line.empty()) {
     return colors.text_color;
   }
@@ -695,7 +706,7 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
         l = l.substr(2);
         color = colors.kludge_color;
       } else if (!had_ansi && colorize) {
-        color = get_line_color(msg, l);
+        color = get_line_color(l);
       }
     }
     bout.ansic(0);

@@ -57,11 +57,11 @@ struct system_toggles_t {
 
 /** Configuration for various color codes to use in the message bases in WWIV. */
 struct message_color_config_t {
-  std::string text_color;
-  std::string quote_color;
-  std::string kludge_color;
-  std::string origin_color;
-  std::string tear_color;
+  std::string text_color{"|#0"};
+  std::string quote_color{"|#5"};
+  std::string kludge_color{"|08"};
+  std::string origin_color{"|#8"};
+  std::string tear_color{"|#8"};
 };
 
 /** Configuration for various color codes to use in WWIV. */
@@ -342,6 +342,9 @@ public:
 
   // System Toggles (mostly toggle settings moved from wwiv.ini)
   [[nodiscard]] system_toggles_t& toggles() { return config_.toggles; }
+
+  // System Colors.
+  [[nodiscard]] color_config_t& colors() { return config_.colors; }
 
   void newuser_password(const std::string&);
   // New User restrictions given by default when they sign up.
