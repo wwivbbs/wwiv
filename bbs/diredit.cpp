@@ -90,7 +90,7 @@ std::optional<Network> select_network() {
 
   bout.pl("|#5Networks: ");
   for (const auto& n : nets) {
-    bout.print("|#1|#9) |#2{}", n.first, n.second.name);
+    bout.print("|#1|#9) |#2{}\r\n", n.first, n.second.name);
   }
   bout.nl();
   bout.outstr("|#2(Q=Quit) Select Network Number : ");

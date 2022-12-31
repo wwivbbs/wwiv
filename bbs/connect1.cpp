@@ -45,7 +45,7 @@ void set_net_num(int network_number) {
 int32_t next_system_reg(int16_t ts) {
   const auto b = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
   if (const auto & r = b.reg_number(); r.find(ts) != r.end()) {
-    return r.at(ts);
+    return wwiv::stl::at(r, ts);
   }
   return 0;
 }
