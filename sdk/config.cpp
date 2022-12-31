@@ -17,10 +17,12 @@
 /**************************************************************************/
 #include "sdk/config.h"
 
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/jsonfile.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "sdk/config430.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
@@ -111,6 +113,11 @@ bool Config::Load() {
 }
 
 bool Config::Save() {
+  // Update version/date on writes of config.json.
+  config_.header.last_written_date = DateTime::now().to_string();
+  config_.header.written_by_wwiv_version = full_version();
+  config_.header.written_by_wwiv_num_version = wwiv_config_version();
+
   JsonFile f(FilePath(root_directory_, "config.json"), "config", config_, 1);
   if (readonly_) {
     LOG(ERROR) << "Tried to save a readonly config.json!";
