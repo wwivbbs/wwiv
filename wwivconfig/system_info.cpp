@@ -25,6 +25,7 @@
 #include "localui/edit_items.h"
 #include "sdk/vardec.h"
 #include "wwivconfig/new_user.h"
+#include "wwivconfig/colors.h"
 #include "wwivconfig/toggles.h"
 #include "wwivconfig/utility.h"
 #include <cstdint>
@@ -213,8 +214,12 @@ void sysinfo1(wwiv::sdk::Config& config) {
             1, y);
   ++y;
   items.add(new Label("System Toggles:"),
-            new NewUserSubDialog<wwiv::sdk::system_toggles_t>(config, config.toggles(), toggles),
-            1, y);
+            new NewUserSubDialog<wwiv::sdk::system_toggles_t>(config, config.toggles(), toggles), 1,
+            y);
+  ++y;
+  items.add(new Label("System Colors:"),
+            new NewUserSubDialog<wwiv::sdk::color_config_t>(config, config.colors(), colors), 1,
+            y);
   ++y;
 
   items.add_aligned_width_column(1);

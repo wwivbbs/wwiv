@@ -47,6 +47,7 @@ template <class Archive> void serialize(Archive& ar, subboard_t& s) {
   SERIALIZE(s, storage_type);
   SERIALIZE(s, nets);
   SERIALIZE(s, conf);
+  SERIALIZE(s, colorize_text);
 }
 
 template <class Archive> void serialize(Archive& ar, subboard_52_t& s) { 

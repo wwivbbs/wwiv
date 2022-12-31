@@ -154,9 +154,9 @@ static bool load_external_programs(Context& context, const std::filesystem::path
     }
 
     external_programs_t e{};
-    e.exe = parts.at(0);
-    e.low = to_number<int>(parts.at(1));
-    e.high = to_number<int>(parts.at(2));
+    e.exe = wwiv::stl::at(parts, 0);
+    e.low = to_number<int>(wwiv::stl::at(parts, 1));
+    e.high = to_number<int>(wwiv::stl::at(parts, 2));
     context.external_programs->emplace_back(e);
   }
   return true;

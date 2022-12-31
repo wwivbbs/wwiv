@@ -35,13 +35,6 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::sdk::msgapi;
 
-//static std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
-//  auto temp(s);
-//  temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
-//  // Use SplitString(..., false) so we don't skip blank lines.
-//  return SplitString(temp, "\r", false);
-//}
-
 class ParsedMessageTest : public ::testing::Test {
 protected:
   ParsedMessageTest()
@@ -73,14 +66,14 @@ protected:
     expected_list_wwiv_.emplace_back("Line of text");
   }
 
-  std::string expected_string(size_t pos, const std::string& val) {
+  std::string expected_string_ftn_format(size_t pos, const std::string& val) {
     insert_at(expected_list_, pos, val);
-    return JoinStrings(expected_list_, "\r\n") + cz;
+    return JoinStrings(expected_list_, "\r") + cz;
   }
 
-  std::string expected_string_new_msgid(size_t pos, const std::string& val) {
+  std::string expected_string_new_msgid_ftn_format(size_t pos, const std::string& val) {
     insert_at(expected_list_new_msgid_, pos, val);
-    return JoinStrings(expected_list_new_msgid_, "\r\n") + cz;
+    return JoinStrings(expected_list_new_msgid_, "\r") + cz;
   }
 
   std::string expected_string_wwiv(size_t pos, const std::string& val) {
@@ -104,17 +97,16 @@ protected:
 
 TEST_F(ParsedMessageTest, AfterMsgID) {
   const auto kReply = ca + "REPLY";
-  ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text, "\r\n");
+  FTNParsedMessageText p(JoinStrings(expected_list_, "\r"));
   p.add_control_line_after("MSGID", "REPLY");
   const auto actual_string = p.to_string();
 
-  EXPECT_EQ(expected_string(4, kReply), actual_string);
+  EXPECT_EQ(expected_string_ftn_format(4, kReply), actual_string);
 }
 
 TEST_F(ParsedMessageTest, AddReplyAndReplaceMsgID) {
   const auto kReply = ca + "REPLY";
-  ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text,
-                      "\r\n");
+  FTNParsedMessageText p(JoinStrings(expected_list_, "\r"));
   const auto kNewMsgId = ca + "MSGID 5678";
   p.add_control_line_after("MSGID", "MSGID 5678");
   // Remove original msgid
@@ -122,13 +114,12 @@ TEST_F(ParsedMessageTest, AddReplyAndReplaceMsgID) {
   p.add_control_line_after("MSGID", "REPLY");
   const auto actual_string = p.to_string();
 
-  EXPECT_EQ(expected_string_new_msgid(4, kReply), actual_string);
+  EXPECT_EQ(expected_string_new_msgid_ftn_format(4, kReply), actual_string);
 }
 
 TEST_F(ParsedMessageTest, AfterMsgID_WWIVControlLines) {
   const auto kReply = cd + "0REPLY";
-  ParsedMessageText p(cd + "0", JoinStrings(expected_list_wwiv_, "\r\n"),
-                      split_wwiv_style_message_text, "\r\n");
+  WWIVParsedMessageText p(JoinStrings(expected_list_wwiv_, "\r\n"));
   p.add_control_line_after("MSGID", "REPLY");
   const auto actual_string = p.to_string();
 
@@ -138,19 +129,17 @@ TEST_F(ParsedMessageTest, AfterMsgID_WWIVControlLines) {
 TEST_F(ParsedMessageTest, AtEndOfControlLines) {
   const auto kControlLineWithControlChar = ca + "DUDE";
   const std::string kControlLine = "DUDE";
-  ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text,
-                      "\r\n");
+  FTNParsedMessageText p(JoinStrings(expected_list_, "\r"));
   p.add_control_line(kControlLine);
   const auto actual_string = p.to_string();
 
-  EXPECT_EQ(expected_string(5, kControlLineWithControlChar), actual_string);
+  EXPECT_EQ(expected_string_ftn_format(5, kControlLineWithControlChar), actual_string);
 }
 
 TEST_F(ParsedMessageTest, AtEndOfControlLines_WWIVControlLines) {
   const std::string kControlLine = "DUDE";
   const auto kControlLineWithControlChar = cd + "0DUDE";
-  ParsedMessageText p(cd + "0", JoinStrings(expected_list_wwiv_, "\r\n"),
-                      split_wwiv_style_message_text, "\r\n");
+  WWIVParsedMessageText p(JoinStrings(expected_list_wwiv_, "\r\n"));
   p.add_control_line(kControlLine);
   const auto actual_string = p.to_string();
 

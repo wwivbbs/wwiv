@@ -56,6 +56,7 @@
 #include "core/command_line.h"
 #include "core/eventbus.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings-ng.h"
 #include "core/strings.h"
 #include "core/version.h"
@@ -237,7 +238,8 @@ bool Application::reset_local_io(LocalIO* wlocal_io) {
   return true;
 }
 
-void Application::CreateComm(unsigned int nHandle, unsigned int parent_pid, CommunicationType type) {
+void Application::CreateComm(unsigned int nHandle, unsigned int /* parent_pid*/,
+                             CommunicationType type) {
   switch (type) {
   case CommunicationType::SSH: {
 #ifdef WWIV_HAS_SSH_CRYPTLIB
@@ -1212,9 +1214,9 @@ Names* Application::names() const { return names_.get(); }
 
 msgapi::MessageApi* Application::msgapi(int type) const {
   if (type == 0) {
-    return msgapis_.at(2).get();
+    return wwiv::stl::at(msgapis_, 2).get();
   }
-  return msgapis_.at(type).get();
+  return wwiv::stl::at(msgapis_, type).get();
 }
 
 msgapi::MessageApi* Application::msgapi() const {

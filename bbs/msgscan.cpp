@@ -339,7 +339,7 @@ static std::vector<std::string> CreateMessageTitleVector(MessageArea* area, int 
 static void display_title_new(const std::vector<std::string>& lines, const FullScreenView& fs,
                               int i, bool selected) {
   bout.goxy(1, i + fs.lines_start());
-  const auto& l = lines.at(i);
+  const auto& l = wwiv::stl::at(lines, i);
   if (selected) {
     bout.outstr("|17|12>");
   } else {
@@ -739,8 +739,12 @@ void HandleMessageReply(int& msg_num) {
     return;
   }
   const auto& cs = a()->current_sub();
-  auto m = read_type2_message(&p2.msg, p2.anony & 0x0f, true,
-                              cs.filename, p2.ownersys, p2.owneruser);
+  auto o =
+      read_type2_message(&p2.msg, p2.anony & 0x0f, true, cs.filename, p2.ownersys, p2.owneruser);
+  if (!o) {
+    return;
+  }
+  auto& m = o.value();
   m.title = p2.title;
 
   grab_quotes(m.raw_message_text, m.from_user_name, a()->context());

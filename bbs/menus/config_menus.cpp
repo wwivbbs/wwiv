@@ -136,7 +136,7 @@ void ConfigUserMenuSet(const std::string& data) {
       bout.nl(2);
       bout.outstr("|#9Enter the menu set to use : ");
       auto sel = bin.input_number<int>(1, 1, r.size(), false);
-      if (const auto m = r.at(sel); ValidateMenuSet(m.name)) {
+      if (const auto m = wwiv::stl::at(r, sel); ValidateMenuSet(m.name)) {
         bout.nl();
         bout.print("|#9Menu Set : |#2{:<8.8} :  |#1{}|#0\r\n", m.name, m.description);
         bout.outstr("|#5Use this menu set? ");

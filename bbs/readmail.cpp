@@ -358,7 +358,7 @@ static std::tuple<Network, int> network_and_num(const mailrec& m) {
 }
 
 void readmail(bool newmail_only) {
-  constexpr auto mail_who_field_len = 45;
+  //constexpr auto mail_who_field_len = 45;
   int i1, curmail = 0;
   bool done;
   mailrec m{};
@@ -486,8 +486,12 @@ void readmail(bool newmail_only) {
         // message, including sender name (which is all we have for FTN messages).
         // We need to get the full header before that and pass it into this
         // method to display it.
+
+        // TODO(rushfan): Should we fail here vs. value_or? I don't see any graceful way to do that.
         auto msg = read_type2_message(&m.msg, m.anony & 0x0f, readit ? true : false, "email",
-                                      nFromSystem, nFromUser);
+                                      nFromSystem, nFromUser)
+                       .value_or(Type2MessageData{});
+
         msg.message_area = "Personal E-Mail";
         msg.title = m.title;
         msg.message_number = curmail + 1;

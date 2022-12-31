@@ -4,6 +4,7 @@ Include(FindWWIVCurses)
 set(COMMON_SOURCES
   "archivers.cpp"
   "autoval.cpp"
+  "colors.cpp"
   "convert.cpp"
   "editors.cpp"
   "levels.cpp"

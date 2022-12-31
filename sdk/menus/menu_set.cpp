@@ -105,7 +105,7 @@ MenuDescriptions::~MenuDescriptions() = default;
 
 std::string MenuDescriptions::description(const std::string& name) const {
   if (contains(descriptions_, name)) {
-    return descriptions_.at(name);
+    return wwiv::stl::at(descriptions_, name);
   }
   return {};
 }

@@ -26,6 +26,7 @@
 
 namespace wwiv::sdk {
 
+/** Configuration header at the start of config.dat and also in config.json */
 struct config_header_t {
   int written_by_wwiv_num_version;
   std::string written_by_wwiv_version;
@@ -52,6 +53,20 @@ struct newuser_config_t {
 
 struct system_toggles_t {
   bool lastnet_at_logon{false};
+};
+
+/** Configuration for various color codes to use in the message bases in WWIV. */
+struct message_color_config_t {
+  std::string text_color{"|#0"};
+  std::string quote_color{"|#5"};
+  std::string kludge_color{"|08"};
+  std::string origin_color{"|#8"};
+  std::string tear_color{"|#8"};
+};
+
+/** Configuration for various color codes to use in WWIV. */
+struct color_config_t {
+  message_color_config_t msg;
 };
 
 struct validation_config_t {
@@ -172,6 +187,9 @@ struct config_t {
 
   // System toggles (on/off)
   system_toggles_t toggles;
+
+  // Color configuration
+  color_config_t colors;
 };
 
 class Config final  : public BbsDirectories {
@@ -324,6 +342,9 @@ public:
 
   // System Toggles (mostly toggle settings moved from wwiv.ini)
   [[nodiscard]] system_toggles_t& toggles() { return config_.toggles; }
+
+  // System Colors.
+  [[nodiscard]] color_config_t& colors() { return config_.colors; }
 
   void newuser_password(const std::string&);
   // New User restrictions given by default when they sign up.

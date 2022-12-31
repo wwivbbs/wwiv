@@ -55,20 +55,20 @@ std::vector<int> to_ansi_numbers(const std::string& as, int max_args, std::vecto
   const auto list_size = std::min<int>(max_args, wwiv::stl::size_int(list));
   for (auto i = 0; i < wwiv::stl::ssize(defaults); i++) {
     if (i < list_size) {
-      const auto& c = list.at(i);
+      const auto& c = wwiv::stl::at(list, i);
       if (!c.empty()) {
         out.push_back(to_number<int>(c));
         continue;
       }
     }
-    out.push_back(defaults.at(i));
+    out.push_back(wwiv::stl::at(defaults, i));
   }
 
   if (list_size > 0 && list_size > wwiv::stl::ssize(defaults)) {
     const auto start = defaults.size();
     const auto end = list_size - defaults.size();
     for (auto i = start; i < end; i++) {
-      const auto& c = list.at(i);
+      const auto& c = wwiv::stl::at(list, i);
       if (!c.empty()) {
         out.push_back(to_number<int>(c));
       }
@@ -328,7 +328,7 @@ bool HeartAndPipeCodeFilter::write(char c) {
 
 bool HeartAndPipeCodeFilter::attr(uint8_t a) {
   if (a < colors_.size()) {
-    return chain_->attr(colors_.at(a));
+    return chain_->attr(wwiv::stl::at(colors_, a));
   }
   return false;
 }

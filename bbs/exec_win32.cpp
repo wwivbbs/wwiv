@@ -546,7 +546,7 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
       }
       // Set the socket to be std{in,out}
       // This doesn't work at all
-      const auto sock = bout.remoteIO()->GetDoorHandle();
+      // const auto sock = bout.remoteIO()->GetDoorHandle();
 
       // si.hStdError = stdout_write;
       si.hStdOutput = stdout_write;

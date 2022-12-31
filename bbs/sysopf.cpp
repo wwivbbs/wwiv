@@ -763,10 +763,12 @@ void mailr() {
             bout.outstr("|#1Filename|#0.... |#2|#2File : Unknown or Missing|#0\r\n");
           }
         }
-        bool next;
-        auto msg = read_type2_message(&m.msg, m.anony & 0x0f, true, "email", m.fromsys, m.fromuser);
+        bool next{false};
         int fake_msgno = -1;
-        display_type2_message(fake_msgno, msg, &next);
+        if (auto msg =
+                read_type2_message(&m.msg, m.anony & 0x0f, true, "email", m.fromsys, m.fromuser)) {
+          display_type2_message(fake_msgno, msg.value(), &next);
+        }
         bout.outstr("|#2R,D,Q,<space>  : ");
         if (next) {
           c = ' ';

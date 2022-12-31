@@ -86,6 +86,17 @@ template <class Archive> void serialize(Archive& ar, system_toggles_t& n) {
   SERIALIZE(n, lastnet_at_logon);
 }
 
+template <class Archive> void serialize(Archive& ar, message_color_config_t& n) { 
+  SERIALIZE(n, text_color);
+  SERIALIZE(n, quote_color);
+  SERIALIZE(n, kludge_color);
+  SERIALIZE(n, origin_color);
+  SERIALIZE(n, tear_color);
+}
+
+template <class Archive> void serialize(Archive& ar, color_config_t& n) {
+  SERIALIZE(n, msg);
+}
 
 template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, header);
@@ -144,6 +155,7 @@ template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, script_flags);
 
   SERIALIZE(n, toggles);
+  SERIALIZE(n, colors);
 }
 
 

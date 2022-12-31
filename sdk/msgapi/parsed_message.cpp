@@ -274,9 +274,13 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
 WWIVParsedMessageText::WWIVParsedMessageText(const std::string& text)
     : ParsedMessageText("\004"
                         "0",
-                        text, split_wwiv_style_message_text,
-                        "\r\n") {}
+                        text, split_wwiv_style_message_text, "\r\n") {}
   
 WWIVParsedMessageText::~WWIVParsedMessageText() = default;
+
+FTNParsedMessageText::FTNParsedMessageText(const std::string& text)
+    : ParsedMessageText("\001", text, split_wwiv_style_message_text, "\r") {}
+
+FTNParsedMessageText::~FTNParsedMessageText() = default;
 
 } // namespace wwiv
