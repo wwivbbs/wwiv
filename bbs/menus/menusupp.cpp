@@ -237,6 +237,10 @@ void KillEMail() {
 }
 
 void LastCallers() {
+  if (a()->user()->clear_screen()) bout.cls();
+  bout.nl(2);
+  bout.print("|#1Last few callers to |#5{}|#7: |#0\r\n", a()->config()->system_name() );
+  bout.nl(2);
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
       a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
     bout.outstr("|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n");
@@ -246,6 +250,9 @@ void LastCallers() {
   const char filler_char = okansi() ? '\xCD' : '=';
   bout.print("|#7{}\r\n", std::string(79, filler_char));
   bout.printfile(LASTON_TXT);
+  bout.print("|#7{}\r\n", std::string(79, filler_char));
+  bout.nl();
+  bout.pausescr();
 }
 
 void ReadEMail() {
