@@ -230,7 +230,8 @@ bool Chains::HasRegisteredChains() const {
   return false;
 }
 
-void Chains::increment_chain_usage(int num) { chains_.at(num).usage++; }
+void Chains::increment_chain_usage(int num) { wwiv::stl::at(chains_, num).usage++;
+}
 
 // static
 uint16_t Chains::to_ansir(const chain_t& c) {

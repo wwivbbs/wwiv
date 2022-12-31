@@ -339,7 +339,7 @@ static std::vector<std::string> CreateMessageTitleVector(MessageArea* area, int 
 static void display_title_new(const std::vector<std::string>& lines, const FullScreenView& fs,
                               int i, bool selected) {
   bout.goxy(1, i + fs.lines_start());
-  const auto& l = lines.at(i);
+  const auto& l = wwiv::stl::at(lines, i);
   if (selected) {
     bout.outstr("|17|12>");
   } else {

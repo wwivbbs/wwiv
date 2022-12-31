@@ -179,7 +179,7 @@ int MenuDownload(const std::string& dir_and_fname, bool bFreeDL, bool bTitle) {
   if (v.size() != 2) {
     return -1;
   }
-  return MenuDownload(v.at(0), aligns(v.at(1)), bFreeDL, bTitle);
+  return MenuDownload(wwiv::stl::at(v, 0), aligns(v.at(1)), bFreeDL, bTitle);
 }
 
 static int FindDoorNo(const std::string& name) {

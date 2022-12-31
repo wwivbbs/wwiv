@@ -501,7 +501,7 @@ static void fill_call(int color, int row, const std::vector<CalloutEntry>& entri
       y++;
     }
     if (i < size_int(entries)) {
-      sprintf(s1, "%-5u", entries.at(i).node);
+      sprintf(s1, "%-5u", wwiv::stl::at(entries, i).node);
     } else {
       strcpy(s1, "     ");
     }
@@ -600,8 +600,8 @@ static std::pair<int, int> ansicallout() {
     switch (ch) {
     case ' ':
     case RETURN:
-      sn = entries.at(pos).node;
-      snn = entries.at(pos).net;
+      sn = at(entries, pos).node;
+      snn = at(entries, pos).net;
       done = true;
       break;
     case 'Q':

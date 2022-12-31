@@ -100,10 +100,9 @@ static std::string GetMailBoxStatus() {
   }
   if (a()->user()->forward_systemnum() != 0) {
     if (a()->user()->mailbox_forwarded()) {
-      return fmt::format("Forward to #{} @{}.{}.",
-              a()->user()->forward_usernum(),
-              a()->user()->forward_systemnum(),
-              a()->nets().at(a()->user()->forward_netnum()).name);
+      return fmt::format("Forward to #{} @{}.{}.", a()->user()->forward_usernum(),
+                         a()->user()->forward_systemnum(),
+                         wwiv::stl::at(a()->nets(), a()->user()->forward_netnum()).name);
     }
     const auto fwd_username = read_inet_addr(a()->sess().user_num());
     return StrCat("Forwarded to Internet ", fwd_username);

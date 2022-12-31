@@ -56,6 +56,7 @@
 #include "core/command_line.h"
 #include "core/eventbus.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings-ng.h"
 #include "core/strings.h"
 #include "core/version.h"
@@ -1213,9 +1214,9 @@ Names* Application::names() const { return names_.get(); }
 
 msgapi::MessageApi* Application::msgapi(int type) const {
   if (type == 0) {
-    return msgapis_.at(2).get();
+    return wwiv::stl::at(msgapis_, 2).get();
   }
-  return msgapis_.at(type).get();
+  return wwiv::stl::at(msgapis_, type).get();
 }
 
 msgapi::MessageApi* Application::msgapi() const {

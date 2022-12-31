@@ -544,7 +544,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   }
 
   const auto title = fmt::format("Net: {} [.{}] ({})", n.name, nn,
-                                 StringTrim(nettypes.at(static_cast<int>(n.type)).second));
+                                 StringTrim(wwiv::stl::at(nettypes, static_cast<int>(n.type)).second));
 
   items.relayout_items_and_labels();
   items.Run(title);
@@ -685,7 +685,7 @@ void networks(const wwiv::sdk::Config& config, std::set<int>& need_network3) {
         switch (result.hotkey) {
         case 'D':
           if (networks.networks().size() > 1) {
-            const auto prompt = fmt::format("Delete '{}'", networks.at(result.selected).name);
+            const auto prompt = fmt::format("Delete '{}'", wwiv::stl::at(networks, result.selected).name);
             auto yn = dialog_yn(window, prompt);
             if (yn) {
               yn = dialog_yn(window, "Are you REALLY sure? ");
