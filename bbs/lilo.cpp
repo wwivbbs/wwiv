@@ -112,7 +112,7 @@ static void CleanUserInfo() {
     a()->set_current_user_dir_num(last_dirnum);
   }
 }
-
+  
 bool IsPhoneNumberUSAFormat(User *pUser) {
   const auto country = pUser->country();
   return country == "USA" || country == "CAN" || country == "MEX";
@@ -120,7 +120,7 @@ bool IsPhoneNumberUSAFormat(User *pUser) {
 
 static int GetAnsiStatusAndShowWelcomeScreen() {
   bout.print("\r\nWWIV {}\r\n", full_version());
-  bout.pl("Copyright (c) 1998-2022, WWIV Software Services.");
+  bout.pl("Copyright (c) 1998-2023, WWIV Software Services.");
   bout.pl("All Rights Reserved.");
 
   const auto ans = check_ansi();

@@ -31,7 +31,7 @@ using namespace wwiv::strings;
 
 namespace wwiv::local::ui {
 
-static const char* copyrightString = "Copyright (c) 1998-2022, WWIV Software Services";
+static const char* copyrightString = "Copyright (c) 1998-2023, WWIV Software Services";
 
 #if defined ( _WIN32 )
 static HANDLE hConOut;
