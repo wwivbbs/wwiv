@@ -253,6 +253,17 @@ void LastCallers() {
   bout.print("|#7{}\r\n", std::string(79, filler_char));
   bout.nl();
   bout.pausescr();
+
+  // InterBBS Last Callers MOD
+  for (const auto& n : a()->nets().networks()) {
+    auto s1 = FilePath(n.dir, LASTON_TXT);
+    if (File::Exists(s1)) {
+        bout.printfile_path(s1);
+        bout.pausescr();
+	}
+    }
+  // InterBBS Last Callers MOD ends here
+
 }
 
 void ReadEMail() {
@@ -291,7 +302,7 @@ void GoodBye() {
     int cycle = 0;
     do {
       bout.cls();
-      bout.printfile(filename.string());
+      bout.printfile_path(filename.string());
       switch (const auto ch = onek("QFTO", true); ch) {
       case 'Q':
         cycle = 1;
