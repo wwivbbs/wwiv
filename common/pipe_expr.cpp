@@ -266,6 +266,12 @@ std::string eval_fn_set(Context& context_, const std::vector<pipe_expr_token_t>&
     const auto val = is_truthy(args.at(1).lexeme);
     context_.u().set_flag(User::pauseOnPage, val);
     context_.session_context().disable_pause(!val);
+  } else if (var == "bps") {
+    if (args.at(1).type != pipe_expr_token_type_t::number_literal) {
+      return "ERROR: 'set bps' requires number argument";
+    }
+    const auto bps = to_number<int>(args.at(1).lexeme);
+    context_.session_context().set_file_bps(bps);
   } else if (var == "lines") {
     if (args.at(1).type != pipe_expr_token_type_t::number_literal) {
       return "ERROR: 'set lines' requires number argument";
