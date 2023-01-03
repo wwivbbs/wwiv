@@ -235,23 +235,23 @@ public:
    */
   void spin_outstr(const std::string& text, int color);
 
-/**
- * This function prints out a string, with a user-specifiable delay between
- * each character, and a user-definable pause after the entire string has
- * been printed, then it backspaces the string. The color is also definable.
- * The parameters are as follows:
- * <p>
- * <em>Note: ANSI is not required.</em>
- * <p>
- * Example:
- * <p>
- * back_outstr("This is an example.", 3, 20ms, 500ms);
- *
- * @param text  The string to print
- * @param color The color of the string
- * @param char_dly Delay between each character, in milliseconds
- * @param string_dly Delay between completion of string and backspacing
- */
+  /**
+   * This function prints out a string, with a user-specifiable delay between
+   * each character, and a user-definable pause after the entire string has
+   * been printed, then it backspaces the string. The color is also definable.
+   * The parameters are as follows:
+   * 
+   * Note: ANSI is not required.
+   * 
+   * Example:
+   * 
+   * back_outstr("This is an example.", 3, 20ms, 500ms);
+   *
+   * @param[in] text:       The string to print
+   * @param[in] color:      The color of the string
+   * @param[in] char_dly:   Delay between each character, in milliseconds
+   * @param[in] string_dly: Delay between completion of string and backspacing
+   */
   void back_outstr(const std::string& text, int color, std::chrono::duration<double> char_dly, std::chrono::duration<double> string_dly);
 
   /**
@@ -260,8 +260,12 @@ public:
   void rainbow(const std::string& text);
 
   /**
-   * Displays the text in the strings file referred to by key adding all
-   * key/value pairs from map into the unnamed context.
+   * Displays the text in the "strings file" referred to by key adding all
+   * key/value pairs from 'map' into the unnamed context.
+   * 
+   * @param[in] key:     The key into the string file to locate the text to display
+   * @param[in] map:     The map of replacable parameters to display using the pipe code 
+   *                     variables.  for example to display a variable "foo", use: "|{foo}"
    */
   int str(const std::string& key, const std::map<std::string, std::string>& map) {
     // Process arguments
@@ -350,12 +354,63 @@ public:
   // PrintFile and friends.  Used to display a file (msg/ans/b&w/etc).
   //
 
-  void print_local_file(const std::string& filename);
+ /**
+   * Displays a file locally, meaning it pauses at the end.  In the future this
+   * could use LIST.COM or spawn some other viewer program (it used to on dos)
+   * 
+   * @param[in] data: The filename, optionally without extension and `data` options to display.
+   *                  See menu_data_and_options_t for more information on the options.
+   */
+  void print_local_file(const std::string& data);
+
+ /**
+   * Displays a file from either the menu set, language dir, or root gfiles directory, allowing
+   * for options such pause or speed.
+   * 
+   * Example: `FOO BPS=2400`
+   *
+   * @param[in] data: The filename, optionally without extension and `data` options to display. 
+   *                  See menu_data_and_options_t for more information on the options. 
+   * @param[in] abortable: If `true` a caller can press a key to stop display.
+   * @param[in] force_pause: pause on screen even when ansi movement would have caused
+   *                         no pause to occur.
+   */
   bool printfile(const std::string& data, bool abortable = true, bool force_pause = true);
+
+ /**
+   * Displays the file using the full path to locate it.
+   *
+   * Example: `/opt/wwiv/gfiles/foo.msg`
+   *
+   * @param[in] path: The full file path to display including both directory and file extension.
+   * @param[in] abortable: If `true` a caller can press a key to stop display.
+   * @param[in] force_pause: pause on screen even when ansi movement would have caused
+   *                         no pause to occur.
+   */
   bool printfile_path(const std::filesystem::path& file_path, bool abortable = true,
                       bool force_pause = true);
+
+  /**
+   * Displays a help file or an error that no help is available. A help file is a normal 
+   * file displayed with printfile.
+   * 
+   * @param[in] filename: The file name, optionally without extension, to display.
+   */
   bool print_help_file(const std::string& filename);
-  bool printfile_random(const std::string& base_fn);
+
+
+  /**
+   * Displays a random file from either the menu set, language dir, or root gfiles 
+   * directory, allowing for options such pause or speed.
+   * 
+   * A random file has an extension of ".0" through ".999" instead of `.ans`
+   *
+   * Example: `FOO BPS=2400`
+   *
+   * @param[in] data: The base filename (without extension) and `data` options to display.
+   *                  See menu_data_and_options_t for more information on the options.
+   */
+  bool printfile_random(const std::string& data);
 
   /** Gets the current language instance. */
   [[nodiscard]] Language& lang();
