@@ -581,7 +581,7 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
     return;
   }
 
-  bout.print("|#7{}{}{}\r\n", static_cast<unsigned char>(198),
+  bout.print("|#7{:c}{}{:c}\r\n", static_cast<unsigned char>(198),
              std::string(a()->user()->screen_width() - 3, static_cast<unsigned char>(205)),
              static_cast<unsigned char>(181));
   const auto num_title_lines = std::max<int>(a()->sess().num_screen_lines() - 6, 1);
@@ -594,7 +594,7 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
       abort = true;
     }
   }
-  bout.print("|#7{}{}{}\r\n", static_cast<unsigned char>(198),
+  bout.print("|#7{:c}{}{:c}\r\n", static_cast<unsigned char>(198),
              std::string(a()->user()->screen_width() - 3, static_cast<unsigned char>(205)),
              static_cast<unsigned char>(181));
 }
