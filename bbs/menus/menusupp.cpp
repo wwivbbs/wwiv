@@ -302,7 +302,7 @@ void GoodBye() {
     int cycle = 0;
     do {
       bout.cls();
-      bout.printfile_path(filename.string());
+      bout.printfile_path(filename);
       switch (const auto ch = onek("QFTO", true); ch) {
       case 'Q':
         cycle = 1;
