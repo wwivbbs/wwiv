@@ -623,7 +623,13 @@ static std::vector<std::string> split_wwiv_message(const std::string& message_te
     for (const auto c  : l) {
       heart.write(c);
     }
-    ansi.write("\n");
+    // todo: pipe state may be wrong here, maybe need to call heart.write
+    // and let that fix up pipe state, etc?
+    if (!l.empty() && l.front() == 0x04) { // CD
+      ansi.attr(7);
+      ansi.reset();
+    }
+    heart.write('\n');
   }
   b.close();
   return b.to_screen_as_lines();
