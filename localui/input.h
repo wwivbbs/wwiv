@@ -106,7 +106,6 @@ int messagebox(UIWindow* window, const std::string& text);
 int messagebox(UIWindow* window, const std::vector<std::string>& text);
 int input_select_item(UIWindow* window, const std::string& prompt,
                       const std::vector<std::string>& items);
-void trimstrpath(char* s);
 
 template <typename T>
 static std::string to_restriction_string(T data, int size, const std::string& res) {

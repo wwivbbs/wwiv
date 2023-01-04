@@ -86,21 +86,21 @@ TEST(StringsTest, StrCat_AlphaNumeric) {
 TEST(StringsTest, StringReplace_EntireString) {
   std::string s = "Hello";
   const std::string world = "World";
-  EXPECT_EQ(world, StringReplace(&s, "Hello", "World"));
+  StringReplace(&s, "Hello", "World");
   EXPECT_EQ(world, s);
 }
 
 TEST(StringsTest, StringReplace_PartialString) {
   std::string s = "Hello World";
   const std::string expected = "World World";
-  EXPECT_EQ(expected, StringReplace(&s, "Hello", "World"));
+  StringReplace(&s, "Hello", "World");
   EXPECT_EQ(expected, s);
 }
 
 TEST(StringsTest, StringReplace_NotFound) {
   std::string s = "Hello World";
   const std::string expected(s);
-  EXPECT_EQ(expected, StringReplace(&s, "Dude", "Where's my car"));
+  StringReplace(&s, "Dude", "Where's my car");
   EXPECT_EQ(expected, s);
 }
 
@@ -345,10 +345,6 @@ TEST(StringsTest, StringLowerCase) {
   std::string a = "aB";
   StringLowerCase(&a);
   EXPECT_EQ("ab", a);
-}
-
-TEST(StringsTest, StringRemoveChar) {
-  EXPECT_STREQ("he", StringRemoveChar("hello world", 'l'));
 }
 
 TEST(StringsTest, IEQuals_charstar) {

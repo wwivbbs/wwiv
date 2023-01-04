@@ -117,7 +117,8 @@ static std::string fopen_compatible_mode(const std::string& m) noexcept {
     return m;
   }
   auto s{m};
-  return StringReplace(&s, "d", "t");
+  StringReplace(&s, "d", "t");
+  return s;
 }
 
 TextFile::TextFile(const std::filesystem::path& file_name, const std::string& file_mode) noexcept

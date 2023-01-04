@@ -111,14 +111,54 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   [[nodiscard]] int StringCompareIgnoreCase(const char* str1, const char* str2);
   [[nodiscard]] int StringCompare(const char* str1, const char* str2);
 
-  const std::string& StringReplace(std::string* orig, const std::string& old_string,
-                                   const std::string& new_string);
+  /**
+   * @brief Replace all occurences in `orig` of `old_string` with `new_string`.
+   * @param[in,out] orig original string containing the text to which to apply substitutions
+   * @param[in]     old_string    substrings to be replaced by new_string
+   * @param[in]     new_string    substrings to replace old_string
+  */
+  void StringReplace(std::string* orig, const std::string& old_string,
+                     const std::string& new_string);
+
+  /**
+   * @brief Splits a string on the boundaries defined by delims 
+   * 
+   * @param[in] original_string The string to be split
+   * @param[in] delims          the boundaries at which to split the strong
+   * @return                    A vector containing original_string split at delims
+  */
   std::vector<std::string> SplitString(const std::string& original_string,
                                        const std::string& delims);
+
+  /**
+   * @brief Splits a string on the boundaries defined by delims
+   * 
+   * @param[in] original_string The string to be split
+   * @param[in] delims          the boundaries at which to split the strong
+   * @param[in[ skip_empty      Should empty strings be not included in the returned std::vector.
+   * @return                    A vector containing original_string split at delims
+   */
   [[nodiscard]] std::vector<std::string> SplitString(const std::string& original_string,
                                        const std::string& delims, bool skip_empty);
+
+  /**
+   * @brief Splits a string on the boundaries defined by delims
+   * 
+   * @param[in] original_string The string to be split
+   * @param[in] delims          the boundaries at which to split the strong
+   * @param[out] out            A vector containing original_string split at delims
+   */
   void SplitString(const std::string& original_string, const std::string& delims,
                    std::vector<std::string>* out);
+
+  /**
+   * @brief Splits a string on the boundaries defined by delims
+   * 
+   * @param[in] original_string The string to be split
+   * @param[in] delims          the boundaries at which to split the strong
+   * @param[in[ skip_empty      Should empty strings be not included in the returned std::vector.
+   * @param[out] out            A vector containing original_string split at delims
+   */
   void SplitString(const std::string& original_string, const std::string& delims, bool skip_empty,
                    std::vector<std::string>* out);
 
@@ -127,7 +167,7 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
    */
   std::tuple<std::string, std::string> SplitOnce(const std::string& original_string, const std::string& delims);
 
-/**
+  /**
    * Splits a string once on the last occurrence of any character in delims.
    */
   std::tuple<std::string, std::string> SplitOnceLast(const std::string& original_string, const std::string& delims);
@@ -142,17 +182,20 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   [[nodiscard]] std::string StringTrim(const std::string& orig);
 
   void StringTrimCRLF(std::string* s);
+
+  /**
+   * Removes the whitespace from the end of the string
+   * 
+   * @param str The string from which to remove the trailing whitespace
+   */
   void StringTrimEnd(std::string* s);
+
   void StringTrimEnd(char* str);
   void StringTrimBegin(std::string* s);
   void StringUpperCase(std::string* s);
   [[nodiscard]] std::string ToStringUpperCase(const std::string& s);
   void StringLowerCase(std::string* s);
   [[nodiscard]] std::string ToStringLowerCase(const std::string& s);
-
-// Strips the string from the first occurrence of ch
-  // Doesn't seem to be used anywhere. Maybe it should be removed.
-  char* StringRemoveChar(const char* str, char ch);
 
   /**
    * Joints the strings in lines, using end_of_line in between each line.
