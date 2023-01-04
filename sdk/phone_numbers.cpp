@@ -80,10 +80,12 @@ bool PhoneNumbers::Load() {
     return false;
   }
 
-  const int num_records = file.number_of_records();
-  phones_.clear();
-  phones_.resize(num_records);
-  return file.Read(&phones_[0], num_records);
+  if (const auto num_records = file.number_of_records(); num_records > 0) {
+    phones_.clear();
+    phones_.resize(num_records);
+    return file.Read(&phones_[0], num_records);
+  }
+  return true;
 }
 
 bool PhoneNumbers::Save() {
