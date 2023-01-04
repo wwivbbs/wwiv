@@ -80,12 +80,7 @@ bool PhoneNumbers::Load() {
     return false;
   }
 
-  if (const auto num_records = file.number_of_records(); num_records > 0) {
-    phones_.clear();
-    phones_.resize(num_records);
-    return file.Read(&phones_[0], num_records);
-  }
-  return true;
+  return file.ReadVector(phones_);
 }
 
 bool PhoneNumbers::Save() {
@@ -96,7 +91,7 @@ bool PhoneNumbers::Save() {
   if (!file) {
     return false;
   }
-  return file.Write(&phones_[0], phones_.size());
+  return file.WriteVector(phones_);
 }
 
 
