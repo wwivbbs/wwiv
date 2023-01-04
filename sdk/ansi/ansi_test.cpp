@@ -150,33 +150,22 @@ TEST_F(AnsiTest, XenosTagLine) {
 [^D]5
 [^D]6
 [^D]7)";
-  StringReplace(&text, "\n", "\r\n");
+
   StringReplace(&text, "[^A]", "\x01");
   StringReplace(&text, "[^C]", "\x03");
   StringReplace(&text, "[^D]", "\x04");
 
-  //auto lines = SplitString(text, "\r\n");
+  const auto lines = SplitString(text, "\n");
 
-  WWIVParsedMessageText pmt(text);
-  parsed_message_lines_style_t style{};
-  style.ctrl_lines = control_lines_t::control_lines;
-  style.add_wrapping_marker = false;
-  style.line_length = 120 - 1;
-  const auto lines = pmt.to_lines(style);
-
-  // Finally render it to the frame buffer to interpret
-  // heart codes, ansi, etc
-  FrameBuffer b80(120);
+  // Finally render it to the frame buffer to interpret heart codes, ansi, etc.
+  FrameBuffer b80(80);
   Ansi ansib80(&b80, {}, 0x07);
   HeartAndPipeCodeFilter heart(&ansib80, {7, 11, 14, 13, 31, 10, 12, 9, 5, 3});
   for (auto& l : lines) {
-    if (l.empty()) {
-      continue;
-    }
     for (const auto c : l) {
       heart.write(c);
     }
-    // todo - this needs to be in read_messsage.cpp too.
+    // This is the same as in split_wwiv_message
     if (l.front() == 0x04) { // CD
       ansib80.attr(7);
       ansib80.reset();
@@ -185,11 +174,9 @@ TEST_F(AnsiTest, XenosTagLine) {
   }
   b80.close();
   auto screen_lines = b80.to_screen_as_lines();
-  for (auto& l : screen_lines) {
-    l.assign(l.c_str());
-  }
-  auto out = JoinStrings(screen_lines, "\n");
-  FAIL() << out;
+
+  const auto expected = fmt::format("{:c}4{:c}[0;31;40;1m/ v \\{:c}[33m`", 0x04, 0x1b, 0x1b);
+  EXPECT_TRUE(starts_with(screen_lines[3], expected)) << JoinStrings(screen_lines, "\n");
 }
 
 

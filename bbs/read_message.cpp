@@ -593,13 +593,13 @@ static std::vector<std::string> split_wwiv_message(const std::string& message_te
   const auto orig_lines = pmt.to_lines(style);
 
   // Now handle control chars, and optional lines.
+  const auto optional_lines = user.optional_val();
   std::vector<std::string> lines;
   for (auto& line : orig_lines) {
     if (line.empty()) {
       lines.emplace_back("");
       continue;
     }
-    const auto optional_lines = user.optional_val();
     if (line.front() == CD) {
       const auto level = line.size() > 1 ? line.at(1) - '0' : 0;
       if (level == 0 && !controlcodes) {
@@ -614,8 +614,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& message_te
     lines.emplace_back(line);
   }
 
-  // Finally render it to the frame buffer to interpret
-  // heart codes, ansi, etc
+  // Render it to the frame buffer to interpret heart codes, ansi, etc.
   FrameBuffer b(user.screen_width());
   Ansi ansi(&b, {}, 0x07);
   HeartAndPipeCodeFilter heart(&ansi, user.colors());
@@ -623,8 +622,8 @@ static std::vector<std::string> split_wwiv_message(const std::string& message_te
     for (const auto c  : l) {
       heart.write(c);
     }
-    // todo: pipe state may be wrong here, maybe need to call heart.write
-    // and let that fix up pipe state, etc?
+    // Reset the ANSI state and color at the end of line for lines that start
+    // with control codes.
     if (!l.empty() && l.front() == 0x04) { // CD
       ansi.attr(7);
       ansi.reset();
