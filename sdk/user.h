@@ -685,8 +685,11 @@ class User final {
     return data.year + 1900;
   }
 
-  /** Gets the current user's birthday as a DateTime */
-  [[nodiscard]] core::DateTime birthday_dt() const;
+  /**
+   * @brief Returns the current user's birthday as "Month DD, YYYY".
+   * @return String of user's birthday as "Month DD, YYYY".
+  */
+  [[nodiscard]] std::string birthday_month_dd_yyyy() const;
 
   /** Gets the current user's birthday as a string in format "mm/dd/yy" */
   [[nodiscard]] std::string birthday_mmddyy() const;
