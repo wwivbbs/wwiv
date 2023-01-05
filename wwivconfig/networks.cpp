@@ -212,7 +212,14 @@ public:
               "This isn't currently used, but you likely want WWIV BinkP", 1, y);
     ++y;
 
-    // dy_start
+    items.add(new Label("Max Allowed Age:"), new NumberEditItem<int>(&n->max_echomail_age_days),
+              "Max number of days old a packet is allowed to be and still be imported. 0=any", 1,
+              y);
+    ++y;
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // New column: dy_start
+
     auto dy = dy_start_;
     items.add(new Label("Process TIC  :"), new BooleanEditItem(&n->process_tic),
               "Process TIC files for this network.", 3, dy);

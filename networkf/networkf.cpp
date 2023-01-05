@@ -129,6 +129,16 @@ NetworkF::NetworkF(const sdk::BbsDirectories& bbsdirs, const networkf_options_t&
 
 NetworkF::~NetworkF() = default;
 
+int ftn_date_days_old(const Clock& clock, const std::string& ftn_date) {
+  const auto daten = fido_to_daten(ftn_date);
+  const auto pkt_dt = DateTime::from_daten(daten).to_system_clock();
+  const auto now = clock.Now().to_system_clock();
+  // TODO(rushfan): C++20 is needed for std::chrono::days
+  const auto diff_hours = std::chrono::duration_cast<std::chrono::hours>(now - pkt_dt).count();
+  const auto days = diff_hours / 24;
+  return days;
+}
+
 bool NetworkF::import_packet_file(const std::filesystem::path& path) {
   LOG(INFO) << "Importing Packet: " << path.string();
   auto o = FidoPacket::Open(path);
@@ -176,8 +186,19 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
       dupe().add(msg);
     }
 
+    if (!is_email &&
+        ftn_date_days_old(clock_, msg.vh.date_time) > net().fido.max_echomail_age_days) {
+      // Packet is too old, skip it.
+      const auto msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
+      LOG(ERROR) << "Too old FTN message: '" << msg.vh.subject << "' msgid: (" << msgid << ")";
+      LOG(ERROR) << "Text: " << msg.vh.text;
+      // TODO(rushfan): move this or write out saved copy?
+      continue;
+    }
+
+    const auto ftn_packet_daten = fido_to_daten(msg.vh.date_time);
     net_header_rec nh{};
-    nh.daten = static_cast<uint32_t>(fido_to_daten(msg.vh.date_time));
+    nh.daten = static_cast<uint32_t>(ftn_packet_daten);
     nh.fromsys = FTN_FAKE_OUTBOUND_NODE;
     nh.fromuser = 0;
     nh.list_len = 0;
@@ -203,8 +224,7 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
     text.append(msg.vh.subject);
     text.push_back(0);
     text.append(StrCat(msg.vh.from_user_name, "(", from_address, ")\r\n"));
-    auto dt = fido_to_daten(msg.vh.date_time);
-    text.append(daten_to_wwivnet_time(dt));
+    text.append(daten_to_wwivnet_time(ftn_packet_daten));
     text.append("\r\n");
 
     if (!is_email) {
