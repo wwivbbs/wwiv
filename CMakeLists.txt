@@ -31,8 +31,15 @@ ENSURE_MINIMUM_COMPILER_VERSIONS()
 
 if(WWIV_ASAN_ENABLED)
   string(REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  message(STATUS "Enabling -fsanitize=address")
   message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}\n")
   add_compile_options(-fsanitize=address)
+endif()
+
+# fanalyzer
+if(WWIV_GCC_ANALYZER_ENABLED)
+  message(STATUS "Enabling -fanalyzer")
+  add_compile_options(-fanalyzer)
 endif()
 
 if (WWIV_BUILD_TESTS)
