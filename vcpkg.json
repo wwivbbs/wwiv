@@ -4,6 +4,7 @@
     "dependencies": [
       "cereal",
       "fmt",
+      "cpp-httplib",
       "gtest"
     ]
   }

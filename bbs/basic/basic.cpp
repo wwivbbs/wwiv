@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "bbs/basic/basic.h"
+#include "httplib.h"
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
@@ -34,6 +35,8 @@
 #include "core/textfile.h"
 #include "deps/my_basic/core/my_basic.h"
 #include "sdk/config.h"
+
+
 #include <cstdarg>
 #include <mutex>
 #include <optional>
@@ -97,13 +100,14 @@ static std::optional<std::string> ReadBasicFile(wwiv::common::Output& out,
   return {lines};
 }
 
-static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
+bool Basic::LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
   const auto* d = get_wwiv_script_userdata(bas);
   const auto path = FilePath(d->script_dir, script_name);
   const auto o = ReadBasicFile(*d->out, path, script_name);
   if (!o) {
     return false;
   }
+  d->basic->AddSourceModule(script_name, o.value());
   const auto ret = mb_load_string(bas, o.value().c_str(), true);
   return ret == MB_FUNC_OK;
 } 
@@ -136,34 +140,46 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* ms
       msg);
 }
 
-static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int p, uint16_t row,
-                       uint16_t col) {
-  const std::string file = (f) ? f : "(null)";
-  VLOG(2) << "p: " << p << "; f: " << file << "; row: " << row << "; col: " << col;
+static int _on_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, int pos,
+                       uint16_t row, uint16_t col) {
+  const std::string source_file = (src) ? src : "(null)";
+  VLOG(2) << "pos: " << pos << "; source_file: " << source_file << "; row: " << row
+          << "; col: " << col;
 
-  mb_unrefvar(s);
-  mb_unrefvar(l);
-  mb_unrefvar(f);
-  mb_unrefvar(p);
+  mb_unrefvar(bas);
+  mb_unrefvar(ast);
+
+  return MB_FUNC_OK;
+}
+
+static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* source_file,
+                            int pos, uint16_t row, uint16_t col) {
+  mb_unrefvar(bas);
+  mb_unrefvar(ast);
+  mb_unrefvar(source_file);
+  mb_unrefvar(pos);
   mb_unrefvar(row);
   mb_unrefvar(col);
 
   return MB_FUNC_OK;
 }
 
-static int _on_prev_stepped(struct mb_interpreter_t* s, void** l, const char* f, int p,
-                            uint16_t row, uint16_t col) {
-  mb_unrefvar(s);
-  mb_unrefvar(l);
-  mb_unrefvar(f);
-  mb_unrefvar(p);
-  mb_unrefvar(row);
-  mb_unrefvar(col);
 
-  return MB_FUNC_OK;
+std::string Receive(const httplib::Request& req, httplib::Response& res,
+                    const httplib::ContentReader& content_reader) {
+  if (req.is_multipart_form_data()) {
+    return false;
+  }
+  std::string body;
+  content_reader([&](const char* data, size_t data_length) {
+    body.append(data, data_length);
+    return true;
+  });
+  //std::lock_guard lock(mu_);
+  //queue_.emplace_back(t, body);
+  res.set_content("ok", "text/plain");
+  return body;
 }
-
-
 Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, common::Context* ctx)
     : bin_(i), bout_(o), config_(config), ctx_(ctx) {
 
@@ -171,15 +187,17 @@ Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, com
   // by the implementation of custom functions.  Values derived from the script name
   // must be set in RunScript.
   script_userdata_ = std::make_unique<BasicScriptState>(
-    config_.datadir(), config_.scriptdir(), ctx, &bin_, &bout_);
+    config_.datadir(), config_.scriptdir(), ctx, &bin_, &bout_, this);
 
   [[maybe_unused]] static auto once = RegisterMyBasicGlobals();
 
   bas_ = SetupBasicInterpreter();
   RegisterDefaultNamespaces();
-
-   mb_debug_set_stepped_handler(bas_, _on_prev_stepped, _on_stepped);
 }
+
+// Having this here in a c++ file means we can delete basic without knowing 
+// the complete types of httplib in basic.h
+Basic::~Basic() = default;
 
 static std::string ScriptBaseName(const std::string& script_name) {
   auto basename = ToStringLowerCase(script_name);
@@ -189,14 +207,12 @@ static std::string ScriptBaseName(const std::string& script_name) {
   return basename;
 }
 
-// static
 mb_interpreter_t* Basic::SetupBasicInterpreter() {
   struct mb_interpreter_t* bas = nullptr;
   mb_open(&bas);
 
-  // TODO(rushfan): Update to new syntax
-  // mb_debug_set_stepped_handler(bas, _on_step-ped);
   mb_set_error_handler(bas, _on_error);
+  mb_debug_set_stepped_handler(bas, _on_prev_stepped, _on_stepped);
 
   mb_set_import_handler(bas, [](struct mb_interpreter_t* b, const char* p) -> int {
     return LoadBasicFile(b, p) ? MB_FUNC_OK : MB_FUNC_ERR;
@@ -231,6 +247,8 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
     return false;
   }
   script_userdata_->module = module;
+  current_module_ = module;
+  source_map_[module] = text;
   mb_set_userdata(bas_, script_userdata_.get());
 
   if (mb_load_string(bas_, text.c_str(), true) != MB_FUNC_OK) {
@@ -251,6 +269,74 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
   return true;
 }
 
+bool Basic::StartDebugger() { 
+  svr_ = std::make_unique<httplib::Server>();
+
+  svr_->Get("/debug/status", [](const httplib::Request&, httplib::Response& res) {
+    res.set_content("ok", "text/plain");
+  });
+  svr_->Post("/debug/attach", [&](const httplib::Request& req, httplib::Response& res,
+                           const httplib::ContentReader& content_reader) {
+    auto msg = Receive(req, res, content_reader);
+    LOG(INFO) << "Debugger Message: " << msg;
+    return AttachDebugger(msg);
+  });
+  svr_->Post("/debug/dettach", [&](const httplib::Request& req, httplib::Response& res,
+                                  const httplib::ContentReader& content_reader) {
+    auto msg = Receive(req, res, content_reader);
+    LOG(INFO) << "Debugger Message: " << msg;
+    return DetachDebugger(msg);
+  });
+
+  srv_thread_ = std::thread([this] { svr_->listen("0.0.0.0", 9948); });
+  return false;
+}
+
+bool Basic::AttachDebugger(const std::string& /*body*/) {
+  std::lock_guard lock(mu_);
+  debugger_attached_ = true;
+  current_module_.clear();
+  source_map_.clear();
+  return true;
+}
+
+bool Basic::DetachDebugger(const std::string& /*body*/) {
+  std::lock_guard lock(mu_);
+  debugger_attached_ = false;
+  current_module_.clear();
+  source_map_.clear();
+  return true;
+}
+
+bool Basic::debugger_attached() const {
+  std::lock_guard lock(mu_);
+  return debugger_attached_;
+}
+
+void Basic::SetCurrentModuleName(const std::string& module) {
+  std::lock_guard lock(mu_);
+  current_module_ = module;
+}
+
+void Basic::AddSourceModule(const std::string& module, const std::string& text) {
+  std::lock_guard lock(mu_);
+  source_map_[module] = text;
+}
+
+std::string Basic::current_module_name() const { 
+  std::lock_guard lock(mu_);
+  return current_module_;
+}
+
+std::optional<std::string> Basic::module_source(const std::string& module) const { 
+  std::lock_guard lock(mu_);
+  if (auto it = source_map_.find(module); it != source_map_.end()) {
+    return it->second;
+  }
+  return std::nullopt;
+}
+
+
 bool Basic::RunScript(const std::string& script_name) {
   const auto path = FilePath(config_.scriptdir(), script_name);
   if (!File::Exists(path)) {
@@ -269,6 +355,8 @@ bool Basic::RunScript(const std::string& script_name) {
 
 bool RunBasicScript(const std::string& script_name) {
   Basic basic(bin, bout, *a()->config(), &a()->context());
+  // TODO: Check for debugger enablement
+  basic.StartDebugger();
   return basic.RunScript(script_name);
 }
 

@@ -19,7 +19,18 @@
 #define INCLUDED_BBS_BASIC_H
 
 #include "bbs/basic/util.h"
+#include <mutex>
+#include <optional>
 #include <string>
+#include <thread>
+
+namespace httplib {
+class Client;
+class ContentReader;
+class Response;
+class Request;
+class Server;
+} // namespace httplib
 
 namespace wwiv::common {
 class Input;
@@ -37,14 +48,27 @@ class Basic {
 public:
   Basic(common::Input& i, common::Output& o, const sdk::Config& config,
         common::Context* ctx);
+  ~Basic();
 
   bool RunScript(const std::string& script_name);
   bool RunScript(const std::string& module, const std::string& text);
+  bool StartDebugger();
   [[nodiscard]] mb_interpreter_t* bas() const noexcept { return bas_; }
+
+  // Debugger support
+  bool AttachDebugger(const std::string& msg);
+  bool DetachDebugger(const std::string& msg);
+  bool debugger_attached() const;
+
+  void SetCurrentModuleName(const std::string& module);
+  void AddSourceModule(const std::string& module, const std::string& text);
+  std::string current_module_name() const;
+  std::optional<std::string> module_source(const std::string& module) const;
 
 private:
   bool RegisterDefaultNamespaces();
-  static mb_interpreter_t* SetupBasicInterpreter();
+  mb_interpreter_t* SetupBasicInterpreter();
+  static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name);
 
   common::Input& bin_;
   common::Output& bout_;
@@ -53,6 +77,17 @@ private:
   std::unique_ptr<BasicScriptState> script_userdata_;
 
   mb_interpreter_t* bas_;
+
+  std::thread srv_thread_;
+  std::unique_ptr<httplib::Server> svr_;
+  std::thread cli_thread_;
+  std::unique_ptr<httplib::Client> cli_;
+
+  // Guard everything the debugger touches
+  mutable std::mutex mu_;
+  bool debugger_attached_{false};
+  std::map<std::string, std::string> source_map_;
+  std::string current_module_;
 };
 
 bool RunBasicScript(const std::string& script_name);

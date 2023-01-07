@@ -162,8 +162,11 @@ target_link_libraries(
   sdk 
 )
 
+ find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
+target_include_directories(bbs_lib PRIVATE ${CPP_HTTPLIB_INCLUDE_DIRS})
+
 if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
-message(STATUS "WWIV_SSH_CRYPTLIB is ON")
+  message(STATUS "WWIV_SSH_CRYPTLIB is ON")
   include_directories(../deps/cl345)
   target_sources(bbs_lib PRIVATE ssh.cpp)
   target_link_libraries(bbs_lib CL345_LIB)
