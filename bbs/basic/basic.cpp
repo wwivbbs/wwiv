@@ -408,6 +408,12 @@ bool Basic::StartDebugger(int port) {
     }
     res.set_content(result, "text/plain");
   });
+  svr_->Get("/debug/v1/state", [this](const httplib::Request&, httplib::Response& res) {
+    auto& d = current_debug_state();
+    auto loc = d.location();
+    const auto source = fmt::format("{} {} {} {}\n", loc.module, loc.pos, loc.row, loc.col);
+    res.set_content(source, "text/plain");
+  });
   svr_->Get("/debug/v1/watch", [this](const httplib::Request&, httplib::Response& res) {
     std::string result = "name: \"foo\" value=\"value\"";
     res.set_content(result, "text/plain");
