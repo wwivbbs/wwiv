@@ -190,7 +190,7 @@ static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char
 std::string Receive(const httplib::Request& req, httplib::Response& res,
                     const httplib::ContentReader& content_reader) {
   if (req.is_multipart_form_data()) {
-    return "";
+    return {};
   }
   std::string body;
   content_reader([&](const char* data, size_t data_length) {
@@ -199,6 +199,7 @@ std::string Receive(const httplib::Request& req, httplib::Response& res,
   });
   return body;
 }
+
 Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, common::Context* ctx)
     : bin_(i), bout_(o), config_(config), ctx_(ctx) {
 
@@ -405,6 +406,10 @@ bool Basic::StartDebugger(int port) {
     for (const auto& f : frames) {
       result.append(f);
     }
+    res.set_content(result, "text/plain");
+  });
+  svr_->Get("/debug/v1/watch", [this](const httplib::Request&, httplib::Response& res) {
+    std::string result = "name: \"foo\" value=\"value\"";
     res.set_content(result, "text/plain");
   });
   svr_->Get("/debug/v1/breakpoints", [this](const httplib::Request&, httplib::Response& res) {
