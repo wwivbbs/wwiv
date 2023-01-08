@@ -36,7 +36,7 @@
 #include "deps/my_basic/core/my_basic.h"
 #include "sdk/config.h"
 
-
+#include <chrono>
 #include <cstdarg>
 #include <mutex>
 #include <optional>
@@ -44,6 +44,7 @@
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
+using namespace std::chrono_literals;
 
 namespace wwiv::bbs::basic {
 
@@ -107,7 +108,7 @@ bool Basic::LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name)
   if (!o) {
     return false;
   }
-  d->basic->AddSourceModule(script_name, o.value());
+  d->basic->current_debug_state().AddSourceModule(script_name, o.value());
   const auto ret = mb_load_string(bas, o.value().c_str(), true);
   return ret == MB_FUNC_OK;
 } 
@@ -140,20 +141,41 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* ms
       msg);
 }
 
-static int _on_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, int pos,
-                       uint16_t row, uint16_t col) {
-  const std::string source_file = (src) ? src : "(null)";
-  VLOG(2) << "pos: " << pos << "; source_file: " << source_file << "; row: " << row
-          << "; col: " << col;
+static int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, int pos,
+                            uint16_t row, uint16_t col) {
 
-  mb_unrefvar(bas);
   mb_unrefvar(ast);
+  const auto* data = get_wwiv_script_userdata(bas);
+  auto& debug_state = data->basic->current_debug_state();
+  if (!data->basic->debugger_attached()) {
+    return MB_FUNC_OK;
+  }
+  if (src) {
+    debug_state.SetCurrentModuleName(src);
+  }
+  LOG(INFO) << "pos: " << pos << "; source_file: " << ((src) ? src : "(null)") << "; row: " << row
+            << "; col: " << col;
+
+  if (debug_state.running_state() == RunningState::RUNNING) {
+    // Check for breakpoints and stop or return MB_FUNC_OK here to keep running
+
+  }
+
+  auto num_stack_frames = mb_debug_count_stack_frames(bas);
+  char* frames[16];
+  memset(frames, 0, sizeof(frames));
+  const auto fc = std::min<int>(num_stack_frames, 16);
+  mb_debug_get_stack_trace(bas, frames, fc);
+
+  debug_state.SetCallStackFrames(frames, fc);
+  debug_state.SetLocation(pos, row, col);
 
   return MB_FUNC_OK;
 }
 
 static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* source_file,
                             int pos, uint16_t row, uint16_t col) {
+  // here is where the logic of (a) was a breakpoint hit lives.
   mb_unrefvar(bas);
   mb_unrefvar(ast);
   mb_unrefvar(source_file);
@@ -168,16 +190,13 @@ static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char
 std::string Receive(const httplib::Request& req, httplib::Response& res,
                     const httplib::ContentReader& content_reader) {
   if (req.is_multipart_form_data()) {
-    return false;
+    return "";
   }
   std::string body;
   content_reader([&](const char* data, size_t data_length) {
     body.append(data, data_length);
     return true;
   });
-  //std::lock_guard lock(mu_);
-  //queue_.emplace_back(t, body);
-  res.set_content("ok", "text/plain");
   return body;
 }
 Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, common::Context* ctx)
@@ -197,7 +216,13 @@ Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, com
 
 // Having this here in a c++ file means we can delete basic without knowing 
 // the complete types of httplib in basic.h
-Basic::~Basic() = default;
+Basic::~Basic() {
+  // Stop the server then join the thread to wait for it to exit.
+  if (svr_) {
+    svr_->stop();
+    srv_thread_.join();
+  }
+}
 
 static std::string ScriptBaseName(const std::string& script_name) {
   auto basename = ToStringLowerCase(script_name);
@@ -212,7 +237,7 @@ mb_interpreter_t* Basic::SetupBasicInterpreter() {
   mb_open(&bas);
 
   mb_set_error_handler(bas, _on_error);
-  mb_debug_set_stepped_handler(bas, _on_prev_stepped, _on_stepped);
+  mb_debug_set_stepped_handler(bas, _on_prev_stepped, _on_post_stepped);
 
   mb_set_import_handler(bas, [](struct mb_interpreter_t* b, const char* p) -> int {
     return LoadBasicFile(b, p) ? MB_FUNC_OK : MB_FUNC_ERR;
@@ -247,8 +272,9 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
     return false;
   }
   script_userdata_->module = module;
-  current_module_ = module;
-  source_map_[module] = text;
+  auto& debug = current_debug_state();
+  debug.SetInitialModule(module, text);
+  debug.AddSourceModule(module, text);
   mb_set_userdata(bas_, script_userdata_.get());
 
   if (mb_load_string(bas_, text.c_str(), true) != MB_FUNC_OK) {
@@ -269,42 +295,74 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
   return true;
 }
 
-bool Basic::StartDebugger() { 
+bool Basic::WaitForDebuggerToAttach() {
+  bout_.pl("Waiting for debugger to attach...");
+  int count = 0;
+  while (true) {
+    if (debugger_attached()) {
+      return true;
+    }
+    wwiv::os::sleep_for(1s);
+    if (++count % 5 == 0) {
+      bout_.pl("Waiting for debugger to attach...");
+    }
+    if (count > 120) {
+      return false;
+    }
+  }
+}
+
+bool Basic::StartDebugger(int port) { 
   svr_ = std::make_unique<httplib::Server>();
 
   svr_->Get("/debug/status", [](const httplib::Request&, httplib::Response& res) {
     res.set_content("ok", "text/plain");
   });
-  svr_->Post("/debug/attach", [&](const httplib::Request& req, httplib::Response& res,
+  svr_->Post("/debug/v1/attach", [&](const httplib::Request& req, httplib::Response& res,
                            const httplib::ContentReader& content_reader) {
+    if (debugger_attached()) {
+      return false;
+    }
     auto msg = Receive(req, res, content_reader);
     LOG(INFO) << "Debugger Message: " << msg;
+    res.set_content("attached", "text/plain");
     return AttachDebugger(msg);
   });
-  svr_->Post("/debug/dettach", [&](const httplib::Request& req, httplib::Response& res,
+  svr_->Post("/debug/v1/detach", [&](const httplib::Request& req, httplib::Response& res,
                                   const httplib::ContentReader& content_reader) {
     auto msg = Receive(req, res, content_reader);
     LOG(INFO) << "Debugger Message: " << msg;
+    res.set_content("detached", "text/plain");
     return DetachDebugger(msg);
   });
 
-  srv_thread_ = std::thread([this] { svr_->listen("0.0.0.0", 9948); });
-  return false;
+  svr_->Get("/debug/v1/source", [this](const httplib::Request&, httplib::Response& res) {
+    auto& d = current_debug_state();
+    const auto source = d.module_source(d.current_module_name()).value_or("");
+    res.set_content(source, "text/plain");
+  });
+  svr_->Get("/debug/v1/breakpoints", [this](const httplib::Request&, httplib::Response& res) {
+    res.set_content("none", "text/plain");
+  });
+
+  srv_thread_ = std::thread(
+      [&](int p) {
+        svr_->listen("0.0.0.0", p);
+        DetachDebugger("server stopped");
+      },
+      port);
+  return true;
 }
 
 bool Basic::AttachDebugger(const std::string& /*body*/) {
   std::lock_guard lock(mu_);
   debugger_attached_ = true;
-  current_module_.clear();
-  source_map_.clear();
   return true;
 }
 
 bool Basic::DetachDebugger(const std::string& /*body*/) {
   std::lock_guard lock(mu_);
   debugger_attached_ = false;
-  current_module_.clear();
-  source_map_.clear();
   return true;
 }
 
@@ -313,27 +371,21 @@ bool Basic::debugger_attached() const {
   return debugger_attached_;
 }
 
-void Basic::SetCurrentModuleName(const std::string& module) {
-  std::lock_guard lock(mu_);
-  current_module_ = module;
-}
 
-void Basic::AddSourceModule(const std::string& module, const std::string& text) {
+DebugState& Basic::current_debug_state() {
   std::lock_guard lock(mu_);
-  source_map_[module] = text;
-}
-
-std::string Basic::current_module_name() const { 
-  std::lock_guard lock(mu_);
-  return current_module_;
-}
-
-std::optional<std::string> Basic::module_source(const std::string& module) const { 
-  std::lock_guard lock(mu_);
-  if (auto it = source_map_.find(module); it != source_map_.end()) {
-    return it->second;
+  if (debug_state_) {
+    return *debug_state_;
   }
-  return std::nullopt;
+  debug_state_ = std::make_unique<DebugState>();
+  return *debug_state_;
+}
+
+// maybe this should be deleted.
+DebugState& Basic::new_debug_state() { 
+  std::lock_guard lock(mu_);
+  debug_state_ = std::make_unique<DebugState>(); 
+  return *debug_state_;
 }
 
 
@@ -355,8 +407,11 @@ bool Basic::RunScript(const std::string& script_name) {
 
 bool RunBasicScript(const std::string& script_name) {
   Basic basic(bin, bout, *a()->config(), &a()->context());
-  // TODO: Check for debugger enablement
-  basic.StartDebugger();
+  // Check for debugger enablement
+  if (a()->sess().debug_wwivbasic()) {
+    basic.StartDebugger(a()->sess().debug_wwivbasic_port());
+    basic.WaitForDebuggerToAttach();
+  }
   return basic.RunScript(script_name);
 }
 

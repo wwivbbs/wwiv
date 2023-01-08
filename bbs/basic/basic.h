@@ -15,10 +15,11 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_BBS_BASIC_H
-#define INCLUDED_BBS_BASIC_H
+#ifndef INCLUDED_BBS_BASIC_BASIC_H
+#define INCLUDED_BBS_BASIC_BASIC_H
 
 #include "bbs/basic/util.h"
+#include "bbs/basic/debug_state.h"
 #include <mutex>
 #include <optional>
 #include <string>
@@ -52,7 +53,8 @@ public:
 
   bool RunScript(const std::string& script_name);
   bool RunScript(const std::string& module, const std::string& text);
-  bool StartDebugger();
+  bool StartDebugger(int port);
+  bool WaitForDebuggerToAttach();
   [[nodiscard]] mb_interpreter_t* bas() const noexcept { return bas_; }
 
   // Debugger support
@@ -60,10 +62,8 @@ public:
   bool DetachDebugger(const std::string& msg);
   bool debugger_attached() const;
 
-  void SetCurrentModuleName(const std::string& module);
-  void AddSourceModule(const std::string& module, const std::string& text);
-  std::string current_module_name() const;
-  std::optional<std::string> module_source(const std::string& module) const;
+  DebugState& current_debug_state();
+  DebugState& new_debug_state();
 
 private:
   bool RegisterDefaultNamespaces();
@@ -80,14 +80,11 @@ private:
 
   std::thread srv_thread_;
   std::unique_ptr<httplib::Server> svr_;
-  std::thread cli_thread_;
-  std::unique_ptr<httplib::Client> cli_;
 
   // Guard everything the debugger touches
   mutable std::mutex mu_;
   bool debugger_attached_{false};
-  std::map<std::string, std::string> source_map_;
-  std::string current_module_;
+  std::unique_ptr<DebugState> debug_state_;
 };
 
 bool RunBasicScript(const std::string& script_name);

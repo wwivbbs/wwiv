@@ -88,6 +88,7 @@ add_library(
   xinit.cpp
   wfc.cpp
   basic/basic.cpp
+  basic/debug_state.cpp
   basic/util.cpp
   basic/wwiv.cpp
   basic/wwiv_data.cpp

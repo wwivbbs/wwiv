@@ -133,6 +133,10 @@ public:
   [[nodiscard]] int instance_number() const { return instance_number_; }
   void instance_number(int i) { instance_number_ = i; }
 
+  [[nodiscard]] bool debug_wwivbasic() const;
+  [[nodiscard]] int debug_wwivbasic_port() const;
+  void debug_wwivbasic_port(int d);
+
   [[nodiscard]] bool incom() const noexcept { return incom_; }
   void incom(bool i) { incom_ = i; }
   [[nodiscard]] bool outcom() const noexcept { return outcom_; }
@@ -323,6 +327,7 @@ private:
   int file_bps_{0};
   int system_bps_{0};
   std::unique_ptr<wwiv::sdk::menus::MenuSet56> current_menu_set_;
+  int debug_wwivbasic_port_{0};
 };
 
 class MapValueProvider : public sdk::value::ValueProvider {
