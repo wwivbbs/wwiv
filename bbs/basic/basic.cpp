@@ -312,6 +312,55 @@ bool Basic::WaitForDebuggerToAttach() {
   }
 }
 
+std::string dump_headers(const httplib::Headers& headers) {
+  std::string s;
+  char buf[BUFSIZ];
+
+  for (auto it = headers.begin(); it != headers.end(); ++it) {
+    const auto& x = *it;
+    snprintf(buf, sizeof(buf), "%s: %s\n", x.first.c_str(), x.second.c_str());
+    s += buf;
+  }
+
+  return s;
+}
+
+static std::string log(const httplib::Request& req, const httplib::Response& res) {
+  std::string s;
+  char buf[BUFSIZ];
+
+  s += "================================\n";
+
+  snprintf(buf, sizeof(buf), "%s %s %s", req.method.c_str(), req.version.c_str(), req.path.c_str());
+  s += buf;
+
+  std::string query;
+  for (auto it = req.params.begin(); it != req.params.end(); ++it) {
+    const auto& x = *it;
+    snprintf(buf, sizeof(buf), "%c%s=%s", (it == req.params.begin()) ? '?' : '&', x.first.c_str(),
+             x.second.c_str());
+    query += buf;
+  }
+  snprintf(buf, sizeof(buf), "%s\n", query.c_str());
+  s += buf;
+
+  s += dump_headers(req.headers);
+
+  s += "--------------------------------\n";
+
+  snprintf(buf, sizeof(buf), "%d %s\n", res.status, res.version.c_str());
+  s += buf;
+  s += dump_headers(res.headers);
+  s += "\n";
+
+  if (!res.body.empty()) {
+    s += res.body;
+  }
+
+  s += "\n";
+
+  return s;
+}
 bool Basic::StartDebugger(int port) { 
   svr_ = std::make_unique<httplib::Server>();
 
@@ -321,6 +370,8 @@ bool Basic::StartDebugger(int port) {
   svr_->Post("/debug/v1/attach", [&](const httplib::Request& req, httplib::Response& res,
                            const httplib::ContentReader& content_reader) {
     if (debugger_attached()) {
+      res.status = 400;
+      res.set_content("Already attached", "text/plain");
       return false;
     }
     auto msg = Receive(req, res, content_reader);
@@ -330,6 +381,11 @@ bool Basic::StartDebugger(int port) {
   });
   svr_->Post("/debug/v1/detach", [&](const httplib::Request& req, httplib::Response& res,
                                   const httplib::ContentReader& content_reader) {
+    if (!debugger_attached()) {
+      res.status = 400;
+      res.set_content("Not Attached", "text/plain");
+      return false;
+    }
     auto msg = Receive(req, res, content_reader);
     LOG(INFO) << "Debugger Message: " << msg;
     res.set_content("detached", "text/plain");
@@ -341,10 +397,23 @@ bool Basic::StartDebugger(int port) {
     const auto source = d.module_source(d.current_module_name()).value_or("");
     res.set_content(source, "text/plain");
   });
+  svr_->Get("/debug/v1/stack", [this](const httplib::Request&, httplib::Response& res) {
+    auto& d = current_debug_state();
+    const auto frames = d.stack_frames();
+    std::string result;
+    result.reserve(frames.size() * 80);
+    for (const auto& f : frames) {
+      result.append(f);
+    }
+    res.set_content(result, "text/plain");
+  });
   svr_->Get("/debug/v1/breakpoints", [this](const httplib::Request&, httplib::Response& res) {
     res.set_content("none", "text/plain");
   });
 
+  svr_->set_logger([](const httplib::Request& req, const httplib::Response& res) {
+    LOG(INFO) << log(req, res);
+  });
   srv_thread_ = std::thread(
       [&](int p) {
         svr_->listen("0.0.0.0", p);
