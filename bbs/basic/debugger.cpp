@@ -115,23 +115,28 @@ bool Debugger::attached() const {
   return attached_;
 }
 
-bool Debugger::StartServers(int port) { 
+bool Debugger::StartServers(int port) {
   using namespace std::placeholders;
   svr_ = std::make_unique<httplib::Server>();
 
   svr_->Get("/debug/status", std::bind(&Debugger::status, this, _1, _2));
 
-  // std::bind gives 'error C2668: 'httplib::Server::Post': ambiguous call to overloaded function' here
+  // std::bind gives 'error C2668: 'httplib::Server::Post': ambiguous call to overloaded function'
+  // here
   svr_->Post("/debug/v1/attach",
              [this](const httplib::Request& req, httplib::Response& res) { Attach(req, res); });
   svr_->Post("/debug/v1/detach",
              [this](const httplib::Request& req, httplib::Response& res) { Detach(req, res); });
 
   // These should be POST too
-  svr_->Get("/debug/v1/stepover", std::bind(&Debugger::stepover, this, _1, _2));
-  svr_->Get("/debug/v1/tracein", std::bind(&Debugger::tracein, this, _1, _2));
-  svr_->Get("/debug/v1/run", std::bind(&Debugger::run, this, _1, _2));
-  svr_->Get("/debug/v1/stop", std::bind(&Debugger::stop, this, _1, _2));
+  svr_->Post("/debug/v1/stepover",
+             [this](const httplib::Request& req, httplib::Response& res) { stepover(req, res); });
+  svr_->Post("/debug/v1/tracein",
+             [this](const httplib::Request& req, httplib::Response& res) { tracein(req, res); });
+  svr_->Post("/debug/v1/run",
+             [this](const httplib::Request& req, httplib::Response& res) { run(req, res); });
+  svr_->Post("/debug/v1/stop",
+             [this](const httplib::Request& req, httplib::Response& res) { stop(req, res); });
 
   svr_->Get("/debug/v1/source", std::bind(&Debugger::source, this, _1, _2));
   svr_->Get("/debug/v1/stack", std::bind(&Debugger::stack, this, _1, _2));
