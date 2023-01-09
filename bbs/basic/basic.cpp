@@ -41,6 +41,7 @@
 #include <mutex>
 #include <optional>
 #include <string>
+#include <thread>
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -158,21 +159,39 @@ static int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char
   LOG(INFO) << "pos: " << pos << "; source_file: " << ((src) ? src : "(null)") << "; row: " << row
             << "; col: " << col;
 
-  if (debug_state.running_state() == RunningState::RUNNING) {
-    // Check for breakpoints and stop or return MB_FUNC_OK here to keep running
-
-  }
-
+  // Update State
   auto num_stack_frames = mb_debug_count_stack_frames(bas);
   char* frames[16];
   memset(frames, 0, sizeof(frames));
   const auto fc = std::min<int>(num_stack_frames, 16);
   mb_debug_get_stack_trace(bas, frames, fc);
-
   debug_state.SetCallStackFrames(frames, fc);
   debug_state.SetLocation(pos, row, col);
 
-  return MB_FUNC_OK;
+  // See what to do now
+  // TODO: Move this into running state.
+  for (;;) {
+    switch (const auto s = debug_state.running_state()) {
+    case RunningState::UNKNOWN:
+      debug_state.SetRunningState(RunningState::STEPPING);
+      break;
+    case RunningState::HALTING:
+      debug_state.SetRunningState(RunningState::HALTED);
+      return MB_FUNC_ERR;
+    case RunningState::HALTED:
+      return MB_FUNC_ERR;
+    case RunningState::RUNNING:
+      return MB_FUNC_OK;
+    case RunningState::STEPPING:
+      debug_state.SetRunningState(RunningState::STOPPED);
+      return MB_FUNC_OK;
+    case RunningState::STOPPED:
+      wwiv::os::sleep_for(1s);
+      break;
+    default:
+      break;
+    }
+  }
 }
 
 static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* source_file,
@@ -189,18 +208,7 @@ static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char
 }
 
 
-std::string Receive(const httplib::Request& req, httplib::Response&,
-                    const httplib::ContentReader& content_reader) {
-  if (req.is_multipart_form_data()) {
-    return {};
-  }
-  std::string body;
-  content_reader([&](const char* data, size_t data_length) {
-    body.append(data, data_length);
-    return true;
-  });
-  return body;
-}
+
 
 Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, common::Context* ctx)
     : bin_(i), bout_(o), config_(config), ctx_(ctx) {
@@ -217,14 +225,7 @@ Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, com
   RegisterDefaultNamespaces();
 }
 
-// Having this here in a c++ file means we can delete basic without knowing 
-// the complete types of httplib in basic.h
 Basic::~Basic() {
-  // Stop the server then join the thread to wait for it to exit.
-  if (svr_) {
-    svr_->stop();
-    srv_thread_.join();
-  }
 }
 
 static std::string ScriptBaseName(const std::string& script_name) {
@@ -297,160 +298,27 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
   return true;
 }
 
-bool Basic::WaitForDebuggerToAttach() {
-  bout_.pl("Waiting for debugger to attach...");
-  int count = 0;
-  while (true) {
-    if (debugger_attached()) {
-      return true;
-    }
-    wwiv::os::sleep_for(1s);
-    if (++count % 5 == 0) {
-      bout_.pl("Waiting for debugger to attach...");
-    }
-    if (count > 120) {
-      return false;
-    }
-  }
-}
 
-std::string dump_headers(const httplib::Headers& headers) {
-  std::string s;
-  char buf[BUFSIZ];
-
-  for (auto it = headers.begin(); it != headers.end(); ++it) {
-    const auto& x = *it;
-    snprintf(buf, sizeof(buf), "%s: %s\n", x.first.c_str(), x.second.c_str());
-    s += buf;
-  }
-
-  return s;
-}
-
-static std::string log(const httplib::Request& req, const httplib::Response& res) {
-  std::string s;
-  char buf[BUFSIZ];
-
-  s += "================================\n";
-
-  snprintf(buf, sizeof(buf), "%s %s %s", req.method.c_str(), req.version.c_str(), req.path.c_str());
-  s += buf;
-
-  std::string query;
-  for (auto it = req.params.begin(); it != req.params.end(); ++it) {
-    const auto& x = *it;
-    snprintf(buf, sizeof(buf), "%c%s=%s", (it == req.params.begin()) ? '?' : '&', x.first.c_str(),
-             x.second.c_str());
-    query += buf;
-  }
-  snprintf(buf, sizeof(buf), "%s\n", query.c_str());
-  s += buf;
-
-  s += dump_headers(req.headers);
-
-  s += "--------------------------------\n";
-
-  snprintf(buf, sizeof(buf), "%d %s\n", res.status, res.version.c_str());
-  s += buf;
-  s += dump_headers(res.headers);
-  s += "\n";
-
-  if (!res.body.empty()) {
-    s += res.body;
-  }
-
-  s += "\n";
-
-  return s;
-}
 bool Basic::StartDebugger(int port) { 
-  using namespace std::placeholders;
-  svr_ = std::make_unique<httplib::Server>();
-
-  svr_->Get("/debug/status", std::bind(&Debugger::status, debugger_.get(), _1, _2));
-
-  // Not sure why bind didn't work here.
-  svr_->Post("/debug/v1/attach", [this](const httplib::Request& req, httplib::Response& res,
-                                        const httplib::ContentReader& content_reader) {
-    AttachDebugger(req, res, content_reader);
-  });
-  svr_->Post("/debug/v1/detach", [this](const httplib::Request& req, httplib::Response& res,
-                                        const httplib::ContentReader& content_reader) {
-    DetachDebugger(req, res, content_reader);
-  });
-
-  // These should be POST too
-  svr_->Get("/debug/v1/stepover", std::bind(&Debugger::stepover, debugger_.get(), _1, _2));
-  svr_->Get("/debug/v1/tracein", std::bind(&Debugger::tracein, debugger_.get(), _1, _2));
-
-  svr_->Get("/debug/v1/source", std::bind(&Debugger::source, debugger_.get(), _1, _2));
-  svr_->Get("/debug/v1/stack", std::bind(&Debugger::stack, debugger_.get(), _1, _2));
-  svr_->Get("/debug/v1/state", std::bind(&Debugger::state, debugger_.get(), _1, _2));
-  svr_->Get("/debug/v1/watch", std::bind(&Debugger::watch, debugger_.get(), _1, _2));
-  svr_->Get("/debug/v1/breakpoints", std::bind(&Debugger::breakpoints, debugger_.get(), _1, _2));
-
-  svr_->set_logger([](const httplib::Request& req, const httplib::Response& res) {
-    LOG(INFO) << log(req, res);
-  });
-  srv_thread_ = std::thread([&](int p) { svr_->listen("0.0.0.0", p); DetachDebuggerImpl(); }, port);
-  return true;
-}
-
-void Basic::AttachDebugger(const httplib::Request& req, httplib::Response& res,
-                           const httplib::ContentReader& content_reader) {
-  if (debugger_attached()) {
-    res.status = 400;
-    res.set_content("Already attached", "text/plain");
-    return;
-  }
-  auto msg = Receive(req, res, content_reader);
-  LOG(INFO) << "Debugger Message: " << msg;
-  res.set_content("attached", "text/plain");
-
   std::lock_guard lock(mu_);
   debugger_ = std::make_unique<Debugger>();
-  debugger_attached_ = true;
   // Set the initial module that we had at startup.
   debugger_->current_debug_state().SetInitialModule(initial_module_, initial_module_source_);
+  return debugger_->StartServers(port);
 }
 
-void Basic::DetachDebuggerImpl() {
-  std::lock_guard lock(mu_);
-  debugger_.reset(nullptr);
-  debugger_attached_ = false;
-}
-
-void Basic::DetachDebugger(const httplib::Request& req, httplib::Response& res,
-                           const httplib::ContentReader& content_reader) {
-  if (!debugger_attached()) {
-    res.status = 400;
-    res.set_content("Not Attached", "text/plain");
-    return;
-  }
-  auto msg = Receive(req, res, content_reader);
-  LOG(INFO) << "Debugger Message: " << msg;
-  res.set_content("detached", "text/plain");
-  DetachDebuggerImpl();
-}
 
 bool Basic::debugger_attached() const {
   std::lock_guard lock(mu_);
-  return debugger_attached_;
+  if (debugger_) {
+    return debugger_->attached();
+  }
+  return false;
 }
 
 Debugger* Basic::debugger() {
   std::lock_guard lock(mu_);
   return debugger_.get();
-}
-
-
-DebugState& Basic::current_debug_state() {
-  std::lock_guard lock(mu_);
-  if (debug_state_) {
-    return *debug_state_;
-  }
-  debug_state_ = std::make_unique<DebugState>();
-  return *debug_state_;
 }
 
 bool Basic::RunScript(const std::string& script_name) {
@@ -474,7 +342,8 @@ bool RunBasicScript(const std::string& script_name) {
   // Check for debugger enablement
   if (a()->sess().debug_wwivbasic()) {
     basic.StartDebugger(a()->sess().debug_wwivbasic_port());
-    basic.WaitForDebuggerToAttach();
+    bout.pl("Waiting for debugger to attach...");
+    basic.debugger()->WaitForDebuggerToAttach();
   }
   return basic.RunScript(script_name);
 }

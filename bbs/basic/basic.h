@@ -55,19 +55,11 @@ public:
   bool RunScript(const std::string& script_name);
   bool RunScript(const std::string& module, const std::string& text);
   bool StartDebugger(int port);
-  bool WaitForDebuggerToAttach();
   [[nodiscard]] mb_interpreter_t* bas() const noexcept { return bas_; }
 
-  // Debugger support
-  void AttachDebugger(const httplib::Request& req, httplib::Response& res,
-                      const httplib::ContentReader& content_reader);
-  void DetachDebugger(const httplib::Request& req, httplib::Response& res,
-                      const httplib::ContentReader& content_reader);
-  void DetachDebuggerImpl();
+  // Debugger helpers
   bool debugger_attached() const;
   Debugger* debugger();
-
-  DebugState& current_debug_state();
 
 private:
   bool RegisterDefaultNamespaces();
@@ -82,12 +74,8 @@ private:
 
   mb_interpreter_t* bas_;
 
-  std::thread srv_thread_;
-  std::unique_ptr<httplib::Server> svr_;
-
   // Guard everything the debugger touches
   mutable std::mutex mu_;
-  bool debugger_attached_{false};
   std::unique_ptr<DebugState> debug_state_;
   std::unique_ptr<Debugger> debugger_;
   std::string initial_module_;

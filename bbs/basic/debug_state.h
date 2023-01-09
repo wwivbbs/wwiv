@@ -34,7 +34,19 @@ struct DebugLocation {
   int col;
 };
 
-enum class RunningState { RUNNING, STEPPING, STOPPED, UNKNOWN };
+enum class RunningState { 
+  // Running, don't interrupt until a breakpoint is hit
+  RUNNING, 
+  // Will take one step
+  STEPPING, 
+  // Stopped after a break or step
+  STOPPED, 
+  // Trying to HALT
+  HALTING, 
+  // Done halting
+  HALTED, 
+  // Who knows.
+  UNKNOWN };
 
 class DebugState {
 public:
