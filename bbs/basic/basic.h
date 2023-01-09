@@ -20,6 +20,7 @@
 
 #include "bbs/basic/util.h"
 #include "bbs/basic/debug_state.h"
+#include "bbs/basic/debugger.h"
 #include <mutex>
 #include <optional>
 #include <string>
@@ -28,8 +29,8 @@
 namespace httplib {
 class Client;
 class ContentReader;
-class Response;
-class Request;
+struct Response;
+struct Request;
 class Server;
 } // namespace httplib
 
@@ -58,12 +59,15 @@ public:
   [[nodiscard]] mb_interpreter_t* bas() const noexcept { return bas_; }
 
   // Debugger support
-  bool AttachDebugger(const std::string& msg);
-  bool DetachDebugger(const std::string& msg);
+  void AttachDebugger(const httplib::Request& req, httplib::Response& res,
+                      const httplib::ContentReader& content_reader);
+  void DetachDebugger(const httplib::Request& req, httplib::Response& res,
+                      const httplib::ContentReader& content_reader);
+  void DetachDebuggerImpl();
   bool debugger_attached() const;
+  Debugger* debugger();
 
   DebugState& current_debug_state();
-  DebugState& new_debug_state();
 
 private:
   bool RegisterDefaultNamespaces();
@@ -85,6 +89,9 @@ private:
   mutable std::mutex mu_;
   bool debugger_attached_{false};
   std::unique_ptr<DebugState> debug_state_;
+  std::unique_ptr<Debugger> debugger_;
+  std::string initial_module_;
+  std::string initial_module_source_;
 };
 
 bool RunBasicScript(const std::string& script_name);

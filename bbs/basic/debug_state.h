@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2022, WWIV Software Services             */
+/*             Copyright (C)2023, WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -51,6 +51,8 @@ public:
   void AddSourceModule(const std::string& module, const std::string& text);
   std::string current_module_name() const;
   std::optional<std::string> module_source(const std::string& module) const;
+
+  std::string to_string() const;
 
 private:
   mutable std::mutex mu_;

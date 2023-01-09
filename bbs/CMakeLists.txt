@@ -89,6 +89,7 @@ add_library(
   wfc.cpp
   basic/basic.cpp
   basic/debug_state.cpp
+  basic/debugger.cpp
   basic/util.cpp
   basic/wwiv.cpp
   basic/wwiv_data.cpp

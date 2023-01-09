@@ -92,5 +92,10 @@ std::optional<std::string> DebugState::module_source(const std::string& module) 
   return std::nullopt;
 }
 
+std::string DebugState::to_string() const { 
+  auto loc = location();
+  return fmt::format("{} {} {} {}\n", loc.module, loc.pos, loc.row, loc.col);
+}
+
 }
 

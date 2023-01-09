@@ -108,7 +108,9 @@ bool Basic::LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name)
   if (!o) {
     return false;
   }
-  d->basic->current_debug_state().AddSourceModule(script_name, o.value());
+  if (d->basic->debugger_attached()) {
+    d->basic->debugger()->current_debug_state().AddSourceModule(script_name, o.value());
+  }
   const auto ret = mb_load_string(bas, o.value().c_str(), true);
   return ret == MB_FUNC_OK;
 } 
@@ -146,10 +148,10 @@ static int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char
 
   mb_unrefvar(ast);
   const auto* data = get_wwiv_script_userdata(bas);
-  auto& debug_state = data->basic->current_debug_state();
   if (!data->basic->debugger_attached()) {
     return MB_FUNC_OK;
   }
+  auto& debug_state = data->basic->debugger()->current_debug_state();
   if (src) {
     debug_state.SetCurrentModuleName(src);
   }
@@ -187,7 +189,7 @@ static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char
 }
 
 
-std::string Receive(const httplib::Request& req, httplib::Response& res,
+std::string Receive(const httplib::Request& req, httplib::Response&,
                     const httplib::ContentReader& content_reader) {
   if (req.is_multipart_form_data()) {
     return {};
@@ -273,9 +275,8 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
     return false;
   }
   script_userdata_->module = module;
-  auto& debug = current_debug_state();
-  debug.SetInitialModule(module, text);
-  debug.AddSourceModule(module, text);
+  initial_module_ = module;
+  initial_module_source_ = text;
   mb_set_userdata(bas_, script_userdata_.get());
 
   if (mb_load_string(bas_, text.c_str(), true) != MB_FUNC_OK) {
@@ -363,92 +364,83 @@ static std::string log(const httplib::Request& req, const httplib::Response& res
   return s;
 }
 bool Basic::StartDebugger(int port) { 
+  using namespace std::placeholders;
   svr_ = std::make_unique<httplib::Server>();
 
-  svr_->Get("/debug/status", [](const httplib::Request&, httplib::Response& res) {
-    res.set_content("ok", "text/plain");
+  svr_->Get("/debug/status", std::bind(&Debugger::status, debugger_.get(), _1, _2));
+
+  // Not sure why bind didn't work here.
+  svr_->Post("/debug/v1/attach", [this](const httplib::Request& req, httplib::Response& res,
+                                        const httplib::ContentReader& content_reader) {
+    AttachDebugger(req, res, content_reader);
   });
-  svr_->Post("/debug/v1/attach", [&](const httplib::Request& req, httplib::Response& res,
-                           const httplib::ContentReader& content_reader) {
-    if (debugger_attached()) {
-      res.status = 400;
-      res.set_content("Already attached", "text/plain");
-      return false;
-    }
-    auto msg = Receive(req, res, content_reader);
-    LOG(INFO) << "Debugger Message: " << msg;
-    res.set_content("attached", "text/plain");
-    return AttachDebugger(msg);
-  });
-  svr_->Post("/debug/v1/detach", [&](const httplib::Request& req, httplib::Response& res,
-                                  const httplib::ContentReader& content_reader) {
-    if (!debugger_attached()) {
-      res.status = 400;
-      res.set_content("Not Attached", "text/plain");
-      return false;
-    }
-    auto msg = Receive(req, res, content_reader);
-    LOG(INFO) << "Debugger Message: " << msg;
-    res.set_content("detached", "text/plain");
-    return DetachDebugger(msg);
+  svr_->Post("/debug/v1/detach", [this](const httplib::Request& req, httplib::Response& res,
+                                        const httplib::ContentReader& content_reader) {
+    DetachDebugger(req, res, content_reader);
   });
 
-  svr_->Get("/debug/v1/source", [this](const httplib::Request&, httplib::Response& res) {
-    auto& d = current_debug_state();
-    const auto source = d.module_source(d.current_module_name()).value_or("");
-    res.set_content(source, "text/plain");
-  });
-  svr_->Get("/debug/v1/stack", [this](const httplib::Request&, httplib::Response& res) {
-    auto& d = current_debug_state();
-    const auto frames = d.stack_frames();
-    std::string result;
-    result.reserve(frames.size() * 80);
-    for (const auto& f : frames) {
-      result.append(f);
-    }
-    res.set_content(result, "text/plain");
-  });
-  svr_->Get("/debug/v1/state", [this](const httplib::Request&, httplib::Response& res) {
-    auto& d = current_debug_state();
-    auto loc = d.location();
-    const auto source = fmt::format("{} {} {} {}\n", loc.module, loc.pos, loc.row, loc.col);
-    res.set_content(source, "text/plain");
-  });
-  svr_->Get("/debug/v1/watch", [this](const httplib::Request&, httplib::Response& res) {
-    std::string result = "name: \"foo\" value=\"value\"";
-    res.set_content(result, "text/plain");
-  });
-  svr_->Get("/debug/v1/breakpoints", [this](const httplib::Request&, httplib::Response& res) {
-    res.set_content("none", "text/plain");
-  });
+  // These should be POST too
+  svr_->Get("/debug/v1/stepover", std::bind(&Debugger::stepover, debugger_.get(), _1, _2));
+  svr_->Get("/debug/v1/tracein", std::bind(&Debugger::tracein, debugger_.get(), _1, _2));
+
+  svr_->Get("/debug/v1/source", std::bind(&Debugger::source, debugger_.get(), _1, _2));
+  svr_->Get("/debug/v1/stack", std::bind(&Debugger::stack, debugger_.get(), _1, _2));
+  svr_->Get("/debug/v1/state", std::bind(&Debugger::state, debugger_.get(), _1, _2));
+  svr_->Get("/debug/v1/watch", std::bind(&Debugger::watch, debugger_.get(), _1, _2));
+  svr_->Get("/debug/v1/breakpoints", std::bind(&Debugger::breakpoints, debugger_.get(), _1, _2));
 
   svr_->set_logger([](const httplib::Request& req, const httplib::Response& res) {
     LOG(INFO) << log(req, res);
   });
-  srv_thread_ = std::thread(
-      [&](int p) {
-        svr_->listen("0.0.0.0", p);
-        DetachDebugger("server stopped");
-      },
-      port);
+  srv_thread_ = std::thread([&](int p) { svr_->listen("0.0.0.0", p); DetachDebuggerImpl(); }, port);
   return true;
 }
 
-bool Basic::AttachDebugger(const std::string& /*body*/) {
+void Basic::AttachDebugger(const httplib::Request& req, httplib::Response& res,
+                           const httplib::ContentReader& content_reader) {
+  if (debugger_attached()) {
+    res.status = 400;
+    res.set_content("Already attached", "text/plain");
+    return;
+  }
+  auto msg = Receive(req, res, content_reader);
+  LOG(INFO) << "Debugger Message: " << msg;
+  res.set_content("attached", "text/plain");
+
   std::lock_guard lock(mu_);
+  debugger_ = std::make_unique<Debugger>();
   debugger_attached_ = true;
-  return true;
+  // Set the initial module that we had at startup.
+  debugger_->current_debug_state().SetInitialModule(initial_module_, initial_module_source_);
 }
 
-bool Basic::DetachDebugger(const std::string& /*body*/) {
+void Basic::DetachDebuggerImpl() {
   std::lock_guard lock(mu_);
+  debugger_.reset(nullptr);
   debugger_attached_ = false;
-  return true;
+}
+
+void Basic::DetachDebugger(const httplib::Request& req, httplib::Response& res,
+                           const httplib::ContentReader& content_reader) {
+  if (!debugger_attached()) {
+    res.status = 400;
+    res.set_content("Not Attached", "text/plain");
+    return;
+  }
+  auto msg = Receive(req, res, content_reader);
+  LOG(INFO) << "Debugger Message: " << msg;
+  res.set_content("detached", "text/plain");
+  DetachDebuggerImpl();
 }
 
 bool Basic::debugger_attached() const {
   std::lock_guard lock(mu_);
   return debugger_attached_;
+}
+
+Debugger* Basic::debugger() {
+  std::lock_guard lock(mu_);
+  return debugger_.get();
 }
 
 
@@ -460,14 +452,6 @@ DebugState& Basic::current_debug_state() {
   debug_state_ = std::make_unique<DebugState>();
   return *debug_state_;
 }
-
-// maybe this should be deleted.
-DebugState& Basic::new_debug_state() { 
-  std::lock_guard lock(mu_);
-  debug_state_ = std::make_unique<DebugState>(); 
-  return *debug_state_;
-}
-
 
 bool Basic::RunScript(const std::string& script_name) {
   const auto path = FilePath(config_.scriptdir(), script_name);

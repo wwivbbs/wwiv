@@ -314,9 +314,12 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   [[nodiscard]] bool ifind_first(const std::string& haystack, const std::string& needle);
 
 #ifdef _WIN32
-
+#ifndef strcasecmp
   #define strcasecmp(a, b) _stricmp(a, b)
+#endif
+#ifndef strncasecmp
   #define strncasecmp(a, b, c) _strnicmp(a, b, c)
+#endif
 
   char* strcasestr(const char* haystack, const char* needle);
 
