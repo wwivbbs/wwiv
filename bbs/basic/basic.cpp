@@ -173,7 +173,7 @@ static int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char
   for (;;) {
     switch (const auto s = debug_state.running_state()) {
     case RunningState::UNKNOWN:
-      debug_state.SetRunningState(RunningState::STEPPING);
+      debug_state.SetRunningState(RunningState::STOPPED);
       break;
     case RunningState::HALTING:
       debug_state.SetRunningState(RunningState::HALTED);

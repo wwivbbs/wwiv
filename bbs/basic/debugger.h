@@ -50,10 +50,8 @@ public:
   bool WaitForDebuggerToAttach();
 
 private:
-  void Attach(const httplib::Request& req, httplib::Response& res,
-              const httplib::ContentReader& content_reader);
-  void Detach(const httplib::Request& req, httplib::Response& res,
-              const httplib::ContentReader& content_reader);
+  void Attach(const httplib::Request& req, httplib::Response& res);
+  void Detach(const httplib::Request& req, httplib::Response& res);
   void DetachImpl();
 
   // HTTP action handlers

@@ -30,19 +30,6 @@ using namespace std::chrono_literals;
 
 namespace wwiv::bbs::basic {
 
-static std::string Receive(const httplib::Request& req, httplib::Response&,
-                           const httplib::ContentReader& content_reader) {
-  if (req.is_multipart_form_data()) {
-    return {};
-  }
-  std::string body;
-  content_reader([&](const char* data, size_t data_length) {
-    body.append(data, data_length);
-    return true;
-  });
-  return body;
-}
-
 bool Debugger::WaitForDebuggerToAttach() {
   int count = 0;
   while (true) {
@@ -134,15 +121,11 @@ bool Debugger::StartServers(int port) {
 
   svr_->Get("/debug/status", std::bind(&Debugger::status, this, _1, _2));
 
-  // Not sure why bind didn't work here.
-  svr_->Post("/debug/v1/attach", [this](const httplib::Request& req, httplib::Response& res,
-                                        const httplib::ContentReader& content_reader) {
-    Attach(req, res, content_reader);
-  });
-  svr_->Post("/debug/v1/detach", [this](const httplib::Request& req, httplib::Response& res,
-                                        const httplib::ContentReader& content_reader) {
-    Detach(req, res, content_reader);
-  });
+  // std::bind gives 'error C2668: 'httplib::Server::Post': ambiguous call to overloaded function' here
+  svr_->Post("/debug/v1/attach",
+             [this](const httplib::Request& req, httplib::Response& res) { Attach(req, res); });
+  svr_->Post("/debug/v1/detach",
+             [this](const httplib::Request& req, httplib::Response& res) { Detach(req, res); });
 
   // These should be POST too
   svr_->Get("/debug/v1/stepover", std::bind(&Debugger::stepover, this, _1, _2));
@@ -169,14 +152,13 @@ bool Debugger::StartServers(int port) {
 }
 
 
-void Debugger::Attach(const httplib::Request& req, httplib::Response& res,
-                           const httplib::ContentReader& content_reader) {
+void Debugger::Attach(const httplib::Request& req, httplib::Response& res) {
   if (attached()) {
     res.status = 400;
     res.set_content("Already attached", "text/plain");
     return;
   }
-  auto msg = Receive(req, res, content_reader);
+  auto msg = req.body;
   LOG(INFO) << "Debugger Message: " << msg;
   res.set_content("attached", "text/plain");
 
@@ -189,14 +171,13 @@ void Debugger::DetachImpl() {
   attached_ = false;
 }
 
-void Debugger::Detach(const httplib::Request& req, httplib::Response& res,
-                      const httplib::ContentReader& content_reader) {
+void Debugger::Detach(const httplib::Request& req, httplib::Response& res) {
   if (!attached()) {
     res.status = 400;
     res.set_content("Not Attached", "text/plain");
     return;
   }
-  auto msg = Receive(req, res, content_reader);
+  auto msg = req.body;
   LOG(INFO) << "Debugger Message: " << msg;
   res.set_content("detached", "text/plain");
   DetachImpl();
