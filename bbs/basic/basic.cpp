@@ -144,7 +144,8 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* ms
       msg);
 }
 
-static int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, int pos,
+static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast,
+                                            const char* src, int pos,
                             uint16_t row, uint16_t col) {
 
   mb_unrefvar(ast);
@@ -201,7 +202,7 @@ static int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char
   }
 }
 
-static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* source_file,
+static int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char* source_file,
                             int pos, uint16_t row, uint16_t col) {
   // here is where the logic of (a) was a breakpoint hit lives.
   mb_unrefvar(bas);
