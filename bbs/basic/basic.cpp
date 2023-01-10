@@ -186,6 +186,13 @@ static int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char
       debug_state.SetRunningState(RunningState::STOPPED);
       return MB_FUNC_OK;
     case RunningState::STOPPED:
+      // Add way to bail
+      if (data->in->bkbhit()) {
+        if (data->in->bgetchraw() == 0x03) {
+          data->out->pl("Exiting debugger...");
+          return MB_FUNC_ERR;
+        }
+      }
       wwiv::os::sleep_for(1s);
       break;
     default:
@@ -285,6 +292,13 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
     return false;
   }
 
+  if (a()->sess().debug_wwivbasic()) {
+    bout.pl("Waiting for debugger to attach...");
+    StartDebugger(a()->sess().debug_wwivbasic_port());
+    debugger_->current_debug_state().SetInitialModule(module, text);
+    debugger()->WaitForDebuggerToAttach();
+  }
+
   static std::mutex script_mutex;
   std::lock_guard<std::mutex> guard(script_mutex);
   const auto ret = mb_run(bas_, false);
@@ -302,8 +316,6 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
 bool Basic::StartDebugger(int port) { 
   std::lock_guard lock(mu_);
   debugger_ = std::make_unique<Debugger>();
-  // Set the initial module that we had at startup.
-  debugger_->current_debug_state().SetInitialModule(initial_module_, initial_module_source_);
   return debugger_->StartServers(port);
 }
 
@@ -333,18 +345,13 @@ bool Basic::RunScript(const std::string& script_name) {
     return false;
   }
   const auto module = ScriptBaseName(script_name);
+  // Check for debugger enablement
   return RunScript(module, o.value());
 }
 
 
 bool RunBasicScript(const std::string& script_name) {
   Basic basic(bin, bout, *a()->config(), &a()->context());
-  // Check for debugger enablement
-  if (a()->sess().debug_wwivbasic()) {
-    basic.StartDebugger(a()->sess().debug_wwivbasic_port());
-    bout.pl("Waiting for debugger to attach...");
-    basic.debugger()->WaitForDebuggerToAttach();
-  }
   return basic.RunScript(script_name);
 }
 
