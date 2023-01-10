@@ -144,11 +144,59 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* ms
       msg);
 }
 
-static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast,
-                                            const char* src, int pos,
+static std::string to_string(struct mb_interpreter_t* bas, void** ast, mb_value_t v) {
+  switch (v.type) {
+  case MB_DT_INT:
+    return std::to_string(v.value.integer);
+  case MB_DT_REAL:
+    return std::to_string(v.value.float_point);
+  case MB_DT_STRING:
+    if (v.value.string != nullptr) {
+      return v.value.string;
+    }
+    return {};
+    break;
+  case MB_DT_LIST: {
+    int count = 0;
+    if (mb_count_coll(bas, ast, v, &count) != MB_FUNC_OK) {
+      return {};
+    }
+    std::string result;
+    for (auto i = 0; i < count; i++) {
+      mb_value_t idx;
+      mb_make_int(idx, i);
+      mb_value_t val{};
+      if (mb_get_coll(bas, ast, v, idx, &val) == MB_FUNC_OK) {
+        if (!result.empty()) {
+          result += ", ";
+        }
+        result.append(to_string(bas, ast, val));
+      }
+    }
+    return fmt::format("[{}]", result);
+  } break;
+  default:
+    return fmt::format("$$$ UNKNOWN VALUE FROM TYPE: {}$$", v.type);
+  }
+//  return fmt::format("$$$ UNKNOWN VALUE FROM TYPE: {}$$", v.type);
+}
+
+static void var_collector(struct mb_interpreter_t* bas, const char* n, mb_value_t v) {
+  const auto* data = get_wwiv_script_userdata(bas);
+  if (!data->basic->debugger_attached()) {
+    return;
+  }
+  Variable var;
+  var.name = (n != nullptr) ? n : "";
+  var.type = mb_get_type_string(v.type);
+  auto** ast = data->basic->debugger()->ast();
+  var.value = to_string(bas, ast, v);
+  data->basic->debugger()->add_var(var);
+}
+
+static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, int pos,
                             uint16_t row, uint16_t col) {
 
-  mb_unrefvar(ast);
   const auto* data = get_wwiv_script_userdata(bas);
   if (!data->basic->debugger_attached()) {
     return MB_FUNC_OK;
@@ -157,7 +205,7 @@ static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast,
   if (src) {
     debug_state.SetCurrentModuleName(src);
   }
-  LOG(INFO) << "pos: " << pos << "; source_file: " << ((src) ? src : "(null)") << "; row: " << row
+  VLOG(1) << "pos: " << pos << "; source_file: " << ((src) ? src : "(null)") << "; row: " << row
             << "; col: " << col;
 
   // Update State
@@ -169,9 +217,14 @@ static int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast,
   debug_state.SetCallStackFrames(frames, fc);
   debug_state.SetLocation(pos, row, col);
 
+  // Update variables
+  data->basic->debugger()->clear_vars();
+  data->basic->debugger()->set_ast(ast);
+  mb_get_vars(bas, ast, var_collector, -1);
+
   // See what to do now
   // TODO: Move this into running state.
-  for (;;) {
+  for (;;) { 
     switch (const auto s = debug_state.running_state()) {
     case RunningState::UNKNOWN:
       debug_state.SetRunningState(RunningState::STOPPED);

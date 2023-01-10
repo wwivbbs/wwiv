@@ -145,7 +145,7 @@ bool Debugger::StartServers(int port) {
   svr_->Get("/debug/v1/breakpoints", std::bind(&Debugger::breakpoints, this, _1, _2));
 
   svr_->set_logger([](const httplib::Request& req, const httplib::Response& res) {
-    LOG(INFO) << log(req, res);
+    VLOG(1) << log(req, res);
   });
   srv_thread_ = std::thread(
       [&](int p) {
@@ -157,14 +157,12 @@ bool Debugger::StartServers(int port) {
 }
 
 
-void Debugger::Attach(const httplib::Request& req, httplib::Response& res) {
+void Debugger::Attach(const httplib::Request&, httplib::Response& res) {
   if (attached()) {
     res.status = 400;
     res.set_content("Already attached", "text/plain");
     return;
   }
-  auto msg = req.body;
-  LOG(INFO) << "Debugger Message: " << msg;
   res.set_content("attached", "text/plain");
 
   std::lock_guard lock(mu_);
@@ -176,16 +174,17 @@ void Debugger::DetachImpl() {
   attached_ = false;
 }
 
-void Debugger::Detach(const httplib::Request& req, httplib::Response& res) {
+void Debugger::Detach(const httplib::Request&, httplib::Response& res) {
   if (!attached()) {
     res.status = 400;
     res.set_content("Not Attached", "text/plain");
     return;
   }
-  auto msg = req.body;
-  LOG(INFO) << "Debugger Message: " << msg;
   res.set_content("detached", "text/plain");
-  DetachImpl();
+  std::lock_guard lock(mu_);
+  attached_ = false;
+  // restore back to the running state.
+  debug_state_.SetRunningState(RunningState::RUNNING);
 }
 
 
@@ -257,6 +256,7 @@ std::string Debugger::status(const httplib::Request&, httplib::Response& res) {
   return {};
 }
 
+// TODO: rename to vars?
 std::string Debugger::watch(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
   std::string result = "name: \"foo\" value=\"value\"";
@@ -268,6 +268,31 @@ std::string Debugger::breakpoints(const httplib::Request&, httplib::Response& re
   std::lock_guard lock(mu_);
   res.set_content("none", "text/plain");
   return {};
+}
+
+void Debugger::clear_vars() {
+  std::lock_guard lock(mu_);
+  vars_.clear();
+}
+
+void Debugger::set_ast(void** a) {
+  std::lock_guard lock(mu_);
+  ast_ = a;
+}
+
+void** Debugger::ast() {
+  std::lock_guard lock(mu_);
+  return ast_;
+}
+
+std::vector<Variable> Debugger::vars() const {
+  std::lock_guard lock(mu_);
+  return vars_;
+}
+
+void Debugger::add_var(const Variable& v) {
+  std::lock_guard lock(mu_);
+  vars_.push_back(v);
 }
 
 } // namespace wwiv::bbs::basic

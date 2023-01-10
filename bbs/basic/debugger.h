@@ -38,6 +38,12 @@ class Server;
 
 namespace wwiv::bbs::basic {
 
+struct Variable {
+  std::string name;
+  std::string type;
+  std::string value;
+};
+
 class Debugger {
 public:
   Debugger() = default;
@@ -48,6 +54,13 @@ public:
   // Debugger Core
   bool StartServers(int port);
   bool WaitForDebuggerToAttach();
+
+  // Variables
+  void clear_vars();
+  void set_ast(void** a);
+  void** ast();
+  std::vector<Variable> vars() const;
+  void add_var(const Variable& v);
 
 private:
   void Attach(const httplib::Request& req, httplib::Response& res);
@@ -68,13 +81,14 @@ private:
   std::string watch(const httplib::Request&, httplib::Response& res);
   std::string breakpoints(const httplib::Request&, httplib::Response& res);
 
-
 private:
   mutable std::mutex mu_;
   DebugState debug_state_;
   bool attached_{false};
   std::thread srv_thread_;
   std::unique_ptr<httplib::Server> svr_;
+  std::vector<Variable> vars_;
+  void** ast_;
 };
 
 } // namespace wwiv::bbs::basic
