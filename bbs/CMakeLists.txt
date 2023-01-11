@@ -88,6 +88,7 @@ add_library(
   xinit.cpp
   wfc.cpp
   basic/basic.cpp
+  basic/debug_model.cpp
   basic/debug_state.cpp
   basic/debugger.cpp
   basic/util.cpp
@@ -133,7 +134,7 @@ if(UNIX)
   endif()
 
   find_package (Threads)
-  target_link_libraries(bbs_lib z util ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+  target_link_libraries(bbs_lib z util ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} nlohmann_json::nlohmann_json)
 
 endif()
 
@@ -153,6 +154,7 @@ if(OS2)
 		make_abs_cmd_os2.cpp 
   )
 endif()
+find_package(nlohmann_json CONFIG REQUIRED)
 
 target_link_libraries(
   bbs_lib 
@@ -162,6 +164,8 @@ target_link_libraries(
   core 
   fsed
   sdk 
+  nlohmann_json::nlohmann_json
+
 )
 
  find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")

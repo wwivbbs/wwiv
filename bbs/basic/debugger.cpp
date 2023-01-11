@@ -17,8 +17,10 @@
 /**************************************************************************/
 #include "httplib.h"
 
+#include "basic.h"
 #include "debugger.h"
 #include "fmt/format.h"
+#include <nlohmann/json.hpp>
 #include <map>
 #include <mutex>
 #include <optional>
@@ -29,6 +31,7 @@
 using namespace std::chrono_literals;
 
 namespace wwiv::bbs::basic {
+
 
 bool Debugger::WaitForDebuggerToAttach() {
   int count = 0;
@@ -60,29 +63,19 @@ std::string dump_headers(const httplib::Headers& headers) {
 
 static std::string log(const httplib::Request& req, const httplib::Response& res) {
   std::string s;
-  char buf[BUFSIZ];
 
   s += "================================\n";
+  s += fmt::format("{} {} {}", req.method, req.version, req.path);
 
-  snprintf(buf, sizeof(buf), "%s %s %s", req.method.c_str(), req.version.c_str(), req.path.c_str());
-  s += buf;
-
-  std::string query;
   for (auto it = req.params.begin(); it != req.params.end(); ++it) {
-    const auto& x = *it;
-    snprintf(buf, sizeof(buf), "%c%s=%s", (it == req.params.begin()) ? '?' : '&', x.first.c_str(),
-             x.second.c_str());
-    query += buf;
+    s += fmt::format("{:c}{}={}", (it == req.params.begin()) ? '?' : '&', it->first,
+      it->second);
   }
-  snprintf(buf, sizeof(buf), "%s\n", query.c_str());
-  s += buf;
-
+  s += "\n";
   s += dump_headers(req.headers);
-
   s += "--------------------------------\n";
 
-  snprintf(buf, sizeof(buf), "%d %s\n", res.status, res.version.c_str());
-  s += buf;
+  s += fmt::format("{} {}\n", res.status, res.version);
   s += dump_headers(res.headers);
   s += "\n";
 
@@ -91,7 +84,6 @@ static std::string log(const httplib::Request& req, const httplib::Response& res
   }
 
   s += "\n";
-
   return s;
 }
 
@@ -188,14 +180,12 @@ void Debugger::Detach(const httplib::Request&, httplib::Response& res) {
 }
 
 
-std::string Debugger::state(const httplib::Request&, httplib::Response& res) {
+void Debugger::state(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
-  auto loc = debug_state_.location();
-  res.set_content(debug_state_.to_string(), "text/plain");
-  return {};
+  res.set_content(debug_state_.to_json(), "application/json");
 }
 
-std::string Debugger::stack(const httplib::Request&, httplib::Response& res) {
+void Debugger::stack(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
   const auto frames = debug_state_.stack_frames();
   std::string result;
@@ -204,95 +194,203 @@ std::string Debugger::stack(const httplib::Request&, httplib::Response& res) {
     result.append(f);
   }
   res.set_content(result, "text/plain");
-  return {};
 }
 
-std::string Debugger::stepover(const httplib::Request&, httplib::Response& res) {
-  std::lock_guard lock(mu_);
-  // realistically this should set a breakpoint on next line then run
-  debug_state_.SetRunningState(RunningState::STEPPING);
-  auto loc = debug_state_.location();
-  res.set_content(debug_state_.to_string(), "text/plain");
-  return {};
+void Debugger::stepover(const httplib::Request&, httplib::Response& res) {
+  {
+    std::lock_guard lock(mu_);
+    // realistically this should set a breakpoint on next line then run
+    debug_state_.SetRunningState(RunningState::STEPPING);
+  }
+
+  // try to let the next step happenbefore we get the location.
+  const auto last_step = step_count().load();
+  wwiv::os::sleep_for(15ms);
+  for (int i = 0; i < 200; i++) {
+    const auto current_step = step_count().load();
+    wwiv::os::sleep_for(10ms);
+    if (current_step > last_step) {
+      break;
+    }
+  }
+  {
+    res.set_content(debug_state_.to_json(), "text/plain");
+  }
 }
 
-std::string Debugger::run(const httplib::Request&, httplib::Response& res) {
+void Debugger::run(const httplib::Request&, httplib::Response&) {
   std::lock_guard lock(mu_);
-  // realistically this should set a breakpoint on next line then run
   debug_state_.SetRunningState(RunningState::RUNNING);
-  auto loc = debug_state_.location();
-  res.set_content(debug_state_.to_string(), "text/plain");
-  return {};
 }
 
-std::string Debugger::stop(const httplib::Request&, httplib::Response& res) {
+void Debugger::stop(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
-  // realistically this should set a breakpoint on next line then run
+  // Grab snapshot before stopping
+  res.set_content(debug_state_.to_json(), "application/json");
   debug_state_.SetRunningState(RunningState::HALTING);
-  auto loc = debug_state_.location();
-  res.set_content(debug_state_.to_string(), "text/plain");
-  return {};
 }
 
-std::string Debugger::tracein(const httplib::Request&, httplib::Response& res) { 
+void Debugger::tracein(const httplib::Request&, httplib::Response& res) { 
   std::lock_guard lock(mu_);
   debug_state_.SetRunningState(RunningState::STEPPING);
 
-  auto loc = debug_state_.location();
-  res.set_content(debug_state_.to_string(), "text/plain");
-  return {};
+  res.set_content(debug_state_.to_json(), "application/json");
 }
 
-std::string Debugger::source(const httplib::Request&, httplib::Response& res) {
+void Debugger::source(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
   const auto source = debug_state_.module_source(debug_state_.current_module_name()).value_or("");
   res.set_content(source, "text/plain");
-  return {};
 }
 
-std::string Debugger::status(const httplib::Request&, httplib::Response& res) {
+void Debugger::status(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
   res.set_content("ok", "text/plain");
-  return {};
 }
 
-// TODO: rename to vars?
-std::string Debugger::watch(const httplib::Request&, httplib::Response& res) {
+void Debugger::watch(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
-  std::string result = "name: \"foo\" value=\"value\"";
-  res.set_content(result, "text/plain");
-  return {};
+  nlohmann::json j = debug_state_.vars();
+  res.set_content(j.dump(4), "application/json");
 }
 
-std::string Debugger::breakpoints(const httplib::Request&, httplib::Response& res) {
+void Debugger::breakpoints(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
   res.set_content("none", "text/plain");
-  return {};
 }
 
-void Debugger::clear_vars() {
-  std::lock_guard lock(mu_);
-  vars_.clear();
+// Handlers for my_basic
+
+
+static std::string to_string(struct mb_interpreter_t* bas, void** ast, mb_value_t v) {
+  switch (v.type) {
+  case MB_DT_INT:
+    return std::to_string(v.value.integer);
+  case MB_DT_REAL:
+    return std::to_string(v.value.float_point);
+  case MB_DT_STRING:
+    if (v.value.string != nullptr) {
+      return v.value.string;
+    }
+    return {};
+    break;
+  case MB_DT_LIST: {
+    int count = 0;
+    if (mb_count_coll(bas, ast, v, &count) != MB_FUNC_OK) {
+      return {};
+    }
+    std::string result;
+    for (auto i = 0; i < count; i++) {
+      mb_value_t idx;
+      mb_make_int(idx, i);
+      mb_value_t val{};
+      if (mb_get_coll(bas, ast, v, idx, &val) == MB_FUNC_OK) {
+        if (!result.empty()) {
+          result += ", ";
+        }
+        result.append(to_string(bas, ast, val));
+      }
+    }
+    return fmt::format("[{}]", result);
+  } break;
+  default:
+    return fmt::format("$$$ UNKNOWN VALUE FROM TYPE: {}$$", v.type);
+  }
 }
 
-void Debugger::set_ast(void** a) {
-  std::lock_guard lock(mu_);
-  ast_ = a;
+static void var_collector(struct mb_interpreter_t* bas, const char* n, mb_value_t v) {
+  const auto* data = get_wwiv_script_userdata(bas);
+  if (!data->basic->debugger_attached()) {
+    return;
+  }
+  auto& debug_state = data->basic->debugger()->current_debug_state();
+  Variable var;
+  var.name = (n != nullptr) ? n : "";
+  var.type = mb_get_type_string(v.type);
+  var.frame = debug_state.frame();
+  auto** ast = debug_state.ast();
+  var.value = to_string(bas, ast, v);
+  debug_state.add_var(var);
 }
 
-void** Debugger::ast() {
-  std::lock_guard lock(mu_);
-  return ast_;
+int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, int pos,
+  uint16_t row, uint16_t col) {
+
+  const auto* data = get_wwiv_script_userdata(bas);
+  if (!data->basic->debugger_attached()) {
+    return MB_FUNC_OK;
+  }
+  auto& debug_state = data->basic->debugger()->current_debug_state();
+  if (src) {
+    debug_state.SetCurrentModuleName(src);
+  }
+  VLOG(1) << "pos: " << pos << "; source_file: " << ((src) ? src : "(null)") << "; row: " << row
+    << "; col: " << col;
+
+  // Update State
+  auto num_stack_frames = mb_debug_count_stack_frames(bas);
+  char* frames[16];
+  memset(frames, 0, sizeof(frames));
+  const auto fc = std::min<int>(num_stack_frames, 16);
+  mb_debug_get_stack_trace(bas, frames, fc);
+  debug_state.SetCallStackFrames(frames, fc);
+  debug_state.SetLocation(pos, row, col);
+
+  // Update variables
+  debug_state.clear_vars();
+  debug_state.set_ast(ast);
+  for (int i = 0; i <= num_stack_frames; i++) {
+    debug_state.set_frame(i);
+    mb_get_vars(bas, ast, var_collector, i);
+  }
+
+  // Update step count last.
+  data->basic->debugger()->step_count()++;
+
+  // See what to do now
+  // TODO: Move this into running state.
+  for (;;) {
+    switch (const auto s = debug_state.running_state()) {
+    case RunningState::UNKNOWN:
+      debug_state.SetRunningState(RunningState::STOPPED);
+      break;
+    case RunningState::HALTING:
+      debug_state.SetRunningState(RunningState::HALTED);
+      return MB_FUNC_ERR;
+    case RunningState::HALTED:
+      return MB_FUNC_ERR;
+    case RunningState::RUNNING:
+      return MB_FUNC_OK;
+    case RunningState::STEPPING:
+      debug_state.SetRunningState(RunningState::STOPPED);
+      return MB_FUNC_OK;
+    case RunningState::STOPPED:
+      // Add way to bail
+      if (data->in->bkbhit()) {
+        if (data->in->bgetchraw() == 0x03) {
+          data->out->pl("Exiting debugger...");
+          return MB_FUNC_ERR;
+        }
+      }
+      wwiv::os::sleep_for(10ms);
+      break;
+    default:
+      break;
+    }
+  }
 }
 
-std::vector<Variable> Debugger::vars() const {
-  std::lock_guard lock(mu_);
-  return vars_;
-}
+int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char* source_file,
+  int pos, uint16_t row, uint16_t col) {
+  // here is where the logic of (a) was a breakpoint hit lives.
+  mb_unrefvar(bas);
+  mb_unrefvar(ast);
+  mb_unrefvar(source_file);
+  mb_unrefvar(pos);
+  mb_unrefvar(row);
+  mb_unrefvar(col);
 
-void Debugger::add_var(const Variable& v) {
-  std::lock_guard lock(mu_);
-  vars_.push_back(v);
+  return MB_FUNC_OK;
 }
 
 } // namespace wwiv::bbs::basic

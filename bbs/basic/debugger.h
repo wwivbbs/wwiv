@@ -20,7 +20,9 @@
 
 #include "bbs/basic/debug_state.h"
 #include "bbs/basic/util.h"
+#include <nlohmann/json_fwd.hpp>
 
+#include <atomic>
 #include <map>
 #include <mutex>
 #include <optional>
@@ -38,11 +40,6 @@ class Server;
 
 namespace wwiv::bbs::basic {
 
-struct Variable {
-  std::string name;
-  std::string type;
-  std::string value;
-};
 
 class Debugger {
 public:
@@ -55,12 +52,9 @@ public:
   bool StartServers(int port);
   bool WaitForDebuggerToAttach();
 
-  // Variables
-  void clear_vars();
-  void set_ast(void** a);
-  void** ast();
-  std::vector<Variable> vars() const;
-  void add_var(const Variable& v);
+  // step count
+  std::atomic<int>& step_count() { return step_count_; }
+
 
 private:
   void Attach(const httplib::Request& req, httplib::Response& res);
@@ -68,18 +62,19 @@ private:
   void DetachImpl();
 
   // HTTP action handlers
-  std::string run(const httplib::Request&, httplib::Response& res);
-  std::string stop(const httplib::Request&, httplib::Response& res);
-  std::string stepover(const httplib::Request&, httplib::Response& res);
-  std::string tracein(const httplib::Request&, httplib::Response& res);
+  void run(const httplib::Request&, httplib::Response& res);
+  void stop(const httplib::Request&, httplib::Response& res);
+  void stepover(const httplib::Request&, httplib::Response& res);
+  void tracein(const httplib::Request&, httplib::Response& res);
   // HTTP Getters
-  std::string state(const httplib::Request&, httplib::Response& res);
-  std::string stack(const httplib::Request&, httplib::Response& res);
-  std::string source(const httplib::Request&, httplib::Response& res);
+  void state(const httplib::Request&, httplib::Response& res);
+  void stack(const httplib::Request&, httplib::Response& res);
+  void source(const httplib::Request&, httplib::Response& res);
 
-  std::string status(const httplib::Request&, httplib::Response& res);
-  std::string watch(const httplib::Request&, httplib::Response& res);
-  std::string breakpoints(const httplib::Request&, httplib::Response& res);
+  void status(const httplib::Request&, httplib::Response& res);
+  void watch(const httplib::Request&, httplib::Response& res);
+  void breakpoints(const httplib::Request&, httplib::Response& res);
+
 
 private:
   mutable std::mutex mu_;
@@ -87,9 +82,14 @@ private:
   bool attached_{false};
   std::thread srv_thread_;
   std::unique_ptr<httplib::Server> svr_;
-  std::vector<Variable> vars_;
-  void** ast_;
+  std::atomic<int> step_count_{ 0 };
 };
+
+int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, int pos,
+  uint16_t row, uint16_t col);
+int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, int pos,
+  uint16_t row, uint16_t col);
+
 
 } // namespace wwiv::bbs::basic
 

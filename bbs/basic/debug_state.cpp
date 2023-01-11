@@ -17,6 +17,7 @@
 /**************************************************************************/
 #include "bbs/basic/debug_state.h"
 #include "bbs/basic/util.h"
+#include <nlohmann/json.hpp>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -34,7 +35,7 @@ void DebugState::SetCallStackFrames(char** f, int fc) {
   }
 }
 
-std::vector<std::string> DebugState::stack_frames() {
+std::vector<std::string> DebugState::stack_frames() const {
   std::lock_guard lock(mu_);
   return frames_;
 }
@@ -92,10 +93,46 @@ std::optional<std::string> DebugState::module_source(const std::string& module) 
   return std::nullopt;
 }
 
-std::string DebugState::to_string() const { 
+std::string DebugState::to_string() const {
   const auto loc = location();
   return fmt::format("{} {} {} {}\n", loc.module, loc.pos, loc.row, loc.col);
 }
+
+std::string DebugState::to_json() const {
+  nlohmann::json j; // = debug_state_.vars();
+  j["version"] = "0.0";
+  j["location"] = location();
+  j["vars"] = vars_;
+  j["stack"] = stack_frames();
+  return j.dump(4);
+}
+
+
+void DebugState::clear_vars() {
+  std::lock_guard lock(mu_);
+  vars_.clear();
+}
+
+void DebugState::set_ast(void** a) {
+  std::lock_guard lock(mu_);
+  ast_ = a;
+}
+
+void** DebugState::ast() {
+  std::lock_guard lock(mu_);
+  return ast_;
+}
+
+std::vector<Variable> DebugState::vars() const {
+  std::lock_guard lock(mu_);
+  return vars_;
+}
+
+void DebugState::add_var(const Variable& v) {
+  std::lock_guard lock(mu_);
+  vars_.push_back(v);
+}
+
 
 }
 

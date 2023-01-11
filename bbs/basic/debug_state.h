@@ -18,6 +18,8 @@
 #ifndef INCLUDED_BBS_BASIC_DEBUG_STATE_H
 #define INCLUDED_BBS_BASIC_DEBUG_STATE_H
 
+#include "bbs/basic/debug_model.h"
+#include <nlohmann/json_fwd.hpp>
 #include <map>
 #include <mutex>
 #include <optional>
@@ -25,14 +27,8 @@
 #include <thread>
 #include <vector>
 
-namespace wwiv::bbs::basic {
 
-struct DebugLocation {
-  std::string module;
-  int pos;
-  int row;
-  int col;
-};
+namespace wwiv::bbs::basic {
 
 enum class RunningState { 
   // Running, don't interrupt until a breakpoint is hit
@@ -51,7 +47,7 @@ enum class RunningState {
 class DebugState {
 public:
   void SetCallStackFrames(char** frames, int fc);
-  std::vector<std::string> stack_frames();
+  std::vector<std::string> stack_frames() const;
   void SetLocation(int pos, int row, int col);
   DebugLocation location() const;
   void SetRunningState(RunningState state);
@@ -64,7 +60,17 @@ public:
   std::string current_module_name() const;
   std::optional<std::string> module_source(const std::string& module) const;
 
+  // Variables
+  void clear_vars();
+  void set_ast(void** a);
+  void** ast();
+  std::vector<Variable> vars() const;
+  void add_var(const Variable& v);
+  void set_frame(int f) { frame_ = f; }
+  int frame() const { return frame_; }
+
   std::string to_string() const;
+  std::string to_json() const;
 
 private:
   mutable std::mutex mu_;
@@ -74,6 +80,10 @@ private:
   std::map<std::string, std::string> source_map_;
   std::string current_module_;
   std::string initial_module_;
+  // Vars support
+  void** ast_{ nullptr };
+  std::vector<Variable> vars_;
+  int frame_{ 0 };
 };
 
 
