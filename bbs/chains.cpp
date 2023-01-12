@@ -71,7 +71,10 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
   }
 
   for (const auto rb : r) {
-    if (rb <= 0) {
+    if (rb <= 1) {
+      continue;
+    }
+    if (r.size()==1) {
       continue;
     }
     if (!a()->users()->readuser(&user, rb)) {
