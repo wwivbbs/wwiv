@@ -173,6 +173,7 @@ void Debugger::Attach(const httplib::Request&, httplib::Response& res) {
   j["attached"] = true;
   session_id_ = create_debug_session_id();
   j["session_id"] = session_id_;
+  j["initial_module"] = current_debug_state().current_module_name();
   res.set_content(j.dump(4), "text/plain");
 
   std::lock_guard lock(mu_);
@@ -205,6 +206,7 @@ void Debugger::CreateBreakpoint(const httplib::Request& req, httplib::Response& 
   int line = -1;
   if (req.has_param("line")) {
     line = wwiv::strings::to_number<int>(req.get_param_value("line"));
+    // TODO(rushfan): Need module here too.
   } else {
     res.status = 400;
     res.set_content("missing line number", "text/plain");
