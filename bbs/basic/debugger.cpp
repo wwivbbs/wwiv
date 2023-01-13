@@ -19,11 +19,14 @@
 
 #include "basic.h"
 #include "debugger.h"
+#include "core/strings.h"
 #include "fmt/format.h"
 #include <nlohmann/json.hpp>
+#include <cmath>
 #include <map>
 #include <mutex>
 #include <optional>
+#include <random>
 #include <string>
 #include <thread>
 #include <vector>
@@ -32,6 +35,7 @@ using namespace std::chrono_literals;
 
 namespace wwiv::bbs::basic {
 
+static const char MIME_TYPE_JSON[] = "application/json";
 
 bool Debugger::WaitForDebuggerToAttach() {
   int count = 0;
@@ -120,7 +124,10 @@ bool Debugger::StartServers(int port) {
   svr_->Post("/debug/v1/detach",
              [this](const httplib::Request& req, httplib::Response& res) { Detach(req, res); });
 
-  // These should be POST too
+  svr_->Delete(R"(/debug/v1/breakpoint/(\d+))",
+    [this](const httplib::Request& req, httplib::Response& res) { DeleteBreakpoint(req, res); });
+  svr_->Post("/debug/v1/breakpoint",
+    [this](const httplib::Request& req, httplib::Response& res) { CreateBreakpoint(req, res); });
   svr_->Post("/debug/v1/stepover",
              [this](const httplib::Request& req, httplib::Response& res) { stepover(req, res); });
   svr_->Post("/debug/v1/tracein",
@@ -131,10 +138,8 @@ bool Debugger::StartServers(int port) {
              [this](const httplib::Request& req, httplib::Response& res) { stop(req, res); });
 
   svr_->Get("/debug/v1/source", std::bind(&Debugger::source, this, _1, _2));
-  svr_->Get("/debug/v1/stack", std::bind(&Debugger::stack, this, _1, _2));
   svr_->Get("/debug/v1/state", std::bind(&Debugger::state, this, _1, _2));
   svr_->Get("/debug/v1/watch", std::bind(&Debugger::watch, this, _1, _2));
-  svr_->Get("/debug/v1/breakpoints", std::bind(&Debugger::breakpoints, this, _1, _2));
 
   svr_->set_logger([](const httplib::Request& req, const httplib::Response& res) {
     VLOG(1) << log(req, res);
@@ -142,12 +147,21 @@ bool Debugger::StartServers(int port) {
   srv_thread_ = std::thread(
       [&](int p) {
         svr_->listen("0.0.0.0", p);
-        DetachImpl();
+        attached_ = false;
+        session_id_.clear();
       },
       port);
   return true;
 }
 
+static std::string create_debug_session_id() {
+  std::random_device rd;
+  std::mt19937_64 e2(rd());
+  std::uniform_int_distribution<long long int> dist(std::llround(std::pow(2, 61)), std::llround(std::pow(2, 62)));
+
+  const auto result = dist(e2);
+  return std::to_string(result);
+}
 
 void Debugger::Attach(const httplib::Request&, httplib::Response& res) {
   if (attached()) {
@@ -155,15 +169,14 @@ void Debugger::Attach(const httplib::Request&, httplib::Response& res) {
     res.set_content("Already attached", "text/plain");
     return;
   }
-  res.set_content("attached", "text/plain");
+  nlohmann::json j; 
+  j["attached"] = true;
+  session_id_ = create_debug_session_id();
+  j["session_id"] = session_id_;
+  res.set_content(j.dump(4), "text/plain");
 
   std::lock_guard lock(mu_);
   attached_ = true;
-}
-
-void Debugger::DetachImpl() {
-  std::lock_guard lock(mu_);
-  attached_ = false;
 }
 
 void Debugger::Detach(const httplib::Request&, httplib::Response& res) {
@@ -175,47 +188,77 @@ void Debugger::Detach(const httplib::Request&, httplib::Response& res) {
   res.set_content("detached", "text/plain");
   std::lock_guard lock(mu_);
   attached_ = false;
+  session_id_.clear();
   // restore back to the running state.
   debug_state_.SetRunningState(RunningState::RUNNING);
 }
 
+// Post to create a breakpoint
+void Debugger::CreateBreakpoint(const httplib::Request& req, httplib::Response& res) {
+  if (!attached()) {
+    res.status = 400;
+    res.set_content("Not Attached", "text/plain");
+    return;
+  }
 
-void Debugger::state(const httplib::Request&, httplib::Response& res) {
+  // res.set_content("detached", "text/plain");
+  int line = -1;
+  if (req.has_param("line")) {
+    line = wwiv::strings::to_number<int>(req.get_param_value("line"));
+  } else {
+    res.status = 400;
+    res.set_content("missing line number", "text/plain");
+    return;
+  }
+
   std::lock_guard lock(mu_);
-  res.set_content(debug_state_.to_json(), "application/json");
+  debug_state_.breakpoints().add(line);
+  res.status = 200;
+  res.set_content("breakpoint added", "text/plain");
 }
 
-void Debugger::stack(const httplib::Request&, httplib::Response& res) {
-  std::lock_guard lock(mu_);
-  const auto frames = debug_state_.stack_frames();
-  std::string result;
-  result.reserve(frames.size() * 80);
-  for (const auto& f : frames) {
-    result.append(f);
+void Debugger::DeleteBreakpoint(const httplib::Request& req, httplib::Response& res) {
+  if (!attached()) {
+    res.status = 400;
+    res.set_content("Not Attached", "text/plain");
+    return;
   }
-  res.set_content(result, "text/plain");
+
+  const auto line = wwiv::strings::to_number<int>(req.matches[1]);
+
+  {
+    std::lock_guard lock(mu_);
+    debug_state_.breakpoints().remove(line);
+  }
+
+  res.status = 200;
+  res.set_content("breakpoint added", "text/plain");
+}
+void Debugger::state(const httplib::Request&, httplib::Response& res) {
+  std::lock_guard lock(mu_);
+  res.set_content(debug_state_.to_json(), MIME_TYPE_JSON);
 }
 
 void Debugger::stepover(const httplib::Request&, httplib::Response& res) {
+
   {
     std::lock_guard lock(mu_);
     // realistically this should set a breakpoint on next line then run
-    debug_state_.SetRunningState(RunningState::STEPPING);
+    debug_state_.SetRunningState(RunningState::STEPPING_OVER);
   }
 
-  // try to let the next step happenbefore we get the location.
+  // try to let the next step happen before we get the location.
   const auto last_step = step_count().load();
   wwiv::os::sleep_for(15ms);
-  for (int i = 0; i < 200; i++) {
+  auto start = std::chrono::steady_clock::now();
+  while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start).count() < 5) {
     const auto current_step = step_count().load();
     wwiv::os::sleep_for(10ms);
     if (current_step > last_step) {
       break;
     }
   }
-  {
-    res.set_content(debug_state_.to_json(), "text/plain");
-  }
+  res.set_content(debug_state_.to_json(), MIME_TYPE_JSON);
 }
 
 void Debugger::run(const httplib::Request&, httplib::Response&) {
@@ -226,7 +269,7 @@ void Debugger::run(const httplib::Request&, httplib::Response&) {
 void Debugger::stop(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
   // Grab snapshot before stopping
-  res.set_content(debug_state_.to_json(), "application/json");
+  res.set_content(debug_state_.to_json(), MIME_TYPE_JSON);
   debug_state_.SetRunningState(RunningState::HALTING);
 }
 
@@ -234,7 +277,7 @@ void Debugger::tracein(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
   debug_state_.SetRunningState(RunningState::STEPPING);
 
-  res.set_content(debug_state_.to_json(), "application/json");
+  res.set_content(debug_state_.to_json(), MIME_TYPE_JSON);
 }
 
 void Debugger::source(const httplib::Request&, httplib::Response& res) {
@@ -251,12 +294,7 @@ void Debugger::status(const httplib::Request&, httplib::Response& res) {
 void Debugger::watch(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
   nlohmann::json j = debug_state_.vars();
-  res.set_content(j.dump(4), "application/json");
-}
-
-void Debugger::breakpoints(const httplib::Request&, httplib::Response& res) {
-  std::lock_guard lock(mu_);
-  res.set_content("none", "text/plain");
+  res.set_content(j.dump(4), MIME_TYPE_JSON);
 }
 
 // Handlers for my_basic
@@ -315,6 +353,7 @@ static void var_collector(struct mb_interpreter_t* bas, const char* n, mb_value_
 
 int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, int pos,
   uint16_t row, uint16_t col) {
+  LOG(INFO) << "on_prev_stepped [enter]: row: " << row << "; pos: " << pos;
 
   const auto* data = get_wwiv_script_userdata(bas);
   if (!data->basic->debugger_attached()) {
@@ -324,28 +363,24 @@ int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, 
   if (src) {
     debug_state.SetCurrentModuleName(src);
   }
-  VLOG(1) << "pos: " << pos << "; source_file: " << ((src) ? src : "(null)") << "; row: " << row
-    << "; col: " << col;
 
   // Update State
-  auto num_stack_frames = mb_debug_count_stack_frames(bas);
+  debug_state.set_num_stack_frames(mb_debug_count_stack_frames(bas));
   char* frames[16];
   memset(frames, 0, sizeof(frames));
-  const auto fc = std::min<int>(num_stack_frames, 16);
-  mb_debug_get_stack_trace(bas, frames, fc);
-  debug_state.SetCallStackFrames(frames, fc);
+  const auto mfc = std::min<int>(debug_state.num_stack_frames(), 16);
+  mb_debug_get_stack_trace(bas, frames, mfc);
+  debug_state.SetCallStackFrames(frames, mfc);
   debug_state.SetLocation(pos, row, col);
 
   // Update variables
   debug_state.clear_vars();
   debug_state.set_ast(ast);
-  for (int i = 0; i <= num_stack_frames; i++) {
+  for (int i = 0; i <= debug_state.num_stack_frames(); i++) {
     debug_state.set_frame(i);
     mb_get_vars(bas, ast, var_collector, i);
   }
-
-  // Update step count last.
-  data->basic->debugger()->step_count()++;
+  LOG(INFO) << "on_prev_stepped [state updated]: row: " << row << "; pos: " << pos << "; fc: " << mfc;
 
   // See what to do now
   // TODO: Move this into running state.
@@ -356,20 +391,37 @@ int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, 
       break;
     case RunningState::HALTING:
       debug_state.SetRunningState(RunningState::HALTED);
-      return MB_FUNC_ERR;
-    case RunningState::HALTED:
-      return MB_FUNC_ERR;
-    case RunningState::RUNNING:
       return MB_FUNC_OK;
+    case RunningState::HALTED:
+      return MB_FUNC_BYE;
+    case RunningState::RUNNING:
+      // Check for breakpoints.
+      if (debug_state.breakpoint_hit(row)) {
+        data->basic->debugger()->step_count()++;
+        LOG(INFO) << "on_prev_stepped [breakpoint hit]: row: " << row;
+        debug_state.SetRunningState(RunningState::STOPPED);
+        continue;
+      }
+      return MB_FUNC_OK;
+    // Step In
     case RunningState::STEPPING:
+      data->basic->debugger()->step_count()++;
       debug_state.SetRunningState(RunningState::STOPPED);
       return MB_FUNC_OK;
+    case RunningState::STEPPING_OVER: {
+      // Add a step breakpoint and run.
+      const auto fc = debug_state.num_stack_frames();
+      debug_state.breakpoints().step(fc);
+      debug_state.SetRunningState(RunningState::RUNNING);
+      LOG(INFO) << "Adding STEP breakpoint: row: " << row << "; fc: " << fc;
+      return MB_FUNC_OK;
+    } 
     case RunningState::STOPPED:
       // Add way to bail
       if (data->in->bkbhit()) {
         if (data->in->bgetchraw() == 0x03) {
           data->out->pl("Exiting debugger...");
-          return MB_FUNC_ERR;
+          return MB_FUNC_BYE;
         }
       }
       wwiv::os::sleep_for(10ms);
@@ -382,8 +434,6 @@ int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, 
 
 int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char* source_file,
   int pos, uint16_t row, uint16_t col) {
-  // here is where the logic of (a) was a breakpoint hit lives.
-  mb_unrefvar(bas);
   mb_unrefvar(ast);
   mb_unrefvar(source_file);
   mb_unrefvar(pos);

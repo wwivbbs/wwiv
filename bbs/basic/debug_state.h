@@ -30,11 +30,29 @@
 
 namespace wwiv::bbs::basic {
 
+class Breakpoints {
+public:
+  void clear();
+  void add(int line);
+  void step(int callstack_depth);
+  bool remove(int line);
+  std::vector<Breakpoint>& all() { return breakpoints_; }
+  const std::vector<Breakpoint>& all() const { return breakpoints_; }
+  std::vector<Breakpoint> visible() const;
+
+
+private:
+  std::vector<Breakpoint> breakpoints_;
+  int id_{0};
+};
+
 enum class RunningState { 
   // Running, don't interrupt until a breakpoint is hit
   RUNNING, 
   // Will take one step
   STEPPING, 
+  // Will take one step at the same stack frame
+  STEPPING_OVER,
   // Stopped after a break or step
   STOPPED, 
   // Trying to HALT
@@ -42,14 +60,19 @@ enum class RunningState {
   // Done halting
   HALTED, 
   // Who knows.
-  UNKNOWN };
+  UNKNOWN 
+};
 
 class DebugState {
 public:
   void SetCallStackFrames(char** frames, int fc);
   std::vector<std::string> stack_frames() const;
+
   void SetLocation(int pos, int row, int col);
   DebugLocation location() const;
+
+  Breakpoints& DebugState::breakpoints();
+  bool breakpoint_hit(int line);
   void SetRunningState(RunningState state);
   RunningState running_state() const;
   void SetCurrentModuleName(const std::string& module);
@@ -68,6 +91,10 @@ public:
   void add_var(const Variable& v);
   void set_frame(int f) { frame_ = f; }
   int frame() const { return frame_; }
+  void set_num_stack_frames(int f) { num_stack_frames_ = f; }
+  int num_stack_frames() const { return num_stack_frames_; }
+
+  // Breakpoints
 
   std::string to_string() const;
   std::string to_json() const;
@@ -75,6 +102,7 @@ public:
 private:
   mutable std::mutex mu_;
   std::vector<std::string> frames_;
+  std::string current_function_;
   DebugLocation location_;
   RunningState running_state_{RunningState::UNKNOWN};
   std::map<std::string, std::string> source_map_;
@@ -83,7 +111,9 @@ private:
   // Vars support
   void** ast_{ nullptr };
   std::vector<Variable> vars_;
+  Breakpoints breakpoints_;
   int frame_{ 0 };
+  int num_stack_frames_{ 0 };
 };
 
 

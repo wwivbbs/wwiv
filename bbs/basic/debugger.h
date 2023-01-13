@@ -55,26 +55,23 @@ public:
   // step count
   std::atomic<int>& step_count() { return step_count_; }
 
-
 private:
   void Attach(const httplib::Request& req, httplib::Response& res);
   void Detach(const httplib::Request& req, httplib::Response& res);
-  void DetachImpl();
+  void CreateBreakpoint(const httplib::Request& req, httplib::Response& res);
+  void DeleteBreakpoint(const httplib::Request& req, httplib::Response& res);
 
   // HTTP action handlers
   void run(const httplib::Request&, httplib::Response& res);
   void stop(const httplib::Request&, httplib::Response& res);
   void stepover(const httplib::Request&, httplib::Response& res);
   void tracein(const httplib::Request&, httplib::Response& res);
+
   // HTTP Getters
   void state(const httplib::Request&, httplib::Response& res);
-  void stack(const httplib::Request&, httplib::Response& res);
   void source(const httplib::Request&, httplib::Response& res);
-
   void status(const httplib::Request&, httplib::Response& res);
   void watch(const httplib::Request&, httplib::Response& res);
-  void breakpoints(const httplib::Request&, httplib::Response& res);
-
 
 private:
   mutable std::mutex mu_;
@@ -83,6 +80,7 @@ private:
   std::thread srv_thread_;
   std::unique_ptr<httplib::Server> svr_;
   std::atomic<int> step_count_{ 0 };
+  std::string session_id_;
 };
 
 int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, int pos,
