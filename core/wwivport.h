@@ -42,7 +42,8 @@ typedef uint32_t daten_t;
 #ifdef _WIN64
 typedef int64_t ssize_t;
 #else
-typedef int ssize_t;
+// Most places seem to use long, and httplib grumbles
+typedef long ssize_t;
 #endif // _WIN64
 
 #ifdef _WIN32

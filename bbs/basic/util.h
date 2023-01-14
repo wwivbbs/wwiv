@@ -32,6 +32,7 @@ struct mb_interpreter_t;
 namespace wwiv::bbs::basic {
 
 char* BasicStrDup(std::string_view s);
+class Basic;
 
 enum class file_location_t { GFILES, MENUS, TEMP, BBS };
 enum class chain_type_t { DOOR32, STDIO, FOSSIL, NETFOSS };
@@ -51,12 +52,13 @@ struct wwiv_exec_options_t {
 class BasicScriptState {
 public:
   BasicScriptState(std::string d, std::string s, common::Context* c, common::Input* i,
-                   common::Output* o);
+                   common::Output* o, Basic* b);
   std::string datadir;
   std::string script_dir;
   common::Context* ctx;
   common::Input* in;
   common::Output* out;
+  Basic* basic;
   std::string module;
 
   int allocate_handle() noexcept { return ++handle_; }

@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "bbs/basic/basic.h"
+#include "httplib.h"
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
@@ -34,13 +35,17 @@
 #include "core/textfile.h"
 #include "deps/my_basic/core/my_basic.h"
 #include "sdk/config.h"
+
+#include <chrono>
 #include <cstdarg>
 #include <mutex>
 #include <optional>
 #include <string>
+#include <thread>
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
+using namespace std::chrono_literals;
 
 namespace wwiv::bbs::basic {
 
@@ -97,12 +102,15 @@ static std::optional<std::string> ReadBasicFile(wwiv::common::Output& out,
   return {lines};
 }
 
-static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
+bool Basic::LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
   const auto* d = get_wwiv_script_userdata(bas);
   const auto path = FilePath(d->script_dir, script_name);
   const auto o = ReadBasicFile(*d->out, path, script_name);
   if (!o) {
     return false;
+  }
+  if (d->basic->debugger_attached()) {
+    d->basic->debugger()->current_debug_state().AddSourceModule(script_name, o.value());
   }
   const auto ret = mb_load_string(bas, o.value().c_str(), true);
   return ret == MB_FUNC_OK;
@@ -136,34 +144,6 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* ms
       msg);
 }
 
-static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int p, uint16_t row,
-                       uint16_t col) {
-  const std::string file = (f) ? f : "(null)";
-  VLOG(2) << "p: " << p << "; f: " << file << "; row: " << row << "; col: " << col;
-
-  mb_unrefvar(s);
-  mb_unrefvar(l);
-  mb_unrefvar(f);
-  mb_unrefvar(p);
-  mb_unrefvar(row);
-  mb_unrefvar(col);
-
-  return MB_FUNC_OK;
-}
-
-static int _on_prev_stepped(struct mb_interpreter_t* s, void** l, const char* f, int p,
-                            uint16_t row, uint16_t col) {
-  mb_unrefvar(s);
-  mb_unrefvar(l);
-  mb_unrefvar(f);
-  mb_unrefvar(p);
-  mb_unrefvar(row);
-  mb_unrefvar(col);
-
-  return MB_FUNC_OK;
-}
-
-
 Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, common::Context* ctx)
     : bin_(i), bout_(o), config_(config), ctx_(ctx) {
 
@@ -171,14 +151,15 @@ Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, com
   // by the implementation of custom functions.  Values derived from the script name
   // must be set in RunScript.
   script_userdata_ = std::make_unique<BasicScriptState>(
-    config_.datadir(), config_.scriptdir(), ctx, &bin_, &bout_);
+    config_.datadir(), config_.scriptdir(), ctx, &bin_, &bout_, this);
 
   [[maybe_unused]] static auto once = RegisterMyBasicGlobals();
 
   bas_ = SetupBasicInterpreter();
   RegisterDefaultNamespaces();
+}
 
-   mb_debug_set_stepped_handler(bas_, _on_prev_stepped, _on_stepped);
+Basic::~Basic() {
 }
 
 static std::string ScriptBaseName(const std::string& script_name) {
@@ -189,14 +170,16 @@ static std::string ScriptBaseName(const std::string& script_name) {
   return basename;
 }
 
-// static
 mb_interpreter_t* Basic::SetupBasicInterpreter() {
   struct mb_interpreter_t* bas = nullptr;
   mb_open(&bas);
 
-  // TODO(rushfan): Update to new syntax
-  // mb_debug_set_stepped_handler(bas, _on_step-ped);
   mb_set_error_handler(bas, _on_error);
+
+  if (a()->sess().debug_wwivbasic()) {
+    // Only add these handlers if we're in debug mode.
+    mb_debug_set_stepped_handler(bas, _on_prev_stepped, _on_post_stepped);
+  }
 
   mb_set_import_handler(bas, [](struct mb_interpreter_t* b, const char* p) -> int {
     return LoadBasicFile(b, p) ? MB_FUNC_OK : MB_FUNC_ERR;
@@ -231,11 +214,20 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
     return false;
   }
   script_userdata_->module = module;
+  initial_module_ = module;
+  initial_module_source_ = text;
   mb_set_userdata(bas_, script_userdata_.get());
 
   if (mb_load_string(bas_, text.c_str(), true) != MB_FUNC_OK) {
     LOG(ERROR) << "Unable to load text: '" << text << "'";
     return false;
+  }
+
+  if (a()->sess().debug_wwivbasic()) {
+    bout.pl("Waiting for debugger to attach...");
+    StartDebugger(a()->sess().debug_wwivbasic_port());
+    debugger_->current_debug_state().SetInitialModule(module, text);
+    debugger()->WaitForDebuggerToAttach();
   }
 
   static std::mutex script_mutex;
@@ -251,6 +243,27 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
   return true;
 }
 
+
+bool Basic::StartDebugger(int port) { 
+  std::lock_guard lock(mu_);
+  debugger_ = std::make_unique<Debugger>();
+  return debugger_->StartServers(port);
+}
+
+
+bool Basic::debugger_attached() const {
+  std::lock_guard lock(mu_);
+  if (debugger_) {
+    return debugger_->attached();
+  }
+  return false;
+}
+
+Debugger* Basic::debugger() {
+  std::lock_guard lock(mu_);
+  return debugger_.get();
+}
+
 bool Basic::RunScript(const std::string& script_name) {
   const auto path = FilePath(config_.scriptdir(), script_name);
   if (!File::Exists(path)) {
@@ -263,6 +276,7 @@ bool Basic::RunScript(const std::string& script_name) {
     return false;
   }
   const auto module = ScriptBaseName(script_name);
+  // Check for debugger enablement
   return RunScript(module, o.value());
 }
 
