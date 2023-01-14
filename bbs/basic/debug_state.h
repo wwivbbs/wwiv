@@ -72,7 +72,7 @@ public:
   void SetLocation(int pos, int row, int col);
   DebugLocation location() const;
 
-  Breakpoints& DebugState::breakpoints();
+  Breakpoints& breakpoints();
   bool breakpoint_hit(int line);
   void SetRunningState(RunningState state);
   RunningState running_state() const;
