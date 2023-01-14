@@ -33,7 +33,7 @@ namespace wwiv::bbs::basic {
 class Breakpoints {
 public:
   void clear();
-  void add(int line);
+  std::optional<Breakpoint> add(const std::string& module, int line);
   void step(int callstack_depth);
   bool remove(int line);
   std::vector<Breakpoint>& all() { return breakpoints_; }

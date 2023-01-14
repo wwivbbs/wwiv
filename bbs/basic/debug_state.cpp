@@ -32,11 +32,13 @@ void Breakpoints::clear() {
   breakpoints_.clear();
 }
 
-void Breakpoints::add(int line) {
+std::optional<Breakpoint> Breakpoints::add(const std::string& module, int line) {
   Breakpoint b{};
   b.id = ++id_;
+  b.module = module;
   b.line = line;
-  breakpoints_.emplace_back(b);
+  breakpoints_.push_back(b);
+  return { b };
 }
 
 void Breakpoints::step(int depth) {

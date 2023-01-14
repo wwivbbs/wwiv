@@ -174,7 +174,7 @@ void Debugger::Attach(const httplib::Request&, httplib::Response& res) {
   session_id_ = create_debug_session_id();
   j["session_id"] = session_id_;
   j["initial_module"] = current_debug_state().current_module_name();
-  res.set_content(j.dump(4), "text/plain");
+  res.set_content(j.dump(4), "application/json");
 
   std::lock_guard lock(mu_);
   attached_ = true;
@@ -213,10 +213,30 @@ void Debugger::CreateBreakpoint(const httplib::Request& req, httplib::Response& 
     return;
   }
 
+  std::string module = this->debug_state_.current_module_name();
+  if (req.has_param("module")) {
+    module = req.get_param_value("module");
+  }
+
+  if (req.has_param("typ")) {
+    auto typ = req.get_param_value("module");
+    if (typ != "line") {
+      res.status = 400;
+      res.set_content("only line breakpoints are supported", "text/plain");
+    }
+  }
+
   std::lock_guard lock(mu_);
-  debug_state_.breakpoints().add(line);
-  res.status = 200;
-  res.set_content("breakpoint added", "text/plain");
+  if (auto ob = debug_state_.breakpoints().add(module, line)) {
+    res.status = 200;
+    nlohmann::json j;
+    j = ob.value();
+    res.set_content(j.dump(4), "application/json");
+    return;
+  }
+
+  res.status = 400;
+  res.set_content("Adding breakpoint failed", "text/plain");
 }
 
 void Debugger::DeleteBreakpoint(const httplib::Request& req, httplib::Response& res) {
