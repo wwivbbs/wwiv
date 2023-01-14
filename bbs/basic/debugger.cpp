@@ -246,11 +246,11 @@ void Debugger::DeleteBreakpoint(const httplib::Request& req, httplib::Response& 
     return;
   }
 
-  const auto line = wwiv::strings::to_number<int>(req.matches[1]);
+  const auto id = wwiv::strings::to_number<int>(req.matches[1]);
 
   {
     std::lock_guard lock(mu_);
-    debug_state_.breakpoints().remove(line);
+    debug_state_.breakpoints().remove(id);
   }
 
   res.status = 200;
@@ -456,6 +456,7 @@ int _on_prev_stepped(struct mb_interpreter_t* bas, void** ast, const char* src, 
 
 int _on_post_stepped(struct mb_interpreter_t* bas, void** ast, const char* source_file,
   int pos, uint16_t row, uint16_t col) {
+  mb_unrefvar(bas);
   mb_unrefvar(ast);
   mb_unrefvar(source_file);
   mb_unrefvar(pos);

@@ -51,15 +51,24 @@ void Breakpoints::step(int depth) {
   breakpoints_.emplace_back(b);
 }
 
-
-bool Breakpoints::remove(int line) {
+bool Breakpoints::removeAllAtLine(const std::string& module, int line) {
   bool any_removed{ false };
   for (auto it = std::begin(breakpoints_); it != std::end(breakpoints_); ++it) {
-    if (it->line == line) {
+    if (it->line == line && wwiv::strings::iequals(it->module, module)) {
       it = breakpoints_.erase(it);
     }
   }
   return any_removed;
+}
+
+bool Breakpoints::remove(int id) {
+  for (auto it = std::begin(breakpoints_); it != std::end(breakpoints_); ++it) {
+    if (it->id == id) {
+      it = breakpoints_.erase(it);
+      return true;
+    }
+  }
+  return false;
 }
 
 std::vector<Breakpoint> Breakpoints::visible() const {

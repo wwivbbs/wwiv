@@ -35,7 +35,8 @@ public:
   void clear();
   std::optional<Breakpoint> add(const std::string& module, int line);
   void step(int callstack_depth);
-  bool remove(int line);
+  bool remove(int id);
+  bool removeAllAtLine(const std::string& module, int line);
   std::vector<Breakpoint>& all() { return breakpoints_; }
   const std::vector<Breakpoint>& all() const { return breakpoints_; }
   std::vector<Breakpoint> visible() const;
