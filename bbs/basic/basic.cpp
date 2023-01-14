@@ -175,7 +175,11 @@ mb_interpreter_t* Basic::SetupBasicInterpreter() {
   mb_open(&bas);
 
   mb_set_error_handler(bas, _on_error);
-  mb_debug_set_stepped_handler(bas, _on_prev_stepped, _on_post_stepped);
+
+  if (a()->sess().debug_wwivbasic()) {
+    // Only add these handlers if we're in debug mode.
+    mb_debug_set_stepped_handler(bas, _on_prev_stepped, _on_post_stepped);
+  }
 
   mb_set_import_handler(bas, [](struct mb_interpreter_t* b, const char* p) -> int {
     return LoadBasicFile(b, p) ? MB_FUNC_OK : MB_FUNC_ERR;
