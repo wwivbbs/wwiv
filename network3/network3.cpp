@@ -49,6 +49,7 @@
 #include "sdk/net/packets.h"
 #include "sdk/net/subscribers.h"
 
+#include <cctype>
 #include <cstdlib>
 #include <iostream>
 #include <map>
@@ -390,7 +391,10 @@ static void rename_pending_files(const std::filesystem::path& dir) {
 
   FindFiles ff(FilePath(dir, "s*.net"), FindFiles::FindFilesType::files);
   for (const auto& f : ff) {
-    rename_pend(dir, f.name, '3');
+    if (std::isdigit(f.name.at(1))) {
+      // Only process files of the form s######.net
+      rename_pend(dir, f.name, '3');
+    }
   }
 }
 
