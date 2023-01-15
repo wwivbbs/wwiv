@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "bbs/basic/debug_state.h"
+
+#include "core/strings.h"
 #include "bbs/basic/util.h"
 #include <nlohmann/json.hpp>
 #include <mutex>
@@ -24,6 +26,8 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+
+using namespace wwiv::strings;
 
 namespace wwiv::bbs::basic {
 
@@ -35,7 +39,7 @@ void Breakpoints::clear() {
 std::optional<Breakpoint> Breakpoints::add(const std::string& module, int line) {
   Breakpoint b{};
   b.id = ++id_;
-  b.module = module;
+  b.module = wwiv::strings::ToStringUpperCase(module);
   b.line = line;
   breakpoints_.push_back(b);
   return { b };
@@ -149,19 +153,21 @@ RunningState DebugState::running_state() const {
 
 void DebugState::SetCurrentModuleName(const std::string& module) {
   std::lock_guard lock(mu_);
-  current_module_ = module;
+  current_module_ = ToStringUpperCase(module);
 }
 
 void DebugState::SetInitialModule(const std::string& module, const std::string& text) {
+  const auto m = ToStringUpperCase(module);
   std::lock_guard lock(mu_);
-  initial_module_ = module;
-  current_module_ = module;
-  source_map_[module] = text;
+  initial_module_ = m;
+  current_module_ = m;
+  source_map_[m] = text;
 }
 
 void DebugState::AddSourceModule(const std::string& module, const std::string& text) {
+  const auto m = ToStringUpperCase(module);
   std::lock_guard lock(mu_);
-  source_map_[module] = text;
+  source_map_[m] = text;
 }
 
 std::string DebugState::current_module_name() const {
@@ -170,8 +176,9 @@ std::string DebugState::current_module_name() const {
 }
 
 std::optional<std::string> DebugState::module_source(const std::string& module) const {
+  const auto m = ToStringUpperCase(module);
   std::lock_guard lock(mu_);
-  if (auto it = source_map_.find(module); it != source_map_.end()) {
+  if (auto it = source_map_.find(m); it != source_map_.end()) {
     return it->second;
   }
   return std::nullopt;

@@ -213,9 +213,13 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
     bout_.outstr("WWIVbasic scripting is not enabled on this system.");
     return false;
   }
-  script_userdata_->module = module;
-  initial_module_ = module;
-  initial_module_source_ = text;
+  const auto m = ToStringUpperCase(module);
+  {
+    std::lock_guard lock(mu_);
+    script_userdata_->module = m;
+    initial_module_ = m;
+    initial_module_source_ = text;
+  }
   mb_set_userdata(bas_, script_userdata_.get());
 
   if (mb_load_string(bas_, text.c_str(), true) != MB_FUNC_OK) {
