@@ -36,6 +36,7 @@ using namespace std::chrono_literals;
 namespace wwiv::bbs::basic {
 
 static const char MIME_TYPE_JSON[] = "application/json";
+static const char MIME_TYPE_TEXT[] = "text/plain";
 
 bool Debugger::WaitForDebuggerToAttach() {
   int count = 0;
@@ -166,7 +167,7 @@ static std::string create_debug_session_id() {
 void Debugger::Attach(const httplib::Request&, httplib::Response& res) {
   if (attached()) {
     res.status = 400;
-    res.set_content("Already attached", "text/plain");
+    res.set_content("Already attached", MIME_TYPE_TEXT);
     return;
   }
   nlohmann::json j; 
@@ -183,10 +184,10 @@ void Debugger::Attach(const httplib::Request&, httplib::Response& res) {
 void Debugger::Detach(const httplib::Request&, httplib::Response& res) {
   if (!attached()) {
     res.status = 400;
-    res.set_content("Not Attached", "text/plain");
+    res.set_content("Not Attached", MIME_TYPE_TEXT);
     return;
   }
-  res.set_content("detached", "text/plain");
+  res.set_content("detached", MIME_TYPE_TEXT);
   std::lock_guard lock(mu_);
   attached_ = false;
   session_id_.clear();
@@ -198,18 +199,18 @@ void Debugger::Detach(const httplib::Request&, httplib::Response& res) {
 void Debugger::CreateBreakpoint(const httplib::Request& req, httplib::Response& res) {
   if (!attached()) {
     res.status = 400;
-    res.set_content("Not Attached", "text/plain");
+    res.set_content("Not Attached", MIME_TYPE_TEXT);
     return;
   }
 
-  // res.set_content("detached", "text/plain");
+  // res.set_content("detached", MIME_TYPE_TEXT);
   int line = -1;
   if (req.has_param("line")) {
     line = wwiv::strings::to_number<int>(req.get_param_value("line"));
     // TODO(rushfan): Need module here too.
   } else {
     res.status = 400;
-    res.set_content("missing line number", "text/plain");
+    res.set_content("missing line number", MIME_TYPE_TEXT);
     return;
   }
 
@@ -222,7 +223,7 @@ void Debugger::CreateBreakpoint(const httplib::Request& req, httplib::Response& 
     auto typ = req.get_param_value("module");
     if (typ != "line") {
       res.status = 400;
-      res.set_content("only line breakpoints are supported", "text/plain");
+      res.set_content("only line breakpoints are supported", MIME_TYPE_TEXT);
     }
   }
 
@@ -236,13 +237,13 @@ void Debugger::CreateBreakpoint(const httplib::Request& req, httplib::Response& 
   }
 
   res.status = 400;
-  res.set_content("Adding breakpoint failed", "text/plain");
+  res.set_content("Adding breakpoint failed", MIME_TYPE_TEXT);
 }
 
 void Debugger::DeleteBreakpoint(const httplib::Request& req, httplib::Response& res) {
   if (!attached()) {
     res.status = 400;
-    res.set_content("Not Attached", "text/plain");
+    res.set_content("Not Attached", MIME_TYPE_TEXT);
     return;
   }
 
@@ -254,7 +255,7 @@ void Debugger::DeleteBreakpoint(const httplib::Request& req, httplib::Response& 
   }
 
   res.status = 200;
-  res.set_content("breakpoint added", "text/plain");
+  res.set_content("breakpoint deleted", MIME_TYPE_TEXT);
 }
 void Debugger::state(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
@@ -283,8 +284,9 @@ void Debugger::stepover(const httplib::Request&, httplib::Response& res) {
   res.set_content(debug_state_.to_json(), MIME_TYPE_JSON);
 }
 
-void Debugger::run(const httplib::Request&, httplib::Response&) {
+void Debugger::run(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
+  res.set_content(debug_state_.to_json(), MIME_TYPE_JSON);
   debug_state_.SetRunningState(RunningState::RUNNING);
 }
 
@@ -305,12 +307,12 @@ void Debugger::tracein(const httplib::Request&, httplib::Response& res) {
 void Debugger::source(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
   const auto source = debug_state_.module_source(debug_state_.current_module_name()).value_or("");
-  res.set_content(source, "text/plain");
+  res.set_content(source, MIME_TYPE_TEXT);
 }
 
 void Debugger::status(const httplib::Request&, httplib::Response& res) {
   std::lock_guard lock(mu_);
-  res.set_content("ok", "text/plain");
+  res.set_content("ok", MIME_TYPE_TEXT);
 }
 
 void Debugger::watch(const httplib::Request&, httplib::Response& res) {
