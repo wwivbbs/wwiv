@@ -396,7 +396,7 @@ int WWIVConfigApplication::Main(int argc, char** argv) const {
   CreateSysopAccountIfNeeded(bbsdir);
 
   // Check for Upgrades needed.
-  if (do_wwiv_ugprades(window, bbsdir) == ShouldContinue::EXIT) {
+  if (do_wwiv_upgrades(window, bbsdir) == ShouldContinue::EXIT) {
     return 1;
   }
 

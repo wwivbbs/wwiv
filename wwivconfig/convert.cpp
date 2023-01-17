@@ -615,7 +615,7 @@ bool convert_config_424_to_430(UIWindow* window, const std::filesystem::path& co
 
 
 
-ShouldContinue do_wwiv_ugprades(UIWindow* window, const std::string& bbsdir) {
+ShouldContinue do_wwiv_upgrades(UIWindow* window, const std::string& bbsdir) {
   // Start by checking if we're already at the latest.
   if (File::Exists(FilePath(bbsdir, CONFIG_JSON))) {
     // Good, we have a config.json already, now make sure it's at the latest 5.x config version.
