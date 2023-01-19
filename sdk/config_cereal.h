@@ -84,6 +84,7 @@ template <class Archive> void serialize(Archive& ar, newuser_config_t& n) {
 
 template <class Archive> void serialize(Archive& ar, system_toggles_t& n) {
   SERIALIZE(n, lastnet_at_logon);
+  SERIALIZE(n, show_chain_usage);
 }
 
 template <class Archive> void serialize(Archive& ar, message_color_config_t& n) { 

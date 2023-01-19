@@ -53,6 +53,7 @@ struct newuser_config_t {
 
 struct system_toggles_t {
   bool lastnet_at_logon{false};
+  bool show_chain_usage{false};
 };
 
 /** Configuration for various color codes to use in the message bases in WWIV. */
