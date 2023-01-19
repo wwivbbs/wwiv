@@ -96,7 +96,7 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
 // Note: we aren't using a const map since [] doesn't work for const maps.
 static void show_chains(int *mapp, std::map<int, int>& map) {
   bout.cls();
-  bout.nl();
+  bout.printfile(CHAINS_NOEXT);
   auto abort = false;
   auto next = false;
   if (a()->chains->HasRegisteredChains()) {
@@ -119,6 +119,24 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     }
   } else {
     bout.litebar(StrCat(a()->config()->system_name(), " Online Programs"));
+    if (a()->config()->toggles().show_chain_usage) {
+      bout.bpla(fmt::sprintf(" |#5Num |#1%-28.28s|#1%-5.5s |#5Num |#1%-28.28s|#1%-5.5s", "Description", "Usage", "Description", "Usage"), &abort);
+      bout.outstr("|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF\r\n");
+    for (auto i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
+      bout.outstr(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-27.27s|#7\xB3|#1%5d|#7\xB3", i + 1, a()->chains->at(map[i]).description, a()->chains->at(map[i]).usage), &abort, &next);
+      i++;
+      if (!abort && !a()->sess().hangup()) {
+        if (i >= *mapp) {
+	  bout.bpla(fmt::sprintf("  |#7\xB3                            |#7\xB3     |#7\xB3"), &abort);
+        } else {
+	  bout.bpla(fmt::sprintf("|#2%2d|#7\xB3 |#1%-27.27s|#7\xB3|#1%5d|#7\xB3", i + 1,
+				 a()->chains->at(map[i]).description,
+				 a()->chains->at(map[i]).usage), &abort);
+	}
+      }
+    }
+    bout.outstr("|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9\r\n");
+    } else {
     bout.outstr("|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n");
     for (auto i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
       bout.outstr(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains->at(map[i]).description), &abort, &next);
@@ -134,6 +152,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
       }
     }
     bout.outstr("|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9\r\n");
+    }
   }
 }
 
@@ -180,7 +199,6 @@ void run_chain(int chain_num) {
 // Main high-level function for chain access and execution.
 
 void do_chains() {
-  bout.printfile(CHAINS_NOEXT);
 
   std::map<int, int> map;
 
