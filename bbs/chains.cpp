@@ -96,7 +96,7 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
 // Note: we aren't using a const map since [] doesn't work for const maps.
 static void show_chains(int *mapp, std::map<int, int>& map) {
   bout.cls();
-  bout.nl();
+  bout.printfile(CHAINS_NOEXT);
   auto abort = false;
   auto next = false;
   if (a()->chains->HasRegisteredChains()) {
@@ -180,7 +180,6 @@ void run_chain(int chain_num) {
 // Main high-level function for chain access and execution.
 
 void do_chains() {
-  bout.printfile(CHAINS_NOEXT);
 
   std::map<int, int> map;
 
