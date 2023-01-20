@@ -121,37 +121,60 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     bout.litebar(StrCat(a()->config()->system_name(), " Online Programs"));
     if (a()->config()->toggles().show_chain_usage) {
       bout.bpla(fmt::sprintf(" |#5Num |#1%-28.28s|#1%-5.5s |#5Num |#1%-28.28s|#1%-5.5s", "Description", "Usage", "Description", "Usage"), &abort);
+      if (okansi()) {
       bout.outstr("|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF\r\n");
+      } else {
+	bout.bpla(fmt::sprintf("+--+----------------------------+-----+--+----------------------------+-----+"), &abort);
+      }
     for (auto i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
-      bout.outstr(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-27.27s|#7\xB3|#1%5d|#7\xB3", i + 1, a()->chains->at(map[i]).description, a()->chains->at(map[i]).usage), &abort, &next);
+      auto bar = fmt::sprintf("|#%d%s", FRAME_COLOR, okansi() ? "\xB3": "|") ; 
+      bout.outstr(fmt::sprintf("%s|#2%2d%s |#1%-27.27s%s|#1%5d%s",
+			       bar, i + 1,
+			       bar, a()->chains->at(map[i]).description,
+			       bar, a()->chains->at(map[i]).usage, bar)
+		  , &abort, &next);
       i++;
       if (!abort && !a()->sess().hangup()) {
         if (i >= *mapp) {
-	  bout.bpla(fmt::sprintf("  |#7\xB3                            |#7\xB3     |#7\xB3"), &abort);
+	  bout.bpla(fmt::sprintf("  %s                            %s     %s",bar,bar,bar), &abort);
         } else {
-	  bout.bpla(fmt::sprintf("|#2%2d|#7\xB3 |#1%-27.27s|#7\xB3|#1%5d|#7\xB3", i + 1,
-				 a()->chains->at(map[i]).description,
-				 a()->chains->at(map[i]).usage), &abort);
+	  bout.bpla(fmt::sprintf("|#2%2d%s |#1%-27.27s%s|#1%5d%s",
+				 i + 1, bar,
+				 a()->chains->at(map[i]).description, bar,
+				 a()->chains->at(map[i]).usage, bar), &abort);
 	}
       }
     }
+      if (okansi()) {
     bout.outstr("|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9\r\n");
+      } else {
+	bout.bpla(fmt::sprintf("+--+----------------------------+-----+--+----------------------------+-----+"), &abort);
+      }
     } else {
-    bout.outstr("|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n");
+      if (okansi()) {
+	bout.outstr("|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n");
+      } else {
+	bout.bpla(fmt::sprintf("+--+----------------------------------+--+----------------------------------+"), &abort);
+      }
+    auto bar = fmt::sprintf("|#%d%s", FRAME_COLOR, okansi() ? "\xB3": "|") ; 
     for (auto i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
-      bout.outstr(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains->at(map[i]).description), &abort, &next);
+      bout.outstr(fmt::sprintf("%s|#2%2d%s |#1%-33.33s%s", bar, i + 1, bar, a()->chains->at(map[i]).description, bar), &abort, &next);
       i++;
       if (!abort && !a()->sess().hangup()) {
         if (i >= *mapp) {
-          bout.bpla(fmt::sprintf("  |#7\xB3                                  |#7\xB3"), &abort);
+          bout.bpla(fmt::sprintf("  %s                                  %s",bar,bar), &abort);
         } else {
-          bout.bpla(fmt::sprintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1,
-                                 a()->chains->at(map[i]).description),
+          bout.bpla(fmt::sprintf("|#2%2d%s |#1%-33.33s%s", i + 1, bar,
+                                 a()->chains->at(map[i]).description, bar),
                     &abort);
         }
       }
     }
+    if (okansi()) {
     bout.outstr("|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9\r\n");
+          } else {
+      bout.bpla(fmt::sprintf("+--+----------------------------------+--+----------------------------------+"), &abort);
+    }
     }
   }
 }
