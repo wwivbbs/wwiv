@@ -54,9 +54,7 @@ class ConsoleAppender : public Appender {
 
 class LogFileAppender : public Appender {
 public:
-  explicit LogFileAppender(std::string fn)
-    : filename_(std::move(fn)) {
-  }
+  explicit LogFileAppender(const std::filesystem::path& fn) : filename_(fn) {}
 
   bool append(const std::string& message) override {
     // Not super performant, but we'll start here and see how far this
@@ -74,7 +72,7 @@ public:
   }
 
 private:
-  const std::string filename_;
+  const std::filesystem::path filename_;
 };
 
 static std::string FormatLogLevel(LoggerLevel l, int v) noexcept {

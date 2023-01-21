@@ -620,7 +620,7 @@ static void HandleMessageDownload(int msgnum) {
 
     bool bFileAbortStatus;
     bool bStatus;
-    send_file(f.string(), &bStatus, &bFileAbortStatus, f.string(), -1, b.length());
+    send_file(f, &bStatus, &bFileAbortStatus, f.string(), -1, b.length());
     bout.print("|#1Message download... |#2{}", bStatus ? "successful" : "unsuccessful");
     if (bStatus) {
       sysoplog("Downloaded message");
