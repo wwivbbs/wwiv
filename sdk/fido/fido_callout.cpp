@@ -55,7 +55,7 @@ void load_minimal(Archive const&, wwiv::sdk::fido::FidoAddress& a, const std::st
 
 namespace wwiv::sdk::fido {
 
-FidoCallout::FidoCallout(const std::string& root_directory, int max_backups, const Network& net)
+FidoCallout::FidoCallout(const std::filesystem::path& root_directory, int max_backups, const Network& net)
     : Callout(net, max_backups), root_dir_(root_directory), net_(net) {
 
   initialized_ = Load();

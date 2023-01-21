@@ -124,7 +124,7 @@ private:
 
 class Conferences final {
 public:
-  Conferences(const std::string& datadir, Subs& subs, files::Dirs& dirs, int max_backups = 0);
+  Conferences(const std::filesystem::path& datadir, Subs& subs, files::Dirs& dirs, int max_backups = 0);
   ~Conferences() = default;
 
   [[nodiscard]] std::optional<conference_file_t> Load() const;

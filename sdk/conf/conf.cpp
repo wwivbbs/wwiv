@@ -140,7 +140,7 @@ bool Conference::erase(char key) {
   return confs_.erase(key) > 0;
 }
 
-Conferences::Conferences(const std::string& datadir, Subs& subs, files::Dirs& dirs, int max_backups)
+Conferences::Conferences(const std::filesystem::path& datadir, Subs& subs, files::Dirs& dirs, int max_backups)
   : datadir_(datadir), subs_(subs), dirs_(dirs), max_backups_(max_backups) {
   if (auto o = Load()) {
     LoadFromFile(o.value());

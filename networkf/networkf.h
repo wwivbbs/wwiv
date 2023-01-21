@@ -122,7 +122,7 @@ private:
   NetDat netdat_;
   sdk::fido::FtnDirectories dirs_;
   const networkf_options_t opts_;
-  const std::string datadir_;
+  const std::filesystem::path datadir_;
 
 
   std::unique_ptr<sdk::FtnMessageDupe> dupe_;

@@ -663,7 +663,7 @@ static void select_menu(const wwiv::sdk::Config& config, const std::string& menu
   }
 }
 
-static bool check_for_menu_help(const std::string& datadir) {
+static bool check_for_menu_help(const std::filesystem::path& datadir) {
   const auto path = FilePath(datadir, "menu_commands.json");
   if (!File::Exists(path)) {
     auto* window = curses_out->window();

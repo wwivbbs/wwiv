@@ -47,7 +47,7 @@ struct archive_entry_t {
 /**
  * Reads data/archiver.dat and populates a vector of arcrec from it.
  */
-std::vector<arcrec> read_arcs(const std::string& datadir);
+std::vector<arcrec> read_arcs(const std::filesystem::path& datadir);
 
 /**
  * Returns an optional vector of archive_entry_t containing the files of archive

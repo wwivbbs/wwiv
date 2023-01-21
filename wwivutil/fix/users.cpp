@@ -71,7 +71,7 @@ static bool checkFileSize(File& file, unsigned long len) {
   return true;
 }
 
-static void saveStatus(const std::string& datadir) {
+static void saveStatus(const std::filesystem::path& datadir) {
   File statusDat(FilePath(datadir, STATUS_DAT));
 
   statusDat.Open(File::modeReadWrite | File::modeBinary);
@@ -79,7 +79,7 @@ static void saveStatus(const std::string& datadir) {
   statusDat.Close();
 }
 
-static bool initStatusDat(const std::string& datadir) {
+static bool initStatusDat(const std::filesystem::path& datadir) {
   const auto nFileMode = File::modeReadOnly | File::modeBinary;
   auto update = false;
   const auto status_fn = FilePath(datadir, STATUS_DAT);

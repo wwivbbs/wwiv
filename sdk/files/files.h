@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_FILES_FILES_H__
-#define __INCLUDED_SDK_FILES_FILES_H__
+#ifndef INCLUDED_SDK_FILES_FILES_H
+#define INCLUDED_SDK_FILES_FILES_H
 
 #include "dirs.h"
 #include "core/clock.h"
@@ -42,7 +42,7 @@ enum class FileAreaSortType {
 class FileApi {
 public:
   virtual ~FileApi() = default;
-  explicit FileApi(std::string data_directory);
+  explicit FileApi(const std::filesystem::path& data_directory);
 
   [[nodiscard]] bool Exist(const std::string& filename) const;
   [[nodiscard]] bool Exist(const directory_t& dir) const;
@@ -57,7 +57,7 @@ public:
   void set_clock(std::unique_ptr<core::Clock> clock);
 
 private:
-  std::string data_directory_;
+  const std::filesystem::path data_directory_;
   std::unique_ptr<core::Clock> clock_;
 };
 
@@ -93,8 +93,8 @@ public:
   using pointer = FileRecord*;
   using reference = FileRecord&;
 
-  FileArea(FileApi* api, std::string data_directory, const directory_t& dir);
-  FileArea(FileApi* api, std::string data_directory, const std::string& filename);
+  FileArea(FileApi* api, const std::filesystem::path& data_directory, const directory_t& dir);
+  FileArea(FileApi* api, const std::filesystem::path& data_directory, const std::string& filename);
   ~FileArea() = default;
   
   // File Header specific
@@ -165,7 +165,7 @@ protected:
 
   // Not owned.
   FileApi* api_;
-  const std::string data_directory_;
+  const std::filesystem::path data_directory_;
   const std::string base_filename_;
   const std::string filename_;
   directory_t dir_{};

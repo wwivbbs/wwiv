@@ -51,6 +51,7 @@
 
 #include <cctype>
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -353,7 +354,7 @@ static int write_bbsdata_files(const std::vector<net_system_list_rec>& bbsdata_d
   return num_reachable;
 }
 
-static void update_net_ver_status_dat(const std::string& datadir) {
+static void update_net_ver_status_dat(const std::filesystem::path& datadir) {
   statusrec_t statusrec{};
   DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT),
                              File::modeBinary | File::modeReadWrite);
@@ -372,7 +373,7 @@ static void update_net_ver_status_dat(const std::string& datadir) {
   file.Write(0, &statusrec);
 }
 
-static void update_filechange_status_dat(const std::string& datadir) {
+static void update_filechange_status_dat(const std::filesystem::path& datadir) {
   StatusMgr sm(datadir);
   sm.Run([=](Status& s)
   {

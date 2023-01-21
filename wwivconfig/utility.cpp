@@ -24,6 +24,7 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
+#include <filesystem>
 #include <string>
 
 // Make sure it's after windows.h
@@ -46,7 +47,7 @@ static void fix_user_rec(userrec* u) {
   u->macros[2][sizeof(u->macros[2]) - 1] = 0;
 }
 
-int number_userrecs(const std::string& datadir) {
+int number_userrecs(const std::filesystem::path& datadir) {
   if (const auto file =
           DataFile<userrec>(FilePath(datadir, USER_LST),
                             File::modeReadWrite | File::modeBinary | File::modeCreateFile,
@@ -87,7 +88,7 @@ void write_user(const Config& config, int un, userrec* u) {
   }
 }
 
-void save_status(const std::string& datadir, const statusrec_t& statusrec) {
+void save_status(const std::filesystem::path& datadir, const statusrec_t& statusrec) {
   if (auto file =
           DataFile<statusrec_t>(FilePath(datadir, STATUS_DAT),
                                 File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
@@ -96,7 +97,7 @@ void save_status(const std::string& datadir, const statusrec_t& statusrec) {
 }
 
 /** returns true if "status.dat" is read correctly */
-bool read_status(const std::string& datadir, statusrec_t& statusrec) {
+bool read_status(const std::filesystem::path& datadir, statusrec_t& statusrec) {
   if (auto file = DataFile<statusrec_t>(FilePath(datadir, STATUS_DAT),
                                         File::modeBinary | File::modeReadWrite)) {
     return file.Read(&statusrec);

@@ -47,9 +47,9 @@ public:
   virtual ~MessageApi() = default;
   MessageApi(
     const MessageApiOptions& options,
-    std::string root_directory,
-    std::string subs_directory,
-    std::string messages_directory,
+    const std::filesystem::path& root_directory,
+    const std::filesystem::path& subs_directory,
+    const std::filesystem::path& messages_directory,
     std::vector<net::Network> net_networks);
 
   /** Checks to see if the files for a subboard exist. */
@@ -64,7 +64,7 @@ public:
   [[nodiscard]] virtual bool Remove(const std::string& name) = 0;
 
   [[nodiscard]] const std::vector<net::Network>& network() const { return net_networks_; }
-  [[nodiscard]] std::string root_directory() const { return root_directory_; }
+  [[nodiscard]] std::filesystem::path root_directory() const { return root_directory_; }
   [[nodiscard]] MessageApiOptions options() const { return options_; }
 
   // TODO(rushfan): Here's where we add hooks to the lastread system
@@ -73,9 +73,9 @@ public:
 protected:
   const MessageApiOptions options_;
 
-  std::string root_directory_;
-  std::string subs_directory_;
-  std::string messages_directory_;
+  const std::filesystem::path root_directory_;
+  const std::filesystem::path subs_directory_;
+  const std::filesystem::path messages_directory_;
   std::vector<net::Network> net_networks_;
 };
 
