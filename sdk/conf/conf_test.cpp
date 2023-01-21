@@ -46,10 +46,6 @@ protected:
 
 
 TEST_F(ConfTest, Smoke) {
-  const auto path = FilePath(FileHelper::TestData(), "fido/0d73f767.pkt");
-  auto f = File(path);
-  ASSERT_TRUE(f.Exists()) << f;
-
   auto testdata = FilePath(FileHelper::TestData(), "conf");
   helper.config().datadir(testdata.string());
   helper.config().raw_config().datadir = testdata.string();
@@ -57,9 +53,7 @@ TEST_F(ConfTest, Smoke) {
   std::vector<net::Network> net_networks;
   Subs subs(testdata.string(), net_networks);
   files::Dirs dirs(testdata.string(), 0);
-  dirs.LoadLegacy();
+  ASSERT_TRUE(dirs.LoadLegacy());
 
   auto result = UpgradeConferences(helper.config(), subs, dirs);
-  //conference_file_t UpgradeConferences(const Config & config, Subs & subs, files::Dirs & dirs);
-
-}
+} 

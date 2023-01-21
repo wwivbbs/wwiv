@@ -254,7 +254,7 @@ void Config::script_package_os_enabled(bool b) noexcept {
 }
 
 std::string Config::to_abs_path(const std::string& dir) const {
-  return File::absolute(root_directory_.string(), dir).string();
+  return File::absolute(root_directory_, dir).string();
 }
 
 std::string LogDirFromConfig(const std::string& bbsdir) {
