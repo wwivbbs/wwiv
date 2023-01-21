@@ -388,9 +388,10 @@ public:
   // You probably shouldn't do this unless you are upgrading a dat to JSON.
   void set_readonly(bool r) { readonly_ = r; }
 
+  void update_paths();
+
 private:
   [[nodiscard]] std::string to_abs_path(const std::string& dir) const;
-  void update_paths();
 
   bool initialized_{false};
   std::filesystem::path root_directory_;
