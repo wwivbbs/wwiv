@@ -164,15 +164,16 @@ public:
   PostMessageCommand() : BaseMessagesSubCommand("post", "Posts a new message.") {}
 
   bool AddSubCommands() override {
-    add_argument({"title", "message sub name to post on", ""});
-    add_argument({"from", "message sub name to post on", ""});
-    add_argument({"from_usernum", "message sub name to post on", ""});
-    add_argument({"to", "message sub name to post on", ""});
-    add_argument({"date", "message sub name to post on", ""});
-    add_argument({"in_reply_to", "message sub name to post on", ""});
+    add_argument({"title", "title of post", ""});
+    add_argument({"from", "user name sending the post", ""});
+    add_argument({"from_usernum", "usernum sending the post", ""});
+    add_argument({"to", "who the post is addressed to", ""});
+    add_argument({"date", "date of post", ""});
+    add_argument({"in_reply_to", "who this post is a reply to", ""});
     add_argument({"delete_overflow",
                   "Strategy for deleting excess messages when adding new ones. (none|one|all)",
                   "none"});
+    add_argument({"use_re_and_by","use re and by lines", ""});
 
     return true;
   }
@@ -241,7 +242,7 @@ public:
 
     MessageAreaOptions area_options{};
     area_options.send_post_to_network = true;
-    area_options.add_re_and_by_line = true;
+    area_options.add_re_and_by_line = arg("use_re_and_by").as_bool();
     return area->AddMessage(*msg, area_options) ? 0 : 1;
   }
 };
