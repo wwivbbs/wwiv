@@ -480,7 +480,7 @@ void tag_files(bool& need_title) {
       bout.clear_lines_listed();
       a()->filelist.clear();
       need_title = true;
-      bout.cls();
+      //bout.cls();
       done = true;
       break;
     case 'D':
