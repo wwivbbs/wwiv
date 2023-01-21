@@ -22,6 +22,7 @@
 #include "core/wwivport.h"
 #include "sdk/config.h"
 #include <initializer_list>
+#include <filesystem>
 #include <set>
 #include <string>
 #include <vector>
@@ -129,7 +130,7 @@ private:
   bool SaveToDat();
 
   bool initialized_{false};
-  std::string datadir_;
+  std::filesystem::path datadir_;
   std::vector<chain_t> chains_;
 };
 

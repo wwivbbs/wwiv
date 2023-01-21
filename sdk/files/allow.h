@@ -15,17 +15,16 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ALLOW_H__
-#define __INCLUDED_SDK_ALLOW_H__
+#ifndef INCLUDED_SDK_ALLOW_H
+#define INCLUDED_SDK_ALLOW_H
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
 #include "sdk/config.h"
 
-namespace wwiv {
-namespace sdk {
-namespace files {
+namespace wwiv::sdk::files {
 
 
 struct allow_entry_t {
@@ -53,14 +52,12 @@ public:
   [[nodiscard]] bool save_on_exit() const { return save_on_exit_;  }
 
 private:
-  const std::string data_directory_;
+  const std::filesystem::path data_directory_;
   bool loaded_{false};
   bool save_on_exit_{false};
   std::vector<allow_entry_t> allow_;
 };
 
-} // namespace files
-} // namespace sdk
-} // namespace wwiv
+} // namespace 
 
-#endif  // __INCLUDED_SDK_ALLOW_H__
+#endif  // INCLUDED_SDK_ALLOW_H

@@ -130,7 +130,8 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
   }
 
   if (user_input[0] == 'O' && (so() || lcs())) {
-    show_files("*.frm", a()->config()->gfilesdir().c_str());
+    const auto gfilesdir = a()->config()->gfilesdir().string();
+    show_files("*.frm", gfilesdir.c_str());
     bout.outstr("|#2Which form letter: ");
     auto fn = bin.input_filename("", 8);
     if (fn.empty()) {
@@ -619,7 +620,7 @@ static void HandleMessageDownload(int msgnum) {
 
     bool bFileAbortStatus;
     bool bStatus;
-    send_file(f.string(), &bStatus, &bFileAbortStatus, f.string(), -1, b.length());
+    send_file(f, &bStatus, &bFileAbortStatus, f.string(), -1, b.length());
     bout.print("|#1Message download... |#2{}", bStatus ? "successful" : "unsuccessful");
     if (bStatus) {
       sysoplog("Downloaded message");

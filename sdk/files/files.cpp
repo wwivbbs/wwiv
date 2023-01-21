@@ -35,8 +35,8 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {
 
-FileApi::FileApi(std::string data_directory)
-: data_directory_(std::move(data_directory)) {
+FileApi::FileApi(const std::filesystem::path& data_directory)
+: data_directory_(data_directory) {
   clock_ = std::make_unique<SystemClock>();
 };
 
@@ -119,15 +119,16 @@ daten_t FileAreaHeader::daten() const {
 }
 
 // Delegates to other constructor
-FileArea::FileArea(FileApi* api, std::string data_directory, const directory_t& dir)
-    : FileArea(api, std::move(data_directory), dir.filename) {
+FileArea::FileArea(FileApi* api, const std::filesystem::path& data_directory, const directory_t& dir)
+    : FileArea(api, data_directory, dir.filename) {
   dir_ = dir; 
 }
 
 // Real constructor that does all of the work.
-FileArea::FileArea(FileApi* api, std::string data_directory, const std::string& filename)
-    : api_(api), data_directory_(std::move(data_directory)),
-      base_filename_(filename), filename_(StrCat(filename, ".dir")) {
+FileArea::FileArea(FileApi* api, const std::filesystem::path& data_directory,
+                   const std::string& filename)
+    : api_(api), data_directory_(data_directory), base_filename_(filename),
+      filename_(StrCat(filename, ".dir")) {
   open_ = Load();
   // Load up extended descriptions
   ext_desc();

@@ -593,7 +593,7 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
   }
 }
 
-static void select_menu(const wwiv::sdk::Config& config, const std::string& menu_dir,
+static void select_menu(const wwiv::sdk::Config& config, const std::filesystem::path& menu_dir,
                         const std::string& dir) {
   const auto full_dir_path = FilePath(menu_dir, dir);
   wwiv::sdk::menus::MenuSet56 menu_set(full_dir_path);
@@ -663,7 +663,7 @@ static void select_menu(const wwiv::sdk::Config& config, const std::string& menu
   }
 }
 
-static bool check_for_menu_help(const std::string& datadir) {
+static bool check_for_menu_help(const std::filesystem::path& datadir) {
   const auto path = FilePath(datadir, "menu_commands.json");
   if (!File::Exists(path)) {
     auto* window = curses_out->window();

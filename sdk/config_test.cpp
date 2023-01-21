@@ -39,13 +39,13 @@ public:
 };
 
 TEST_F(ConfigTest, Helper_CreatedBBSRoot) {
-  ASSERT_TRUE(ends_with(helper.root_directory(), "bbs")) << helper.root_directory();
+  ASSERT_TRUE(ends_with(helper.root_directory().string(), "bbs")) << helper.root_directory();
 }
 
 TEST_F(ConfigTest, Helper_ConfigWorks) { ASSERT_EQ(helper.config().datadir(), helper.datadir()); }
 
 TEST_F(ConfigTest, Config_CurrentDirectory) {
-  ASSERT_EQ(0, chdir(helper.root_directory().c_str()));
+  ASSERT_EQ(0, chdir(helper.root_directory().string().c_str()));
 
   const Config config(File::current_directory());
   ASSERT_TRUE(config.IsInitialized());

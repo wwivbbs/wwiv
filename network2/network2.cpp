@@ -61,7 +61,7 @@ using namespace wwiv::strings;
 static bool email_changed = false;
 static bool posts_changed = false;
 
-static void update_filechange_status_dat(const std::string& datadir, bool email, bool posts) {
+static void update_filechange_status_dat(const std::filesystem::path& datadir, bool email, bool posts) {
   StatusMgr sm(datadir);
   sm.Run([=](Status& s)
   {

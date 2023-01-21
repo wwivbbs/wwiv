@@ -21,6 +21,7 @@
 #include "sdk/config.h"
 #include <chrono>
 #include <ctime>
+#include <filesystem>
 #include <string>
 
 namespace wwiv::net {
@@ -38,7 +39,7 @@ enum class NetworkSide { FROM, TO };
 
 class NetworkLog final {
 public:
-  explicit NetworkLog(std::string gfiles_directory);
+  explicit NetworkLog(const std::filesystem::path& gfiles_directory);
   ~NetworkLog();
 
   bool Log(time_t time, NetworkSide side, int node, unsigned int bytes_sent,
@@ -53,7 +54,7 @@ public:
                                           const std::string& network_name) const;
 
 private:
-  std::string gfiles_directory_;
+  const std::filesystem::path gfiles_directory_;
 };
 
 } // namespace wwiv::net

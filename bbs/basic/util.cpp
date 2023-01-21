@@ -30,9 +30,9 @@ class Basic;
 
 using namespace wwiv::common;
 
-BasicScriptState::BasicScriptState(std::string d, std::string s, Context* c, Input* i,
+BasicScriptState::BasicScriptState(std::filesystem::path d, std::filesystem::path s, Context* c, Input* i,
                                    Output* o, Basic* b)
-    : datadir(std::move(d)), script_dir(std::move(s)), ctx(c), in(i), out(o), module("none"), basic(b) {}
+    : datadir(d), script_dir(s), ctx(c), in(i), out(o), module("none"), basic(b) {}
 
 char* BasicStrDup(std::string_view s) { 
   return mb_memdup(s.data(), s.size() + 1);

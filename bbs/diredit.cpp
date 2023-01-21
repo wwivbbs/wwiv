@@ -380,7 +380,7 @@ void insert_dir(int n) {
   files::directory_t r{};
   r.name = "** NEW DIR **";
   r.filename = "noname";
-  r.path = a()->config()->dloadsdir();
+  r.path = a()->config()->dloadsdir().string();
   r.acs = "user.sl >= 10";
   r.maxfiles = 500;
   r.mask = 0;

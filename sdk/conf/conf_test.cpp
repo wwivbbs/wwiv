@@ -46,6 +46,10 @@ protected:
 
 
 TEST_F(ConfTest, Smoke) {
+  if (!wwiv::core::test::FileHelper::HasTestData()) {
+    GTEST_SKIP() << "Skipping all tests that use real files since FileHelper::TestData() is empty.";
+  }
+
   auto testdata = FilePath(FileHelper::TestData(), "conf");
   helper.config().datadir(testdata.string());
   helper.config().raw_config().datadir = testdata.string();

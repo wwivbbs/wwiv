@@ -69,14 +69,14 @@ static std::string CreateNetworkBinary(const std::string& exe) {
   std::ostringstream ss;
   ss << FilePath(a()->bindir(), exe).string();
 #ifdef _WIN32
-  // CreateProcess is failing on Windows with the .exe extension, and since
+  // CreateProcess is failing on Windows without the .exe extension, and since
   // we don't use MakeAbsCmd on this, it's without .exe.
   ss << ".exe";
 #endif  // _WIN32
   ss << " --v=" << a()->verbose();
   ss << " --bbsdir=" << a()->bbspath().string();
-  ss << " --bindir=" << a()->bindir();
-  ss << " --configdir=" << a()->configdir();
+  ss << " --bindir=" << a()->bindir().string();
+  ss << " --configdir=" << a()->configdir().string();
 
   return ss.str();
 }

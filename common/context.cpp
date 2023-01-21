@@ -38,9 +38,9 @@ using namespace wwiv::strings;
 using namespace std::chrono;
 
 Dirs::Dirs(const std::filesystem::path& bbsdir)
-    : Dirs(FilePath(bbsdir, "temp").string(), FilePath(bbsdir, "batch").string(),
-           FilePath(bbsdir, "batch").string(), FilePath(bbsdir, "gfiles").string(),
-           FilePath(bbsdir, "scratch").string()) {}
+    : Dirs(FilePath(bbsdir, "temp"), FilePath(bbsdir, "batch"),
+           FilePath(bbsdir, "batch"), FilePath(bbsdir, "gfiles"),
+           FilePath(bbsdir, "scratch")) {}
 
 std::filesystem::path Dirs::current_menu_gfiles_directory() const noexcept {
   return FilePath(current_menu_directory_, "gfiles");

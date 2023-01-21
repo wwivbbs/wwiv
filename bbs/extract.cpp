@@ -27,12 +27,13 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 
+#include <filesystem>
 #include <string>
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-static std::optional<std::string> get_extract_dir() {
+static std::optional<std::filesystem::path> get_extract_dir() {
   bout.print_help_file(MEXTRACT_NOEXT);
   do {
     bout.outstr("|#5(Q=Quit) Which (D,G,T) ? ");
@@ -42,7 +43,7 @@ static std::optional<std::string> get_extract_dir() {
     case 'D':
       return a()->config()->datadir();
     case 'T':
-      return a()->sess().dirs().temp_directory().string();
+      return a()->sess().dirs().temp_directory();
     case '?':
       bout.print_help_file(MEXTRACT_NOEXT);
       break;

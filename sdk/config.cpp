@@ -158,7 +158,7 @@ void Config::system_phone(const std::string& d) { config_.systemphone = d; }
 
 void Config::system_password(const std::string& d) { config_.systempw = d; }
 
-std::string Config::config_filename() const {
+std::filesystem::path Config::config_filename() const {
   return FilePath(root_directory(), CONFIG_JSON).string();
 }
 
@@ -182,21 +182,21 @@ const config_t& Config::to_config_t() const {
   return config_;
 }
 
-void Config::set_paths_for_test(const std::string& datadir, const std::string& msgsdir,
-                                const std::string& gfilesdir, const std::string& menudir,
-                                const std::string& dloadsdir, const std::string& scriptdir) {
+void Config::set_paths_for_test(const std::filesystem::path& datadir, const std::filesystem::path& msgsdir,
+                                const std::filesystem::path& gfilesdir, const std::filesystem::path& menudir,
+                                const std::filesystem::path& dloadsdir, const std::filesystem::path& scriptdir) {
   datadir_ = datadir;
-  config_.datadir = datadir;
+  config_.datadir = datadir.string();
   msgsdir_ = msgsdir;
-  config_.msgsdir = msgsdir;
+  config_.msgsdir = msgsdir.string();
   gfilesdir_ = gfilesdir;
-  config_.gfilesdir = gfilesdir;
+  config_.gfilesdir = gfilesdir.string();
   menudir_ = menudir;
-  config_.menudir = menudir;
+  config_.menudir = menudir.string();
   dloadsdir_ = dloadsdir;
-  config_.dloadsdir = dloadsdir;
+  config_.dloadsdir = dloadsdir.string();
   script_dir_ = scriptdir;
-  config_.scriptdir = scriptdir;
+  config_.scriptdir = scriptdir.string();
 }
 
 static void set_script_flag(uint16_t& data, uint16_t flg, bool on) {
@@ -253,11 +253,11 @@ void Config::script_package_os_enabled(bool b) noexcept {
   set_script_flag(config_.script_flags, script_flag_enable_os, b);
 }
 
-std::string Config::to_abs_path(const std::string& dir) const {
+std::filesystem::path Config::to_abs_path(const std::string& dir) const {
   return File::absolute(root_directory_, dir).string();
 }
 
-std::string LogDirFromConfig(const std::string& bbsdir) {
+std::filesystem::path LogDirFromConfig(const std::filesystem::path& bbsdir) {
   const Config config{bbsdir};
   if (!config.IsInitialized()) {
     return {};
@@ -265,7 +265,7 @@ std::string LogDirFromConfig(const std::string& bbsdir) {
   return config.logdir();
 }
 
-std::unique_ptr<Config> load_any_config(const std::string& bbsdir) {
+std::unique_ptr<Config> load_any_config(const std::filesystem::path& bbsdir) {
   auto config = std::make_unique<Config>(bbsdir);
   if (config->IsInitialized()) {
     return config;

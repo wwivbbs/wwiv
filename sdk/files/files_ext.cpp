@@ -32,15 +32,17 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {
 
-FileAreaExtendedDesc::FileAreaExtendedDesc(FileApi* api, std::string data_directory,
+FileAreaExtendedDesc::FileAreaExtendedDesc(FileApi* api,
+                                           const std::filesystem::path& data_directory,
                                            const directory_t& dir, int num_files)
-    : FileAreaExtendedDesc(api, std::move(data_directory), dir.filename, num_files) {
+    : FileAreaExtendedDesc(api, data_directory, dir.filename, num_files) {
   dir_ = dir;
 }
 
-FileAreaExtendedDesc::FileAreaExtendedDesc(FileApi* api, std::string data_directory,
+FileAreaExtendedDesc::FileAreaExtendedDesc(FileApi* api,
+                                           const std::filesystem::path& data_directory,
                                            const std::string& filename, int num_files)
-    : api_(api), data_directory_(std::move(data_directory)), filename_(StrCat(filename, ".ext")),
+    : api_(api), data_directory_(data_directory), filename_(StrCat(filename, ".ext")),
       num_files_(std::max<int>(std::numeric_limits<int16_t>::max(), num_files)) {}
 
 bool FileAreaExtendedDesc::Load() {

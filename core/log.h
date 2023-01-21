@@ -21,6 +21,7 @@
 
 #include "core/os.h"
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <sstream>
@@ -120,7 +121,7 @@ public:
 typedef std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>>
 log_to_map_t;
 typedef std::function<std::string()> timestamp_fn;
-typedef std::function<std::string(std::string)> logdir_fn;
+typedef std::function<std::filesystem::path(std::filesystem::path)> logdir_fn;
 
 
 class LoggerConfig {

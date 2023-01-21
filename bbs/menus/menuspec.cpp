@@ -127,9 +127,9 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_
       }
       bool sent = false;
       if (bOkToDL == -1) {
-        send_file(s1.string(), &sent, &abort, f.aligned_filename(), dn, -2L);
+        send_file(s1, &sent, &abort, f.aligned_filename(), dn, -2L);
       } else {
-        send_file(s1.string(), &sent, &abort, f.aligned_filename(), dn, f.numbytes());
+        send_file(s1, &sent, &abort, f.aligned_filename(), dn, f.numbytes());
       }
 
       if (sent) {

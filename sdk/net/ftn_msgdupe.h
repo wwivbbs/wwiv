@@ -18,6 +18,7 @@
 #ifndef INCLUDED_SDK_FTN_MSGDUPE_H
 #define INCLUDED_SDK_FTN_MSGDUPE_H
 
+#include <filesystem>
 #include <string>
 #include <set>
 #include <vector>
@@ -40,7 +41,7 @@ static_assert(sizeof(msgids) == sizeof(uint64_t), "sizeof(msgids) must be the sa
 class FtnMessageDupe final {
 public:
   explicit FtnMessageDupe(const Config& config);
-  FtnMessageDupe(std::string datadir, bool use_filesystem);
+  FtnMessageDupe(const std::filesystem::path& datadir, bool use_filesystem);
   ~FtnMessageDupe() = default;
 
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
@@ -67,8 +68,8 @@ private:
   bool Load();
   bool Save();
 
-  bool initialized_;
-  std::string datadir_;
+  bool initialized_{ false };
+  const std::filesystem::path datadir_;
   std::vector<msgids> dupes_;
   std::set<uint32_t> msgid_dupes_;
   std::set<uint32_t> header_dupes_;

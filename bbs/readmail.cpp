@@ -636,7 +636,8 @@ void readmail(bool newmail_only) {
         break;
       case 'O': {
         if (cs() && okmail && m.fromuser != 65535 && nn != 255) {
-          show_files("*.frm", a()->config()->gfilesdir().c_str());
+          const auto gfilesdir = a()->config()->gfilesdir().string();
+          show_files("*.frm", gfilesdir.c_str());
           bout.outstr("|#2Which form letter: ");
           auto user_input = bin.input(8, true);
           if (user_input.empty()) {
