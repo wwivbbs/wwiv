@@ -56,13 +56,13 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
   const std::string regname = is_regged ? user.name() : "Available";
   if (ansi) {
     bout.bpla(
-        fmt::sprintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
+        fmt::format(" |#{:d}\xB3|#5{:3d}|#{:d}\xB3|#1{:>41}|#{:d}\xB3|{:2d}{:21}|#{:d}\xB3|#1{:5d}|#{:d}\xB3",
                      FRAME_COLOR, chain_num, FRAME_COLOR, c.description, FRAME_COLOR,
                      (is_regged) ? 14 : 13, regname, FRAME_COLOR, c.usage, FRAME_COLOR),
         &abort);
   } else {
     bout.bpla(
-        fmt::sprintf(" |%3d|%-41.41s|%-21.21s|%5d|", chain_num, c.description, regname, c.usage),
+        fmt::format(" |{:3d}|{:41}|{:21}|{:5d}|", chain_num, c.description, regname, c.usage),
         &abort);
   }
 
@@ -81,11 +81,11 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
       continue;
     }
     if (ansi) {
-      bout.bpla(fmt::sprintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3", FRAME_COLOR, " ",
+      bout.bpla(fmt::format(" |#{:d}\xB3   \xBA{:41}\xB3|#2{:21}|#{:d}\xB3{:5}\xB3", FRAME_COLOR, " ",
                              user.name(), FRAME_COLOR, " "),
                 &abort);
     } else {
-      bout.bpla(fmt::sprintf(" |   |                                         |%-21.21s|     |",
+      bout.bpla(fmt::format(" |   |                                         |{:21}|     |",
                              rb ? user.name() : "Available"),
                 &abort);
     }
@@ -100,58 +100,81 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   auto abort = false;
   auto next = false;
   if (a()->chains->HasRegisteredChains()) {
-    bout.bpla(fmt::sprintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
+    bout.bpla(fmt::format("|#5  Num |#1{:42}|#2{:22}|#1{:5}", "Description", "Sponsored by", "Usage"), &abort);
 
     if (okansi()) {
-      bout.bpla(fmt::sprintf("|#%d %s", FRAME_COLOR,
+      bout.bpla(fmt::format("|#{:d} {}", FRAME_COLOR,
               "\xDA\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF"), &abort);
     } else {
-      bout.bpla(fmt::sprintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
+      bout.bpla(" +---+-----------------------------------------+---------------------+-----+", &abort);
     }
     for (auto i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
       const auto& c = a()->chains->at(map[i]);
       show_chain(c, okansi(), i+1, abort);
     }
     if (okansi()) {
-      bout.bpla(fmt::sprintf("|#%d %s", FRAME_COLOR, "\xC0\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9"), &abort);
+      bout.bpla(fmt::format("|#{:d} {}", FRAME_COLOR, "\xC0\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9"), &abort);
     } else {
-      bout.bpla(fmt::sprintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
+      bout.bpla(" +---+-----------------------------------------+---------------------+-----+", &abort);
     }
   } else {
     bout.litebar(StrCat(a()->config()->system_name(), " Online Programs"));
     if (a()->config()->toggles().show_chain_usage) {
-      bout.bpla(fmt::sprintf(" |#5Num |#1%-28.28s|#1%-5.5s |#5Num |#1%-28.28s|#1%-5.5s", "Description", "Usage", "Description", "Usage"), &abort);
+      bout.bpla(fmt::format(" |#5Num |#1{:28}|#1{:5} |#5Num |#1{:28}|#1{:5}", "Description", "Usage", "Description", "Usage"), &abort);
+      if (okansi()) {
       bout.outstr("|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF\r\n");
+      } else {
+	bout.bpla("+--+----------------------------+-----+--+----------------------------+-----+", &abort);
+      }
     for (auto i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
-      bout.outstr(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-27.27s|#7\xB3|#1%5d|#7\xB3", i + 1, a()->chains->at(map[i]).description, a()->chains->at(map[i]).usage), &abort, &next);
+      const auto bar = fmt::format("|#{:d}{}", FRAME_COLOR, okansi() ? "\xB3": "|") ; 
+      bout.outstr(fmt::format("{}|#2{:2d}{} |#1{:27}{}|#1{:5d}{}",
+			       bar, i + 1,
+			       bar, a()->chains->at(map[i]).description,
+			       bar, a()->chains->at(map[i]).usage, bar)
+		  , &abort, &next);
       i++;
       if (!abort && !a()->sess().hangup()) {
         if (i >= *mapp) {
-	  bout.bpla(fmt::sprintf("  |#7\xB3                            |#7\xB3     |#7\xB3"), &abort);
+	  bout.bpla(fmt::format("  {}                            {}     {}",bar,bar,bar), &abort);
         } else {
-	  bout.bpla(fmt::sprintf("|#2%2d|#7\xB3 |#1%-27.27s|#7\xB3|#1%5d|#7\xB3", i + 1,
-				 a()->chains->at(map[i]).description,
-				 a()->chains->at(map[i]).usage), &abort);
+	  bout.bpla(fmt::format("|#2{:2d}{} |#1{:27}{}|#1{:5d}{}",
+				 i + 1, bar,
+				 a()->chains->at(map[i]).description, bar,
+				 a()->chains->at(map[i]).usage, bar), &abort);
 	}
       }
     }
+      if (okansi()) {
     bout.outstr("|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9\r\n");
+      } else {
+	bout.bpla("+--+----------------------------+-----+--+----------------------------+-----+", &abort);
+      }
     } else {
-    bout.outstr("|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n");
+      if (okansi()) {
+	bout.outstr("|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n");
+      } else {
+	bout.bpla("+--+----------------------------------+--+----------------------------------+", &abort);
+      }
+    const auto bar = fmt::format("|#{:d}{}", FRAME_COLOR, okansi() ? "\xB3": "|") ; 
     for (auto i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
-      bout.outstr(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains->at(map[i]).description), &abort, &next);
+      bout.outstr(fmt::format("{}|#2{:2d}{} |#1{:33}{}", bar, i + 1, bar, a()->chains->at(map[i]).description, bar), &abort, &next);
       i++;
       if (!abort && !a()->sess().hangup()) {
         if (i >= *mapp) {
-          bout.bpla(fmt::sprintf("  |#7\xB3                                  |#7\xB3"), &abort);
+          bout.bpla(fmt::format("  {}                                  {}",bar,bar), &abort);
         } else {
-          bout.bpla(fmt::sprintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1,
-                                 a()->chains->at(map[i]).description),
+          bout.bpla(fmt::format("|#2{:2d}{} |#1{:33}{}", i + 1, bar,
+                                 a()->chains->at(map[i]).description, bar),
                     &abort);
         }
       }
     }
+    if (okansi()) {
     bout.outstr("|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9\r\n");
+          } else {
+      bout.bpla("+--+----------------------------------+--+----------------------------------+", &abort);
+    }
     }
   }
 }
