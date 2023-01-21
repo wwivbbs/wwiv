@@ -148,7 +148,6 @@ private:
   [[nodiscard]] const std::filesystem::path& fn_path() const;
 
   bool initialized_;
-  std::string datadir_;
   const std::filesystem::path path_;
   std::vector<Instance> instances_;
 };

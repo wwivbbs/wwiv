@@ -178,7 +178,7 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
   cmdline.Parse();
 
   const auto l = cmdline.arg("logdir");
-  auto logdir = cmdline.logdir();
+  auto logdir = std::filesystem::path(cmdline.logdir());
   if (l.is_default() && c.logdir_fn_) {
     if (const auto logdir_from_fn = c.logdir_fn_(cmdline.bbsdir()); !logdir_from_fn.empty()) {
       logdir = logdir_from_fn;

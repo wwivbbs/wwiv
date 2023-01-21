@@ -130,7 +130,8 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
   }
 
   if (user_input[0] == 'O' && (so() || lcs())) {
-    show_files("*.frm", a()->config()->gfilesdir().c_str());
+    const auto gfilesdir = a()->config()->gfilesdir().string();
+    show_files("*.frm", gfilesdir.c_str());
     bout.outstr("|#2Which form letter: ");
     auto fn = bin.input_filename("", 8);
     if (fn.empty()) {

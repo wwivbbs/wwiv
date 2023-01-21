@@ -49,10 +49,11 @@ namespace wwiv::common {
 class Dirs {
 public:
   explicit Dirs(const std::filesystem::path& bbsdir);
-  Dirs(const std::string& temp, const std::string& batch, const std::string& qwk,
-       std::string gfiles, const std::string& scratch)
+  Dirs(const std::filesystem::path& temp, const std::filesystem::path& batch,
+       const std::filesystem::path& qwk, const std::filesystem::path& gfiles,
+       const std::filesystem::path& scratch)
       : temp_directory_(temp), batch_directory_(batch), qwk_directory_(qwk),
-        gfiles_directory_(std::move(gfiles)), scratch_directory_(scratch) {}
+        gfiles_directory_(gfiles), scratch_directory_(scratch) {}
 
   [[nodiscard]] const std::filesystem::path& temp_directory() const noexcept { return temp_directory_; }
   void temp_directory(const std::string& d) { temp_directory_ = d; }
@@ -69,7 +70,7 @@ public:
   [[nodiscard]] const std::filesystem::path& qwk_directory() const noexcept { return qwk_directory_; }
   void qwk_directory(const std::string& d) { qwk_directory_ = d; }
 
-  [[nodiscard]] const std::string& gfiles_directory() const noexcept { return gfiles_directory_; }
+  [[nodiscard]] const std::filesystem::path& gfiles_directory() const noexcept { return gfiles_directory_; }
   void gfiles_directory(const std::string& d) { gfiles_directory_ = d; }
 
   [[nodiscard]] std::filesystem::path current_menu_directory() const noexcept {
@@ -96,7 +97,7 @@ private:
   std::filesystem::path batch_directory_;
   std::filesystem::path qwk_directory_;
   std::filesystem::path current_menu_directory_;
-  std::string gfiles_directory_;
+  std::filesystem::path gfiles_directory_;
   std::filesystem::path scratch_directory_;
 };
 

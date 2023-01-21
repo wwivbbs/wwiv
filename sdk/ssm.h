@@ -20,6 +20,7 @@
 
 #include "sdk/usermanager.h"
 #include "sdk/net/net.h"
+#include <filesystem>
 #include <string>
 
 namespace wwiv::sdk {
@@ -34,7 +35,7 @@ public:
                    uint32_t user_number, const std::string& text);
   bool delete_local_to_user(uint32_t user_number);
 private:
-  const std::string data_directory_;
+  const std::filesystem::path data_directory_;
   UserManager& user_manager_;
 };
 

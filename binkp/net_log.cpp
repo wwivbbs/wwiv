@@ -36,8 +36,7 @@ using namespace wwiv::sdk;
 
 namespace wwiv::net {
 
-NetworkLog::NetworkLog(std::string gfiles_directory)
-    : gfiles_directory_(std::move(gfiles_directory)) {}
+NetworkLog::NetworkLog(const std::filesystem::path& d) : gfiles_directory_(d) {}
 NetworkLog::~NetworkLog() = default;
 
 std::string NetworkLog::CreateLogLine(time_t time, NetworkSide side, int node,

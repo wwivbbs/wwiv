@@ -18,13 +18,15 @@
 #ifndef INCLUDED_SDK_PHONE_NUMBERS_H
 #define INCLUDED_SDK_PHONE_NUMBERS_H
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
 struct phonerec;
 
 namespace wwiv::sdk {
-class Config;
+
+ class Config;
 
 class PhoneNumbers {
 public:
@@ -41,7 +43,7 @@ private:
   bool Save();
 
   bool initialized_;
-  std::string datadir_;
+  std::filesystem::path datadir_;
   std::vector<phonerec> phones_;
 };
 

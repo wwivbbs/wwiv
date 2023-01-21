@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_BINKP_CONFIG_H__
-#define __INCLUDED_NETWORKB_BINKP_CONFIG_H__
+#ifndef INCLUDED_NETWORKB_BINKP_CONFIG_H
+#define INCLUDED_NETWORKB_BINKP_CONFIG_H
 
 #include "sdk/net/binkp.h"
 #include "sdk/net/callout.h"
@@ -27,8 +27,7 @@
 #include <memory>
 #include <string>
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 class BinkConfig final {
 public:
@@ -45,7 +44,7 @@ public:
   [[nodiscard]] std::string callout_fido_address() const { return callout_fido_node_; }
   [[nodiscard]] std::string system_name() const { return system_name_; }
   [[nodiscard]] std::string sysop_name() const { return sysop_name_; }
-  [[nodiscard]] std::string gfiles_directory() const { return gfiles_directory_; }
+  [[nodiscard]] std::filesystem::path gfiles_directory() const { return gfiles_directory_; }
   [[nodiscard]] std::string callout_network_name() const { return callout_network_name_; }
   /** Gets net.dir in absolute form for the network named network_name */
   [[nodiscard]] std::filesystem::path network_dir(const std::string& network_name) const;
@@ -79,14 +78,13 @@ public:
 
 private:
   const sdk::Config& config_;
-  std::string home_dir_;
 
   int callout_wwivnet_node_{0};
   std::string callout_fido_node_;
   std::string system_name_;
   std::string callout_network_name_ = "wwivnet";
   std::string sysop_name_;
-  std::string gfiles_directory_;
+  std::filesystem::path gfiles_directory_;
   const wwiv::sdk::Networks networks_;
   std::map<const std::string, std::unique_ptr<wwiv::sdk::Callout>> callouts_;
   std::unique_ptr<wwiv::sdk::Binkp> binkp_;
@@ -99,7 +97,6 @@ private:
   std::string session_identifier_;
 };
 
-} // namespace net
-} // namespace wwiv
+} // namespace 
 
-#endif // __INCLUDED_NETWORKB_BINKP_CONFIG_H__
+#endif // INCLUDED_NETWORKB_BINKP_CONFIG_H

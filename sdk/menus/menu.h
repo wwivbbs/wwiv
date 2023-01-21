@@ -121,8 +121,7 @@ class MenuSet56;
 
 class Menu430 {
 public:
-  Menu430(std::filesystem::path menu_dir, std::string menu_set,
-          std::string menu_name);
+  Menu430(std::filesystem::path menu_dir, std::string menu_set, std::string menu_name);
   [[nodiscard]] bool Load();
   [[nodiscard]] bool initialized() const noexcept { return initialized_; }
 

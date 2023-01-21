@@ -26,14 +26,14 @@ namespace wwiv::sdk {
 
 class BbsDirectories {
 public:
-  [[nodiscard]] virtual std::string root_directory() const = 0;
-  [[nodiscard]] virtual std::string datadir() const = 0;
-  [[nodiscard]] virtual std::string msgsdir() const = 0;
-  [[nodiscard]] virtual std::string gfilesdir() const = 0;
-  [[nodiscard]] virtual std::string menudir() const = 0;
-  [[nodiscard]] virtual std::string dloadsdir() const = 0;
-  [[nodiscard]] virtual std::string scriptdir() const = 0;
-  [[nodiscard]] virtual std::string logdir() const = 0;
+  [[nodiscard]] virtual std::filesystem::path root_directory() const = 0;
+  [[nodiscard]] virtual std::filesystem::path datadir() const = 0;
+  [[nodiscard]] virtual std::filesystem::path msgsdir() const = 0;
+  [[nodiscard]] virtual std::filesystem::path gfilesdir() const = 0;
+  [[nodiscard]] virtual std::filesystem::path menudir() const = 0;
+  [[nodiscard]] virtual std::filesystem::path dloadsdir() const = 0;
+  [[nodiscard]] virtual std::filesystem::path scriptdir() const = 0;
+  [[nodiscard]] virtual std::filesystem::path logdir() const = 0;
 
   /**
    * Returns the scrarch directory for a given node.
