@@ -37,7 +37,7 @@ bool convert_config_424_to_430(local::ui::UIWindow* window, const std::filesyste
 config_upgrade_state_t convert_config_to_52(local::ui::UIWindow* window, const std::filesystem::path& config_filename);
 int final_wwiv_config_dat_version();
 
-ShouldContinue do_wwiv_ugprades(local::ui::UIWindow* window, const std::string& bbsdir);
+ShouldContinue do_wwiv_upgrades(local::ui::UIWindow* window, const std::string& bbsdir);
 
 }
 

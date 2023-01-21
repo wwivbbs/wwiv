@@ -183,7 +183,7 @@ static bool handle_new_external(Context& context, NetPacket& p) {
       p.list.clear();
       const auto tempfn = fmt::format("temp{}.net", p.nh.minor_type);
       if (write_wwivnet_packet(FilePath(context.net.dir, tempfn), p)) {
-        const auto exe = fmt::format("{}{} {} .{}", context.net.dir.string(), e.exe, tempfn, context.net.network_number());
+	const auto exe = fmt::format("{} {}{} .{}", e.exe, context.net.dir.string(),  tempfn, context.net.network_number());
         System(exe);
       }
     }
