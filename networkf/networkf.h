@@ -57,7 +57,6 @@ public:
   // [[VisibleForTesting]]
   const sdk::net::Network& net() const { return net_; }
 
-
 private:
   bool import_packet_file(const std::filesystem::path& path);
 
@@ -131,6 +130,10 @@ private:
 };
 
 void ShowNetworkfHelp(const NetworkCommandLine& cmdline);
+
+// Returns the difference in days between now (according to clock) and the date
+// specified in ftn format by ftn_date.
+int ftn_date_days_old(const core::Clock& clock, const std::string& ftn_date);
 
 } // namespace wwiv::net::networkf
 

@@ -358,10 +358,16 @@ void Input::Input1(char* out_text, const std::string& orig_text, int max_length,
         }
         if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME ||
             mode == InputMode::CMDLINE) {
-          if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
-            // Force lowercase filenames but not command lines.
-            c = to_lower_case<unsigned char>(static_cast<unsigned char>(c));
-          }
+          // This was causing issues (see https://github.com/wwivbbs/wwiv/issues/1515)
+          // N.B. I'm not sure what issues removing this will cause, but people on @nix
+          // will need to be more careful about the case of files they enter.
+          // We're early enough in 5.8 cycle that hopefully we'll shake out any problems
+          // caused by this before we finalize it.
+          
+          //if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
+          //  // Force lowercase filenames but not command lines.
+          //  c = to_lower_case<unsigned char>(static_cast<unsigned char>(c));
+          //}
           if (mode == InputMode::FILENAME && strchr("/\\<>|*?\";:", c)) {
             c = 0;
           } else if (mode == InputMode::FILENAME && strchr("<>|*?\";", c)) {

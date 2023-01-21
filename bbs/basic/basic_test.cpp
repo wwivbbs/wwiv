@@ -251,7 +251,13 @@ TEST_F(BasicTest, WWIV_IO_PrintFile_DoesNotExist) {
 }
 
 TEST_F(BasicTest, WWIV_IO_Outstr) {
-  ASSERT_TRUE(RunScript("wwiv.io.outstr((\"Hello World\")"));
+  ASSERT_TRUE(RunScript("wwiv.io.outstr(\"Hello World\")"));
+
+  EXPECT_EQ("Hello World", helper.io()->captured());
+}
+
+TEST_F(BasicTest, WWIV_IO_Puts) {
+  ASSERT_TRUE(RunScript("wwiv.io.puts(\"Hello World\")"));
 
   EXPECT_EQ("Hello World", helper.io()->captured());
 }

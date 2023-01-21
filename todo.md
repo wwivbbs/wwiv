@@ -2,6 +2,9 @@
 # Copyright 2002-2021, WWIV Software Services
 ***
 
+# TODO debugger
+
+
 # TODO Cleanups
 * make a SideMenu class so we don't need statics in side_menu method.
 * redo readmail(...) It's a friggin mess.

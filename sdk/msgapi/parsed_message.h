@@ -26,13 +26,17 @@ namespace wwiv::sdk::msgapi {
 
 /**
  * Specifies how to return the text with respect to control lines,
+ * 
  * * control_lines: Return raw control lines
  * * control_lines_masked: Replace control line character with '@'
  * * no_control_lines: Skip lines containing control lines.
  */
 enum class control_lines_t {
+  /// Return raw control lines
   control_lines,
+  /// Replace control line character with '@'
   control_lines_masked,
+  /// Skip lines containing control lines.
   no_control_lines
 };
 

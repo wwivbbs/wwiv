@@ -22,11 +22,36 @@ set(COMMON_SOURCES
   "toggles.cpp"
   "user_editor.cpp"
   "utility.cpp"
-  "wwivconfig.cpp"
   "wwivd_ui.cpp"
   )
 
+add_library(wwivconfig_lib ${COMMON_SOURCES})
+target_link_libraries(wwivconfig_lib localui common core sdk ${CURSES_LIBRARIES})
 
-add_executable(wwivconfig ${COMMON_SOURCES})
+if (WWIV_BUILD_TESTS)
+
+  set(wwivconfig_test_sources
+    convert_test.cpp
+    wwivconfig_test_main.cpp
+  )
+
+  add_executable(wwivconfig_tests ${wwivconfig_test_sources})
+  set_max_warnings(wwivconfig_tests)
+  target_link_libraries(wwivconfig_tests 
+      ${CURSES_LIBRARIES} 
+      core 
+      core_fixtures
+      GTest::gtest 
+      localui common 
+      sdk 
+      sdk_fixtures
+      wwivconfig_lib 
+  )
+
+  gtest_discover_tests(wwivconfig_tests)
+
+endif()
+
+add_executable(wwivconfig "wwivconfig.cpp")
 set_max_warnings(wwivconfig)
-target_link_libraries(wwivconfig localui common core sdk ${CURSES_LIBRARIES})
+target_link_libraries(wwivconfig wwivconfig_lib localui common core sdk ${CURSES_LIBRARIES})

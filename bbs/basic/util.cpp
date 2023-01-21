@@ -26,11 +26,13 @@
 
 namespace wwiv::bbs::basic {
 
+class Basic;
+
 using namespace wwiv::common;
 
 BasicScriptState::BasicScriptState(std::string d, std::string s, Context* c, Input* i,
-                                   Output* o)
-    : datadir(std::move(d)), script_dir(std::move(s)), ctx(c), in(i), out(o), module("none") {}
+                                   Output* o, Basic* b)
+    : datadir(std::move(d)), script_dir(std::move(s)), ctx(c), in(i), out(o), module("none"), basic(b) {}
 
 char* BasicStrDup(std::string_view s) { 
   return mb_memdup(s.data(), s.size() + 1);

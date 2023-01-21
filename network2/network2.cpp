@@ -183,7 +183,7 @@ static bool handle_new_external(Context& context, NetPacket& p) {
       p.list.clear();
       const auto tempfn = fmt::format("temp{}.net", p.nh.minor_type);
       if (write_wwivnet_packet(FilePath(context.net.dir, tempfn), p)) {
-        const auto exe = fmt::format("{}{} {} .{}", context.net.dir.string(), e.exe, tempfn, context.net.network_number());
+	const auto exe = fmt::format("{} {}{} .{}", e.exe, context.net.dir.string(),  tempfn, context.net.network_number());
         System(exe);
       }
     }
@@ -292,8 +292,30 @@ static bool handle_packet(Context& context, NetPacket& p) {
   }
 }
 
-static bool handle_file(Context& context, const std::string& name) {
-  NetMailFile packets(context.net.dir / name, true, true);
+static void handle_epreproc_net(const Context& context) {
+  static constexpr char EPREPROC_NET[] = "epreproc.net";
+  const auto epreproc_net_file = FilePath(context.net.dir, EPREPROC_NET);
+  if (!File::Exists(epreproc_net_file)) {
+    return;
+  }
+
+  TextFile f(epreproc_net_file, "rt");
+  if (!f.IsOpen()) {
+    return;
+  }
+  const auto lines = f.ReadFileIntoVector();
+  for (const auto& l : lines) {
+    const auto cmd = fmt::format("{} .{}", l, context.net.network_number());
+    System(cmd);
+  }
+}
+
+
+static bool handle_local_net(Context& context) {
+  // Handle epreproc.net 1st before we open and process the local.net packet
+  handle_epreproc_net(context);
+
+  NetMailFile packets(context.net.dir / LOCAL_NET, true, true);
   if (!packets) {
     return false;
   }
@@ -336,7 +358,7 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
                                                         new NullLastReadImpl()));
 
     LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
-    if (handle_file(context, LOCAL_NET)) {
+    if (handle_local_net(context)) {
       if (net_cmdline.skip_delete()) {
         backup_file(net.dir / LOCAL_NET);
       }

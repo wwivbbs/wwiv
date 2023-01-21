@@ -208,6 +208,22 @@ void EditItems::relayout_items_and_labels() {
     return;
   }
 
+  //
+  // Ensure that we have blank columns before any later columsn.
+  // This allows things like this UI to work:
+  // XXXXXXXXXXXXXXXXXXX YYYYYYYYYYYYY
+  //                     YYYYYYYYYYYYY
+  //
+  for (const auto& [row_num, row] : cells_) {
+    const auto& [first, _] = *row.begin();
+    for (int i = 1; i < first; i++) {
+      // Add mising empty spacer labels
+      add(new Label(""), i, row_num);
+    }
+  }
+
+
+  // Make map of Widths -> row numbers
   std::map<int, std::set<int>> widths_and_rows;
   for (const auto& [row_num, row] : cells_) {
     widths_and_rows[size_int(row)].insert(row_num);
@@ -237,6 +253,7 @@ void EditItems::relayout_items_and_labels() {
     }
   }
 
+  // Calculate max width first
   if (!align_label_cols_.empty()) {
     std::map<int, int> aligned_col_max_width;
     for (const auto aligned_col : align_label_cols_) {
@@ -252,6 +269,8 @@ void EditItems::relayout_items_and_labels() {
         }
       }
     }
+
+    // Assign widths.
     for (const auto aligned_col : align_label_cols_) {
       auto& width = aligned_col_max_width[aligned_col];
       // Update width for the individual item.

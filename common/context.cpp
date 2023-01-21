@@ -137,6 +137,10 @@ void SessionContext::load_menu_set(const std::filesystem::path& menusdir,
   }
 }
 
+int SessionContext::debug_wwivbasic_port() const { return debug_wwivbasic_port_; }
+bool SessionContext::debug_wwivbasic() const { return debug_wwivbasic_port_ > 0; }
+void SessionContext::debug_wwivbasic_port(int d) { debug_wwivbasic_port_ = d; }
+
 std::optional<sdk::value::Value> MapValueProvider::value(const std::string& name) const {
   if (const auto& iter = map_.find(name); iter != std::end(map_)) {
     return sdk::value::Value(iter->second);
@@ -168,5 +172,7 @@ bool Context::clear_context_variables() {
   return_values_.clear();
   return true;
 }
+
+
 
 }

@@ -261,15 +261,15 @@ J..
 
 TEST(WWIVParsedMessageTest, ToLines_B1498) {
   const std::string cz(1, static_cast<char>(CZ));
-  std::string raw =
+  std::string text =
       R"(The majority of the storm was here in MD on Thursday night into Friday.  We[^A]
 went from 57 degrees at 1am Friday morning to 3 degrees Saturday morning.  Very[^A]
 high wind gusts and lots of rain, that changed to ice/snow for a bit, but[^A]
 didn't accumulate to anything.)";
 
   const std::string expected = "RF> This is a long\x1|RF> line of text|RF> xxxx of the text|";
-  StringReplace(&raw, "\n", "\r\n");
-  const auto& text = StringReplace(&raw, "[^A]", "\x01");
+  StringReplace(&text, "\n", "\r\n");
+  StringReplace(&text, "[^A]", "\x01");
   const WWIVParsedMessageText p(text);
   parsed_message_lines_style_t style{};
   style.line_length = 79;
@@ -291,15 +291,15 @@ didn't accumulate to anything.)";
 
 TEST(WWIVParsedMessageTest, ToLines_B1498_120) {
   const std::string cz(1, static_cast<char>(CZ));
-  std::string raw =
+  std::string text =
       R"(The majority of the storm was here in MD on Thursday night into Friday.  We[^A]
 went from 57 degrees at 1am Friday morning to 3 degrees Saturday morning.  Very[^A]
 high wind gusts and lots of rain, that changed to ice/snow for a bit, but[^A]
 didn't accumulate to anything.)";
 
   const std::string expected = "RF> This is a long\x1|RF> line of text|RF> xxxx of the text|";
-  StringReplace(&raw, "\n", "\r\n");
-  const auto& text = StringReplace(&raw, "[^A]", "\x01");
+  StringReplace(&text, "\n", "\r\n");
+  StringReplace(&text, "[^A]", "\x01");
   const WWIVParsedMessageText p(text);
   parsed_message_lines_style_t style{};
   style.line_length = 119;

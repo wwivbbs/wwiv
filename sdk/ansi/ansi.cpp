@@ -282,6 +282,13 @@ bool HeartAndPipeCodeFilter::write(char c) {
     has_heart_ = true;
     return true;
   }
+  if (c == 10) {
+    // clear pipe and heart state and pass through
+    has_heart_ = false;
+    pipe_state_ = pipe_state::none;
+    pipe_text_.clear();
+    return chain_->write(c);
+  }
   switch (pipe_state_) {
   case pipe_state::none:
     if (c == '|') {

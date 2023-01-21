@@ -254,19 +254,15 @@ int User::age() const {
   return years_old(this, clock);
 }
 
-[[nodiscard]] DateTime User::birthday_dt() const { 
-  tm tm{};
-  tm.tm_year = data.year;
-  tm.tm_mon = data.month - 1;
-  tm.tm_mday = data.day;
-  tm.tm_hour = 12;
-  tm.tm_isdst = 0;
-  return DateTime::from_tm(&tm);
+[[nodiscard]] std::string User::birthday_month_dd_yyyy() const {
+  static const char* mon[] = {"January",   "February", "March",    "April",
+                              "May",       "June",     "July",     "August",
+                              "September", "October",  "November", "December"};
+  return fmt::format("{} {}, {}", mon[birthday_month() - 1], birthday_mday(), birthday_year());
 }
 
 [[nodiscard]] std::string User::birthday_mmddyy() const {
-  const auto s = fmt::format("{:02}/{:02}/{:02}", data.month, data.day, data.year);
-  return s;
+  return fmt::format("{:02}/{:02}/{:02}", data.month, data.day, data.year);
 }
 
 std::string User::mailbox_state() const {

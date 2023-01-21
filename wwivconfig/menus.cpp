@@ -188,7 +188,14 @@ public:
   }
 
   [[nodiscard]] std::string menu_label() const override {
-    return fmt::format("[Edit] {} actions.", t_.size());
+    switch (t_.size()) {
+    case 0:
+      return "[Edit] No actions.";
+    case 1:
+      return fmt::format("[Edit] cmd: '{}'", t_.at(0).cmd);
+    default:
+      return fmt::format("[Edit] {} actions.", t_.size());
+    }
   }
   std::vector<const value::ValueProvider*> providers_;
 };
@@ -447,7 +454,7 @@ protected:
 };
 
 static void edit_settings(const Config& config, wwiv::sdk::menus::MenuSet56& menu_set) {
-  const auto menu_path = menu_set.menuset_dir();
+  const auto& menu_path = menu_set.menuset_dir();
 
   const UserManager um(config);
   User user{};

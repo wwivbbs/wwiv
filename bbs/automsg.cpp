@@ -118,6 +118,16 @@ void write_automessage() {
     bAnonStatus = bin.yesno();
   }
 
+  auto authorName = a()->user()->name_and_number();
+  if (bAnonStatus) {
+      authorName = ">UNKNOWN<";
+    }
+  bout.print("\r\n|#9Auto message by: |#2{}|#0\r\n\n", authorName);
+  for (const auto& line: lines) {
+      bout.ansic(9);
+      bout.pl(line);
+  }
+  bout.nl();
   bout.outstr("|#9Is this OK? ");
   if (bin.yesno()) {
     a()->status_manager()->Run([bAnonStatus](Status& s) {
@@ -126,7 +136,6 @@ void write_automessage() {
     });
 
     TextFile file(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "wt");
-    const auto authorName = a()->user()->name_and_number();
     file.WriteLine(authorName);
     sysoplog("Changed Auto-message");
     for (const auto& line : lines) {

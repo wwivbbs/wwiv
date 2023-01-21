@@ -49,6 +49,7 @@
 #include "sdk/net/packets.h"
 #include "sdk/net/subscribers.h"
 
+#include <cctype>
 #include <cstdlib>
 #include <iostream>
 #include <map>
@@ -93,7 +94,8 @@ static bool check_wwivnet_host_networks(
           std::set<uint16_t> subscribers;
 
           const auto filename = StrCat("n", n.stype, ".net");
-          if (ReadSubcriberFile(FilePath(net.dir, filename), subscribers)) {
+          const auto subscriber_fn = FilePath(net.dir, filename);
+          if (ReadSubcriberFile(subscriber_fn, subscribers)) {
             for (auto subscriber : subscribers) {
               const auto c = b.node_config_for(subscriber);
               if (!c) {
@@ -101,7 +103,12 @@ static bool check_wwivnet_host_networks(
               }
             }
           } else {
-            text << "Unable to find subscribers file for stype: " << n.stype << "\r\n";
+            if (!WriteSubcriberFile(subscriber_fn, subscribers)) {
+              text << "Unable to find subscribers file for stype: " << n.stype << "\r\n";
+            }
+            else {
+              text << "Created subscribers file for stype: " << n.stype << "\r\n";
+            }
           }
         } else {
           // Sub hosted elsewhere.
@@ -390,7 +397,10 @@ static void rename_pending_files(const std::filesystem::path& dir) {
 
   FindFiles ff(FilePath(dir, "s*.net"), FindFiles::FindFilesType::files);
   for (const auto& f : ff) {
-    rename_pend(dir, f.name, '3');
+    if (std::isdigit(f.name.at(1))) {
+      // Only process files of the form s######.net
+      rename_pend(dir, f.name, '3');
+    }
   }
 }
 

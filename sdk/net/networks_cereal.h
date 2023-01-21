@@ -158,6 +158,7 @@ void load(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, wwiv_heart_color_codes);
   SERIALIZE(n, wwiv_pipe_color_codes);
   SERIALIZE(n, allow_any_pipe_codes);
+  SERIALIZE(n, max_echomail_age_days);
 }
 
 template <class Archive>
@@ -181,6 +182,7 @@ void save(Archive & ar, const fido_network_config_t& n) {
   SERIALIZE(n, wwiv_heart_color_codes);
   SERIALIZE(n, wwiv_pipe_color_codes);
   SERIALIZE(n, allow_any_pipe_codes);
+  SERIALIZE(n, max_echomail_age_days);
 }
 
 template <class Archive> void serialize(Archive& ar, common_network_config_t& n) {

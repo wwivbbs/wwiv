@@ -257,7 +257,8 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
       break;
     case control_lines_t::control_lines_masked: {
       auto s{l};
-      out.push_back(StringReplace(&s, control_char_, "@"));
+      StringReplace(&s, control_char_, "@");
+      out.push_back(s);
     } break;
     case control_lines_t::no_control_lines:
       if (!is_control_line) {
