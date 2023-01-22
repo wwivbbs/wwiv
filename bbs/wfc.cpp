@@ -483,7 +483,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     case 'W': {
       Clear();
       write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-      bout.print("|#1Edit {}<filename>: \r\n", a()->config()->gfilesdir());
+      bout.print("|#1Edit {}<filename>: \r\n", a()->config()->gfilesdir().string());
       text_edit();
     } break;
     // Print Yesterday's Log

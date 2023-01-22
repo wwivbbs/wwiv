@@ -32,6 +32,7 @@
 #include "sdk/vardec.h"
 #include <cstdint>
 #include <cstring>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -60,7 +61,7 @@ static std::string prot_name(const std::vector<newexternalrec>& externs, int pn)
   return ">NONE<";
 }
 
-static void load_protocols(const std::string& datadir, std::vector<newexternalrec>& externs,
+static void load_protocols(const std::filesystem::path& datadir, std::vector<newexternalrec>& externs,
                            std::vector<newexternalrec>& over_intern) {
   externs.clear();
   over_intern.clear();
@@ -149,7 +150,7 @@ NOTE: Batch protocols >MUST< correctly support DSZLOG.)""""), 1, y);
   }
 }
 
-void extrn_prots(const std::string& datadir) {
+void extrn_prots(const std::filesystem::path& datadir) {
   std::vector<newexternalrec> externs;
   std::vector<newexternalrec> over_interns;
   load_protocols(datadir, externs, over_interns);

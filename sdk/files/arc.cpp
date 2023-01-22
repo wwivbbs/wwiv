@@ -560,7 +560,7 @@ std::optional<std::string> determine_arc_extension(const std::filesystem::path& 
   return std::nullopt;
 }
 
-std::vector<arcrec> read_arcs(const std::string& datadir) {
+std::vector<arcrec> read_arcs(const std::filesystem::path& datadir) {
   std::vector<arcrec> arcs;
   if (auto file = DataFile<arcrec>(FilePath(datadir, ARCHIVER_DAT))) {
     file.ReadVector(arcs, 20);

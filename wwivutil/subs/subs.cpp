@@ -45,7 +45,7 @@ namespace wwiv::wwivutil {
 
 // This is hacked from subacc.cpp.
 // TODO(rushfan): move this into the message sdk.
-static uint32_t WWIVReadLastRead(const std::string& datadir, const std::string& sub_filename) {
+static uint32_t WWIVReadLastRead(const std::filesystem::path& datadir, const std::string& sub_filename) {
   // open file, and create it if necessary
   postrec p{};
 

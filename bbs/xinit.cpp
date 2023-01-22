@@ -382,7 +382,8 @@ bool Application::ReadConfig() {
 
   if (!config_->versioned_config_dat()) {
     const auto msg = fmt::format(
-        "Please run WWIVconfig to upgrade {} to the most recent version.", config_->config_filename());
+        "Please run WWIVconfig to upgrade {} to the most recent version.", 
+        config_->config_filename().string());
     std::cerr << msg << std::endl;
     LOG(ERROR) << msg;
     sleep_for(seconds(2));

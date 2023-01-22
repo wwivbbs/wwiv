@@ -143,7 +143,7 @@ bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename,
   return true;
 }
 
-static bool ConvertLegacyList(const std::string& dir, const std::string& legacy_filename,
+static bool ConvertLegacyList(const std::filesystem::path& dir, const std::string& legacy_filename,
                               std::vector<BbsListEntry>& entries) {
 
   TextFile legacy_file(FilePath(dir, legacy_filename), "r");

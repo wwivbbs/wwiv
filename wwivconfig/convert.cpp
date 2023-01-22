@@ -352,7 +352,7 @@ static bool convert_to_v2(UIWindow* window, Config& config) {
   return true;
 }
 
-static bool convert_menu(const std::string& menu_dir, const std::string& menu_set,
+static bool convert_menu(const std::filesystem::path& menu_dir, const std::string& menu_set,
                          const std::string& menu_name, int max_backups) {
 
   const auto dir = FilePath(menu_dir, menu_set);

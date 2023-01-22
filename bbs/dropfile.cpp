@@ -415,11 +415,12 @@ void CreateDoorSysDropFile() {
             0); // kb dl/day max
     file.Write(line);
     const auto birthday_date = u.birthday_mmddyy();
-    const auto gfilesdir = a()->config()->gfilesdir();
+    const auto gfilesdir = a()->config()->gfilesdir().string();
+    const auto datadir = a()->config()->datadir().string();
     const auto t = times();
     line = fmt::sprintf("%s\n%s\n%s\n%s\n%s\n%s\n%c\n%c\n%c\n%u\n%u\n%s\n%-.5s\n%s\n", 
             birthday_date,
-            a()->config()->datadir(), gfilesdir,
+            datadir, gfilesdir,
             a()->config()->sysop_name(), u.name(),
             "00:01", // event time
             'Y',
@@ -508,9 +509,10 @@ std::string create_chain_file() {
         u.gender(), u.gold(), u.laston(),
         u.screen_width(), u.screen_lines(), u.sl()));
     const auto temporary_log_filename = instance_sysoplog_filename();
-    const auto gfilesdir = a()->config()->gfilesdir();
+    const auto gfilesdir = a()->config()->gfilesdir().string();
+    const auto datadir = a()->config()->datadir().string();
     file.Write(fmt::sprintf("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n", cs(), so(), okansi(),
-                            a()->sess().incom(), nsl(), gfilesdir, a()->config()->datadir(),
+                            a()->sess().incom(), nsl(), gfilesdir, datadir,
                             temporary_log_filename));
     if (a()->sess().using_modem()) {
       file.WriteLine(a()->modem_speed_);

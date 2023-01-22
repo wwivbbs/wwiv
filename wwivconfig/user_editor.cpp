@@ -95,7 +95,7 @@ static std::vector<HelpItem> create_extra_help_items() {
   return help_items;
 }
 
-static int JumpToUser(CursesWindow* window, const std::string& datadir) {
+static int JumpToUser(CursesWindow* window, const std::filesystem::path& datadir) {
   std::vector<ListBoxItem> items;
   {
     DataFile<smalrec> file(FilePath(datadir, NAMES_LST), File::modeReadOnly | File::modeBinary,

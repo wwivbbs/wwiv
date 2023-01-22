@@ -19,6 +19,7 @@
 #define INCLUDED_SDK_NAMES_H
 
 #include "sdk/config.h"
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -53,7 +54,7 @@ private:
    */
   bool AddUnsorted(const std::string& name, uint32_t user_number);
 
-  const std::string data_directory_;
+  const std::filesystem::path data_directory_;
   bool loaded_{false};
   bool save_on_exit_{false};
   std::vector<smalrec> names_;

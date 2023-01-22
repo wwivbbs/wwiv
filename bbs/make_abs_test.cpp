@@ -23,6 +23,7 @@
 
 #include "gtest/gtest.h"
 #include <filesystem>
+#include <filesystem>
 #include <string>
 
 using wwiv::strings::StrCat;
@@ -32,10 +33,10 @@ class MakeAbsTest : public ::testing::Test {
 protected:
   void SetUp() override {
     helper.SetUp();
-    root = helper.app_->bbspath().string();
+    root = helper.app_->bbspath();
   }
   BbsHelper helper{};
-  std::string root;
+  std::filesystem::path root;
 };
 
 #ifdef _WIN32

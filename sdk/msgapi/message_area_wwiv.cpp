@@ -306,7 +306,7 @@ std::unique_ptr<MessageText> WWIVMessageArea::ReadMessageText(int message_number
   return msg->release_text();
 }
 
-static uint32_t next_qscan_value_and_increment_post(const std::string& bbsdir) {
+static uint32_t next_qscan_value_and_increment_post(const std::filesystem::path& bbsdir) {
   statusrec_t statusrec{};
   const Config config(bbsdir);
   if (!config.IsInitialized()) {

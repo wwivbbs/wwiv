@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <iomanip>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -44,7 +45,8 @@ constexpr char CD = 4;
 
 namespace wwiv::wwivutil::files {
 
-static std::optional<std::vector<sdk::files::directory_t>> ReadAreas(const std::string& datadir) {
+static std::optional<std::vector<sdk::files::directory_t>>
+ReadAreas(const std::filesystem::path& datadir) {
   sdk::files::Dirs dirs(datadir, 0);
   if (dirs.Load()) {
     return {dirs.dirs()};

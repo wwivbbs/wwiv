@@ -41,12 +41,10 @@ namespace wwiv::sdk {
 
 FtnMessageDupe::FtnMessageDupe(const Config& config) : FtnMessageDupe(config.datadir(), true) {}
 
-FtnMessageDupe::FtnMessageDupe(std::string datadir, bool use_filesystem)
-    : datadir_(std::move(datadir)), use_filesystem_(use_filesystem) {
+FtnMessageDupe::FtnMessageDupe(const std::filesystem::path& datadir, bool use_filesystem)
+    : datadir_(datadir), use_filesystem_(use_filesystem) {
   if (!datadir_.empty()) {
     initialized_ = Load();
-  } else {
-    initialized_ = false;
   }
 }
 

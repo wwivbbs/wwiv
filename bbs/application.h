@@ -258,9 +258,9 @@ public:
   [[nodiscard]] uint8_t primary_port() const { return primary_port_; }
 
   [[nodiscard]] std::filesystem::path bbspath() const noexcept;
-  [[nodiscard]] std::string bindir() const noexcept;
-  [[nodiscard]] std::string configdir() const noexcept;
-  [[nodiscard]] std::string logdir() const noexcept;
+  [[nodiscard]] std::filesystem::path bindir() const noexcept;
+  [[nodiscard]] std::filesystem::path configdir() const noexcept;
+  [[nodiscard]] std::filesystem::path logdir() const noexcept;
   [[nodiscard]] int verbose() const noexcept;
 
   [[nodiscard]] bool HasConfigFlag(int nFlag) const { return (flags_ & nFlag) != 0; }

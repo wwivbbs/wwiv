@@ -22,6 +22,7 @@
 #include "sdk/fido/fido_address.h"
 #include "sdk/net/callout.h"
 #include "sdk/net/net.h"
+#include <filesystem>
 #include <map>
 #include <string>
 
@@ -32,7 +33,8 @@ public:
   typedef int size_type;
   static const size_type npos = -1;
   
-  FidoCallout(const std::string& root_directory, int max_backups, const wwiv::sdk::net::Network& net);
+  FidoCallout(const std::filesystem::path& root_directory, int max_backups,
+              const wwiv::sdk::net::Network& net);
 
   // [[ VisibleForTesting ]]
   ~FidoCallout() override;
@@ -70,7 +72,7 @@ private:
   // TODO(rushfan): Remove this eventually
   FidoCallout(const wwiv::sdk::Config& config, const net::Network& net);
   bool initialized_{false};
-  const std::string root_dir_;
+  const std::filesystem::path root_dir_;
   net::Network net_;
   std::map<FidoAddress, net::fido_node_config_t> node_configs_;
 };

@@ -794,9 +794,9 @@ void Application::GotCaller(int ms) {
 }
 
 std::filesystem::path Application::bbspath() const noexcept { return bbs_dir_; }
-std::string Application::bindir() const noexcept { return bindir_; }
-std::string Application::configdir() const noexcept { return configdir_; }
-std::string Application::logdir() const noexcept { return logdir_; }
+std::filesystem::path Application::bindir() const noexcept { return bindir_; }
+std::filesystem::path Application::configdir() const noexcept { return configdir_; }
+std::filesystem::path Application::logdir() const noexcept { return logdir_; }
 int Application::verbose() const noexcept { return verbose_; }
 
 int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {

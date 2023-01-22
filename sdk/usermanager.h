@@ -22,6 +22,7 @@
 
 #include "sdk/config.h"
 #include "sdk/user.h"
+#include <filesystem>
 #include <string>
 
 namespace wwiv::sdk {
@@ -68,7 +69,7 @@ public:
 
 private:
   const Config config_;
-  const std::string data_directory_;
+  const std::filesystem::path data_directory_;
   int userrec_length_;
   int max_number_users_;
   bool allow_writes_{false};
