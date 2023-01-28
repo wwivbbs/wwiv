@@ -271,6 +271,12 @@ static bool handle_packet(Context& context, NetPacket& p) {
   // EPROGS.NET support
   case main_type_new_external:
     return handle_new_external(context, p);
+
+  // Skip deleted messages/
+  case 0xFFFF:
+    // Ack processing it since there is nothing to do.
+    return true;
+
   // Legacy numeric only post types.
   case main_type_post:
   case main_type_pre_post:
@@ -369,7 +375,7 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
       update_filechange_status_dat(context.config.datadir(), email_changed, posts_changed);
       return 0;
     }
-    LOG(ERROR) << "ERROR: handle_file returned false";
+    LOG(ERROR) << "ERROR: handle_local_net returned false";
     return 1;
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [network]: " << e.what();
