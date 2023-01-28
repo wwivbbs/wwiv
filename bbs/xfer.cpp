@@ -294,6 +294,12 @@ std::string file_mask(const std::string& prompt) {
 }
 
 void listfiles() {
+  if (a()->current_user_dir().subnum < 0 || a()->udir.empty()) {
+    // We don't have any current directory, can not list files.
+    bout.pl("|#6No directories available.");
+    return;
+  }
+
   if (okansi()) {
     listfiles_plus(LP_LIST_DIR);
     return;
@@ -331,6 +337,10 @@ void listfiles() {
 }
 
 void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
+  if (a()->udir.empty()) {
+    bout.pl("|#6No directories available.");
+    return;
+  }
   const auto old_cur_dir = a()->current_user_dir_num();
   a()->set_current_user_dir_num(nDirNum);
   dliscan();
@@ -365,8 +375,12 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
 }
 
 void nscanall() {
-  bool scan_all_confs = false;
   a()->sess().scanned_files(true);
+
+  if (a()->udir.empty()) {
+    return;
+  }
+  bool scan_all_confs = false;
 
   if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
     bout.nl();
@@ -418,6 +432,10 @@ void nscanall() {
 }
 
 void searchall() {
+  if (a()->udir.empty()) {
+    bout.pl("|#6No directories available.");
+    return;
+  }
   if (okansi()) {
     listfiles_plus(LP_SEARCH_ALL);
     return;

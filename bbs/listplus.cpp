@@ -222,6 +222,12 @@ static void catch_divide_by_zero(int signum) {
 }
 
 int listfiles_plus(int type) {
+  if (a()->current_user_dir().subnum < 0 || a()->udir.empty()) {
+    // We don't have any current directory, can not list files.
+    bout.pl("|#6No directories available.");
+    return 0;
+  }
+
   const auto save_topdata = bout.localIO()->topdata();
   const auto save_dir = a()->current_user_dir_num();
   const long save_status = a()->user()->get_status();
@@ -936,6 +942,12 @@ static void update_user_config_screen(uploadsrec* u, int which) {
 }
 
 void config_file_list() {
+  if (a()->current_user_dir().subnum < 0 || a()->udir.empty()) {
+    // We don't have any current directory, can not list files.
+    bout.pl("|#6No directories available.");
+    return;
+  }
+
   int which = -1;
   unsigned long bit = 0L;
   uploadsrec u = {};
@@ -1448,6 +1460,11 @@ void do_batch_sysop_command(int mode, const std::string& file_name) {
 }
 
 int search_criteria(search_record* sr) {
+  if (a()->current_user_dir().subnum < 0 || a()->udir.empty()) {
+    // We don't have any current directory, can not list files.
+    bout.pl("|#6No directories available.");
+    return 0;
+  }
   auto all_conf = true;
 
   const auto useconf = ok_multiple_conf(a()->user(), a()->uconfdir);
