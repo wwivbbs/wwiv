@@ -163,6 +163,12 @@ int PrintCommand::Execute() {
     VLOG(1) << "Wrote: " << count << " chars.";
     VLOG(1) << "CPS = " << count / (end.to_time_t() - start.to_time_t());
   }
+  // Cleanup CursesIO.
+  if (curses_out != nullptr) {
+    delete curses_out;
+    curses_out = nullptr;
+  }
+
   return 0;
 }
 
