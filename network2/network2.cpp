@@ -272,7 +272,7 @@ static bool handle_packet(Context& context, NetPacket& p) {
   case main_type_new_external:
     return handle_new_external(context, p);
 
-  // Skip deleted messages/
+  // Skip deleted messages.
   case 0xFFFF:
     // Ack processing it since there is nothing to do.
     return true;
