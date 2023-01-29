@@ -440,7 +440,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
       num_header_lines++;
     }
     if (!msg.from_sys_loc.empty()) {
-      bout.print(" |#9Loc|#7: |#1{:<30}\r\n", msg.from_sys_loc);
+      bout.print(" |#9Loc|#7: |#1{0:<{1}.{1}}\r\n", msg.from_sys_loc, a()->user()->screen_width()-45);
       num_header_lines++;
     }
   }

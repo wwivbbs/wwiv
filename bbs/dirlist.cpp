@@ -32,16 +32,14 @@
 
 using namespace wwiv::sdk;
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Implementation
-//
-//
-//
-
-
 /** Displays the available file areas for the current user. */
 void dirlist(int mode) {
+
+  if (a()->udir.empty()) {
+    bout.pl("|#6No directories available.");
+    return;
+  }
+
   bool next   = false;
   int oc      = a()->sess().current_user_dir_conf_num();
   int os      = a()->current_user_dir().subnum;

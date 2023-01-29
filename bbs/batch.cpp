@@ -804,6 +804,11 @@ int batchdl(int mode) {
 }
 
 void upload(int dn) {
+  if (a()->current_user_dir().subnum < 0 || a()->udir.empty() || dn < 0) {
+    // We don't have any current directory, can not list files.
+    bout.pl("|#6No directories available.");
+    return;
+  }
   const auto& d = a()->dirs()[dn];
   dliscan1(d);
   const long free_space = File::freespace_for_path(d.path);
