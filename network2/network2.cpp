@@ -363,12 +363,12 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
     context.set_api(2, std::make_unique<WWIVMessageApi>(options, config, networks.networks(),
                                                         new NullLastReadImpl()));
 
-    LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
+    VLOG(1) << "Processing: " << net.dir.string() << LOCAL_NET;
     if (handle_local_net(context)) {
       if (net_cmdline.skip_delete()) {
         backup_file(net.dir / LOCAL_NET);
       }
-      LOG(INFO) << "Deleting: " << net.dir << LOCAL_NET;
+      VLOG(1) << "Deleting: " << net.dir.string() << LOCAL_NET;
       if (!File::Remove(net.dir / LOCAL_NET)) {
         LOG(ERROR) << "ERROR: Unable to delete " << net.dir << LOCAL_NET;
       }

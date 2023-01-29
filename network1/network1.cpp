@@ -136,7 +136,7 @@ bool Network1::handle_packet(NetPacket& p) {
 bool Network1::handle_file(const std::string& name) {
   File f(FilePath(net_.dir, name));
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
-    LOG(INFO) << "Unable to open file: " << net_.dir << name;
+    LOG(ERROR) << "Unable to open file: " << net_.dir << name;
     return false;
   }
 
@@ -149,7 +149,7 @@ bool Network1::handle_file(const std::string& name) {
       return false;
     }
     if (!handle_packet(packet)) {
-      LOG(INFO) << "error handing packet: type: " << packet.nh.main_type;
+      LOG(ERROR) << "error handing packet: type: " << packet.nh.main_type;
     }
   }
 }
@@ -159,9 +159,9 @@ bool Network1::Run() {
     LOG(INFO) << " * Analyzing " << net_.name << " pending files...";
     FindFiles ff(FilePath(net_.dir, "p*.net"), FindFiles::FindFilesType::files);
     for (const auto& f : ff) {
-      LOG(INFO) << "Processing: " << net_.dir << f.name;
+      VLOG(1) << "Processing: " << net_.dir.string() << f.name;
       if (handle_file(f.name)) {
-        LOG(INFO) << "Deleting: " << net_.dir << f.name;
+        VLOG(1) << "Deleting: " << net_.dir.string() << f.name;
         if (net_cmdline_.skip_delete()) {
           backup_file(FilePath(net_.dir, f.name));
         }
@@ -177,7 +177,7 @@ bool Network1::Run() {
       const auto sn = it->second.systemnumber();
       if (!bbslist_.node_config_for(sn)) {
         // Try to remove a entry that does not exist..
-        LOG(INFO) << "Removing contact1.net entry for node that does not exist: " << sn;
+        LOG(INFO) << "Removing contact.net entry for node that does not exist: " << sn;
         it = m.erase(it);
         continue;
       }
