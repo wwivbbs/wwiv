@@ -36,6 +36,7 @@
 
 using wwiv::core::BooleanCommandLineArgument;
 using namespace std::chrono_literals;
+using namespace wwiv::local::io;
 using namespace wwiv::local::ui;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
@@ -122,21 +123,18 @@ int PrintCommand::Execute() {
   if (!barg("ansi")) {
     std::cout << s << std::endl;
   } else {
-    std::unique_ptr<local::io::LocalIO> io;
+    std::unique_ptr<LocalIO> io;
     const auto io_type = sarg("io");
     const auto bps = iarg("bps");
 #ifdef _WIN32
     if (io_type == "win32") {
-      io = std::make_unique<local::io::Win32ConsoleIO>();
+      io = std::make_unique<Win32ConsoleIO>();
     }
 #endif
     if (!io) {
       need_pause = true;
       CursesIO::Init("wwivutil");
-      // Use 25 lines (80x25) by default.
-      // TODO(rushfan): We should try to inspect the screen size if possible
-      // and use that instead.  Don't know how to do that on *NIX though.
-      io = std::make_unique<local::io::CursesLocalIO>(25, 80);
+      io = std::make_unique<CursesLocalIO>(curses_out->GetMaxY(), curses_out->GetMaxX());
     }
     LocalIOScreen screen(io.get(), 80);
     AnsiCallbacks cb;
@@ -160,8 +158,11 @@ int PrintCommand::Execute() {
     if (need_pause) {
       io->GetChar();
     }
+    const auto time_taken = end.to_time_t() - start.to_time_t();
     VLOG(1) << "Wrote: " << count << " chars.";
-    VLOG(1) << "CPS = " << count / (end.to_time_t() - start.to_time_t());
+    if (time_taken > 0) {
+      VLOG(1) << "CPS = " << count / (end.to_time_t() - start.to_time_t());
+    }
   }
   // Cleanup CursesIO.
   if (curses_out != nullptr) {
