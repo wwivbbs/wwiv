@@ -80,6 +80,12 @@ bool Network1::write_multiple_wwivnet_packets(const net_header_rec& nh,
     forsys_to_all[forsys].insert(node);
   }
 
+  if (nh.tosys != 0) {
+    // TODO(rushfan): Does this happen, and if so should we also forward 
+    // this packet to nh.tosys?  Maybe?
+    LOG(ERROR) << "write_multiple_wwivnet_packets called to a tosys != 0; got; " << nh.tosys;
+  }
+
   auto result = true;
   for (const auto& fa : forsys_to_all) {
     NetPacket np(nh, std::vector<uint16_t>(fa.second.begin(), fa.second.end()), text);
