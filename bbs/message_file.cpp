@@ -59,7 +59,9 @@ static std::unique_ptr<File> OpenMessageFile(const std::string messageAreaFileNa
       gat[i] = 0;
     }
     file->Write(gat, GAT_SECTION_SIZE);
+    file->Close();
     file->set_length(GAT_SECTION_SIZE + (75L * 1024L));
+    file->Open(File::modeReadWrite | File::modeBinary);
     gat_section = 0;
   }
   file->Seek(0L, File::Whence::begin);

@@ -312,9 +312,16 @@ bool File::Exists() const noexcept {
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 bool File::set_length(size_type l) {
+  if (IsOpen()) {
+#if defined (_WIN32) 
+    return _chsize_s(handle_, l) == 0;
+#else
+    return ftruncate(handle_, l) == 0;
+#endif
+  }
+
   std::error_code ec;
-  resize_file(full_path_name_, l, ec);
-  if (ec.value() != 0) {
+  if (resize_file(full_path_name_, l, ec); ec.value() != 0) {
     LOG(WARNING) << "Errror on resize_file: '" << full_path_name_ << "': " << ec.value() << "; "
                  << ec.message() << "; open: " << IsOpen();
     return false;

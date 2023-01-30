@@ -61,9 +61,7 @@ int dump_file(const std::filesystem::path& filename) {
       std::cout << "/" << packet.nh.minor_type;
     }
     std::cout << ")" << std::endl;
-    if (packet.nh.list_len > 0) {
-      std::cout << "    list_len: " << packet.nh.list_len << std::endl;
-    }
+    std::cout << "    list_len: " << packet.nh.list_len << std::endl;
     std::cout << "       daten: " << daten_to_wwivnet_time(packet.nh.daten) << std::endl;
     std::cout << "      length: " << packet.nh.length << std::endl;
     if (packet.nh.method > 0) {

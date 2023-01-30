@@ -60,12 +60,15 @@ bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
     // Don't create if it already exists.
     return false;
   }
-  File fileSub(fn);
-  if (fileSub.Open(File::modeReadOnly | File::modeBinary)) {
-    // Don't create if we can open it.
-    return false;
+  {
+    File fileSub(fn);
+    if (fileSub.Open(File::modeReadOnly | File::modeBinary)) {
+      // Don't create if we can open it.
+      return false;
+    }
   }
 
+  File fileSub(fn);
   if (!fileSub.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
     // Don't create if we fail to write it.
     return false;
@@ -80,13 +83,17 @@ bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
 
   {
     // Create new Message Text (.DAT ) file.
-    msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    // I think we can skip this too since it doesn't do anything as we
-    // set the length on the file which fills it with zeros.
-    uint16_t gat[GAT_NUMBER_ELEMENTS] = {0};
-    msgs_file.Write(gat, GAT_SECTION_SIZE);
-
-    msgs_file.set_length(GAT_SECTION_SIZE + (75L * 1024L));
+    if (msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
+      // I think we can skip this too since it doesn't do anything as we
+      // set the length on the file which fills it with zeros.
+      uint16_t gat[GAT_NUMBER_ELEMENTS] = { 0 };
+      msgs_file.Write(gat, GAT_SECTION_SIZE);
+      msgs_file.Close();
+      msgs_file.set_length(GAT_SECTION_SIZE + (75L * 1024L));
+    }
+    else {
+      LOG(ERROR) << "Unable to create msgs file: " << msgs_file.full_pathname();
+    }
   }
 
   if (name != EMAIL_NOEXT) {
@@ -146,15 +153,13 @@ std::unique_ptr<WWIVEmail> WWIVMessageApi::OpenEmail() {
       // Create it if it doesn't exist.  We still can have an odd case
       // where 1 file exists, but that's not ever normal. so we'll
       // complain later about not being able to create this.
-      if (!Create("email", ".dat", ".dat", 0)) {
-        return {};
-      }
+      [[maybe_unused]] auto _ = Create("email", ".dat", ".dat", 0);
       // Return the newly created WWIVEmail object.
       return std::make_unique<WWIVEmail>(config_, data, text, stl::size_int(net_networks_));
     }
 
     File datafile(data);
-    if (!datafile.Open(File::modeReadOnly | File::modeBinary)) {
+    if (!datafile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       LOG(ERROR) << "Unable to open datafile: " << data;
       return {};
     }
@@ -164,7 +169,7 @@ std::unique_ptr<WWIVEmail> WWIVMessageApi::OpenEmail() {
       return {};
     }
     File textfile(text);
-    if (!textfile.Open(File::modeReadOnly | File::modeBinary)) {
+    if (!textfile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       LOG(ERROR) << "Unable to open msgsfile: " << data;
       return {};
     }
