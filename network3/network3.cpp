@@ -92,23 +92,12 @@ static bool check_wwivnet_host_networks(
       if (n.net_num == network_number) {
         if (n.host == 0) {
           // Sub hosted here.
-          std::set<uint16_t> subscribers;
-
           const auto filename = StrCat("n", n.stype, ".net");
           const auto subscriber_fn = FilePath(net.dir, filename);
-          if (ReadSubcriberFile(subscriber_fn, subscribers)) {
-            for (auto subscriber : subscribers) {
-              const auto c = b.node_config_for(subscriber);
-              if (!c) {
-                text << "Unknown system @" << subscriber << " subscribed to sub '" << n.stype << "'\r\n";
-              }
-            }
-          } else {
-            if (!WriteSubcriberFile(subscriber_fn, subscribers)) {
-              text << "Unable to find subscribers file for stype: " << n.stype << "\r\n";
-            }
-            else {
-              text << "Created subscribers file for stype: " << n.stype << "\r\n";
+          const auto subscribers = ReadSubcriberFile(subscriber_fn);
+          for (auto subscriber : subscribers) {
+            if (const auto c = b.node_config_for(subscriber); !c) {
+              text << "Unknown system @" << subscriber << " subscribed to sub '" << n.stype << "'\r\n";
             }
           }
         } else {

@@ -122,12 +122,8 @@ static void DisplayNetInfo(size_t nSubNum) {
     if (sn.host == 0) {
       std::string host = "<HERE>";
       const auto net_file_name = fmt::format("n{}.net", sn.stype);
-      std::set<uint16_t> subscribers;
       const auto subscriber_fn = FilePath(net.dir, net_file_name);
-      if (!ReadSubcriberFile(subscriber_fn, subscribers)) {
-        // This will create the file if it does not already exist.
-        WriteSubcriberFile(subscriber_fn, subscribers);
-      }
+      auto subscribers = ReadSubcriberFile(subscriber_fn);
       auto num = size_int(subscribers);
       bout.printf("%-12.12s %-12.12s %-20.20s  %-4d  %s%s\r\n",
                            net.name, host, sn.stype, num,

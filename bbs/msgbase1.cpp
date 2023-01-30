@@ -126,16 +126,12 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     if (xnp.host) {
       nh.tosys = xnp.host;
     } else {
-      std::set<uint16_t> subscribers;
-      const auto subscribers_read =
-          ReadSubcriberFile(FilePath(net.dir, StrCat("n", xnp.stype, ".net")), subscribers);
-      if (subscribers_read) {
-        for (const auto& s : subscribers) {
-          if ((a()->net_num() != netnum || nh.fromsys != s) && s != net.sysnum) {
-            if (valid_system(s)) {
-              nh.list_len++;
-              list.push_back(s);
-            }
+      auto subscribers = ReadSubcriberFile(FilePath(net.dir, StrCat("n", xnp.stype, ".net")));
+      for (const auto& s : subscribers) {
+        if ((a()->net_num() != netnum || nh.fromsys != s) && s != net.sysnum) {
+          if (valid_system(s)) {
+            nh.list_len++;
+            list.push_back(s);
           }
         }
       }

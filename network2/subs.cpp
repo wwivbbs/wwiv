@@ -189,16 +189,8 @@ bool handle_sub_add_req(Context& context, NetPacket& p) {
     return resp(sub_adddrop_not_host);
   }
   const auto filename = StrCat("n", subtype, ".net");
-  std::set<uint16_t> subscribers;
   const auto subscriber_fn = FilePath(context.net.dir, filename);
-  if (!ReadSubcriberFile(subscriber_fn, subscribers)) {
-    // Try to create the file if it does not already exist.
-    if (!WriteSubcriberFile(subscriber_fn, subscribers)) {
-      const std::string msg = "Unable to read subscribers file.";
-      LOG(WARNING) << msg;
-      return resp(sub_adddrop_error);
-    }
-  }
+  auto subscribers = ReadSubcriberFile(subscriber_fn);
   if (const auto result = subscribers.insert(p.nh.fromsys); result.second == false) {
     context.ssm.send_local(1, fmt::format("Can't add system @{} to subtype: {}, it's already there.",p.nh.fromsys, subtype));
     return resp(sub_adddrop_already_there);
@@ -228,15 +220,8 @@ bool handle_sub_drop_req(Context& context, NetPacket& p) {
     return resp(sub_adddrop_not_host);
   }
   const auto filename = StrCat("n", subtype, ".net");
-  std::set<uint16_t> subscribers;
   const auto subscriber_fn = FilePath(context.net.dir, filename);
-  if (!ReadSubcriberFile(subscriber_fn, subscribers)) {
-    // Try to create the file if it does not already exist.
-    if (!WriteSubcriberFile(subscriber_fn, subscribers)) {
-      LOG(INFO) << "Unable to read subscribers file.";
-      return resp(sub_adddrop_error);
-    }
-  }
+  auto subscribers = ReadSubcriberFile(subscriber_fn);
   if (const auto num_removed = subscribers.erase(p.nh.fromsys); num_removed == 0) {
     return resp(sub_adddrop_not_there);
   }
