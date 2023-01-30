@@ -27,6 +27,7 @@
 #include "fmt/printf.h"
 #include "network2/context.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 #include "sdk/ssm.h"
 #include "sdk/subxtr.h"
 #include "sdk/net/packets.h"
@@ -188,6 +189,12 @@ bool handle_sub_add_req(Context& context, NetPacket& p) {
     LOG(ERROR) << msg;
     return resp(sub_adddrop_not_host);
   }
+  const auto disallow_dat_fn = FilePath(context.net.dir, DISALLOW_NET);
+  auto disallowed = ReadSubcriberFile(disallow_dat_fn);
+  if (contains(disallowed, p.nh.fromsys)) {
+    context.ssm.send_local(1, fmt::format("Req Add: @{}Tried to subscribe '{}' - not allowed.", p.nh.fromsys, subtype));
+    return resp(sub_adddrop_not_allowed);
+  }
   const auto filename = StrCat("n", subtype, ".net");
   const auto subscriber_fn = FilePath(context.net.dir, filename);
   auto subscribers = ReadSubcriberFile(subscriber_fn);
@@ -237,16 +244,15 @@ bool handle_sub_drop_req(Context& context, NetPacket& p) {
 
 static std::string SubAddDropResponseMessage(uint8_t code) {
   switch (code) {
-  case sub_adddrop_already_there: return "You are already there";
+  case sub_adddrop_already_there: return "You are already in the sub.";
   case sub_adddrop_error: return "Error Adding or Droppign Sub";
-  case sub_adddrop_not_allowed: return "Not allowed to add or drop this sub";
-  case sub_adddrop_not_host: return "This system is not the host";
-  case sub_adddrop_not_there: return "You were not subscribed to the sub";
-  case sub_adddrop_ok: return "Add or Drop successful";
+  case sub_adddrop_not_allowed: return "The sub is not under automatic control.  Send email instead.";
+  case sub_adddrop_not_host: return "That sub is not hosted here.";
+  case sub_adddrop_not_there: return "You were not listed for the sub.";
+  case sub_adddrop_ok: return "Success! You have been added to or removed from the sub.";
   default:
     return fmt::format("Unknown response code {}", code);
   }
-
 }
 
 bool handle_sub_add_drop_resp(Context& context, NetPacket& p, const std::string& add_or_drop) {

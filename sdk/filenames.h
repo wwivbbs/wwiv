@@ -44,7 +44,8 @@
 #define CALLOUT_NET "callout.net"
 #define CATEG_NET "categ.net"
 #define CHAT_NOEXT "chat"
-#define DROPFILE_CHAIN_TXT "chain.txt"
+constexpr auto DISALLOW_NET = "disallow.net";
+constexpr auto DROPFILE_CHAIN_TXT = "chain.txt";
 constexpr auto CHAINS_DAT = "chains.dat";
 constexpr auto CHAINS_REG = "chains.reg";
 constexpr auto CHAINS_JSON = "chains.json";
