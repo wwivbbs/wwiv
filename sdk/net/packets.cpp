@@ -103,10 +103,9 @@ std::tuple<NetPacket, ReadNetPacketResponse> read_packet(File& f, bool process_d
       return std::make_tuple(packet, ReadNetPacketResponse::ERROR);
     }
 
-    if (packet.nh.method > 0 && process_de &&
+    if (packet.nh.method == 1  && process_de &&
         packet.nh.length > 146 /* Make sure we have enough for a header */) {
-      // HACK - this should do this in a shim DE
-      // 146 is the sizeof EN/DE header.
+      // HACK - this should do this in a shim DE 146 is the sizeof EN/DE header for de1.
       packet.nh.length -= 146;
       char header[147];
       f.Read(header, 146);
