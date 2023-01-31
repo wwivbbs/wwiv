@@ -63,17 +63,16 @@ FtnDirectories::FtnDirectories(std::filesystem::path bbsdir, const Network& net,
 
 FtnDirectories::~FtnDirectories() = default;
 
-std::string FtnDirectories::net_dir() const { return net_dir_.string(); }
-std::string FtnDirectories::inbound_dir() const { return inbound_dir_.string(); }
-std::string FtnDirectories::temp_inbound_dir() const { return temp_inbound_dir_.string(); }
-std::string FtnDirectories::temp_outbound_dir() const { return temp_outbound_dir_.string(); }
-std::string FtnDirectories::outbound_dir() const { return outbound_dir_.string(); }
-std::string FtnDirectories::netmail_dir() const { return netmail_dir_.string(); }
-std::string FtnDirectories::bad_packets_dir() const { return bad_packets_dir_.string(); }
-std::string FtnDirectories::receive_dir() const { return receive_dir_.string(); }
+std::filesystem::path FtnDirectories::net_dir() const { return net_dir_; }
+std::filesystem::path FtnDirectories::inbound_dir() const { return inbound_dir_; }
+std::filesystem::path FtnDirectories::temp_inbound_dir() const { return temp_inbound_dir_; }
+std::filesystem::path FtnDirectories::temp_outbound_dir() const { return temp_outbound_dir_; }
+std::filesystem::path FtnDirectories::outbound_dir() const { return outbound_dir_; }
+std::filesystem::path FtnDirectories::netmail_dir() const { return netmail_dir_; }
+std::filesystem::path FtnDirectories::bad_packets_dir() const { return bad_packets_dir_; }
+std::filesystem::path FtnDirectories::receive_dir() const { return receive_dir_; }
 
-std::string FtnDirectories::tic_dir() const { return tic_dir_.string(); }
-std::string FtnDirectories::unknown_dir() const { return unknown_dir_.string(); }
-
+std::filesystem::path FtnDirectories::tic_dir() const { return tic_dir_; }
+std::filesystem::path FtnDirectories::unknown_dir() const { return unknown_dir_; }
 
 }

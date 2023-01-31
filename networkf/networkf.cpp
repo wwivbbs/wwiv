@@ -252,7 +252,7 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
   return true;
 }
 
-bool NetworkF::import_packets(const std::string& dir, const std::string& mask) {
+bool NetworkF::import_packets(const std::filesystem::path& dir, const std::string& mask) {
   VLOG(1) << "Importing packets from: " << dir << "' mask: '" << mask << "'";
   FindFiles files(FilePath(dir, mask), FindFiles::FindFilesType::files);
   if (files.empty()) {
@@ -318,7 +318,7 @@ bool NetworkF::import_bundle_file(const std::filesystem::path& path) {
  *
  * Returns the # of bundles processed.
  */
-int NetworkF::import_bundles(const std::string& dir, const std::string& mask) {
+int NetworkF::import_bundles(const std::filesystem::path& dir, const std::string& mask) {
   auto num_bundles_processed = 0;
 
   VLOG(3) << "import_bundles: mask: " << mask;
@@ -353,7 +353,7 @@ int NetworkF::import_bundles(const std::string& dir, const std::string& mask) {
   return num_bundles_processed;
 }
 
-static std::string rename_fido_packet(const std::string& dir, const std::string& origname) {
+static std::string rename_fido_packet(const std::filesystem::path& dir, const std::string& origname) {
   if (!ends_with(origname, ".pkt") || origname.size() != 12) {
     LOG(ERROR) << "rename_fido_packet: not allowed on name: '" << origname << "'";
     return origname;
@@ -722,9 +722,9 @@ std::optional<std::string> NetworkF::create_ftn_packet_and_bundle(const FidoAddr
   return bundlename;
 }
 
-static std::string NextNetmailFilePath(const std::string& dir) {
+static std::string NextNetmailFilePath(const std::filesystem::path& path) {
   for (int i = 2; i < 10000; i++) {
-    auto candidate = FilePath(dir, StrCat(i, ".msg"));
+    auto candidate = FilePath(path, StrCat(i, ".msg"));
     if (!File::Exists(candidate)) {
       return candidate.string();
     }
@@ -835,7 +835,7 @@ std::optional<std::string> NetworkF::CreateFloFile(const wwiv::sdk::fido::FidoAd
   return std::nullopt;
 }
 
-std::optional<std::string>
+std::optional<std::filesystem::path>
 NetworkF::CreateNetmailAttach(const FidoAddress& dest, const std::string& bundlename,
                               const fido_packet_config_t& packet_config) {
   const auto netmail_filepath = NextNetmailFilePath(dirs_.netmail_dir());
@@ -854,7 +854,7 @@ NetworkF::CreateNetmailAttach(const FidoAddress& dest, const std::string& bundle
   return netmail_filepath;
 }
 
-std::optional<std::string>
+std::optional<std::filesystem::path>
 NetworkF::CreateNetmailAttachOrFloFile(const FidoAddress& dest, const std::string& bundlename,
                                        const fido_packet_config_t& packet_config) {
   if (net_.fido.mailer_type == fido_mailer_t::attach) {

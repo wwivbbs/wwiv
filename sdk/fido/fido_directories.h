@@ -33,16 +33,16 @@ public:
   FtnDirectories(const std::filesystem::path& bbsdir, const Network& net);
   virtual ~FtnDirectories();
 
-  [[nodiscard]] std::string net_dir() const;
-  [[nodiscard]] std::string inbound_dir() const;
-  [[nodiscard]] std::string temp_inbound_dir() const;
-  [[nodiscard]] std::string temp_outbound_dir() const;
-  [[nodiscard]] std::string outbound_dir() const;
-  [[nodiscard]] std::string netmail_dir() const;
-  [[nodiscard]] std::string bad_packets_dir() const;
-  [[nodiscard]] std::string receive_dir() const;
-  [[nodiscard]] std::string tic_dir() const;
-  [[nodiscard]] std::string unknown_dir() const;
+  [[nodiscard]] std::filesystem::path net_dir() const;
+  [[nodiscard]] std::filesystem::path inbound_dir() const;
+  [[nodiscard]] std::filesystem::path temp_inbound_dir() const;
+  [[nodiscard]] std::filesystem::path temp_outbound_dir() const;
+  [[nodiscard]] std::filesystem::path outbound_dir() const;
+  [[nodiscard]] std::filesystem::path netmail_dir() const;
+  [[nodiscard]] std::filesystem::path bad_packets_dir() const;
+  [[nodiscard]] std::filesystem::path receive_dir() const;
+  [[nodiscard]] std::filesystem::path tic_dir() const;
+  [[nodiscard]] std::filesystem::path unknown_dir() const;
 
 private:
   const std::filesystem::path bbsdir_;

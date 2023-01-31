@@ -60,12 +60,12 @@ public:
 private:
   bool import_packet_file(const std::filesystem::path& path);
 
-  bool import_packets(const std::string& dir, const std::string& mask);
+  bool import_packets(const std::filesystem::path& dir, const std::string& mask);
 
   bool import_bundle_file(const std::filesystem::path& path);
 
   /** imports FTN bundles, returning the number of packets processed */
-  int import_bundles(const std::string& dir, const std::string& mask);
+  int import_bundles(const std::filesystem::path& dir, const std::string& mask);
 
   /**
    * Creates a FTN bundle using the appropriate archiver for the route_to system,
@@ -100,12 +100,12 @@ private:
                                            const sdk::net::fido_packet_config_t& packet_config);
 
   /** Create a FLO file, returning the name netmail attach file or nullopt */
-  std::optional<std::string>
+  std::optional<std::filesystem::path>
   CreateNetmailAttach(const sdk::fido::FidoAddress& dest, const std::string& bundlename,
                       const sdk::net::fido_packet_config_t& packet_config);
 
   /** Create a FLO file, returning the FLO file or generated or nullopt */
-  std::optional<std::string>
+  std::optional<std::filesystem::path>
   CreateNetmailAttachOrFloFile(const sdk::fido::FidoAddress& dest, const std::string& bundlename,
                                const sdk::net::fido_packet_config_t& packet_config);
 

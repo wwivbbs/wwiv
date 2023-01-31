@@ -123,7 +123,9 @@ void FileManager::ReceiveFile(const std::string& filename) {
   received_files_.push_back(filename);
 }
 
-static void rename_wwivnet_pend(const std::string& receive_directory, const std::string& net_dir, const std::string& filename) {
+static void rename_wwivnet_pend(const std::filesystem::path& receive_directory, 
+  const std::filesystem::path& net_dir, 
+  const std::string& filename) {
   const auto pend_filename = FilePath(receive_directory, filename);
   if (!File::Exists(pend_filename)) {
     LOG(ERROR) << " pending file does not exist: " << pend_filename;
