@@ -90,7 +90,7 @@ std::optional<Network> select_network() {
 
   bout.pl("|#5Networks: ");
   for (const auto& n : nets) {
-    bout.print("|#1|#9) |#2{}\r\n", n.first, n.second.name);
+    bout.print("|#1{}|#9) |#2{}\r\n", n.first, n.second.name);
   }
   bout.nl();
   bout.outstr("|#2(Q=Quit) Select Network Number : ");
@@ -118,7 +118,7 @@ static void list_area_tags(const std::vector<wwiv::sdk::files::dir_area_t>& area
   auto first{true};
   for (const auto& t : area_tags) {
     if (style == list_area_tags_style_t::number) {
-      bout.print("|#2{}|#9) ", nn++);
+      bout.print("|#2{}|#9) ", ++nn);
     } else if (style == list_area_tags_style_t::indent) {
       if (!first) {
         bout.outstr("                  ");
@@ -218,7 +218,7 @@ void modify_dir(int n) {
     }
     bout.print("|#9N) //UPLOADALL  : |#2{}\r\n", YesNoString((r.mask & mask_uploadall)));
     bout.print("|#9O) WWIV Reg     : |#2{}\r\n", YesNoString((r.mask & mask_wwivreg)));
-    bout.outstr("|#9T) FTN Area Tags: |#2{}\r\n");
+    bout.outstr("|#9T) FTN Area Tags: |#2");
     list_area_tags(r.area_tags, list_area_tags_style_t::indent);
     bout.print("|#9   Conferences  : |#2{}\r\n", r.conf.to_string());
     bout.nl(2);
