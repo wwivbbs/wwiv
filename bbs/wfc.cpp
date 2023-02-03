@@ -161,7 +161,7 @@ void WFC::DrawScreen() {
     const auto percent = static_cast<double>(status->active_today_minutes()) / 1440.0;
     bout.localIO()->PutsXYA(
         21, 13, 14,
-        fmt::format("{} Mins ({:.2}%)    ", status->active_today_minutes(), 100.0 * percent));
+        fmt::format("{} Mins ({:.2}%)  ", status->active_today_minutes(), 100.0 * percent));
     bout.localIO()->PutsXYA(58, 6, 14, full_version());
 
     bout.localIO()->PutsXYA(58, 7, 14, std::to_string(status->status_net_version()));
