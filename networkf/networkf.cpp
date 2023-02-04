@@ -223,7 +223,7 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
     text.push_back(0);
     text.append(msg.vh.subject);
     text.push_back(0);
-    text.append(StrCat(msg.vh.from_user_name, "(", from_address, ")\r\n"));
+    text.append(StrCat(msg.vh.from_user_name, " (", from_address, ")\r\n"));
     text.append(daten_to_wwivnet_time(ftn_packet_daten));
     text.append("\r\n");
 
