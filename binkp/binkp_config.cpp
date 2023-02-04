@@ -37,9 +37,9 @@ namespace wwiv::net {
 
 BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& config,
                        const Networks& networks)
-    : config_(config), callout_network_name_(callout_network_name), networks_(networks) {
+    : config_(config), callout_network_name_(ToStringLowerCase(callout_network_name)),
+      networks_(networks) {
   // network names will alwyas be compared lower case.
-  StringLowerCase(&callout_network_name_);
   system_name_ = config.system_name();
   if (system_name_.empty()) {
     system_name_ = "Unnamed WWIV BBS";

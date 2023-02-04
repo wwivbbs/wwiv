@@ -108,8 +108,7 @@ void write_automessage() {
     bout.print("|#7{}:|#0", i + 1);
     std::string line;
     inli(&line, &rollOver, 70);
-    StringTrimEnd(&line);
-    lines.push_back(line);
+    lines.push_back(StringTrimEnd(line));
   }
   bout.nl();
   bool bAnonStatus = false;

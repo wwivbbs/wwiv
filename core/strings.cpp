@@ -260,6 +260,11 @@ void StringTrimEnd(std::string* s) {
   s->erase(pos + 1);
 }
 
+std::string StringTrimEnd(std::string_view s) {
+  const auto pos = s.find_last_not_of(DELIMS_WHITE);
+  return std::string(s.data(), pos + 1);
+}
+
 /**
  * Removes the whitespace from the end of the string
  * @param str The string from which to remove the trailing whitespace

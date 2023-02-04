@@ -258,8 +258,7 @@ static std::string SubAddDropResponseMessage(uint8_t code) {
 bool handle_sub_add_drop_resp(Context& context, NetPacket& p, const std::string& add_or_drop) {
   // We want to stop at the 1st \0
   auto b = std::begin(p.text());
-  auto subname = get_message_field(p.text(),b, {'\0'}, 80);
-  StringTrimEnd(&subname);
+  const auto subname = StringTrimEnd(get_message_field(p.text(),b, {'\0'}, 80));
   if (b == std::end(p.text())) {
     LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
@@ -267,17 +266,17 @@ bool handle_sub_add_drop_resp(Context& context, NetPacket& p, const std::string&
 
   LOG(INFO) << "Processed " << add_or_drop << " response from system @" << p.nh.fromsys << " to subtype: " << subname;
 
-  auto code = *b++;
-  auto code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
+  const auto code = *b++;
+  const auto code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
 
-  auto orig_title = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
-  auto sender_name = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
-  auto orig_date = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
-  auto message_text = std::string(b, std::end(p.text()));
+  const auto orig_title = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
+  const auto sender_name = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
+  const auto orig_date = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
+  const auto message_text = std::string(b, std::end(p.text()));
   net_header_rec nh = {};
 
-  auto title = StrCat("WWIV AreaFix (", context.net.name, ") Response for subtype '", subname, "'");
-  auto byname = StrCat("WWIV AreaFix (", context.net.name, ") @", p.nh.fromsys);
+  const auto title = StrCat("WWIV AreaFix (", context.net.name, ") Response for subtype '", subname, "'");
+  const auto byname = StrCat("WWIV AreaFix (", context.net.name, ") @", p.nh.fromsys);
   auto body =
       StrCat("SubType '", subname, "', (", add_or_drop, ") Response: '", code_string, "'\r\n");
   body.append(message_text);

@@ -98,8 +98,7 @@ static std::tuple<std::string, std::string, bool> split_tic_line(const std::stri
   if (idx == std::string::npos) {
     return std::make_tuple("", "", true);
   }
-  auto keyword = ToStringLowerCase(line.substr(0, idx));
-  StringTrimEnd(&keyword);
+  const auto keyword = StringTrimEnd(ToStringLowerCase(line.substr(0, idx)));
   const auto params = StringTrim(line.substr(idx + 1));
   return std::make_tuple(keyword, params, false);
 }

@@ -27,6 +27,7 @@
 #include <limits>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -189,8 +190,8 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
    * @param str The string from which to remove the trailing whitespace
    */
   void StringTrimEnd(std::string* s);
+  std::string StringTrimEnd(std::string_view s);
 
-  //void StringTrimEnd(char* str);
   void StringTrimBegin(std::string* s);
   void StringUpperCase(std::string* s);
   [[nodiscard]] std::string ToStringUpperCase(const std::string& s);

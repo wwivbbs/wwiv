@@ -207,8 +207,7 @@ void OnlineUserEditor() {
       bout.localIO()->GotoXY(wx + 8, wy + 12);
       auto note = u.note();
       rc = bout.localIO()->EditLine(note, 60, AllowedKeys::ALL);
-      StringTrimEnd(&note);
-      u.note(note);
+      u.note(StringTrimEnd(note));
     } break;
     default: {
       LOG(ERROR) << "Unknown case: " << cp;

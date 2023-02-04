@@ -37,9 +37,7 @@ std::optional<std::string> get_qwk_from_message(const std::string& text) {
   if (qwk_from_end && qwk_from_end > qwk_from_start) {
     std::string temp(qwk_from_start, qwk_from_end - qwk_from_start);
 
-    strings::StringTrim(&temp);
-    strings::StringUpperCase(&temp);
-    return temp;
+    return strings::ToStringUpperCase(strings::StringTrim(temp));
   }
   return std::nullopt;
 }

@@ -335,6 +335,22 @@ TEST(StringsTest, StringTrimEnd) {
   EXPECT_EQ(" a", a);
 }
 
+TEST(StringsTest, StringTrimEnd_Empty) {
+  std::string a;
+  StringTrimEnd(&a);
+  EXPECT_TRUE(a.empty());
+}
+
+TEST(StringsTest, StringTrimEnd_StringView) {
+  const auto a = StringTrimEnd(" a ");
+  EXPECT_EQ(" a", a);
+}
+
+TEST(StringsTest, StringTrimEnd_StringView_Empty) {
+  const auto a = StringTrimEnd("");
+  EXPECT_TRUE(a.empty());
+}
+
 TEST(StringsTest, StringUpperCase) {
   std::string a = "aB";
   StringUpperCase(&a);

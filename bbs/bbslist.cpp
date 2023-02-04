@@ -162,8 +162,7 @@ static bool ConvertLegacyList(const std::filesystem::path& dir, const std::strin
       continue;
     }
     BbsListEntry e{};
-    auto name = line.substr(14, 42);
-    StringTrimEnd(&name);
+    auto name = StringTrimEnd(line.substr(14, 42));
     e.name = name;
     e.addresses.push_back({"modem", line.substr(0, 12)});
     e.software = line.substr(74, 4);

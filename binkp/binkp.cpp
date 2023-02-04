@@ -376,8 +376,7 @@ BinkState BinkP::WaitConn() {
     // Present all addresses on answering side.
     for (const auto& net : config_->networks().networks()) {
       if (net.type == network_type_t::wwivnet) {
-        std::string lower_case_network_name = net.name;
-        StringLowerCase(&lower_case_network_name);
+        std::string lower_case_network_name = ToStringLowerCase(net.name);
         send_command_packet(BinkpCommands::M_NUL, fmt::format("WWIV @{}.{}", net.sysnum,
                                                                lower_case_network_name));
         if (!network_addresses.empty()) {

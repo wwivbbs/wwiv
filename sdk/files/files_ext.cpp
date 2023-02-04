@@ -185,8 +185,7 @@ std::optional<std::string> FileAreaExtendedDesc::ReadExtended(const std::string&
     file.Read(&ss[0], ed.len);
     file.Close();
 
-    StringTrimEnd(&ss);
-    return {ss};
+    return StringTrimEnd(ss);
   }
   return std::nullopt;
 }
