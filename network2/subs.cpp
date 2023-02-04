@@ -257,10 +257,10 @@ static std::string SubAddDropResponseMessage(uint8_t code) {
 
 bool handle_sub_add_drop_resp(Context& context, NetPacket& p, const std::string& add_or_drop) {
   // We want to stop at the 1st \0
-  auto subname = p.text();
-  StringTrimEnd(&subname);
-
   auto b = std::begin(p.text());
+  auto subname = get_message_field(p.text(),b, {'\0'}, 80);
+  StringTrimEnd(&subname);
+  b=std::begin(p.text());
   while (b != std::end(p.text()) && *b != '\0') {
     ++b;
   }
@@ -280,9 +280,8 @@ bool handle_sub_add_drop_resp(Context& context, NetPacket& p, const std::string&
   auto code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
 
   auto orig_title = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
-  auto sender_date = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
+  auto sender_name = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
   auto orig_date = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
-
   auto message_text = std::string(b, std::end(p.text()));
   net_header_rec nh = {};
 
@@ -294,6 +293,7 @@ bool handle_sub_add_drop_resp(Context& context, NetPacket& p, const std::string&
 
   nh.touser = 1;
   nh.fromuser = std::numeric_limits<uint16_t>::max();
+  nh.fromsys = p.nh.fromsys;
   nh.main_type = main_type_email;
   nh.daten = daten_t_now();
 
