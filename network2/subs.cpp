@@ -260,15 +260,6 @@ bool handle_sub_add_drop_resp(Context& context, NetPacket& p, const std::string&
   auto b = std::begin(p.text());
   auto subname = get_message_field(p.text(),b, {'\0'}, 80);
   StringTrimEnd(&subname);
-  b=std::begin(p.text());
-  while (b != std::end(p.text()) && *b != '\0') {
-    ++b;
-  }
-  if (b == std::end(p.text())) {
-    LOG(INFO) << "Unable to determine code from add_drop response.";
-    return false;
-  } // NULL
-  ++b;
   if (b == std::end(p.text())) {
     LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
