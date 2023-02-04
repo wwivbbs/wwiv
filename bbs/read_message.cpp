@@ -422,7 +422,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
     bout.nl();
     num_header_lines++;
   }
-  bout.print("|#9Date|#7: |#1{}\r\n", msg.date);
+  bout.print("|#9Date|#7: |#1{0:{1}.{1}}\r\n", msg.date, a()->user()->screen_width()-50);
   num_header_lines++;
   if (!msg.to_user_name.empty()) {
     bout.print("  |#9To|#7: |#1{}\r\n", msg.to_user_name);
