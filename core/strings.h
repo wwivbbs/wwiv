@@ -190,7 +190,7 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
    */
   void StringTrimEnd(std::string* s);
 
-  void StringTrimEnd(char* str);
+  //void StringTrimEnd(char* str);
   void StringTrimBegin(std::string* s);
   void StringUpperCase(std::string* s);
   [[nodiscard]] std::string ToStringUpperCase(const std::string& s);

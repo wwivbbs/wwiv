@@ -865,6 +865,7 @@ private:
   const std::filesystem::path base_;
 };
 
+
 class CommandLineItem final : public EditItem<char*> {
 public:
   CommandLineItem(int maxsize, char* data) : EditItem<char*>(maxsize, data) {}
@@ -879,7 +880,9 @@ public:
     window->GotoXY(this->x_, this->y_);
     const auto return_code =
         editline(window, this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
-    strings::StringTrimEnd(this->data_);
+    std::string s(this->data_);
+    wwiv::strings::StringTrimEnd(&s);
+    strcpy(this->data_, s.c_str());
     return return_code;
   }
 
