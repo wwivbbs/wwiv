@@ -55,7 +55,7 @@ TEST_F(NetworkFTest, Smoke) {
   opts.system_name = "test bbsname";
 
   net_system_list_rec netsys;
-  netsys.sysnum = 32675;
+  netsys.sysnum = FTN_FAKE_OUTBOUND_NODE;
   wwiv::sdk::BbsListNet bbslist({netsys});
 
   FakeClock clock(DateTime::now());

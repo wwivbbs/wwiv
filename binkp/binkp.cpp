@@ -941,7 +941,7 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
       }
     }
 
-    // Log to net.log using fake outbound node (32675)
+    // Log to net.log using fake outbound node (32765)
     net_log.Log(system_clock::to_time_t(start_time), network_log_side, FTN_FAKE_OUTBOUND_NODE,
                 bytes_sent_, bytes_received_, log_seconds, remote_.network_name());
 
