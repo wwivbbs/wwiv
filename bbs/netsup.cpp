@@ -69,14 +69,14 @@ static std::string CreateNetworkBinary(const std::string& exe) {
   std::ostringstream ss;
   ss << FilePath(a()->bindir(), exe).string();
 #ifdef _WIN32
-  // CreateProcess is failing on Windows with the .exe extension, and since
+  // CreateProcess is failing on Windows without the .exe extension, and since
   // we don't use MakeAbsCmd on this, it's without .exe.
   ss << ".exe";
 #endif  // _WIN32
   ss << " --v=" << a()->verbose();
   ss << " --bbsdir=" << a()->bbspath().string();
-  ss << " --bindir=" << a()->bindir();
-  ss << " --configdir=" << a()->configdir();
+  ss << " --bindir=" << a()->bindir().string();
+  ss << " --configdir=" << a()->configdir().string();
 
   return ss.str();
 }
@@ -501,7 +501,7 @@ static void fill_call(int color, int row, const std::vector<CalloutEntry>& entri
       y++;
     }
     if (i < size_int(entries)) {
-      sprintf(s1, "%-5u", entries.at(i).node);
+      sprintf(s1, "%-5u", wwiv::stl::at(entries, i).node);
     } else {
       strcpy(s1, "     ");
     }
@@ -600,8 +600,8 @@ static std::pair<int, int> ansicallout() {
     switch (ch) {
     case ' ':
     case RETURN:
-      sn = entries.at(pos).node;
-      snn = entries.at(pos).net;
+      sn = at(entries, pos).node;
+      snn = at(entries, pos).net;
       done = true;
       break;
     case 'Q':

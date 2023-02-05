@@ -48,9 +48,8 @@ int DumpConnectCommand::Execute() {
 
   std::map<const std::string, Connect> connects;
   for (const auto& net : networks.networks()) {
-    std::string lower_case_network_name(net.name);
-    StringLowerCase(&lower_case_network_name);
-    connects.emplace(lower_case_network_name, Connect(net.dir));
+    const auto lnn = ToStringLowerCase(net.name);
+    connects.emplace(lnn, Connect(net.dir));
   }
 
   for (const auto& c : connects) {

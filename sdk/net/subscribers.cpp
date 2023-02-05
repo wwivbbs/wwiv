@@ -32,11 +32,12 @@ using namespace wwiv::sdk::fido;
 
 namespace wwiv::sdk {
 
-std::set<FidoAddress> ReadFidoSubcriberFile(const std::filesystem::path& filename) {
+std::set<FidoAddress> ReadFidoSubcriberFile(const std::filesystem::path& path) {
 
-  VLOG(1) << "ReadFidoSubcriberFile: " << filename;
-  TextFile file(filename, "rt");
+  VLOG(1) << "ReadFidoSubcriberFile: " << path;
+  TextFile file(path, "rt");
   if (!file.IsOpen()) {
+    TextFile wf(path, "wt");
     return{};
   }
 
@@ -50,29 +51,30 @@ std::set<FidoAddress> ReadFidoSubcriberFile(const std::filesystem::path& filenam
     try {
       subscribers.insert(FidoAddress(line));
     } catch (const bad_fidonet_address& e) {
-      LOG(ERROR) << "ReadFidoSubcriberFile: [" << filename << "] : " <<  e.what();
+      LOG(ERROR) << "ReadFidoSubcriberFile: [" << path.string() << "] : " <<  e.what();
     }
   }
   return subscribers;
 }
 
-bool ReadSubcriberFile(const std::filesystem::path& filename, std::set<uint16_t>& subscribers) {
-  VLOG(1) << "ReadSubcriberFile: " << filename;
-  subscribers.clear();
+std::set<uint16_t> ReadSubcriberFile(const std::filesystem::path& path) {
+  VLOG(1) << "ReadSubcriberFile: " << path;
 
-  TextFile file(filename, "rt");
+  TextFile file(path, "rt");
   if (!file.IsOpen()) {
-    return false;
+    TextFile wf(path, "wt");
+    return {};
   }
 
   std::string line;
+  std::set<uint16_t> subscribers;
   while (file.ReadLine(&line)) {
     StringTrim(&line);
     if (auto s = to_number<uint16_t>(line); s > 0) {
       subscribers.insert(s);
     }
   }
-  return true;
+  return subscribers;
 }
 
 bool WriteSubcriberFile(const std::filesystem::path& path, const std::set<uint16_t>& subscribers) {

@@ -237,6 +237,10 @@ void KillEMail() {
 }
 
 void LastCallers() {
+  if (a()->user()->clear_screen()) bout.cls();
+  bout.nl(2);
+  bout.print("|#1Last few callers to |#5{}|#7: |#0\r\n", a()->config()->system_name() );
+  bout.nl(2);
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
       a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
     bout.outstr("|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n");
@@ -246,6 +250,20 @@ void LastCallers() {
   const char filler_char = okansi() ? '\xCD' : '=';
   bout.print("|#7{}\r\n", std::string(79, filler_char));
   bout.printfile(LASTON_TXT);
+  bout.print("|#7{}\r\n", std::string(79, filler_char));
+  bout.nl();
+  bout.pausescr();
+
+  // InterBBS Last Callers MOD
+  for (const auto& n : a()->nets().networks()) {
+    auto s1 = FilePath(n.dir, LASTON_TXT);
+    if (File::Exists(s1)) {
+        bout.printfile_path(s1);
+        bout.pausescr();
+	}
+    }
+  // InterBBS Last Callers MOD ends here
+
 }
 
 void ReadEMail() {
@@ -284,7 +302,7 @@ void GoodBye() {
     int cycle = 0;
     do {
       bout.cls();
-      bout.printfile(filename.string());
+      bout.printfile_path(filename);
       switch (const auto ch = onek("QFTO", true); ch) {
       case 'Q':
         cycle = 1;
@@ -400,10 +418,12 @@ void ToggleExpert(const std::string& data) {
 void WWIVVersion() {
   bout.cls();
   bout.print("|#9WWIV Bulletin Board System {}\r\n", full_version());
-  bout.outstr("|#9Copyright (C) 1998-2021, WWIV Software Services.\r\n");
-  bout.outstr("|#9All Rights Reserved.\r\n\r\n");
-  bout.pl(  "|#9Licensed under the Apache License, Version 2.0.");
-  bout.outstr("|#9Please see |#1http://www.wwivbbs.org/ |#9for more information\r\n\r\n");
+  bout.pl("|#9Copyright (C) 1998-2023, WWIV Software Services.");
+  bout.pl("|#9All Rights Reserved.");
+  bout.nl();
+  bout.pl("|#9Licensed under the Apache License, Version 2.0.");
+  bout.pl("|#9Please see |#1http://www.wwivbbs.org/ |#9for more information");
+  bout.nl();
   bout.print("|#9Compile Time    : |#2{}\r\n", wwiv_compile_datetime());
   bout.print("|#9SysOp Name      : |#2{}\r\n", a()->config()->sysop_name());
   bout.print("|#9OS              : |#2{}\r\n", os::os_version_string());

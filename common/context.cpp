@@ -38,9 +38,9 @@ using namespace wwiv::strings;
 using namespace std::chrono;
 
 Dirs::Dirs(const std::filesystem::path& bbsdir)
-    : Dirs(FilePath(bbsdir, "temp").string(), FilePath(bbsdir, "batch").string(),
-           FilePath(bbsdir, "batch").string(), FilePath(bbsdir, "gfiles").string(),
-           FilePath(bbsdir, "scratch").string()) {}
+    : Dirs(FilePath(bbsdir, "temp"), FilePath(bbsdir, "batch"),
+           FilePath(bbsdir, "batch"), FilePath(bbsdir, "gfiles"),
+           FilePath(bbsdir, "scratch")) {}
 
 std::filesystem::path Dirs::current_menu_gfiles_directory() const noexcept {
   return FilePath(current_menu_directory_, "gfiles");
@@ -137,6 +137,10 @@ void SessionContext::load_menu_set(const std::filesystem::path& menusdir,
   }
 }
 
+int SessionContext::debug_wwivbasic_port() const { return debug_wwivbasic_port_; }
+bool SessionContext::debug_wwivbasic() const { return debug_wwivbasic_port_ > 0; }
+void SessionContext::debug_wwivbasic_port(int d) { debug_wwivbasic_port_ = d; }
+
 std::optional<sdk::value::Value> MapValueProvider::value(const std::string& name) const {
   if (const auto& iter = map_.find(name); iter != std::end(map_)) {
     return sdk::value::Value(iter->second);
@@ -168,5 +172,7 @@ bool Context::clear_context_variables() {
   return_values_.clear();
   return true;
 }
+
+
 
 }

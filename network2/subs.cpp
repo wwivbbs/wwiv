@@ -27,6 +27,7 @@
 #include "fmt/printf.h"
 #include "network2/context.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 #include "sdk/ssm.h"
 #include "sdk/subxtr.h"
 #include "sdk/net/packets.h"
@@ -188,13 +189,15 @@ bool handle_sub_add_req(Context& context, NetPacket& p) {
     LOG(ERROR) << msg;
     return resp(sub_adddrop_not_host);
   }
-  const auto filename = StrCat("n", subtype, ".net");
-  std::set<uint16_t> subscribers;
-  if (!ReadSubcriberFile(FilePath(context.net.dir, filename), subscribers)) {
-    const std::string msg = "Unable to read subscribers file.";
-    LOG(WARNING) << msg;
-    return resp(sub_adddrop_error);
+  const auto disallow_dat_fn = FilePath(context.net.dir, DISALLOW_NET);
+  auto disallowed = ReadSubcriberFile(disallow_dat_fn);
+  if (contains(disallowed, p.nh.fromsys)) {
+    context.ssm.send_local(1, fmt::format("Req Add: @{}Tried to subscribe '{}' - not allowed.", p.nh.fromsys, subtype));
+    return resp(sub_adddrop_not_allowed);
   }
+  const auto filename = StrCat("n", subtype, ".net");
+  const auto subscriber_fn = FilePath(context.net.dir, filename);
+  auto subscribers = ReadSubcriberFile(subscriber_fn);
   if (const auto result = subscribers.insert(p.nh.fromsys); result.second == false) {
     context.ssm.send_local(1, fmt::format("Can't add system @{} to subtype: {}, it's already there.",p.nh.fromsys, subtype));
     return resp(sub_adddrop_already_there);
@@ -224,11 +227,8 @@ bool handle_sub_drop_req(Context& context, NetPacket& p) {
     return resp(sub_adddrop_not_host);
   }
   const auto filename = StrCat("n", subtype, ".net");
-  std::set<uint16_t> subscribers;
-  if (!ReadSubcriberFile(FilePath(context.net.dir, filename), subscribers)) {
-    LOG(INFO) << "Unable to read subscribers file.";
-    return resp(sub_adddrop_error);
-  }
+  const auto subscriber_fn = FilePath(context.net.dir, filename);
+  auto subscribers = ReadSubcriberFile(subscriber_fn);
   if (const auto num_removed = subscribers.erase(p.nh.fromsys); num_removed == 0) {
     return resp(sub_adddrop_not_there);
   }
@@ -244,32 +244,21 @@ bool handle_sub_drop_req(Context& context, NetPacket& p) {
 
 static std::string SubAddDropResponseMessage(uint8_t code) {
   switch (code) {
-  case sub_adddrop_already_there: return "You are already there";
+  case sub_adddrop_already_there: return "You are already in the sub.";
   case sub_adddrop_error: return "Error Adding or Droppign Sub";
-  case sub_adddrop_not_allowed: return "Not allowed to add or drop this sub";
-  case sub_adddrop_not_host: return "This system is not the host";
-  case sub_adddrop_not_there: return "You were not subscribed to the sub";
-  case sub_adddrop_ok: return "Add or Drop successful";
+  case sub_adddrop_not_allowed: return "The sub is not under automatic control.  Send email instead.";
+  case sub_adddrop_not_host: return "That sub is not hosted here.";
+  case sub_adddrop_not_there: return "You were not listed for the sub.";
+  case sub_adddrop_ok: return "Success! You have been added to or removed from the sub.";
   default:
     return fmt::format("Unknown response code {}", code);
   }
-
 }
 
 bool handle_sub_add_drop_resp(Context& context, NetPacket& p, const std::string& add_or_drop) {
   // We want to stop at the 1st \0
-  auto subname = p.text();
-  StringTrimEnd(&subname);
-
   auto b = std::begin(p.text());
-  while (b != std::end(p.text()) && *b != '\0') {
-    ++b;
-  }
-  if (b == std::end(p.text())) {
-    LOG(INFO) << "Unable to determine code from add_drop response.";
-    return false;
-  } // NULL
-  ++b;
+  const auto subname = StringTrimEnd(get_message_field(p.text(),b, {'\0'}, 80));
   if (b == std::end(p.text())) {
     LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
@@ -277,24 +266,24 @@ bool handle_sub_add_drop_resp(Context& context, NetPacket& p, const std::string&
 
   LOG(INFO) << "Processed " << add_or_drop << " response from system @" << p.nh.fromsys << " to subtype: " << subname;
 
-  auto code = *b++;
-  auto code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
+  const auto code = *b++;
+  const auto code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
 
-  auto orig_title = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
-  auto sender_date = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
-  auto orig_date = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
-
-  auto message_text = std::string(b, std::end(p.text()));
+  const auto orig_title = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
+  const auto sender_name = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
+  const auto orig_date = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
+  const auto message_text = std::string(b, std::end(p.text()));
   net_header_rec nh = {};
 
-  auto title = StrCat("WWIV AreaFix (", context.net.name, ") Response for subtype '", subname, "'");
-  auto byname = StrCat("WWIV AreaFix (", context.net.name, ") @", p.nh.fromsys);
+  const auto title = StrCat("WWIV AreaFix (", context.net.name, ") Response for subtype '", subname, "'");
+  const auto byname = StrCat("WWIV AreaFix (", context.net.name, ") @", p.nh.fromsys);
   auto body =
       StrCat("SubType '", subname, "', (", add_or_drop, ") Response: '", code_string, "'\r\n");
   body.append(message_text);
 
   nh.touser = 1;
   nh.fromuser = std::numeric_limits<uint16_t>::max();
+  nh.fromsys = p.nh.fromsys;
   nh.main_type = main_type_email;
   nh.daten = daten_t_now();
 

@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 #include "bbs/msgbase1.h"
 #include "core/datetime.h"
@@ -26,19 +27,13 @@
 #include "local_io/keycodes.h"
 #include "sdk/msgapi/parsed_message.h"
 
+using namespace testing;
 using namespace wwiv::core;
 using namespace wwiv::local::io;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::sdk::msgapi;
-
-static std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
-  auto temp(s);
-  temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
-  // Use SplitString(..., false) so we don't skip blank lines.
-  return SplitString(temp, "\r", false);
-}
 
 class ParsedMessageTest : public ::testing::Test {
 protected:
@@ -71,14 +66,14 @@ protected:
     expected_list_wwiv_.emplace_back("Line of text");
   }
 
-  std::string expected_string(size_t pos, const std::string& val) {
+  std::string expected_string_ftn_format(size_t pos, const std::string& val) {
     insert_at(expected_list_, pos, val);
-    return JoinStrings(expected_list_, "\r\n") + cz;
+    return JoinStrings(expected_list_, "\r") + cz;
   }
 
-  std::string expected_string_new_msgid(size_t pos, const std::string& val) {
+  std::string expected_string_new_msgid_ftn_format(size_t pos, const std::string& val) {
     insert_at(expected_list_new_msgid_, pos, val);
-    return JoinStrings(expected_list_new_msgid_, "\r\n") + cz;
+    return JoinStrings(expected_list_new_msgid_, "\r") + cz;
   }
 
   std::string expected_string_wwiv(size_t pos, const std::string& val) {
@@ -102,17 +97,16 @@ protected:
 
 TEST_F(ParsedMessageTest, AfterMsgID) {
   const auto kReply = ca + "REPLY";
-  ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text, "\r\n");
+  FTNParsedMessageText p(JoinStrings(expected_list_, "\r"));
   p.add_control_line_after("MSGID", "REPLY");
   const auto actual_string = p.to_string();
 
-  EXPECT_EQ(expected_string(4, kReply), actual_string);
+  EXPECT_EQ(expected_string_ftn_format(4, kReply), actual_string);
 }
 
 TEST_F(ParsedMessageTest, AddReplyAndReplaceMsgID) {
   const auto kReply = ca + "REPLY";
-  ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text,
-                      "\r\n");
+  FTNParsedMessageText p(JoinStrings(expected_list_, "\r"));
   const auto kNewMsgId = ca + "MSGID 5678";
   p.add_control_line_after("MSGID", "MSGID 5678");
   // Remove original msgid
@@ -120,13 +114,12 @@ TEST_F(ParsedMessageTest, AddReplyAndReplaceMsgID) {
   p.add_control_line_after("MSGID", "REPLY");
   const auto actual_string = p.to_string();
 
-  EXPECT_EQ(expected_string_new_msgid(4, kReply), actual_string);
+  EXPECT_EQ(expected_string_new_msgid_ftn_format(4, kReply), actual_string);
 }
 
 TEST_F(ParsedMessageTest, AfterMsgID_WWIVControlLines) {
   const auto kReply = cd + "0REPLY";
-  ParsedMessageText p(cd + "0", JoinStrings(expected_list_wwiv_, "\r\n"),
-                      split_wwiv_style_message_text, "\r\n");
+  WWIVParsedMessageText p(JoinStrings(expected_list_wwiv_, "\r\n"));
   p.add_control_line_after("MSGID", "REPLY");
   const auto actual_string = p.to_string();
 
@@ -136,19 +129,17 @@ TEST_F(ParsedMessageTest, AfterMsgID_WWIVControlLines) {
 TEST_F(ParsedMessageTest, AtEndOfControlLines) {
   const auto kControlLineWithControlChar = ca + "DUDE";
   const std::string kControlLine = "DUDE";
-  ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text,
-                      "\r\n");
+  FTNParsedMessageText p(JoinStrings(expected_list_, "\r"));
   p.add_control_line(kControlLine);
   const auto actual_string = p.to_string();
 
-  EXPECT_EQ(expected_string(5, kControlLineWithControlChar), actual_string);
+  EXPECT_EQ(expected_string_ftn_format(5, kControlLineWithControlChar), actual_string);
 }
 
 TEST_F(ParsedMessageTest, AtEndOfControlLines_WWIVControlLines) {
   const std::string kControlLine = "DUDE";
   const auto kControlLineWithControlChar = cd + "0DUDE";
-  ParsedMessageText p(cd + "0", JoinStrings(expected_list_wwiv_, "\r\n"),
-                      split_wwiv_style_message_text, "\r\n");
+  WWIVParsedMessageText p(JoinStrings(expected_list_wwiv_, "\r\n"));
   p.add_control_line(kControlLine);
   const auto actual_string = p.to_string();
 
@@ -264,4 +255,67 @@ J..
   style.reattribute_quotes = true;
   const auto lines = p.to_lines(style);
   EXPECT_EQ(34u, lines.size()) << JoinStrings(lines, "\n");
+}
+
+
+
+TEST(WWIVParsedMessageTest, ToLines_B1498) {
+  const std::string cz(1, static_cast<char>(CZ));
+  std::string text =
+      R"(The majority of the storm was here in MD on Thursday night into Friday.  We[^A]
+went from 57 degrees at 1am Friday morning to 3 degrees Saturday morning.  Very[^A]
+high wind gusts and lots of rain, that changed to ice/snow for a bit, but[^A]
+didn't accumulate to anything.)";
+
+  const std::string expected = "RF> This is a long\x1|RF> line of text|RF> xxxx of the text|";
+  StringReplace(&text, "\n", "\r\n");
+  StringReplace(&text, "[^A]", "\x01");
+  const WWIVParsedMessageText p(text);
+  parsed_message_lines_style_t style{};
+  style.line_length = 79;
+  style.ctrl_lines = control_lines_t::control_lines;
+  style.add_wrapping_marker = false;
+  const auto lines = p.to_lines(style);
+  EXPECT_EQ(4u, lines.size());
+  EXPECT_THAT(lines[0],
+              Eq("The majority of the storm was here in MD on Thursday night into Friday.  We"))
+      << JoinStrings(lines, "\n");
+  EXPECT_THAT(lines[1],
+              Eq("went from 57 degrees at 1am Friday morning to 3 degrees Saturday morning.  Very"))
+      << JoinStrings(lines, "\n");
+  EXPECT_THAT(lines[2],
+              Eq("high wind gusts and lots of rain, that changed to ice/snow for a bit, but"))
+      << JoinStrings(lines, "\n");
+  EXPECT_THAT(lines[3], Eq("didn't accumulate to anything.")) << JoinStrings(lines, "\n");
+}
+
+TEST(WWIVParsedMessageTest, ToLines_B1498_120) {
+  const std::string cz(1, static_cast<char>(CZ));
+  std::string text =
+      R"(The majority of the storm was here in MD on Thursday night into Friday.  We[^A]
+went from 57 degrees at 1am Friday morning to 3 degrees Saturday morning.  Very[^A]
+high wind gusts and lots of rain, that changed to ice/snow for a bit, but[^A]
+didn't accumulate to anything.)";
+
+  const std::string expected = "RF> This is a long\x1|RF> line of text|RF> xxxx of the text|";
+  StringReplace(&text, "\n", "\r\n");
+  StringReplace(&text, "[^A]", "\x01");
+  const WWIVParsedMessageText p(text);
+  parsed_message_lines_style_t style{};
+  style.line_length = 119;
+  style.ctrl_lines = control_lines_t::control_lines;
+  style.add_wrapping_marker = false;
+  const auto lines = p.to_lines(style);
+  EXPECT_EQ(3u, lines.size());
+  EXPECT_THAT(lines[0], Eq("The majority of the storm was here in MD on Thursday night into "
+                           "Friday.  We went from 57 degrees at 1am Friday morning"))
+      << JoinStrings(lines, "\n");
+  EXPECT_THAT(lines[1], Eq("to 3 degrees Saturday morning.  Very high wind gusts and lots of rain, "
+                           "that changed to ice/snow for a bit, but didn't"))
+      << JoinStrings(lines, "\n");
+  EXPECT_THAT(lines[2], Eq("accumulate to anything.")) << JoinStrings(lines, "\n");
+
+
+
+
 }

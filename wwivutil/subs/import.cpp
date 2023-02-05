@@ -52,7 +52,7 @@ Example: wwivutil subs import --net=1
   read_acs = user.sl >= 10
   maxmsgs = 5000
   uplink = 21:2/100
-
+  conf = ANF
 )";
 }
 

@@ -21,6 +21,7 @@
 
 #include "core/os.h"
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <sstream>
@@ -28,11 +29,22 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#ifdef _MSC_VER
+#include <sal.h>
+#endif
+
 typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 
 #if defined(_DEBUG) || !defined(NDEBUG)
 #define WWIV_CORE_LOG_DEBUG
 #endif
+
+#ifdef _MSC_VER
+#define WWIV_ANALYSIS_ASSUME(expr) _Analysis_assume_(expr)
+#else
+#define WWIV_ANALYSIS_ASSUME(expr)
+#endif
+
 
 #define LOG(LEVEL) LOG_##LEVEL
 #define VLOG(LEVEL) LOG_VERBOSE(LEVEL)
@@ -49,16 +61,19 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define LOG_ERROR wwiv::core::Logger(wwiv::core::LoggerLevel::error, 0)
 #define LOG_FATAL wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0)
 #define LOG_VERBOSE(verbosity) wwiv::core::Logger(wwiv::core::LoggerLevel::verbose, verbosity)
-#define LOG_FATAL wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0)
 
-#define CHECK(x) if (!(x)) wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0) \
-    << "Failed Precondition: at " << __FILE__ << ":" << __LINE__ << " Condition: " #x " " << wwiv::os::stacktrace()
+#define CHECK(x)                                                                                   \
+  if (!(x))                                                                                        \
+  wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0)                                            \
+      << "Failed Precondition: at " << __FILE__ << ":" << __LINE__ << " Condition: " #x " "        \
+      << wwiv::os::stacktrace()
 
 #define CHECK_LE(x, y) LOG_IF(!((x) <= (y)), FATAL)
 #define CHECK_EQ(x, y) LOG_IF(!((x) == (y)), FATAL)
 #define CHECK_NE(x, y) LOG_IF(!((x) != (y)), FATAL)
 #define CHECK_GE(x, y) LOG_IF(!((x) >= (y)), FATAL)
 #define CHECK_GT(x, y) LOG_IF(!((x) > (y)), FATAL)
+
 #ifdef WWIV_CORE_LOG_DEBUG
 #define DCHECK(x) CHECK(x)
 
@@ -106,7 +121,7 @@ public:
 typedef std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>>
 log_to_map_t;
 typedef std::function<std::string()> timestamp_fn;
-typedef std::function<std::string(std::string)> logdir_fn;
+typedef std::function<std::filesystem::path(std::filesystem::path)> logdir_fn;
 
 
 class LoggerConfig {

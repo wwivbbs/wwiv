@@ -130,7 +130,8 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
   }
 
   if (user_input[0] == 'O' && (so() || lcs())) {
-    show_files("*.frm", a()->config()->gfilesdir().c_str());
+    const auto gfilesdir = a()->config()->gfilesdir().string();
+    show_files("*.frm", gfilesdir.c_str());
     bout.outstr("|#2Which form letter: ");
     auto fn = bin.input_filename("", 8);
     if (fn.empty()) {
@@ -339,7 +340,7 @@ static std::vector<std::string> CreateMessageTitleVector(MessageArea* area, int 
 static void display_title_new(const std::vector<std::string>& lines, const FullScreenView& fs,
                               int i, bool selected) {
   bout.goxy(1, i + fs.lines_start());
-  const auto& l = lines.at(i);
+  const auto& l = wwiv::stl::at(lines, i);
   if (selected) {
     bout.outstr("|17|12>");
   } else {
@@ -581,7 +582,7 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
     return;
   }
 
-  bout.print("|#7{}{}{}\r\n", static_cast<unsigned char>(198),
+  bout.print("|#7{:c}{}{:c}\r\n", static_cast<unsigned char>(198),
              std::string(a()->user()->screen_width() - 3, static_cast<unsigned char>(205)),
              static_cast<unsigned char>(181));
   const auto num_title_lines = std::max<int>(a()->sess().num_screen_lines() - 6, 1);
@@ -594,7 +595,7 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
       abort = true;
     }
   }
-  bout.print("|#7{}{}{}\r\n", static_cast<unsigned char>(198),
+  bout.print("|#7{:c}{}{:c}\r\n", static_cast<unsigned char>(198),
              std::string(a()->user()->screen_width() - 3, static_cast<unsigned char>(205)),
              static_cast<unsigned char>(181));
 }
@@ -619,7 +620,7 @@ static void HandleMessageDownload(int msgnum) {
 
     bool bFileAbortStatus;
     bool bStatus;
-    send_file(f.string(), &bStatus, &bFileAbortStatus, f.string(), -1, b.length());
+    send_file(f, &bStatus, &bFileAbortStatus, f.string(), -1, b.length());
     bout.print("|#1Message download... |#2{}", bStatus ? "successful" : "unsuccessful");
     if (bStatus) {
       sysoplog("Downloaded message");
@@ -739,8 +740,12 @@ void HandleMessageReply(int& msg_num) {
     return;
   }
   const auto& cs = a()->current_sub();
-  auto m = read_type2_message(&p2.msg, p2.anony & 0x0f, true,
-                              cs.filename, p2.ownersys, p2.owneruser);
+  auto o =
+      read_type2_message(&p2.msg, p2.anony & 0x0f, true, cs.filename, p2.ownersys, p2.owneruser);
+  if (!o) {
+    return;
+  }
+  auto& m = o.value();
   m.title = p2.title;
 
   grab_quotes(m.raw_message_text, m.from_user_name, a()->context());

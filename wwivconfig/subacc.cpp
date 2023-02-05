@@ -36,7 +36,7 @@ using namespace wwiv::strings;
 static std::unique_ptr<File> fileSub;             
 // filename of .sub file. Ideally this shoudn't be a string but we don't use it
 // from joined threads nor from other initializers executed before the program starts
-static std::string subdat_fn; 
+static std::filesystem::path subdat_fn; 
 
 // locals
 static int current_read_message_area, subchg;
@@ -100,8 +100,7 @@ bool iscan1(int si, const wwiv::sdk::Subs& subs, const wwiv::sdk::Config& config
   }
 
   // set sub filename
-  const auto datadir = config.datadir();
-  subdat_fn = fmt::format("{}{}.sub", datadir, subs.sub(si).filename);
+  subdat_fn = FilePath(config.datadir(), fmt::format("{}.sub", subs.sub(si).filename));
 
   // open file, and create it if necessary
   if (!File::Exists(subdat_fn)) {

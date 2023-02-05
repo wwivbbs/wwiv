@@ -376,8 +376,7 @@ BinkState BinkP::WaitConn() {
     // Present all addresses on answering side.
     for (const auto& net : config_->networks().networks()) {
       if (net.type == network_type_t::wwivnet) {
-        std::string lower_case_network_name = net.name;
-        StringLowerCase(&lower_case_network_name);
+        std::string lower_case_network_name = ToStringLowerCase(net.name);
         send_command_packet(BinkpCommands::M_NUL, fmt::format("WWIV @{}.{}", net.sysnum,
                                                                lower_case_network_name));
         if (!network_addresses.empty()) {
@@ -941,7 +940,7 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
       }
     }
 
-    // Log to net.log using fake outbound node (32675)
+    // Log to net.log using fake outbound node (32765)
     net_log.Log(system_clock::to_time_t(start_time), network_log_side, FTN_FAKE_OUTBOUND_NODE,
                 bytes_sent_, bytes_received_, log_seconds, remote_.network_name());
 

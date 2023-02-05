@@ -49,9 +49,8 @@ int DumpCalloutCommand::Execute() {
 
   std::map<const std::string, Callout> callouts;
   for (const auto& net : networks.networks()) {
-    auto lower_case_network_name(net.name);
-    StringLowerCase(&lower_case_network_name);
-    callouts.emplace(lower_case_network_name, Callout(net, config()->config()->max_backups()));
+    const auto lnn = ToStringLowerCase(net.name);
+    callouts.emplace(lnn, Callout(net, config()->config()->max_backups()));
   }
 
   for (const auto& c : callouts) {

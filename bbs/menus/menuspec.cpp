@@ -127,9 +127,9 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool free_
       }
       bool sent = false;
       if (bOkToDL == -1) {
-        send_file(s1.string(), &sent, &abort, f.aligned_filename(), dn, -2L);
+        send_file(s1, &sent, &abort, f.aligned_filename(), dn, -2L);
       } else {
-        send_file(s1.string(), &sent, &abort, f.aligned_filename(), dn, f.numbytes());
+        send_file(s1, &sent, &abort, f.aligned_filename(), dn, f.numbytes());
       }
 
       if (sent) {
@@ -179,7 +179,7 @@ int MenuDownload(const std::string& dir_and_fname, bool bFreeDL, bool bTitle) {
   if (v.size() != 2) {
     return -1;
   }
-  return MenuDownload(v.at(0), aligns(v.at(1)), bFreeDL, bTitle);
+  return MenuDownload(wwiv::stl::at(v, 0), aligns(v.at(1)), bFreeDL, bTitle);
 }
 
 static int FindDoorNo(const std::string& name) {

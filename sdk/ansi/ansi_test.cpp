@@ -24,6 +24,8 @@
 
 #include "gtest/gtest.h"
 #include <string>
+#include <sdk/msgapi/parsed_message.h>
+using namespace wwiv::sdk::msgapi;
 
 using namespace wwiv::strings;
 using namespace wwiv::sdk::ansi;
@@ -137,3 +139,50 @@ TEST_F(AnsiTest, HeartAndPipe_WWIVPipeExpression) {
   write_hp("|{a.b}");
   check({"|{a.b}"});
 }
+
+
+TEST_F(AnsiTest, XenosTagLine) {
+  std::string text =
+      R"([^D]1
+[^D]2[^C]6  A  [^C]2.-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-.[^C]0
+[^D]3[^C]6 /[^C]5*[^C]6\ [^C]2|[^C]4 /\liens' /\lcove! WWIV on Linux, Taguig, Metro Manila, Philippines [^C]2|
+[^D]4[^C]6/ v \[^C]2`-=-=-=-=-=-=-=-=-=-=-=-[[^C]4 WWIV Development[^C]2]-=-=--=-=-=-=-=-=-=-=-=-=-'
+[^D]5
+[^D]6
+[^D]7)";
+
+  StringReplace(&text, "[^A]", "\x01");
+  StringReplace(&text, "[^C]", "\x03");
+  StringReplace(&text, "[^D]", "\x04");
+
+  const auto lines = SplitString(text, "\n");
+
+  // Finally render it to the frame buffer to interpret heart codes, ansi, etc.
+  FrameBuffer b80(80);
+  Ansi ansib80(&b80, {}, 0x07);
+  HeartAndPipeCodeFilter heart(&ansib80, {7, 11, 14, 13, 31, 10, 12, 9, 5, 3});
+  for (auto& l : lines) {
+    for (const auto c : l) {
+      heart.write(c);
+    }
+    // This is the same as in split_wwiv_message
+    if (l.front() == 0x04) { // CD
+      ansib80.attr(7);
+      ansib80.reset();
+    }
+    heart.write('\n');
+  }
+  b80.close();
+  auto screen_lines = b80.to_screen_as_lines();
+
+  const auto expected = fmt::format("{:c}4{:c}[0;31;40;1m/ v \\{:c}[33m`", 0x04, 0x1b, 0x1b);
+  EXPECT_TRUE(starts_with(screen_lines[3], expected)) << JoinStrings(screen_lines, "\n");
+}
+
+
+/*
+* 
+
+
+
+*/

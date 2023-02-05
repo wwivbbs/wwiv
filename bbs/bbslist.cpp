@@ -143,7 +143,7 @@ bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename,
   return true;
 }
 
-static bool ConvertLegacyList(const std::string& dir, const std::string& legacy_filename,
+static bool ConvertLegacyList(const std::filesystem::path& dir, const std::string& legacy_filename,
                               std::vector<BbsListEntry>& entries) {
 
   TextFile legacy_file(FilePath(dir, legacy_filename), "r");
@@ -162,8 +162,7 @@ static bool ConvertLegacyList(const std::string& dir, const std::string& legacy_
       continue;
     }
     BbsListEntry e{};
-    auto name = line.substr(14, 42);
-    StringTrimEnd(&name);
+    auto name = StringTrimEnd(line.substr(14, 42));
     e.name = name;
     e.addresses.push_back({"modem", line.substr(0, 12)});
     e.software = line.substr(74, 4);

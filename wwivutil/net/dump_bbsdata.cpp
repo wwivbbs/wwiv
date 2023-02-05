@@ -56,8 +56,7 @@ int DumpBbsDataCommand::Execute() {
 
   std::map<const std::string, BbsListNet> bbslists;
   for (const auto& net : networks.networks()) {
-    auto lower_case_network_name(net.name);
-    StringLowerCase(&lower_case_network_name);
+    const auto lower_case_network_name = ToStringLowerCase(net.name);
     if (barg("bbslist")) {
       LOG(INFO) << "Parsing bbslist.net";
       bbslists.emplace(lower_case_network_name, BbsListNet::ParseBbsListNet(net.sysnum, net.dir));

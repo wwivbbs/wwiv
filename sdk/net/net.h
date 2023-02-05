@@ -261,6 +261,9 @@ struct fido_network_config_t {
   bool wwiv_heart_color_codes{false};
   // Allow any pipe codes, WWIV and standard.
   bool allow_any_pipe_codes{true};
+  // Max number of days old a packet is allowed to be and still be imported.
+  // This should help with dupes.  A value of 0 means no age restriction.
+  int max_echomail_age_days{0};
 };
 
 /**

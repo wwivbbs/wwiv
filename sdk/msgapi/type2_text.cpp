@@ -75,8 +75,7 @@ std::optional<File> Type2Text::OpenMessageFile() const {
   // a()->status_manager()->reload_status();
 
   File message_file(path_);
-  if (!message_file.Open(File::modeReadWrite | File::modeBinary)) {
-    // TODO(rushfan): Switch to std::optional?
+  if (!message_file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return std::nullopt;
   }
   return message_file;

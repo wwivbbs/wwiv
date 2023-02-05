@@ -43,7 +43,7 @@ std::filesystem::path FileHelper::testdata_;
 FileHelper::FileHelper() {
   const auto* const test_info = testing::UnitTest::GetInstance()->current_test_info();
   const auto dir = fmt::format("{}_{}", test_info->test_suite_name(), test_info->name());
-  tmp_ = CreateTempDir(dir);
+  tmp_ = File::canonical(CreateTempDir(dir));
 }
 
 std::string FileHelper::DirName(const std::string& oname) const {
@@ -140,7 +140,7 @@ std::filesystem::path FileHelper::CreateTempDir(const std::string& base) {
   }
 #else
   char local_dir_template[MAX_PATH];
-  const auto template_ = StrCat(temp_path.string(), "/fileXXXXXX");
+  const auto template_ = StrCat(temp_path.string(), "/", base, "XXXXXX");
   to_char_array(local_dir_template, template_);
   char* result = mkdtemp(local_dir_template);
   if (result) {
@@ -152,7 +152,7 @@ std::filesystem::path FileHelper::CreateTempDir(const std::string& base) {
 
 std::filesystem::path FileHelper::CreateTempFilePath(const std::string& orig_name) const {
   const auto name{File::FixPathSeparators(orig_name)};
-  return FilePath(TempDir(), name);
+  return File::canonical(FilePath(TempDir(), name));
 }
 
 std::tuple<FILE*, std::filesystem::path>

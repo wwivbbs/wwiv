@@ -140,7 +140,7 @@ bool Conference::erase(char key) {
   return confs_.erase(key) > 0;
 }
 
-Conferences::Conferences(const std::string& datadir, Subs& subs, files::Dirs& dirs, int max_backups)
+Conferences::Conferences(const std::filesystem::path& datadir, Subs& subs, files::Dirs& dirs, int max_backups)
   : datadir_(datadir), subs_(subs), dirs_(dirs), max_backups_(max_backups) {
   if (auto o = Load()) {
     LoadFromFile(o.value());
@@ -300,6 +300,10 @@ conference_file_t UpgradeConferences(const Config& config, Subs& subs, files::Di
     auto c56 = to_conference_t(c4);
     // Now to emplace this into the subs.
     for (const auto subnum : c4.subs) {
+      if (subnum >= dirs.size()) {
+        // Don't try to dereference a bad sub
+        continue;
+      }
       try {
         auto& dir = dirs.dir(subnum);
         LOG(INFO) << "Inserting conf: '" << c56.key << "' into dir : " << dir.name;

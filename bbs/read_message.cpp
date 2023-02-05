@@ -308,14 +308,33 @@ static void UpdateHeaderInformation(int8_t anon_type, bool readit, const std::st
   }
 }
 
-Type2MessageData read_type2_message(messagerec* msg, uint8_t an, bool readit, const std::string& file_name,
-                                    int from_sys_num, int from_user) {
+std::optional<Type2MessageData> read_type2_message(messagerec* msg, uint8_t an, bool readit,
+                                                   const std::string& file_name, int from_sys_num,
+                                                   int from_user) {
 
   Type2MessageData data{};
   data.email = iequals("email", file_name);
+  if (data.email) {
+    data.message_area = "WWIV E-mail";
+  } else {
+    data.sub = a()->current_sub();
+    data.message_area = data.sub.name;
+
+    if (data.sub.nets.empty()) {
+      data.flags.insert(MessageFlags::LOCAL);
+    }
+    for (const auto& nets : data.sub.nets) {
+      const auto& net = a()->nets()[nets.net_num];
+      if (net.type == network_type_t::ftn) {
+        data.flags.insert(MessageFlags::FTN);
+      } else if (net.type == network_type_t::wwivnet) {
+        data.flags.insert(MessageFlags::WWIVNET);
+      }
+    }
+  }
   auto o = readfile(msg, file_name);
   if (!o) {
-    return {};
+    return std::nullopt;
   }
   // Make a copy of the raw message text.
   data.message_text = o.value();
@@ -403,7 +422,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
     bout.nl();
     num_header_lines++;
   }
-  bout.print("|#9Date|#7: |#1{}\r\n", msg.date);
+  bout.print("|#9Date|#7: |#1{0:{1}.{1}}\r\n", msg.date, a()->user()->screen_width()-50);
   num_header_lines++;
   if (!msg.to_user_name.empty()) {
     bout.print("  |#9To|#7: |#1{}\r\n", msg.to_user_name);
@@ -421,7 +440,7 @@ static int legacy_display_header_text(Type2MessageData& msg) {
       num_header_lines++;
     }
     if (!msg.from_sys_loc.empty()) {
-      bout.print(" |#9Loc|#7: |#1{:<30}\r\n", msg.from_sys_loc);
+      bout.print(" |#9Loc|#7: |#1{0:<{1}.{1}}\r\n", msg.from_sys_loc, a()->user()->screen_width()-45);
       num_header_lines++;
     }
   }
@@ -563,9 +582,10 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg, bool a
   return FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
 }
 
-static std::vector<std::string> split_wwiv_message(const std::string& orig_text, bool controlcodes) {
+static std::vector<std::string> split_wwiv_message(const std::string& message_text,
+                                                   bool controlcodes) {
   const auto& user = *a()->user();
-  WWIVParsedMessageText pmt(orig_text);
+  WWIVParsedMessageText pmt(message_text);
   parsed_message_lines_style_t style{};
   style.ctrl_lines = control_lines_t::control_lines;
   style.add_wrapping_marker = false;
@@ -573,55 +593,97 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
   const auto orig_lines = pmt.to_lines(style);
 
   // Now handle control chars, and optional lines.
+  const auto optional_lines = user.optional_val();
   std::vector<std::string> lines;
-  std::string overflow;
-  for (auto line : orig_lines) {
+  for (auto& line : orig_lines) {
     if (line.empty()) {
       lines.emplace_back("");
       continue;
     }
-    const auto optional_lines = user.optional_val();
     if (line.front() == CD) {
       const auto level = line.size() > 1 ? line.at(1) - '0' : 0;
-      if (level == 0) {
-        // ^D0 lines are always skipped unless explicitly requested.
-        if (!controlcodes) {
-          continue;
-        }
-        line = StrCat("|08@", line.substr(2), "|#0");
-      } else {
-        line = line.substr(2);
+      if (level == 0 && !controlcodes) {
+        continue;
       }
       if (optional_lines != 0 && line.size() >= 2 && 10 - optional_lines < level) {
         // This is too high of a level, so skip it.
         continue;
       }
     }
-    // Not CD.  Check overflow.
+    // Not CD.
     lines.emplace_back(line);
   }
 
-  // Finally render it to the frame buffer to interpret
-  // heart codes, ansi, etc
-  FrameBuffer b{80};
+  // Render it to the frame buffer to interpret heart codes, ansi, etc.
+  FrameBuffer b(user.screen_width());
   Ansi ansi(&b, {}, 0x07);
   HeartAndPipeCodeFilter heart(&ansi, user.colors());
   for (auto& l : lines) {
     for (const auto c  : l) {
       heart.write(c);
     }
-    ansi.write("\n");
+    // Reset the ANSI state and color at the end of line for lines that start
+    // with control codes.
+    if (!l.empty() && l.front() == 0x04) { // CD
+      ansi.attr(7);
+      ansi.reset();
+    }
+    heart.write('\n');
   }
   b.close();
   return b.to_screen_as_lines();
 }
 
+/**
+ * returns the colorozed lined color by guessing the type of line.
+ */
+static std::string get_line_color(std::string& line) {
+  auto& colors = a()->config()->raw_config().colors.msg;
+  if (colors.tear_color.empty()) {
+    colors.tear_color = "|#8";
+  }
+  if (colors.origin_color.empty()) {
+    colors.origin_color = "|#8";
+  }
+  if (colors.quote_color.empty()) {
+    colors.quote_color = "|#5";
+  }
+  if (colors.text_color.empty()) {
+    colors.text_color = "|#0";
+  }
+  if (colors.kludge_color.empty()) {
+    colors.kludge_color = "|08";
+  }
+  if (line.empty()) {
+    return colors.text_color;
+  }
+  if (starts_with(line, "---")) {
+    return colors.tear_color;
+  }
+  if (starts_with(line, " * Origin:")) {
+    return colors.origin_color;
+  }
+  
+  if (auto pos = line.find('>'); pos >= 0 && pos <= 4 && line.find('\x3') == std::string::npos) {
+    return colors.quote_color;
+  }
+
+  return colors.text_color;
+}
+
 static void display_message_text_new(const std::vector<std::string>& lines, int start,
-                                     int message_height, int screen_width, int lines_start) {
+                                     int message_height, int screen_width, int lines_start, Type2MessageData& msg) {
   auto had_ansi = false;
+  auto& colors = a()->config()->raw_config().colors.msg;
+  if (colors.kludge_color.empty()) {
+    colors.kludge_color = "|08";
+  }
+  const auto colorize = msg.sub.colorize_text;
+
   for (auto i = start; i < start + message_height; i++) {
     // Do this so we don't pop up a pause for sure.
     bout.clear_lines_listed();
+    std::string color = "|#0";
 
     if (i >= size_int(lines)) {
       break;
@@ -630,22 +692,30 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
     auto l = lines.at(i);
     if (l.find("\x1b[") != std::string::npos) {
       had_ansi = true;
+      color = "|16";
     }
-    if (!l.empty() && l.back() == CA) {
-      // A line ending in ^A means it soft-wrapped.
-      l.pop_back();
-    }
-    if (!l.empty() && l.front() == CB) {
-      // Line starting with ^B is centered.
-      if (ssize(stripcolors(l)) >= screen_width) {
-        // TODO(rushfan): This should be stripped size
-        l = l.substr(1, screen_width);
-      } else {
-        l = StrCat(std::string((screen_width - stripcolors(l).size()) / 2, ' '), l.substr(1));
+    if (!l.empty()) {
+      if (l.back() == CA) {
+        // A line ending in ^A means it soft-wrapped.
+        l.pop_back();
+      } 
+      if (l.front() == CB) {
+        // Line starting with ^B is centered.
+        if (ssize(stripcolors(l)) >= screen_width) {
+          // TODO(rushfan): This should be stripped size
+          l = l.substr(1, screen_width);
+        } else {
+          l = StrCat(std::string((screen_width - stripcolors(l).size()) / 2, ' '), l.substr(1));
+        }
+      } else if (l.front() == CD) {
+        l = l.substr(2);
+        color = colors.kludge_color;
+      } else if (!had_ansi && colorize) {
+        color = get_line_color(l);
       }
     }
     bout.ansic(0);
-    bout.outstr(had_ansi ? "|16" : "|#0");
+    bout.outstr(color);
     bout.outstr(l);
     bout.clreol();
   }
@@ -687,7 +757,7 @@ static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData&
     if (dirty) {
       bout.ansic(0);
       display_message_text_new(lines, start, fs.message_height(), fs.screen_width(),
-                               fs.lines_start());
+                               fs.lines_start(), msg);
       dirty = false;
       fs.DrawBottomBar(start == last ? "END" : percent_read(start, last));
       fs.ClearCommandLine();
@@ -841,7 +911,7 @@ void display_type2_message_old_impl(Type2MessageData& msg, bool* next) {
 ReadMessageResult display_type2_message(int& msgno, Type2MessageData& msg, bool* next) {
   const auto fsreader_enabled =
       a()->fullscreen_read_prompt() && a()->user()->has_flag(User::fullScreenReader);
-  const auto skip_fs_reader_per_sub = (msg.subboard_flags & anony_no_fullscreen) != 0;
+  const auto skip_fs_reader_per_sub = (msg.sub.anony & anony_no_fullscreen) != 0;
   if (fsreader_enabled && !skip_fs_reader_per_sub && !msg.email) {
     // N.B.: We don't use the full screen reader for email yet since
     // It does not work.  Need to figure out how to rearrange email
@@ -894,30 +964,20 @@ ReadMessageResult read_post(int& msgnum, bool* next, int* val) {
   const auto read_it =
       (lcs() || (a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_post_anony)) ? true : false;
   const auto& cs = a()->current_sub();
-  auto m = read_type2_message(&p.msg, p.anony & 0x0f, read_it,
-                              cs.filename.c_str(), p.ownersys, p.owneruser);
-  m.subboard_flags = cs.anony;
+  auto o =
+      read_type2_message(&p.msg, p.anony & 0x0f, read_it, cs.filename, p.ownersys, p.owneruser);
+  ReadMessageResult result{};
+  if (!o) {
+    result.option = ReadMessageOption::NEXT_MSG;
+    return result;
+  }
+  auto& m = o.value();
+  m.message_number = msgnum;
+  m.total_messages = a()->GetNumMessagesInCurrentMessageArea();
   if (a()->sess().forcescansub()) {
     m.flags.insert(MessageFlags::FORCED);
   }
 
-  m.message_number = msgnum;
-  m.total_messages = a()->GetNumMessagesInCurrentMessageArea();
-  m.message_area = cs.name;
-
-  if (cs.nets.empty()) {
-    m.flags.insert(MessageFlags::LOCAL);
-  }
-  for (const auto& nets : cs.nets) {
-    const auto& net = a()->nets()[nets.net_num];
-    if (net.type == network_type_t::ftn) {
-      m.flags.insert(MessageFlags::FTN);
-    } else if (net.type == network_type_t::wwivnet) {
-      m.flags.insert(MessageFlags::WWIVNET);
-    }
-  }
-
-  ReadMessageResult result{};
   if (p.status & (status_unvalidated | status_delete)) {
     if (!lcs()) {
       result.option = ReadMessageOption::NEXT_MSG;

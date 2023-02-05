@@ -103,10 +103,9 @@ std::tuple<NetPacket, ReadNetPacketResponse> read_packet(File& f, bool process_d
       return std::make_tuple(packet, ReadNetPacketResponse::ERROR);
     }
 
-    if (packet.nh.method > 0 && process_de &&
+    if (packet.nh.method == 1  && process_de &&
         packet.nh.length > 146 /* Make sure we have enough for a header */) {
-      // HACK - this should do this in a shim DE
-      // 146 is the sizeof EN/DE header.
+      // HACK - this should do this in a shim DE 146 is the sizeof EN/DE header for de1.
       packet.nh.length -= 146;
       char header[147];
       f.Read(header, 146);
@@ -732,35 +731,28 @@ bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net
     } else if (current_net.type == network_type_t::wwivnet) {
       if (subnet.host == 0) {
         // We are the host.
-        std::set<uint16_t> subscribers;
-        const auto subscribers_read =
-            ReadSubcriberFile(FilePath(current_net.dir, StrCat("n", subnet.stype, ".net")), subscribers);
-        if (subscribers_read) {
-          // Remove the original sender from the set of systems
-          // that we will resend this to.
-          subscribers.erase(template_packet.nh.fromsys);
-          for (const auto& skip : subscribers_to_skip) {
-            // Skip the subscribers to skip too.
-            subscribers.erase(skip);
-          }
-          VLOG(1) << "Removing subscriber (sender): " << template_packet.nh.fromsys;
-          VLOG(1) << "Read subscribers #: " << subscribers.size();
-          VLOG(1) << "Creating wwivnet NetPacket to: ";
-          for (const auto x : subscribers) {
-            VLOG(1) << "        @" << x;
-          }
-
-          if (subscribers.empty()) {
-            VLOG(1) << "No subscribers left, skipping sending this NetPacket";
-          }
-          h.list_len = static_cast<uint16_t>(subscribers.size());
-          h.tosys = 0;
-          write_wwivnet_packet_or_log(
-              current_net, network_app_id,
-              NetPacket(h, std::vector<uint16_t>(subscribers.begin(), subscribers.end()), text));
-        } else {
-          LOG(ERROR) << "Unable to read subscribers for " << current_net.dir << " " << subnet.stype;
+        auto subscribers = ReadSubcriberFile(FilePath(current_net.dir, StrCat("n", subnet.stype, ".net")));
+        // Remove the original sender from the set of systems that we will resend this to.
+        subscribers.erase(template_packet.nh.fromsys);
+        for (const auto& skip : subscribers_to_skip) {
+          // Skip the subscribers to skip too.
+          subscribers.erase(skip);
         }
+        VLOG(1) << "Removing subscriber (sender): " << template_packet.nh.fromsys;
+        VLOG(1) << "Read subscribers #: " << subscribers.size();
+        VLOG(1) << "Creating wwivnet NetPacket to: ";
+        for (const auto x : subscribers) {
+          VLOG(1) << "        @" << x;
+        }
+
+        if (subscribers.empty()) {
+          VLOG(1) << "No subscribers left, skipping sending this NetPacket";
+        }
+        h.list_len = static_cast<uint16_t>(subscribers.size());
+        h.tosys = 0;
+        write_wwivnet_packet_or_log(
+            current_net, network_app_id,
+            NetPacket(h, std::vector<uint16_t>(subscribers.begin(), subscribers.end()), text));
       } else {
         // We are not the host.  Send message to host.
         h.tosys = subnet.host;

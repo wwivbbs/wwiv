@@ -22,6 +22,7 @@
 #include "core/strings.h"
 #include "sdk/vardec.h"
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <string>
@@ -33,7 +34,7 @@ class Status {
   friend class StatusMgr;
 
 public:
-  Status(std::string datadir, const statusrec_t& s);
+  Status(const std::filesystem::path& datadir, const statusrec_t& s);
   ~Status();
 
   /** If the caller number variable is using the old (pre 4.2) location, move it to the new location
@@ -113,7 +114,7 @@ public:
 
 private:
   statusrec_t status_;
-  const std::string datadir_;
+  const std::filesystem::path datadir_;
 };
 
 /*!
@@ -128,9 +129,9 @@ public:
   /*!
    * @function StatusMgr Constructor
    */
-  StatusMgr(std::string datadir, status_callabck_fn callback)
-      : datadir_(std::move(datadir)), callback_(std::move(callback)) {}
-  explicit StatusMgr(std::string datadir) : datadir_(std::move(datadir)) {}
+  StatusMgr(const std::filesystem::path& datadir, status_callabck_fn callback)
+      : datadir_(datadir), callback_(std::move(callback)) {}
+  explicit StatusMgr(const std::filesystem::path& datadir) : datadir_(datadir) {}
   virtual ~StatusMgr() = default;
   /*!
    * @function Loads the contents of STATUS.DAT
@@ -148,7 +149,7 @@ public:
   bool Run(status_txn_fn fn);
 
 private:
-  const std::string datadir_;
+  const std::filesystem::path datadir_;
   status_callabck_fn callback_;
   statusrec_t statusrec_{};
 };

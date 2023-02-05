@@ -154,7 +154,7 @@ static std::optional<int> query_network(const std::vector<NetworkAndName>& nets)
       return std::nullopt;
     }
     const int n = ch - '1';
-    return { nets.at(n).net.network_number() };
+    return { wwiv::stl::at(nets, n).net.network_number() };
   }
   const auto mmk = mmkey(odc); 
   if (mmk == "Q") {
@@ -164,7 +164,7 @@ static std::optional<int> query_network(const std::vector<NetworkAndName>& nets)
   if (selected < 0 || selected >= wwiv::stl::size_int(nets)) {
     return std::nullopt;
   }
-  return { nets.at(selected).net.network_number() };
+  return {wwiv::stl::at(nets, selected).net.network_number()};
 }
 
 static std::tuple<uint16_t, uint16_t> parse_internet_email_info(const std::string& email) {

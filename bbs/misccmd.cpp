@@ -198,12 +198,14 @@ void kill_old_email() {
         break;
         case 'R': {
           bout.nl(2);
-          auto msg = read_type2_message(&m.msg, m.anony & 0x0f, false, "email", 0, 0);
-          msg.title = m.title;
-          msg.message_area = "Personal E-Mail";
-          auto next = false;
-          auto fake_msgno = -1;
-          display_type2_message(fake_msgno, msg, &next);
+          if (auto o = read_type2_message(&m.msg, m.anony & 0x0f, false, "email", 0, 0)) {
+            auto& msg = o.value();
+            msg.title = m.title;
+            msg.message_area = "Personal E-Mail";
+            auto next = false;
+            auto fake_msgno = -1;
+            display_type2_message(fake_msgno, msg, &next);
+          }
         }
         break;
         }

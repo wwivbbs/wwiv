@@ -26,7 +26,7 @@
 
 namespace wwiv::sdk::fido::test {
 
-wwiv::sdk::net::Network CreateTestNetwork(const std::filesystem::path& dir) { 
+static wwiv::sdk::net::Network CreateTestNetwork(const std::filesystem::path& dir) { 
   wwiv::sdk::net::Network n(wwiv::sdk::net::network_type_t::ftn, "TestNET", dir,
                             FTN_FAKE_OUTBOUND_NODE);
   n.fido.inbound_dir = "in";

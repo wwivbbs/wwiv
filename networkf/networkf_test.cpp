@@ -23,7 +23,17 @@
 #include "networkf/networkf.h"
 #include "sdk/bbslist.h"
 #include "sdk/sdk_helper.h"
+#include "sdk/fido/fido_util.h"
 #include "sdk/fido/test/ftn_directories_test_helper.h"
+#include <gmock/gmock-matchers.h>
+
+#include <chrono>
+#include <string>
+
+using namespace std::chrono;
+using namespace testing;
+using namespace wwiv::core;
+using namespace wwiv::sdk::fido;
 
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido::test;
@@ -45,14 +55,41 @@ TEST_F(NetworkFTest, Smoke) {
   opts.system_name = "test bbsname";
 
   net_system_list_rec netsys;
-  netsys.sysnum = 32675;
+  netsys.sysnum = FTN_FAKE_OUTBOUND_NODE;
   wwiv::sdk::BbsListNet bbslist({netsys});
 
-  wwiv::core::FakeClock clock(wwiv::core::DateTime::now());
+  FakeClock clock(DateTime::now());
 
   auto net = helper.CreateTestNetwork(wwiv::sdk::net::network_type_t::ftn);
-  wwiv::net::networkf::NetworkF f(helper, opts, net, bbslist, clock);
+  NetworkF f(helper, opts, net, bbslist, clock);
 
   EXPECT_EQ(net.dir.string(), f.net().dir.string());
 }
 
+
+TEST_F(NetworkFTest, DaysOld_New) {
+  // daten_to_fido
+  FakeClock clock(DateTime::now());
+  auto fd = daten_to_fido(clock.Now().to_time_t());
+
+  EXPECT_THAT(ftn_date_days_old(clock, fd), Eq(0));
+}
+
+TEST_F(NetworkFTest, DaysOld_30) {
+  // daten_to_fido
+  FakeClock clock(DateTime::now());
+  auto fd = daten_to_fido(clock.Now().to_time_t());
+  clock.tick(hours(30 * 24));
+
+  EXPECT_THAT(ftn_date_days_old(clock, fd), Eq(30));
+}
+
+TEST_F(NetworkFTest, DaysOld_Newer) {
+  // daten_to_fido
+  FakeClock packet_clock(DateTime::now());
+  const auto now_clock = packet_clock;
+  packet_clock.tick(hours(25));
+  const auto fd = daten_to_fido(packet_clock.Now().to_time_t());
+
+  EXPECT_THAT(ftn_date_days_old(now_clock, fd), Le(0));
+}

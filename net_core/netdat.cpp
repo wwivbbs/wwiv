@@ -111,13 +111,13 @@ bool NetDat::WriteStats() {
   }
 
   const auto total = fmt::format(" Total :  {} msgs, {}k", total_files, bytes_to_k(total_bytes));
-  VLOG(2) << total;
+  LOG(INFO) << total;
   add_message(netdat_msgtype_t::normal, total);
 
   if (stl::contains(stats_, 65535)) {
-    const auto& s = stats_.at(65535);
+    const auto& s = wwiv::stl::at(stats_, 65535);
     const auto line = fmt::format("  Dead :  {} msgs, {}k", s.files, bytes_to_k(s.bytes));
-    VLOG(2) << line;
+    LOG(INFO) << line;
     add_message(netdat_msgtype_t::normal, line);
   }
 

@@ -88,6 +88,9 @@ add_library(
   xinit.cpp
   wfc.cpp
   basic/basic.cpp
+  basic/debug_model.cpp
+  basic/debug_state.cpp
+  basic/debugger.cpp
   basic/util.cpp
   basic/wwiv.cpp
   basic/wwiv_data.cpp
@@ -131,7 +134,7 @@ if(UNIX)
   endif()
 
   find_package (Threads)
-  target_link_libraries(bbs_lib z util ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+  target_link_libraries(bbs_lib z util ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} nlohmann_json::nlohmann_json)
 
 endif()
 
@@ -151,6 +154,7 @@ if(OS2)
 		make_abs_cmd_os2.cpp 
   )
 endif()
+find_package(nlohmann_json CONFIG REQUIRED)
 
 target_link_libraries(
   bbs_lib 
@@ -160,10 +164,15 @@ target_link_libraries(
   core 
   fsed
   sdk 
+  nlohmann_json::nlohmann_json
+
 )
 
+ find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
+target_include_directories(bbs_lib PRIVATE ${CPP_HTTPLIB_INCLUDE_DIRS})
+
 if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
-message(STATUS "WWIV_SSH_CRYPTLIB is ON")
+  message(STATUS "WWIV_SSH_CRYPTLIB is ON")
   include_directories(../deps/cl345)
   target_sources(bbs_lib PRIVATE ssh.cpp)
   target_link_libraries(bbs_lib CL345_LIB)

@@ -49,7 +49,9 @@
 #include "sdk/net/packets.h"
 #include "sdk/net/subscribers.h"
 
+#include <cctype>
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -90,18 +92,13 @@ static bool check_wwivnet_host_networks(
       if (n.net_num == network_number) {
         if (n.host == 0) {
           // Sub hosted here.
-          std::set<uint16_t> subscribers;
-
           const auto filename = StrCat("n", n.stype, ".net");
-          if (ReadSubcriberFile(FilePath(net.dir, filename), subscribers)) {
-            for (auto subscriber : subscribers) {
-              const auto c = b.node_config_for(subscriber);
-              if (!c) {
-                text << "Unknown system @" << subscriber << " subscribed to sub '" << n.stype << "'\r\n";
-              }
+          const auto subscriber_fn = FilePath(net.dir, filename);
+          const auto subscribers = ReadSubcriberFile(subscriber_fn);
+          for (auto subscriber : subscribers) {
+            if (const auto c = b.node_config_for(subscriber); !c) {
+              text << "Unknown system @" << subscriber << " subscribed to sub '" << n.stype << "'\r\n";
             }
-          } else {
-            text << "Unable to find subscribers file for stype: " << n.stype << "\r\n";
           }
         } else {
           // Sub hosted elsewhere.
@@ -346,7 +343,7 @@ static int write_bbsdata_files(const std::vector<net_system_list_rec>& bbsdata_d
   return num_reachable;
 }
 
-static void update_net_ver_status_dat(const std::string& datadir) {
+static void update_net_ver_status_dat(const std::filesystem::path& datadir) {
   statusrec_t statusrec{};
   DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT),
                              File::modeBinary | File::modeReadWrite);
@@ -365,7 +362,7 @@ static void update_net_ver_status_dat(const std::string& datadir) {
   file.Write(0, &statusrec);
 }
 
-static void update_filechange_status_dat(const std::string& datadir) {
+static void update_filechange_status_dat(const std::filesystem::path& datadir) {
   StatusMgr sm(datadir);
   sm.Run([=](Status& s)
   {
@@ -390,7 +387,10 @@ static void rename_pending_files(const std::filesystem::path& dir) {
 
   FindFiles ff(FilePath(dir, "s*.net"), FindFiles::FindFilesType::files);
   for (const auto& f : ff) {
-    rename_pend(dir, f.name, '3');
+    if (std::isdigit(f.name.at(1))) {
+      // Only process files of the form s######.net
+      rename_pend(dir, f.name, '3');
+    }
   }
 }
 

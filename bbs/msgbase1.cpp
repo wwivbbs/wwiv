@@ -126,16 +126,12 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     if (xnp.host) {
       nh.tosys = xnp.host;
     } else {
-      std::set<uint16_t> subscribers;
-      const auto subscribers_read =
-          ReadSubcriberFile(FilePath(net.dir, StrCat("n", xnp.stype, ".net")), subscribers);
-      if (subscribers_read) {
-        for (const auto& s : subscribers) {
-          if ((a()->net_num() != netnum || nh.fromsys != s) && s != net.sysnum) {
-            if (valid_system(s)) {
-              nh.list_len++;
-              list.push_back(s);
-            }
+      auto subscribers = ReadSubcriberFile(FilePath(net.dir, StrCat("n", xnp.stype, ".net")));
+      for (const auto& s : subscribers) {
+        if ((a()->net_num() != netnum || nh.fromsys != s) && s != net.sysnum) {
+          if (valid_system(s)) {
+            nh.list_len++;
+            list.push_back(s);
           }
         }
       }
@@ -237,8 +233,8 @@ void post(const PostData& post_data) {
   // Additions for MSGID reply.
   if (a()->current_net().type == network_type_t::ftn && !post_data.reply_to.text.empty()) {
     // We're handling a reply.
-    auto msgid = FtnMessageDupe::GetMessageIDFromWWIVText(post_data.reply_to.text);
-    if (!msgid.empty()) {
+    if (const auto msgid = FtnMessageDupe::GetMessageIDFromWWIVText(post_data.reply_to.text);
+        !msgid.empty()) {
       const auto address = a()->current_net().fido.fido_address;
       try {
         FidoAddress addr(address);

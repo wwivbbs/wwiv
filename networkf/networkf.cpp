@@ -129,6 +129,16 @@ NetworkF::NetworkF(const sdk::BbsDirectories& bbsdirs, const networkf_options_t&
 
 NetworkF::~NetworkF() = default;
 
+int ftn_date_days_old(const Clock& clock, const std::string& ftn_date) {
+  const auto daten = fido_to_daten(ftn_date);
+  const auto pkt_dt = DateTime::from_daten(daten).to_system_clock();
+  const auto now = clock.Now().to_system_clock();
+  // TODO(rushfan): C++20 is needed for std::chrono::days
+  const auto diff_hours = std::chrono::duration_cast<std::chrono::hours>(now - pkt_dt).count();
+  const auto days = diff_hours / 24;
+  return days;
+}
+
 bool NetworkF::import_packet_file(const std::filesystem::path& path) {
   LOG(INFO) << "Importing Packet: " << path.string();
   auto o = FidoPacket::Open(path);
@@ -176,8 +186,19 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
       dupe().add(msg);
     }
 
+    if (!is_email &&
+        ftn_date_days_old(clock_, msg.vh.date_time) > net().fido.max_echomail_age_days) {
+      // Packet is too old, skip it.
+      const auto msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
+      LOG(ERROR) << "Too old FTN message: '" << msg.vh.subject << "' msgid: (" << msgid << ")";
+      LOG(ERROR) << "Text: " << msg.vh.text;
+      // TODO(rushfan): move this or write out saved copy?
+      continue;
+    }
+
+    const auto ftn_packet_daten = fido_to_daten(msg.vh.date_time);
     net_header_rec nh{};
-    nh.daten = static_cast<uint32_t>(fido_to_daten(msg.vh.date_time));
+    nh.daten = static_cast<uint32_t>(ftn_packet_daten);
     nh.fromsys = FTN_FAKE_OUTBOUND_NODE;
     nh.fromuser = 0;
     nh.list_len = 0;
@@ -202,9 +223,8 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
     text.push_back(0);
     text.append(msg.vh.subject);
     text.push_back(0);
-    text.append(StrCat(msg.vh.from_user_name, "(", from_address, ")\r\n"));
-    auto dt = fido_to_daten(msg.vh.date_time);
-    text.append(daten_to_wwivnet_time(dt));
+    text.append(StrCat(msg.vh.from_user_name, " (", from_address, ")\r\n"));
+    text.append(daten_to_wwivnet_time(ftn_packet_daten));
     text.append("\r\n");
 
     if (!is_email) {
@@ -232,7 +252,7 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
   return true;
 }
 
-bool NetworkF::import_packets(const std::string& dir, const std::string& mask) {
+bool NetworkF::import_packets(const std::filesystem::path& dir, const std::string& mask) {
   VLOG(1) << "Importing packets from: " << dir << "' mask: '" << mask << "'";
   FindFiles files(FilePath(dir, mask), FindFiles::FindFilesType::files);
   if (files.empty()) {
@@ -298,7 +318,7 @@ bool NetworkF::import_bundle_file(const std::filesystem::path& path) {
  *
  * Returns the # of bundles processed.
  */
-int NetworkF::import_bundles(const std::string& dir, const std::string& mask) {
+int NetworkF::import_bundles(const std::filesystem::path& dir, const std::string& mask) {
   auto num_bundles_processed = 0;
 
   VLOG(3) << "import_bundles: mask: " << mask;
@@ -333,7 +353,7 @@ int NetworkF::import_bundles(const std::string& dir, const std::string& mask) {
   return num_bundles_processed;
 }
 
-static std::string rename_fido_packet(const std::string& dir, const std::string& origname) {
+static std::string rename_fido_packet(const std::filesystem::path& dir, const std::string& origname) {
   if (!ends_with(origname, ".pkt") || origname.size() != 12) {
     LOG(ERROR) << "rename_fido_packet: not allowed on name: '" << origname << "'";
     return origname;
@@ -702,9 +722,9 @@ std::optional<std::string> NetworkF::create_ftn_packet_and_bundle(const FidoAddr
   return bundlename;
 }
 
-static std::string NextNetmailFilePath(const std::string& dir) {
+static std::string NextNetmailFilePath(const std::filesystem::path& path) {
   for (int i = 2; i < 10000; i++) {
-    auto candidate = FilePath(dir, StrCat(i, ".msg"));
+    auto candidate = FilePath(path, StrCat(i, ".msg"));
     if (!File::Exists(candidate)) {
       return candidate.string();
     }
@@ -815,7 +835,7 @@ std::optional<std::string> NetworkF::CreateFloFile(const wwiv::sdk::fido::FidoAd
   return std::nullopt;
 }
 
-std::optional<std::string>
+std::optional<std::filesystem::path>
 NetworkF::CreateNetmailAttach(const FidoAddress& dest, const std::string& bundlename,
                               const fido_packet_config_t& packet_config) {
   const auto netmail_filepath = NextNetmailFilePath(dirs_.netmail_dir());
@@ -834,7 +854,7 @@ NetworkF::CreateNetmailAttach(const FidoAddress& dest, const std::string& bundle
   return netmail_filepath;
 }
 
-std::optional<std::string>
+std::optional<std::filesystem::path>
 NetworkF::CreateNetmailAttachOrFloFile(const FidoAddress& dest, const std::string& bundlename,
                                        const fido_packet_config_t& packet_config) {
   if (net_.fido.mailer_type == fido_mailer_t::attach) {

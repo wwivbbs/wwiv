@@ -26,6 +26,7 @@
 
 namespace wwiv::sdk {
 
+/** Configuration header at the start of config.dat and also in config.json */
 struct config_header_t {
   int written_by_wwiv_num_version;
   std::string written_by_wwiv_version;
@@ -52,6 +53,21 @@ struct newuser_config_t {
 
 struct system_toggles_t {
   bool lastnet_at_logon{false};
+  bool show_chain_usage{false};
+};
+
+/** Configuration for various color codes to use in the message bases in WWIV. */
+struct message_color_config_t {
+  std::string text_color{"|#0"};
+  std::string quote_color{"|#5"};
+  std::string kludge_color{"|08"};
+  std::string origin_color{"|#8"};
+  std::string tear_color{"|#8"};
+};
+
+/** Configuration for various color codes to use in WWIV. */
+struct color_config_t {
+  message_color_config_t msg;
 };
 
 struct validation_config_t {
@@ -172,6 +188,9 @@ struct config_t {
 
   // System toggles (on/off)
   system_toggles_t toggles;
+
+  // Color configuration
+  color_config_t colors;
 };
 
 class Config final  : public BbsDirectories {
@@ -197,9 +216,9 @@ public:
   void set_initialized_for_test(bool initialized) { initialized_ = initialized; }
   void set_config(const config_t& config, bool update_paths);
   [[nodiscard]] const config_t& to_config_t() const;
-  void set_paths_for_test(const std::string& datadir, const std::string& msgsdir,
-                          const std::string& gfilesdir, const std::string& menudir,
-                          const std::string& dloadsdir, const std::string& scriptdir);
+  void set_paths_for_test(const std::filesystem::path& datadir, const std::filesystem::path& msgsdir,
+                          const std::filesystem::path& gfilesdir, const std::filesystem::path& menudir,
+                          const std::filesystem::path& dloadsdir, const std::filesystem::path& scriptdir);
 
   [[nodiscard]] bool versioned_config_dat() const { return versioned_config_dat_; }
   // ReSharper disable once CppMemberFunctionMayBeStatic
@@ -210,20 +229,20 @@ public:
   [[nodiscard]] int config_revision_number() const { return config_.header.config_revision_number; }
   void config_revision_number(int v) { config_.header.config_revision_number = v; }
 
-  [[nodiscard]] std::string root_directory() const override { return root_directory_.string(); }
-  [[nodiscard]] std::string datadir() const override { return datadir_; }
+  [[nodiscard]] std::filesystem::path root_directory() const override { return root_directory_; }
+  [[nodiscard]] std::filesystem::path datadir() const override { return datadir_; }
   void datadir(const std::string& d) { config_.datadir = d; }
-  [[nodiscard]] std::string msgsdir() const override { return msgsdir_; }
+  [[nodiscard]] std::filesystem::path msgsdir() const override { return msgsdir_; }
   void msgsdir(const std::string& d) { config_.msgsdir = d; }
-  [[nodiscard]] std::string gfilesdir() const override { return gfilesdir_; }
+  [[nodiscard]] std::filesystem::path gfilesdir() const override { return gfilesdir_; }
   void gfilesdir(const std::string& d) { config_.gfilesdir = d; }
-  [[nodiscard]] std::string menudir() const override { return menudir_; }
+  [[nodiscard]] std::filesystem::path menudir() const override { return menudir_; }
   void menudir(const std::string& d) { config_.menudir = d; }
-  [[nodiscard]] std::string dloadsdir() const override { return dloadsdir_; }
+  [[nodiscard]] std::filesystem::path dloadsdir() const override { return dloadsdir_; }
   void dloadsdir(const std::string& d) { config_.dloadsdir = d; }
-  [[nodiscard]] std::string scriptdir() const override { return script_dir_; }
+  [[nodiscard]] std::filesystem::path scriptdir() const override { return script_dir_; }
   void scriptdir(const std::string& d) { config_.scriptdir = d; }
-  [[nodiscard]] std::string logdir() const override { return log_dir_; }
+  [[nodiscard]] std::filesystem::path logdir() const override { return log_dir_; }
   void logdir(const std::string& d) { config_.logdir = d; }
 
   // moved from wwiv.ini
@@ -251,7 +270,7 @@ public:
   [[nodiscard]] std::string system_password() const { return config_.systempw; }
   void system_password(const std::string& d);
 
-  [[nodiscard]] std::string config_filename() const;
+  [[nodiscard]] std::filesystem::path config_filename() const;
 
   // Sets the value for required upload/download ratio.
   // This has been moved to the ini file.
@@ -325,6 +344,9 @@ public:
   // System Toggles (mostly toggle settings moved from wwiv.ini)
   [[nodiscard]] system_toggles_t& toggles() { return config_.toggles; }
 
+  // System Colors.
+  [[nodiscard]] color_config_t& colors() { return config_.colors; }
+
   void newuser_password(const std::string&);
   // New User restrictions given by default when they sign up.
   [[nodiscard]] uint16_t newuser_restrict() const { return config_.newuser_restrict; }
@@ -366,9 +388,10 @@ public:
   // You probably shouldn't do this unless you are upgrading a dat to JSON.
   void set_readonly(bool r) { readonly_ = r; }
 
-private:
-  [[nodiscard]] std::string to_abs_path(const std::string& dir) const;
   void update_paths();
+
+private:
+  [[nodiscard]] std::filesystem::path to_abs_path(const std::string& dir) const;
 
   bool initialized_{false};
   std::filesystem::path root_directory_;
@@ -376,13 +399,13 @@ private:
   // Is this config read only (meaning it was loaded from a dat file).
   bool readonly_{true};
 
-  std::string datadir_;
-  std::string msgsdir_;
-  std::string gfilesdir_;
-  std::string menudir_;
-  std::string dloadsdir_;
-  std::string script_dir_;
-  std::string log_dir_;
+  std::filesystem::path datadir_;
+  std::filesystem::path msgsdir_;
+  std::filesystem::path gfilesdir_;
+  std::filesystem::path menudir_;
+  std::filesystem::path dloadsdir_;
+  std::filesystem::path script_dir_;
+  std::filesystem::path log_dir_;
 
   config_t config_{};
 };
@@ -391,12 +414,12 @@ private:
  * Helper to load the config and get the logdir from it.
  * Used by the Logger code.
  */
-std::string LogDirFromConfig(const std::string& bbsdir);
+std::filesystem::path LogDirFromConfig(const std::filesystem::path& bbsdir);
 
 /**
  * Loads a config from either JSON or DAT.
  */
-std::unique_ptr<Config> load_any_config(const std::string& bbsdir);
+std::unique_ptr<Config> load_any_config(const std::filesystem::path& bbsdir);
 
 } // namespace wwiv::sdk
 

@@ -1,6 +1,6 @@
 ﻿{
   "configurations": [
-    { 
+    {
       "name": "x86-Debug",
       "generator": "Ninja",
       "configurationType": "Debug",
@@ -10,6 +10,7 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "msvc_x86" ],
-      "variables": []
-    }  ]
+      "intelliSenseMode": "windows-msvc-x64"
+    }
+  ]
 }

@@ -61,7 +61,7 @@ using namespace wwiv::strings;
 static bool email_changed = false;
 static bool posts_changed = false;
 
-static void update_filechange_status_dat(const std::string& datadir, bool email, bool posts) {
+static void update_filechange_status_dat(const std::filesystem::path& datadir, bool email, bool posts) {
   StatusMgr sm(datadir);
   sm.Run([=](Status& s)
   {
@@ -154,9 +154,9 @@ static bool load_external_programs(Context& context, const std::filesystem::path
     }
 
     external_programs_t e{};
-    e.exe = parts.at(0);
-    e.low = to_number<int>(parts.at(1));
-    e.high = to_number<int>(parts.at(2));
+    e.exe = wwiv::stl::at(parts, 0);
+    e.low = to_number<int>(wwiv::stl::at(parts, 1));
+    e.high = to_number<int>(wwiv::stl::at(parts, 2));
     context.external_programs->emplace_back(e);
   }
   return true;
@@ -183,7 +183,7 @@ static bool handle_new_external(Context& context, NetPacket& p) {
       p.list.clear();
       const auto tempfn = fmt::format("temp{}.net", p.nh.minor_type);
       if (write_wwivnet_packet(FilePath(context.net.dir, tempfn), p)) {
-        const auto exe = fmt::format("{}{} {} .{}", context.net.dir.string(), e.exe, tempfn, context.net.network_number());
+	const auto exe = fmt::format("{} {}{} .{}", e.exe, context.net.dir.string(),  tempfn, context.net.network_number());
         System(exe);
       }
     }
@@ -271,6 +271,12 @@ static bool handle_packet(Context& context, NetPacket& p) {
   // EPROGS.NET support
   case main_type_new_external:
     return handle_new_external(context, p);
+
+  // Skip deleted messages.
+  case 0xFFFF:
+    // Ack processing it since there is nothing to do.
+    return true;
+
   // Legacy numeric only post types.
   case main_type_post:
   case main_type_pre_post:
@@ -292,8 +298,30 @@ static bool handle_packet(Context& context, NetPacket& p) {
   }
 }
 
-static bool handle_file(Context& context, const std::string& name) {
-  NetMailFile packets(context.net.dir / name, true, true);
+static void handle_epreproc_net(const Context& context) {
+  static constexpr char EPREPROC_NET[] = "epreproc.net";
+  const auto epreproc_net_file = FilePath(context.net.dir, EPREPROC_NET);
+  if (!File::Exists(epreproc_net_file)) {
+    return;
+  }
+
+  TextFile f(epreproc_net_file, "rt");
+  if (!f.IsOpen()) {
+    return;
+  }
+  const auto lines = f.ReadFileIntoVector();
+  for (const auto& l : lines) {
+    const auto cmd = fmt::format("{} .{}", l, context.net.network_number());
+    System(cmd);
+  }
+}
+
+
+static bool handle_local_net(Context& context) {
+  // Handle epreproc.net 1st before we open and process the local.net packet
+  handle_epreproc_net(context);
+
+  NetMailFile packets(context.net.dir / LOCAL_NET, true, true);
   if (!packets) {
     return false;
   }
@@ -335,19 +363,19 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
     context.set_api(2, std::make_unique<WWIVMessageApi>(options, config, networks.networks(),
                                                         new NullLastReadImpl()));
 
-    LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
-    if (handle_file(context, LOCAL_NET)) {
+    VLOG(1) << "Processing: " << net.dir.string() << LOCAL_NET;
+    if (handle_local_net(context)) {
       if (net_cmdline.skip_delete()) {
         backup_file(net.dir / LOCAL_NET);
       }
-      LOG(INFO) << "Deleting: " << net.dir << LOCAL_NET;
+      VLOG(1) << "Deleting: " << net.dir.string() << LOCAL_NET;
       if (!File::Remove(net.dir / LOCAL_NET)) {
         LOG(ERROR) << "ERROR: Unable to delete " << net.dir << LOCAL_NET;
       }
       update_filechange_status_dat(context.config.datadir(), email_changed, posts_changed);
       return 0;
     }
-    LOG(ERROR) << "ERROR: handle_file returned false";
+    LOG(ERROR) << "ERROR: handle_local_net returned false";
     return 1;
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [network]: " << e.what();

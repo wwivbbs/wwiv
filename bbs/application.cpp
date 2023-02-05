@@ -56,6 +56,7 @@
 #include "core/command_line.h"
 #include "core/eventbus.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings-ng.h"
 #include "core/strings.h"
 #include "core/version.h"
@@ -237,7 +238,8 @@ bool Application::reset_local_io(LocalIO* wlocal_io) {
   return true;
 }
 
-void Application::CreateComm(unsigned int nHandle, unsigned int parent_pid, CommunicationType type) {
+void Application::CreateComm(unsigned int nHandle, unsigned int /* parent_pid*/,
+                             CommunicationType type) {
   switch (type) {
   case CommunicationType::SSH: {
 #ifdef WWIV_HAS_SSH_CRYPTLIB
@@ -792,9 +794,9 @@ void Application::GotCaller(int ms) {
 }
 
 std::filesystem::path Application::bbspath() const noexcept { return bbs_dir_; }
-std::string Application::bindir() const noexcept { return bindir_; }
-std::string Application::configdir() const noexcept { return configdir_; }
-std::string Application::logdir() const noexcept { return logdir_; }
+std::filesystem::path Application::bindir() const noexcept { return bindir_; }
+std::filesystem::path Application::configdir() const noexcept { return configdir_; }
+std::filesystem::path Application::logdir() const noexcept { return logdir_; }
 int Application::verbose() const noexcept { return verbose_; }
 
 int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
@@ -848,6 +850,8 @@ int Application::Run(int argc, char* argv[]) {
   cmdline.add_argument({"fsed", 'f', "Opens file in the FSED", ""});
   cmdline.add_argument({"bps", 'b', "Modem speed of logged on user", "38400"});
   cmdline.add_argument({"sysop_cmd", 'c', "Executes a sysop command (b/c/d)", ""});
+  cmdline.add_argument(BooleanCommandLineArgument{"debug", 'd', "Debug WWIVbasic Scripts", false});
+  cmdline.add_argument({"debug_port", "Debug WWIVbasic Script Port Number", "9948"});
   cmdline.add_argument(
       BooleanCommandLineArgument{"beginday", 'e', "Load for beginday event only", false});
   cmdline.add_argument({"handle", 'h', "Socket handle", "0"});
@@ -910,6 +914,11 @@ int Application::Run(int argc, char* argv[]) {
   no_hangup_ = cmdline.barg("no_hangup");
   sess().ok_modem_stuff(!cmdline.barg("no_modem"));
   sess().instance_number(cmdline.iarg("instance"));
+  auto debug = cmdline.barg("debug");
+  if (debug) {
+    auto debug_port = cmdline.iarg("debug_port");
+    sess().debug_wwivbasic_port(debug_port);
+  }
 
   auto this_usernum_from_commandline = static_cast<uint16_t>(cmdline.iarg("user_num"));
   if (const auto x = cmdline.sarg("x"); !x.empty()) {
@@ -1212,9 +1221,9 @@ Names* Application::names() const { return names_.get(); }
 
 msgapi::MessageApi* Application::msgapi(int type) const {
   if (type == 0) {
-    return msgapis_.at(2).get();
+    return wwiv::stl::at(msgapis_, 2).get();
   }
-  return msgapis_.at(type).get();
+  return wwiv::stl::at(msgapis_, type).get();
 }
 
 msgapi::MessageApi* Application::msgapi() const {

@@ -198,13 +198,13 @@ public:
       "Origin line to add to outgoing echomail messages from this system", 
               1, y);
     ++y;
-    dy_start_ = y;
     const std::vector<std::pair<fido_mailer_t, std::string>> mailerlist = {
         {fido_mailer_t::flo, "BSO (FLO) [Recommended]"},
         {fido_mailer_t::attach, "NetMail (ATTACH)"}};
     items.add(new Label("Mailer:"), new ToggleEditItem<fido_mailer_t>(mailerlist, &n->mailer_type),
               "Select BSO if using WWIV's Native BinkP.", 1, y);
-    ++y;
+    dy_start_ = y++;
+
     const std::vector<std::pair<fido_transport_t, std::string>> transportlist = {
         {fido_transport_t::directory, "Directory"}, {fido_transport_t::binkp, "WWIV BinkP"}};
     items.add(new Label("Transport:"),
@@ -212,7 +212,14 @@ public:
               "This isn't currently used, but you likely want WWIV BinkP", 1, y);
     ++y;
 
-    // dy_start
+    items.add(new Label("Max Age:"), new NumberEditItem<int>(&n->max_echomail_age_days),
+              "Max number of days old a packet is allowed to be and still be imported. 0=any", 1,
+              y);
+    ++y;
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // New column: dy_start
+
     auto dy = dy_start_;
     items.add(new Label("Process TIC  :"), new BooleanEditItem(&n->process_tic),
               "Process TIC files for this network.", 3, dy);
@@ -220,14 +227,9 @@ public:
     items.add(new Label("Cvt Hearts   :"), new BooleanEditItem(&n->wwiv_heart_color_codes),
               "Convert WWIV Heart codes into PIPE color codes.", 3, dy);
     ++dy;
-    // HACK: We can't layout in columns with empty columns before the control.
-    items.add(new Label(""), 1, dy);
-    items.add(new Label(""), 2, dy);
     items.add(new Label("Cvt WWIV Pipe:"), new BooleanEditItem(&n->wwiv_pipe_color_codes),
               "Convert WWIV user color pipe codes into standard PIPE color codes.", 3, dy);
     ++dy;
-    items.add(new Label(""), 1, dy);
-    items.add(new Label(""), 2, dy);
     items.add(new Label("Allow Pipe Codes:"), new BooleanEditItem(&n->allow_any_pipe_codes),
               "Allow pipe codes, don't strip outbound PIPE codes.", 3, dy);
     ++dy;
@@ -544,7 +546,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   }
 
   const auto title = fmt::format("Net: {} [.{}] ({})", n.name, nn,
-                                 StringTrim(nettypes.at(static_cast<int>(n.type)).second));
+                                 StringTrim(wwiv::stl::at(nettypes, static_cast<int>(n.type)).second));
 
   items.relayout_items_and_labels();
   items.Run(title);
@@ -685,7 +687,7 @@ void networks(const wwiv::sdk::Config& config, std::set<int>& need_network3) {
         switch (result.hotkey) {
         case 'D':
           if (networks.networks().size() > 1) {
-            const auto prompt = fmt::format("Delete '{}'", networks.at(result.selected).name);
+            const auto prompt = fmt::format("Delete '{}'", wwiv::stl::at(networks, result.selected).name);
             auto yn = dialog_yn(window, prompt);
             if (yn) {
               yn = dialog_yn(window, "Are you REALLY sure? ");

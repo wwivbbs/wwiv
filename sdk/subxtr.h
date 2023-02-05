@@ -69,6 +69,8 @@ struct subboard_t {
   std::vector<subboard_network_data_t> nets;
   // Conference keys.
   conf_set_t conf;
+  // Attempt to colorize the text if not colorized?
+  bool colorize_text{false};
 };
 
 // 5.2 style sub-board. 

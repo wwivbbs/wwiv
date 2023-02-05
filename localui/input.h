@@ -106,7 +106,6 @@ int messagebox(UIWindow* window, const std::string& text);
 int messagebox(UIWindow* window, const std::vector<std::string>& text);
 int input_select_item(UIWindow* window, const std::string& prompt,
                       const std::vector<std::string>& items);
-void trimstrpath(char* s);
 
 template <typename T>
 static std::string to_restriction_string(T data, int size, const std::string& res) {
@@ -866,6 +865,7 @@ private:
   const std::filesystem::path base_;
 };
 
+
 class CommandLineItem final : public EditItem<char*> {
 public:
   CommandLineItem(int maxsize, char* data) : EditItem<char*>(maxsize, data) {}
@@ -880,7 +880,9 @@ public:
     window->GotoXY(this->x_, this->y_);
     const auto return_code =
         editline(window, this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
-    strings::StringTrimEnd(this->data_);
+    std::string s(this->data_);
+    wwiv::strings::StringTrimEnd(&s);
+    strcpy(this->data_, s.c_str());
     return return_code;
   }
 
@@ -942,7 +944,7 @@ public:
 
 protected:
   [[nodiscard]] const wwiv::sdk::Config& config() const noexcept { return c_; }
-  [[nodiscard]] virtual std::string menu_label() const { return "[Press Enter to Edit]"; }
+  [[nodiscard]] virtual std::string menu_label() const { return "[Edit]"; }
 
   const sdk::Config& c_;
   T& t_;

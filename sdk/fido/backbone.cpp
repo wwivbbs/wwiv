@@ -71,6 +71,10 @@ import_result_t ImportSubsFromBackbone(Subs& subs, const Network& net, int16_t n
   prototype.read_acs = ini.value<std::string>("read_acs", "user.sl >= 10");
   prototype.maxmsgs = ini.value<uint16_t>("maxmsgs", 5000);
   prototype.storage_type = ini.value<uint8_t>("storage_type", 2);
+  if (const auto conf = ini.value<std::string>("conf", ""); !conf.empty()) {
+    // Set the conferences if the string is not empty.
+    prototype.conf.from_string(conf);
+  }
 
   sdk::subboard_network_data_t netdata{};
   const sdk::fido::FidoAddress uplink(ini.value<std::string>("uplink"));

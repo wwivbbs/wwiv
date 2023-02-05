@@ -41,11 +41,7 @@ static int dump_file(const std::string& filename) {
   }
 
   const auto start = std::chrono::steady_clock::now();
-  std::set<uint16_t> subscribers;
-  if (!ReadSubcriberFile(filename, subscribers)) {
-    LOG(ERROR) << "Error reading subscriber file: " << filename;
-    return 1;
-  }
+  const auto subscribers = ReadSubcriberFile(filename);
   const auto end = std::chrono::steady_clock::now();
   if (subscribers.empty()) {
     LOG(INFO) << "No Subscribers: " << filename;

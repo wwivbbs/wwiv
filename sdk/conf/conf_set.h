@@ -50,7 +50,7 @@ public:
   void from_string(const std::string& s) {
     data_.clear();
     for (const auto c : s) {
-      data_.insert(c);
+      data_.insert(wwiv::strings::to_upper_case_char(c));
     }
   }
 

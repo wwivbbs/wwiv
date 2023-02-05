@@ -19,8 +19,9 @@
 #ifndef INCLUDED_WWIVCONFIG_PROTOCOLS_H
 #define INCLUDED_WWIVCONFIG_PROTOCOLS_H
 
+#include <filesystem>
 #include <string>
 
-void extrn_prots(const std::string& datadir);
+void extrn_prots(const std::filesystem::path& datadir);
 
 #endif // INCLUDED_WWIVCONFIG_PROTOCOLS_H

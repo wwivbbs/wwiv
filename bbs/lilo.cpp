@@ -72,6 +72,7 @@ using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 using std::chrono::seconds;
+using namespace wwiv::bbs::menus;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;
@@ -111,7 +112,7 @@ static void CleanUserInfo() {
     a()->set_current_user_dir_num(last_dirnum);
   }
 }
-
+  
 bool IsPhoneNumberUSAFormat(User *pUser) {
   const auto country = pUser->country();
   return country == "USA" || country == "CAN" || country == "MEX";
@@ -119,7 +120,7 @@ bool IsPhoneNumberUSAFormat(User *pUser) {
 
 static int GetAnsiStatusAndShowWelcomeScreen() {
   bout.print("\r\nWWIV {}\r\n", full_version());
-  bout.pl("Copyright (c) 1998-2022, WWIV Software Services.");
+  bout.pl("Copyright (c) 1998-2023, WWIV Software Services.");
   bout.pl("All Rights Reserved.");
 
   const auto ans = check_ansi();
@@ -529,35 +530,6 @@ static void UpdateLastOnFile() {
     lines = laston_file.ReadFileIntoVector();
   }
 
-  if (!lines.empty()) {
-    bool needs_header = true;
-    for (const auto& line : lines) {
-      if (line.empty()) {
-        continue;
-      }
-      if (needs_header) {
-        bout.nl(2);
-        bout.outstr("|#1Last few callers|#7: |#0");
-        bout.nl(2);
-        if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-            a()->config()->newuser_config().use_address_city_state != newuser_item_type_t::unused) {
-          bout.pl("|#2Number Name/Handle               Time  Date  City            ST Cty Speed    ##");
-        } else {
-          bout.pl("|#2Number Name/Handle               Language   Time  Date  Speed                ##");
-        }
-        const auto hz = okansi() ? '\xCD' : '=';
-        bout.print("|#7{}\r\n", std::string(79, hz));
-        needs_header = false;
-      }
-      bout.pl(line);
-      if (bin.checka()) {
-        break;
-      }
-    }
-    bout.nl(2);
-    bout.pausescr();
-  }
-
 
   auto status = a()->status_manager()->get_status();
   {
@@ -856,6 +828,7 @@ void logon() {
   UpdateUserStatsForLogin();
 
   PrintLogonFile();
+  LastCallers();
   UpdateLastOnFile();
 
   if (a()->config()->toggles().lastnet_at_logon) {

@@ -55,20 +55,20 @@ std::vector<int> to_ansi_numbers(const std::string& as, int max_args, std::vecto
   const auto list_size = std::min<int>(max_args, wwiv::stl::size_int(list));
   for (auto i = 0; i < wwiv::stl::ssize(defaults); i++) {
     if (i < list_size) {
-      const auto& c = list.at(i);
+      const auto& c = wwiv::stl::at(list, i);
       if (!c.empty()) {
         out.push_back(to_number<int>(c));
         continue;
       }
     }
-    out.push_back(defaults.at(i));
+    out.push_back(wwiv::stl::at(defaults, i));
   }
 
   if (list_size > 0 && list_size > wwiv::stl::ssize(defaults)) {
     const auto start = defaults.size();
     const auto end = list_size - defaults.size();
     for (auto i = start; i < end; i++) {
-      const auto& c = list.at(i);
+      const auto& c = wwiv::stl::at(list, i);
       if (!c.empty()) {
         out.push_back(to_number<int>(c));
       }
@@ -282,6 +282,13 @@ bool HeartAndPipeCodeFilter::write(char c) {
     has_heart_ = true;
     return true;
   }
+  if (c == 10) {
+    // clear pipe and heart state and pass through
+    has_heart_ = false;
+    pipe_state_ = pipe_state::none;
+    pipe_text_.clear();
+    return chain_->write(c);
+  }
   switch (pipe_state_) {
   case pipe_state::none:
     if (c == '|') {
@@ -328,7 +335,7 @@ bool HeartAndPipeCodeFilter::write(char c) {
 
 bool HeartAndPipeCodeFilter::attr(uint8_t a) {
   if (a < colors_.size()) {
-    return chain_->attr(colors_.at(a));
+    return chain_->attr(wwiv::stl::at(colors_, a));
   }
   return false;
 }

@@ -495,17 +495,14 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
   }
   memset(&qwk_info->qwk_rec, ' ', sizeof(qwk_info->qwk_rec));
 
-  auto m = read_type2_message(&m1->msg, m1->anony & 0x0f, true,
-                              fn, m1->ownersys, m1->owneruser);
-
-  int cur = 0;
-  if (m.message_text.empty() && m.title.empty()) {
-    // TODO(rushfan): Really read_type2_message should return an std::optional<Type2MessageData>
+  auto o = read_type2_message(&m1->msg, m1->anony & 0x0f, true, fn, m1->ownersys, m1->owneruser);
+  if (!o) {
     bout.outstr("File not found.");
     bout.nl();
     return;
   }
-
+  auto& m = o.value();
+  int cur = 0;
   auto len = m.message_text.length();
   if (len <= 0) {
     std::cout << "we have no text for this message." << std::endl;

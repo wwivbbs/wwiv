@@ -101,9 +101,8 @@ bool is_bundle_file(const std::string& name) {
     return false;
   }
   ext.pop_back();
-  StringLowerCase(&ext);
   const auto dow = dow_prefixes();
-  return contains(dow, ext);
+  return contains(dow, ToStringLowerCase(ext));
 }
 
 bool is_packet_file(const std::string& name) {

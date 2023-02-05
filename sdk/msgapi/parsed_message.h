@@ -15,26 +15,28 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_PARSED_MESSAGE_H__
-#define __INCLUDED_SDK_PARSED_MESSAGE_H__
+#ifndef INCLUDED_SDK_PARSED_MESSAGE_H
+#define INCLUDED_SDK_PARSED_MESSAGE_H
 
 #include <functional>
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 /**
  * Specifies how to return the text with respect to control lines,
+ * 
  * * control_lines: Return raw control lines
  * * control_lines_masked: Replace control line character with '@'
  * * no_control_lines: Skip lines containing control lines.
  */
 enum class control_lines_t {
+  /// Return raw control lines
   control_lines,
+  /// Replace control line character with '@'
   control_lines_masked,
+  /// Skip lines containing control lines.
   no_control_lines
 };
 
@@ -63,8 +65,6 @@ class ParsedMessageText {
 public:
   typedef std::function<std::vector<std::string>(const std::string&)> splitfn;
 
-  ParsedMessageText(std::string control_char, const std::string& text, const splitfn& s, std::string eol);
-  virtual ~ParsedMessageText();
   bool add_control_line_after(const std::string& near_line, const std::string& line);
   bool add_control_line(const std::string& line);
   /** 
@@ -74,6 +74,11 @@ public:
   bool remove_control_line(const std::string& start_of_line);
   [[nodiscard]] std::string to_string() const;
   [[nodiscard]] std::vector<std::string> to_lines(const parsed_message_lines_style_t& style) const;
+
+protected:
+  ParsedMessageText(std::string control_char, const std::string& text, const splitfn& s,
+                    std::string eol);
+  virtual ~ParsedMessageText();
 
 private:
   const std::string control_char_;
@@ -92,8 +97,18 @@ public:
   ~WWIVParsedMessageText();
 };
 
-} // namespace msgapi
-} // namespace sdk
-} // namespace wwiv
+/**
+ * Represents a parsed (split into lines) message  in FTN format (control
+ * lines start with ^A) and end of line is "\r".
+ */
+class FTNParsedMessageText final : public ParsedMessageText {
+public:
+  FTNParsedMessageText(const std::string& text);
+  ~FTNParsedMessageText();
+};
 
-#endif // __INCLUDED_SDK_PARSED_MESSAGE_H__
+std::vector<std::string> split_wwiv_style_message_text(const std::string& s);
+
+} 
+
+#endif // INCLUDED_SDK_PARSED_MESSAGE_H

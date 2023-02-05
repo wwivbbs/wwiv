@@ -29,6 +29,10 @@
 #include <string>
 #include <vector>
 
+#ifdef _MSC_VER
+#include <sal.h>
+#endif
+
 
 const unsigned char* translate_letters[] = {
     reinterpret_cast<const unsigned char *>("abcdefghijklmnopqrstuvwxyz�������"),
@@ -72,9 +76,12 @@ bool iequals(const std::string& s1, const std::string& s2) {
                     });
 }
 
+
 int StringCompareIgnoreCase(const char* str1, const char* str2) {
   CHECK(str1 != nullptr);
   CHECK(str2 != nullptr);
+  WWIV_ANALYSIS_ASSUME(str1 != nullptr);
+  WWIV_ANALYSIS_ASSUME(str2 != nullptr);
 
   return strcasecmp(str1, str2);
 }
@@ -82,18 +89,19 @@ int StringCompareIgnoreCase(const char* str1, const char* str2) {
 int StringCompare(const char* str1, const char* str2) {
   CHECK(str1 != nullptr);
   CHECK(str2 != nullptr);
+  WWIV_ANALYSIS_ASSUME(str1 != nullptr);
+  WWIV_ANALYSIS_ASSUME(str2 != nullptr);
 
   return strcmp(str1, str2);
 }
 
-const std::string& StringReplace(std::string* orig, const std::string& old_string,
-                                 const std::string& new_string) {
+void StringReplace(std::string* orig, const std::string& old_string,
+                   const std::string& new_string) {
   auto pos = orig->find(old_string, 0);
   while (pos != std::string::npos) {
     orig->replace(pos, old_string.length(), new_string);
     pos = orig->find(old_string, pos + new_string.length());
   }
-  return *orig;
 }
 
 std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims) {
@@ -252,6 +260,11 @@ void StringTrimEnd(std::string* s) {
   s->erase(pos + 1);
 }
 
+std::string StringTrimEnd(std::string_view s) {
+  const auto pos = s.find_last_not_of(DELIMS_WHITE);
+  return std::string(s.data(), pos + 1);
+}
+
 /**
  * Removes the whitespace from the end of the string
  * @param str The string from which to remove the trailing whitespace
@@ -286,30 +299,6 @@ std::string ToStringLowerCase(const std::string& orig) {
   return s;
 }
 
-char* StringRemoveChar(const char* str, char ch) {
-  static char s_strip_string[255];
-
-  CHECK(str != nullptr);
-  strcpy(s_strip_string, "");
-
-  int i1 = 0;
-  for (size_t i = 0; i < strlen(str); i++) {
-    if (ch != str[i]) {
-      s_strip_string[i1] = str[i];
-      i1++;
-    } else {
-      s_strip_string[i1] = '\0';
-      break;
-    }
-  }
-
-  //if last char is a space, remove it too.
-  if (s_strip_string[i1 - 1] == ' ') {
-    i1--;
-  }
-  s_strip_string[i1] = '\0';
-  return s_strip_string;
-}
 
 std::string JoinStrings(const std::vector<std::string>& lines, const std::string& end_of_line) {
   std::string out;
@@ -404,6 +393,7 @@ bool wwiv::strings::contains(const std::string& haystack, const std::string_view
 
 char* stripcolors(const char* str) {
   CHECK(str);
+  WWIV_ANALYSIS_ASSUME(str != nullptr);
   static char s[255];
   const auto result = stripcolors(std::string(str));
   strcpy(s, result.c_str());

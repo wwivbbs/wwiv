@@ -330,7 +330,7 @@ const NodelistEntry* Nodelist::entry(uint16_t zone, uint16_t net, uint16_t node)
   if (!stl::contains(entries_, a)) {
     return nullptr;
   }
-  return &entries_.at(a);
+  return &wwiv::stl::at(entries_, a);
 }
 
 bool Nodelist::has_zone(int zone) const noexcept {

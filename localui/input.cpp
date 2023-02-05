@@ -703,13 +703,4 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
   return value;
 }
 
-void trimstrpath(char* s) {
-  StringTrimEnd(s);
-
-  if (const auto i = strlen(s); i && (s[i - 1] != File::pathSeparatorChar)) {
-    s[i] = File::pathSeparatorChar;
-    s[i + 1] = 0;
-  }
-}
-
 }

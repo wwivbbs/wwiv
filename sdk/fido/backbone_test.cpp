@@ -125,6 +125,53 @@ TEST_F(BackboneTest, TwoNew) {
 
 }
 
+/** By default the INI file for the test class contained no conferences */
+TEST_F(BackboneTest, NoConf) {
+  ASSERT_THAT(subs->size(), Eq(0));
+  ASSERT_TRUE(inif->IsOpen());
+  auto backbone_entries = ParseBackboneFile(backbone_file);
+
+  // Ensure the import operation claims to have completed successfully.
+  auto r = ImportSubsFromBackbone(*subs, net, 1, *inif, backbone_entries);
+  ASSERT_TRUE(r.success);
+  ASSERT_TRUE(r.subs_dirty);
+  EXPECT_THAT(subs->size(), Eq(2));
+
+  // Ensure that Subs now contains the newly added subs.
+  auto sit = subs->subs().front();
+  EXPECT_TRUE(sit.conf.empty());
+}
+
+TEST_F(BackboneTest, WithConf) {
+  ASSERT_THAT(subs->size(), Eq(0));
+  auto backbone_entries = ParseBackboneFile(backbone_file);
+  // Create new inifile with conferences.
+  ini_file = helper_.CreateTempFile("import.ini", R"(
+[backbone]
+post_acs = user.sl >= 21
+read_acs = user.sl >= 12
+maxmsgs = 512
+net_num = 1
+uplink = 11:1/1
+conf = AwF
+)");
+  // Use new inif that has conferences in it.
+  inif = std::make_unique<IniFile>(ini_file, "backbone");
+  ASSERT_TRUE(inif->IsOpen());
+
+  // Ensure the import operation claims to have completed successfully.
+  auto r = ImportSubsFromBackbone(*subs, net, 1, *inif, backbone_entries);
+  ASSERT_TRUE(r.success);
+  ASSERT_TRUE(r.subs_dirty);
+  EXPECT_THAT(subs->size(), Eq(2));
+
+  // Ensure that Subs now contains the newly added subs.
+  auto sit = subs->subs().front();
+  EXPECT_FALSE(sit.conf.empty());
+  // Note the conf list is sorted and has the correct case.
+  EXPECT_THAT(sit.conf.to_string(), Eq("AFW"));
+}
+
 TEST_F(BackboneTest, OneAlreadyExists) {
   ASSERT_THAT(subs->size(), Eq(0));
   subboard_t newsub{};

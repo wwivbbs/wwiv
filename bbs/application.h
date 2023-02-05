@@ -21,6 +21,7 @@
 
 #include "bbs/runnable.h"
 #include "common/exceptions.h"
+#include "core/stl.h"
 
 #include <chrono>
 #include <filesystem>
@@ -257,14 +258,14 @@ public:
   [[nodiscard]] uint8_t primary_port() const { return primary_port_; }
 
   [[nodiscard]] std::filesystem::path bbspath() const noexcept;
-  [[nodiscard]] std::string bindir() const noexcept;
-  [[nodiscard]] std::string configdir() const noexcept;
-  [[nodiscard]] std::string logdir() const noexcept;
+  [[nodiscard]] std::filesystem::path bindir() const noexcept;
+  [[nodiscard]] std::filesystem::path configdir() const noexcept;
+  [[nodiscard]] std::filesystem::path logdir() const noexcept;
   [[nodiscard]] int verbose() const noexcept;
 
   [[nodiscard]] bool HasConfigFlag(int nFlag) const { return (flags_ & nFlag) != 0; }
 
-  [[nodiscard]] uint32_t spawn_option(const std::string& c) const { return spawn_opts_.at(c); }
+  [[nodiscard]] uint32_t spawn_option(const std::string& c) const { return wwiv::stl::at(spawn_opts_, c); }
 
   void set_at_wfc(bool b) { at_wfc_ = b; }
   [[nodiscard]] bool at_wfc() const { return at_wfc_; }

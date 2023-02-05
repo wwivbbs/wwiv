@@ -240,11 +240,6 @@ bool Output::printfile(const std::string& data, bool abortable, bool force_pause
   return printfile_path(full_path_name, abortable, force_pause);
 }
 
-/**
- * Displays a help file or an error that no help is available.
- *
- * A help file is a normal file displayed with printfile.
- */
 bool Output::print_help_file(const std::string& filename) {
   if (!printfile(filename)) {
     bout.print("No help available.  File '{}' does not exist.\r\n", filename);
@@ -253,17 +248,14 @@ bool Output::print_help_file(const std::string& filename) {
   return true;
 }
 
-/**
- * Displays a file locally.
- */
-void Output::print_local_file(const std::string& filename) {
-  printfile(filename);
+void Output::print_local_file(const std::string& data) {
+  printfile(data);
   bout.nl(2);
   bout.pausescr();
 }
 
-bool Output::printfile_random(const std::string& raw_base_fn) {
-  const printfile_opts opts(sess(), *this, raw_base_fn, true, true);
+bool Output::printfile_random(const std::string& data) {
+  const printfile_opts opts(sess(), *this, data, true, true);
   const auto& dir = sess().dirs().current_menu_gfiles_directory();
   const auto base_fn = opts.data();
   if (const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0")); !File::Exists(dot_zero)) {

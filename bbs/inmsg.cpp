@@ -205,8 +205,7 @@ static bool InternalMessageEditor(std::vector<std::string>& lin, int maxli, int*
     }
     check_message_size = true;
     if (current_line[0] == '/') {
-      auto cmd = current_line;
-      StringUpperCase(&cmd);
+      auto cmd = ToStringUpperCase(current_line);
       if (cmd == "/HELP" ||
           cmd == "/H" ||
           cmd == "/?") {

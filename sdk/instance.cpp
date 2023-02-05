@@ -112,8 +112,7 @@ DateTime Instance::updated() const {
   return DateTime::from_daten(ir_.last_update);
 }
 
-Instances::Instances(const Config& config)
-    : datadir_(config.datadir()), path_(FilePath(datadir_, INSTANCE_DAT)) {
+Instances::Instances(const Config& config) : path_(FilePath(config.datadir(), INSTANCE_DAT)) {
   initialized_ = File::Exists(path_);
   instances_ = all();
 }

@@ -62,6 +62,13 @@ LNet::LNet(const wwiv::net::NetworkCommandLine& cmdline)
 LNet::~LNet() {
   delete io;
   io = nullptr;
+
+  // Cleanup CursesIO.
+  using namespace wwiv::local::ui;
+  if (curses_out != nullptr) {
+    delete curses_out;
+    curses_out = nullptr;
+  }
 }
 
 void LNet::dump_char(char ch) {

@@ -93,14 +93,13 @@ bool Names::Remove(uint32_t user_number) {
     return false;
   }
 
-  auto upper_case_name(name);
-  StringUpperCase(&upper_case_name);
-  auto it = names_.begin();
-  for (; it != names_.end()
-         && StringCompare(upper_case_name.c_str(), reinterpret_cast<char*>((*it).name)) > 0;
+  const auto upper_case_name = ToStringUpperCase(name);
+  auto it = names_.cbegin();
+  for (; it != names_.cend()
+         && StringCompare(upper_case_name.c_str(), reinterpret_cast<const char*>((*it).name)) > 0;
          ++it) {
   }
-  if (!IsEquals(upper_case_name.c_str(), reinterpret_cast<char*>((*it).name))) {
+  if (!IsEquals(upper_case_name.c_str(), reinterpret_cast<const char*>((*it).name))) {
     return false;
   }
   names_.erase(it);

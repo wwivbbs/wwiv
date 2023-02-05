@@ -102,6 +102,8 @@ private:
   std::string pipe_text_;
 };
 
+
+
 } // namespace
 
 #endif

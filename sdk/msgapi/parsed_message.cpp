@@ -32,7 +32,7 @@ using namespace wwiv::strings;
 
 constexpr char CZ = 26;
 
-static std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
+std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
   auto temp(s);
   const auto cz_pos = temp.find(CZ);
   if (cz_pos != std::string::npos) {
@@ -54,13 +54,21 @@ static std::vector<std::string> split_wwiv_style_message_text(const std::string&
       continue;
     }
     if (l.back() == 0x01) { // ^A
-      l.pop_back();
+      l.pop_back(); // remove trailing ^A
+      if (!current_line.empty() && current_line.back() != ' ' && l.front() != ' ') {
+        // Make sure we have at least a space between lines. Fix #1498
+        current_line.push_back(' ');
+      }
       current_line.append(l);
       continue;
     }
     if (current_line.empty()) {
       out.emplace_back(l);
     } else {
+      if (!current_line.empty() && current_line.back() != ' ' && l.front() != ' ') {
+        // Make sure we have at least a space between lines. Fix #1498
+        current_line.push_back(' ');
+      }
       out.emplace_back(current_line.append(l));
       current_line.clear();
     }
@@ -249,7 +257,8 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
       break;
     case control_lines_t::control_lines_masked: {
       auto s{l};
-      out.push_back(StringReplace(&s, control_char_, "@"));
+      StringReplace(&s, control_char_, "@");
+      out.push_back(s);
     } break;
     case control_lines_t::no_control_lines:
       if (!is_control_line) {
@@ -266,9 +275,13 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
 WWIVParsedMessageText::WWIVParsedMessageText(const std::string& text)
     : ParsedMessageText("\004"
                         "0",
-                        text, split_wwiv_style_message_text,
-                        "\r\n") {}
+                        text, split_wwiv_style_message_text, "\r\n") {}
   
 WWIVParsedMessageText::~WWIVParsedMessageText() = default;
+
+FTNParsedMessageText::FTNParsedMessageText(const std::string& text)
+    : ParsedMessageText("\001", text, split_wwiv_style_message_text, "\r") {}
+
+FTNParsedMessageText::~FTNParsedMessageText() = default;
 
 } // namespace wwiv

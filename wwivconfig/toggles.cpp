@@ -33,6 +33,11 @@ void toggles(wwiv::sdk::Config&, wwiv::sdk::system_toggles_t& t, CursesWindow*) 
   items.add(new Label("LastNet at Logon:"),
             new BooleanEditItem(&t.lastnet_at_logon),
     "Show the most recent network connections at logon", 1, y);
+  ++y;
+  items.add(new Label("Show Chain Usage:"),
+            new BooleanEditItem(&t.show_chain_usage),
+    "Show usage stats in chain display", 1, y);
+
 
   items.add_aligned_width_column(1);
   items.relayout_items_and_labels();

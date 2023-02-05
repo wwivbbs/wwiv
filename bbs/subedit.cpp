@@ -122,8 +122,8 @@ static void DisplayNetInfo(size_t nSubNum) {
     if (sn.host == 0) {
       std::string host = "<HERE>";
       const auto net_file_name = fmt::format("n{}.net", sn.stype);
-      std::set<uint16_t> subscribers;
-      ReadSubcriberFile(FilePath(net.dir, net_file_name), subscribers);
+      const auto subscriber_fn = FilePath(net.dir, net_file_name);
+      auto subscribers = ReadSubcriberFile(subscriber_fn);
       auto num = size_int(subscribers);
       bout.printf("%-12.12s %-12.12s %-20.20s  %-4d  %s%s\r\n",
                            net.name, host, sn.stype, num,
@@ -158,29 +158,30 @@ static void modify_sub(int n) {
   do {
     bout.cls();
     bout.litebar(StrCat("Editing Message Sub #", n));
-    bout.print("|#9A) Name       : |#2{}\r\n", r.name);
-    bout.print("|#9B) Filename   : |#2{}\r\n", r.filename);
-    bout.print("|#9C) Key        : |#2{}\r\n", GetKey(r));
-    bout.print("|#9D) Read ACS   : |#2{}\r\n", r.read_acs);
-    bout.print("|#9E) Post ACS   : |#2{}\r\n", r.post_acs);
-    bout.print("|#9F) Anony      : |#2{}\r\n", GetAnon(r));
-    bout.print("|#9H) Max Msgs   : |#2{}\r\n", r.maxmsgs);
-    bout.outstr("|#9J) Net info   : |#2");
+    bout.print("|#9A) Name         : |#2{}\r\n", r.name);
+    bout.print("|#9B) Filename     : |#2{}\r\n", r.filename);
+    bout.print("|#9C) Key          : |#2{}\r\n", GetKey(r));
+    bout.print("|#9D) Read ACS     : |#2{}\r\n", r.read_acs);
+    bout.print("|#9E) Post ACS     : |#2{}\r\n", r.post_acs);
+    bout.print("|#9F) Anony        : |#2{}\r\n", GetAnon(r));
+    bout.print("|#9H) Max Msgs     : |#2{}\r\n", r.maxmsgs);
+    bout.outstr("|#9J) Net info     : |#2");
     DisplayNetInfo(n);
 
-    bout.print("|#9K) Storage typ: |#2{}\r\n", static_cast<int>(r.storage_type));
-    bout.print("|#9L) Val network: |#2{}\r\n", YesNoString((r.anony & anony_val_net) ? true : false));
-    bout.print("|#9M) Req ANSI   : |#2{}\r\n",
+    bout.print("|#9K) Storage typ  : |#2{}\r\n", static_cast<int>(r.storage_type));
+    bout.print("|#9L) Val network  : |#2{}\r\n", YesNoString((r.anony & anony_val_net) ? true : false));
+    bout.print("|#9M) Req ANSI     : |#2{}\r\n",
                YesNoString((r.anony & anony_ansi_only) ? true : false));
-    bout.print("|#9N) Disable tag: |#2{}\r\n", YesNoString((r.anony & anony_no_tag) ? true : false));
-    bout.print("|#9O) Description: |#2{}\r\n",
+    bout.print("|#9N) Disable tag  : |#2{}\r\n", YesNoString((r.anony & anony_no_tag) ? true : false));
+    bout.print("|#9O) Description  : |#2{}\r\n",
                ((!a()->subs().sub(n).desc.empty()) ? a()->subs().sub(n).desc : "None."));
-    bout.print("|#9P) Disable FS:  |#2{}\r\n",
+    bout.print("|#9P) Disable FS   : |#2{}\r\n",
                YesNoString((r.anony & anony_no_fullscreen) ? true : false));
-    bout.print("|#9   Conferences: |#2{}\r\n", r.conf.to_string());
+    bout.print("|#9R) Colorize Text: |#2{}\r\n", YesNoString(r.colorize_text));
+    bout.print("|#9   Conferences  : |#2{}\r\n", r.conf.to_string());
     bout.nl();
-    bout.outstr("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ");
-    auto ch = onek("QABCDEFGHIJKLMNOP[]", true);
+    bout.outstr("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1R|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ");
+    auto ch = onek("QABCDEFGHIJKLMNOPR[]", true);
     bout.nl();
     switch (ch) {
     case 'Q':
@@ -330,6 +331,7 @@ static void modify_sub(int n) {
         }
         bout.print("{:c}), <space>=Quit? ", static_cast<char>('a' + a()->subs().sub(n).nets.size() - 1));
         std::string charstring;
+        charstring = " ";
         for (size_t i = 0; i < a()->subs().sub(n).nets.size(); i++) {
           charstring.push_back(static_cast<char>('A' + i));
         }
@@ -393,6 +395,11 @@ static void modify_sub(int n) {
       if (bin.yesno()) {
         r.anony |= anony_no_fullscreen;
       }
+      break;
+    case 'R':
+      bout.nl();
+      bout.outstr("|#5Attempt to colorize uncolorized message text for this sub? ");
+      r.colorize_text = bin.yesno();
       break;
     }
   } while (!done && !a()->sess().hangup());

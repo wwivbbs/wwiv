@@ -41,8 +41,8 @@ static std::string sysoplog_filename(const std::string& d) {
   return fmt::sprintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
 }
 
-Status::Status(std::string datadir, const statusrec_t& s)
-    : status_(s), datadir_(std::move(datadir)) {}
+Status::Status(const std::filesystem::path& datadir, const statusrec_t& s)
+    : status_(s), datadir_(datadir) {}
 
 Status::~Status() = default;
 

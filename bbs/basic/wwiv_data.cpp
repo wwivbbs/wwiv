@@ -170,7 +170,7 @@ bool RegisterNamespaceData(mb_interpreter_t* basi) {
       }
 
       if (!SaveData(d, scope, data)) {
-        d->out->outstr("#6Error saving data.\r\n");
+        d->out->outstr("|#6Error saving data.\r\n");
       }
     }
     mb_check(mb_attempt_close_bracket(bas, l));
@@ -210,10 +210,6 @@ bool RegisterNamespaceData(mb_interpreter_t* basi) {
           sd->out->outstr("[oops] ");
         }
       }
-
-      //if (!SaveData(sd, scope, data)) {
-      //  sd->out->outstr("#6Error loading data.\r\n");
-      //}
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;

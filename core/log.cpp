@@ -54,9 +54,7 @@ class ConsoleAppender : public Appender {
 
 class LogFileAppender : public Appender {
 public:
-  explicit LogFileAppender(std::string fn)
-    : filename_(std::move(fn)) {
-  }
+  explicit LogFileAppender(const std::filesystem::path& fn) : filename_(fn) {}
 
   bool append(const std::string& message) override {
     // Not super performant, but we'll start here and see how far this
@@ -74,7 +72,7 @@ public:
   }
 
 private:
-  const std::string filename_;
+  const std::filesystem::path filename_;
 };
 
 static std::string FormatLogLevel(LoggerLevel l, int v) noexcept {
@@ -178,7 +176,7 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
   cmdline.Parse();
 
   const auto l = cmdline.arg("logdir");
-  auto logdir = cmdline.logdir();
+  auto logdir = std::filesystem::path(cmdline.logdir());
   if (l.is_default() && c.logdir_fn_) {
     if (const auto logdir_from_fn = c.logdir_fn_(cmdline.bbsdir()); !logdir_from_fn.empty()) {
       logdir = logdir_from_fn;

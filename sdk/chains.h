@@ -18,9 +18,11 @@
 #ifndef INCLUDED_SDK_CHAINS_H
 #define INCLUDED_SDK_CHAINS_H
 
+#include "core/stl.h"
 #include "core/wwivport.h"
 #include "sdk/config.h"
 #include <initializer_list>
+#include <filesystem>
 #include <set>
 #include <string>
 #include <vector>
@@ -96,8 +98,9 @@ public:
 
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
   [[nodiscard]] const std::vector<chain_t>& chains() const { return chains_; }
-  [[nodiscard]] const chain_t& at(size_type num) const { return chains_.at(num); }
-  [[nodiscard]] chain_t& at(size_type num) { return chains_.at(num); }
+  [[nodiscard]] const chain_t& at(size_type num) const { return wwiv::stl::at(chains_, num); }
+  [[nodiscard]] chain_t& at(size_type num) { return wwiv::stl::at(chains_, num);
+  }
 
   bool insert(size_type n, chain_t r);
   bool erase(size_type n);
@@ -127,7 +130,7 @@ private:
   bool SaveToDat();
 
   bool initialized_{false};
-  std::string datadir_;
+  std::filesystem::path datadir_;
   std::vector<chain_t> chains_;
 };
 

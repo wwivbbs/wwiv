@@ -382,7 +382,8 @@ bool Application::ReadConfig() {
 
   if (!config_->versioned_config_dat()) {
     const auto msg = fmt::format(
-        "Please run WWIVconfig to upgrade {} to the most recent version.", config_->config_filename());
+        "Please run WWIVconfig to upgrade {} to the most recent version.", 
+        config_->config_filename().string());
     std::cerr << msg << std::endl;
     LOG(ERROR) << msg;
     sleep_for(seconds(2));
@@ -534,7 +535,7 @@ static bool mkdir_or_warn(const std::filesystem::path& dir, const std::string& n
 bool Application::InitializeBBS(bool cleanup_network) {
   Cls();
   std::clog << std::endl
-            << full_version() << ", Copyright (c) 1998-2022, WWIV Software Services."
+            << full_version() << ", Copyright (c) 1998-2023, WWIV Software Services."
             << std::endl
             << std::endl
             << "\r\nInitializing BBS..." << std::endl;
