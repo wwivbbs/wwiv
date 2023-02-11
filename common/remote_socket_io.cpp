@@ -98,8 +98,8 @@ bool RemoteSocketIO::open() {
   }
   StartThreads();
 
-  GetRemotePeerAddress(socket_, remote_info().address);
-  GetRemotePeerHostname(socket_, remote_info().address_name);
+  remote_info().address = GetRemotePeerAddress(socket_).value_or("");
+  remote_info().address_name = GetRemotePeerHostname(socket_).value_or("");
   if (telnet_) {
     {
       unsigned char s[3] = {RemoteSocketIO::TELNET_OPTION_IAC, RemoteSocketIO::TELNET_OPTION_DONT,

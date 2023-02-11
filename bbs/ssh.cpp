@@ -409,7 +409,7 @@ bool IOSSH::ssh_initalize() {
 bool IOSSH::open() { 
   if (!initialized_) return false;  
   
-  wwiv::core::GetRemotePeerAddress(ssh_socket_, remote_info().address);
+  remote_info().address = wwiv::core::GetRemotePeerAddress(ssh_socket_).value_or("");
   return io_->open(); 
 }
 

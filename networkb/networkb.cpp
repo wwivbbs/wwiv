@@ -86,9 +86,8 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
 
   do {  // NOLINT(bugprone-infinite-loop)
     try {
-      std::string ip;
-      if (GetRemotePeerAddress(sock, ip)) {
-        LOG(INFO) << "Received connection from: " << ip;
+      if (const auto ip = GetRemotePeerAddress(sock)) {
+        LOG(INFO) << "Received connection from: " << ip.value();
       }
       std::unique_ptr<SocketConnection> c;
       if (socket_connected) {

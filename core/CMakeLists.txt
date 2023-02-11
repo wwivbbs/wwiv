@@ -109,6 +109,7 @@ if (WWIV_BUILD_TESTS)
     "ip_address_test.cpp"
     "log_test.cpp"
     "md5_test.cpp"
+    "net_test.cpp"
     "os_test.cpp"
     "scope_exit_test.cpp"
     "semaphore_file_test.cpp"

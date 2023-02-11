@@ -73,42 +73,38 @@ bool InitializeSockets() {
   return true;
 }
 
-bool GetRemotePeerAddress(SOCKET socket, std::string& ip) {
+std::optional<std::string> GetRemotePeerAddress(SOCKET socket) {
   sockaddr_in addr{};
   socklen_t nAddrSize = sizeof(sockaddr);
 
   const auto result = getpeername(socket, reinterpret_cast<sockaddr*>(&addr), &nAddrSize);
   if (result == -1) {
-    return false;
+    return std::nullopt;
   }
 
   char buf[255];
-  ip = inet_ntop(addr.sin_family, &addr.sin_addr, buf, sizeof(buf));
-  return true;
+  std::string ip = inet_ntop(addr.sin_family, &addr.sin_addr, buf, sizeof(buf));
+  return ip;
 }
 
-bool GetRemotePeerHostname(SOCKET socket, std::string& hostname) {
+std::optional<std::string> GetRemotePeerHostname(SOCKET socket) {
   sockaddr_in addr{};
   socklen_t nAddrSize = sizeof(sockaddr);
 
   char host[1024];
   char service[81];
 
-  auto result = getpeername(socket, reinterpret_cast<sockaddr*>(&addr), &nAddrSize);
-  if (result == -1) {
-    return false;
+  if (getpeername(socket, reinterpret_cast<sockaddr*>(&addr), &nAddrSize) == -1) {
+    return std::nullopt;
   }
+
   // pretend sa is full of good information about the host and port...
-
-  result = getnameinfo(reinterpret_cast<sockaddr*>(&addr), sizeof(addr), host, sizeof(host),
-                       service, sizeof(service), 0);
-
-  if (result != 0) {
-    return false;
+  if (getnameinfo(reinterpret_cast<sockaddr*>(&addr), sizeof(addr), host, sizeof(host), service,
+                  sizeof(service), 0) != 0) {
+    return std::nullopt;
   }
 
-  hostname = host;
-  return true;
+  return std::string(host);
 }
 
 SOCKET CreateListenSocket(int port) {
@@ -147,6 +143,37 @@ SOCKET CreateListenSocket(int port) {
   }
 
   return sock;
+}
+
+bool is_rfc1918_private_address(const std::string& ip) {
+  // RFC 1918 defined private address space:
+  // 10.0.0.0/8 IP addresses: 10.0.0.0 – 10.255.255.255
+  // 172.16.0.0/12 IP addresses: 172.16.0.0 – 172.31.255.255
+  // 192.168.0.0/16 IP addresses: 192.168.0.0 – 192.168.255.255
+  auto parts = SplitString(ip, ".");
+  if (parts.size() != 4) {
+    // WTF
+    return false;
+  }
+  std::vector<int> o;
+  for (const auto& part : parts) {
+    o.push_back(to_number<int>(part));
+  }
+  
+  if (o.size() != 4) {
+    // WTF
+    return false;
+  }
+  if (o.at(0) == 10) {
+    return true;
+  }
+  if (o.at(0) == 172 && o.at(1) >= 16) {
+    return true;
+  }
+  if (o.at(0) == 192 && o.at(1) == 168) {
+    return true;
+  }
+  return false;
 }
 
 /**

@@ -39,7 +39,7 @@ struct wwivd_blocking_t {
   // xbl.spamhaus.org
   std::string dns_rbl_server{"xbl.spamhaus.org"};
 
-  bool use_dns_cc = true;
+  bool use_dns_cc = false;
   // zz.countries.nerd.dk
   std::string dns_cc_server{"zz.countries.nerd.dk"};
   std::vector<int> block_cc_countries;
