@@ -20,7 +20,7 @@
 
 #include "core/datafile.h"
 #include "sdk/config.h"
-#include "sdk/msgapi/message_wwiv.h"
+#include "sdk/msgapi/message.h"
 #include "sdk/msgapi/type2_text.h"
 #include <cstdint>
 #include <string>
@@ -64,7 +64,7 @@ public:
 
   bool Close();
 
-  bool AddMessage(const EmailData& data);
+  bool AddMessage(EmailData& data);
 
   /** Total number of active email messages in the system. */
   [[nodiscard]] int number_of_messages();

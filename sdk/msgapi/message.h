@@ -18,84 +18,109 @@
 #ifndef INCLUDED_SDK_MESSAGE_H
 #define INCLUDED_SDK_MESSAGE_H
 
+#include "sdk/vardec.h"
 #include <memory>
 #include <string>
 
+
 namespace wwiv::sdk::msgapi {
+
+class MessageApi;
 
 class MessageHeader {
 public:
-  virtual ~MessageHeader() = default;
+  explicit MessageHeader(const MessageApi* api);
 
-  [[nodiscard]] virtual std::string title() const = 0;
-  virtual void set_title(const std::string&) = 0;
-  [[nodiscard]] virtual std::string to() const = 0;
-  virtual void set_to(const std::string&) = 0;
-  [[nodiscard]] virtual std::string from() const = 0;
-  virtual void set_from(const std::string&) = 0;
-  [[nodiscard]] virtual uint16_t from_usernum() const = 0;
-  virtual void set_from_usernum(uint16_t) = 0;
-  [[nodiscard]] virtual uint16_t from_system() const = 0;
-  virtual void set_from_system(uint16_t) = 0;
-  [[nodiscard]] virtual uint32_t daten() const = 0;
-  virtual void set_daten(uint32_t) = 0;
-  [[nodiscard]] virtual uint8_t status() const = 0;
-  virtual void set_status(uint8_t) = 0;
-  [[nodiscard]] virtual uint8_t anony() const = 0;
-  virtual void set_anony(uint8_t) = 0;
-  [[nodiscard]] virtual std::string oaddress() const = 0;
-  virtual void set_oaddress(const std::string&) = 0;
-  [[nodiscard]] virtual std::string destination_address() const = 0;
-  virtual void set_destination_address(const std::string&) = 0;
-  [[nodiscard]] virtual std::string in_reply_to() const = 0;
-  virtual void set_in_reply_to(const std::string&) = 0;
+  // Should only be used when reading a message from a type-2 message file.
+  // Needs to be public so make_unique will work on it.
+  MessageHeader(const postrec& header, std::string from, std::string to,
+    std::string in_reply_to, const MessageApi* api);
 
-  [[nodiscard]] virtual bool local() const = 0;
-  [[nodiscard]] virtual bool private_msg() const = 0;
-  virtual void set_private_msg(bool b) = 0;
+  [[nodiscard]] std::string title() const { return header_.title; }
+  void set_title(const std::string&);
+  [[nodiscard]] std::string to() const { return to_.empty() ? "All" : to_; }
+  void set_to(const std::string& to) { to_ = to; }
+  [[nodiscard]] std::string from() const { return from_; }
+  void set_from(const std::string& f) { from_ = f; }
+  [[nodiscard]] uint16_t from_usernum() const { return header_.owneruser; }
+  void set_from_usernum(uint16_t n) { header_.owneruser = n; }
+  [[nodiscard]] uint16_t from_system() const { return header_.ownersys; }
+  void set_from_system(uint16_t n) { header_.ownersys = n; }
+  [[nodiscard]] daten_t daten() const { return header_.daten; }
+  void set_daten(daten_t d) { header_.daten = d; }
+  [[nodiscard]] uint8_t status() const { return header_.status; }   // TODO(rushfan): This should be generic
+  void set_status(uint8_t t) { header_.status = t; }
+  [[nodiscard]] uint8_t anony() const { return header_.anony; }      // TODO(rushfan): This should be generic
+  void set_anony(uint8_t a) { header_.anony = a; }
+  [[nodiscard]] std::string oaddress() const { return oaddress_; } // TODO(rushfan): Implement me!
+  void set_oaddress(const std::string& a) { oaddress_ = a; }
+  [[nodiscard]] std::string destination_address() const { return destination_address_; }
+  void set_destination_address(const std::string& a) { destination_address_ = a; }
+  [[nodiscard]] std::string in_reply_to() const { return in_reply_to_; }
+  void set_in_reply_to(const std::string& t) { in_reply_to_ = t; }
 
-  [[nodiscard]] virtual bool unvalidated() const = 0;
-  virtual void set_unvalidated(bool b) = 0;
+  [[nodiscard]] bool local() const;
+  [[nodiscard]] bool private_msg() const { return false; } // we don't support private subs
+  void set_private_msg(bool b) { private_ = b; }
 
-  [[nodiscard]] virtual bool locked() const = 0;
-  virtual void set_locked(bool b) = 0;
-  [[nodiscard]] virtual bool deleted() const = 0;
-  virtual void set_deleted(bool b) = 0;
+  [[nodiscard]] bool unvalidated() const;
+  void set_unvalidated(bool b);
+  [[nodiscard]] bool locked() const; // 
+  void set_locked(bool b);
+  [[nodiscard]] bool deleted() const;
+  void set_deleted(bool b);
 
-  [[nodiscard]] virtual bool pending_network() const = 0;
-  virtual void set_pending_network(bool b) = 0;
-  [[nodiscard]] virtual bool source_verified() const = 0;
-  [[nodiscard]] virtual bool net_network_post() const = 0;
+  [[nodiscard]] bool pending_network() const;
+  void set_pending_network(bool b);
+  [[nodiscard]] bool source_verified() const;
+  [[nodiscard]] bool net_network_post() const;
+
+  [[nodiscard]] const postrec& data() const { return header_; }
 
   // Read only methods
-  [[nodiscard]] virtual uint32_t last_read() const = 0;
-  [[nodiscard]] virtual uint8_t storage_type() const = 0;
+  // In WWIV last_read == highest_read.
+  [[nodiscard]] uint32_t last_read() const;
+  [[nodiscard]] uint8_t storage_type() const;
 
+  friend class WWIVMessageArea;
 
-protected:
-  MessageHeader() = default;
+private:
+  postrec header_{};
+  std::string from_;
+  std::string to_;
+  std::string in_reply_to_;
+  std::string oaddress_;
+  std::string destination_address_;
+  bool private_{ false };
+  const MessageApi* api_;
 };
 
 class MessageText {
 public:
-  virtual ~MessageText() = default;
-  [[nodiscard]] virtual const std::string& text() const = 0;
-  virtual void set_text(std::string) = 0;
-
-protected:
   MessageText() = default;
+  explicit MessageText(const std::string& text) : text_(text) {}
+  virtual ~MessageText() = default;
+  [[nodiscard]] virtual const std::string& string() const { return text_; }
+  virtual void set_text(const std::string& t) { text_ = t; };
+
+private:
+  std::string text_;
 };
 
 class Message {
 public:
+  Message(MessageHeader&& header, MessageText&& text);
+  Message(MessageHeader&& header, const std::string& text);
+  Message(MessageApi* api) : header_(api) {}
   virtual ~Message() = default;
-  [[nodiscard]] virtual MessageHeader& header() const = 0;
-  [[nodiscard]] virtual MessageText& text() const = 0;
-  virtual std::unique_ptr<MessageHeader> release_header() = 0;
-  virtual std::unique_ptr<MessageText> release_text() = 0;
-
-protected:
-  Message() = default;
+  [[nodiscard]] virtual MessageHeader& header() { return header_; }
+  [[nodiscard]] virtual const MessageHeader& header() const { return header_; }
+  [[nodiscard]] virtual MessageText& text() { return text_; };
+  [[nodiscard]] virtual void set_text(const std::string& t) { text_.set_text(t); };
+  [[nodiscard]] virtual const MessageText& text() const { return text_; };
+private:
+  MessageHeader header_;
+  MessageText text_;
 };
 
 }  // namespace

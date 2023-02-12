@@ -229,8 +229,8 @@ public:
     auto raw_text = text_file.ReadFileIntoString();
     auto lines = SplitString(raw_text, "\n", false);
 
-    auto msg(area->CreateMessage());
-    auto& header = msg->header();
+    auto msg = area->CreateMessage();
+    auto& header = msg.header();
     header.set_from_system(0);
     header.set_from_usernum(static_cast<uint16_t>(from_usernum));
     header.set_title(title);
@@ -238,12 +238,12 @@ public:
     header.set_to(to);
     header.set_daten(daten.to_daten_t());
     header.set_in_reply_to(in_reply_to);
-    msg->text().set_text(JoinStrings(lines, "\r\n"));
+    msg.set_text(JoinStrings(lines, "\r\n"));
 
     MessageAreaOptions area_options{};
     area_options.send_post_to_network = true;
     area_options.add_re_and_by_line = arg("use_re_and_by").as_bool();
-    return area->AddMessage(*msg, area_options) ? 0 : 1;
+    return area->AddMessage(msg, area_options) ? 0 : 1;
   }
 };
 
@@ -435,7 +435,7 @@ int MessagesDumpCommand::ExecuteImpl(MessageArea* area, const std::string& basen
     }
     const auto& text = message->text();
     std::cout << std::string(72, '-') << std::endl;
-    auto lines = wwiv::strings::SplitString(text.text(), "\n", false);
+    auto lines = wwiv::strings::SplitString(text.string(), "\n", false);
     for (const auto& line : lines) {
       if (line.empty()) {
         continue;

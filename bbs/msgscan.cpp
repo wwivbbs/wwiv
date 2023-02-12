@@ -271,7 +271,7 @@ static FullScreenView CreateFullScreenListTitlesView() {
   return FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
 }
 
-static std::string CreateLine(std::unique_ptr<Message>&& msg, const int msgnum) {
+static std::string CreateLine(std::optional<Message>&& msg, const int msgnum) {
   if (!msg) {
     return "";
   }
@@ -288,8 +288,7 @@ static std::string CreateLine(std::unique_ptr<Message>&& msg, const int msgnum) 
   if (h.storage_type() == 2) {
     // HACK: Need to make this generic. this before supporting JAM.
     // N.B. If for some reason dynamic_cast fails, a std::bad_cast is thrown.
-    const auto& wh = dynamic_cast<const WWIVMessageHeader&>(h);
-    if (wh.last_read() > a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()]) {
+    if (h.last_read() > a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()]) {
       line[0] = '*';
     }
   }

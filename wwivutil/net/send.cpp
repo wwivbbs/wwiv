@@ -150,9 +150,8 @@ int SubSendCommand::Execute() {
   for (auto i = std::max<int>(1, area->number_of_messages() - num); i <= area->number_of_messages();
        i++) {
     auto message = area->ReadMessage(i);
-    const auto* wm = dynamic_cast<const WWIVMessage*>(message.get());
-    auto packet = create_packet_from_wwiv_message(*wm, subtype, {host});
-    LOG(INFO) << "Writing packet for message: " << wm->header().title();
+    auto packet = create_packet_from_wwiv_message(*message, subtype, {host});
+    LOG(INFO) << "Writing packet for message: " << message->header().title();
     // TODO(rushfan): make documented list of what network_app_id codes
     // are used when writing pending packets.
     write_wwivnet_packet_or_log(net, 'u', packet);

@@ -19,7 +19,7 @@
 #define __INCLUDED_SDK_TYPE2_TEXT_H__
 
 #include "core/file.h"
-#include "sdk/msgapi/message_wwiv.h"
+#include "sdk/msgapi/message.h"
 #include <cstdint>
 #include <filesystem>
 #include <optional>

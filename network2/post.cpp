@@ -178,19 +178,19 @@ bool handle_inbound_post(Context& context, NetPacket& p) {
 
   // TODO(rushfan): Should we let CreateMessage accept the packet directly
   // then we could also check the main_type to ensure it's fine.
-  auto msg = area->CreateMessage();
-  msg->header().set_from_system(p.nh.fromsys);
-  msg->header().set_from_usernum(p.nh.fromuser);
-  msg->header().set_title(ppt.title());
-  msg->header().set_from(ppt.sender());
-  msg->header().set_daten(p.nh.daten);
-  msg->text().set_text(ppt.text());
+  Message msg(&context.api(sub.storage_type));
+  msg.header().set_from_system(p.nh.fromsys);
+  msg.header().set_from_usernum(p.nh.fromuser);
+  msg.header().set_title(ppt.title());
+  msg.header().set_from(ppt.sender());
+  msg.header().set_daten(p.nh.daten);
+  msg.set_text(ppt.text());
 
   MessageAreaOptions options{};
   options.send_post_to_network = false;
   // these should already exist if they are needed.
   options.add_re_and_by_line = false;
-  if (!area->AddMessage(*msg, options)) {
+  if (!area->AddMessage(msg, options)) {
     const auto errmsg = fmt::format("Failed to add message: '{}'; writing to dead.net", ppt.title());
     context.netdat().add_message(NetDat::netdat_msgtype_t::error, errmsg);
     LOG(ERROR) << "    ! ERROR " << errmsg;

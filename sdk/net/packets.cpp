@@ -20,15 +20,18 @@
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "fmt/format.h"
 #include "sdk/filenames.h"
+#include "sdk/subxtr.h"
 #include "sdk/net/subscribers.h"
 #include <string>
 #include <utility>
 
 using namespace wwiv::core;
+using namespace wwiv::stl;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -307,7 +310,7 @@ bool NetPacket::UpdateRouting(const Network& net) {
     LOG(INFO) << "Can't updating routing information, already have 32k of message.";
     return false;
   }
-  nh.length += stl::size_uint32(routing_information);
+  nh.length += size_uint32(routing_information);
 
   // Need to skip over either 3 or 4 lines 1st depending on the NetPacket type.
   const auto lines = number_of_header_lines(nh.main_type);
@@ -607,7 +610,7 @@ std::string get_subtype_from_packet_text(const std::string& text) {
 }
 
 /** Creates an outbound NetPacket to be sent */
-NetPacket create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
+NetPacket create_packet_from_wwiv_message(const wwiv::sdk::msgapi::Message& m,
                                        const std::string& subtype, std::set<uint16_t> receipients) {
 
   std::vector<uint16_t> list;
@@ -642,7 +645,7 @@ NetPacket create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& 
   text.append("\r\n");
   text.append(daten_to_wwivnet_time(nh.daten));
   text.append("\r\n");
-  text.append(m.text().text());
+  text.append(m.text().string());
 
   nh.length = stl::size_uint32(text);
 

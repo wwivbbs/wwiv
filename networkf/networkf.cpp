@@ -909,7 +909,7 @@ bool NetworkF::export_main_type_email_name(std::set<std::string>& bundles, NetPa
   // Lame implementation that creates 1 file per message.
   LOG(INFO) << "Creating packet for netmail.";
 
-  auto it = p.text().begin();
+  auto it = std::begin(p.text());
   const auto to = get_message_field(p.text(), it, {0}, 80);
   const auto odest = get_address_from_single_line(to);
   if (!odest.has_value()) {

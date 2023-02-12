@@ -20,12 +20,16 @@
 
 #include "core/file.h"
 #include "sdk/bbslist.h"
-#include "sdk/msgapi/message_wwiv.h"
+#include "sdk/msgapi/message.h"
 #include "sdk/net/net.h"
 #include <filesystem>
 #include <set>
 #include <string>
 #include <vector>
+
+namespace wwiv::sdk {
+struct subboard_t;
+}
 
 namespace wwiv::sdk::net {
 
@@ -320,7 +324,7 @@ std::string net_info_minor_type_name(uint16_t typ);
 std::string get_subtype_from_packet_text(const std::string& text);
 
 /** Creates an outbound NetPacket to be sent */
-NetPacket create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
+NetPacket create_packet_from_wwiv_message(const wwiv::sdk::msgapi::Message& m,
                                        const std::string& subtype, std::set<uint16_t> receipients);
 
 // Writes out a WWIVnet NetPacket to the pending file and logs success and failure to the 
