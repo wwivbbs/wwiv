@@ -38,8 +38,8 @@ namespace wwiv::fsed {
 
 FsedView::FsedView(const FullScreenView& fs, MessageEditorData& data, bool file)
     : fs_(fs), bout_(fs_.out()), bin_(fs_.in()), data_(data), file_(file) {
-  max_view_lines_ = std::max<int>(20, fs.message_height() - 1);
-  max_view_columns_ = std::max<int>(fs.screen_width(), 79);
+  max_view_lines_ = fs.message_height() - 1;
+  max_view_columns_ = fs.screen_width();
 }
 
 FullScreenView& FsedView::fs() { return fs_; }
