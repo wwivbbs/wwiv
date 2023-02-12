@@ -25,9 +25,6 @@ using namespace wwiv::sdk::net;
 
 namespace wwiv::sdk::msgapi {
 
-MessageAreaLastRead::MessageAreaLastRead(MessageApi* api) : api_(api) {}
-MessageAreaLastRead::~MessageAreaLastRead() = default;
-
 MessageArea::MessageArea(MessageApi* api) : api_(api) {}
 MessageArea::~MessageArea() = default;
 

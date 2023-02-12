@@ -51,19 +51,6 @@ private:
   bool initialized_{true};
 };
 
-class WWIVMessageAreaLastRead : public MessageAreaLastRead {
-public:
-  WWIVMessageAreaLastRead(WWIVMessageApi* api, int message_area_number);
-
-  [[nodiscard]] uint32_t last_read(int user_number) override;
-  bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) override;
-  bool Close() override;
-
-private:
-  WWIVMessageApi* wapi_;
-  int message_area_number_;
-};
-
 struct wwiv_parsed_text_fieds {
   std::string from_username;
   std::string date;
@@ -102,7 +89,7 @@ public:
   [[nodiscard]] Message CreateMessage() override;
   [[nodiscard]] bool Exists(daten_t d, const std::string& title, uint16_t from_system,
                             uint16_t from_user) override;
-  [[nodiscard]] MessageAreaLastRead& last_read() const noexcept override;
+  [[nodiscard]] const MessageAreaLastRead& last_read() const noexcept override;
   [[nodiscard]] message_anonymous_t anonymous_type() const noexcept override;
 
 private:
@@ -124,7 +111,7 @@ private:
   bool open_{false};
   subfile_header_t header_;
   const std::vector<net::Network> net_networks_;
-  std::unique_ptr<MessageAreaLastRead> last_read_;
+  MessageAreaLastRead last_read_;
   int nonce_{0};
 };
 

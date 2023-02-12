@@ -46,15 +46,17 @@ class MessageApi;
 
 class MessageAreaLastRead {
 public:
-  explicit MessageAreaLastRead(MessageApi* api);
-  virtual ~MessageAreaLastRead();
-  [[nodiscard]] virtual uint32_t last_read(int user_number) = 0;
-  [[nodiscard]] virtual bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) = 0;
-  virtual bool Close() = 0;
+  MessageAreaLastRead(MessageApi* api, int message_area_number) :
+    api_(api), message_area_number_(message_area_number) {}
+  virtual ~MessageAreaLastRead() = default;
 
-protected:
-  // Not owned.
+  [[nodiscard]] uint32_t last_read(int user_number);
+  bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read);
+  bool Close();
+
+private:
   MessageApi* api_;
+  int message_area_number_;
 };
 
 struct MessageAreaOptions {
@@ -103,7 +105,7 @@ public:
   [[nodiscard]] uint8_t storage_type() const { return storage_type_; }
   void set_storage_type(uint8_t t) { storage_type_ = t; }
 
-  [[nodiscard]] virtual MessageAreaLastRead& last_read() const noexcept = 0;
+  [[nodiscard]] virtual const MessageAreaLastRead& last_read() const noexcept = 0;
   [[nodiscard]] virtual message_anonymous_t anonymous_type() const noexcept = 0;
 
 protected:

@@ -63,8 +63,8 @@ public:
   [[nodiscard]] bool Remove(const std::string& name) override;
   [[nodiscard]] MessageArea* Open(const subboard_t& sub, int subnum) override;
   [[nodiscard]] std::unique_ptr<WWIVEmail> OpenEmail();
-  [[nodiscard]] uint32_t last_read(int area) const;
-  void set_last_read(int area, uint32_t last_read);
+  [[nodiscard]] uint32_t last_read(int area) const override;
+  void set_last_read(int area, uint32_t last_read) override;
   [[nodiscard]] const Config& config() const noexcept { return config_; }
 
 private:

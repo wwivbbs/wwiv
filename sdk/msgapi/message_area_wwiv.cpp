@@ -88,26 +88,6 @@ static std::unique_ptr<WWIVMessageAreaHeader> ReadHeader(DataFile<postrec>& file
   return std::make_unique<WWIVMessageAreaHeader>(raw_header);
 }
 
-WWIVMessageAreaLastRead::WWIVMessageAreaLastRead(WWIVMessageApi* api, int message_area_number)
-    : MessageAreaLastRead(api), wapi_(api), message_area_number_(message_area_number) {}
-
-uint32_t WWIVMessageAreaLastRead::last_read(int) {
-  if (message_area_number_ < 0) {
-    return 0;
-  }
-  return wapi_->last_read(message_area_number_);
-}
-
-bool WWIVMessageAreaLastRead::set_last_read(int, uint32_t last_read, uint32_t highest_read) {
-  if (message_area_number_ < 0) {
-    // Fake area - nothing to do.
-    return true;
-  }
-  wapi_->set_last_read(message_area_number_, std::max<uint32_t>(last_read, highest_read));
-  return true;
-}
-
-bool WWIVMessageAreaLastRead::Close() { return false; }
 
 WWIVMessageAreaHeader::WWIVMessageAreaHeader(int ver, uint32_t num_messages)
     : header_(subfile_header_t()) {
@@ -123,7 +103,8 @@ WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub,
                                  std::filesystem::path text_filename, int subnum,
                                  std::vector<Network> net_networks)
     : MessageArea(api), Type2Text(std::move(text_filename)), wwiv_api_(api), sub_(sub),
-      sub_filename_(std::move(sub_filename)), header_{}, net_networks_(std::move(net_networks)) {
+      sub_filename_(std::move(sub_filename)), header_{}, net_networks_(std::move(net_networks)),
+      last_read_(api, subnum) {
   DataFile<postrec> subfile(sub_filename_, File::modeBinary | File::modeReadOnly);
   if (!subfile) {
     // TODO: throw exception
@@ -132,7 +113,6 @@ WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub,
     header_ = h->raw_header();
   }
   open_ = true;
-  last_read_.reset(new WWIVMessageAreaLastRead(api, subnum));
 }
 
 WWIVMessageArea::~WWIVMessageArea() { WWIVMessageArea::Close(); }
@@ -665,7 +645,7 @@ bool WWIVMessageArea::Exists(daten_t d, const std::string& title, uint16_t from_
   return false;
 }
 
-MessageAreaLastRead& WWIVMessageArea::last_read() const noexcept { return *last_read_; }
+const MessageAreaLastRead& WWIVMessageArea::last_read() const noexcept { return last_read_; }
 
 message_anonymous_t WWIVMessageArea::anonymous_type() const noexcept {
   switch (sub_.anony & 0x0f) {

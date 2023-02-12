@@ -49,6 +49,7 @@ set(COMMON_SOURCES
   "msgapi/message.cpp"
   "msgapi/message_api.cpp"
   "msgapi/message_api_wwiv.cpp"
+  "msgapi/message_area.cpp"
   "msgapi/message_area_wwiv.cpp"
   "msgapi/parsed_message.cpp"
   "msgapi/type2_text.cpp"

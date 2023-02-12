@@ -67,9 +67,14 @@ public:
   [[nodiscard]] std::filesystem::path root_directory() const { return root_directory_; }
   [[nodiscard]] MessageApiOptions options() const { return options_; }
 
+  // Last read
+  [[nodiscard]] virtual uint32_t last_read(int area) const = 0;
+  virtual void set_last_read(int area, uint32_t last_read) = 0;
+
   // TODO(rushfan): Here's where we add hooks to the lastread system
   // so that message api's created inside the bbs will share *qsc with
   // the legacy code until it's all removed.
+
 protected:
   const MessageApiOptions options_;
 
