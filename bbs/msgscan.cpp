@@ -1087,7 +1087,7 @@ static bool query_post() {
   if (!a()->user()->restrict_post() &&
       a()->user()->posts_today() < a()->config()->sl(a()->sess().effective_sl()).posts &&
       wwiv::bbs::check_acs(a()->current_sub().post_acs)) {
-    bout.print("|#5Post on {} (|#2Y/N/Q|#5) ? ", a()->current_sub().name);
+    bout.print("\r|#5Post on {} (|#2Y/N/Q|#5) ? ", a()->current_sub().name);
     a()->sess().clear_irt();
     clear_quotes(a()->sess());
     const auto q = bin.ynq();
