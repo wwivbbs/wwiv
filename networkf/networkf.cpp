@@ -653,7 +653,7 @@ std::optional<std::string> NetworkF::create_ftn_packet(const FidoAddress& dest,
 
     if (from_address.point() == 0) {
       text << "\r"
-           << "--- WWIV " << full_version() << "\r"
+           << "--- WWIV " << full_version() << "[" << os_version_string() << "]\r"
            << " * Origin: " << origin_line << " (" << to_zone_net_node(from_address) << ")\r";
     } else {
       text << "\r"
