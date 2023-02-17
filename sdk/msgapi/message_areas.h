@@ -15,9 +15,9 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_MESSAGE_AREAS_H__
-#define __INCLUDED_SDK_MESSAGE_AREAS_H__
+#ifndef INCLUDED_SDK_MESSAGE_AREAS_H
+#define INCLUDED_SDK_MESSAGE_AREAS_H
 
 #include "sdk/msgapi/message_area.h"
 
-#endif  // __INCLUDED_SDK_MESSAGE_AREAS_H__
+#endif

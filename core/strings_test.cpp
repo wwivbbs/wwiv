@@ -335,6 +335,12 @@ TEST(StringsTest, StringTrimEnd) {
   EXPECT_EQ(" a", a);
 }
 
+TEST(StringsTest, StringTrimEnd_NoTrailingSpace) {
+  std::string a = " a";
+  StringTrimEnd(&a);
+  EXPECT_EQ(" a", a);
+}
+
 TEST(StringsTest, StringTrimEnd_Empty) {
   std::string a;
   StringTrimEnd(&a);

@@ -93,7 +93,7 @@ static bool increment_email_counters(const Config& config, uint16_t email_usernu
 
 // Expects data.text is of the form:
 // SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
-bool WWIVEmail::AddMessage(const EmailData& data) {
+bool WWIVEmail::AddMessage(EmailData& data) {
   mailrec m{};
   to_char_array(m.title, data.title);
   m.anony = static_cast<unsigned char>(data.anony);

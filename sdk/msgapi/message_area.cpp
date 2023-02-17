@@ -15,44 +15,31 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/msgapi/message_api.h"
+#include "sdk/msgapi/message_area_wwiv.h"
 
 #include "core/log.h"
-#include <string>
-#include <utility>
+#include "core/stl.h"
+#include "core/strings.h"
+#include "sdk/msgapi/message_api.h"
 
-using namespace wwiv::sdk::net;
+#include <string>
 
 namespace wwiv::sdk::msgapi {
 
-MessageArea::MessageArea(MessageApi* api) : api_(api) {}
-MessageArea::~MessageArea() = default;
-
-int MessageArea::max_messages() const {
-  if (max_messages_ == 0) {
-    return std::numeric_limits<int>::max();
+[[nodiscard]] uint32_t MessageAreaLastRead::last_read(int user_number) {
+  if (message_area_number_ < 0) {
+    return 0;
   }
-  return max_messages_;
+  return api_->last_read(message_area_number_);
 }
 
-MessageApi::MessageApi(const MessageApiOptions& options,
-                       const std::filesystem::path& root_directory,
-                       const std::filesystem::path& subs_directory,
-                       const std::filesystem::path& messages_directory,
-                       std::vector<Network> net_networks)
-    : options_(options), root_directory_(root_directory),
-      subs_directory_(subs_directory),
-      messages_directory_(messages_directory), net_networks_(std::move(net_networks)) {}
-
-std::unique_ptr<MessageArea> MessageApi::CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subnum) {
-  if (!Exist(sub)) {
-    LOG(INFO) << "Message area: '" << sub.filename << "' does not exist. Attempting to create it.";
-    // Since the area does not exist, let's create it automatically like WWIV always does.
-    if (!Create(sub, -1)) {
-      LOG(ERROR) << "Failed to create area: " << sub.filename << " let's try to open it anyway.";
-    }
+bool MessageAreaLastRead::set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) {
+  if (message_area_number_ >= 0) {
+    api_->set_last_read(message_area_number_, std::max<uint32_t>(last_read, highest_read));
   }
-  return Open(sub, subnum);
+  return true;
 }
+
+bool MessageAreaLastRead::Close() { return true; }
 
 } // namespace wwiv::sdk::msgapi

@@ -22,9 +22,14 @@
 #include "sdk/msgapi/message.h"
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace wwiv::sdk::msgapi {
+
+class Message;
+class MessageHeader;
+class MessageText;
 
 enum class message_anonymous_t {
   anonymous_none,
@@ -41,15 +46,17 @@ class MessageApi;
 
 class MessageAreaLastRead {
 public:
-  explicit MessageAreaLastRead(MessageApi* api);
-  virtual ~MessageAreaLastRead();
-  [[nodiscard]] virtual uint32_t last_read(int user_number) = 0;
-  [[nodiscard]] virtual bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) = 0;
-  virtual bool Close() = 0;
+  MessageAreaLastRead(MessageApi* api, int message_area_number) :
+    api_(api), message_area_number_(message_area_number) {}
+  virtual ~MessageAreaLastRead() = default;
 
-protected:
-  // Not owned.
+  [[nodiscard]] uint32_t last_read(int user_number);
+  bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read);
+  bool Close();
+
+private:
   MessageApi* api_;
+  int message_area_number_;
 };
 
 struct MessageAreaOptions {
@@ -79,17 +86,17 @@ public:
   [[nodiscard]] virtual int number_of_messages() = 0;
 
   // message specific
-  [[nodiscard]] virtual std::unique_ptr<Message> ReadMessage(int message_number) = 0;
-  [[nodiscard]] virtual std::unique_ptr<MessageHeader> ReadMessageHeader(int message_number) = 0;
-  [[nodiscard]] virtual std::unique_ptr<MessageText> ReadMessageText(int message_number) = 0;
-  [[nodiscard]] virtual bool AddMessage(const Message& message, const MessageAreaOptions& options) = 0;
+  [[nodiscard]] virtual std::optional<Message> ReadMessage(int message_number) = 0;
+  [[nodiscard]] virtual std::optional<MessageHeader> ReadMessageHeader(int message_number) = 0;
+  [[nodiscard]] virtual std::optional<MessageText> ReadMessageText(int message_number) = 0;
+  [[nodiscard]] virtual bool AddMessage(Message& message, const MessageAreaOptions& options) = 0;
   [[nodiscard]] virtual bool DeleteMessage(int message_number) = 0;
   /** Updates message_number to point to the */
   virtual bool ResyncMessage(int& message_number) = 0;
   virtual bool ResyncMessage(int& message_number, Message& message) = 0;
 
   /** Creates a new empty message for this area. */
-  [[nodiscard]] virtual std::unique_ptr<Message> CreateMessage() = 0;
+  [[nodiscard]] virtual Message CreateMessage() = 0;
   [[nodiscard]] virtual bool Exists(daten_t d, const std::string& title, uint16_t from_system, uint16_t from_user) = 0;
 
   [[nodiscard]] int max_messages() const;
@@ -98,7 +105,7 @@ public:
   [[nodiscard]] uint8_t storage_type() const { return storage_type_; }
   void set_storage_type(uint8_t t) { storage_type_ = t; }
 
-  [[nodiscard]] virtual MessageAreaLastRead& last_read() const noexcept = 0;
+  [[nodiscard]] virtual const MessageAreaLastRead& last_read() const noexcept = 0;
   [[nodiscard]] virtual message_anonymous_t anonymous_type() const noexcept = 0;
 
 protected:

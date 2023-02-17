@@ -129,7 +129,7 @@ public:
       return 1;
     }
     
-    std::unique_ptr<MessageArea> area(api().CreateOrOpen(sub(), -1));
+    auto area(api().CreateOrOpen(sub(), -1));
     if (!area) {
       std::clog << "Unable to Open message area: '" << sub().filename << "'." << std::endl;
       return 1;
@@ -199,7 +199,7 @@ public:
       return 1;
     }
     
-    std::unique_ptr<MessageArea> area(api().CreateOrOpen(sub_, -1));
+    auto area(api().CreateOrOpen(sub_, -1));
     if (!area) {
       std::clog << "Error opening message area: '" << basename << "'." << std::endl;
       return 1;
@@ -229,8 +229,8 @@ public:
     auto raw_text = text_file.ReadFileIntoString();
     auto lines = SplitString(raw_text, "\n", false);
 
-    auto msg(area->CreateMessage());
-    auto& header = msg->header();
+    auto msg = area->CreateMessage();
+    auto& header = msg.header();
     header.set_from_system(0);
     header.set_from_usernum(static_cast<uint16_t>(from_usernum));
     header.set_title(title);
@@ -238,12 +238,12 @@ public:
     header.set_to(to);
     header.set_daten(daten.to_daten_t());
     header.set_in_reply_to(in_reply_to);
-    msg->text().set_text(JoinStrings(lines, "\r\n"));
+    msg.set_text(JoinStrings(lines, "\r\n"));
 
     MessageAreaOptions area_options{};
     area_options.send_post_to_network = true;
     area_options.add_re_and_by_line = arg("use_re_and_by").as_bool();
-    return area->AddMessage(*msg, area_options) ? 0 : 1;
+    return area->AddMessage(msg, area_options) ? 0 : 1;
   }
 };
 
@@ -289,7 +289,7 @@ public:
     // Ensure we can open it.
     {
       try {
-        std::unique_ptr<MessageArea> area(api().CreateOrOpen(sub(), -1));
+        auto area(api().CreateOrOpen(sub(), -1));
       } catch (const bad_message_area&) {
         std::clog << "Error opening message area: '" << basename << "'." << std::endl;
         return 1;
@@ -303,12 +303,12 @@ public:
     auto newsub = sub();
     newsub.filename = StrCat(basename, ".new");
     {
-      std::unique_ptr<MessageArea> area(api().Open(sub(), -1));
+      auto area(api().Open(sub(), -1));
       if (!api().Create(newsub, -1)) {
         std::clog << "Unable to create new area: " << newsub.filename;
         return 1;
       }
-      std::unique_ptr<MessageArea> newarea(api().Open(newsub, -1));
+      auto newarea(api().Open(newsub, -1));
       const auto total = area->number_of_messages();
       for (auto i = 1; i <= total; i++) {
         auto message(area->ReadMessage(i));
@@ -435,7 +435,7 @@ int MessagesDumpCommand::ExecuteImpl(MessageArea* area, const std::string& basen
     }
     const auto& text = message->text();
     std::cout << std::string(72, '-') << std::endl;
-    auto lines = wwiv::strings::SplitString(text.text(), "\n", false);
+    auto lines = wwiv::strings::SplitString(text.string(), "\n", false);
     for (const auto& line : lines) {
       if (line.empty()) {
         continue;
@@ -471,7 +471,7 @@ int MessagesDumpCommand::Execute() {
   const auto end_date = sarg("end_date");
   const auto all = barg("all");
 
-  std::unique_ptr<MessageArea> area(api().Open(sub_, -1));
+  auto area(api().Open(sub_, -1));
   if (!area) {
     std::clog << "Error opening message area: '" << sub().filename << "'." << std::endl;
     return 1;
