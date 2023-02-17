@@ -479,6 +479,7 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const wwivd_config_t& c) {
   return {};
 }
 
+
 // Can throw
 // ReSharper disable once CppMemberFunctionMayBeConst
 ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedConnection() {
@@ -489,9 +490,9 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
 
   VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (2): " << sock;
   // We fail open when we can't get the remote peer
-  if (!GetRemotePeerAddress(sock, remote_peer)) {
+  if (GetRemotePeerAddress(sock)) {
     LOG(ERROR) << "Allowing connections we can't determine the remote peer.";
-    return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
+    return BlockedConnectionResult(BlockedConnectionAction::ALLOW, "???");
   }
 
   VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (3): " << sock;
@@ -513,9 +514,16 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
     }
   }
 
-  VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (5): " << sock;
+  VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (5a): " << sock;
+  if (is_rfc1918_private_address(remote_peer)) {
+    LOG(INFO) << "Allowing connection for peer from RFC1918 address space: " << remote_peer;
+    return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
+  }
+
+  VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (5b): " << sock;
   // Check for country blocking if we have a DNS cc server defined.
-  if (b.use_dns_cc && !b.dns_cc_server.empty()) {
+  if (b.use_dns_cc && !b.dns_cc_server.empty() && !ends_with(b.dns_cc_server, "nerd.dk")) {
+    // TODO(rushfan): HACK to disable using nerd.dk which is down.
     const auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
     LOG(INFO) << "Validating country code for connection on port: " << r.port
               << "; from peer: " << remote_peer << "; country code: " << cc;

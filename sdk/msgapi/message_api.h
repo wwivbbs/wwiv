@@ -57,9 +57,11 @@ public:
   /** Opens a message area, throwing bad_message_area if it does not exist. */
   [[nodiscard]] virtual bool Create(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
   /** Opens a message area, throwing bad_message_area if it does not exist. */
-  [[nodiscard]] virtual MessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
+  [[nodiscard]] virtual std::unique_ptr<MessageArea> Open(const wwiv::sdk::subboard_t& sub,
+                                                          int subnum) = 0;
   /** Creates or Opens a message area. throwing bad_message_area if it exists but can not be opened.*/
-  [[nodiscard]] virtual MessageArea* CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subnum);
+  [[nodiscard]] virtual std::unique_ptr<MessageArea> CreateOrOpen(const wwiv::sdk::subboard_t& sub,
+                                                                  int subnum);
   /** Deletes the message area identified by filename: name */
   [[nodiscard]] virtual bool Remove(const std::string& name) = 0;
 
@@ -67,9 +69,14 @@ public:
   [[nodiscard]] std::filesystem::path root_directory() const { return root_directory_; }
   [[nodiscard]] MessageApiOptions options() const { return options_; }
 
+  // Last read
+  [[nodiscard]] virtual uint32_t last_read(int area) const = 0;
+  virtual void set_last_read(int area, uint32_t last_read) = 0;
+
   // TODO(rushfan): Here's where we add hooks to the lastread system
   // so that message api's created inside the bbs will share *qsc with
   // the legacy code until it's all removed.
+
 protected:
   const MessageApiOptions options_;
 

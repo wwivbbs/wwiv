@@ -20,7 +20,6 @@
 
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_api.h"
-#include "sdk/msgapi/message_wwiv.h"
 #include "sdk/msgapi/type2_text.h"
 #include <cstdint>
 #include <filesystem>
@@ -52,19 +51,6 @@ private:
   bool initialized_{true};
 };
 
-class WWIVMessageAreaLastRead : public MessageAreaLastRead {
-public:
-  WWIVMessageAreaLastRead(WWIVMessageApi* api, int message_area_number);
-
-  [[nodiscard]] uint32_t last_read(int user_number) override;
-  bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) override;
-  bool Close() override;
-
-private:
-  WWIVMessageApi* wapi_;
-  int message_area_number_;
-};
-
 struct wwiv_parsed_text_fieds {
   std::string from_username;
   std::string date;
@@ -92,20 +78,18 @@ public:
   int number_of_messages() override;
 
   // message specific.
-  // I would return a unique_ptr here but that doesn't work with
-  // covariant return types for subclasses.
-  std::unique_ptr<Message> ReadMessage(int message_number) override;
-  std::unique_ptr<MessageHeader> ReadMessageHeader(int message_number) override;
-  std::unique_ptr<MessageText> ReadMessageText(int message_number) override;
-  bool AddMessage(const Message& message, const MessageAreaOptions& options) override;
+  std::optional<Message> ReadMessage(int message_number) override;
+  std::optional<MessageHeader> ReadMessageHeader(int message_number) override;
+  std::optional<MessageText> ReadMessageText(int message_number) override;
+  bool AddMessage(Message& message, const MessageAreaOptions& options) override;
   bool DeleteMessage(int message_number) override;
   bool ResyncMessage(int& message_number) override;
   bool ResyncMessage(int& message_number, Message& message) override;
 
-  [[nodiscard]] std::unique_ptr<Message> CreateMessage() override;
+  [[nodiscard]] Message CreateMessage() override;
   [[nodiscard]] bool Exists(daten_t d, const std::string& title, uint16_t from_system,
                             uint16_t from_user) override;
-  [[nodiscard]] MessageAreaLastRead& last_read() const noexcept override;
+  [[nodiscard]] const MessageAreaLastRead& last_read() const noexcept override;
   [[nodiscard]] message_anonymous_t anonymous_type() const noexcept override;
 
 private:
@@ -113,7 +97,7 @@ private:
   [[nodiscard]] bool add_post(const postrec& post);
   [[nodiscard]] std::optional<wwiv_parsed_text_fieds> ParseMessageText(const postrec& header, int message_number);
   [[nodiscard]] [[nodiscard]] bool HasSubChanged() const;
-  [[nodiscard]] bool ResyncMessageImpl(int& message_number, Message& message);
+  [[nodiscard]] bool ResyncMessageImpl(int& message_number, const Message& message);
 
   static constexpr uint8_t STORAGE_TYPE = 2;
 
@@ -127,7 +111,7 @@ private:
   bool open_{false};
   subfile_header_t header_;
   const std::vector<net::Network> net_networks_;
-  std::unique_ptr<MessageAreaLastRead> last_read_;
+  MessageAreaLastRead last_read_;
   int nonce_{0};
 };
 

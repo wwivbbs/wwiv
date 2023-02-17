@@ -20,6 +20,7 @@
 #include "core/command_line.h"
 #include "core/datetime.h"
 #include "core/log.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/bbslist.h"
 #include "sdk/net/networks.h"

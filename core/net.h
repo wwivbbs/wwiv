@@ -22,6 +22,7 @@
 #include <atomic>
 #include <functional>
 #include <map>
+#include <optional>
 #include <string>
 
 #if defined( _WIN32 )
@@ -60,10 +61,15 @@ namespace wwiv::core {
 
 bool InitializeSockets();
 
-bool GetRemotePeerAddress(SOCKET socket, std::string& ip);
-bool GetRemotePeerHostname(SOCKET socket, std::string& hostname);
+std::optional<std::string> GetRemotePeerAddress(SOCKET socket);
+std::optional<std::string> GetRemotePeerHostname(SOCKET socket);
 
 SOCKET CreateListenSocket(int port);
+
+/**
+ * Returns true if address is a private IP address as defined in RFC1918.
+ */
+bool is_rfc1918_private_address(const std::string& address);
 
 /**
  * Returns true if address is contained in the DNSRBL rbl_address.
