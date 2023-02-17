@@ -142,7 +142,7 @@ int SubSendCommand::Execute() {
     LOG(ERROR) << "Sub doesn't exist in this message type";
     return 1;
   }
-  std::unique_ptr<MessageArea> area(api->Open(*so, -1));
+  auto area(api->Open(*so, -1));
   if (!area) {
     LOG(ERROR) << "Unable to open message area.";
     return 1;

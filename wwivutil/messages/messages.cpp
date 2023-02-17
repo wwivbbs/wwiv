@@ -129,7 +129,7 @@ public:
       return 1;
     }
     
-    std::unique_ptr<MessageArea> area(api().CreateOrOpen(sub(), -1));
+    auto area(api().CreateOrOpen(sub(), -1));
     if (!area) {
       std::clog << "Unable to Open message area: '" << sub().filename << "'." << std::endl;
       return 1;
@@ -199,7 +199,7 @@ public:
       return 1;
     }
     
-    std::unique_ptr<MessageArea> area(api().CreateOrOpen(sub_, -1));
+    auto area(api().CreateOrOpen(sub_, -1));
     if (!area) {
       std::clog << "Error opening message area: '" << basename << "'." << std::endl;
       return 1;
@@ -289,7 +289,7 @@ public:
     // Ensure we can open it.
     {
       try {
-        std::unique_ptr<MessageArea> area(api().CreateOrOpen(sub(), -1));
+        auto area(api().CreateOrOpen(sub(), -1));
       } catch (const bad_message_area&) {
         std::clog << "Error opening message area: '" << basename << "'." << std::endl;
         return 1;
@@ -303,12 +303,12 @@ public:
     auto newsub = sub();
     newsub.filename = StrCat(basename, ".new");
     {
-      std::unique_ptr<MessageArea> area(api().Open(sub(), -1));
+      auto area(api().Open(sub(), -1));
       if (!api().Create(newsub, -1)) {
         std::clog << "Unable to create new area: " << newsub.filename;
         return 1;
       }
-      std::unique_ptr<MessageArea> newarea(api().Open(newsub, -1));
+      auto newarea(api().Open(newsub, -1));
       const auto total = area->number_of_messages();
       for (auto i = 1; i <= total; i++) {
         auto message(area->ReadMessage(i));
@@ -471,7 +471,7 @@ int MessagesDumpCommand::Execute() {
   const auto end_date = sarg("end_date");
   const auto all = barg("all");
 
-  std::unique_ptr<MessageArea> area(api().Open(sub_, -1));
+  auto area(api().Open(sub_, -1));
   if (!area) {
     std::clog << "Error opening message area: '" << sub().filename << "'." << std::endl;
     return 1;

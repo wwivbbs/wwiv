@@ -57,9 +57,11 @@ public:
   /** Opens a message area, throwing bad_message_area if it does not exist. */
   [[nodiscard]] virtual bool Create(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
   /** Opens a message area, throwing bad_message_area if it does not exist. */
-  [[nodiscard]] virtual MessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
+  [[nodiscard]] virtual std::unique_ptr<MessageArea> Open(const wwiv::sdk::subboard_t& sub,
+                                                          int subnum) = 0;
   /** Creates or Opens a message area. throwing bad_message_area if it exists but can not be opened.*/
-  [[nodiscard]] virtual MessageArea* CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subnum);
+  [[nodiscard]] virtual std::unique_ptr<MessageArea> CreateOrOpen(const wwiv::sdk::subboard_t& sub,
+                                                                  int subnum);
   /** Deletes the message area identified by filename: name */
   [[nodiscard]] virtual bool Remove(const std::string& name) = 0;
 

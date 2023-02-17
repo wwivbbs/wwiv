@@ -68,7 +68,7 @@ TEST_F(MsgApiTest, CreateArea) {
   subboard_t sub{};
   sub.filename = "a1";
   ASSERT_TRUE(api->Create(sub, -1));
-  unique_ptr<MessageArea> a1(api->Open(sub, -1));
+  auto a1(api->Open(sub, -1));
   EXPECT_TRUE(a1->Close());
 
   EXPECT_TRUE(File::Exists(FilePath(helper.datadir(), "a1.sub")));
@@ -80,12 +80,12 @@ TEST_F(MsgApiTest, SmokeTest) {
   sub.filename = "a1";
   {
     ASSERT_TRUE(api->Create(sub, -1));
-    unique_ptr<MessageArea> area(api->Open(sub, -1));
+    auto area(api->Open(sub, -1));
     auto msg(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(msg, {}));
   }
 
-  unique_ptr<MessageArea> a2(api->Open(sub, -1));
+  auto a2(api->Open(sub, -1));
   EXPECT_EQ(1, a2->number_of_messages());
   const auto m1 = a2->ReadMessage(1);
   EXPECT_EQ("From", m1->header().from());
@@ -96,13 +96,13 @@ TEST_F(MsgApiTest, ToName) {
   sub.filename = "a1";
   {
     ASSERT_TRUE(api->Create(sub, -1));
-    unique_ptr<MessageArea> area(api->Open(sub, -1));
+    auto area(api->Open(sub, -1));
     auto msg(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     msg.header().set_to("Dude");
     EXPECT_TRUE(area->AddMessage(msg, {}));
   }
 
-  unique_ptr<MessageArea> a2(api->Open(sub, -1));
+  auto a2(api->Open(sub, -1));
   const auto m1 = a2->ReadMessage(1);
   EXPECT_EQ("Dude", m1->header().to()) << "T:" << m1->text().string();
 }
@@ -111,7 +111,7 @@ TEST_F(MsgApiTest, Resynch) {
   subboard_t sub{};
   sub.filename = "a1";
   ASSERT_TRUE(api->Create(sub, -1));
-  unique_ptr<MessageArea> area(api->Open(sub, -1));
+  auto area(api->Open(sub, -1));
   {
     auto m(CreateMessage(*area, 1, "From1", "Title1", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(m, {}));
@@ -127,7 +127,7 @@ TEST_F(MsgApiTest, Resynch) {
 
   // Re open the area, ensure that we read back the same first
   // two messages.
-  unique_ptr<MessageArea> a2(api->Open(sub, -1));
+  auto a2(api->Open(sub, -1));
   auto m1 = a2->ReadMessage(1);
   EXPECT_EQ("From1", m1->header().from());
   auto m2 = a2->ReadMessage(2);
@@ -149,7 +149,7 @@ TEST_F(MsgApiTest, Resynch_MessageNumber) {
     subboard_t sub{};
     sub.filename = "a1";
     ASSERT_TRUE(api->Create(sub, -1));
-    unique_ptr<MessageArea> area(api->Open(sub, -1));
+    auto area(api->Open(sub, -1));
     auto m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(m, {}));
     m.header().set_from("From2");
@@ -160,7 +160,7 @@ TEST_F(MsgApiTest, Resynch_MessageNumber) {
   // two messages.
   subboard_t sub{};
   sub.filename = "a1";
-  unique_ptr<MessageArea> a2(api->Open(sub, -1));
+  auto a2(api->Open(sub, -1));
 
   // Delete message #1, now we should just have 1 message.
   EXPECT_TRUE(a2->DeleteMessage(1));

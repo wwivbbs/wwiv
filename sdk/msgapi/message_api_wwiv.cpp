@@ -111,7 +111,7 @@ bool WWIVMessageApi::Remove(const std::string&) {
   return false;
 }
 
-MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) {
+std::unique_ptr<MessageArea> WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) {
   std::filesystem::path sub_fullpath;
   std::filesystem::path msgs_fullpath;
   {
@@ -139,7 +139,7 @@ MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) 
     sub_fullpath = sub_fn;
     msgs_fullpath = msgs_fn;
   }
-  auto* area = new WWIVMessageArea(this, sub, sub_fullpath, msgs_fullpath, subnum, net_networks_);
+  auto area = std::make_unique<WWIVMessageArea>(this, sub, sub_fullpath, msgs_fullpath, subnum, net_networks_);
   area->set_max_messages(sub.maxmsgs);
   area->set_storage_type(sub.storage_type);
   return area;
