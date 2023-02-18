@@ -886,14 +886,14 @@ static void HandleTogglePendingNet(int msg_num, int& val) {
 
 static void HandleRemoveFromNewScan() {
   const auto subname = a()->subs().sub(a()->current_user_sub().subnum).name;
-  bout.print("\r\n|#5Remove '{}' from your Q-Scan? ", subname);
+  bout.print("|#5Remove '{}' from your Q-Scan? ", subname);
   if (bin.yesno()) {
     a()->sess().qsc_q[a()->current_user_sub().subnum / 32] ^=
         (1L << (a()->current_user_sub().subnum % 32));
     return;
   }
 
-  bout.print("\r\n|#9Mark messages in '{}' as read? ", subname);
+  bout.print("|#9Mark messages in '{}' as read? ", subname);
   if (bin.yesno()) {
     const auto status = a()->status_manager()->get_status();
     a()->sess().qsc_p[a()->current_user_sub().subnum] = status->qscanptr() - 1L;
@@ -1084,7 +1084,7 @@ static bool query_post() {
   if (!a()->user()->restrict_post() &&
       a()->user()->posts_today() < a()->config()->sl(a()->sess().effective_sl()).posts &&
       wwiv::bbs::check_acs(a()->current_sub().post_acs)) {
-    bout.print("|#5Post on {} (|#2Y/N/Q|#5) ? ", a()->current_sub().name);
+    bout.print("\r|#5Post on {} (|#2Y/N/Q|#5) ? ", a()->current_sub().name);
     a()->sess().clear_irt();
     clear_quotes(a()->sess());
     const auto q = bin.ynq();
