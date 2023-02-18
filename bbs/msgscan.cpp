@@ -981,6 +981,7 @@ static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& 
     case '?':
       HandleMessageHelp();
       break;
+    case '@':
     case 'A':
       HandleScanReadAutoReply(msgnum, szUserInput, scan_option);
       break;
@@ -1156,6 +1157,9 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
       case 'Q':
         done = true;
         nextsub = false;
+        break;
+      case '@':
+        HandleScanReadAutoReply(msgnum, "@", scan_option);
         break;
       case 'A':
         HandleScanReadAutoReply(msgnum, "A", scan_option);
