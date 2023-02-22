@@ -1001,6 +1001,7 @@ static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& 
       HandleToggleAutoPurge(msgnum);
       break;
     case 'P':
+      a()->sess().clear_irt();
       post(PostData());
       break;
     case 'U':
@@ -1188,6 +1189,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
         HandleToggleAutoPurge(msgnum);
         break;
       case 'P': {
+	a()->sess().clear_irt();
         post(PostData());
       } break;
       case 'U':
