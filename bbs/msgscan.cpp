@@ -886,14 +886,14 @@ static void HandleTogglePendingNet(int msg_num, int& val) {
 
 static void HandleRemoveFromNewScan() {
   const auto subname = a()->subs().sub(a()->current_user_sub().subnum).name;
-  bout.print("\r\n|#5Remove '{}' from your Q-Scan? ", subname);
+  bout.print("|#5Remove '{}' from your Q-Scan? ", subname);
   if (bin.yesno()) {
     a()->sess().qsc_q[a()->current_user_sub().subnum / 32] ^=
         (1L << (a()->current_user_sub().subnum % 32));
     return;
   }
 
-  bout.print("\r\n|#9Mark messages in '{}' as read? ", subname);
+  bout.print("|#9Mark messages in '{}' as read? ", subname);
   if (bin.yesno()) {
     const auto status = a()->status_manager()->get_status();
     a()->sess().qsc_p[a()->current_user_sub().subnum] = status->qscanptr() - 1L;
@@ -981,6 +981,7 @@ static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& 
     case '?':
       HandleMessageHelp();
       break;
+    case '@':
     case 'A':
       HandleScanReadAutoReply(msgnum, szUserInput, scan_option);
       break;
@@ -1000,6 +1001,7 @@ static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& 
       HandleToggleAutoPurge(msgnum);
       break;
     case 'P':
+      a()->sess().clear_irt();
       post(PostData());
       break;
     case 'U':
@@ -1084,7 +1086,7 @@ static bool query_post() {
   if (!a()->user()->restrict_post() &&
       a()->user()->posts_today() < a()->config()->sl(a()->sess().effective_sl()).posts &&
       wwiv::bbs::check_acs(a()->current_sub().post_acs)) {
-    bout.print("|#5Post on {} (|#2Y/N/Q|#5) ? ", a()->current_sub().name);
+    bout.print("\r|#5Post on {} (|#2Y/N/Q|#5) ? ", a()->current_sub().name);
     a()->sess().clear_irt();
     clear_quotes(a()->sess());
     const auto q = bin.ynq();
@@ -1157,6 +1159,9 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
         done = true;
         nextsub = false;
         break;
+      case '@':
+        HandleScanReadAutoReply(msgnum, "@", scan_option);
+        break;
       case 'A':
         HandleScanReadAutoReply(msgnum, "A", scan_option);
         break;
@@ -1184,6 +1189,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
         HandleToggleAutoPurge(msgnum);
         break;
       case 'P': {
+	a()->sess().clear_irt();
         post(PostData());
       } break;
       case 'U':
