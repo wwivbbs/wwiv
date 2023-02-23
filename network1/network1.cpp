@@ -71,7 +71,7 @@ Network1::Network1(const NetworkCommandLine& cmdline, const BbsListNet& bbslist,
  * Determines the filename for each of the nodes in list to forward to
  * and writes packets (calling write_wwivnet_packet) to each of them.
  */
-bool Network1::write_multiple_wwivnet_packets(const net_header_rec& nh,
+bool Network1::write_multiple_wwivnet_packets(const net_header_rec& orig_header,
                                               const std::vector<uint16_t>& list,
                                               const std::string& text) {
   std::map<uint16_t, std::set<uint16_t>> forsys_to_all;
@@ -80,19 +80,21 @@ bool Network1::write_multiple_wwivnet_packets(const net_header_rec& nh,
     forsys_to_all[forsys].insert(node);
   }
 
-  if (nh.tosys != 0) {
+  if (orig_header.tosys != 0) {
     // TODO(rushfan): Does this happen, and if so should we also forward 
     // this packet to nh.tosys?  Maybe?
-    LOG(ERROR) << "write_multiple_wwivnet_packets called to a tosys != 0; got; " << nh.tosys;
+    LOG(ERROR) << "write_multiple_wwivnet_packets called to a tosys != 0; got; " << orig_header.tosys;
   }
 
   auto result = true;
   for (const auto& fa : forsys_to_all) {
-    NetPacket np(nh, std::vector<uint16_t>(fa.second.begin(), fa.second.end()), text);
-    np.nh.list_len = static_cast<uint16_t>(np.list.size());
+    net_header_rec nh{ orig_header };
+    std::vector<uint16_t> nplist(fa.second.begin(), fa.second.end());
+    nh.list_len = static_cast<uint16_t>(nplist.size());
+    NetPacket np(nh, nplist , text);
     if (np.list.size() == 1) {
       // If we only have 1, move it out of list into tosys.
-      np.nh.tosys = *np.list.begin();
+      np.nh.tosys = *std::begin(np.list);
       np.nh.list_len = 0;
       np.list.clear();
     }
