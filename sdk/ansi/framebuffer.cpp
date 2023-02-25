@@ -91,6 +91,9 @@ bool FrameBuffer::write(char c, uint8_t a) {
 }
 
 void FrameBuffer::close() {
+  if (!open_) {
+    return;
+  }
   open_ = false;
   if (b_.empty()) {
     return;

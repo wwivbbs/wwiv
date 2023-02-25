@@ -59,6 +59,7 @@ public:
       : chain_(chain), ctx_(ctx) {}
   bool write(char c) override;
   bool attr(uint8_t a) override;
+  void close() override;
 
 private:
   AnsiFilter* chain_;

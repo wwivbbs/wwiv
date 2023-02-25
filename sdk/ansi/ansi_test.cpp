@@ -37,7 +37,7 @@ public:
 
   void write(const std::string& s) {
     ansi.write(s);
-    b.close();
+    ansi.close();
   }
 
   bool write_hp(const std::string& s) {
@@ -47,7 +47,7 @@ public:
         result = false;
       }
     }
-    b.close();
+    heart_and_pipe.close();
     return result;
   }
 
@@ -172,6 +172,7 @@ TEST_F(AnsiTest, XenosTagLine) {
     }
     heart.write('\n');
   }
+  heart.close();
   b80.close();
   auto screen_lines = b80.to_screen_as_lines();
 
@@ -180,9 +181,13 @@ TEST_F(AnsiTest, XenosTagLine) {
 }
 
 
-/*
-* 
+TEST_F(AnsiTest, HeartAndPipe_TrailingPipeCRLF) {
+  write_hp("| world |\r\n");
+  check({ "| world |" });
+}
 
 
-
-*/
+TEST_F(AnsiTest, HeartAndPipe_TrailingPipe) {
+  write_hp("| world |");
+  check({ "| world |" });
+}

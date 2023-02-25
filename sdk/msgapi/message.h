@@ -116,7 +116,7 @@ public:
   [[nodiscard]] virtual MessageHeader& header() { return header_; }
   [[nodiscard]] virtual const MessageHeader& header() const { return header_; }
   [[nodiscard]] virtual MessageText& text() { return text_; };
-  [[nodiscard]] virtual void set_text(const std::string& t) { text_.set_text(t); };
+  virtual void set_text(const std::string& t) { text_.set_text(t); };
   [[nodiscard]] virtual const MessageText& text() const { return text_; };
 private:
   MessageHeader header_;

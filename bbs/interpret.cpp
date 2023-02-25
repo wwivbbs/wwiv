@@ -300,3 +300,7 @@ bool BbsMacroFilter::write(char c) {
 bool BbsMacroFilter::attr(uint8_t a) { 
   return chain_->attr(a);
 }
+
+void BbsMacroFilter::close() {
+  chain_->close();
+}

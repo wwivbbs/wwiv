@@ -350,4 +350,30 @@ bool HeartAndPipeCodeFilter::bad_pipe() {
   return true;
 }
 
+void HeartAndPipeCodeFilter::close() { 
+  switch (pipe_state_) {
+  case  pipe_state::none: 
+    break;
+  case  pipe_state::dos_color:
+  case  pipe_state::pipe:
+    chain_->write('|');
+    break;
+  case  pipe_state::wwiv_color:
+    chain_->write('|');
+    chain_->write('#');
+    break;
+  default: 
+    break;
+  }
+  for (const auto& pc : pipe_text_) {
+    chain_->write(pc);
+  }
+  pipe_text_.clear();
+  pipe_state_ = pipe_state::none;
+
+  if (chain_) {
+    chain_->close();
+  }
+}
+
 } // namespace wwiv

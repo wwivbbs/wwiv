@@ -37,8 +37,12 @@ struct AnsiCallbacks {
 class AnsiFilter {
 public:
   virtual ~AnsiFilter() = default;
+  // writes c to the filter/buffer.
   virtual bool write(char c) = 0;
+  // Sets the attr to a for the next write
   virtual bool attr(uint8_t a) = 0;
+  // Closes this filter and any chained filters/screen buffers.
+  virtual void close() = 0;
 };
 
 class Ansi final : public AnsiFilter {
@@ -63,6 +67,11 @@ public:
   bool reset();
 
   [[nodiscard]] AnsiMode state() const noexcept { return state_; }
+
+  void close() override {
+    if (b_) { b_->close(); }
+  }
+
 
 private:
   bool write_in_sequence(char c);
@@ -92,6 +101,7 @@ public:
   bool write(char c) override;
   bool attr(uint8_t a) override;
   bool bad_pipe();
+  void close() override;
 
 private:
   enum class pipe_state { none, pipe, wwiv_color, dos_color };
