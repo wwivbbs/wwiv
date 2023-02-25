@@ -630,7 +630,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& message_te
     }
     heart.write('\n');
   }
-  b.close();
+  heart.close();
   return b.to_screen_as_lines();
 }
 

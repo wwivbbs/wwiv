@@ -153,6 +153,7 @@ int PrintCommand::Execute() {
       }
       heart.write(c);
     }
+    heart.close();
     auto end = core::DateTime::now();
 
     if (need_pause) {
