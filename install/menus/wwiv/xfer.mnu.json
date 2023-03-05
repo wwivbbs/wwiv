@@ -4,7 +4,7 @@
         "cls": false,
         "num_action": "dirs",
         "logging_action": "key",
-        "help_type": "always",
+        "help_type": "user_choice",
         "generated_menu": {
             "num_cols": 3,
             "color_title": "|#4",
