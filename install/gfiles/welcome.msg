@@ -1,11 +1,3 @@
-|#8unsortables
-|#8kona
-|#8wolf
-|#8jon
-|#8grace
-|#8mara*
-|#8metz
-|#8mona
-|#8sentry
-|#8tony
-|#8tomy
+we're so sorry
+we're going to help 
+get this all sorted out...
