@@ -49,7 +49,7 @@ void ToggleScrollLockKey() {
  * (ie, the user has hit scroll lock + the light is lit if there is a
  * scroll lock LED), the sysop is assumed to be available.
  */
-bool sysop1() {
+bool sysop_available() {
 #if defined(_WIN32)
   return (GetKeyState(VK_SCROLL) & 0x1);
 #else

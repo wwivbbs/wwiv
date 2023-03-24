@@ -298,7 +298,7 @@ bool lcs() {
 // current user's chat restriction (if any) and sysop high and low times,
 // if any, as well as status of scroll-lock key.
 bool sysop2() {
-  if (!sysop1()) {
+  if (!sysop_available()) {
     return false;
   }
   if (a()->user()->restrict_chat()) {

@@ -869,7 +869,7 @@ void logon() {
 
   CheckUserForVotingBooth();
 
-  if ((a()->sess().incom() || sysop1()) && a()->user()->sl() < 255) {
+  if ((a()->sess().incom() || sysop_available()) && a()->user()->sl() < 255) {
     broadcast(fmt::format("{} Just logged on!", a()->user()->name()));
   }
   setiia(std::chrono::seconds(5));
@@ -913,7 +913,7 @@ void logoff() {
   }
 
   if (a()->sess().user_num() > 0) {
-    if ((a()->sess().incom() || sysop1()) && a()->user()->sl() < 255) {
+    if ((a()->sess().incom() || sysop_available()) && a()->user()->sl() < 255) {
       broadcast(fmt::format("{} Just logged off!", a()->user()->name()));
     }
   }

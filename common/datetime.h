@@ -47,7 +47,7 @@ std::chrono::system_clock::time_point minutes_after_midnight(int minutes);
 int minutes_since_midnight();
 
 // This really shouldn't be here.
-bool sysop1();
+bool sysop_available();
 void ToggleScrollLockKey();
 
 } // namespace wwiv::common 

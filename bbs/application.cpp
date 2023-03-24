@@ -364,7 +364,7 @@ void Application::tleft(bool check_for_timeout) {
   }
 
   const auto temp_sysop = user()->sl() != 255 && sess().effective_sl() == 255;
-  const auto sysop_available = wwiv::common::sysop1();
+  const auto sysop_available = wwiv::common::sysop_available();
 
   const auto cx = bout.localIO()->WhereX();
   const auto cy = bout.localIO()->WhereY();
