@@ -15,6 +15,58 @@ Legend (starting with 5.3)
     so that you don't overwrite any files (or use winmerge or meld
     to compare new changes)
 
+What's New in WWIV 5.8.0 (2023)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Removed duplicated code for LastCallers() from lilo.cpp. (#1501)
+* Fix cosmetic bug in Scan Message Titles in Traditional Reader mode (#1505)
+* Added InterBBS LastCallers to display laston.txt if it exists in network directory.
+* Fixed logoff matrix to squelch INFO error from appearing in logs.
+* Need comments on printfile and friends on how to use them. (#1502)
++ Feature request: ANSI display speed (#1479)
+  You can now add a pipe expression like:
+  |{set bps 2400}
+* Birthday date not displayed correctly on newuser account (#1509)
+* Crash in PhoneNumbers::Load when phonenum.dat is empty (#1511)
+* Show preview of auto-message before confirming save (#1512) (#1510)
++ Add max age option for importing FTN messages (#1423)
++ basic debugger with stepping works (use github.com/wwiv/wwivdbg for client)
+* Fix Chains display of sponsor lists first sponsor twice (#1513)
+* Display of Chain sponsor no longer duplicates 1st entry (#1514)
+* Only rename pending files if the 2nd digit is not a letter. (#1518)
+* Create subscriber file as needed when it does not exist. (#1519)
+* Fix Win32 on 10, when in BE, modify Network, space to Quit does not. (#1521)
+* Fix do_wwiv_ugprades() function misspelled in wwivconfig (#1523)
+* Chains fixes displaying CHAINS_NOEXT and switchable Chain Usage display (#1528)
+* Make chain usage display configurable from wwivconfig (#1527)
+* Clean up non-ANSI displays for CHAINS (#1530)
+* String passed to System call to execute "eprogs.net" externals corrected. (#1533)
++ Implement support for epreproc.net (#1531)
+* Added precision to formatting in chains display (#1535)
+* Limit loc string to avoid header overflowing and other minor fixes (#1537)
+* Display more of location string when there is room. (#1542)
+* Check that file areas exist in most xfer functions (#1551)
+* Use higher value for max_view_lines and max_view_columns instead of lower value (#1543)
+* Fix off-by-one error in message reporting network value range (#1545)
+* Delete curses_out in the places we don't on exit (#1539)
+* network2 moves "deleted" packets to dead.net because identifed as UNKNOWN type. (#1540)
+* wwivutil print fixes crash and also autodetect screen size (#1555) (#1556)
+* Fix file::set_length from failing when the file is open
+* network2 doesn't use the DISALLOW.NET file (#1541)
+* net: only skip 146 bytes for method 1
+* minor cosmetic fixes in WFC and message date header display (#1565)
+* Cleaned up output of file area tags and networks in diredit (#1568)
+* network2 handle_sub_add_drop_resp fix, and cosmetic networkf fix (#1571)
+! Don't call out to nerd.dk for country blocking, it's broke (#1576)
+* Make fsed/view.cpp use default screen settings for max values (#1579)
+* Cosmetic: add OS to FTN tearlines and fixes to msgscan prompt and legacy header display (#1585) 
+* Restored '@' reply to a different address in HandleScanAutoReply in both Traditional Reader and Full Screen Reader (#1572)
+* Clear title before 'P'osting a new message in msgscan/titlescan (#1588)
+* Removed dangling RE: with title for new posts (#1590)
+* Replaced : with ; in wwiv.ini for uniformity and so ini file parsers don't gag. (#1586)
+* Make Xfer menu display toggleable with eXpert mode option on new installs. (#1578)
+
+
+
 What's New in WWIV 5.8.0 (2022)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * A couple of renames to make terms make more sense
@@ -56,6 +108,21 @@ What's New in WWIV 5.8.0 (2022)
 * default wwiv main menu is missing //QWK (#1492)
 * //QWK menu for sysop doesn't list (*) config menu (#1493)
 * wwivutil subs import  - update nSUBNAME.net when using import (#1495)
+* move code to import subs into sdk so it can be used by developers
++ LNet: Add ability to (W)rite packet to new file, and added PAUSE on page
++ Initial cut at support to auto add missing fido echos
+* /s not working in fsed (#1378)
++ Add a new option to wwivfsed "--wrap" to turn off WWIV style wrapping.
+* writing to dead net should clear the list_len and list (#1496)
+* wwivutil: Make --start and --end a bit more robust in inputs it accepts to wwivutil messages dump
+* Fix wrapped lines in fsed reader (#1498)
+* Fix pause sometimes needing 2 key presses (#1499)
++ Need way to add newly created auto-imported subs to a conference (#1500)
+  Add support for a new "conf = CONFERENCE LETTERS" line into the inport.ini file
+  used by both auto importing of subs from FTN echos, as well as the
+  "wwivutil subs import" command.
++ initial cut of functioning default colors for non-wwiv messages
+
 
 
 What's New in WWIV 5.8.0 (2021)
