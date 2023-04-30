@@ -15,7 +15,6 @@ add_library(core
   "file_lock.cpp"
   "findfiles.cpp"
   "graphs.cpp"
-  "http_server.cpp"
   "inifile.cpp"
   "ip_address.cpp"
   "jsonfile.cpp"

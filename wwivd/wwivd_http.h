@@ -20,10 +20,18 @@
 
 #include "wwivd/connection_data.h"
 
+namespace httplib {
+  struct Response;
+  struct Request;
+  class Server;
+} // namespace httplib
+
+
 namespace wwiv::wwivd {
 
-void HandleHttpConnection(ConnectionData data, wwiv::core::accepted_socket_t r);
+void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* nodes,
+                   const httplib::Request&, httplib::Response& res);
 
-}  // namespace
+} // namespace wwiv::wwivd
 
 #endif

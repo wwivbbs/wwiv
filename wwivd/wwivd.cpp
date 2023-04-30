@@ -20,7 +20,6 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
-#include "core/http_server.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
@@ -54,6 +53,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #endif // __linux__
+
+#include "httplib.h"
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -149,10 +150,6 @@ int Main(CommandLine& cmdline) {
     std::thread client(HandleBinkPConnection, std::make_unique<ConnectionHandler>(data, r));
     client.detach();
   };
-  auto http_fn = [&](accepted_socket_t r) {
-    std::thread client(HandleHttpConnection, data, r);
-    client.detach();
-  };
 
   SocketSet sockets(10);
   if (c.telnet_port > 0) {
@@ -164,11 +161,6 @@ int Main(CommandLine& cmdline) {
   if (c.binkp_port > 0) {
     sockets.add(c.binkp_port, binkp_fn, "BINKP");
   }
-  if (c.http_port > 0) {
-    sockets.add(c.http_port, http_fn, "HTTP");
-    // TODO(rushfan):
-    // http_address;
-  }
 
   SwitchToNonRootUser(wwiv_user);
   need_to_exit.store(false);
@@ -177,11 +169,29 @@ int Main(CommandLine& cmdline) {
   // Do network callouts if enabled.
   do_wwivd_callouts(config, c);
 
+  std::unique_ptr<httplib::Server> svr;
+  std::thread srv_thread;
+  if (c.http_port > 0) {
+    using namespace std::placeholders;
+    svr = std::make_unique<httplib::Server>();    
+    svr->Get("/status", std::bind(StatusHandler, data.nodes, _1, _2));
+    svr->set_logger(
+        [](const httplib::Request& req, const httplib::Response& res) { VLOG(1) << res.body; });
+    srv_thread = std::thread([&](int p) { svr->listen("0.0.0.0", p); }, c.http_port);
+  }
+
+  int result = EXIT_SUCCESS;
   if (!sockets.Run(need_to_exit)) {
     LOG(INFO) << "Error accepting client socket. " << errno;
-    return 2;
+    result = 2;
   }
-  return EXIT_SUCCESS;
+
+  if (svr) {
+    svr->stop();
+    srv_thread.join();
+  }
+
+  return result;
 }
 
 } // namespace wwiv

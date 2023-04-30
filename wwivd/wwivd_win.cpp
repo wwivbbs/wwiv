@@ -62,11 +62,33 @@ void signal_handler(int mysignal) {
   }
 }
 
+/*
+  #define CTRL_C_EVENT        0
+  #define CTRL_BREAK_EVENT    1
+  #define CTRL_CLOSE_EVENT    2
+  #define CTRL_LOGOFF_EVENT   5
+  #define CTRL_SHUTDOWN_EVENT 6
+ */
+static BOOL WINAPI WWIVDConsoleHandlerRoutine(_In_ DWORD dwCtrlType) {
+  static std::string consoleHandlerNames[]{
+    "CTRL_C_EVENT", "CTRL_BREAK_EVENT", "CTRL_CLOSE_EVENT", "???", "???", "CTRL_LOGOFF_EVENT", "CTRL_SHUTDOWN_EVENT"
+  };
+  std::cerr << "WWIVDConsoleHandlerRoutine: " << consoleHandlerNames[dwCtrlType] << std::endl;
+  need_to_exit.store(true);
+  return TRUE;
+}
+
 void BeforeStartServer() {
   // Not the best place, but this works.
   InitializeSockets();
   signal(SIGTERM, signal_handler);
   signal(SIGINT, signal_handler);
+
+  // Set the console handler.
+  if (!SetConsoleCtrlHandler(WWIVDConsoleHandlerRoutine, TRUE)) {
+    LOG(WARNING) << "SetConsoleCtrlHandler failed";
+  }
+
   std::cerr << "set signal handlers" << std::endl;
 }
 

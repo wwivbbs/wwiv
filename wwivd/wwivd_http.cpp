@@ -27,7 +27,6 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/vector.hpp>
 
-#include "core/http_server.h"
 #include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/net.h"
@@ -38,10 +37,13 @@
 #include "sdk/config.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
+#include "httplib.h"
 
 #include <string>
 
 namespace wwiv::wwivd {
+
+static const char MIME_TYPE_JSON[] = "application/json";
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -72,55 +74,20 @@ std::string ToJson(status_reponse_t r) {
   return ss.str();
 }
 
-class StatusHandler : public HttpHandler {
-public:
-  StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* nodes) : nodes_(nodes) {}
-
-  HttpResponse Handle(HttpMethod, const std::string&, std::vector<std::string> headers) override {
-    // We only handle status
-    HttpResponse response(200);
-    response.headers.emplace("Content-Type: ", "text/json");
-
-    status_reponse_t r{};
-    for (const auto& n : *nodes_) {
-      const auto v = n.second->status_lines();
-      r.num_instances += n.second->total_nodes();
-      r.used_instances += n.second->nodes_used();
-      for (const auto& l : v) {
-        r.lines.push_back(l);
-      }
+void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* nodes,
+                   const httplib::Request&, httplib::Response& res) {
+  // We only handle status
+  status_reponse_t r{};
+  for (const auto& n : *nodes) {
+    const auto v = n.second->status_lines();
+    r.num_instances += n.second->total_nodes();
+    r.used_instances += n.second->nodes_used();
+    for (const auto& l : v) {
+      r.lines.push_back(l);
     }
-    response.text = ToJson(r);
-    return response;
   }
-
-private:
-  std::map<const std::string, std::shared_ptr<NodeManager>>* nodes_;
-};
-
-void HandleHttpConnection(ConnectionData data, accepted_socket_t r) {
-  const auto sock = r.client_socket;
-  const auto& b = data.c->blocking;
-
-  try {
-    if (const auto remote_peer = GetRemotePeerAddress(sock)) {
-      const auto cc = get_dns_cc(remote_peer.value(), b.dns_cc_server);
-      LOG(INFO) << "Accepted HTTP connection on port: " << r.port
-                << "; from: " << remote_peer.value() << "; country code: " << cc;
-    }
-
-    // HTTP Request
-    HttpServer h(std::make_unique<SocketConnection>(r.client_socket));
-    StatusHandler status(data.nodes);
-    h.add(HttpMethod::GET, "/status", &status);
-    h.Run();
-
-  }
-  catch (const std::exception& e) {
-    LOG(ERROR) << "HandleHttpConnection: Handled Uncaught Exception: " << e.what();
-  }
-  VLOG(1) << "Exiting HandleHttpConnection (exception)";
+  const auto source = ToJson(r);
+  res.set_content(source, MIME_TYPE_JSON);
 }
-
 
 }
