@@ -15,11 +15,16 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_CHAINS_H__
-#define __INCLUDED_BBS_CHAINS_H__
+#ifndef INCLUDED_BBS_CHAINS_H
+#define INCLUDED_BBS_CHAINS_H
 
-void run_chain(int nChainum);
+namespace wwiv::sdk {
+  struct chain_t;
+}
+
+void run_chain(const wwiv::sdk::chain_t& c, int chain_num);
+void run_chain(int chain_num);
 void do_chains();
 
 
-#endif  // __INCLUDED_BBS_CHAINS_H__
+#endif  // INCLUDED_BBS_CHAINS_H
