@@ -1,6 +1,6 @@
 {
     "name": "wwiv",
-    "version-string": "5.8.0",
+    "version-string": "5.8.1",
   "dependencies": [
     "cereal",
     "fmt",
