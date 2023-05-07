@@ -485,17 +485,18 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const wwivd_config_t& c) {
 ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedConnection() {
   const auto sock = r.client_socket;
   VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (1): " << sock;
-  std::string remote_peer;
-  const auto& b = data.c->blocking;
 
   VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (2): " << sock;
   // We fail open when we can't get the remote peer
-  if (GetRemotePeerAddress(sock)) {
-    LOG(ERROR) << "Allowing connections we can't determine the remote peer.";
+  const auto o = GetRemotePeerAddress(sock);
+  if (!o) {
+    LOG(ERROR) << "CheckForBlockedConnection: Allowing connections we can't determine the remote peer.";
     return BlockedConnectionResult(BlockedConnectionAction::ALLOW, "???");
   }
+  const auto remote_peer = o.value();
 
   VLOG(4) << "ConnectionHandler::CheckForBlockedConnection; (3): " << sock;
+  const auto& b = data.c->blocking;
   // Check for always allowed addresses
   if (b.use_goodip_txt && data.good_ips_) {
     if (data.good_ips_->IsAlwaysAllowed(remote_peer)) {

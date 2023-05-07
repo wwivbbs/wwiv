@@ -330,6 +330,7 @@ bool ValidateSysopPassword() {
  * Hangs up the modem if user online. Whether using modem or not.
  */
 void hang_it_up() {
+  VLOG(1) << "hang_it_up()";
   if (!a()->sess().ok_modem_stuff()) {
     return;
   }

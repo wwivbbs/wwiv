@@ -906,6 +906,7 @@ void logon() {
 }
 
 void logoff() {
+  VLOG(1) << "logoff()";
   mailrec m{};
 
   if (a()->sess().incom()) {
