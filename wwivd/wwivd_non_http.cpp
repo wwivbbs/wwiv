@@ -323,6 +323,7 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
       bbs.working_directory.empty() ? "" : FilePath(root, bbs.working_directory).string();
 
   auto at_exit = finally([=] {
+    VLOG(1) << "closing socket: " << sock;
     closesocket(sock);
     VLOG(2) << "closed socket: " << sock;
   });

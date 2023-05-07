@@ -919,7 +919,9 @@ void logoff() {
     }
   }
   setiia(std::chrono::seconds(5));
-  bout.remoteIO()->disconnect();
+  if (!bout.remoteIO()->disconnect()) {
+    LOG(WARNING) << "remoteIO->disconnect() returned false.";
+  }
   // Don't need hangup here, but *do* want to ensure that a()->sess().hangup() is true.
   a()->sess().hangup(true);
   VLOG(1) << "Setting a()->sess().hangup()=true in logoff";
