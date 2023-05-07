@@ -70,6 +70,11 @@ public:
   [[nodiscard]] bool deleted() const;
   void set_deleted(bool b);
 
+  // Return the primary network number this message was received on
+  [[nodiscard]] int net_number() const;
+  // Sets the primary network number this message was received on
+  void set_net_number(int nn);
+
   [[nodiscard]] bool pending_network() const;
   void set_pending_network(bool b);
   [[nodiscard]] bool source_verified() const;

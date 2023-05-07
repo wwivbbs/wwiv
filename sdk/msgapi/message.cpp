@@ -78,6 +78,14 @@ void MessageHeader::set_deleted(bool b) {
   ToggleBit(header_.status, status_delete, b);
 }
 
+int MessageHeader::net_number() const {
+  return header_.network.network_msg.net_number;
+}
+
+void MessageHeader::set_net_number(int nn) {
+  header_.network.network_msg.net_number = nn;
+}
+
 bool MessageHeader::pending_network() const {
   return (header_.status & status_pending_net) != 0;
 }

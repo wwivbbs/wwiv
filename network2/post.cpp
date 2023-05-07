@@ -184,6 +184,9 @@ bool handle_inbound_post(Context& context, NetPacket& p) {
   msg.header().set_title(ppt.title());
   msg.header().set_from(ppt.sender());
   msg.header().set_daten(p.nh.daten);
+
+  // Set the network number this came in on.
+  msg.header().set_net_number(context.network_number);
   msg.set_text(ppt.text());
 
   MessageAreaOptions options{};
