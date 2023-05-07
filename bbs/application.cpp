@@ -1176,6 +1176,7 @@ int Application::Run(int argc, char* argv[]) {
     logoff();
     {
       // post_logoff_cleanup
+      VLOG(1) << "post_logoff_cleanup";
       remove_from_temp("*.*", sess().dirs().temp_directory(), false);
       remove_from_temp("*.*", sess().dirs().batch_directory(), false);
       remove_from_temp("*.*", sess().dirs().qwk_directory(), false);
@@ -1424,6 +1425,9 @@ void Application::Hangup(hangup_type_t t) {
     return;
   }
   sess().hangup(true);
+  // Force close the socket to stop it from waiting for the caller.
+  // TODO - See if this should happen somewhere else.
+  comm_->close(false);
   VLOG(1) << "Invoked Hangup()";
   throw hangup_error(t, user()->name_and_number());
 }
