@@ -155,21 +155,22 @@ static void show_chains(const chains_map& chains) {
                   &abort);
       }
       for (auto i = 0; i < size_int(chains.chains) && !abort && !a()->sess().hangup(); i++) {
+        if (a()->sess().hangup() || abort) {
+          break;
+        }
         const auto bar = fmt::format("|#{:d}{}", FRAME_COLOR, okansi() ? "\xB3" : "|");
-        const auto& c = *chains.chains.at(i);
+        auto* c = chains.chains.at(i);
         bout.outstr(fmt::format("{}|#2{:2d}{} |#1{:27.27}{}|#1{:5d}{}", bar, i + 1, bar,
-                                c.description, bar, c.usage, bar),
+                                c->description, bar, c->usage, bar),
                     &abort, &next);
-        i++;
-        if (!abort && !a()->sess().hangup()) {
-          if (i >= size_int(chains.chains)) {
-            bout.bpla(fmt::format("  {}                            {}     {}", bar, bar, bar),
-                      &abort);
-          } else {
-            bout.bpla(fmt::format("|#2{:2d}{} |#1{:27.27}{}|#1{:5d}{}", i + 1, bar, c.description,
-                                  bar, c.usage, bar),
-                      &abort);
-          }
+        if (++i >= size_int(chains.chains)) {
+          bout.bpla(fmt::format("  {}                            {}     {}", bar, bar, bar),
+                    &abort);
+        } else {
+          c = chains.chains.at(i);
+          bout.bpla(fmt::format("|#2{:2d}{} |#1{:27.27}{}|#1{:5d}{}", i + 1, bar, c->description,
+                                bar, c->usage, bar),
+                    &abort);
         }
       }
       if (okansi()) {
@@ -200,10 +201,10 @@ static void show_chains(const chains_map& chains) {
         if (a()->sess().hangup() || abort) {
           break;
         }
-        auto* c = chains.chains[i++];
+        auto* c = chains.chains[i];
         bout.outstr(fmt::format("{}|#2{:2d}{} |#1{:33.33}{}", bar, i + 1, bar, c->description, bar),
                     &abort, &next);
-        if (i >= size_int(chains.chains)) {
+        if (++i >= size_int(chains.chains)) {
           bout.bpla(fmt::format("  {}                                  {}", bar, bar), &abort);
         } else {
           c = chains.chains[i];
