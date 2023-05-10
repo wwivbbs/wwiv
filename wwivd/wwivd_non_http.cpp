@@ -38,6 +38,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -285,7 +286,8 @@ static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
                        const std::string& working_dir, const std::shared_ptr<NodeManager>& nodes,
                        int node_number, SOCKET sock, ConnectionType connection_type,
                        const std::string& remote_peer) {
-  const auto pid = fmt::format("[{}] ", get_pid());
+
+  const auto wwiv_pid = fmt::format("[{}] ", get_pid());
   nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
 
   const std::map<char, std::string> params = {
@@ -309,14 +311,12 @@ static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
   }
   const auto cmd = CreateCommandLine(raw_cmd, params);
   File::set_current_directory(working_dir);
-  return ExecCommandAndWait(wc, cmd, pid, node_number, sock);
+  return ExecCommandAndWait(wc, *nodes, cmd, wwiv_pid, node_number, sock);
 }
 
-static bool launch_node(const Config& config, const wwivd_config_t& wc, 
-                        wwivd_matrix_entry_t& bbs,
-                        const std::shared_ptr<NodeManager>& nodes,
-                        int node_number, SOCKET sock, ConnectionType connection_type,
-                        const std::string& remote_peer) {
+static bool launch_node(const Config& config, const wwivd_config_t& wc, wwivd_matrix_entry_t& bbs,
+                        const std::shared_ptr<NodeManager>& nodes, int node_number, SOCKET sock,
+                        ConnectionType connection_type, const std::string& remote_peer) {
   const auto& raw_cmd = connection_type == ConnectionType::SSH ? bbs.ssh_cmd : bbs.telnet_cmd;
   const auto root = config.root_directory();
   const auto working_dir =
@@ -328,9 +328,9 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
     VLOG(2) << "closed socket: " << sock;
   });
 
-  const auto pid = fmt::format("[{}] ", get_pid());
-  VLOG(1) << pid << "launching node(" << node_number << ")";
-  const auto sem_text = fmt::format("Created by pid: {}\nremote peer: {}", pid, remote_peer);
+  const auto wwiv_pid = fmt::format("[{}] ", get_pid());
+  VLOG(1) << wwiv_pid << ": launching node(" << node_number << ")";
+  const auto sem_text = fmt::format("Created by pid: {}\nremote peer: {}", wwiv_pid, remote_peer);
   const auto sem_path = node_file(config, connection_type, node_number);
 
   try {
@@ -350,7 +350,7 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
 #endif
       sock = INVALID_SOCKET;
     }
-    bool result = launch_cmd(wc, raw_cmd, working_dir, nodes, node_number, sock, connection_type, remote_peer);
+    auto result = launch_cmd(wc, raw_cmd, working_dir, nodes, node_number, sock, connection_type, remote_peer);
     VLOG(1) << "after launch_cmd";
 #if defined(WWIV_USE_PIPES)
 #if defined(__OS2__)
@@ -368,7 +368,7 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
 #endif
     return result;
   } catch (const semaphore_not_acquired& e) {
-    LOG(ERROR) << pid << "Unable to create semaphore file: " << sem_path << "; errno: " << errno
+    LOG(ERROR) << wwiv_pid << "Unable to create semaphore file: " << sem_path << "; errno: " << errno
                << "; what: " << e.what();
     return false;
   }
@@ -574,12 +574,13 @@ void ConnectionHandler::HandleBinkPConnection() {
 
     auto& nodemgr = data.nodes->at("BINKP");
     auto node = -1;
-    if (nodemgr->AcquireNode(node)) {
+    if (nodemgr->AcquireNode(node, result.remote_peer)) {
       auto at_exit2 = finally([=] {
         closesocket(sock);
         VLOG(2) << "closed socket: " << sock;
       });
-      launch_cmd(*data.c, data.c->binkp_cmd, "", nodemgr, 0, sock, ConnectionType::BINKP, result.remote_peer);
+      launch_cmd(*data.c, data.c->binkp_cmd, "", nodemgr, 0, sock, ConnectionType::BINKP,
+                 result.remote_peer);
     }
 
   } catch (const std::exception& e) {
@@ -674,7 +675,7 @@ void ConnectionHandler::HandleConnection() {
 
     // Telnet or SSH connection.  Find open node number and launch the child.
     auto node = -1;
-    if (nodemgr->AcquireNode(node)) {
+    if (nodemgr->AcquireNode(node, result.remote_peer)) {
       auto current_dir = File::current_directory();
       launch_node(*data.config, *data.c, bbs, nodemgr, node, sock, connection_type, result.remote_peer);
       File::set_current_directory(current_dir);

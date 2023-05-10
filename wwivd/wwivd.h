@@ -20,11 +20,16 @@
 #define INCLUDED_WWIV_WWIV_WWIVD_H
 
 #include <string>
+#include <tuple>
 #include <core/net.h>
 #include "sdk/config.h"
 
 namespace wwiv::sdk {
 class wwivd_config_t;
+}
+
+namespace wwiv::wwivd {
+class NodeManager;
 }
 
 void BeforeStartServer();
@@ -37,7 +42,8 @@ void SwitchToNonRootUser(const std::string& wwiv_user);
  * since this is the child socket.
  * pid and node_number is just used for logging.
  */
-bool ExecCommandAndWait(const wwiv::sdk::wwivd_config_t& wc, const std::string& cmd,
-                        const std::string& pid, int node_number, SOCKET sock);
+bool ExecCommandAndWait(const wwiv::sdk::wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
+                        const std::string& cmd, const std::string& pid, int node_number,
+                        SOCKET sock);
 
 #endif

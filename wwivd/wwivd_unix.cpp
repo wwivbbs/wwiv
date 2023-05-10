@@ -43,6 +43,7 @@
 #include "sdk/config.h"
 #include "sdk/vardec.h"
 #include "sdk/filenames.h"
+#include "wwivd/node_manager.h"
 
 using std::cerr;
 using std::clog;
@@ -156,8 +157,9 @@ void SwitchToNonRootUser(const std::string& wwiv_user) {
   }
 }
 
-bool ExecCommandAndWait(const wwivd_config_t& wc, const std::string& cmd, const std::string& pid,
-                        int node_number, SOCKET sock) {
+bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
+                        const std::string& cmd, const std::string& pid, int node_number,
+                        SOCKET sock) {
   char sh[21];
   char dc[21];
   char cmdstr[4000];
@@ -180,6 +182,7 @@ bool ExecCommandAndWait(const wwivd_config_t& wc, const std::string& cmd, const 
     return false;
   }
   bbs_pid = child_pid;
+  node_manager.set_pid(node_number, bbs_pid);
   int status = 0;
   VLOG(2) << pid << "before waitpid";
   while (waitpid(child_pid, &status, 0) == -1) {

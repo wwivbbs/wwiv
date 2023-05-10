@@ -1,5 +1,7 @@
 # CMake for WWIV Daemon
 
+find_package(nlohmann_json CONFIG REQUIRED)
+
 set(WWIVD_SOURCES 
 	ips.cpp
 	nets.cpp

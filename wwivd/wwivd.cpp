@@ -167,7 +167,8 @@ int Main(CommandLine& cmdline) {
   need_to_reload_config.store(false);
 
   // Do network callouts if enabled.
-  do_wwivd_callouts(config, c);
+  auto& nodemgr = data.nodes->at("BINKP");
+  do_wwivd_callouts(config, c, nodemgr);
 
   std::unique_ptr<httplib::Server> svr;
   std::thread srv_thread;
@@ -177,7 +178,9 @@ int Main(CommandLine& cmdline) {
     svr->Get("/status", std::bind(StatusHandler, data.nodes, _1, _2));
     svr->set_logger(
         [](const httplib::Request& req, const httplib::Response& res) { VLOG(1) << res.body; });
-    srv_thread = std::thread([&](int p) { svr->listen("0.0.0.0", p); }, c.http_port);
+    srv_thread = std::thread([&](const std::string http_address, int p) { 
+      svr->listen(http_address, p); 
+      }, c.http_address, c.http_port);
   }
 
   int result = EXIT_SUCCESS;

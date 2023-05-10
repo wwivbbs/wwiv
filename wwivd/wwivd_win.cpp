@@ -24,6 +24,7 @@
 #include "core/socket_connection.h"
 #include "core/strings.h"
 #include "sdk/wwivd_config.h"
+#include "wwivd/node_manager.h"
 #include <atomic>
 #include <iostream>
 #include <csignal>
@@ -95,8 +96,9 @@ void BeforeStartServer() {
 void SwitchToNonRootUser(const std::string&) {
 }
 
-bool ExecCommandAndWait(const wwivd_config_t& wc, const std::string& cmd, const std::string& pid,
-                        int node_number, SOCKET sock) {
+bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
+                        const std::string& cmd, const std::string& pid, int node_number,
+                        SOCKET sock) {
 
   LOG(INFO) << pid << "Invoking Command Line (Win32):" << cmd;
 
@@ -140,6 +142,8 @@ bool ExecCommandAndWait(const wwivd_config_t& wc, const std::string& cmd, const 
     // to it.
     closesocket(sock);
   }
+
+  node_manager.set_pid(node_number, pi.dwProcessId);
 
   // Wait until child process exits.
   auto dwExitCode = WaitForSingleObject(pi.hProcess, INFINITE);

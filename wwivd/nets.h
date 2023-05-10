@@ -17,14 +17,16 @@
 /**************************************************************************/
 #ifndef INCLUDED_WWIVD_NETS_H
 #define INCLUDED_WWIVD_NETS_H
+#include <memory>
 
 #include "sdk/config.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/wwivd_config.h"
 
 namespace wwiv::wwivd {
+class NodeManager;
 
-void do_wwivd_callouts(const sdk::Config& config, const sdk::wwivd_config_t& c);
+void do_wwivd_callouts(const sdk::Config& config, const sdk::wwivd_config_t& c, std::shared_ptr<NodeManager> nodes);
 
 } // namespace
 

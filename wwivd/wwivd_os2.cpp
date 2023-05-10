@@ -29,6 +29,8 @@
 #include "core/socket_connection.h"
 #include "core/strings.h"
 #include "sdk/wwivd_config.h"
+#include "wwivd/node_manager.h"
+
 #include <atomic>
 #include <iostream>
 #include <csignal>
@@ -81,8 +83,9 @@ void SwitchToNonRootUser(const std::string&) {
 }
 
 
-bool ExecCommandAndWait(const wwivd_config_t& wc, const std::string& cmd, const std::string& pid,
-                        int node_number, SOCKET sock) {
+bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
+                        const std::string& cmd, const std::string& pid, int node_number,
+                        SOCKET sock) {
 
   LOG(INFO) << pid << "Invoking Command Line (Win32):" << cmd;
 
@@ -133,6 +136,8 @@ bool ExecCommandAndWait(const wwivd_config_t& wc, const std::string& cmd, const 
 
   RESULTCODES code;  // Result code for the child process
   PID pidOut = child_pid;
+  node_manager.set_pid(node_number, child_pid);
+
 
   if(APIRET rc = DosWaitChild(DCWA_PROCESS, DCWW_WAIT, &code, &pidOut, child_pid); rc != NO_ERROR) {
     LOG(ERROR) << "DosWaitChild failed: Error: " << rc;

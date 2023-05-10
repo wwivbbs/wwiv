@@ -19,6 +19,7 @@
 
 #include "core/log.h"
 #include "core/stl.h"
+#include <chrono>
 #include <memory>
 #include <mutex>
 #include <unordered_map>
@@ -79,6 +80,16 @@ std::vector<std::string> NodeManager::status_lines() const {
   return v;
 }
 
+std::vector<NodeStatus> NodeManager::nodes() const {
+  std::lock_guard<std::mutex> lock(mu_);
+  std::vector<NodeStatus> v;
+  for (const auto n : nodes_) {
+    v.emplace_back(n.second);
+  }
+
+  return v;
+}
+
 NodeStatus& NodeManager::status_for_unlocked(int node) { return nodes_[node]; }
 
 NodeStatus NodeManager::status_for_copy(int node) {
@@ -94,6 +105,12 @@ void NodeManager::set_node(int node, ConnectionType type, const std::string& des
   n.type = type;
   n.description = description;
   n.connected = true;
+}
+
+void NodeManager::set_pid(int node, int pid) {
+  std::lock_guard<std::mutex> lock(mu_);
+  auto& n = status_for_unlocked(node);
+  n.pid = pid;
 }
 
 void NodeManager::clear_node(int node) {
@@ -116,12 +133,15 @@ int NodeManager::nodes_used() const {
   return count;
 }
 
-bool NodeManager::AcquireNode(int& node) {
+bool NodeManager::AcquireNode(int& node, const std::string& peer) {
   std::lock_guard<std::mutex> lock(mu_);
   for (auto& e : nodes_) {
     if (!e.second.connected) {
       e.second.connected = true;
       e.second.type = type_;
+      e.second.peer = peer;
+      auto const now = std::chrono::system_clock::now();
+      e.second.connection_time = std::chrono::system_clock::to_time_t(now);
       e.second.description = "Connecting...";
       node = e.second.node;
       return true;

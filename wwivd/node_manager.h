@@ -18,6 +18,7 @@
 #ifndef INCLUDED_WWIVD_NODE_MANAGER_H
 #define INCLUDED_WWIVD_NODE_MANAGER_H
 
+#include <ctime>
 #include <map>
 #include <mutex>
 #include <string>
@@ -40,7 +41,10 @@ std::string to_string(ConnectionType t);
 struct NodeStatus {
   ConnectionType type = ConnectionType::UNKNOWN;
   int node = 0;
+  std::string peer;
+  time_t connection_time;
   std::string description;
+  int pid;
   bool connected = false;
 };
 
@@ -60,17 +64,20 @@ public:
 
   [[nodiscard]] std::vector<std::string> status_lines() const;
 
+  [[nodiscard]] std::vector<NodeStatus> nodes() const;
+
   [[nodiscard]] NodeStatus& status_for_unlocked(int node);
 
   [[nodiscard]] NodeStatus status_for_copy(int node);
 
   void set_node(int node, ConnectionType type, const std::string& description);
+  void set_pid(int node, int pid);
 
   void clear_node(int node);
 
   [[nodiscard]] int nodes_used() const;
 
-  bool AcquireNode(int& node);
+  bool AcquireNode(int& node, const std::string& peer);
 
   bool ReleaseNode(int node);
 

@@ -65,8 +65,8 @@ static NetworkContact network_contact_from_last_time(const fido::FidoAddress& ad
   return NetworkContact{ncr};
 }
 
-static void one_net_ftn_callout(const Config& config, const Network& net,
-                                const wwivd_config_t& c, int network_number) {
+static void one_net_ftn_callout(const Config& config, const Network& net, const wwivd_config_t& c,
+                                std::shared_ptr<NodeManager> nodes, int network_number) {
   const fido::FidoCallout callout(config.root_directory(), config.max_backups(), net);
 
   // TODO(rushfan): 1. Right now we just keep the map of last call-out
@@ -100,14 +100,14 @@ static void one_net_ftn_callout(const Config& config, const Network& net,
     const std::map<char, std::string> params = {{'N', address.as_string()},
                                            {'T', std::to_string(network_number)}};
     const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
-    if (!ExecCommandAndWait(c, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
+    if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
       LOG(ERROR) << "Error executing command: '" << cmd << "'";
     }
   }
 }
 
 static void one_net_wwivnet_callout(const Network& net, const wwivd_config_t& c,
-                                    int network_number) {
+                                    std::shared_ptr<NodeManager> nodes, int network_number) {
   VLOG(2) << "one_net_wwivnet_callout: @" << net.sysnum << "; name: " << net.name;
   Contact contact(net);
   const Callout callout(net, 0);
@@ -131,28 +131,29 @@ static void one_net_wwivnet_callout(const Network& net, const wwivd_config_t& c,
     const std::map<char, std::string> params = {{'N', std::to_string(kv.first)},
                                            {'T', std::to_string(network_number)}};
     const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
-    if (!ExecCommandAndWait(c, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
+    if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
       LOG(ERROR) << "Error executing command: " << cmd;
     }
   }
 }
 
-static void one_callout_loop(const Config& config, const wwivd_config_t& c) {
+static void one_callout_loop(const Config& config, const wwivd_config_t& c, std::shared_ptr<NodeManager> nodes) {
   VLOG(1) << "do_wwivd_callouts: one_callout_loop: ";
   const Networks networks(config);
   const auto& nets = networks.networks();
   auto network_number = 0;
   for (const auto& net : nets) {
     if (net.type == network_type_t::wwivnet) {
-      one_net_wwivnet_callout(net, c, network_number++);
+      one_net_wwivnet_callout(net, c, nodes, network_number++);
     } else if (net.type == network_type_t::ftn) {
-      one_net_ftn_callout(config, net, c, network_number++);
+      one_net_ftn_callout(config, net, c, nodes, network_number++);
     }
   }
 }
 
 // This is called from the thread
-static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& original_config) {
+static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& original_config,
+                                  std::shared_ptr<NodeManager> nodes) {
   auto c{original_config};
 
   StatusMgr sm(config.datadir(), [](int) {});
@@ -168,7 +169,7 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
     if (c.do_network_callouts) {
       if (auto now = DateTime::now().to_system_clock(); now - last_callout > 60s) {
         last_callout = DateTime::now().to_system_clock();
-        one_callout_loop(config, c);
+        one_callout_loop(config, c, nodes);
       }
     }
     if (need_to_exit.load()) {
@@ -186,7 +187,7 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
         LOG(INFO) << "Executing beginday event. (" << d << " != " << ld << ")";
         const std::map<char, std::string> params{};
         const auto cmd = CreateCommandLine(c.beginday_cmd, params);
-        if (!ExecCommandAndWait(c, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
+        if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
           LOG(ERROR) << "Error executing [BeginDay Event]: '" << cmd << "'";
         }
       }
@@ -194,14 +195,14 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
   }
 }
 
-void do_wwivd_callouts(const Config& config, const wwivd_config_t& c) {
+void do_wwivd_callouts(const Config& config, const wwivd_config_t& c, std::shared_ptr<NodeManager> nodes) {
   if (c.do_network_callouts) {
     LOG(INFO) << "WWIVD is handling network callouts.";
   }
   if (c.do_beginday_event) {
     LOG(INFO) << "WWIVD is handling beginday event.";
   }
-  std::thread callout_thread(do_wwivd_callout_loop, std::cref(config), std::cref(c));
+  std::thread callout_thread(do_wwivd_callout_loop, std::cref(config), std::cref(c), nodes);
   callout_thread.detach();
 }
 
