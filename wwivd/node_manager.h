@@ -18,12 +18,18 @@
 #ifndef INCLUDED_WWIVD_NODE_MANAGER_H
 #define INCLUDED_WWIVD_NODE_MANAGER_H
 
+#include "sdk/config.h"
+#include "sdk/instance.h"
 #include <ctime>
 #include <map>
 #include <mutex>
 #include <string>
 #include <vector>
 #include <unordered_map>
+
+namespace wwiv::sdk {
+  struct wwivd_matrix_entry_t;
+}
 
 namespace wwiv::wwivd {
 
@@ -49,8 +55,11 @@ struct NodeStatus {
 };
 
 class NodeManager final {
+private:
+  NodeManager(const wwiv::sdk::Config& config, const std::string& name, ConnectionType type, int start, int end, bool wwiv_bbs);
 public:
-  NodeManager(const std::string& name, ConnectionType type, int start, int end);
+  explicit NodeManager(const wwiv::sdk::Config& config, const wwiv::sdk::wwivd_matrix_entry_t& bbs);
+  explicit NodeManager(const wwiv::sdk::Config& config, ConnectionType type);
   ~NodeManager();
 
   // Get rid of unwanted forms.
@@ -63,6 +72,9 @@ public:
   [[nodiscard]] static std::string status_string(const NodeStatus& n);
 
   [[nodiscard]] std::vector<std::string> status_lines() const;
+
+  // Updates the node statuses from the BBS.
+  [[nodiscard]] bool update_nodes();
 
   [[nodiscard]] std::vector<NodeStatus> nodes() const;
 
@@ -86,10 +98,12 @@ public:
   [[nodiscard]] int end_node() const { return end_; }
 
 private:
+  wwiv::sdk::Config config_;
   const std::string name_;
   const ConnectionType type_;
   int start_ = 0;
   int end_ = 0;
+  bool wwiv_bbs_{ false };
   std::map<int, NodeStatus> nodes_;
 
   mutable std::mutex mu_;

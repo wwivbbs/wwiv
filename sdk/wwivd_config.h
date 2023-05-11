@@ -74,6 +74,8 @@ struct wwivd_matrix_entry_t {
   int local_node;
   /** Mode for passing data to the BBS: Socket or Named Pipe */
   wwivd_data_mode_t data_mode{wwivd_data_mode_t::socket};
+  /** Is this the primary WWIV BBS */
+  bool wwiv_bbs{ true };
 };
 
 class wwivd_config_t {

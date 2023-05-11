@@ -110,13 +110,14 @@ int Main(CommandLine& cmdline) {
   BeforeStartServer();
 
   std::map<const std::string, std::shared_ptr<NodeManager>> nodes;
+
   for (const auto& b : c.bbses) {
-    nodes[b.name] =
-        std::make_shared<NodeManager>(b.name, ConnectionType::TELNET, b.start_node, b.end_node);
+    nodes[b.name] = std::make_shared<NodeManager>(config, b);
   }
   // Add node manager for binkp.
-  nodes["BINKP"] = std::make_shared<NodeManager>("BINKP", ConnectionType::BINKP, 0, 0);
+  nodes["BINKP"] = std::make_shared<NodeManager>(config, ConnectionType::BINKP);
 
+  // Add node for each BBS.
   for (const auto& n : nodes) {
     if (!DeleteAllSemaphores(config, n.second->start_node(), n.second->end_node())) {
       LOG(ERROR) << "Unable to clear semaphores.";

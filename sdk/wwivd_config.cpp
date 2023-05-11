@@ -83,6 +83,7 @@ void serialize(Archive& ar, wwivd_matrix_entry_t &a) {
   SERIALIZE(a, telnet_cmd);
   SERIALIZE(a, data_mode);
   SERIALIZE(a, working_directory);
+  SERIALIZE(a, wwiv_bbs);
 }
 
 template <class Archive>

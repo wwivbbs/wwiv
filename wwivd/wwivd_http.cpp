@@ -164,6 +164,8 @@ void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* no
       const auto& nm = n.second;
       r.num_instances += nm->total_nodes();
       r.used_instances += nm->nodes_used();
+      // Read the latest state from the instance.dat.
+      (void) nm->update_nodes();
       for (const auto& node : nm->nodes()) {
         status_line_t l{};
         l.name = bbs_name;

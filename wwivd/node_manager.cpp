@@ -17,6 +17,10 @@
 /**************************************************************************/
 #include "wwivd/node_manager.h"
 
+#include "sdk/config.h"
+#include "sdk/instance.h"
+#include "sdk/wwivd_config.h"
+
 #include "core/log.h"
 #include "core/stl.h"
 #include <chrono>
@@ -44,12 +48,19 @@ std::string to_string(ConnectionType t) {
   return "*UNKNOWN*";
 }
 
-NodeManager::NodeManager(const std::string& name, ConnectionType type, int start, int end)
-    : name_(name), type_(type), start_(start), end_(end) {
+NodeManager::NodeManager(const wwiv::sdk::Config& config, const std::string& name,
+                         ConnectionType type, int start, int end, bool wwiv_bbs)
+    : config_(config), name_(name), type_(type), start_(start), end_(end), wwiv_bbs_(wwiv_bbs) {
   for (auto i = start; i <= end; i++) {
     clear_node(i);
   }
 }
+
+NodeManager::NodeManager(const wwiv::sdk::Config& config, const wwiv::sdk::wwivd_matrix_entry_t& bbs)
+  : NodeManager(config, bbs.name, ConnectionType::TELNET, bbs.start_node, bbs.end_node, bbs.wwiv_bbs) {}
+
+NodeManager::NodeManager(const wwiv::sdk::Config& config, ConnectionType type)
+  : NodeManager(config, to_string(type), type, 0, 0, false) {}
 
 NodeManager::~NodeManager() = default;
 
@@ -78,6 +89,35 @@ std::vector<std::string> NodeManager::status_lines() const {
   }
 
   return v;
+}
+
+bool NodeManager::update_nodes() {
+  if (!wwiv_bbs_) {
+    return false;
+  }
+
+  wwiv::sdk::Instances instances(config_);
+  if (!instances) {
+    LOG(WARNING) << "Unable to read Instance information.";
+    return false;
+  }
+
+  std::lock_guard<std::mutex> lock(mu_);
+  for (const auto& inst : instances) {
+    if (inst.node_number() < start_ || inst.node_number() > this->end_) {
+      continue;
+    }
+    auto& n = status_for_unlocked(inst.node_number());
+    if (inst.updated().to_system_clock() < (std::chrono::system_clock::now() - std::chrono::hours(6))) {
+      LOG(WARNING) << "Stale instance: " << inst.updated().to_string();
+    }
+    n.connected = inst.online();
+    if (n.connected) {
+      n.description = inst.location_description();
+      n.connection_time = inst.started().to_time_t();
+    }
+  }
+  return true;
 }
 
 std::vector<NodeStatus> NodeManager::nodes() const {

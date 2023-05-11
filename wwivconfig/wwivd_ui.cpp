@@ -194,6 +194,9 @@ static void edit_matrix_entry(const Config& config, wwivd_matrix_entry_t& b) {
     items.add(new Label("Data Mode:"),
               new ToggleEditItem<wwiv::sdk::wwivd_data_mode_t>(data_modes, &b.data_mode),
               "The way to communicate from wwivd to bbs (default is socket handle)", 1, y);
+    y++;
+    items.add(new Label("WWIV BBS:"), new BooleanEditItem(&b.wwiv_bbs),
+      "Is this the primary WWIV BBS for this WWIVD.", 1, y);
   }
 
   items.relayout_items_and_labels();

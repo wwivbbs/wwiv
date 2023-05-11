@@ -152,9 +152,11 @@ std::vector<Instance> Instances::all() {
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 bool Instances::upsert(size_type pos, const instancerec& ir) {
+  instancerec mir{ ir };
+  mir.last_update = daten_t_now();
   if (auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadWrite |
                                                    File::modeCreateFile)) {
-    return file.Write(pos, &ir);
+    return file.Write(pos, &mir);
   }
   return false;
 }
