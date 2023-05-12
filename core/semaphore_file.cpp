@@ -22,6 +22,7 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
+#include "fmt/format.h"
 #include <cerrno>
 #include <fcntl.h>
 #include <string>
@@ -56,6 +57,18 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath,
                                          const std::string& text,
                                          std::chrono::duration<double> timeout) {
   VLOG(2) << "SemaphoreFile::try_acquire: '" << filepath << "'";
+
+  if (File::Exists(filepath)) {
+    // Try to delete any stale semaphore files if they are over a day old.
+    auto ctime = std::chrono::system_clock::from_time_t(File::last_write_time(filepath));
+    auto oldest_allowed = std::chrono::system_clock::now() - std::chrono::hours(24);
+    auto minutes_old = std::chrono::duration_cast<std::chrono::minutes>(std::chrono::system_clock::now() - ctime);
+    VLOG(1) << fmt::format("Found BSY file: '{}'; minutes old: {}", filepath.string(), minutes_old.count());
+    if (ctime < oldest_allowed) {
+      LOG(WARNING) << fmt::format("Found stale BSY file: '{}'; minutes old: {}", filepath.string(), minutes_old.count());
+      File::Remove(filepath, true);
+    }
+  }
   const auto mode = O_CREAT | O_EXCL | O_TEMPORARY | O_RDWR;
   const auto pmode = S_IREAD | S_IWRITE;
   auto step = timeout / 10;

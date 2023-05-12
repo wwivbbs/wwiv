@@ -349,6 +349,16 @@ time_t File::last_write_time() const { return last_write_time(full_path_name_); 
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
+
+// static
+time_t File::creation_time(const std::filesystem::path& path) {
+  const auto p = path.string();
+  // Stick with calling stat vs. filesystem:last_write_time until C++20 since
+  // C++20 will allow portable output
+  struct stat buf {};
+  return stat(p.c_str(), &buf) == -1 ? 0 : buf.st_ctime;
+}
+
 // static
 time_t File::last_write_time(const std::filesystem::path& path) {
   const auto p = path.string();
@@ -517,13 +527,19 @@ std::ostream& operator<<(std::ostream& os, const File& file) {
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 bool File::set_last_write_time(time_t last_write_time) noexcept {
+  return File::set_last_write_time(full_path_name_, last_write_time);
+}
+
+// static 
+bool File::set_last_write_time(const std::filesystem::path& path,
+  time_t last_write_time) noexcept {
   // Stick with calling utime vs. filesystem:last_write_time until C++20 since
   // C++20 will allow portable output
 
   // ReSharper disable once CppInitializedValueIsAlwaysRewritten
-  struct utimbuf ut{};
+  struct utimbuf ut {};
   ut.actime = ut.modtime = last_write_time;
-  return utime(full_path_name_.string().c_str(), &ut) != -1;
+  return utime(path.string().c_str(), &ut) != -1;
 }
 
 std::unique_ptr<FileLock> File::lock(FileLockType lock_type) {

@@ -153,6 +153,26 @@ TEST(FileTest, IsDirectory_Open) {
   ASSERT_TRUE(std::filesystem::is_regular_file(path, ec));
 }
 
+
+TEST(FileTest, CreationTime_NotOpen) {
+  static const std::string kHelloWorld = "Hello World";
+  wwiv::core::test::FileHelper helper;
+  const auto now = time(nullptr);
+  const auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
+  ASSERT_LE(now, File::creation_time(path));
+}
+
+TEST(FileTest, CreationTime_Open) {
+  static const std::string kHelloWorld = "Hello World";
+  wwiv::core::test::FileHelper helper;
+  time_t now = time(nullptr);
+  auto path = helper.CreateTempFile(test_info_->name(), kHelloWorld);
+  File file(path);
+  ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
+  ASSERT_LE(now, File::creation_time(path));
+}
+
+
 TEST(FileTest, LastWriteTime_NotOpen) {
   static const std::string kHelloWorld = "Hello World";
   wwiv::core::test::FileHelper helper;

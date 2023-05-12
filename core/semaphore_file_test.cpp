@@ -25,6 +25,7 @@
 #include <chrono>
 #include <string>
 
+
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -60,7 +61,27 @@ TEST(SemaphoreFileTest, Smoke) {
   const auto ok =
       SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
 
-  const auto fn = ok.path();
+  const auto& fn = ok.path();
+  LOG(INFO) << "fd: " << ok.fd() << "; fn: " << fn;
+
+  EXPECT_TRUE(File::Exists(fn)) << fn;
+}
+
+TEST(SemaphoreFileTest, OldFile) {
+  static const std::string kHelloWorld = "Hello World";
+  wwiv::core::test::FileHelper file;
+  const auto path = file.CreateTempFile("x.sem", kHelloWorld);  
+
+  // Make it ~ one day ago
+  auto l = File::last_write_time(path);
+  l -= (60 * 60 * 25);
+  ASSERT_TRUE(File::set_last_write_time(path, l));
+
+  // Will throw if it can't acquire.
+  const auto ok =
+    SemaphoreFile::try_acquire(path, "", std::chrono::milliseconds(100));
+
+  const auto& fn = ok.path();
   LOG(INFO) << "fd: " << ok.fd() << "; fn: " << fn;
 
   EXPECT_TRUE(File::Exists(fn)) << fn;

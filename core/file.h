@@ -185,7 +185,12 @@ public:
   [[nodiscard]] static std::filesystem::path absolute(const std::filesystem::path& base,
                                                       const std::filesystem::path& relative);
 
+  // Time the file was created.
+  [[nodiscard]] static time_t creation_time(const std::filesystem::path& path);
+
   [[nodiscard]] static time_t last_write_time(const std::filesystem::path& path);
+  [[nodiscard]] static bool set_last_write_time(const std::filesystem::path& path,
+                                                time_t last_write_time) noexcept;
 
   /**
    * Returns an canonical absolute path.
