@@ -32,12 +32,14 @@
 #include "common/value/uservalueprovider.h"
 #include "core/strings.h"
 #include "sdk/config.h"
+#include "sdk/instance.h"
 #include "sdk/menus/menu_set.h"
 
 #include <string>
 
 using namespace wwiv::core;
 using namespace wwiv::common::menus;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::menus;
 
@@ -77,7 +79,7 @@ static void log_command(menu_logtype_t logging, const menu_item_56_t& mi) {
   }
 }
 
-MainMenu::MainMenu(const sdk::Config& config) : config_(config) {}
+MainMenu::MainMenu(const Config& config) : config_(config) {}
 
 void MainMenu::Run() {
   menu_set_ = a()->sess().current_menu_set();
@@ -142,7 +144,7 @@ void mainmenu() {
   m.Run();
 }
 
-Menu::Menu(const std::filesystem::path& menu_path, const wwiv::sdk::menus::MenuSet56& menu_set,
+Menu::Menu(const std::filesystem::path& menu_path, const MenuSet56& menu_set,
            const std::string& menu_name)
     : menu_set_name_(menu_set.menu_set.name), menu_name_(menu_name),
       menu_set_(menu_set),  menu_(menu_path, menu_set, menu_name) {

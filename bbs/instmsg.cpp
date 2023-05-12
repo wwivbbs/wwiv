@@ -155,7 +155,7 @@ std::optional<int> user_online(int user_number) {
 * some info about this instance.
 */
 void write_inst(int loc, int subloc, int flags) {
-  static Instance ti{};
+  static Instance ti(a()->config()->root_directory(), a()->config()->datadir(), a()->sess().instance_number());
 
   auto re_write = false;
   if (ti.user_number() == 0) {

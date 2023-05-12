@@ -47,6 +47,7 @@
 #include "fmt/format.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
+#include "sdk/instance.h"
 #include "sdk/qscan.h"
 #include "sdk/qwk_config.h"
 #include "sdk/status.h"
@@ -55,6 +56,7 @@
 #include "sdk/ansi/makeansi.h"
 
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 

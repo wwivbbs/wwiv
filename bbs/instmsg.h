@@ -33,79 +33,6 @@ constexpr int INST_MSG_CHAT = 6;  // External chat request
 /****************************************************************************/
 
 
-// (moved from vardec.h)
-
-/* Instance status flags */
-constexpr int INST_FLAGS_NONE = 0x0000;  // No flags at all
-constexpr int INST_FLAGS_ONLINE = 0x0001;  // User online
-constexpr int INST_FLAGS_MSG_AVAIL = 0x0002;  // Available for inst msgs
-constexpr int INST_FLAGS_INVIS = 0x0004;  // For invisibility
-
-/* Instance primary location points */
-constexpr int INST_LOC_DOWN = 0;
-constexpr int INST_LOC_INIT = 1;
-constexpr int INST_LOC_EMAIL = 2;
-constexpr int INST_LOC_MAIN = 3;
-constexpr int INST_LOC_XFER = 4;
-constexpr int INST_LOC_CHAINS = 5;
-constexpr int INST_LOC_NET = 6;
-constexpr int INST_LOC_GFILES = 7;
-constexpr int INST_LOC_BEGINDAY = 8;
-constexpr int INST_LOC_EVENT = 9;
-constexpr int INST_LOC_CHAT = 10;
-constexpr int INST_LOC_CHAT2 = 11;
-constexpr int INST_LOC_CHATROOM = 12;
-constexpr int INST_LOC_LOGON = 13;
-constexpr int INST_LOC_LOGOFF = 14;
-constexpr int INST_LOC_FSED = 15;
-constexpr int INST_LOC_UEDIT = 16;
-constexpr int INST_LOC_CHAINEDIT = 17;
-constexpr int INST_LOC_BOARDEDIT = 18;
-constexpr int INST_LOC_DIREDIT = 19;
-constexpr int INST_LOC_GFILEEDIT = 20;
-constexpr int INST_LOC_CONFEDIT = 21;
-constexpr int INST_LOC_DOS = 22;
-constexpr int INST_LOC_DEFAULTS = 23;
-constexpr int INST_LOC_REBOOT = 24;
-constexpr int INST_LOC_RELOAD = 25;
-constexpr int INST_LOC_VOTE = 26;
-constexpr int INST_LOC_BANK = 27;
-constexpr int INST_LOC_AMSG = 28;
-constexpr int INST_LOC_SUBS = 29;
-constexpr int INST_LOC_CHUSER = 30;
-constexpr int INST_LOC_TEDIT = 31;
-constexpr int INST_LOC_MAILR = 32;
-constexpr int INST_LOC_RESETQSCAN = 33;
-constexpr int INST_LOC_VOTEEDIT = 34;
-constexpr int INST_LOC_VOTEPRINT = 35;
-constexpr int INST_LOC_RESETF = 36;
-constexpr int INST_LOC_FEEDBACK = 37;
-constexpr int INST_LOC_KILLEMAIL = 38;
-constexpr int INST_LOC_POST = 39;
-constexpr int INST_LOC_NEWUSER = 40;
-constexpr int INST_LOC_RMAIL = 41;
-constexpr int INST_LOC_DOWNLOAD = 42;
-constexpr int INST_LOC_UPLOAD = 43;
-constexpr int INST_LOC_BIXFER = 44;
-constexpr int INST_LOC_NETLIST = 45;
-constexpr int INST_LOC_TERM = 46;
-//constexpr int INST_LOC_EVENTEDIT = 47;  NO LONGER USED
-constexpr int INST_LOC_GETUSER = 48;
-constexpr int INST_LOC_QWK = 49;
-constexpr int INST_LOC_CH1 = 5000;
-constexpr int INST_LOC_CH2 = 5001;
-constexpr int INST_LOC_CH3 = 5002;
-constexpr int INST_LOC_CH5 = 5004;
-constexpr int INST_LOC_CH6 = 5005;
-constexpr int INST_LOC_CH7 = 5006;
-constexpr int INST_LOC_CH8 = 5007;
-constexpr int INST_LOC_CH9 = 5008;
-constexpr int INST_LOC_CH10 = 5009;
-constexpr int INST_LOC_WFC = 65535;
-
-
-/****************************************************************************/
-
 
 
 void send_inst_str(int whichinst, const std::string& send_string);
@@ -113,7 +40,7 @@ void broadcast(const std::string& message);
 void process_inst_msgs();
 int  num_instances();
 std::optional<int> user_online(int user_number);
-void write_inst(int loc, int subloc = 0, int flags = INST_FLAGS_NONE);
+void write_inst(int loc, int subloc = 0, int flags = wwiv::sdk::INST_FLAGS_NONE);
 bool inst_msg_waiting();
 std::chrono::milliseconds setiia(std::chrono::milliseconds poll_time);
 void toggle_invis();

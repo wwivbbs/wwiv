@@ -26,8 +26,10 @@
 #include "bbs/basic/basic.h"
 #include "core/log.h"
 #include "local_io/local_io.h"
+#include "sdk/instance.h"
 
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 
 static int ExecuteExternalProgramNoScript(wwiv::bbs::CommandLine& commandLine, uint32_t nFlags) {
   LOG(INFO) << "ExecuteExternalProgram: " << commandLine.cmdline();

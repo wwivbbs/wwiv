@@ -23,9 +23,12 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+#include "sdk/chains.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/subxtr.h"
 #include "sdk/vardec.h"
+#include "sdk/files/dirs.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -39,22 +42,29 @@ const std::filesystem::path& Instances::fn_path() const {
   return path_;
 }
 
-Instance::Instance(instancerec ir)
-  : ir_(ir) {
+Instance::Instance(std::filesystem::path root_dir, std::filesystem::path data_dir, instancerec ir)
+  : root_dir_(root_dir), data_dir_(data_dir), ir_(ir) {
 }
 
-Instance::Instance(int instance_num) : ir_() {
+Instance::Instance(std::filesystem::path root_dir, std::filesystem::path data_dir, int instance_num)
+    : root_dir_(root_dir), data_dir_(data_dir), ir_() {
   ir_.number = static_cast<int16_t>(instance_num);
 }
 
-Instance::Instance(Instance&& o) noexcept : ir_(o.ir_) {}
+Instance::Instance(Instance&& o) noexcept : root_dir_(o.root_dir_), data_dir_(o.data_dir_), ir_(o.ir_) {}
 
-Instance& Instance::operator=(const Instance& o)  = default;
-  
-Instance& Instance::operator=(Instance&& o) noexcept {
+Instance& Instance::operator=(const Instance& o) {
+  data_dir_ = o.data_dir_;
+  root_dir_ = o.root_dir_;
   ir_ = o.ir_;
   return *this;
 }
+  
+//Instance& Instance::operator=(Instance&& o) noexcept {
+//  data_dir_ = o.data_dir_;
+//  ir_ = o.ir_;
+//  return *this;
+//}
 
 const instancerec& Instance::ir() const {
   return ir_;
@@ -62,6 +72,10 @@ const instancerec& Instance::ir() const {
 
 instancerec& Instance::ir() {
   return ir_;
+}
+
+std::filesystem::path Instance::root_directory() const {
+  return root_dir_;
 }
 
 int Instance::node_number() const noexcept {
@@ -85,91 +99,10 @@ bool Instance::invisible() const noexcept {
 }
 
 std::string Instance::location_description() const {
-  return instance_location(ir_);
-}
-
-int Instance::loc_code() const noexcept {
-  return ir_.loc;
-}
-
-bool Instance::in_channel() const noexcept {
-  return ir_.loc >= INST_LOC_CH1 && ir_.loc <= INST_LOC_CH10;
-}
-
-int Instance::modem_speed() const noexcept {
-  return ir_.modem_speed;
-}
-
-int Instance::subloc_code() const noexcept {
-  return ir_.subloc;
-}
-
-DateTime Instance::started() const {
-  return DateTime::from_daten(ir_.inst_started);
-}
-
-DateTime Instance::updated() const {
-  return DateTime::from_daten(ir_.last_update);
-}
-
-Instances::Instances(const Config& config) : path_(FilePath(config.datadir(), INSTANCE_DAT)) {
-  initialized_ = File::Exists(path_);
-  instances_ = all();
-}
-
-Instances::size_type Instances::size() const {
-  if (const auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
-    return std::max<int>(0, file.number_of_records() - 1);
-  }
-  return 0;
-}
-
-// ReSharper disable once CppMemberFunctionMayBeConst
-Instance Instances::at(size_type pos) {
-  if (auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
-    instancerec ir{};
-    if (file.Read(pos, &ir)) {
-      return Instance(ir);
-    }
-  }
-  return Instance(pos);
-}
-
-// ReSharper disable once CppMemberFunctionMayBeConst
-std::vector<Instance> Instances::all() {
-  if (auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
-    std::vector<instancerec> ir;
-    if (file.ReadVector(ir)) {
-      std::vector<Instance> r;
-      for (const auto& i : ir) {
-        r.emplace_back(i);
-      }
-      return r;
-    }
-  }
-  return {};
-}
-
-// ReSharper disable once CppMemberFunctionMayBeConst
-bool Instances::upsert(size_type pos, const instancerec& ir) {
-  instancerec mir{ ir };
-  mir.last_update = daten_t_now();
-  if (auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadWrite |
-                                                   File::modeCreateFile)) {
-    return file.Write(pos, &mir);
-  }
-  return false;
-}
-
-bool Instances::upsert(size_type pos, const Instance& ir) {
-  return upsert(pos, ir.ir());
-}
-
-std::string instance_location(const instancerec& ir) {
-  if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
+  if (ir_.loc >= INST_LOC_CH1 && ir_.loc <= INST_LOC_CH10) {
     return "WWIV Chatroom";
   }
-  switch (ir.loc) {
+  switch (ir_.loc) {
   case INST_LOC_DOWN:
     return "Offline";
   case INST_LOC_INIT:
@@ -178,10 +111,25 @@ std::string instance_location(const instancerec& ir) {
     return "Sending Email";
   case INST_LOC_MAIN:
     return "Main Menu";
-  case INST_LOC_XFER:
+  case INST_LOC_XFER: {
+    wwiv::sdk::files::Dirs dirs(data_dir_, 0);
+    if (dirs.Load()) {
+      if (ir_.subloc < dirs.size()) {
+        return fmt::format("Transfer Area: Dir : {}", stripcolors(dirs[ir_.subloc].name));
+      }
+    }
     return "Transfer Area";
-  case INST_LOC_CHAINS:
-    return "Chains";
+  }
+  case INST_LOC_CHAINS: {
+    Chains chains(data_dir_);
+    if (chains.Load()) {
+      if (ir_.subloc > 0 && ir_.subloc <= chains.size()) {
+        const auto& c = chains.at(ir_.subloc - 1);
+        return fmt::format("Chains: Door: {}", stripcolors(c.description));
+      }
+    }
+  }
+  return "Chains";
   case INST_LOC_NET:
     return "Network Transmission";
   case INST_LOC_GFILES:
@@ -228,8 +176,16 @@ std::string instance_location(const instancerec& ir) {
     return "In TimeBank";
   case INST_LOC_AMSG:
     return "AutoMessage";
-  case INST_LOC_SUBS:
-    return "Reading Messages";
+  case INST_LOC_SUBS: {
+    std::vector<net::Network> nets;
+    Subs subs(data_dir_, nets, 0);
+    if (subs.Load()) {
+      if (ir_.subloc < subs.size()) {
+        return fmt::format("Reading Messages: (Sub: {})", stripcolors(subs.sub(ir_.subloc).name));
+      }
+    }
+  }
+  return "Reading Messages";
   case INST_LOC_CHUSER:
     return "Changing User";
   case INST_LOC_TEDIT:
@@ -248,8 +204,16 @@ std::string instance_location(const instancerec& ir) {
     return "Leaving Feedback";
   case INST_LOC_KILLEMAIL:
     return "Viewing Old Email";
-  case INST_LOC_POST:
-    return "Posting a Message";
+  case INST_LOC_POST: {
+    std::vector<net::Network> nets;
+    Subs subs(data_dir_, nets, 0);
+    if (subs.Load()) {
+      if (ir_.subloc < subs.size()) {
+        return fmt::format("Posting a Message: (Sub: {})", stripcolors(subs.sub(ir_.subloc).name));
+      }
+    }
+  }
+  return "Posting a Message";
   case INST_LOC_NEWUSER:
     return "Registering a Newuser";
   case INST_LOC_RMAIL:
@@ -272,6 +236,85 @@ std::string instance_location(const instancerec& ir) {
     return "In QWK";
   }
   return "Unknown BBS Location!";
+}
+
+int Instance::loc_code() const noexcept {
+  return ir_.loc;
+}
+
+bool Instance::in_channel() const noexcept {
+  return ir_.loc >= INST_LOC_CH1 && ir_.loc <= INST_LOC_CH10;
+}
+
+int Instance::modem_speed() const noexcept {
+  return ir_.modem_speed;
+}
+
+int Instance::subloc_code() const noexcept {
+  return ir_.subloc;
+}
+
+DateTime Instance::started() const {
+  return DateTime::from_daten(ir_.inst_started);
+}
+
+DateTime Instance::updated() const {
+  return DateTime::from_daten(ir_.last_update);
+}
+
+Instances::Instances(const Config& config)
+    : path_(FilePath(config.datadir(), INSTANCE_DAT)), root_dir_(config.root_directory()),
+      data_dir_(config.datadir()) {
+  initialized_ = File::Exists(path_);
+  instances_ = all();
+}
+
+Instances::size_type Instances::size() const {
+  if (const auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
+    return std::max<int>(0, file.number_of_records() - 1);
+  }
+  return 0;
+}
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+Instance Instances::at(size_type pos) {
+  if (auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
+    instancerec ir{};
+    if (file.Read(pos, &ir)) {
+      return Instance(root_dir_, data_dir_, ir);
+    }
+  }
+  return Instance(root_dir_, data_dir_, pos);
+}
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+std::vector<Instance> Instances::all() {
+  if (auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
+    std::vector<instancerec> ir;
+    if (file.ReadVector(ir)) {
+      std::vector<Instance> r;
+      for (const auto& i : ir) {
+        r.emplace_back(root_dir_, data_dir_, i);
+      }
+      return r;
+    }
+  }
+  return {};
+}
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+bool Instances::upsert(size_type pos, const instancerec& ir) {
+  instancerec mir{ ir };
+  mir.last_update = daten_t_now();
+  if (auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadWrite |
+                                                   File::modeCreateFile)) {
+    return file.Write(pos, &mir);
+  }
+  return false;
+}
+
+bool Instances::upsert(size_type pos, const Instance& ir) {
+  return upsert(pos, ir.ir());
 }
 
 }

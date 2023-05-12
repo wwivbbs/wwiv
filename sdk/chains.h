@@ -91,6 +91,7 @@ public:
   typedef const chain_t& const_reference;
   static const size_type npos = -1;
   explicit Chains(const Config& config);
+  explicit Chains(const std::filesystem::path& datadir);
   // [[ VisibleForTesting ]]
   explicit Chains(std::initializer_list<chain_t> l) : chains_(l) {}
   Chains() = default;
@@ -99,8 +100,8 @@ public:
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
   [[nodiscard]] const std::vector<chain_t>& chains() const { return chains_; }
   [[nodiscard]] const chain_t& at(size_type num) const { return wwiv::stl::at(chains_, num); }
-  [[nodiscard]] chain_t& at(size_type num) { return wwiv::stl::at(chains_, num);
-  }
+  [[nodiscard]] chain_t& at(size_type num) { return wwiv::stl::at(chains_, num); }
+  [[nodiscard]] size_type size() const { return stl::size_int(chains_); }
 
   bool insert(size_type n, chain_t r);
   bool erase(size_type n);

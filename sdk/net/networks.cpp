@@ -45,10 +45,6 @@ const int Networks::npos; // reserve space.
 
 Networks::Networks(const Config& config)
     : root_directory_(config.root_directory()), datadir_(config.datadir()) {
-  if (!config.IsInitialized()) {
-    return;
-  }
-
   if (!File::Exists(FilePath(datadir_, NETWORKS_JSON)) &&
       !File::Exists(FilePath(datadir_, NETWORKS_DAT))) {
     // Nothing to do.

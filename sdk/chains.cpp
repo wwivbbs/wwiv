@@ -69,13 +69,9 @@ chain_exec_dir_t operator++(chain_exec_dir_t& t, int) {
 
 const Chains::size_type Chains::npos; // reserve space.
 
-Chains::Chains(const Config& config) : datadir_(config.datadir()) {
-  if (!config.IsInitialized()) {
-    return;
-  }
-
+Chains::Chains(const std::filesystem::path& datadir) : datadir_(datadir) {
   if (!File::Exists(FilePath(datadir_, CHAINS_JSON)) &&
-      !File::Exists(FilePath(datadir_, CHAINS_DAT))) {
+    !File::Exists(FilePath(datadir_, CHAINS_DAT))) {
     return;
   }
 
@@ -84,6 +80,8 @@ Chains::Chains(const Config& config) : datadir_(config.datadir()) {
     LOG(ERROR) << "Failed to read " << CHAINS_JSON << " or " << CHAINS_DAT;
   }
 }
+
+Chains::Chains(const Config& config) : Chains(config.datadir()) {}
 
 Chains::~Chains() = default;
 
