@@ -672,6 +672,7 @@ input_result_t<int64_t> Input::input_number_or_key_raw(int64_t cur, int64_t minv
   bout.mpl(max_length);
   auto allowed = hotkeys;
   auto last_ok = false;
+  auto keypressed_ever = false;
   allowed.insert(
       {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\r', '\n', '\b', '\x15', '\x17', '\x18'});
   bout.SavePosition();
@@ -684,6 +685,14 @@ input_result_t<int64_t> Input::input_number_or_key_raw(int64_t cur, int64_t minv
   while (!sess().hangup()) {
     auto ch = bin.getkey();
     if (std::isdigit(ch)) {
+      if (!keypressed_ever) {
+        // We have a digit key, clear the input and start taking the caller's text.
+        keypressed_ever = true;
+        while (!text.empty()) {
+          text.pop_back();
+          bout.bs();
+        }
+      }
       // digit
       if (ssize(text) < max_length && ch) {
         text.push_back(ch);
@@ -694,6 +703,8 @@ input_result_t<int64_t> Input::input_number_or_key_raw(int64_t cur, int64_t minv
       last_input_char = ch;
       continue;
     }
+    keypressed_ever = true;
+
     if (ch > 31) {
       // Only non-control characters should be upper cased.
       // this way it covers the hotkeys.
