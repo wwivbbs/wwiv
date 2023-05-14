@@ -20,6 +20,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/filenames.h"
 #include <map>
 #include <string>
 
@@ -61,8 +62,9 @@ ParseBinkConfigLine(const std::string& line) {
   return {{node, config}};
 }
 
-static bool ParseAddressesFile(std::map<std::string, binkp_session_config_t>* node_config_map, const std::filesystem::path network_dir) {
-  TextFile node_config_file(FilePath(network_dir, "binkp.net"), "rt");
+static bool ParseAddressesFile(std::map<std::string, binkp_session_config_t>* node_config_map, const std::filesystem::path binkp_path) {
+  TextFile node_config_file(binkp_path, "rt");
+  
   if (node_config_file.IsOpen()) {
     // Only load the configuration file if it exists.
     std::string line;
@@ -72,7 +74,7 @@ static bool ParseAddressesFile(std::map<std::string, binkp_session_config_t>* no
       if (r) {
         auto [node_number, node_config] = r.value();
         // Parsed a line correctly.
-        node_config_map->emplace(node_number, node_config);
+        node_config_map->insert_or_assign(node_number, node_config);
       }
     }
   }
@@ -82,7 +84,10 @@ static bool ParseAddressesFile(std::map<std::string, binkp_session_config_t>* no
 Binkp::Binkp(const std::filesystem::path& network_dir) {
   // network names will always be compared lower case.
 
-  ParseAddressesFile(&node_config_, network_dir);
+  if (ParseAddressesFile(&node_config_, FilePath(network_dir, BINKP_NET))) {
+    // Override with entries in local override file.
+    ParseAddressesFile(&node_config_, FilePath(network_dir, "binkp.local.net"));
+  }
 }
 
 Binkp::~Binkp() = default;

@@ -358,7 +358,6 @@ static std::tuple<Network, int> network_and_num(const mailrec& m) {
 }
 
 void readmail(bool newmail_only) {
-  //constexpr auto mail_who_field_len = 45;
   int i1, curmail = 0;
   bool done;
   mailrec m{};
