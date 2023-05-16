@@ -136,7 +136,8 @@ std::string ToJson(status_reponse_t r) {
 
 std::string ToJson(status_reponse_v0_t r) {
   using json = nlohmann::json;
-  json j = r;
+  json j;
+  j["status"] = r;
   return j.dump(4);
 }
 
