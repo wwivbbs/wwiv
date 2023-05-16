@@ -173,6 +173,25 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
 
     const auto is_email = (msg.nh.attribute & MSGPRIVATE) != 0;
     if (!is_email) {
+
+      // Only check age for echomail, not email
+      const auto max_days = net().fido.max_echomail_age_days;
+      if (!is_email && max_days > 0) {
+        // Only check if max_days > 0, otherwise 0 means unlimited.
+        const auto days_old = ftn_date_days_old(clock_, msg.vh.date_time);
+        if (days_old > max_days) {
+          // Packet is too old, skip it.
+          const auto msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
+          const auto logmsg = fmt::format("Too old FTN message ({} days): msgid:{}; '{}'", days_old,
+            msgid, msg.vh.subject);
+          LOG(ERROR) << logmsg;
+          LOG(ERROR) << "Text: " << msg.vh.text;
+          // TODO(rushfan): move this or write out saved copy?
+          continue;
+        }
+      }
+
+
       // Don't check for dupes in emails since we certainly won't have a MSGID and also
       // likely the header may match for automated responses split over multiple messages (#1395)
       if (dupe().is_dupe(msg)) {
@@ -184,22 +203,6 @@ bool NetworkF::import_packet_file(const std::filesystem::path& path) {
         continue;
       }
       dupe().add(msg);
-    }
-
-    const auto max_days = net().fido.max_echomail_age_days;
-    if (!is_email && max_days > 0) {
-      // Only check if max_days > 0, otherwise 0 means unlimited.
-      const auto days_old = ftn_date_days_old(clock_, msg.vh.date_time);
-      if (days_old > max_days) {
-        // Packet is too old, skip it.
-        const auto msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
-        const auto logmsg = fmt::format("Too old FTN message ({} days): msgid:{}; '{}'", days_old,
-                                        msgid, msg.vh.subject);
-        LOG(ERROR) << logmsg;
-        LOG(ERROR) << "Text: " << msg.vh.text;
-        // TODO(rushfan): move this or write out saved copy?
-        continue;
-      }
     }
 
     const auto ftn_packet_daten = fido_to_daten(msg.vh.date_time);
