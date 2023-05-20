@@ -186,6 +186,9 @@ void chat_room() {
       bout.nl();
       bout.outstr("|#1Select a chat channel to enter:\r\n");
       loc = change_channels(-1);
+      if (loc == -1) {
+        return;
+      }
     }
   } else {
     if (a()->user()->restrict_iichat() || !check_ch(1)) {
