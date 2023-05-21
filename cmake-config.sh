@@ -27,6 +27,11 @@ echo "Debug Info [ARCH] - ${ARCH}"
 echo "Debug Info [HERE] - ${HERE}"
 echo "Debug Info [NINJA] - ${NINJA}"
 
+if [ "${ARCH}" == "aarch64" ]; then
+	echo "Configuring for ARM64"
+	export VCPKG_FORCE_SYSTEM_BINARIES=1
+fi
+
 
 S_MODLIST=$(git submodule status)
 if [ -z "$S_MODLIST" ]
