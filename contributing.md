@@ -35,9 +35,9 @@ We love good bug reports!  A good bug report is:
 * Actionable: Knowing what was expected vs. what actually happened is critical.
 * Not a duplicate: Please search the existing issues to see if this has already been reported
 * Versioned: Please indicate what version of the software you are using (a build number of jenkins, or sha of the repository if you built it from git.
-* Environmental: Please indicate the OS and version you are using.  If you have multiple OSes avaialble knowing if this is specific to one operating system or version of operasting system is helpful.
+* Environmental: Please indicate the OS and version you are using.  If you have multiple OSes available knowing if this is specific to one operating system or version of operating system is helpful.
 
-Yes, this is a lot to ask for, but the more specific bug reports are, the more quickly someone can grab it and fix it.  As much (or as little) information you have helps, but the more the merrier and the more likely it'll get quicky fixed.
+Yes, this is a lot to ask for, but the more specific bug reports are, the more quickly someone can grab it and fix it.  As much (or as little) information you have helps, but the more the merrier and the more likely it'll get quickly fixed.
 
 ## Pull Requests
 
@@ -66,7 +66,7 @@ Here's the best way to work with the WWIV git repository:
     ```bash
     # make sure your branch is back onto the "main" branch
     git checkout main
-    # pull (this is a fetch + merge) in the changes from the wwivbbs/wwiv respository.
+    # pull (this is a fetch + merge) in the changes from the wwivbbs/wwiv repository.
     git pull --recurse upstream main
     # push the changes from wwivbbs/wwiv to your fork on github.
     git push
@@ -81,7 +81,7 @@ Here's the best way to work with the WWIV git repository:
 
 4. Make your changes by editing the files and committing changes to your local repository.  Please use good commit messages that explain the changes and also reference github issues as necessary.
 
-5. Merge any new changes from the wwivbbs/wwiv respository into your development branch
+5. Merge any new changes from the wwivbbs/wwiv repository into your development branch
 
     ```bash
     git pull --recurse upstream main
