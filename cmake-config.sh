@@ -16,8 +16,40 @@
 #
 
 declare -r OS=$(uname)
+declare -r FULLOS=$(uname -a)
+declare -r ARCH=$(uname -m)
 declare -r HERE=$(dirname $(realpath $0))
 declare -r NINJA=$(which ninja)
+
+echo "Debug Info [OS] - ${OS}"
+echo "Debug Info [FULLOS] - ${FULLOS}"
+echo "Debug Info [ARCH] - ${ARCH}"
+echo "Debug Info [HERE] - ${HERE}"
+echo "Debug Info [NINJA] - ${NINJA}"
+
+
+S_MODLIST=$(git submodule status)
+if [ -z "$S_MODLIST" ]
+then
+      echo "No Submodules Required - OK"
+      SUBSOK="true"
+else
+	SUBSOK="true"
+	while IFS= read -r line; do
+		S_MODNAME=$(echo "${line}" | awk -F ' ' '{print $2}')
+		if [[ ${line} = -* ]]; then
+			echo "Submodule [${S_MODNAME}] - Missing"
+			SUBSOK="false"
+		else
+			echo "Submodule [${S_MODNAME}] - OK"
+		fi
+	done <<< "${S_MODLIST}"
+	if ! [ "${SUBSOK}" == "true" ]; then
+		echo "Required submodules not found: Aborting"
+		echo "Please run \"git submodule update --init --recursive\" to pull required submodules."
+		exit 1
+	fi
+fi
 
 if ! [ -x "$(command -v cmake)" ]; then
 	echo "** ERROR: Please install cmake"
