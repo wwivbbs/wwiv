@@ -6,7 +6,7 @@ WWIV is compiled with the following compilers:
 - MS Visual C++ 2019 Community Edition.
 - GCC 8.3 (or later) on Linux 
   (tested on Debian10, Ubuntu 20.04, Centos7 with SCL/GCC-8)
-- CMake 3.13 or newer
+- CMake 3.18 or newer
 
 ***
 
@@ -20,14 +20,14 @@ We prefer contributors to FORK ```wwivbbs``` repositories to their account and w
 ### Installing Git
 
 You will need [Git](https://git-scm.com) installed.  You can use the GitHub Desktop GUI, but it's also easy
-to use the commandline tool directly.  You'll need to download [Git](https://git-scm.com/download/win) and
+to use the command line tool directly.  You'll need to download [Git](https://git-scm.com/download/win) and
 install it.  Make sure the ```git``` command is in your PATH.
 
 If you are using GitHub Desktop, this is likely in the folder: "Documents\GitHub\WWIV".  Otherwise just
 create a directory and clone your fork.  You can follow instructions that are written by GitHub 
 [Here](https://help.github.com/en/github/getting-started-with-github/fork-a-repo). Just make sure that
 when you clone the repo, you have "Recurse Submodules" specified in the tool, or using 
-```--recurse-submodules``` on the commandline.
+```--recurse-submodules``` on the command line.
 
 ### Download and Install Visual Studio
 WWIV is compiled with the VS2019 compiler for windows. 
@@ -37,7 +37,7 @@ Choose to install the ```Desktop development with C++``` workload.
 You also may want to optionally install the following "Individual Components":
 ```
    Git For Windows (Only if you do not have this already)
-   GitHub extension for Visaul Studio
+   GitHub extension for Visual Studio
 ```
 
 
@@ -69,13 +69,13 @@ Package | Comments
 git | to grab the source code for compiling  
 ncurses | ncurses-devel, libncurses5-dev, etc depending on your distro
 zlib1g-dev | or zlib-dev depending on your distro
-cmake | 3.13 or later
+cmake | 3.18 or later (3.22 or later if using arm64 or aarch64)
 make | for cryptlib
 ninja-build | 1.8 or later, earlier versions probably work too
 g++ | 8.3.0 or later (easiest to install via build-essential on debian/ubuntu)
 
-If you are on debian or ubuntu, you can use the ```/builds/jenkins/linux/install-prereqs.sh``` 
-escript to ensure that the right software is installed.  This command should be executed as root (using sudo)
+If you are on debian or ubuntu, you can use the ```/builds/linux/install-prereqs.sh``` 
+script to ensure that the right software is installed.  This command should be executed as root (using sudo)
 
 ### WWIV Binaries
 Here's the list of binaries that will be built in the build directory:  
@@ -145,8 +145,29 @@ remove the following file and directory:
   * CMakeFiles
   * CMakeCache.txt 
 
-*** 
 
+## Building on ChromeOS/ChromeBook 
+
+* Tested successfully on
+  * ChromeOS versions 99.x.x and higher
+  * CPU/Arch 64bit (i3, i5, aarch64, mediatek arm64)
+  * 4GB+ Memory
+
+* Tested un-successful on (Was unable to get build tools installed)
+  * ChromeOS version below 99.x.x
+  * CPU/Arch 32bit
+  * Under 4GB 
+
+
+* Notes: 
+  * Not really for production, but great for developing and testing.
+  * Use Linux build directions
+  * Telnet/SSH/Status Ports must be above 10,000 due to limitations on ChromeOS
+  * If running on arm64, or aarch64 CPU, use cmake 3.22.x or higher
+  * Recommend installing under your primary user instead of "wwiv" for simplicity sake. (Again not recommended for production use)
+    * If you choose to use a new user be sure to restart the entire linux sub-system after install. 
+
+***
 Installation and SysOp Instructions
 ====================
 
