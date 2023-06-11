@@ -146,7 +146,6 @@ static std::map<std::string, int> version_map = {{"2023-01", 0}, {"2023-05", 1}}
 
 void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* nodes,
                    const httplib::Request& req, httplib::Response& res) {
-  using json = nlohmann::json;
   static std::mutex mu;
   std::lock_guard<std::mutex> lock(mu);
 

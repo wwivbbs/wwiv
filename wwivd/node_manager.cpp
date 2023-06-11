@@ -123,7 +123,7 @@ bool NodeManager::update_nodes() {
 std::vector<NodeStatus> NodeManager::nodes() const {
   std::lock_guard<std::mutex> lock(mu_);
   std::vector<NodeStatus> v;
-  for (const auto n : nodes_) {
+  for (const auto& n : nodes_) {
     v.emplace_back(n.second);
   }
 

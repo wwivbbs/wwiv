@@ -58,7 +58,7 @@ std::filesystem::path CreateFullPathToPrintWithCols(const std::filesystem::path&
   const std::regex pieces_regex(fmt::format("{}\\.(\\d+)\\{}", filename.stem().string(), ext.string()));
   std::smatch pieces_match;
   std::map<int, std::filesystem::path> col_fn_map;
-  for (const auto f : std::filesystem::directory_iterator(dir)) {
+  for (const auto& f : std::filesystem::directory_iterator(dir)) {
     auto fname = f.path().filename().string();
     if (std::regex_match(fname, pieces_match, pieces_regex)) {
       col_fn_map[wwiv::strings::to_number<int>(pieces_match[1].str())] = f.path();
