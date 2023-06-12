@@ -145,9 +145,9 @@ std::optional<std::string> Type2Text::readfile(const messagerec& msg) {
     current_section = gat[current_section];
   }
 
-  const auto last_cz = out.find_last_of(CZ);
-  const auto last_block_start = out.length() - MSG_BLOCK_SIZE;
-  if (last_cz != std::string::npos && last_block_start >= 0 && last_cz > last_block_start) {
+  const long last_cz = out.find_last_of(CZ);
+  const long last_block_start = out.length() - MSG_BLOCK_SIZE;
+  if (last_cz >= 0 && last_block_start >= 0 && last_cz > last_block_start) {
     // last block has a Control-Z in it.  Make sure we add a 0 after it.
     out.resize(last_cz);
   }

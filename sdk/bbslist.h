@@ -34,6 +34,7 @@ class BbsListNet {
    static BbsListNet ReadBbsDataNet(const std::filesystem::path& network_dir);
   // VisibleForTesting
   BbsListNet(std::initializer_list<net_system_list_rec> l);
+  BbsListNet(const wwiv::sdk::BbsListNet&) = default;
   virtual ~BbsListNet();
   [[nodiscard]] std::optional<net_system_list_rec> node_config_for(int node) const;
   BbsListNet& operator=(const BbsListNet& rhs) { node_config_ = rhs.node_config_; return *this; }

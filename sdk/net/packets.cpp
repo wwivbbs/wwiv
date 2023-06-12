@@ -98,10 +98,10 @@ std::tuple<NetPacket, ReadNetPacketResponse> read_packet(File& f, bool process_d
     f.Read(&packet.list[0], sizeof(uint16_t) * packet.nh.list_len);
   }
 
-  if (packet.nh.length > 0) {
+  if (packet.nh.length != 0) {
     const auto length = packet.nh.length;
 
-    if (length > static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) || length < 0) {
+    if (length > static_cast<uint32_t>(std::numeric_limits<int32_t>::max())) {
       LOG(INFO) << "error reading header, got length too big (underflow?): " << length;
       return std::make_tuple(packet, ReadNetPacketResponse::ERROR);
     }
