@@ -25,6 +25,7 @@
 #include "core/strings.h"
 #include "core/cereal_utils.h"
 #include <cassert>
+#include <optional>
 #include <string>
 
 using namespace wwiv::core;
@@ -104,27 +105,32 @@ static script_data_t to_script_data(const mb_value_t& v) {
 
 enum class wwiv_data_scope_t { global, user };
 
+static std::filesystem::path DataFileName(const BasicScriptState* ud, wwiv_data_scope_t scope) {
+  const auto module_name = ToStringLowerCase(ud->module);
+  if (scope == wwiv_data_scope_t::global) {
+    return FilePath(ud->datadir, StrCat(module_name, ".script.json"));
+  }
+  const auto fn =
+      fmt::format("{}.user.{}.script.json", module_name, ud->ctx->session_context().user_num());
+  return FilePath(ud->datadir, fn);
+}
+
+
 static bool SaveData(const BasicScriptState* ud,
                      wwiv_data_scope_t scope, const std::vector<script_data_t>& data) {
-  const auto& datadir = ud->datadir;
-  const auto& basename = ud->module;
-  const auto usernum = ud->ctx->session_context().user_num();
-  const auto base = scope == wwiv_data_scope_t::global ? basename : fmt::format("{}.user.{}", basename, usernum);
-  const auto path = FilePath(datadir, StrCat(base, ".script.json"));
+  const auto path = DataFileName(ud, scope);
   JsonFile json(path, "data", data);
   return json.Save();
 }
 
-static std::vector<script_data_t> LoadData(const BasicScriptState* ud,
-                                           wwiv_data_scope_t scope) {
+static std::optional<std::vector<script_data_t>> LoadData(const BasicScriptState* ud,
+                                                          wwiv_data_scope_t scope) {
   std::vector<script_data_t> data;
-  const auto& datadir = ud->datadir;
-  const auto& basename = ud->module;
-  const auto usernum = ud->ctx->session_context().user_num();
-  const auto base = scope == wwiv_data_scope_t::global ? basename : fmt::format("{}.user.{}", basename, usernum);
-  const auto path = FilePath(datadir, StrCat(base, ".script.json"));
+  const auto path = DataFileName(ud, scope);
   JsonFile json(path, "data", data);
-  json.Load();
+  if (!json.Load()) {
+    return std::nullopt;
+  }
   return data;
 }
 
@@ -201,13 +207,14 @@ bool RegisterNamespaceData(mb_interpreter_t* basi) {
 
       auto current_count = 0;
       mb_check(mb_count_coll(bas, l, arg, &current_count));
-      auto data = LoadData(sd, scope);
-      for (const auto& d : data) {
-        const auto val = to_mb_value(d);
-        const auto idx = wwiv_mb_make_int(current_count++);
-        const auto ret = mb_set_coll(bas, l, arg, idx, val);
-        if (ret != MB_FUNC_OK) {
-          sd->out->outstr("[oops] ");
+      if (auto data = LoadData(sd, scope)) {
+        for (const auto& d : data.value()) {
+          const auto val = to_mb_value(d);
+          const auto idx = wwiv_mb_make_int(current_count++);
+          const auto ret = mb_set_coll(bas, l, arg, idx, val);
+          if (ret != MB_FUNC_OK) {
+            sd->out->outstr("[oops] ");
+          }
         }
       }
     }
