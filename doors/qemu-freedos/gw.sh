@@ -2,7 +2,7 @@
 #
 # Sample script to call global war.
 #
-# Usage: gw.sh INST_NUM INST_DIR
+# Usage: gw.sh INST_NUM INST_DIR SOCKET_PORT
 #
 # Configuration in WWIV:
 #
