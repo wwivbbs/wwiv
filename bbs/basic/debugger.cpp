@@ -356,7 +356,7 @@ static std::string to_string(struct mb_interpreter_t* bas, void** ast, mb_value_
     return fmt::format("[{}]", result);
   } break;
   default:
-    return fmt::format("$$$ UNKNOWN VALUE FROM TYPE: {}$$", v.type);
+    return fmt::format("$$$ UNKNOWN VALUE FROM TYPE: {}$$", static_cast<int>(v.type));
   }
 }
 

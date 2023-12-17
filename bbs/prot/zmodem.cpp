@@ -78,7 +78,7 @@ int ZDataReceived(ZModem* info, int crcGood);
 int ZmodemRcv(u_char* str, int len, ZModem* info) {
   int err;
 
-  zmodemlog("ZmodemRcv: [{}], len={}; InputState={}\n", sname(info), len, info->InputState);
+  zmodemlog("ZmodemRcv: [{}], len={}; InputState={}\n", sname(info), len, static_cast<int>(info->InputState));
   info->rcvlen = len;
 
   while (--info->rcvlen >= 0) {

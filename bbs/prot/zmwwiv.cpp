@@ -200,7 +200,7 @@ int doIO(ZModem* info) {
   while (!done) {
     const auto tThen = time(nullptr);
     if (info->timeout > 0) {
-      zmodemlog("doIO: [{}] [timeout: {}] [state: {}]\n", tThen, info->timeout, info->state);
+      zmodemlog("doIO: [{}] [timeout: {}] [state: {}]\n", tThen, info->timeout, sname2(info->state));
     }
     // Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
     // performance < 1k/second vs. 8-9k/second locally
@@ -237,7 +237,7 @@ int doIO(ZModem* info) {
       // zmodemlog("ZmodemTimeout State [{}] [done:{}]\n", sname(info), done);
     } else {
       const int len = bout.remoteIO()->read(reinterpret_cast<char*>(buffer), ZMODEM_RECEIVE_BUFFER_SIZE);
-      zmodemlog("ZmodemRcv Before [{}:{}] [{} chars] [done: {}]\n", sname(info), info->state, len, done);
+      zmodemlog("ZmodemRcv Before [{}:{}] [{} chars] [done: {}]\n", sname(info), sname2(info->state), len, done);
       done = ZmodemRcv(buffer, len, info);
       //zmodemlog("ZmodemRcv After [{}] [{} chars] [done: {}]\n", sname(info), len, done);
     }
