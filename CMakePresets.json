@@ -1,0 +1,35 @@
+{
+    "version": 4,
+    "configurePresets": [
+        {
+            "name": "windows-default",
+            "displayName": "Windows",
+            "description": "Sets Ninja generator, compilers, x64 architecture, build and install directory, debug build type",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/_build",
+            "architecture": {
+                "value": "x86",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/install"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": [
+                        "Windows"
+                    ]
+                }
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "windows-default",
+            "displayName": "Windows Build",
+            "configurePreset": "windows-default",
+            "description": "Default Windows debug build (MSVC)"
+        }
+    ]
+}

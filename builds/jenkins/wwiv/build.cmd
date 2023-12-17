@@ -13,64 +13,37 @@
 @rem **************************************************************************
 
 setlocal
-@echo off
+rem echo off
 
 del wwiv-*.zip
 
-if /I "%LABEL%"=="win-x86" (
-	@echo "Setting x86 (32-bit) Architecture"
-	set WWIV_ARCH=x86
-)
-if /I "%LABEL%"=="win-x64" (
-	@echo "Setting x64 (64-bit) Architecture"
-	set WWIV_ARCH=x64
-)
-set WWIV_DISTRO=%LABEL%
-
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
-set WWIV_RELEASE=5.9.0
-set WWIV_FULL_RELEASE=%WWIV_RELEASE%.%BUILD_NUMBER%
-set WWIV_RELEASE_ARCHIVE_FILE=wwiv-%WWIV_DISTRO%-%WWIV_FULL_RELEASE%.zip
-set CMAKE_BINARY_DIR=%WORKSPACE%\_build
-set WWIV_RELEASE_DIR=%CMAKE_BINARY_DIR%\release
-
-@rem ===============================================================================
-
-call %VCVARS_ALL% %WWIV_ARCH%
 
 @echo =============================================================================
-@echo Workspace:            %WORKSPACE% 
-@echo Label:                %LABEL%
-@echo WWIV_ARCHitecture:    %WWIV_ARCH%
-@echo WWIV_DISTRO:          %WWIV_DISTRO%
-@echo WWIV Release:         %WWIV_RELEASE%        
-@echo Build Number:         %BUILD_NUMBER%
-@echo WWIV CMake Root:      %CMAKE_BINARY_DIR%
-@echo WWIV_ARCHive:         %WWIV_RELEASE_ARCHIVE_FILE%
-@echo Release Dir:          %WWIV_RELEASE_DIR%
-@echo Visual Studio Shell:  %VCVARS_ALL%
-@echo WindowsSdkVerBinPath  %WindowsSdkVerBinPath%
-@echo WindowsLibPath        %WindowsLibPath%
-@echo INCLUDE               %INCLUDE%
+@echo Workspace:                 %WORKSPACE% 
+@echo WWIV_ARCHitecture:         %WWIV_ARCH%
+@echo WWIV_DISTRO:               %WWIV_DISTRO%
+@echo WWIV Release:              %WWIV_RELEASE%        
+@echo Build Number:              %BUILD_NUMBER%
+@echo CMAKE_BINARY_DIR:          %CMAKE_BINARY_DIR%
+@echo WWIV_RELEASE_ARCHIVE_FILE: %WWIV_RELEASE_ARCHIVE_FILE%
+@echo Release Dir:               %WWIV_RELEASE_DIR%
+@echo Visual Studio Shell:       %VCVARS_ALL%
+@echo WindowsSdkVerBinPath       %WindowsSdkVerBinPath%
+@echo WindowsLibPath             %WindowsLibPath%
+@echo INCLUDE                    %INCLUDE%
 @echo =============================================================================
 
-mkdir %CMAKE_BINARY_DIR%
-del %CMAKE_BINARY_DIR%\CMakeCache.txt
-rmdir /s/q %CMAKE_BINARY_DIR%\CMakeFiles
-rmdir /s/q %CMAKE_BINARY_DIR%\Testing
+mkdir "%CMAKE_BINARY_DIR%"
 
-cd %WORKSPACE%
-mkdir %WWIV_RELEASE_DIR%
+cd "%WORKSPACE%"
+mkdir "%WWIV_RELEASE_DIR%"
 del /q %WWIV_RELEASE_DIR%
 del /q wwiv-*.zip
 del /q wwiv-*.exe
 
-echo "Updating vcpkg"
-call .\vcpkg\bootstrap-vcpkg.bat
-
-
 echo * Building WWIV
-cd %CMAKE_BINARY_DIR%
+cd "%CMAKE_BINARY_DIR%"
 cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ^
     -DWWIV_RELEASE=%WWIV_RELEASE% ^
     -DWWIV_ARCH=%WWIV_ARCH%  ^
@@ -78,8 +51,8 @@ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ^
     -DWWIV_DISTRO=%WWIV_DISTRO% ^
     %WORKSPACE% || exit /b
 
-rem echo "Copy CL32.DLL so tests can use it in post-config"
-rem copy /y/v %WORKSPACE%\install\platform\win32\cl32.dll %CMAKE_BINARY_DIR%
+echo "Copy CL32.DLL so tests can use it in post-config"
+copy /y/v %WORKSPACE%\install\platform\win32\cl32.dll "%CMAKE_BINARY_DIR%"
 
 cmake --build . --config Release || exit /b
 
@@ -92,10 +65,10 @@ echo * Creating release Archive: %WWIV_RELEASE_ARCHIVE_FILE%
 cpack -G ZIP || exit /b 
 
 cd %WORKSPACE%
-copy /y/v %CMAKE_BINARY_DIR%\%WWIV_RELEASE_ARCHIVE_FILE% %WORKSPACE%\%WWIV_RELEASE_ARCHIVE_FILE%
+copy /y/v "%CMAKE_BINARY_DIR%\%WWIV_RELEASE_ARCHIVE_FILE%" "%WORKSPACE%\%WWIV_RELEASE_ARCHIVE_FILE%"
 
 echo **** SUCCESS ****
-echo ** Archive File: %WORKSPACE%\%WWIV_RELEASE_ARCHIVE_FILE%
+echo ** Archive File: "%WORKSPACE%\%WWIV_RELEASE_ARCHIVE_FILE%"
 echo ** Archive contents:
 %ZIP_EXE% l %WORKSPACE%\%WWIV_RELEASE_ARCHIVE_FILE%
 endlocal

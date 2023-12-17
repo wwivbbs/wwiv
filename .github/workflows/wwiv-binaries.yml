@@ -1,0 +1,152 @@
+name: WWIV 5.9
+run-name: CI build 🚀
+on: [push]
+
+env:
+    CMAKE_BIN: cmake
+    CTEST_BIN: ctest
+    CPACK_BIN: cpack
+    WORKSPACE: ${{ github.workspace }}
+    WWIV_RELEASE: 5.9.0
+    WWIV_RELEASE_LABEL: wwiv59
+    WWIV_CI_LABEL: wwiv59_ci_latest
+    BUILD_NUMBER: 8675309
+
+jobs:
+  wwiv-build-number:
+    runs-on: ubuntu-latest
+    outputs:
+      build_number: ${{ steps.buildnumber.outputs.build_number }}
+    steps:
+      - name: Checkout, Tag and Build Number
+        id: buildnumber
+        uses: onyxmueller/build-tag-number@v1
+        with:
+          token: ${{secrets.github_token}}
+
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
+      - name: Tag the latet commit repository with tag ${{ env.WWIV_CI_LABEL }}
+        id: tag
+        run: |
+          echo "tag=${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
+          git config --global user.email "gh-action@wwivbbs.org"
+          git config --global user.name "GitHub Action"
+          git tag -f -a "${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" -m "Moved CI tag to commit: " ${GITHUB_SHA}
+          git push origin ${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}
+
+  create_release:
+    name: Create Release
+    needs: wwiv-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ env.WWIV_CI_LABEL }}
+          draft: false
+          prerelease: false
+          generate_release_notes: false   
+          tag_name: "${{ env.WWIV_CI_LABEL }}_${{ needs.wwiv-build-number.outputs.build_number }}"
+
+  wwiv-release:
+    needs: create_release
+    strategy:
+        matrix:
+          os: [windows-latest, ubuntu-20.04, ubuntu-22.04]
+          include:
+            - os: ubuntu-20.04 
+              lib_suffix: so
+              archive_suffix: tar.gz
+              wwiv_distro: linux-ubuntu2004 
+            - os: ubuntu-22.04
+              lib_suffix: so
+              wwiv_distro: linux-ubuntu2204 
+              archive_suffix: tar.gz
+            - os: windows-latest
+              lib_suffix: dll
+              wwiv_distro: win-x86 
+              archive_suffix: zip
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Check it out again since now it's a new job.
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+      - name: Setup a new vcpkg
+        uses: lukka/run-vcpkg@v11   # Always specify the specific _version_ of the
+
+      - name: Set Build Number (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: echo BUILD_NUMBER=${{needs.wwiv-build-number.outputs.build_number}} >> "$env:GITHUB_ENV"
+
+      - name: Set Build Number (Linux)
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: echo BUILD_NUMBER=${{needs.wwiv-build-number.outputs.build_number}} >> "$GITHUB_ENV"
+
+      - name: Set Visual Studio Environment Vars
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          $vcbase=$(vswhere -legacy -latest -property installationPath)
+          echo VCVARS_ALL="${vcbase}\VC\Auxiliary\Build\vcvarsall.bat" >> "$env:GITHUB_ENV"
+
+      - name: Set Environment Vars
+        shell: bash
+        run: |
+          echo WWIV_DISTRO=${{ matrix.wwiv_distro }} >> "$GITHUB_ENV"
+          echo WWIV_RELEASE=${{ env.WWIV_RELEASE }} >> "$GITHUB_ENV"
+          echo WWIV_FULL_RELEASE="${{ env.WWIV_RELEASE }}.${{ env.BUILD_NUMBER }}" >> "$GITHUB_ENV"
+          echo WWIV_RELEASE_ARCHIVE_FILE=wwiv-${{ matrix.wwiv_distro }}-${{ env.WWIV_RELEASE }}.${{ env.BUILD_NUMBER }}.${{ matrix.archive_suffix }} >> "$GITHUB_ENV"
+          echo CMAKE_BINARY_DIR='${{ github.workspace }}/_build' >> "$GITHUB_ENV"
+          echo WWIV_RELEASE_DIR='${{ github.workspace }}/_build/release' >> "$GITHUB_ENV"
+
+
+      - name: Check Environment
+        run: |
+          echo "WWIV_RELEASE_ARCHIVE_FILE: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}"
+          echo "WWIV_DISTRO: ${{ env.WWIV_DISTRO }}"
+
+      - name: Set up Visual Studio shell
+        uses: egor-tensin/vs-shell@v2
+        if: ${{ matrix.os == 'windows-latest' }}
+        with:
+          arch: x86
+
+      - name: Build
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: cmd
+        run: builds\jenkins\wwiv\build.cmd
+        env:
+          WWIV_ARCH: x86
+          WWIV_RELEASE: 5.9.0
+
+      - name: Build
+        if: ${{ matrix.os != 'windows-latest' }}
+        shell: bash
+        run: builds/jenkins/wwiv/build
+        env:
+          WWIV_ARCH: x86
+          WWIV_RELEASE: 5.9.0
+          
+      - name: Look for output file
+        run: ls ${{ github.workspace }}/${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
+  
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
+          path: ${{ github.workspace }}/${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
+
+      - name: Release to Latest
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.WWIV_CI_LABEL }}
+          files: ${{ github.workspace }}/${{ env.WWIV_RELEASE_ARCHIVE_FILE }}          
