@@ -68,6 +68,12 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
+      # Check it out again since now it's a new job.
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
       - name: Get CMake
         uses: lukka/get-cmake@latest
       - name: Setup a new vcpkg
