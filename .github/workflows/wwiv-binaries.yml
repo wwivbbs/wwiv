@@ -13,7 +13,7 @@ env:
     BUILD_NUMBER: 8675309
 
 jobs:
-  generate_build_number:
+  wwiv-build-number:
     runs-on: ubuntu-latest
     outputs:
       build_number: ${{ steps.buildnumber.outputs.build_number }}
@@ -32,15 +32,15 @@ jobs:
       - name: Tag the latet commit repository with tag ${{ env.WWIV_CI_LABEL }}
         id: tag
         run: |
-          echo "tag=${{ env.WWIV_CI_LABEL }}" >> $GITHUB_OUTPUT
+          echo "tag=${{ env.WWIV_CI_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
           git config --global user.email "gh-action@wwivbbs.org"
           git config --global user.name "GitHub Action"
-          git tag -f -a ${{ env.WWIV_CI_LABEL }} -m "Moved CI tag to commit: " ${GITHUB_SHA}
+          git tag -f -a "${{ env.WWIV_CI_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" -m "Moved CI tag to commit: " ${GITHUB_SHA}
           git push origin ${{ env.WWIV_CI_LABEL }}
 
   create_release:
     name: Create Release
-    needs: generate_build_number
+    needs: wwiv-build-number
     runs-on: ubuntu-latest
     steps:
       - name: Create Release
@@ -51,7 +51,7 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: false   
-          tag_name: ${{ env.WWIV_CI_LABEL }}
+          tag_name: "${{ env.WWIV_CI_LABEL }}_${{ needs.wwiv-build-number.outputs.build_number }}"
 
   wwiv-release:
     needs: create_release
