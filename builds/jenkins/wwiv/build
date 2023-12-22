@@ -25,6 +25,8 @@ mkdir -p "${WWIV_RELEASE_DIR}"
 
 set -x
 echo "Building binaries"
+export CXX=g++
+export CC=gcc
 pushd ${CMAKE_BINARY_DIR}
 ${CMAKE_BIN} -G "Ninja" \
       -DCMAKE_CXX_COMPILER=g++ \
