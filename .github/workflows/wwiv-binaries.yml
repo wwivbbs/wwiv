@@ -36,7 +36,7 @@ jobs:
           git config --global user.email "gh-action@wwivbbs.org"
           git config --global user.name "GitHub Action"
           git tag -f -a ${{ env.WWIV_CI_LABEL }} -m "Moved CI tag to commit: " ${GITHUB_SHA}
-          git push origin $TAG
+          git push origin ${{ env.WWIV_CI_LABEL }}
 
   create_release:
     name: Create Release
