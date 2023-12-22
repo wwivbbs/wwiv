@@ -21,10 +21,9 @@ option(WWIV_USE_PIPES "Enable Named Pipes support for WWIV." ON)
 
 set(WWIV_RELEASE "5.9.0" CACHE STRING "WWIV Release Major Version to 3 digits")
 set(WWIV_BUILD_NUMBER "development" CACHE STRING "WWIV Build Number")
-set(WWIV_FULL_RELEASE "${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}" CACHE INTERNAL "WWIV Release Version, 4 digits with build number as 4th")
 set(WWIV_ARCH "x86" CACHE STRING "x86 or x64")
 set(WWIV_DISTRO "unknown" CACHE STRING "WWIV OS Distribution e.g. (win-x86 | linux-debian10) ")
-set(CPACK_PACKAGE_FILE_NAME "wwiv-${WWIV_DISTRO}-${WWIV_FULL_RELEASE}")
+set(CPACK_PACKAGE_FILE_NAME "wwiv-${WWIV_DISTRO}-${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}")
 
 set(WWIV_INSTALL_SRC "${CMAKE_SOURCE_DIR}/install" CACHE STRING "By default this is: ${CMAKE_SOURCE_DIR}/install")
 set(WWIV_RELEASE_DIR "${CMAKE_BINARY_DIR}/release" CACHE STRING "By default this is: ${CMAKE_BINARY_DIR}/release")
@@ -60,7 +59,7 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "")
 include(CPack)
 
 
-message(STATUS "WWIV Build Number: ${WWIV_FULL_RELEASE}")
+message(STATUS "WWIV Build Number: ${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}")
 
 
 macro(ENSURE_MINIMUM_COMPILER_VERSIONS)

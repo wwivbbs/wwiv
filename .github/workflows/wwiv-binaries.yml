@@ -83,8 +83,7 @@ jobs:
     env:
       BUILD_NUMBER: ${{needs.wwiv-build-number.outputs.build_number}}
       WWIV_DISTRO: ${{ matrix.wwiv_distro }}
-      WWIV_FULL_RELEASE: "${{ vars.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}"
-      WWIV_RELEASE_ARCHIVE_FILE: ${{ matrix.wwiv_distro }}-${{ vars.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}.${{ matrix.archive_suffix }}
+      WWIV_RELEASE_ARCHIVE_FILE: wwiv-${{ matrix.wwiv_distro }}-${{ vars.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}.${{ matrix.archive_suffix }}
       CMAKE_BINARY_DIR: '${{ github.workspace }}/_build'
       WWIV_RELEASE_DIR: '${{ github.workspace }}/_build/release'
       
@@ -124,7 +123,6 @@ jobs:
           # echo BUILD_NUMBER=${{needs.wwiv-build-number.outputs.build_number}} >> "$GITHUB_ENV"
           # echo WWIV_DISTRO=${{ matrix.wwiv_distro }} >> "$GITHUB_ENV"
           # echo WWIV_RELEASE=${{ env.WWIV_RELEASE }} >> "$GITHUB_ENV"
-          # echo WWIV_FULL_RELEASE="${{ env.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}" >> "$GITHUB_ENV"
           # echo WWIV_RELEASE_ARCHIVE_FILE=wwiv-${{ matrix.wwiv_distro }}-${{ vars.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}.${{ matrix.archive_suffix }} >> "$GITHUB_ENV"
           # echo CMAKE_BINARY_DIR='${{ github.workspace }}/_build' >> "$GITHUB_ENV"
           # echo WWIV_RELEASE_DIR='${{ github.workspace }}/_build/release' >> "$GITHUB_ENV"

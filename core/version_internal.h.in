@@ -20,7 +20,6 @@
 
 # cmakedefine WWIV_RELEASE "@WWIV_RELEASE@"
 # cmakedefine WWIV_BUILD_NUMBER "@WWIV_BUILD_NUMBER@"
-# cmakedefine WWIV_FULL_RELEASE "@WWIV_FULL_RELEASE@"
 
 #define INTERNAL_BUILD_DATE __DATE__ ", " __TIME__;
 
