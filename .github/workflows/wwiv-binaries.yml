@@ -25,6 +25,13 @@ jobs:
         with:
           token: ${{secrets.github_token}}
 
+      - name: Dump Vars
+        env:
+          VARS: ${{ toJson(vars) }}
+        shell: bash
+        run: "echo vars context: $VARS"
+  
+          
       - name: Check out repository code
         uses: actions/checkout@v4
         with:
@@ -83,7 +90,7 @@ jobs:
       BUILD_NUMBER: ${{needs.wwiv-build-number.outputs.build_number}}
       WWIV_DISTRO: ${{ matrix.wwiv_distro }}
       WWIV_FULL_RELEASE: "${{ vars.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}"
-      WWIV_RELEASE_ARCHIVE_FILE=wwiv: ${{ matrix.wwiv_distro }}-${{ vars.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}.${{ matrix.archive_suffix }}
+      WWIV_RELEASE_ARCHIVE_FILE: ${{ matrix.wwiv_distro }}-${{ vars.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}.${{ matrix.archive_suffix }}
       CMAKE_BINARY_DIR: '${{ github.workspace }}/_build'
       WWIV_RELEASE_DIR: '${{ github.workspace }}/_build/release'
       
