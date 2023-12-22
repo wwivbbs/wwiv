@@ -73,7 +73,7 @@ jobs:
               lib_suffix: dll
               wwiv_distro: win-x86 
               archive_suffix: zip
-
+        fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
       # Check it out again since now it's a new job.
