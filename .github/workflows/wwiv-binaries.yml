@@ -47,10 +47,10 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          name: ${{ env.WWIV_CI_LABEL }}
+          name: "${{ env.WWIV_CI_LABEL }}_${{ needs.wwiv-build-number.outputs.build_number }}"
           draft: false
-          prerelease: false
-          generate_release_notes: false   
+          prerelease: true
+          generate_release_notes: true   
           tag_name: "${{ env.WWIV_CI_LABEL }}_${{ needs.wwiv-build-number.outputs.build_number }}"
 
   wwiv-release:
@@ -140,5 +140,5 @@ jobs:
       - name: Release to Latest
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.WWIV_CI_LABEL }}
+          tag_name: "${{ env.WWIV_CI_LABEL }}_${{ needs.wwiv-build-number.outputs.build_number }}"
           files: ${{ github.workspace }}/${{ env.WWIV_RELEASE_ARCHIVE_FILE }}          
