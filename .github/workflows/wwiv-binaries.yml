@@ -28,8 +28,12 @@ jobs:
       - name: Dump Vars
         env:
           VARS: ${{ toJson(vars) }}
+          RELEASE: ${{ vars.WWIV_RELEASE }}
         shell: bash
-        run: "echo vars context: $VARS"
+        run: |
+          echo "vars context: $VARS"
+          echo "explicit vars usage: ${{ vars.WWIV_RELEASE }}"
+          echo "Using in env: $RELEASE"
   
           
       - name: Check out repository code
