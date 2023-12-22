@@ -59,12 +59,15 @@ jobs:
       - wwiv-build-number
     strategy:
         matrix:
-          os: [windows-latest, ubuntu-20.04, ubuntu-22.04]
+          os: 
+            - windows-latest
+#            - ubuntu-20.04
+            - ubuntu-22.04
           include:
-            - os: ubuntu-20.04 
-              lib_suffix: so
-              archive_suffix: tar.gz
-              wwiv_distro: linux-ubuntu2004 
+            # - os: ubuntu-20.04 
+            #   lib_suffix: so
+            #   archive_suffix: tar.gz
+            #   wwiv_distro: linux-ubuntu2004 
             - os: ubuntu-22.04
               lib_suffix: so
               wwiv_distro: linux-ubuntu2204 
@@ -98,9 +101,9 @@ jobs:
         run: |
           echo BUILD_NUMBER=${{needs.wwiv-build-number.outputs.build_number}} >> "$GITHUB_ENV"
           echo WWIV_DISTRO=${{ matrix.wwiv_distro }} >> "$GITHUB_ENV"
-          echo WWIV_RELEASE=${{ env.WWIV_RELEASE }} >> "$GITHUB_ENV"
-          echo WWIV_FULL_RELEASE="${{ env.WWIV_RELEASE }}.${{ env.BUILD_NUMBER }}" >> "$GITHUB_ENV"
-          echo WWIV_RELEASE_ARCHIVE_FILE=wwiv-${{ matrix.wwiv_distro }}-${{ env.WWIV_RELEASE }}.${{ env.BUILD_NUMBER }}.${{ matrix.archive_suffix }} >> "$GITHUB_ENV"
+          # echo WWIV_RELEASE=${{ env.WWIV_RELEASE }} >> "$GITHUB_ENV"
+          echo WWIV_FULL_RELEASE="${{ env.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}" >> "$GITHUB_ENV"
+          echo WWIV_RELEASE_ARCHIVE_FILE=wwiv-${{ matrix.wwiv_distro }}-${{ env.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}.${{ matrix.archive_suffix }} >> "$GITHUB_ENV"
           echo CMAKE_BINARY_DIR='${{ github.workspace }}/_build' >> "$GITHUB_ENV"
           echo WWIV_RELEASE_DIR='${{ github.workspace }}/_build/release' >> "$GITHUB_ENV"
 
