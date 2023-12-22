@@ -6,6 +6,10 @@
 #   BUILD_NUMBER - Jenkins Build number
 #   WWIV_DISTRO - Linux build label (i.e. centos7)
 
+# Ensure we have CC and CXX set
+export CXX=$(which g++)
+export CC=$(which gcc)
+
 echo "============================================================================="
 echo "Workspace:        ${WORKSPACE}"
 echo "CMake:            ${CMAKE_BIN}; Test: ${CTEST_BIN}; Pack: ${CPACK_BIN}"
@@ -14,7 +18,9 @@ echo "Release Dir:      ${WWIV_RELEASE_DIR}"
 echo "WWIV Release:     ${WWIV_FULL_RELEASE}"
 echo "Archive:          ${WWIV_RELEASE_ARCHIVE_FILE}"
 echo "WWIV_DISTRO:      ${WWIV_DISTRO}"
-echo "GCC:              $(gcc --version | head -1)"
+echo "CC:               ${CC}"
+echo "CXX:              ${CXX}"
+echo "GCC version:      $(${CC} --version | head -1)"
 echo "============================================================================="
 
 # Delete any previous release archives before starting the build with set -e
@@ -24,9 +30,8 @@ mkdir -p "${CMAKE_BINARY_DIR}"
 mkdir -p "${WWIV_RELEASE_DIR}"
 
 set -x
+set -e
 echo "Building binaries"
-export CXX=g++
-export CC=gcc
 pushd ${CMAKE_BINARY_DIR}
 ${CMAKE_BIN} -G "Ninja" \
       -DCMAKE_CXX_COMPILER=g++ \
