@@ -50,7 +50,8 @@ jobs:
           name: ${{ env.WWIV_CI_LABEL }}
           draft: false
           prerelease: false
-          generate_release_notes: false          
+          generate_release_notes: false   
+          tag_name: ${{ env.WWIV_CI_LABEL }}
 
   wwiv-release:
     needs: create_release
