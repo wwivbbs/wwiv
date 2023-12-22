@@ -4,7 +4,7 @@
 # Required Variables:
 #   WORKSPACE - Jenkins workspace
 #   BUILD_NUMBER - Jenkins Build number
-#   label - Linux  build label (i.e. centos7)
+#   WWIV_DISTRO - Linux build label (i.e. centos7)
 
 echo "============================================================================="
 echo "Workspace:        ${WORKSPACE}"

@@ -140,7 +140,7 @@ macro(set_max_warnings target)
     target_compile_options("${target}" PRIVATE /W4)
   endif()
 endmacro()
-
+DO
 MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
   STRING(COMPARE EQUAL "${${PROJECT_NAME}_SOURCE_DIR}"
     "${${PROJECT_NAME}_BINARY_DIR}" insource)

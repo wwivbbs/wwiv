@@ -1,5 +1,5 @@
 name: WWIV 5.9
-run-name: CI build 🚀
+run-name: WWIV 5.9 CI
 on: [push]
 
 env:
@@ -87,15 +87,7 @@ jobs:
       - name: Setup a new vcpkg
         uses: lukka/run-vcpkg@v11   # Always specify the specific _version_ of the
 
-      - name: Set Build Number (Windows)
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: echo BUILD_NUMBER=${{needs.wwiv-build-number.outputs.build_number}} >> "$env:GITHUB_ENV"
-
-      - name: Set Build Number (Linux)
-        if: ${{ matrix.os != 'windows-latest' }}
-        run: echo BUILD_NUMBER=${{needs.wwiv-build-number.outputs.build_number}} >> "$GITHUB_ENV"
-
-      - name: Set Visual Studio Environment Vars
+      - name: Locate Visual Studio (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
           $vcbase=$(vswhere -legacy -latest -property installationPath)
@@ -104,6 +96,7 @@ jobs:
       - name: Set Environment Vars
         shell: bash
         run: |
+          echo BUILD_NUMBER=${{needs.wwiv-build-number.outputs.build_number}} >> "$GITHUB_ENV"
           echo WWIV_DISTRO=${{ matrix.wwiv_distro }} >> "$GITHUB_ENV"
           echo WWIV_RELEASE=${{ env.WWIV_RELEASE }} >> "$GITHUB_ENV"
           echo WWIV_FULL_RELEASE="${{ env.WWIV_RELEASE }}.${{ env.BUILD_NUMBER }}" >> "$GITHUB_ENV"
@@ -111,13 +104,7 @@ jobs:
           echo CMAKE_BINARY_DIR='${{ github.workspace }}/_build' >> "$GITHUB_ENV"
           echo WWIV_RELEASE_DIR='${{ github.workspace }}/_build/release' >> "$GITHUB_ENV"
 
-
-      - name: Check Environment
-        run: |
-          echo "WWIV_RELEASE_ARCHIVE_FILE: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}"
-          echo "WWIV_DISTRO: ${{ env.WWIV_DISTRO }}"
-
-      - name: Set up Visual Studio shell
+      - name: Set up Visual Studio Env
         uses: egor-tensin/vs-shell@v2
         if: ${{ matrix.os == 'windows-latest' }}
         with:

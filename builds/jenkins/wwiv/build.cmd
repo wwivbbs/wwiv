@@ -13,10 +13,6 @@
 @rem **************************************************************************
 
 setlocal
-rem echo off
-
-del wwiv-*.zip
-
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 
 @echo =============================================================================
@@ -38,9 +34,6 @@ mkdir "%CMAKE_BINARY_DIR%"
 
 cd "%WORKSPACE%"
 mkdir "%WWIV_RELEASE_DIR%"
-del /q %WWIV_RELEASE_DIR%
-del /q wwiv-*.zip
-del /q wwiv-*.exe
 
 echo * Building WWIV
 cd "%CMAKE_BINARY_DIR%"
