@@ -32,11 +32,11 @@ jobs:
       - name: Tag the latet commit repository with tag ${{ env.WWIV_CI_LABEL }}
         id: tag
         run: |
-          echo "tag=${{ env.WWIV_CI_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
+          echo "tag=${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
           git config --global user.email "gh-action@wwivbbs.org"
           git config --global user.name "GitHub Action"
-          git tag -f -a "${{ env.WWIV_CI_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" -m "Moved CI tag to commit: " ${GITHUB_SHA}
-          git push origin ${{ env.WWIV_CI_LABEL }}
+          git tag -f -a "${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" -m "Moved CI tag to commit: " ${GITHUB_SHA}
+          git push origin ${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}
 
   create_release:
     name: Create Release
