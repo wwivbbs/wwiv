@@ -14,7 +14,6 @@ env:
 
 jobs:
   wwiv-build-number:
-    environment: WWIV59
     runs-on: ubuntu-latest
     outputs:
       build_number: ${{ steps.buildnumber.outputs.build_number }}
@@ -23,18 +22,7 @@ jobs:
         id: buildnumber
         uses: onyxmueller/build-tag-number@v1
         with:
-          token: ${{secrets.github_token}}
-
-      - name: Dump Vars
-        env:
-          VARS: ${{ toJson(vars) }}
-          RELEASE: ${{ vars.WWIV_RELEASE }}
-        shell: bash
-        run: |
-          echo "vars context: $VARS"
-          echo "explicit vars usage: ${{ vars.WWIV_RELEASE }}"
-          echo "Using in env: $RELEASE"
-  
+          token: ${{secrets.github_token}}  
           
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -90,6 +78,8 @@ jobs:
               archive_suffix: zip
         fail-fast: false
     runs-on: ${{ matrix.os }}
+    # TODO: Update this on new releases
+    environment: WWIV59
     env:
       BUILD_NUMBER: ${{needs.wwiv-build-number.outputs.build_number}}
       WWIV_DISTRO: ${{ matrix.wwiv_distro }}
@@ -99,6 +89,18 @@ jobs:
       WWIV_RELEASE_DIR: '${{ github.workspace }}/_build/release'
       
     steps:
+
+      - name: Dump Vars
+        env:
+          VARS: ${{ toJson(vars) }}
+          RELEASE: ${{ vars.WWIV_RELEASE }}
+        shell: bash
+        run: |
+          echo "vars context: $VARS"
+          echo "explicit vars usage: ${{ vars.WWIV_RELEASE }}"
+          echo "Using in env: $RELEASE"
+
+
       # Check it out again since now it's a new job.
       - name: Check out repository code
         uses: actions/checkout@v4
