@@ -54,7 +54,9 @@ jobs:
           tag_name: "${{ env.WWIV_CI_LABEL }}_${{ needs.wwiv-build-number.outputs.build_number }}"
 
   wwiv-release:
-    needs: create_release
+    needs: 
+      - create_release
+      - wwiv-build-number
     strategy:
         matrix:
           os: [windows-latest, ubuntu-20.04, ubuntu-22.04]
