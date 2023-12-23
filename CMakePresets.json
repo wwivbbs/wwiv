@@ -4,7 +4,7 @@
         {
             "name": "windows-default",
             "displayName": "Windows",
-            "description": "Sets Ninja generator, compilers, x64 architecture, build and install directory, debug build type",
+            "description": "Sets Ninja generator, compilers, x86 architecture, build and install directory, debug build type",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/_build",
             "architecture": {
@@ -22,6 +22,14 @@
                     ]
                 }
             }
+        },
+        {
+            "name": "WWIV",
+            "description": "",
+            "displayName": "",
+            "inherits": [
+                "windows-default"
+            ]
         }
     ],
     "buildPresets": [
