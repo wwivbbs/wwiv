@@ -107,6 +107,7 @@ jobs:
           RELEASE: ${{ vars.WWIV_RELEASE }}
         shell: bash
         run: |
+          echo "WWIV_RELEASE_ARCHIVE_FILE: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}"
           echo "vars context: $VARS"
           echo "explicit vars usage: ${{ vars.WWIV_RELEASE }}"
           echo "Using in env: $RELEASE"
