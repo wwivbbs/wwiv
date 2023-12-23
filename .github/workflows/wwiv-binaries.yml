@@ -43,7 +43,7 @@ jobs:
           echo "WWIV_TAG: ${{ env.WWIV_TAG }}"
           git config --global user.email "gh-action@wwivbbs.org"
           git config --global user.name "GitHub Action"
-          git tag -f -a "${{ env.WWIV_TAG }}" -m "Moved CI tag to commit: " ${GITHUB_SHA}
+          git tag -f -a "${{ env.WWIV_TAG }}" -m "${{ env.WWIV_TAG }} SHA: " ${{ github.sha }}
           git push origin ${{ env.WWIV_TAG }}
 
   create_release:
@@ -108,9 +108,8 @@ jobs:
         shell: bash
         run: |
           echo "WWIV_RELEASE_ARCHIVE_FILE: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}"
-          echo "vars context: $VARS"
+          echo "vars context: ${{ env.VARS }}"
           echo "explicit vars usage: ${{ vars.WWIV_RELEASE }}"
-          echo "Using in env: $RELEASE"
 
 
       # Check it out again since now it's a new job.
