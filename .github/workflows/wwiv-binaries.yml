@@ -49,6 +49,8 @@ jobs:
     name: Create Release
     needs: wwiv-build-number
     runs-on: ubuntu-latest
+    env:
+      WWIV_TAG: ${{needs.wwiv-build-number.outputs.wwiv_tag}}
     steps:
       - name: Create Release
         id: create_release
