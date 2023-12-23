@@ -13,6 +13,7 @@ env:
 
 jobs:
   wwiv-build-number:
+    name: Create Build Number
     runs-on: ubuntu-latest
     outputs:
       build_number: ${{ steps.buildnumber.outputs.build_number }}
@@ -63,6 +64,7 @@ jobs:
           tag_name: "${{ env.WWIV_TAG }}"
 
   wwiv-release:
+    name: Build and Publish
     needs: 
       - create_release
       - wwiv-build-number
