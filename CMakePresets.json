@@ -4,7 +4,7 @@
         {
             "name": "windows-default",
             "displayName": "Windows",
-            "description": "Sets Ninja generator, compilers, x86 architecture, build and install directory, debug build type",
+            "description": "Ninja, x86 debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/_build",
             "architecture": {

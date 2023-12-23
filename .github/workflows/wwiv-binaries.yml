@@ -9,7 +9,6 @@ env:
     WORKSPACE: ${{ github.workspace }}
     WWIV_RELEASE: 5.9.0
     WWIV_RELEASE_LABEL: wwiv59
-    WWIV_CI_LABEL: wwiv59_ci_latest
     BUILD_NUMBER: 8675309
 
 jobs:
@@ -17,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build_number: ${{ steps.buildnumber.outputs.build_number }}
+      wwiv_tag: ${{ steps.generate_tag.outputs.wwiv_tag }}
     steps:
       - name: Checkout, Tag and Build Number
         id: buildnumber
@@ -29,14 +29,21 @@ jobs:
         with:
           submodules: recursive
           
-      - name: Tag the latet commit repository with tag ${{ env.WWIV_CI_LABEL }}
+      - name: Generate Tag Name
+        id: generate_tag
+        shell: bash
+        run: |
+          echo "wwiv_tag=${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
+          echo "WWIV_TAG=${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_ENV
+
+      - name: Tag the latet commit repository with tag ${{ env.WWIV_TAG }}
         id: tag
         run: |
-          echo "tag=${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
+          echo "WWIV_TAG: ${{ env.WWIV_TAG }}"
           git config --global user.email "gh-action@wwivbbs.org"
           git config --global user.name "GitHub Action"
-          git tag -f -a "${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" -m "Moved CI tag to commit: " ${GITHUB_SHA}
-          git push origin ${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}
+          git tag -f -a "${{ env.WWIV_TAG }}" -m "Moved CI tag to commit: " ${GITHUB_SHA}
+          git push origin ${{ env.WWIV_TAG }}
 
   create_release:
     name: Create Release
@@ -47,11 +54,11 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          name: "${{ env.WWIV_CI_LABEL }}_${{ needs.wwiv-build-number.outputs.build_number }}"
+          name: "${{ env.WWIV_TAG }}"
           draft: false
           prerelease: true
           generate_release_notes: true   
-          tag_name: "${{ env.WWIV_CI_LABEL }}_${{ needs.wwiv-build-number.outputs.build_number }}"
+          tag_name: "${{ env.WWIV_TAG }}"
 
   wwiv-release:
     needs: 
@@ -82,6 +89,7 @@ jobs:
     environment: WWIV59
     env:
       BUILD_NUMBER: ${{needs.wwiv-build-number.outputs.build_number}}
+      WWIV_TAG: ${{needs.wwiv-build-number.outputs.wwiv_tag}}
       WWIV_DISTRO: ${{ matrix.wwiv_distro }}
       WWIV_RELEASE_ARCHIVE_FILE: wwiv-${{ matrix.wwiv_distro }}-${{ vars.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}.${{ matrix.archive_suffix }}
       CMAKE_BINARY_DIR: '${{ github.workspace }}/_build'
@@ -117,16 +125,6 @@ jobs:
           $vcbase=$(vswhere -legacy -latest -property installationPath)
           echo VCVARS_ALL="${vcbase}\VC\Auxiliary\Build\vcvarsall.bat" >> "$env:GITHUB_ENV"
 
-      # - name: Set Environment Vars
-      #   shell: bash
-      #   run: |
-          # echo BUILD_NUMBER=${{needs.wwiv-build-number.outputs.build_number}} >> "$GITHUB_ENV"
-          # echo WWIV_DISTRO=${{ matrix.wwiv_distro }} >> "$GITHUB_ENV"
-          # echo WWIV_RELEASE=${{ env.WWIV_RELEASE }} >> "$GITHUB_ENV"
-          # echo WWIV_RELEASE_ARCHIVE_FILE=wwiv-${{ matrix.wwiv_distro }}-${{ vars.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}.${{ matrix.archive_suffix }} >> "$GITHUB_ENV"
-          # echo CMAKE_BINARY_DIR='${{ github.workspace }}/_build' >> "$GITHUB_ENV"
-          # echo WWIV_RELEASE_DIR='${{ github.workspace }}/_build/release' >> "$GITHUB_ENV"
-
       - name: Set up Visual Studio Env
         uses: egor-tensin/vs-shell@v2
         if: ${{ matrix.os == 'windows-latest' }}
@@ -160,5 +158,5 @@ jobs:
       - name: Release to Latest
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: "${{ env.WWIV_CI_LABEL }}_${{ needs.wwiv-build-number.outputs.build_number }}"
+          tag_name: "${{ env.WWIV_TAG }}"
           files: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}          
