@@ -135,13 +135,13 @@ jobs:
           $vcbase=$(vswhere -legacy -latest -property installationPath)
           echo VCVARS_ALL="${vcbase}\VC\Auxiliary\Build\vcvarsall.bat" >> "$env:GITHUB_ENV"
 
-      - name: Set up Visual Studio Env
+      - name: Set up Visual Studio Env (Windows)
         uses: egor-tensin/vs-shell@v2
         if: ${{ matrix.os == 'windows-latest' }}
         with:
           arch: x86
 
-      - name: Build
+      - name: Build (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         shell: cmd
         run: builds\jenkins\wwiv\build.cmd
@@ -149,7 +149,7 @@ jobs:
           WWIV_ARCH: x86
           WWIV_RELEASE: 5.9.0
 
-      - name: Build
+      - name: Build (Linux)
         if: ${{ matrix.os != 'windows-latest' }}
         shell: bash
         run: builds/jenkins/wwiv/build
