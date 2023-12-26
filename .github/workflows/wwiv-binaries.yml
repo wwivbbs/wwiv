@@ -8,7 +8,10 @@ run-name: WWIV 5.9 CI
 # ** IMPORTANT: ONLY allow on push events here since WWIV
 # has some self hosted runners
 
-on: [push]
+on:
+  push:
+    branches: 
+      - main
 
 env:
     CMAKE_BIN: cmake
@@ -23,6 +26,7 @@ env:
 jobs:
   wwiv-build-number:
     name: Create Build Number
+    if: github.repository_owner == 'wwivbbs'
     runs-on: ubuntu-latest
     outputs:
       build_number: ${{ steps.buildnumber.outputs.build_number }}
@@ -181,6 +185,11 @@ jobs:
         env:
           WWIV_ARCH: x86
           WWIV_RELEASE: 5.9.0
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           
       - name: Look for output file
         run: ls ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
