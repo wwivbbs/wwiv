@@ -1,5 +1,13 @@
+# WWIV continuous build script
+# Copyright (C)2023, WWIV Software Services
+#
+
 name: WWIV 5.9
 run-name: WWIV 5.9 CI
+
+# ** IMPORTANT: ONLY allow on push events here since WWIV
+# has some self hosted runners
+
 on: [push]
 
 env:
@@ -9,6 +17,7 @@ env:
     WORKSPACE: ${{ github.workspace }}
     WWIV_RELEASE: 5.9.0
     WWIV_RELEASE_LABEL: wwiv59
+    # TODO - rushfan - we should probably remove this.
     BUILD_NUMBER: 8675309
 
 jobs:
@@ -72,23 +81,34 @@ jobs:
         matrix:
           os: 
             - windows-latest
-#            - ubuntu-20.04
             - ubuntu-22.04
             - debian-11
+            - debian-12
+            # - ubuntu-20.04
           include:
+            # Disabled since it's failing to link with cryptlib for some reason
             # - os: ubuntu-20.04 
             #   lib_suffix: so
             #   archive_suffix: tar.gz
             #   wwiv_distro: linux-ubuntu2004 
+
+            # Run's on the weatherstation private cloud
             - os: debian-11
               lib_suffix: so
-              wwiv_distro: linux-debian11 
+              wwiv_distro: linux-debian11
+              archive_suffix: tar.gz
+            # Run's on the weatherstation private cloud
+            - os: debian-12
+              lib_suffix: so
+              wwiv_distro: linux-debian12
               archive_suffix: tar.gz
 
+            # Github hosted runner
             - os: ubuntu-22.04
               lib_suffix: so
               wwiv_distro: linux-ubuntu2204 
               archive_suffix: tar.gz
+            # Github hosted runner
             - os: windows-latest
               lib_suffix: dll
               wwiv_distro: win-x86 
@@ -110,12 +130,17 @@ jobs:
       - name: Dump Vars
         env:
           VARS: ${{ toJson(vars) }}
+          EVENT: ${{ toJson(github.event) }}
+          REPO: ${{ github.repository }}
           RELEASE: ${{ vars.WWIV_RELEASE }}
         shell: bash
         run: |
           echo "WWIV_RELEASE_ARCHIVE_FILE: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}"
+          echo "release: ${{ env.RELEASE }}"
+          echo "github.repository_owner: ${{ github.repository_owner }}"
+          echo "github.repo: ${{ env.REPO }}"
+          echo "github.event context: ${{ env.EVENT }}"
           echo "vars context: ${{ env.VARS }}"
-          echo "explicit vars usage: ${{ vars.WWIV_RELEASE }}"
 
 
       # Check it out again since now it's a new job.
