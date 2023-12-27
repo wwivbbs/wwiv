@@ -129,6 +129,10 @@ static void list_area_tags(const std::vector<wwiv::sdk::files::dir_area_t>& area
   }
 }
 
+// I don't think there is a real max length, but we'll pick something
+// File Echo Area Tag field limit - FTN #1617
+static const int kAreaTagLength = 60;
+
 static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_tags) {
   auto done{false};
   do {
@@ -144,7 +148,7 @@ static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_t
     case 'A': {
       files::dir_area_t da{};
       bout.outstr("Enter Name? ");
-      da.area_tag = bin.input_upper(12);
+      da.area_tag = bin.input_upper(kAreaTagLength);
       const auto r = select_network();
       if (!r) {
         break;
@@ -178,7 +182,7 @@ static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_t
       }
       files::dir_area_t da{};
       bout.outstr("Enter Name? ");
-      da.area_tag = bin.input_upper(12);
+      da.area_tag = bin.input_upper(kAreaTagLength);
       const auto nr = select_network();
       if (!nr) {
         break;
