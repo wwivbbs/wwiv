@@ -131,21 +131,20 @@ jobs:
       
     steps:
 
-      - name: Dump Vars
-        env:
-          VARS: ${{ toJson(vars) }}
-          EVENT: ${{ toJson(github.event) }}
-          REPO: ${{ github.repository }}
-          RELEASE: ${{ vars.WWIV_RELEASE }}
-        shell: bash
-        run: |
-          echo "WWIV_RELEASE_ARCHIVE_FILE: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}"
-          echo "release: ${{ env.RELEASE }}"
-          echo "github.repository_owner: ${{ github.repository_owner }}"
-          echo "github.repo: ${{ env.REPO }}"
-          echo "github.event context: ${{ env.EVENT }}"
-          echo "vars context: ${{ env.VARS }}"
-
+      # - name: Dump Vars
+      #   env:
+      #     VARS: ${{ toJson(vars) }}
+      #     EVENT: ${{ toJson(github.event) }}
+      #     REPO: ${{ github.repository }}
+      #     RELEASE: ${{ vars.WWIV_RELEASE }}
+      #   shell: bash
+      #   run: |
+      #     echo "WWIV_RELEASE_ARCHIVE_FILE: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}"
+      #     echo "release: ${{ env.RELEASE }}"
+      #     echo "github.repository_owner: ${{ github.repository_owner }}"
+      #     echo "github.repo: ${{ env.REPO }}"
+      #     echo "github.event context: ${{ env.EVENT }}"
+      #     echo "vars context: ${{ env.VARS }}"
 
       # Check it out again since now it's a new job.
       - name: Check out repository code
