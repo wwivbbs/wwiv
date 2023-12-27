@@ -2,8 +2,8 @@
     "version": 4,
     "configurePresets": [
         {
-            "name": "windows-default",
-            "displayName": "Windows",
+            "name": "wwiv-default",
+            "displayName": "wwiv default build",
             "description": "Ninja, x86 debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/_build",
@@ -14,17 +14,10 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/install"
-            },
-            "vendor": {
-                "microsoft.com/VisualStudioSettings/CMake/1.0": {
-                    "hostOS": [
-                        "Windows"
-                    ]
-                }
             }
         },
         {
-            "name": "WWIV",
+            "name": "VSCode Debug",
             "description": "",
             "displayName": "",
             "inherits": [
@@ -34,10 +27,25 @@
     ],
     "buildPresets": [
         {
-            "name": "windows-default",
-            "displayName": "Windows Build",
-            "configurePreset": "windows-default",
+            "name": "WWIV Debug Build",
+            "displayName": "WWIV Debug Build",
+            "configurePreset": "wwiv-default",
             "description": "Default Windows debug build (MSVC)"
         }
-    ]
+    ],
+    "testPresets": [
+        {
+          "name": "wwiv-test-default",
+          "description": "Enable output on failure",
+          "configurePreset": "linux-debug",
+          "output": {
+            "outputOnFailure": true
+          }
+        },
+        {
+          "name": "core-test-windows",
+          "inherits": "wwiv-test-default",
+          "configurePreset": "x86-debug"
+        }
+      ]
 }
