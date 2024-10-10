@@ -34,6 +34,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "deps/my_basic/core/my_basic.h"
+#include "fmt/format.h"
 #include "sdk/config.h"
 
 #include <chrono>
@@ -126,22 +127,22 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* ms
     return;
   }
 
+  std::string errmsg;
   if (!func) {
-    printf("Error:\n    Line %d, Col %d\n    Code %d, Abort Code %d\n    Message: %s.\n", row, col,
-           err, err == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code, msg);
-    return;
-  }
-
-  if (err == SE_RN_REACHED_TO_WRONG_FUNCTION) {
-    printf(
+    errmsg = fmt::sprintf("Error:\n    Line %d, Col %d\n    Code %d, Abort Code %d\n    Message: %s.\n", row, col,
+           static_cast<int>(err), err == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code, msg);
+  } else if (err == SE_RN_REACHED_TO_WRONG_FUNCTION) {
+    errmsg = fmt::sprintf(
         "Error:\n    Line %d, Col %d in Func: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
-        row, col, func, err, abort_code, msg);
-    return;
+        row, col, func, static_cast<int>(err), abort_code, msg);
+  } else {
+    errmsg = fmt::sprintf(
+        "Error:\n    Line %d, Col %d in File: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
+        row, col, func, static_cast<int>(err), err == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
+        msg);
   }
-  printf(
-      "Error:\n    Line %d, Col %d in File: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
-      row, col, func, err, err == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
-      msg);
+  bout.pl(StrCat("|#6", errmsg));
+  LOG(ERROR) << errmsg;
 }
 
 Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, common::Context* ctx)

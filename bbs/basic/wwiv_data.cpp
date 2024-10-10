@@ -24,6 +24,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/cereal_utils.h"
+#include "fmt/format.h"
 #include <cassert>
 #include <optional>
 #include <string>
