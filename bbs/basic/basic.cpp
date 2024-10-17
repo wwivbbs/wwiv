@@ -128,6 +128,7 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* ms
   }
 
   std::string errmsg;
+
   if (!func) {
     errmsg = fmt::sprintf("Error:\n    Line %d, Col %d\n    Code %d, Abort Code %d\n    Message: %s.\n", row, col,
            static_cast<int>(err), err == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code, msg);
@@ -141,7 +142,11 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e err, const char* ms
         row, col, func, static_cast<int>(err), err == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
         msg);
   }
-  bout.pl(StrCat("|#6", errmsg));
+
+  const auto* d = get_wwiv_script_userdata(s);
+  auto& out = *d->out;
+  out.print("|#6{}", errmsg);
+  
   LOG(ERROR) << errmsg;
 }
 
