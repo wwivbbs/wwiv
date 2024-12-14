@@ -256,7 +256,8 @@ void Output::print_local_file(const std::string& data) {
 
 bool Output::printfile_random(const std::string& data) {
   const printfile_opts opts(sess(), *this, data, true, true);
-  const auto& dir = sess().dirs().current_menu_gfiles_directory();
+//  const auto& dir = sess().dirs().current_menu_gfiles_directory();
+  const auto& dir = sess().dirs().gfiles_directory();
   const auto base_fn = opts.data();
   if (const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0")); !File::Exists(dot_zero)) {
     return false;
@@ -269,7 +270,7 @@ bool Output::printfile_random(const std::string& data) {
       break;
     }
   }
-  return printfile_path(FilePath(dir, StrCat(base_fn, ".", os::random_number(screens))),
+  return printfile_path(FilePath(dir, StrCat(base_fn, ".", os::random_number(screens-1))),
                         opts.abortable, opts.force_pause);
 }
 
