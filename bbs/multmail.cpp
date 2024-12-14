@@ -274,11 +274,16 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
             bout.nl();
             bout.outstr("Already in list, not added.\r\n\n");
             i = 0;
+	    break;
           }
-          if (i) {
-            pnUserNumber[(*numu)++] = i;
-          }
-        }
+	}
+	  if (i) {
+	    pnUserNumber[(*numu)++] = i;
+	  }
+      } else {
+	if (i) {
+	    pnUserNumber[(*numu)++] = i;
+	}
       }
     }
   }
@@ -291,7 +296,7 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
 #define MAX_LIST 40
 
 void slash_e() {
-  int user_number[MAX_LIST], numu, i;
+  int user_number[MAX_LIST]={}, numu, i;
   char s[81],*sss;
 
   mml_s = nullptr;
@@ -315,7 +320,7 @@ void slash_e() {
   numu = 0;
   do {
     bout.nl(2);
-    bout.outstr("|#2Multi-Mail: A,M,D,L,E,Q,? : ");
+    bout.print("|#2Multi-Mail: List: {} : A,M,D,L,E,Q,? : ",numu);
     switch (char ch = onek("QAMDEL?"); ch) {
     case '?':
       bout.printfile(MMAIL_NOEXT);
@@ -325,9 +330,11 @@ void slash_e() {
       break;
     case 'A':
       bout.nl();
-      bout.outstr("Enter names/numbers for users, one per line, max 20.\r\n\n");
+      bout.print("Enter names/numbers for users, one per line, max {}.\r\n\n",MAX_LIST);
       mml_s = nullptr;
-      add_list(user_number, &numu, MAX_LIST, so());
+      //add_list(user_number, &numu, MAX_LIST, so());
+      add_list(user_number, &numu, MAX_LIST, 0); // do we really want sysops
+                                           // to be able to add dupe entries?
       break;
     case 'M': {
       FindFiles ff(FilePath(a()->config()->datadir(), "*.mml"), FindFiles::FindFilesType::any);
@@ -351,7 +358,6 @@ void slash_e() {
       bout.nl();
       bout.outstr("|#2Which? ");
       bin.input(s, 8);
-
       File fileMailList(FilePath(a()->config()->datadir(), s));
       if (!fileMailList.Open(File::modeBinary | File::modeReadOnly)) {
         bout.nl();
@@ -383,6 +389,12 @@ void slash_e() {
       break;
     case 'D':
       if (numu) {
+	bout.nl();
+	for (i = 0; i < numu; i++) {
+	  User user;
+	  a()->users()->readuser(&user, user_number[i]);
+	  bout.print("{}. {}\r\n", i + 1, a()->names()->UserName(user_number[i]));
+	}
         bout.nl();
         bout.outstr("|#2Delete which? ");
         bin.input(s, 2);
@@ -396,6 +408,7 @@ void slash_e() {
       }
       break;
     case 'L':
+      bout.nl();
       for (i = 0; i < numu; i++) {
         User user;
         a()->users()->readuser(&user, user_number[i]);
