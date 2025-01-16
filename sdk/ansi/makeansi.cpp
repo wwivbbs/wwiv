@@ -17,7 +17,6 @@
 /**************************************************************************/
 #include "sdk/ansi/makeansi.h"
 
-#include <cstdint>
 #include <string>
 #include <vector>
 
