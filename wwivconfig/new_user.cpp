@@ -76,9 +76,14 @@ void newuser_settings(wwiv::sdk::Config& config, wwiv::sdk::newuser_config_t& nc
   items.add(new Label("Real Name:"),
             new ToggleEditItem<wwiv::sdk::newuser_item_type_t>(newuser_item_type_list, &nc.use_real_name),
     "Ask Callers for a real name. This may be needed for some networks", 1, y);
+  items.add(new Label("First & Last Name Required:"),
+            new ToggleEditItem<wwiv::sdk::newuser_item_type_t>(newuser_item_type_list, &nc.first_last_name_required),
+    "Require both a first and last name if real name is required", 3, y);
+  ++y;
   items.add(new Label("Email Address:"),
             new ToggleEditItem<wwiv::sdk::newuser_item_type_t>(newuser_item_type_list, &nc.use_email_address),
-    "Ask callers for an email address", 3, y);
+    "Ask callers for an email address", 1, y);
+  ++y;
   ++y;
   items.add(new Label("Voice Phone:"),
             new ToggleEditItem<wwiv::sdk::newuser_item_type_t>(newuser_item_type_list, &nc.use_voice_phone),
