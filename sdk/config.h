@@ -49,6 +49,7 @@ struct newuser_config_t {
   newuser_item_type_t use_birthday{newuser_item_type_t::required};
   newuser_item_type_t use_computer_type{newuser_item_type_t::required};
   newuser_item_type_t use_email_address{newuser_item_type_t::required};
+  newuser_item_type_t first_last_name_required{newuser_item_type_t::required};
 };
 
 struct system_toggles_t {
