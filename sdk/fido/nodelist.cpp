@@ -172,6 +172,7 @@ bool Nodelist::AddEntry(uint16_t zone, uint16_t net, NodelistEntry& e) {
   FidoAddress address(zone, net, e.number(), 0, domain_);
   e.address(address);
   entries_.emplace(address, e);
+  return true;
 }
 
 bool Nodelist::HandleLine(const std::string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub) {
