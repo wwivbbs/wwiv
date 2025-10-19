@@ -12,14 +12,12 @@ if (WIN32)
 else()
   set (LIBCL_A ${CMAKE_CURRENT_SOURCE_DIR}/libcl.a)
   add_custom_command(
-    OUTPUT 
-      ${LIBCL_A}
-    COMMAND 
-      make
-    WORKING_DIRECTORY 
-      ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT 
-      "Cryptlib makefile target."
+    OUTPUT ${LIBCL_A}
+    COMMAND cmake -E environment
+    COMMAND env
+    COMMAND make
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Cryptlib makefile target."
     )
   add_custom_target(
     cl345_lib_builder

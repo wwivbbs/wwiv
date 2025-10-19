@@ -37,6 +37,21 @@ Zone,1,North_America,Slaterville_Springs_NY,Sysop_Name1,1-607-555-1212,9600,CM,X
 Region,10,Calif-Nevada,Aptos_CA,Sysop_Name10,-Unpublished-,300,CM,XX,INA:realitycheckbbs.org,IBN,IFC
 ,1,Region_10_Echomail_Coordinator_Calif_Nevada,Aptos_CA,Sysop_Name10_1,-Unpublished-,300,CM,XX,INA:realitycheckbbs.org,IBN,IFC
 ;
+;
+Host,109,National_Capital_Area_Net_109,Washington_DC,Frank_Reid,1-757-481-6611,9600,CM,XA,V32b,V42b,V34,IBN:bbsdoors.com
+,41,Internet_Email_Gateway,Wheaton_MD,Andrew_Miller,1-301-949-5764,9600,CM,XR,V32b,V42
+,42,Usenet_News_Gateway,Wheaton_MD,Andrew_Miller,1-301-949-5764,9600,CM,XR,V32b,V42
+,201,bbs.cyberchatnet.com,Vienna_VA,Phillip_Taylor,-Unpublished-,9600,CM,INA:bbs.cyberchatnet.com,IBN,IFC
+,202,bbs.cyberchatnet.com,Vienna_VA,Phillip_Taylor,1-703-310-7439,9600,XR,V32b,V42
+Pvt,264,www.TheLitterBox.org,Bluemont_VA,Tony_Campbell,-Unpublished-,300,IP
+,432,The_Idea_Link,Wheaton_MD,Andrew_Miller,1-301-949-5764,9600,CM,XR,V32b,V42
+Hub,500,Greater_PG_Co_Lcl_Hub,Laurel,Frank_Reid,1-757-481-6611,9600,CM,XA,V32b,V42b,V34
+Pvt,560,The_Play_Pen,Upper_Marlboro_MD,Jeffrey_Estevez,-Unpublished-,300,IP
+,567,www.bbsdoors.com,Laurel_MD,Frank_Reid,-Unpublished-,300,CM,IBN:bbsdoors.com
+,568,Eagle's_Dare,Upper_Marlboro_MD,Frank_Reid,1-757-481-6611,9600,CM,XA,V32b,V42b,V34
+,909,Lincoln_Legacy,Leesburg_VA,John_Covici,1-703-777-8383,9600,CM,HST,V42B,V32B
+;
+;
 Host,102,SoCalNet,Aptos_CA,Sysop_Name102,-Unpublished-,300,CM,XX,INA:realitycheckbbs.org,IBN,IFC
 ,501,iNK_tWO,Covina_CA,Sysop_Name102_501,-Unpublished-,300,CM,XA,INA:bbs.inktwo.com,IBN
 Down,943,Mysteria,Sierra_Madre_CA,Sysop_Name102_943,1-626-555-51212,9600,CM,XA,H16,V32b,V42b,V34,VFC,INA:mysteria.com,IBN
@@ -79,7 +94,6 @@ TEST(NodelistTest, Zone) {
 
 TEST(NodelistTest, Smoke) {
   const auto lines = SplitString(raw, "\n");
-
   Nodelist nl(lines, "");
   ASSERT_TRUE(nl);
 
@@ -132,16 +146,25 @@ TEST(NodelistTest, Nets) {
   ASSERT_TRUE(nl);
 
   const auto nets = nl.nets(1);
-  const std::vector<uint16_t>expected{10, 102 ,123, 261};
+  const std::vector<uint16_t>expected{10, 102 ,109, 123, 261};
   EXPECT_EQ(expected, nets);
 }
 
-TEST(NodelistTest, Nodes) {
+TEST(NodelistTest, Nodes_With_Hub_109) {
+  const auto lines = SplitString(raw, "\n");
+  const Nodelist nl(lines, "");
+  ASSERT_TRUE(nl);
+
+  const auto nets = nl.nodes(1, 109);
+  // 500 is the hub entry in net 109
+  EXPECT_THAT(nets, testing::Contains(500));
+}
+
+TEST(NodelistTest, Nodes_261) {
   const auto lines = SplitString(raw, "\n");
   const Nodelist nl(lines, "");
   ASSERT_TRUE(nl);
 
   const auto nets = nl.nodes(1, 261);
-  const std::vector<uint16_t>expected{1, 1300};
-  EXPECT_EQ(expected, nets);
+  EXPECT_THAT(nets, testing::ElementsAre(1, 1300));
 }

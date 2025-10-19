@@ -322,9 +322,9 @@ static std::string from_name(const mailrec& m, const Network& net, const slrec& 
       return a()->names()->UserName(m.fromuser);
     }
   } else {
-    if (nn == 255) {
-      return fmt::format("#{} @{}.", m.fromuser, m.fromsys, net.name);
-    }
+//    if (nn == 255) {
+//      return fmt::format("#{} @{}.", m.fromuser, m.fromsys, net.name);
+//    }
     if (auto o = readfile(&m.msg, "email")) {
       if (const auto idx = o.value().find('\r'); idx != std::string::npos) {
         const std::string from = o.value().substr(0, idx);
@@ -346,12 +346,12 @@ static std::string from_name(const mailrec& m, const Network& net, const slrec& 
 static std::tuple<Network, int> network_and_num(const mailrec& m) {
   Network net{};
   auto nn = network_number_from(&m);
-  if (nn <= a()->nets().size()) {
+  if (nn < a()->nets().size()) {
     net = a()->nets()[nn];
   } else {
     net.sysnum = static_cast<uint16_t>(-1);
     net.type = network_type_t::unknown;
-    net.name = fmt::format("<deleted network #{}>", nn);
+    net.name = fmt::format("<net #{}>", nn);
     nn = 255;
   }
   return std::make_tuple(net, nn);
@@ -404,7 +404,9 @@ void readmail(bool newmail_only) {
     curmail = 0;
   } else {
     bout.outstr("\r\n\n|#2You have mail from:\r\n");
-    bout.print("|#9{}\r\n", std::string(a()->user()->screen_width() - 1, '-'));
+    std::string box = okansi() ? "\xDA\xC0\xBF\xD9\xC4\xB3" : "++++-|";
+//   0  upperleft 1 lowerleft 2 upperright 3 lowerright 4 = - 5 = |"
+    bout.print("|#7\xDA{}\xBF\r\n", std::string(a()->user()->screen_width() - 3, box[4]));
     for (auto i = 0; i < mw && !abort; i++) {
       if (!read_same_email(mloc, mw, i, m, false, 0)) {
         continue;
@@ -417,11 +419,12 @@ void readmail(bool newmail_only) {
       auto [net, nn] = network_and_num(m);
       set_net_num(nn);
       const auto current_line =
-          fmt::format("|#2{:>3}{}|#1{:<45.45}|#7| |#1{:<25.25}", i + 1, (m.status & status_seen ? " " : "|#3*"),
-                      from_name(m, net, sl, nn), stripcolors(m.title));
+          fmt::format("|#7{}|#2{:>3}{}|#1{:<45.45}|#7{} |#1{:<25.25} |#7{}", box[5], i + 1, (m.status & status_seen ? " " : "|#3*"),
+                      from_name(m, net, sl, nn), box[5], stripcolors(m.title),box[5]);
       bout.bpla(current_line, &abort);
     }
-    bout.print("|#9{}\r\n", std::string(a()->user()->screen_width() - 1, '-'));
+    bout.print("|#7\xC0{}\xD9\r\n", std::string(a()->user()->screen_width() - 3, box[4]));
+//    bout.print("|#9{}\r\n", std::string(a()->user()->screen_width() - 1, '-'));
     bout.outstr("|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n");
     bout.outstr("|#9Enter message number: ");
     const auto res = bin.input_number_hotkey(curmail + 1, {'Q'}, curmail + 1, mw, true);

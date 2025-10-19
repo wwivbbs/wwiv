@@ -70,10 +70,17 @@ fi
 
 # If we've got clang installed, default to that.
 
-if command -v clang > /dev/null ; then
-	echo "clang" ;
-	exit 0 ;
-fi
+#############################################################################
+#
+# *** WWIV Patch 2023-12-22 rushfan ***
+#
+# Don't use clang since the rest of WWIV uses gcc and that causes issues linking in libcl.a
+#
+#
+#if command -v clang > /dev/null ; then
+#	echo "clang" ;
+#	exit 0 ;
+#fi
 
 # If cc is gcc, use that.
 

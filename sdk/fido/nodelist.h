@@ -159,7 +159,9 @@ private:
   bool Load(const std::filesystem::path& path);
   bool Load(const std::vector<std::string>& lines);
 
+  bool AddEntry(uint16_t zone, uint16_t net, NodelistEntry& e);
   bool HandleLine(const std::string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub );
+  
   std::map<FidoAddress, NodelistEntry> entries_;
   std::string domain_;
   bool initialized_{false};

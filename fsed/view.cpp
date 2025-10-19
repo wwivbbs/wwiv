@@ -49,7 +49,7 @@ void FsedView::gotoxy(const FsedModel& ed) {
 }
 
 void FsedView::ClearCommandLine() { 
-    fs_.PutsCommandLine("|#9(|#2ESC|#9=Menu/Help) "); }
+    fs_.PutsCommandLine("|#9(|#2ESC|#9 or |#2/|#9=Menu/Help) "); }
 
 void FsedView::macro(Context& ctx, int cc) {
   if (!ctx.session_context().okmacro() || bin.charbufferpointer_) {

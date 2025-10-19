@@ -164,6 +164,17 @@ Nodelist::Nodelist(const std::filesystem::path& path, std::string domain)
 Nodelist::Nodelist(const std::vector<std::string>& lines, std::string domain) 
   : domain_(std::move(domain)), initialized_(Load(lines)) {}
 
+bool Nodelist::AddEntry(uint16_t zone, uint16_t net, NodelistEntry& e) {
+  if (zone == 0 || net == 0) {
+    // skip malformed entries.
+    return false;
+  }
+  FidoAddress address(zone, net, e.number(), 0, domain_);
+  e.address(address);
+  entries_.emplace(address, e);
+  return true;
+}
+
 bool Nodelist::HandleLine(const std::string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub) {
   if (line.empty()) return true;
   if (line.front() == ';') {
@@ -182,18 +193,16 @@ bool Nodelist::HandleLine(const std::string& line, uint16_t& zone, uint16_t& reg
     case NodelistKeyword::hub:
     {
       hub = e->number();
+      // Hub's should have entries in the database
+      // Hub FTN NODELIST file variable not recognized #1616
+      AddEntry(zone, net, e.value());
     } break;
     // Let's include pvt nodes since you can still route
     // to them.
     case NodelistKeyword::pvt:
     case NodelistKeyword::node:
     {
-      FidoAddress address(zone, net, e->number(), 0, domain_);
-      e->address(address);
-      if (zone != 0 && net != 0) {
-        // skip malformed entries.
-        entries_.emplace(address, e.value());
-      }
+      AddEntry(zone, net, e.value());
     } break;
     case NodelistKeyword::region:
     {

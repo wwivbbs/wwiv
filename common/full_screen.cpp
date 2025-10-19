@@ -95,7 +95,7 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
   const auto saved_color = bout.curatr();
   auto at_exit = finally([=] { bout.setc(saved_color); });
 
-  bout_.print("|09{:c}{}{:c}", static_cast<unsigned char>(198),
+  bout_.print("|#7{:c}{}{:c}", static_cast<unsigned char>(198),
               std::string(screen_width_ - 2, static_cast<unsigned char>(205)),
               static_cast<unsigned char>(181));
 
@@ -105,7 +105,7 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
 
   const auto x = screen_width_ - 10 - ssize(text);
   bout_.goxy(x, y);
-  bout_.print("|09{:c}|17|14 {} |16|09{:c}", static_cast<unsigned char>(181), text,
+  bout_.print("|#7{:c}|17|14 {} |16|09{:c}", static_cast<unsigned char>(181), text,
               static_cast<unsigned char>(198));
 }
 

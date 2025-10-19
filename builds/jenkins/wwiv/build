@@ -4,51 +4,38 @@
 # Required Variables:
 #   WORKSPACE - Jenkins workspace
 #   BUILD_NUMBER - Jenkins Build number
-#   label - Linux  build label (i.e. centos7)
+#   WWIV_DISTRO - Linux build label (i.e. centos7)
 
-declare -r CMAKE_BIN=${CMAKE_BIN:-"cmake"}
-declare -r CTEST_BIN=${CTEST_BIN:-"ctest"}
-declare -r CPACK_BIN=${CPACK_BIN:-"cpack"}
-declare -r WWIV_DISTRO="${label:-"i686"}"
-declare -r WWIV_RELEASE=${WWIV_RELEASE:-"5.9.0"}
-declare -r CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR:-"${WORKSPACE}/_build"}
-declare -r WWIV_RELEASE_DIR=${WWIV_RELEASE_DIR:-"${CMAKE_BINARY_DIR}/release"}
-declare -r WWIV_FULL_RELEASE="${WWIV_RELEASE}.${BUILD_NUMBER}"
-declare -r WWIV_RELEASE_ARCHIVE_FILE=wwiv-${WWIV_DISTRO}-${WWIV_FULL_RELEASE}.tar.gz
+# Ensure we have CC and CXX set
+export CXX=$(which g++)
+export CC=$(which gcc)
 
 echo "============================================================================="
 echo "Workspace:        ${WORKSPACE}"
 echo "CMake:            ${CMAKE_BIN}; Test: ${CTEST_BIN}; Pack: ${CPACK_BIN}"
 echo "CMake Build:      ${CMAKE_BINARY_DIR}"
 echo "Release Dir:      ${WWIV_RELEASE_DIR}"
-echo "WWIV Release:     ${WWIV_FULL_RELEASE}"
 echo "Archive:          ${WWIV_RELEASE_ARCHIVE_FILE}"
 echo "WWIV_DISTRO:      ${WWIV_DISTRO}"
-echo "GCC:              $(gcc --version | head -1)"
+echo "CC:               ${CC}"
+echo "CXX:              ${CXX}"
+echo "GCC version:      $(${CC} --version | head -1)"
 echo "============================================================================="
 
 # Delete any previous release archives before starting the build with set -e
-rm ${WORKSPACE}/wwiv-*.tar.gz || /bin/true
-rm ${CMAKE_BINARY_DIR}/wwiv-*.tar.gz || /bin/true
-rm ${CMAKE_BINARY_DIR}/CMakeCache.txt
-rm -rf "${WWIV_RELEASE_DIR}"
-rm -rf "${CMAKE_BINARY_DIR}/Testing"
-
-set -e
 
 echo "Creating ${CMAKE_BINARY_DIR} and ${WWIV_RELEASE_DIR}"
 mkdir -p "${CMAKE_BINARY_DIR}"
 mkdir -p "${WWIV_RELEASE_DIR}"
 
-echo "Updating vcpkg"
-pushd ${WORKSPACE}
-./vcpkg/bootstrap-vcpkg.sh
-popd
-
 set -x
+set -e
 echo "Building binaries"
 pushd ${CMAKE_BINARY_DIR}
-${CMAKE_BIN} -G "Ninja" -DCMAKE_BUILD_TYPE=Debug \
+${CMAKE_BIN} -G "Ninja" \
+      -DCMAKE_CXX_COMPILER=g++ \
+      -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_BUILD_TYPE=Debug \
       -DWWIV_RELEASE=${WWIV_RELEASE} \
       -DWWIV_ARCH=${WWIV_ARCH}  \
       -DWWIV_BUILD_NUMBER=${BUILD_NUMBER} \

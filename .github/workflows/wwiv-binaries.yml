@@ -1,0 +1,205 @@
+# WWIV continuous build script
+# Copyright (C)2023, WWIV Software Services
+#
+
+name: WWIV 5.9
+run-name: WWIV 5.9 CI
+
+# ** IMPORTANT: ONLY allow on push events here since WWIV
+# has some self hosted runners
+
+on:
+  push:
+    branches: 
+      - main
+
+env:
+    CMAKE_BIN: cmake
+    CTEST_BIN: ctest
+    CPACK_BIN: cpack
+    WORKSPACE: ${{ github.workspace }}
+    WWIV_RELEASE: 5.9.0
+    WWIV_RELEASE_LABEL: wwiv59
+    # TODO - rushfan - we should probably remove this.
+    BUILD_NUMBER: 8675309
+
+jobs:
+  wwiv-build-number:
+    name: Create Build Number
+    if: github.repository_owner == 'wwivbbs'
+    runs-on: ubuntu-latest
+    outputs:
+      build_number: ${{ steps.buildnumber.outputs.build_number }}
+      wwiv_tag: ${{ steps.generate_tag.outputs.wwiv_tag }}
+    steps:
+      - name: Checkout, Tag and Build Number
+        id: buildnumber
+        uses: onyxmueller/build-tag-number@v1
+        with:
+          token: ${{secrets.github_token}}  
+          
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
+      - name: Generate Tag Name
+        id: generate_tag
+        shell: bash
+        run: |
+          echo "wwiv_tag=${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
+          echo "WWIV_TAG=${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_ENV
+
+      - name: Tag the latet commit repository with tag ${{ env.WWIV_TAG }}
+        id: tag
+        run: |
+          echo "WWIV_TAG: ${{ env.WWIV_TAG }}"
+          git config --global user.email "gh-action@wwivbbs.org"
+          git config --global user.name "GitHub Action"
+          git tag -f -a "${{ env.WWIV_TAG }}" -m "${{ env.WWIV_TAG }} SHA: " ${{ github.sha }}
+          git push origin ${{ env.WWIV_TAG }}
+
+  create_release:
+    name: Create Release
+    needs: wwiv-build-number
+    runs-on: ubuntu-latest
+    env:
+      WWIV_TAG: ${{needs.wwiv-build-number.outputs.wwiv_tag}}
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "${{ env.WWIV_TAG }}"
+          draft: false
+          prerelease: true
+          generate_release_notes: false   
+          tag_name: "${{ env.WWIV_TAG }}"
+
+  wwiv-release:
+    name: Build and Publish
+    needs: 
+      - create_release
+      - wwiv-build-number
+    strategy:
+        matrix:
+          os: 
+            - windows-latest
+            - ubuntu-22.04
+            - debian-11
+            - debian-12
+            # - ubuntu-20.04
+          include:
+            # Disabled since it's failing to link with cryptlib for some reason
+            # - os: ubuntu-20.04 
+            #   lib_suffix: so
+            #   archive_suffix: tar.gz
+            #   wwiv_distro: linux-ubuntu2004 
+
+            # Run's on the weatherstation private cloud
+            - os: debian-11
+              lib_suffix: so
+              wwiv_distro: linux-debian11
+              archive_suffix: tar.gz
+            # Run's on the weatherstation private cloud
+            - os: debian-12
+              lib_suffix: so
+              wwiv_distro: linux-debian12
+              archive_suffix: tar.gz
+
+            # Github hosted runner
+            - os: ubuntu-22.04
+              lib_suffix: so
+              wwiv_distro: linux-ubuntu2204 
+              archive_suffix: tar.gz
+            # Github hosted runner
+            - os: windows-latest
+              lib_suffix: dll
+              wwiv_distro: win-x86 
+              archive_suffix: zip
+        fail-fast: false
+    runs-on: ${{ matrix.os }}
+    # TODO: Update this on new releases
+    environment: WWIV59
+    env:
+      BUILD_NUMBER: ${{needs.wwiv-build-number.outputs.build_number}}
+      WWIV_TAG: ${{needs.wwiv-build-number.outputs.wwiv_tag}}
+      WWIV_DISTRO: ${{ matrix.wwiv_distro }}
+      WWIV_RELEASE_ARCHIVE_FILE: wwiv-${{ matrix.wwiv_distro }}-${{ vars.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}.${{ matrix.archive_suffix }}
+      CMAKE_BINARY_DIR: '${{ github.workspace }}/_build'
+      WWIV_RELEASE_DIR: '${{ github.workspace }}/_build/release'
+      
+    steps:
+
+      # - name: Dump Vars
+      #   env:
+      #     VARS: ${{ toJson(vars) }}
+      #     EVENT: ${{ toJson(github.event) }}
+      #     REPO: ${{ github.repository }}
+      #     RELEASE: ${{ vars.WWIV_RELEASE }}
+      #   shell: bash
+      #   run: |
+      #     echo "WWIV_RELEASE_ARCHIVE_FILE: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}"
+      #     echo "release: ${{ env.RELEASE }}"
+      #     echo "github.repository_owner: ${{ github.repository_owner }}"
+      #     echo "github.repo: ${{ env.REPO }}"
+      #     echo "github.event context: ${{ env.EVENT }}"
+      #     echo "vars context: ${{ env.VARS }}"
+
+      # Check it out again since now it's a new job.
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+      - name: Setup a new vcpkg
+        uses: lukka/run-vcpkg@v11   # Always specify the specific _version_ of the
+
+      - name: Locate Visual Studio (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          $vcbase=$(vswhere -legacy -latest -property installationPath)
+          echo VCVARS_ALL="${vcbase}\VC\Auxiliary\Build\vcvarsall.bat" >> "$env:GITHUB_ENV"
+
+      - name: Set up Visual Studio Env (Windows)
+        uses: egor-tensin/vs-shell@v2
+        if: ${{ matrix.os == 'windows-latest' }}
+        with:
+          arch: x86
+
+      - name: Build (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: cmd
+        run: builds\jenkins\wwiv\build.cmd
+        env:
+          WWIV_ARCH: x86
+          WWIV_RELEASE: 5.9.0
+
+      - name: Build (Linux)
+        if: ${{ matrix.os != 'windows-latest' }}
+        shell: bash
+        run: builds/jenkins/wwiv/build
+        env:
+          WWIV_ARCH: x86
+          WWIV_RELEASE: 5.9.0
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          
+      - name: Look for output file
+        run: ls ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
+  
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
+          path: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
+
+      - name: Release to Latest
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "${{ env.WWIV_TAG }}"
+          files: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}          
