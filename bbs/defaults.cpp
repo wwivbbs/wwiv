@@ -164,7 +164,12 @@ static void print_cur_stat() {
                (a()->user()->has_flag(User::fullScreenReader) ? "Full-Screen" : "Traditional"));
   }
   bout.print("|#1I|#9) Internet Address  : |#2{}\r\n", inet_addr);
-  bout.pl("|#1K|#9) Configure Menus");
+  bout.print("|#1K|#9) Configure Menus                      ");
+  if (okansi()) {
+    bout.print("|#1L|#9) ListPlus Enabled   : |#2{}", YesNoString(a()->user()->data.lp_options & cfl_enable));
+  }
+  bout.nl();
+
   if (num_instances() > 1) {
     bout.print("|#1M|#9) Allow user msgs   : |#2{:<16} |#1N|#9) Configure QWK", YesNoString(!a()->user()->ignore_msgs()));
   }
@@ -737,7 +742,7 @@ void defaults(bool& need_menu_reload) {
     bout.outstr("|#9Defaults: ");
     std::string allowable = "Q?1234567BCDIKMNTUW";
     if (okansi()) {
-      allowable.append("89AS");
+      allowable.append("89ALS");
       if (a()->fullscreen_read_prompt()) {
         allowable.push_back('G');
       }
@@ -802,6 +807,9 @@ void defaults(bool& need_menu_reload) {
     case 'K':
       wwiv::bbs::menus::ConfigUserMenuSet("");
       need_menu_reload = true;
+      break;
+    case 'L':
+      a()->user()->data.lp_options ^= cfl_enable;
       break;
     case 'M':
       a()->user()->toggle_flag(User::noMsgs);
