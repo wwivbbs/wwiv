@@ -795,7 +795,7 @@ void xfer_defaults() {
 }
 
 void finddescription() {
-  if (okansi()) {
+  if (okansi() && a()->user()->data.lp_options & cfl_enable ) {
     listfiles_plus(LP_SEARCH_ALL);
     return;
   }
