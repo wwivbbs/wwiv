@@ -47,6 +47,7 @@ static constexpr uint32_t unused_cfl_times_a_day_dloaded = 0x00000100;
 static constexpr uint32_t unused_cfl_days_between_dloads = 0x00000200;
 static constexpr uint32_t cfl_description = 0x00000400;
 static constexpr uint32_t cfl_header = 0x80000000;
+static constexpr uint32_t cfl_enable = 0x10000000;
 
 namespace wwiv::sdk {
 struct validation_config_t;

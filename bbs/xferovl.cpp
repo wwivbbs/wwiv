@@ -734,12 +734,20 @@ void xfer_defaults() {
   do {
     bout.cls();
     bout.outstr("|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n");
-    bout.outstr("|#7[|#22|#7]|#1 Set Default Protocol.\r\n");
-    bout.print("|#7[|#23|#7]|#1 New-Scan Transfer after Message Base ({}).\r\n",
+    bout.print("|#7[|#22|#7]|#1 Set Default Protocol: |#7(|#2{}|#7).\r\n",prot_name(a()->user()->default_protocol()));
+    bout.print("|#7[|#23|#7]|#1 New-Scan Transfer after Message Base: |#7(|#2{}|#7)\r\n",
                YesNoString(a()->user()->newscan_files()));
-    bout.print("|#7[|#24|#7]|#1 Number of lines of extended description to print [{} line(s)].\r\n",
+    bout.print("|#7[|#24|#7]|#1 Number of lines of extended description to print: #|7[|#2{} line(s)|#7]|#1.\r\n",
                a()->user()->GetNumExtended());
-    const std::string onek_options = "Q12345";
+    if (okansi()) {
+      bout.print("|#7[|#2L|#7]|#1 ListPlus Enabled: |#7(|#2{}|#7)\r\n", YesNoString(a()->user()->data.lp_options & cfl_enable));
+    }
+    std::string onek_options = "Q12345L";
+    if (a()->user()->data.lp_options & cfl_enable) {
+	bout.print("|#7[|#2K|#7]|#1 Configure ListPlus\r\n");
+	onek_options.append("K");
+    }
+
     bout.outstr("|#7[|#2Q|#7]|#1 Quit.\r\n\n");
     bout.outstr("|#5Which? ");
     char ch = onek(onek_options);
@@ -775,13 +783,19 @@ void xfer_defaults() {
         }
       }
       break;
+    case 'L':
+      a()->user()->data.lp_options ^= cfl_enable;
+      break;
+    case 'K':
+      config_file_list();
+      break;
     }
   }
   while (!done && !a()->sess().hangup());
 }
 
 void finddescription() {
-  if (okansi()) {
+  if (okansi() && a()->user()->data.lp_options & cfl_enable ) {
     listfiles_plus(LP_SEARCH_ALL);
     return;
   }
