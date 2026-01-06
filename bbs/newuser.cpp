@@ -63,6 +63,7 @@
 #include "sdk/usermanager.h"
 #include <chrono>
 #include <string>
+#include <sstream>
 
 using std::chrono::milliseconds;
 using wwiv::common::InputMode;
@@ -170,13 +171,26 @@ void input_name() {
   } while (!ok && !a()->sess().hangup());
 }
 
+// Function to check if both first and last names are entered
+bool containsFirstAndLastName(const std::string& name) {
+    std::istringstream stream(name);
+    std::string part;
+    int count = 0;
+    
+    while (stream >> part) {
+        ++count;
+    }
+    
+    return count >= 2;
+}
+
 void input_realname() {
   if (a()->config()->sysconfig_flags() & sysconfig_allow_alias) {
     do {
       bout.nl();
       bout.outstr("|#3Enter your FULL real name.\r\n");
       std::string temp_local_name = bin.input_proper(a()->user()->real_name(), 30);
-      if (temp_local_name.empty()) {
+      if (temp_local_name.empty() || ((nc.first_last_name_required == newuser_item_type_t::required) && !containsFirstAndLastName(temp_local_name) )) {
         bout.nl();
         bout.outstr("|#6Sorry, you must enter your FULL real name.\r\n");
       } else {
