@@ -180,6 +180,8 @@ int Main(CommandLine& cmdline) {
     svr->Get("/status", std::bind(StatusHandler, data.nodes, _1, _2));
     svr->Get("/status_v0", std::bind(StatusHandler, data.nodes, _1, _2));
     svr->Get("/status_v1", std::bind(StatusHandler, data.nodes, _1, _2));
+    // Register blocking endpoint
+    svr->Get("/blocking", std::bind(BlockingHandler, &data, _1, _2));
     svr->set_logger(
         [](const httplib::Request& req, const httplib::Response& res) { VLOG(1) << res.body; });
     srv_thread = std::thread([&](const std::string http_address, int p) { 

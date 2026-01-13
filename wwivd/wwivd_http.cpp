@@ -18,6 +18,7 @@
 
 #include <ctime>
 #include <mutex>
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,8 @@
 #include <cereal/types/vector.hpp>
 #include <nlohmann/json.hpp>
 
+#include "core/datetime.h"
+#include "core/file.h"
 #include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/net.h"
@@ -37,12 +40,11 @@
 #include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "httplib.h"
 #include "sdk/config.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
-
-#include <string>
 
 namespace wwiv::wwivd {
 
@@ -209,6 +211,153 @@ void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* no
     return;
   } break;
   }
+}
+
+struct ip_entry_t {
+  std::string ip;
+  std::string added_date;
+  time_t added_timestamp{0};
+  std::string expire_date;
+  time_t expire_timestamp{0};
+  int block_count{0};
+  bool permanent{false};
+};
+
+void to_json(nlohmann::json& j, const ip_entry_t& e) {
+  j = nlohmann::json{
+      {"ip", e.ip},
+      {"added_date", e.added_date},
+      {"added_timestamp", e.added_timestamp},
+      {"expire_date", e.expire_date},
+      {"expire_timestamp", e.expire_timestamp},
+      {"block_count", e.block_count},
+      {"permanent", e.permanent}};
+}
+
+static std::vector<ip_entry_t> ParseIpFile(const std::filesystem::path& filename) {
+  std::vector<ip_entry_t> entries;
+  if (!File::Exists(filename)) {
+    return entries;
+  }
+
+  TextFile file(filename, "rt");
+  if (!file.IsOpen()) {
+    return entries;
+  }
+
+  std::string line;
+  while (file.ReadLine(&line)) {
+    StringTrim(&line);
+    if (line.empty() || line.front() == '#') {
+      continue;
+    }
+
+    ip_entry_t entry;
+    // Extract IP (everything before space or #)
+    const auto space_pos = line.find(' ');
+    const auto hash_pos = line.find('#');
+    const auto end_pos = (space_pos != std::string::npos && hash_pos != std::string::npos)
+                             ? std::min(space_pos, hash_pos)
+                             : (space_pos != std::string::npos ? space_pos : hash_pos);
+    
+    if (end_pos != std::string::npos) {
+      entry.ip = StringTrim(line.substr(0, end_pos));
+      // Try to parse timestamp from comment
+      if (hash_pos != std::string::npos) {
+        const auto comment = StringTrim(line.substr(hash_pos + 1));
+        // Look for ISO8601 date format: YYYY-MM-DDTHH:MM:SS
+        std::regex date_regex(R"((\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}))");
+        std::smatch match;
+        if (std::regex_search(comment, match, date_regex)) {
+          entry.added_date = match.str(1);
+          // Try to parse timestamp manually (YYYY-MM-DDTHH:MM:SS)
+          try {
+            struct tm tm = {};
+            if (sscanf(entry.added_date.c_str(), "%d-%d-%dT%d:%d:%d",
+                       &tm.tm_year, &tm.tm_mon, &tm.tm_mday,
+                       &tm.tm_hour, &tm.tm_min, &tm.tm_sec) == 6) {
+              tm.tm_year -= 1900;
+              tm.tm_mon -= 1;
+              tm.tm_isdst = -1;
+              entry.added_timestamp = mktime(&tm);
+            }
+          } catch (...) {
+            // Ignore parse errors
+          }
+        } else {
+          entry.added_date = comment;
+        }
+      }
+    } else {
+      entry.ip = StringTrim(line);
+    }
+
+    if (!entry.ip.empty()) {
+      entry.permanent = true; // IPs in files are permanent unless in auto-blocker
+      entries.push_back(entry);
+    }
+  }
+
+  return entries;
+}
+
+void BlockingHandler(ConnectionData* data, const httplib::Request&, httplib::Response& res) {
+  static std::mutex mu;
+  std::lock_guard<std::mutex> lock(mu);
+
+  nlohmann::json response;
+
+  // Parse whitelist (goodip.txt)
+  std::vector<ip_entry_t> whitelist;
+  if (data->good_ips_) {
+    const auto goodip_file = FilePath(data->config->datadir(), "goodip.txt");
+    whitelist = ParseIpFile(goodip_file);
+  }
+  response["whitelist"] = whitelist;
+
+  // Parse blacklist (badip.txt)
+  std::vector<ip_entry_t> blacklist;
+  if (data->bad_ips_) {
+    const auto badip_file = FilePath(data->config->datadir(), "badip.txt");
+    blacklist = ParseIpFile(badip_file);
+  }
+
+  // Add auto-blocked IPs
+  std::vector<ip_entry_t> auto_blocked;
+  if (data->auto_blocker_) {
+    const auto& auto_blocked_map = data->auto_blocker_->auto_blocked();
+    const auto now = std::chrono::system_clock::now();
+    const auto now_time_t = std::chrono::system_clock::to_time_t(now);
+
+    for (const auto& [ip, entry] : auto_blocked_map) {
+      ip_entry_t ip_entry;
+      ip_entry.ip = ip;
+      ip_entry.block_count = entry.count;
+      ip_entry.expire_timestamp = entry.expiration;
+      
+      if (entry.expiration > 0) {
+        const auto expire_dt = DateTime::from_time_t(entry.expiration);
+        ip_entry.expire_date = expire_dt.to_string("%FT%T");
+        ip_entry.permanent = false;
+      } else {
+        ip_entry.permanent = true;
+      }
+
+      // Check if expired
+      if (entry.expiration > 0 && entry.expiration <= now_time_t) {
+        continue; // Skip expired entries
+      }
+
+      auto_blocked.push_back(ip_entry);
+    }
+  }
+
+  // Merge auto-blocked into blacklist (they're also blocked)
+  blacklist.insert(blacklist.end(), auto_blocked.begin(), auto_blocked.end());
+  response["blacklist"] = blacklist;
+  response["auto_blocked"] = auto_blocked;
+
+  res.set_content(response.dump(4), MIME_TYPE_JSON);
 }
 
 } // namespace wwiv::wwivd
