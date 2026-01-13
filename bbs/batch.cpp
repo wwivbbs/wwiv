@@ -811,7 +811,7 @@ void upload(int dn) {
   }
   const auto& d = a()->dirs()[dn];
   dliscan1(d);
-  const long free_space = File::freespace_for_path(d.path);
+  const auto free_space = File::freespace_for_path(d.path);
   if (free_space < 100) {
     bout.outstr("\r\nNot enough disk space to upload here.\r\n\n");
     return;

@@ -300,7 +300,7 @@ void listfiles() {
     return;
   }
 
-  if (okansi()) {
+  if (okansi() && a()->user()->data.lp_options & cfl_enable ) {
     listfiles_plus(LP_LIST_DIR);
     return;
   }
@@ -345,7 +345,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
   a()->set_current_user_dir_num(nDirNum);
   dliscan();
   if (this_date >= a()->sess().nscandate()) {
-    if (okansi()) {
+    if (okansi() && a()->user()->data.lp_options & cfl_enable) {
       *abort = listfiles_plus(LP_NSCAN_DIR) ? 1 : 0;
       a()->set_current_user_dir_num(old_cur_dir);
       return;
@@ -391,7 +391,7 @@ void nscanall() {
       tmp_disable_conf(true);
     }
   }
-  if (okansi()) {
+  if (okansi() && a()->user()->data.lp_options & cfl_enable) {
     const auto save_dir = a()->current_user_dir_num();
     listfiles_plus(LP_NSCAN_NSCAN);
     if (scan_all_confs) {
@@ -436,7 +436,7 @@ void searchall() {
     bout.pl("|#6No directories available.");
     return;
   }
-  if (okansi()) {
+  if (okansi() && a()->user()->data.lp_options & cfl_enable ) {
     listfiles_plus(LP_SEARCH_ALL);
     return;
   }

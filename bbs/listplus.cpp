@@ -932,6 +932,8 @@ static void update_user_config_screen(uploadsrec* u, int which) {
   bout.clreol();
   bout.nl();
   bout.clreol();
+  bout.nl();
+  bout.clreol();
   bout.goxy(1, 21);
 
   search_record sr{};
@@ -1019,12 +1021,7 @@ void config_file_list() {
         which = 10;
         break;
       }
-
-      if (a()->user()->data.lp_options & bit) {
-        a()->user()->data.lp_options &= ~bit;
-      } else {
-        a()->user()->data.lp_options |= bit;
-      }
+      a()->user()->data.lp_options ^= bit;
       break;
 
     case '!':
