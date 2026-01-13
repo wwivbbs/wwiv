@@ -35,6 +35,9 @@ void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* no
 void BlockingHandler(ConnectionData* data,
                      const httplib::Request&, httplib::Response& res);
 
+void SysopHandler(ConnectionData* data,
+                  const httplib::Request&, httplib::Response& res);
+
 } // namespace wwiv::wwivd
 
 #endif

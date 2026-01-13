@@ -41,8 +41,15 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "core/version.h"
+#include "fmt/format.h"
 #include "httplib.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
+#include "sdk/instance.h"
+#include "sdk/names.h"
+#include "sdk/status.h"
+#include "sdk/usermanager.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
 
@@ -356,6 +363,99 @@ void BlockingHandler(ConnectionData* data, const httplib::Request&, httplib::Res
   blacklist.insert(blacklist.end(), auto_blocked.begin(), auto_blocked.end());
   response["blacklist"] = blacklist;
   response["auto_blocked"] = auto_blocked;
+
+  res.set_content(response.dump(4), MIME_TYPE_JSON);
+}
+
+void SysopHandler(ConnectionData* data, const httplib::Request&, httplib::Response& res) {
+  static std::mutex mu;
+  std::lock_guard<std::mutex> lock(mu);
+
+  nlohmann::json response;
+
+  // Get status information
+  StatusMgr status_mgr(data->config->datadir());
+  const auto status = status_mgr.get_status();
+  if (!status) {
+    res.status = 500;
+    res.set_content(R"({"error": "Unable to read status.dat"})", MIME_TYPE_JSON);
+    return;
+  }
+
+  // Get sysop user for feedback_waiting
+  int feedback_waiting = 0;
+  UserManager user_mgr(*data->config);
+  if (const auto sysop = user_mgr.readuser(1)) {
+    feedback_waiting = sysop->email_waiting();
+  }
+
+  // Get last user from instances
+  std::string last_user = "Nobody";
+  Instances instances(*data->config);
+  if (instances) {
+    // Find the instance with the highest user_number that's valid
+    int max_user_num = 0;
+    for (const auto& inst : instances) {
+      const auto user_num = inst.user_number();
+      if (user_num > 0 && user_num < data->config->max_users() && user_num > max_user_num) {
+        max_user_num = user_num;
+      }
+    }
+    if (max_user_num > 0) {
+      Names names(*data->config);
+      last_user = names.UserName(max_user_num);
+    }
+  }
+
+  // Get chat status (sysop available) - check if sysop (user 1) is online
+  std::string chat_status = "Not Available";
+  if (instances) {
+    for (const auto& inst : instances) {
+      if (inst.online() && inst.user_number() == 1) {
+        // Sysop is online, check if in chat location
+        const auto loc = inst.loc_code();
+        if (loc == INST_LOC_CHAT || loc == INST_LOC_CHAT2 || loc == INST_LOC_CHATROOM) {
+          chat_status = "Available";
+        }
+        break;
+      }
+    }
+  }
+
+  // Calculate call/day ratio
+  std::string call_day_ratio = "N/A";
+  if (status->days_active() > 0) {
+    const auto ratio = static_cast<float>(status->caller_num()) / static_cast<float>(status->days_active());
+    call_day_ratio = fmt::format("{:.2f}", ratio);
+  }
+
+  // Get current date and time
+  const auto now = DateTime::now();
+  const auto date_str = now.to_string("%m/%d/%y");
+  const auto time_str = now.to_string("%H:%M:%S");
+
+  // Calculate minutes percentage
+  const auto percent = static_cast<double>(status->active_today_minutes()) / 1440.0;
+
+  // Build response
+  response["calls_today"] = status->calls_today();
+  response["feedback_waiting"] = feedback_waiting;
+  response["uploads_today"] = status->uploads_today();
+  response["messages_today"] = status->msgs_today();
+  response["email_today"] = status->email_today();
+  response["feedback_today"] = status->feedback_today();
+  response["mins_used_today"] = status->active_today_minutes();
+  response["mins_used_today_percent"] = fmt::format("{:.2f}", 100.0 * percent);
+  response["wwiv_version"] = full_version();
+  response["net_version"] = status->status_net_version();
+  response["total_users"] = status->num_users();
+  response["total_calls"] = status->caller_num();
+  response["call_day_ratio"] = call_day_ratio;
+  response["chat_status"] = chat_status;
+  response["last_user"] = last_user;
+  response["os"] = os::os_version_string();
+  response["date"] = date_str;
+  response["time"] = time_str;
 
   res.set_content(response.dump(4), MIME_TYPE_JSON);
 }
