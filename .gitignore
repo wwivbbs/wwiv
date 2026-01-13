@@ -222,4 +222,6 @@ core/version.cpp.saved
 # VCPkg Artifacts
 vcpkg_installed
 
+# Flowcharts directory
+flowcharts/
 
