@@ -321,6 +321,7 @@ void BlockingHandler(ConnectionData* data, const httplib::Request&, httplib::Res
     whitelist = ParseIpFile(goodip_file);
   }
   response["whitelist"] = whitelist;
+  response["whitelist_count"] = static_cast<int>(whitelist.size());
 
   // Parse blacklist (badip.txt)
   std::vector<ip_entry_t> blacklist;
@@ -362,7 +363,9 @@ void BlockingHandler(ConnectionData* data, const httplib::Request&, httplib::Res
   // Merge auto-blocked into blacklist (they're also blocked)
   blacklist.insert(blacklist.end(), auto_blocked.begin(), auto_blocked.end());
   response["blacklist"] = blacklist;
+  response["blacklist_count"] = static_cast<int>(blacklist.size());
   response["auto_blocked"] = auto_blocked;
+  response["auto_blocked_count"] = static_cast<int>(auto_blocked.size());
 
   res.set_content(response.dump(4), MIME_TYPE_JSON);
 }
