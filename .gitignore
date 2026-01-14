@@ -222,4 +222,7 @@ core/version.cpp.saved
 # VCPkg Artifacts
 vcpkg_installed
 
+# Temporary files and directories
+temp/
+
 
