@@ -84,6 +84,10 @@ struct status_line_t {
   std::string remote;
   // Connection time in ISO8601
   time_t connect_time;
+  // User number on this node
+  int user_number{ 0 };
+  // User handle/name
+  std::string user_handle;
 };
 
 struct status_reponse_t {
@@ -112,7 +116,9 @@ void to_json(nlohmann::json& j, const status_line_t& v) {
                      {"remote", v.remote},
                      {"connected", v.connected},
                      {"status", v.status},
-                     {"connect_time", v.connect_time}};
+                     {"connect_time", v.connect_time},
+                     {"user_number", v.user_number},
+                     {"user_handle", v.user_handle}};
 }
 
 void from_json(const nlohmann::json& j, status_line_t& v) {
@@ -123,6 +129,12 @@ void from_json(const nlohmann::json& j, status_line_t& v) {
   j.at("connected").get_to(v.connected);
   j.at("status").get_to(v.status);
   j.at("connect_time").get_to(v.connect_time);
+  if (j.contains("user_number")) {
+    j.at("user_number").get_to(v.user_number);
+  }
+  if (j.contains("user_handle")) {
+    j.at("user_handle").get_to(v.user_handle);
+  }
 }
 
 void to_json(nlohmann::json& j, const status_reponse_t& v) {
@@ -152,6 +164,7 @@ std::string ToJson(status_reponse_v0_t r) {
 
 // JSON
 void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* nodes,
+                   const wwiv::sdk::Config* config,
                    const httplib::Request& req, httplib::Response& res) {
   static std::mutex mu;
   std::lock_guard<std::mutex> lock(mu);
@@ -169,6 +182,11 @@ void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* no
   switch (version) {
   case 1: {
     status_reponse_t r{};
+    // Only use config for version 1 (/nodes endpoint)
+    std::unique_ptr<Names> names;
+    if (config) {
+      names = std::make_unique<Names>(*config);
+    }
     for (const auto& n : *nodes) {
       const auto& bbs_name = n.first;
       const auto& nm = n.second;
@@ -185,6 +203,10 @@ void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* no
         l.connect_time = node.connection_time;
         l.remote = node.peer;
         l.pid = node.pid;
+        l.user_number = node.user_number;
+        if (l.user_number > 0 && names) {
+          l.user_handle = names->UserName(l.user_number);
+        }
         r.lines.push_back(l);
       }
     }

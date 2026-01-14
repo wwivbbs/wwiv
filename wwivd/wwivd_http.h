@@ -30,6 +30,7 @@ namespace httplib {
 namespace wwiv::wwivd {
 
 void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* nodes,
+                   const wwiv::sdk::Config* config,
                    const httplib::Request&, httplib::Response& res);
 
 void BlockingHandler(ConnectionData* data,

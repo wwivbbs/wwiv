@@ -177,8 +177,8 @@ int Main(CommandLine& cmdline) {
     using namespace std::placeholders;
     svr = std::make_unique<httplib::Server>();    
     // Register all status endpoints
-    svr->Get("/status", std::bind(StatusHandler, data.nodes, _1, _2));
-    svr->Get("/nodes", std::bind(StatusHandler, data.nodes, _1, _2));
+    svr->Get("/status", std::bind(StatusHandler, data.nodes, data.config, _1, _2));
+    svr->Get("/nodes", std::bind(StatusHandler, data.nodes, data.config, _1, _2));
     // Register blocking endpoint
     svr->Get("/blocking", std::bind(BlockingHandler, &data, _1, _2));
     // Register sysop endpoint
