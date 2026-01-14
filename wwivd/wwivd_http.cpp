@@ -151,8 +151,6 @@ std::string ToJson(status_reponse_v0_t r) {
 }
 
 // JSON
-static std::map<std::string, int> version_map = {{"2023-01", 0}, {"2023-05", 1}};
-
 void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* nodes,
                    const httplib::Request& req, httplib::Response& res) {
   static std::mutex mu;
@@ -161,17 +159,10 @@ void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* no
   int version = 0;
   // Determine version from path
   const auto& path = req.path;
-  if (path == "/status_v1") {
+  if (path == "/nodes") {
     version = 1;
-  } else if (path == "/status_v0") {
-    version = 0;
   } else if (path == "/status") {
-    // Default to version 0, but allow query parameter override for backward compatibility
     version = 0;
-    if (req.has_param("version")) {
-      const auto v = req.get_param_value("version");
-      version = wwiv::stl::get_or_default(version_map, v, 0);
-    }
   }
 
   // We only handle status
