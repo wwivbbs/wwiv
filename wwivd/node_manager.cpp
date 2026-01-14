@@ -112,6 +112,7 @@ bool NodeManager::update_nodes() {
       LOG(WARNING) << "Stale instance: " << inst.updated().to_string();
     }
     n.connected = inst.online();
+    n.user_number = inst.user_number();
     if (n.connected) {
       n.description = inst.location_description();
       n.connection_time = inst.started().to_time_t();

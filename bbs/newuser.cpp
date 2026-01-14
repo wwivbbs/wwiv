@@ -190,7 +190,7 @@ void input_realname() {
       bout.nl();
       bout.outstr("|#3Enter your FULL real name.\r\n");
       std::string temp_local_name = bin.input_proper(a()->user()->real_name(), 30);
-      if (temp_local_name.empty() || ((nc.first_last_name_required == newuser_item_type_t::required) && !containsFirstAndLastName(temp_local_name) )) {
+      if (temp_local_name.empty() || ((a()->config()->newuser_config().first_last_name_required == newuser_item_type_t::required) && !containsFirstAndLastName(temp_local_name) )) {
         bout.nl();
         bout.outstr("|#6Sorry, you must enter your FULL real name.\r\n");
       } else {
