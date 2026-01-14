@@ -147,30 +147,44 @@ SOCKET CreateListenSocket(int port) {
 
 bool is_rfc1918_private_address(const std::string& ip) {
   // RFC 1918 defined private address space:
-  // 10.0.0.0/8 IP addresses: 10.0.0.0 – 10.255.255.255
-  // 172.16.0.0/12 IP addresses: 172.16.0.0 – 172.31.255.255
-  // 192.168.0.0/16 IP addresses: 192.168.0.0 – 192.168.255.255
+  // 10.0.0.0/8 IP addresses: 10.0.0.0  10.255.255.255
+  // 172.16.0.0/12 IP addresses: 172.16.0.0  172.31.255.255
+  // 192.168.0.0/16 IP addresses: 192.168.0.0  192.168.255.255
   auto parts = SplitString(ip, ".");
   if (parts.size() != 4) {
-    // WTF
     return false;
   }
+  
   std::vector<int> o;
+  o.reserve(4);
   for (const auto& part : parts) {
-    o.push_back(to_number<int>(part));
+    const auto num = to_number<int>(part);
+    // Validate octet is in valid range (0-255)
+    if (num < 0 || num > 255) {
+      return false;
+    }
+    o.push_back(num);
   }
   
   if (o.size() != 4) {
-    // WTF
     return false;
   }
-  if (o.at(0) == 10) {
+  
+  const auto octet0 = o.at(0);
+  const auto octet1 = o.at(1);
+  
+  // 10.0.0.0/8 - first octet must be exactly 10
+  if (octet0 == 10) {
     return true;
   }
-  if (o.at(0) == 172 && o.at(1) >= 16) {
+  
+  // 172.16.0.0/12 - first octet must be 172, second octet must be 16-31
+  if (octet0 == 172 && octet1 >= 16 && octet1 <= 31) {
     return true;
   }
-  if (o.at(0) == 192 && o.at(1) == 168) {
+  
+  // 192.168.0.0/16 - first octet must be 192, second octet must be 168
+  if (octet0 == 192 && octet1 == 168) {
     return true;
   }
   return false;
