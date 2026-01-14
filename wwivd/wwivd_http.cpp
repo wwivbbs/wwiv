@@ -172,7 +172,7 @@ void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* no
   int version = 0;
   // Determine version from path
   const auto& path = req.path;
-  if (path == "/nodes") {
+  if (path == "/instances") {
     version = 1;
   } else if (path == "/status") {
     version = 0;
@@ -182,7 +182,7 @@ void StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* no
   switch (version) {
   case 1: {
     status_reponse_t r{};
-    // Only use config for version 1 (/nodes endpoint)
+    // Only use config for version 1 (/instances endpoint)
     std::unique_ptr<Names> names;
     if (config) {
       names = std::make_unique<Names>(*config);
