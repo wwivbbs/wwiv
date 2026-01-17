@@ -57,7 +57,7 @@ FtnDirectories::FtnDirectories(std::filesystem::path bbsdir, const Network& net,
       tic_dir_(File::absolute(net_dir_, net_.fido.tic_dir)),
       unknown_dir_(File::absolute(net_dir_, net_.fido.unknown_dir)) {
   VLOG(1) << "FtnDirectories: receive_dir: " << receive_dir_;
-  md({inbound_dir_, temp_inbound_dir_, temp_outbound_dir(), outbound_dir_,h netmail_dir_, bad_packets_dir_,
+  md({inbound_dir_, temp_inbound_dir_, temp_outbound_dir(), outbound_dir_, netmail_dir_, bad_packets_dir_,
      receive_dir_, tic_dir_, unknown_dir_});
 }
 
