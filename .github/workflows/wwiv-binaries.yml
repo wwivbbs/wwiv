@@ -84,7 +84,7 @@ jobs:
     strategy:
         matrix:
           os: 
-            - windows-latest
+            - windows-2022
             - ubuntu-22.04
             - debian-11
             - debian-12
@@ -113,7 +113,7 @@ jobs:
               wwiv_distro: linux-ubuntu2204 
               archive_suffix: tar.gz
             # Github hosted runner
-            - os: windows-latest
+            - os: windows-2022
               lib_suffix: dll
               wwiv_distro: win-x86 
               archive_suffix: zip
@@ -158,19 +158,19 @@ jobs:
         uses: lukka/run-vcpkg@v11   # Always specify the specific _version_ of the
 
       - name: Locate Visual Studio (Windows)
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os == 'windows-2022' }}
         run: |
           $vcbase=$(vswhere -legacy -latest -property installationPath)
           echo VCVARS_ALL="${vcbase}\VC\Auxiliary\Build\vcvarsall.bat" >> "$env:GITHUB_ENV"
 
       - name: Set up Visual Studio Env (Windows)
         uses: egor-tensin/vs-shell@v2
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os == 'windows-2022' }}
         with:
           arch: x86
 
       - name: Build (Windows)
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os == 'windows-2022' }}
         shell: cmd
         run: builds\jenkins\wwiv\build.cmd
         env:
@@ -178,7 +178,7 @@ jobs:
           WWIV_RELEASE: 5.9.0
 
       - name: Build (Linux)
-        if: ${{ matrix.os != 'windows-latest' }}
+        if: ${{ matrix.os != 'windows-2022' }}
         shell: bash
         run: builds/jenkins/wwiv/build
         env:
@@ -202,4 +202,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: "${{ env.WWIV_TAG }}"
-          files: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}          
+          files: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
