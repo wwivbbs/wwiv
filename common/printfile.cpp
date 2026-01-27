@@ -269,7 +269,7 @@ bool Output::printfile_random(const std::string& data) {
       break;
     }
   }
-  return printfile_path(FilePath(dir, StrCat(base_fn, ".", os::random_number(screens))),
+  return printfile_path(FilePath(dir, StrCat(base_fn, ".", os::random_number(screens-1))),
                         opts.abortable, opts.force_pause);
 }
 
