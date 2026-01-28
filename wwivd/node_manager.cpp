@@ -112,6 +112,7 @@ bool NodeManager::update_nodes() {
       LOG(WARNING) << "Stale instance: " << inst.updated().to_string();
     }
     n.connected = inst.online();
+    n.user_number = inst.user_number();
     if (n.connected) {
       n.description = inst.location_description();
       n.connection_time = inst.started().to_time_t();
@@ -124,7 +125,10 @@ std::vector<NodeStatus> NodeManager::nodes() const {
   std::lock_guard<std::mutex> lock(mu_);
   std::vector<NodeStatus> v;
   for (const auto& n : nodes_) {
-    v.emplace_back(n.second);
+    // Only include nodes within the valid range [start_, end_]
+    if (n.first >= start_ && n.first <= end_) {
+      v.emplace_back(n.second);
+    }
   }
 
   return v;
