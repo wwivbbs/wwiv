@@ -39,6 +39,9 @@ void BlockingHandler(ConnectionData* data,
 void SysopHandler(ConnectionData* data,
                   const httplib::Request&, httplib::Response& res);
 
+void LastOnHandler(ConnectionData* data,
+                   const httplib::Request&, httplib::Response& res);
+
 } // namespace wwiv::wwivd
 
 #endif

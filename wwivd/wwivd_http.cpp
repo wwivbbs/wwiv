@@ -476,4 +476,161 @@ void SysopHandler(ConnectionData* data, const httplib::Request&, httplib::Respon
   res.set_content(response.dump(4), MIME_TYPE_JSON);
 }
 
+struct laston_entry_t {
+  int64_t caller_num{0};
+  std::string username;
+  std::string time;
+  std::string date;
+  std::string city;
+  std::string state;
+  std::string country;
+  std::string speed;
+  int ontoday{0};
+  std::string language;
+};
+
+void to_json(nlohmann::json& j, const laston_entry_t& e) {
+  j = nlohmann::json{
+      {"caller_num", e.caller_num},
+      {"username", e.username},
+      {"time", e.time},
+      {"date", e.date},
+      {"speed", e.speed},
+      {"ontoday", e.ontoday}};
+  
+  // Add optional fields only if they're not empty
+  if (!e.city.empty()) {
+    j["city"] = e.city;
+  }
+  if (!e.state.empty()) {
+    j["state"] = e.state;
+  }
+  if (!e.country.empty()) {
+    j["country"] = e.country;
+  }
+  if (!e.language.empty()) {
+    j["language"] = e.language;
+  }
+}
+
+static std::vector<std::string> SplitFixedWidth(const std::string& line, const std::vector<int>& widths) {
+  std::vector<std::string> fields;
+  size_t pos = 0;
+  for (size_t i = 0; i < widths.size(); ++i) {
+    int width = widths[i];
+    if (pos >= line.length()) {
+      fields.push_back("");
+      continue;
+    }
+    // Extract field of specified width
+    std::string field = line.substr(pos, width);
+    // Trim trailing spaces
+    StringTrim(&field);
+    fields.push_back(field);
+    pos += width;
+    // Skip any spaces between fields (there may be 1 or more spaces)
+    while (pos < line.length() && line[pos] == ' ') {
+      pos++;
+    }
+  }
+  return fields;
+}
+
+static std::vector<laston_entry_t> ParseLastOnFile(const std::filesystem::path& filename) {
+  std::vector<laston_entry_t> entries;
+  if (!File::Exists(filename)) {
+    return entries;
+  }
+
+  TextFile file(filename, "rt");
+  if (!file.IsOpen()) {
+    return entries;
+  }
+
+  std::string line;
+  while (file.ReadLine(&line)) {
+    StringTrim(&line);
+    if (line.empty()) {
+      continue;
+    }
+
+    // Strip ANSI color codes
+    std::string clean_line = stripcolors(line);
+    StringTrim(&clean_line);
+    
+    if (clean_line.empty()) {
+      continue;
+    }
+
+    laston_entry_t entry;
+    
+    // Try to detect format by checking if we have enough fields
+    // Format with city/state: caller_num(6) username(25) time(5) date(5) city(15) state(2) country(3) speed(8) ontoday(2)
+    // Format without: caller_num(6) username(25) language(10) time(5) date(5) speed(20) ontoday(2)
+    
+    // Try format with city/state first (9 fields total)
+    std::vector<int> widths_with_city = {6, 25, 5, 5, 15, 2, 3, 8, 2};
+    auto fields_with_city = SplitFixedWidth(clean_line, widths_with_city);
+    
+    if (fields_with_city.size() >= 9 && !fields_with_city[4].empty() && !fields_with_city[5].empty()) {
+      // Format with city/state
+      try {
+        entry.caller_num = std::stoll(fields_with_city[0]);
+        entry.username = StringTrim(fields_with_city[1]);
+        entry.time = StringTrim(fields_with_city[2]);
+        entry.date = StringTrim(fields_with_city[3]);
+        entry.city = StringTrim(fields_with_city[4]);
+        entry.state = StringTrim(fields_with_city[5]);
+        entry.country = StringTrim(fields_with_city[6]);
+        entry.speed = StringTrim(fields_with_city[7]);
+        entry.ontoday = std::stoi(fields_with_city[8]);
+        entries.push_back(entry);
+        continue;
+      } catch (...) {
+        // Parse failed, try next format
+      }
+    }
+    
+    // Try format without city/state (7 fields total)
+    std::vector<int> widths_without_city = {6, 25, 10, 5, 5, 20, 2};
+    auto fields_without_city = SplitFixedWidth(clean_line, widths_without_city);
+    
+    if (fields_without_city.size() >= 7) {
+      try {
+        entry.caller_num = std::stoll(fields_without_city[0]);
+        entry.username = StringTrim(fields_without_city[1]);
+        entry.language = StringTrim(fields_without_city[2]);
+        entry.time = StringTrim(fields_without_city[3]);
+        entry.date = StringTrim(fields_without_city[4]);
+        entry.speed = StringTrim(fields_without_city[5]);
+        entry.ontoday = std::stoi(fields_without_city[6]);
+        entries.push_back(entry);
+        continue;
+      } catch (...) {
+        // Parse failed, skip this line
+      }
+    }
+  }
+
+  return entries;
+}
+
+void LastOnHandler(ConnectionData* data, const httplib::Request&, httplib::Response& res) {
+  static std::mutex mu;
+  std::lock_guard<std::mutex> lock(mu);
+
+  nlohmann::json response;
+
+  // Get laston.txt file path
+  const auto laston_file = FilePath(data->config->gfilesdir(), LASTON_TXT);
+  
+  // Parse the file
+  auto entries = ParseLastOnFile(laston_file);
+  
+  response["entries"] = entries;
+  response["count"] = static_cast<int>(entries.size());
+
+  res.set_content(response.dump(4), MIME_TYPE_JSON);
+}
+
 } // namespace wwiv::wwivd
