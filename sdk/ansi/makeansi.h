@@ -15,12 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_SDK_MAKEANSI_H
-#define INCLUDED_SDK_MAKEANSI_H
+#ifndef __INCLUDED_SDK_MAKEANSI_H__
+#define __INCLUDED_SDK_MAKEANSI_H__
 
 #include <string>
 
-namespace wwiv::sdk::ansi {
+namespace wwiv {
+namespace sdk {
+namespace ansi {
 
 /** 
  * Passed to this function is a one-byte attribute as defined for IBM type
@@ -29,6 +31,8 @@ namespace wwiv::sdk::ansi {
  */
 std::string makeansi(int attr, int current_attr);
 
-} // namespace wwiv::sdk::ansi
+} // namespace ansi
+} // namespace sdk
+} // namespace wwiv
 
-#endif // INCLUDED_SDK_MAKEANSI_H
+#endif // __INCLUDED_SDK_MAKEANSI_H__

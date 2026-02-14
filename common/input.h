@@ -23,7 +23,6 @@
 #include "common/context.h"
 #include "common/remote_io.h"
 #include <chrono>
-#include <cstdint>
 #include <functional>
 #include <set>
 #include <string>
