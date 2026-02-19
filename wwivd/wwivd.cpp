@@ -176,7 +176,15 @@ int Main(CommandLine& cmdline) {
   if (c.http_port > 0) {
     using namespace std::placeholders;
     svr = std::make_unique<httplib::Server>();    
-    svr->Get("/status", std::bind(StatusHandler, data.nodes, _1, _2));
+    // Register all status endpoints
+    svr->Get("/status", std::bind(StatusHandler, data.nodes, data.config, _1, _2));
+    svr->Get("/instances", std::bind(StatusHandler, data.nodes, data.config, _1, _2));
+    // Register blocking endpoint
+    svr->Get("/blocking", std::bind(BlockingHandler, &data, _1, _2));
+    // Register sysop endpoint
+    svr->Get("/sysop", std::bind(SysopHandler, &data, _1, _2));
+    // Register laston endpoint
+    svr->Get("/laston", std::bind(LastOnHandler, &data, _1, _2));
     svr->set_logger(
         [](const httplib::Request& req, const httplib::Response& res) { VLOG(1) << res.body; });
     srv_thread = std::thread([&](const std::string http_address, int p) { 
