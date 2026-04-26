@@ -120,9 +120,11 @@ bool NewZModemSendFile(const std::filesystem::path& path) {
   int nFilesRem = 0;
   int nBytesRem = 0;
   char file_name[1024]; // was MAX_PATH
+  char remote_name[1024];
   to_char_array(file_name, path.string());
+  to_char_array(remote_name, path.filename().string());
   zmodemlog("NewZModemSendFile: About to call ZmodemTFile\n");
-  done = ZmodemTFile(file_name, file_name, f0, f1, f2, f3, nFilesRem, nBytesRem, &info);
+  done = ZmodemTFile(file_name, remote_name, f0, f1, f2, f3, nFilesRem, nBytesRem, &info);
   zmodemlog("NewZModemSendFile: After ZmodemTFile; [done: {}]\n", done);
   switch (done) {
   case 0:
