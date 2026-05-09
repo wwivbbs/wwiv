@@ -52,6 +52,7 @@ struct NodeStatus {
   std::string description;
   int pid;
   bool connected = false;
+  int user_number = 0;
 };
 
 class NodeManager final {
