@@ -451,6 +451,29 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
   return numl;
 }
 
+// Splits an extended description into display lines.  Extended descriptions
+// are normally stored with "\r\n" line endings, but may also contain bare
+// "\n" (or "\r") separators.  Normalize all of them to "\n" before splitting
+// so that no line keeps a trailing '\r'.  Both print_extended() and
+// check_lines_needed() must use this so the number of rows they compute agree.
+static std::vector<std::string> split_extended_lines(const std::string& raw) {
+  std::string normalized;
+  normalized.reserve(raw.size());
+  for (std::string::size_type i = 0; i < raw.size(); ++i) {
+    if (raw[i] == '\r') {
+      if (i + 1 < raw.size() && raw[i + 1] == '\n') {
+        // CRLF: drop the CR, the LF is copied on the next iteration.
+        continue;
+      }
+      normalized.push_back('\n');
+    } else {
+      normalized.push_back(raw[i]);
+    }
+  }
+  StringTrimEnd(&normalized);
+  return SplitString(normalized, "\n", false);
+}
+
 int print_extended(const std::string& file_name, int numlist, int indent, Color color,
                         search_record* search_rec) {
 
@@ -468,16 +491,16 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
   if (indent > -1 && indent != 16) {
     bout.outstr("  |#9Extended Description:\n\r");
   }
-  const auto lines = SplitString(ss, "\n", false);
+  const auto lines = split_extended_lines(ss);
   auto numl = std::min<int>(size_int(lines), numlist);
   for (auto i = 0; i < numl; i++) {
     bout.Right(std::abs(indent));
-    auto l = lines.at(i);
-    if (ssize(l) > will_fit) {
-      l.resize(will_fit);
-    }
+    // Truncate (ignoring pipe color codes) so that each extended description
+    // line occupies exactly one screen row; the caller uses the returned count
+    // to position the file numbers (see vert_pos in lpfunc.cpp).
+    const auto l = trim_to_size_ignore_colors(lines.at(i), will_fit);
     bout.setc(static_cast<uint8_t>(color));
-    bout.outstr(lines.at(i));
+    bout.outstr(l);
     bout.nl();
   }
   bout.ansic(0);
@@ -518,8 +541,7 @@ int check_lines_needed(uploadsrec* u) {
     if (ext_is_on && mask_extended & u->mask) {
       const auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).
                            value_or("");
-      const auto lines = SplitString(ss, "\r");
-      elines = size_int(lines);
+      elines = size_int(split_extended_lines(ss));
     }
   }
   const auto lc_lines_used = lp_configured_lines();
