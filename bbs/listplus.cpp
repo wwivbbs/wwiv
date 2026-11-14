@@ -125,6 +125,32 @@ static int lp_screen_cols() {
   return std::min<int>(80, a()->user()->screen_width());
 }
 
+// Expands TABs to spaces using 8-column tab stops, the same stops
+// Output::outchr() uses (it emits 8 - (x % 8) spaces for a TAB).  The column
+// is the real screen column: `start_col` (0-based column where the text starts
+// printing) plus the visible width of the text before the TAB, measured with
+// size_without_colors() exactly as trim_to_size_ignore_colors() measures it.
+// Expanding here, before trimming, means the trimmed width equals the width on
+// screen.  (outchr() itself computes the stop from its own x_, which setc() and
+// "|nn" pipe codes advance by the length of the ANSI escape they emit, so
+// leaving TABs to the output layer can't be counted reliably.)
+static std::string lp_expand_tabs(const std::string& s, int start_col) {
+  if (s.find('\t') == std::string::npos) {
+    return s;
+  }
+  std::string out;
+  out.reserve(s.size() + 16);
+  for (const auto c : s) {
+    if (c == '\t') {
+      const auto col = start_col + size_without_colors(out);
+      out.append(8 - (col % 8), ' ');
+    } else {
+      out.push_back(c);
+    }
+  }
+  return out;
+}
+
 static void build_header() {
   int desc_pos = 30;
   std::string header(" Tag # ");
@@ -417,7 +443,8 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     extdesc_pos = -1;
   }
 
-  auto fi = trim_to_size_ignore_colors(file_information, will_fit);
+  // The file line (including the description column) starts at column 0.
+  auto fi = trim_to_size_ignore_colors(lp_expand_tabs(file_information, 0), will_fit);
   fi += "\r\n";
   bout.outstr(fi);
   numl++;
@@ -470,7 +497,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     if (a()->user()->data.lp_options & cfl_date_uploaded && numl < LinesLeft) {
       StringJustify(&file_information, ssize(file_information) + width, ' ',
                     JustificationType::RIGHT);
-      bout.outstr(trim_to_size_ignore_colors(file_information, will_fit));
+      bout.outstr(trim_to_size_ignore_colors(lp_expand_tabs(file_information, 0), will_fit));
       bout.nl();
       ++numl;
     }
@@ -482,7 +509,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
   if (!buffer.empty() && numl < LinesLeft) {
     StringJustify(&file_information, ssize(file_information) + width, ' ',
                   JustificationType::RIGHT);
-    bout.outstr(trim_to_size_ignore_colors(file_information, will_fit));
+    bout.outstr(trim_to_size_ignore_colors(lp_expand_tabs(file_information, 0), will_fit));
     bout.nl();
     ++numl;
   }
@@ -538,7 +565,9 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
     // Truncate (ignoring pipe color codes) so that each extended description
     // line occupies exactly one screen row; the caller uses the returned count
     // to position the file numbers (see vert_pos in lpfunc.cpp).
-    const auto l = trim_to_size_ignore_colors(lines.at(i), will_fit);
+    // The line starts printing at column abs(indent) (after bout.Right()).
+    const auto l =
+        trim_to_size_ignore_colors(lp_expand_tabs(lines.at(i), std::abs(indent)), will_fit);
     bout.setc(static_cast<uint8_t>(color));
     bout.outstr(l);
     bout.nl();
