@@ -173,8 +173,7 @@ static void modify_sub(int n) {
     bout.print("|#9M) Req ANSI     : |#2{}\r\n",
                YesNoString((r.anony & anony_ansi_only) ? true : false));
     bout.print("|#9N) Disable tag  : |#2{}\r\n", YesNoString((r.anony & anony_no_tag) ? true : false));
-    bout.print("|#9O) Description  : |#2{}\r\n",
-               ((!a()->subs().sub(n).desc.empty()) ? a()->subs().sub(n).desc : "None."));
+    bout.print("|#9O) Description  : |#2{}\r\n", (!r.desc.empty() ? r.desc : "None."));
     bout.print("|#9P) Disable FS   : |#2{}\r\n",
                YesNoString((r.anony & anony_no_fullscreen) ? true : false));
     bout.print("|#9R) Colorize Text: |#2{}\r\n", YesNoString(r.colorize_text));
@@ -386,7 +385,9 @@ static void modify_sub(int n) {
     case 'O': {
       bout.nl();
       bout.outstr("|#2Enter new Description : \r\n|#7:");
-      a()->subs().sub(n).desc = bin.input_text(a()->subs().sub(n).desc, 60);
+      // Edit the working copy r; writing straight to subs().sub(n) was
+      // overwritten by set_sub(n, r) when leaving the editor (#1686).
+      r.desc = bin.input_text(r.desc, 60);
     } break;
     case 'P':
       bout.nl();
