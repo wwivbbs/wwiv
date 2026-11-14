@@ -75,46 +75,52 @@ static char _off_[] = "OFF";
 
 static bool lp_config_loaded = false;
 
-// TODO(rushfan): Convert this to use strings.
-static void colorize_foundtext(char* text, search_record* search_rec, int color) {
-  char found_color[10], normal_color[10];
-  char find[101], word[101];
+// Highlights each case-insensitive occurrence of every search word in *text:
+// the match is preceded by the "found" color code and followed by a code that
+// restores `color`.  The result is built in the std::string itself.  The old
+// version worked in place in a char buffer of text->size() * 2 + 120 bytes,
+// which each match grew by 12 bytes, so many matches (for example a one-letter
+// search) overflowed it.  This keeps the old output byte for byte:
+//  - the text is cut at the first NUL (the old strcpy/assign did that);
+//  - the search string is limited to its first 100 characters (old char[101]),
+//    split on "&|!()" with empty words skipped (strtok), and each word trimmed;
+//  - matching uses the same strcasestr();
+//  - exactly 6 characters of each color code are inserted (old strncpy(.., 6));
+//  - each word is searched in the text as colorized by the previous words;
+//  - after a match, searching resumes one character past the restore code
+//    (the old ++temp_buffer), and stops at the end of the text instead of
+//    reading past it.
+static void colorize_foundtext(std::string* text, search_record* search_rec, int color) {
+  if (const auto nul = text->find('\0'); nul != std::string::npos) {
+    text->resize(nul);
+  }
+  if (!lp_config.colorize_found_text) {
+    return;
+  }
+  const auto found_color =
+      fmt::sprintf("|%02d|%02d", lp_config.found_fore_color, lp_config.found_back_color)
+          .substr(0, 6);
+  const auto normal_color = fmt::sprintf("|16|%02d", color).substr(0, 6);
+  const auto find = std::string(search_rec->search.c_str()).substr(0, 100);
 
-  sprintf(found_color, "|%02d|%02d", lp_config.found_fore_color, lp_config.found_back_color);
-  sprintf(normal_color, "|16|%02d", color);
-
-  if (lp_config.colorize_found_text) {
-    to_char_array(find, search_rec->search);
-    char* tok = strtok(find, "&|!()");
-
-    while (tok) {
-      char* temp_buffer = text;
-      strcpy(word, tok);
-      StringTrim(word);
-
-      while (temp_buffer && word[0]) {
-        if ((temp_buffer = strcasestr(temp_buffer, word)) != nullptr) {
-          int size = ssize(temp_buffer) + 1;
-          memmove(&temp_buffer[6], &temp_buffer[0], size);
-          strncpy(temp_buffer, found_color, 6);
-          temp_buffer += strlen(word) + 6;
-          size = ssize(temp_buffer) + 1;
-          memmove(&temp_buffer[6], &temp_buffer[0], size);
-          strncpy(temp_buffer, normal_color, 6);
-          temp_buffer += 6;
-          ++temp_buffer;
-        }
+  for (auto word : SplitString(find, "&|!()")) {
+    StringTrim(&word);
+    if (word.empty()) {
+      continue;
+    }
+    std::string::size_type pos = 0;
+    while (pos < text->size()) {
+      const char* hit = strcasestr(text->c_str() + pos, word.c_str());
+      if (hit == nullptr) {
+        break;
       }
-      tok = strtok(nullptr, "&|!()");
+      const auto found = static_cast<std::string::size_type>(hit - text->c_str());
+      text->insert(found, found_color);
+      const auto after_word = found + found_color.size() + word.size();
+      text->insert(after_word, normal_color);
+      pos = after_word + normal_color.size() + 1;
     }
   }
-}
-
-static void colorize_foundtext(std::string* text, search_record* search_rec, int color) {
-  std::unique_ptr<char[]> s(new char[text->size() * 2 + (12 * 10)]); // extra padding for colorized
-  strcpy(s.get(), text->c_str());
-  colorize_foundtext(s.get(), search_rec, color);
-  text->assign(s.get());
 }
 
 // Number of columns the ListPlus layout may use.  The layout was designed for
