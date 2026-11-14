@@ -453,8 +453,9 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     int num_extended, lines_left;
     int lines_printed;
 
-    // Leave room for the trailer lines (see check_lines_needed()).
-    lines_left = std::max<int>(0, LinesLeft - numl - trailer_lines);
+    // Leave room for the trailer lines and for the extra row print_extended()
+    // ends with (see check_lines_needed()).
+    lines_left = std::max<int>(0, LinesLeft - numl - trailer_lines - 1);
     num_extended = lp_num_extended();
     if (num_extended > lines_left) {
       num_extended = lines_left;
@@ -602,7 +603,8 @@ void show_fileinfo(uploadsrec* u) {
 
 // Returns exactly the number of rows printinfo_plus() will print for this file
 // when it has enough room: 1 for the file line, the extended description lines
-// (at most lp_num_extended()), and lp_trailer_lines().  The optional blank
+// (at most lp_num_extended()) plus the extra row print_extended() ends with,
+// and lp_trailer_lines().  The optional blank
 // separator added by listfiles_plus_function() is only printed when it fits, so
 // it is not included.  The result is capped at a full page so that a file with a
 // very long description is still listed (printinfo_plus() then shortens the
@@ -614,6 +616,12 @@ int check_lines_needed(uploadsrec* u) {
       const auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).
                            value_or("");
       elines = std::min<int>(size_int(split_extended_lines(ss)), lp_num_extended());
+      if (elines > 0) {
+        // print_extended() ends with "if (bout.wherex()) { bout.nl(); ++numl; }".
+        // Output::nl() leaves x_ at 1, not 0, so after its last line that
+        // always fires: one more (blank) row, which it counts and returns.
+        ++elines;
+      }
     }
   }
   return std::min<int>(1 + elines + lp_trailer_lines(u), calc_max_lines());
