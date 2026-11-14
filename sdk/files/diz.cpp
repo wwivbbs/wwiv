@@ -17,7 +17,6 @@
 /**************************************************************************/
 #include "sdk/files/diz.h"
 #include <algorithm>
-
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
