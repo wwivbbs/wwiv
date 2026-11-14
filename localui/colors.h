@@ -21,6 +21,7 @@
 
 #include <map>
 #include <memory>
+#include <cstdint>
 
 namespace wwiv::local::ui {
 
