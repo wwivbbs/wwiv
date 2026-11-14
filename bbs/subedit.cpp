@@ -640,7 +640,9 @@ void boardedit() {
         insert_sub(subnum);
         modify_sub(subnum);
         const auto confs_size = a()->all_confs().subs_conf().size();
-        if (confs_size > 1) {
+        if (!a()->subs().sub(subnum).conf.empty()) {
+          // Conferences were already set with S) in the editor; don't ask again.
+        } else if (confs_size > 1) {
           bout.nl();
           if (auto o = select_conf("Put in which conference? ", a()->all_confs().subs_conf(), true)) {
             a()->subs().sub(subnum).conf.insert(o.value());
