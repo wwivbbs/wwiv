@@ -21,6 +21,7 @@
 
 #include "localui/colors.h"
 #include <string>
+#include <cstdint>
 
 namespace wwiv::local::ui {
 
