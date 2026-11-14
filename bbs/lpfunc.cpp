@@ -99,8 +99,6 @@ static void load_listing() {
 }
 
 int listfiles_plus_function(int type) {
-  int file_handle[51];
-  char vert_pos[51];
   int file_pos = 0, save_file_pos = 0, menu_pos = 0;
   size_t save_dir = a()->current_user_dir_num();
   bool sysop_mode = false;
@@ -120,6 +118,12 @@ int listfiles_plus_function(int type) {
   prep_menu_items(&menu_items);
 
   std::vector<uploadsrec> file_recs(a()->user()->screen_lines() + 20);
+  // File number and row (relative to first_file_pos()) of each file on the
+  // current page.  Every file uses at least one row, so a page never holds more
+  // than max_lines (< screen_lines) files; size these like file_recs.  The row
+  // is an int, not a char, so it can't overflow on tall screens.
+  std::vector<int> file_handle(file_recs.size());
+  std::vector<int> vert_pos(file_recs.size());
   if (!prep_search_rec(&search_rec, type)) {
     return 0;
   }
@@ -171,12 +175,12 @@ int listfiles_plus_function(int type) {
           if (compare_criteria(&search_rec, &file_recs[matches])) {
             int lines_left = max_lines - lines;
             int needed = check_lines_needed(&file_recs[matches]);
-            if (needed <= lines_left) {
+            if (needed <= lines_left && matches + 1 < ssize(file_recs)) {
               if (!matches) {
                 printtitle_plus();
               }
               file_handle[matches] = first_file + amount;
-              vert_pos[matches] = static_cast<char>(lines);
+              vert_pos[matches] = lines;
               auto marked = a()->batch().contains_file(file_recs[matches].filename);
               int lines_used = printinfo_plus(&file_recs[matches], file_handle[matches], marked,
                                               lines_left, &search_rec);

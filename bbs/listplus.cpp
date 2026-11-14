@@ -117,6 +117,14 @@ static void colorize_foundtext(std::string* text, search_record* search_rec, int
   text->assign(s.get());
 }
 
+// Number of columns the ListPlus layout may use.  The layout was designed for
+// 80 columns; never use more than that, but shrink to the user's screen width
+// so that no row wraps (a wrapped row is a screen row that the row counting
+// used for vert_pos in lpfunc.cpp does not know about).
+static int lp_screen_cols() {
+  return std::min<int>(80, a()->user()->screen_width());
+}
+
 static void build_header() {
   int desc_pos = 30;
   std::string header(" Tag # ");
@@ -140,7 +148,7 @@ static void build_header() {
     desc_pos = size_int(header);
     header += "Description";
   }
-  StringJustify(&header, 79, ' ', JustificationType::LEFT);
+  StringJustify(&header, lp_screen_cols() - 1, ' ', JustificationType::LEFT);
   bout.print("|23|01{}\r\n", header);
 
   header.clear();
@@ -152,25 +160,26 @@ static void build_header() {
   }
   if (!header.empty()) {
     StringJustify(&header, desc_pos + ssize(header), ' ', JustificationType::RIGHT);
-    StringJustify(&header, 79, ' ', JustificationType::LEFT);
+    StringJustify(&header, lp_screen_cols() - 1, ' ', JustificationType::LEFT);
     bout.print("|23|01{}\r\n", header);
   }
 }
 
 static void printtitle_plus_old() {
-  bout.print("|16|15{}\r\n", std::string(79, '\xDC'));
+  bout.print("|16|15{}\r\n", std::string(lp_screen_cols() - 1, '\xDC'));
 
   const auto buf =
       fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
                    a()->dirs()[a()->current_user_dir().subnum].name,
                    a()->current_file_area()->number_of_files());
-  bout.printf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf);
+  const auto title = fmt::sprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 ", buf);
+  bout.print("{}\r\n", trim_to_size_ignore_colors(title, lp_screen_cols() - 1));
 
   if (a()->user()->data.lp_options & cfl_header) {
     build_header();
   }
 
-  bout.print("|16|08{}\r\n|#0", std::string(79, '\xDF'));
+  bout.print("|16|08{}\r\n|#0", std::string(lp_screen_cols() - 1, '\xDF'));
 }
 
 void printtitle_plus() {
@@ -183,7 +192,9 @@ void printtitle_plus() {
         fmt::format("Area {} : {: <30} ({} files)", to_number<int>(a()->current_user_dir().keys),
                     a()->dirs()[a()->current_user_dir().subnum].name,
                     a()->current_file_area()->number_of_files());
-    bout.litebar(fmt::format("{:<54} Space=Tag/?=Help", buf));
+    // litebar() prints a leading space and pads to screen_width() - 2.
+    bout.litebar(
+        trim_to_size_ignore_colors(fmt::format("{:<54} Space=Tag/?=Help", buf), lp_screen_cols() - 2));
     bout.ansic(0);
   }
 }
@@ -298,9 +309,37 @@ int lp_add_batch(const std::string& file_name, int dn, int fs) {
 }
 
 
+static std::vector<std::string> split_extended_lines(const std::string& raw);
+
+// Number of rows printinfo_plus() prints after the file line and the extended
+// description: the "UL:" date line and/or the "Upby:" line.  This must match
+// the trailer logic at the end of printinfo_plus(), which prints its last line
+// only when `buffer` (the text of the last of the filename/extension/size/
+// description columns) is non-empty; that is mirrored here.
+static int lp_trailer_lines(const uploadsrec* u) {
+  const auto opts = a()->user()->data.lp_options;
+  if (opts & cfl_date_uploaded) {
+    return (opts & cfl_upby) ? 2 : 1;
+  }
+  if (opts & cfl_description) {
+    return u->description[0] ? 1 : 0;
+  }
+  return (opts & (cfl_fname | cfl_extension | cfl_kbytes)) ? 1 : 0;
+}
+
+// Maximum number of extended description lines to show for any file.
+static int lp_num_extended() {
+  return std::max<int>(a()->user()->GetNumExtended(), lp_config.show_at_least_extended);
+}
+
 int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
                    search_record* search_rec) {
-  int numl = 0, will_fit = 78;
+  int numl = 0;
+  // Keep the file line one column short of the screen width so it never wraps.
+  const int will_fit = lp_screen_cols() - 2;
+  // Rows needed after the extended description.  They are reserved before the
+  // extended description is printed so the total never exceeds LinesLeft.
+  const auto trailer_lines = lp_trailer_lines(u);
   int char_printed = 0, extdesc_pos;
 
   files::FileName filename(u->filename);
@@ -387,15 +426,13 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     int num_extended, lines_left;
     int lines_printed;
 
-    lines_left = LinesLeft - numl;
-    num_extended = a()->user()->GetNumExtended();
-    if (num_extended < lp_config.show_at_least_extended) {
-      num_extended = lp_config.show_at_least_extended;
-    }
+    // Leave room for the trailer lines (see check_lines_needed()).
+    lines_left = std::max<int>(0, LinesLeft - numl - trailer_lines);
+    num_extended = lp_num_extended();
     if (num_extended > lines_left) {
       num_extended = lines_left;
     }
-    if (ext_is_on && mask_extended & u->mask) {
+    if (num_extended > 0 && ext_is_on && mask_extended & u->mask) {
       lines_printed = print_extended(u->filename, num_extended, -extdesc_pos,
                                           static_cast<Color>(a()->user()->data.lp_colors[10]),
                                           search_rec);
@@ -430,10 +467,10 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
   }
 
   if (a()->user()->data.lp_options & cfl_upby) {
-    if (a()->user()->data.lp_options & cfl_date_uploaded) {
+    if (a()->user()->data.lp_options & cfl_date_uploaded && numl < LinesLeft) {
       StringJustify(&file_information, ssize(file_information) + width, ' ',
                     JustificationType::RIGHT);
-      bout.outstr(file_information);
+      bout.outstr(trim_to_size_ignore_colors(file_information, will_fit));
       bout.nl();
       ++numl;
     }
@@ -441,10 +478,11 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     file_information = fmt::sprintf("|%02dUpby: %-15s", a()->user()->data.lp_colors[7], tmp);
   }
 
-  if (!buffer.empty()) {
+  // Never print past LinesLeft, or the listing spills into the side menu row.
+  if (!buffer.empty() && numl < LinesLeft) {
     StringJustify(&file_information, ssize(file_information) + width, ' ',
                   JustificationType::RIGHT);
-    bout.outstr(file_information);
+    bout.outstr(trim_to_size_ignore_colors(file_information, will_fit));
     bout.nl();
     ++numl;
   }
@@ -477,7 +515,9 @@ static std::vector<std::string> split_extended_lines(const std::string& raw) {
 int print_extended(const std::string& file_name, int numlist, int indent, Color color,
                         search_record* search_rec) {
 
-  const int will_fit = 80 - std::abs(indent) - 2;
+  // Each line must fit on one screen row after the indent, or it would wrap
+  // onto a row that the returned count doesn't include.
+  const int will_fit = std::max<int>(0, lp_screen_cols() - std::abs(indent) - 2);
 
   auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(file_name).value_or("");
 
@@ -531,21 +571,23 @@ void show_fileinfo(uploadsrec* u) {
   bout.pausescr();
 }
 
+// Returns exactly the number of rows printinfo_plus() will print for this file
+// when it has enough room: 1 for the file line, the extended description lines
+// (at most lp_num_extended()), and lp_trailer_lines().  The optional blank
+// separator added by listfiles_plus_function() is only printed when it fits, so
+// it is not included.  The result is capped at a full page so that a file with a
+// very long description is still listed (printinfo_plus() then shortens the
+// extended description to fit).
 int check_lines_needed(uploadsrec* u) {
-  const auto num_extended = std::max<int>(a()->user()->GetNumExtended(),
-                                          lp_config.show_at_least_extended);
-  const auto max_lines = std::min<int>(num_extended, calc_max_lines());
-
   auto elines = 0;
   if (a()->user()->data.lp_options & cfl_description) {
     if (ext_is_on && mask_extended & u->mask) {
       const auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).
                            value_or("");
-      elines = size_int(split_extended_lines(ss));
+      elines = std::min<int>(size_int(split_extended_lines(ss)), lp_num_extended());
     }
   }
-  const auto lc_lines_used = lp_configured_lines();
-  return std::min<int>(lc_lines_used + elines, max_lines - 1);
+  return std::min<int>(1 + elines + lp_trailer_lines(u), calc_max_lines());
 }
 
 int prep_search_rec(search_record* r, int type) {
