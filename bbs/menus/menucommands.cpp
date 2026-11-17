@@ -357,6 +357,13 @@ Runs a WWIVbasic Script
               change_colors();
               a()->WriteCurrentUser();
             }));
+  // Deprecated alias used by the default //COLORS menu item (and existing
+  // boards that still have cmd "colorconfig"). Prefer user:colors.
+  m.emplace("colorconfig", MenuItem(R"(An alias for user:colors.
+  This alias is deprecated, please use user:colors.)", MENU_CAT_USER, [](MenuContext&) {
+              change_colors();
+              a()->WriteCurrentUser();
+            }));
 
 
   m.emplace("user:pause", MenuItem(R"(Toggles pause on page)", MENU_CAT_USER, [](MenuContext&) {
