@@ -96,6 +96,23 @@ private:
   std::map<char, const std::string> args_;
 };
 
+/**
+ * Quotes `value` for use as replaceable parameter %n in `cmd_template`.
+ *
+ * On Unix, external commands are run via /bin/bash -c, so characters such
+ * as '&' in a filename would otherwise split the command.  If the template
+ * already quotes the placeholder (for example "%1" or '%1'), the value is
+ * returned unchanged to avoid double-quoting.
+ *
+ * When `split_tokens` is true, each whitespace-separated token is quoted
+ * separately so extract commands can pass multiple names in %2
+ * (FILE_ID.DIZ DESC.SDI).  Tokens that only need globbing (* or ?) are
+ * left unquoted so commands such as `zip -j %1 *.*` still expand.
+ */
+std::string quote_arg_for_command(const std::string& cmd_template, int n,
+                                  const std::string& value,
+                                  bool split_tokens = false);
+
 } // namespace wwiv::bbs 
 
 #endif

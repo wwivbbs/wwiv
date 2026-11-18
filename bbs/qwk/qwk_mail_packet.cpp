@@ -713,8 +713,10 @@ void finish_qwk(qwk_state *qwk_info) {
   if (!qwk_info->abort) {
     auto parem1 = FilePath(a()->sess().dirs().qwk_directory(), qwkname);
     auto parem2 = FilePath(a()->sess().dirs().qwk_directory(), "*.*");
-    wwiv::bbs::CommandLine cl(a()->arcs[archiver].arca);
-    cl.args(parem1.string(), parem2.string());
+    const auto add_cmd = a()->arcs[archiver].arca;
+    wwiv::bbs::CommandLine cl(add_cmd);
+    cl.args(quote_arg_for_command(add_cmd, 1, parem1.string()),
+            quote_arg_for_command(add_cmd, 2, parem2.string()));
     ExecuteExternalProgram(cl, a()->spawn_option(SPAWNOPT_ARCH_A));
 
     qwk_file_to_send = FilePath(a()->sess().dirs().qwk_directory(), qwkname).string();
