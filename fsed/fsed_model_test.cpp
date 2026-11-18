@@ -245,8 +245,9 @@ TEST_F(FsedModelWithViewTest, MidLineInsert_WrapsWithoutClobberingNextParagraph)
   EXPECT_NE(std::string::npos, all.find("NEXT PARAGRAPH"));
 }
 
-// #1344: inserting into an already soft-wrapped paragraph should reflow
-// into the continuation line rather than hiding the overflow "behind" it.
+// #1344: inserting into an already soft-wrapped paragraph must keep every
+// character (with spaces intact) and must not exceed the max width.  Overflow
+// is inserted as a new line rather than merged into the continuation.
 TEST_F(FsedModelWithViewTest, MidLineInsert_ReflowsSoftWrappedParagraph) {
   ed.set_max_line_len(20);
   add("12345 12345 12345 XXXYY");
@@ -299,9 +300,9 @@ TEST_F(FsedModelWithViewTest, BackspaceJoin_FitsEntirely) {
   ed.bs();
 
   EXPECT_EQ(0, ed.curli);
-  EXPECT_EQ(3, ed.cx);
+  EXPECT_EQ(4, ed.cx);
   EXPECT_EQ(1, wwiv::stl::size_int(ed));
-  EXPECT_EQ("AAABBB", line_text(ed.line(0)));
+  EXPECT_EQ("AAA BBB", line_text(ed.line(0)));
 }
 
 // Backspace on the top visible row must scroll the viewport instead of
@@ -367,4 +368,130 @@ TEST_F(FsedModelWithViewTest, CursorLeft_AtTopOfViewport_Scrolls) {
   EXPECT_EQ(89, ed.curli);
   EXPECT_EQ(89, view->top_line());
   EXPECT_EQ(wwiv::stl::size_int(ed.line(89)), ed.cx);
+}
+
+
+// Reproduce the test-video case: a full-width quote line, a hard break, then
+// a soft-wrapped paragraph.  Inserting at column 0 of the quote must wrap at
+// a word boundary (not "Maryla"/"nd.") and must not glue overflow onto the
+// next paragraph ("nd.Trying", "hisextend", "umpsover").
+TEST_F(FsedModelWithViewTest, InsertAtStartOfFullQuote_WrapsAtWordBoundary) {
+  const std::string quote =
+      "U> I find it funny how many people on here are in or are from Maryland.";
+  const std::string para =
+      "Trying this again with some FSED changes I'm working on. I need to make this "
+      "extend past a couple lines, so sorry about the noise. The quick brown fox jumps "
+      "over the lazy dog.";
+  ed.set_max_line_len(static_cast<int>(quote.size()));
+  add(quote);
+  ed.enter();
+  add(para);
+
+  while (ed.curli > 0) {
+    ed.cursor_up();
+  }
+  ed.cursor_home();
+  add("line 3");
+
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    const auto t = line_text(ed.line(i));
+    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), static_cast<int>(quote.size())) << t;
+    if (t.size() >= 6) {
+      EXPECT_NE("Maryla", t.substr(t.size() - 6)) << t;
+    }
+    EXPECT_NE("nd.", t);
+  }
+  const auto all = joined_text(ed);
+  EXPECT_NE(std::string::npos, all.find("Maryland."));
+  EXPECT_NE(std::string::npos, all.find("line 3"));
+  EXPECT_NE(std::string::npos, all.find("Trying this again"));
+  EXPECT_EQ(std::string::npos, all.find("nd.Trying"));
+  EXPECT_EQ(std::string::npos, all.find("hisextend"));
+  EXPECT_EQ(std::string::npos, all.find("umpsover"));
+  EXPECT_EQ(std::string::npos, all.find("Maryland.Trying"));
+}
+
+TEST_F(FsedModelWithViewTest, EnterMidLine_DoesNotConcatenateOntoNextParagraph) {
+  const std::string quote =
+      "U> I find it funny how many people on here are in or are from Maryland.";
+  ed.set_max_line_len(static_cast<int>(quote.size()));
+  add(quote);
+  ed.enter();
+  add("Trying this again");
+  while (ed.curli > 0) {
+    ed.cursor_up();
+  }
+  ed.cursor_end();
+  for (int i = 0; i < 9; i++) {
+    ed.cursor_left(); // just before "Maryland."
+  }
+  ed.enter();
+
+  const auto all = joined_text(ed);
+  EXPECT_EQ(std::string::npos, all.find("nd.Trying"));
+  EXPECT_EQ(std::string::npos, all.find("Maryland.Trying"));
+  EXPECT_NE(std::string::npos, all.find("Trying this again"));
+  bool found_para = false;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), static_cast<int>(quote.size()));
+    if (line_text(ed.line(i)).find("Trying this again") == 0) {
+      found_para = true;
+    }
+  }
+  EXPECT_TRUE(found_para);
+}
+
+TEST_F(FsedModelWithViewTest, BackspaceJoin_PreservesSpaceAfterMaryland) {
+  ed.set_max_line_len(80);
+  add("are from Maryland.\nTrying this");
+  ed.cursor_home();
+  ed.bs();
+
+  EXPECT_EQ(0, ed.curli);
+  EXPECT_EQ("are from Maryland. Trying this", line_text(ed.line(0)));
+  EXPECT_EQ(std::string::npos, joined_text(ed).find("Maryland.Trying"));
+}
+
+// After a wrap, deleting one character must not swallow a neighbor
+// (the test video lost the "g" from "Trying" / "gthis").
+TEST_F(FsedModelWithViewTest, DeleteAfterWrap_DoesNotLoseCharacters) {
+  ed.set_max_line_len(20);
+  add("12345 12345 12345 XXXYY");
+  ASSERT_GE(wwiv::stl::size_int(ed), 2);
+  ASSERT_TRUE(ed.line(0).wrapped());
+  const auto before = joined_text(ed);
+
+  while (ed.curli > 1) {
+    ed.cursor_up();
+  }
+  if (ed.curli == 0) {
+    ed.cursor_down();
+  }
+  ed.cursor_home();
+  ASSERT_GT(wwiv::stl::size_int(ed.curline()), 0);
+  const auto continuation = line_text(ed.curline());
+  const char removed = continuation.front();
+  const auto rest = continuation.substr(1);
+  ed.del();
+
+  const auto after = joined_text(ed);
+  EXPECT_EQ(before.size() - 1, after.size());
+  const auto at = before.rfind(std::string(1, removed) + rest);
+  ASSERT_NE(std::string::npos, at);
+  EXPECT_EQ(before.substr(0, at) + before.substr(at + 1), after);
+}
+
+
+// The old wrap heuristic required the last space to be in the second half
+// of the line, otherwise it character-wrapped.  A space in the first half
+// plus a long last word must still wrap at that space, not mid-word.
+TEST_F(FsedModelWithViewTest, WrapsAtLastSpaceEvenIfInFirstHalf) {
+  ed.set_max_line_len(20);
+  add("1234567 123456789012345");
+  EXPECT_EQ("1234567 ", line_text(ed.line(0)));
+  EXPECT_TRUE(ed.line(0).wrapped());
+  EXPECT_EQ("1234567 123456789012345", joined_text(ed));
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), 20) << line_text(ed.line(i));
+  }
 }

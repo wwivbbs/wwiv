@@ -21,6 +21,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/format.h"
+#include <algorithm>
 
 namespace wwiv::fsed {
 
@@ -105,7 +106,11 @@ int line_t::last_space_before(int maxlen) {
   if (cell_.empty()) {
     return 0;
   }
-  for (auto i = maxlen - 1; i > 0; i--) {
+  // Search the last index that can stay on a line of length maxlen
+  // (indices 0..maxlen-1).  Starting at maxlen would read past that
+  // column and could pick a space in the overflow.
+  const auto start = std::min(size_int(cell_), maxlen) - 1;
+  for (auto i = start; i > 0; i--) {
     const auto c = cell_.at(i).ch;
     if (c == '\t' || c == ' ') {
       return i;

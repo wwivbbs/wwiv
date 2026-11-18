@@ -168,9 +168,12 @@ bool FsedModel::wrap_line() {
 
     const bool was_wrapped = ln.wrapped();
     const auto wwiv_color = ln.wwiv_color();
+    // Last space at or before the last column that can stay on this line.
+    // A previous "last space must be in the second half" heuristic fell
+    // through to a character wrap and split words like "Maryland." into
+    // "Maryla" / "nd." even when the line had spaces.
     const auto last_space = ln.last_space_before(max_line_len_);
-    const bool word_wrap =
-        last_space > 0 && (max_line_len_ - last_space) < (max_line_len_ / 2);
+    const bool word_wrap = last_space > 0 && last_space < line_size;
 
     int wrap_position;
     if (word_wrap) {
@@ -184,6 +187,12 @@ bool FsedModel::wrap_line() {
       // word break.  Leave this line as-is and continue on a new line.
       wrap_position = line_size;
     }
+    if (wrap_position < 0) {
+      wrap_position = 0;
+    }
+    if (wrap_position > line_size) {
+      wrap_position = line_size;
+    }
 
     // Copy the overflow before assign(); insert_at may reallocate later.
     const auto overflow = ln.substr(wrap_position);
@@ -195,28 +204,20 @@ bool FsedModel::wrap_line() {
     const bool move_cursor = (curli == idx && cx >= wrap_position);
     const int new_cx = move_cursor ? (cx - wrap_position) : cx;
 
-    if (was_wrapped && (idx + 1) < size_int(lines_)) {
-      // Already a soft-wrapped paragraph: reflow overflow into the existing
-      // continuation line instead of inserting a new line in the middle (#1344).
-      auto rest = line(idx + 1).cells();
-      line(idx + 1).assign(overflow);
-      line(idx + 1).append(rest);
-    } else {
-      // Hard break, or no continuation line: insert a new line for the
-      // overflow.  The old character-wrap path did "++curli" without
-      // insert_line(), which overwrote the next existing line (#1343).
-      if (size_int(lines_) >= maxli()) {
-        // Put the overflow back so we don't drop text at maxli.
-        if (!overflow.empty()) {
-          line(idx).append(overflow);
-          line(idx).wrapped(was_wrapped);
-        }
-        return false;
+    // Always insert a new line for the overflow.  Merging into the next
+    // existing line prepended text with no space and could cascade through
+    // a quote into a different paragraph ("nd.Trying", "hisextend").
+    if (size_int(lines_) >= maxli()) {
+      // Put the overflow back so we don't drop text at maxli.
+      if (!overflow.empty()) {
+        line(idx).append(overflow);
+        line(idx).wrapped(was_wrapped);
       }
-      wwiv::stl::insert_at(lines_, idx + 1, line_t());
-      line(idx + 1).assign(overflow);
-      line(idx + 1).set_wwiv_color(wwiv_color);
+      return false;
     }
+    wwiv::stl::insert_at(lines_, idx + 1, line_t());
+    line(idx + 1).assign(overflow);
+    line(idx + 1).set_wwiv_color(wwiv_color);
 
     if (move_cursor) {
       curli = idx + 1;
@@ -475,8 +476,17 @@ bool FsedModel::bs() {
   } else if (curli > 0) {
     auto& prev = line(curli - 1);
     auto& cur = curline();
+    // If a soft wrap ate the space at the break, or two hard-broken lines
+    // would glue like "Maryland.Trying", put a separating space back.
+    const bool need_space =
+        size_int(prev) > 0 && size_int(cur) > 0 &&
+        prev.cells().back().ch != ' ' && prev.cells().back().ch != '\t' &&
+        cur.cells().front().ch != ' ' && cur.cells().front().ch != '\t';
+    if (need_space) {
+      prev.push_back(' ');
+    }
+    auto new_cx = size_int(prev);
     const auto last_pos = std::max<int>(0, max_line_len() - size_int(prev) - 1);
-    const auto new_cx = size_int(prev);
     if (ssize(cur) < last_pos) {
       prev.append(cur.cells());
       remove_line();
