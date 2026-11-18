@@ -43,6 +43,17 @@ static void advance_cy(FsedModel& ed, editor_viewport_t& view, bool invalidate =
   }
 }
 
+// Move the cursor up one visual row after curli has already been decremented.
+// Scrolls the viewport when the cursor was on the top visible row so cy
+// never goes negative.
+static void retreat_cy(FsedModel& ed, editor_viewport_t& view) {
+  if (ed.cy > 0) {
+    --ed.cy;
+  } else {
+    view.set_top_line(ed.curli);
+  }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // EDITOR
 
@@ -118,38 +129,103 @@ editor_add_result_t FsedModel::add(char c) {
   }
   const auto start_line = curli;
   ++cx;
-  if (cx < max_line_len_) {
-    // no  wrapping is needed
+  // Wrap when the cursor reached the right margin (typing at the end of a
+  // full line) or when a mid-line insert made the line longer than the
+  // maximum.  The previous check was only "cx < max_line_len_", so inserting
+  // in the middle of a full line grew the line past the screen width and
+  // the terminal wrapped those extra characters over the lines below (#1344).
+  if (cx < max_line_len_ && size_int(curline()) <= max_line_len_) {
+    // no wrapping is needed
     if (line_result == line_add_result_t::needs_redraw) {
       invalidate_range(start_line, curli);
     }
     return editor_add_result_t::added;
   }
-  const auto last_space = line.last_space_before(size_int(line));
-  line.wrapped(true);
-  const auto wwiv_color = line.wwiv_color();
-  if (last_space != -1 && (max_line_len_ - last_space) < (max_line_len_ / 2)) {
-    // Word Wrap at the position after the last space. That way the space
-    // end up on the previous line
-    const auto wrap_position = last_space + 1;
-    const auto nline = line.substr(wrap_position);
-    line.assign(line.substr(0, wrap_position));
-    ++curli;
-    insert_line();
-    curline().assign(nline);
-    cx = size_int(curline());
-  } else {
-    // Character wrap.
-    ++curli;
-    cx %= max_line_len_;
+  if (!wrap_line()) {
+    return editor_add_result_t::error;
   }
-  // Create the new line and carry over line color since we wrapped (either
-  // line or character).
-  curline().set_wwiv_color(wwiv_color);
-
-  invalidate_range(start_line, curli);
-  advance_cy(*this, *view_);
+  // Lines below may have been pushed down or reflowed.  The old code only
+  // invalidated start_line..curli, so the shifted lines stayed put on
+  // screen and looked like they had been overwritten (#1343).  enter()
+  // already invalidates to EOF for the same reason.
+  invalidate_to_eof(start_line);
   return editor_add_result_t::wrapped;
+}
+
+bool FsedModel::wrap_line() {
+  int idx = curli;
+  while (idx < size_int(lines_)) {
+    auto& ln = line(idx);
+    const int line_size = size_int(ln);
+    const bool overflowed = line_size > max_line_len_;
+    // Typing the character that filled the last column should word-wrap the
+    // last word onto the next line, even though the line is not yet overlong.
+    const bool filled_at_cursor =
+        (idx == curli) && (cx >= max_line_len_) && (line_size >= max_line_len_);
+    if (!overflowed && !filled_at_cursor) {
+      break;
+    }
+
+    const bool was_wrapped = ln.wrapped();
+    const auto wwiv_color = ln.wwiv_color();
+    const auto last_space = ln.last_space_before(max_line_len_);
+    const bool word_wrap =
+        last_space > 0 && (max_line_len_ - last_space) < (max_line_len_ / 2);
+
+    int wrap_position;
+    if (word_wrap) {
+      // Break after the last space so the space stays on the previous line.
+      wrap_position = last_space + 1;
+    } else if (overflowed) {
+      // No usable word break; hard-break at the column limit.
+      wrap_position = max_line_len_;
+    } else {
+      // Exactly filled the line while typing at the end, and there is no
+      // word break.  Leave this line as-is and continue on a new line.
+      wrap_position = line_size;
+    }
+
+    // Copy the overflow before assign(); insert_at may reallocate later.
+    const auto overflow = ln.substr(wrap_position);
+    if (wrap_position < line_size) {
+      ln.assign(ln.substr(0, wrap_position));
+    }
+    ln.wrapped(true);
+
+    const bool move_cursor = (curli == idx && cx >= wrap_position);
+    const int new_cx = move_cursor ? (cx - wrap_position) : cx;
+
+    if (was_wrapped && (idx + 1) < size_int(lines_)) {
+      // Already a soft-wrapped paragraph: reflow overflow into the existing
+      // continuation line instead of inserting a new line in the middle (#1344).
+      auto rest = line(idx + 1).cells();
+      line(idx + 1).assign(overflow);
+      line(idx + 1).append(rest);
+    } else {
+      // Hard break, or no continuation line: insert a new line for the
+      // overflow.  The old character-wrap path did "++curli" without
+      // insert_line(), which overwrote the next existing line (#1343).
+      if (size_int(lines_) >= maxli()) {
+        // Put the overflow back so we don't drop text at maxli.
+        if (!overflow.empty()) {
+          line(idx).append(overflow);
+          line(idx).wrapped(was_wrapped);
+        }
+        return false;
+      }
+      wwiv::stl::insert_at(lines_, idx + 1, line_t());
+      line(idx + 1).assign(overflow);
+      line(idx + 1).set_wwiv_color(wwiv_color);
+    }
+
+    if (move_cursor) {
+      curli = idx + 1;
+      cx = new_cx;
+      advance_cy(*this, *view_);
+    }
+    ++idx;
+  }
+  return true;
 }
 
 cell_t FsedModel::current_cell() const {
@@ -200,16 +276,36 @@ bool FsedModel::cursor_down() {
 bool FsedModel::cursor_left() {
   if (cx > 0) {
     --cx;
+    return true;
   }
+  if (curli == 0) {
+    return true;
+  }
+  // At column 0: wrap to the end of the previous line, scrolling if we
+  // were on the top visible row.
+  const auto previous_line = curli;
+  --curli;
+  retreat_cy(*this, *view_);
+  cx = std::min<int>(max_line_len(), size_int(curline()));
+  current_line_dirty(previous_line);
   return true;
 }
 
 bool FsedModel::cursor_right() {
-  // TODO: add option to cursor right to end of view
   const auto right_max = std::min<int>(max_line_len(), size_int(curline()));
   if (cx < right_max) {
     ++cx;
+    return true;
   }
+  if (curli >= size_int(lines_) - 1) {
+    return true;
+  }
+  // At the end of the line: wrap to column 0 of the next line.
+  const auto previous_line = curli;
+  ++curli;
+  cx = 0;
+  advance_cy(*this, *view_);
+  current_line_dirty(previous_line);
   return true;
 }
 
@@ -371,8 +467,8 @@ bool FsedModel::bs() {
   } else if (curli > 0 && size_int(curline()) == 0) {
     // If current line is empty then delete it and move up one line
     if (remove_line()) {
-      --cy;
       --curli;
+      retreat_cy(*this, *view_);
       cx = size_int(curline());
       invalidate_to_eof(curli);
     }
@@ -384,12 +480,15 @@ bool FsedModel::bs() {
     if (ssize(cur) < last_pos) {
       prev.append(cur.cells());
       remove_line();
-    } else if (const int space = cur.last_space_before(last_pos) > 0) {
+    } else if (const int space = cur.last_space_before(last_pos); space > 0) {
+      // last_space_before returns an index, not a boolean.  The previous
+      // "space = expr > 0" form assigned 0 or 1, so a join only pulled one
+      // character back onto the line above.
       prev.append(cur.substr(0, space));
       cur.assign(cur.substr(space));
     }
-    --cy;
     --curli;
+    retreat_cy(*this, *view_);
     cx = new_cx;
     invalidate_to_eof(curli);
   }

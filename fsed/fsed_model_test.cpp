@@ -137,3 +137,234 @@ TEST_F(FsedModelWithViewTest, BackSpace_Color) {
   // Now 0 since we went to the end.
   EXPECT_EQ(0, ed.curline().wwiv_color());
 }
+
+
+// Visible characters of a line, ignoring heart-color codes.
+static std::string line_text(const wwiv::fsed::line_t& ln) {
+  std::string out;
+  for (const auto& c : ln.cells()) {
+    out.push_back(c.ch);
+  }
+  return out;
+}
+
+// Join the visible text of every editor line (no WWIV wrap markers).
+static std::string joined_text(const wwiv::fsed::FsedModel& ed) {
+  std::string out;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    out.append(line_text(ed.line(i)));
+  }
+  return out;
+}
+
+// #1343: wrapping a long paragraph must insert a new line rather than
+// writing into the text that already sits below the cursor.
+TEST_F(FsedModelWithViewTest, WordWrap_DoesNotOverwriteLinesBelow) {
+  ed.set_max_line_len(20);
+  bool saw_invalidate_to_eof = false;
+  ed.add_callback([&](wwiv::fsed::FsedModel& e, wwiv::fsed::editor_range_t r) {
+    // Capture whether any redraw covered the lines that were shifted down.
+    if (r.start.line == 0 && r.end.line == wwiv::stl::size_int(e) - 1) {
+      saw_invalidate_to_eof = true;
+    }
+  });
+
+  // Line 0 is blank; line 1 is quoted text the wrap must not clobber.
+  add("\nQUOTED TEXT");
+  ed.cursor_up();
+  EXPECT_EQ(0, ed.curli);
+
+  add("12345 12345 12345 XXXYY");
+
+  // The quoted line must still be present and unchanged, after the paragraph.
+  bool found = false;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    if (line_text(ed.line(i)) == "QUOTED TEXT") {
+      found = true;
+      EXPECT_GT(i, 0);
+    }
+  }
+  EXPECT_TRUE(found);
+  EXPECT_GE(wwiv::stl::size_int(ed), 3);
+
+  // #1343 display: the wrap must invalidate through EOF so the view
+  // redraws the lines that were shifted down, not just the new wrap line.
+  EXPECT_TRUE(saw_invalidate_to_eof);
+}
+
+// #1343: a long word with no spaces takes the character-wrap path, which
+// used to do "++curli" without insert_line() and overwrote the next line.
+TEST_F(FsedModelWithViewTest, CharacterWrap_DoesNotOverwriteLinesBelow) {
+  ed.set_max_line_len(20);
+  add("\nQUOTED TEXT");
+  ed.cursor_up();
+  add("abcdefghijklmnopqrstuvwxyz");
+
+  bool found = false;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    if (line_text(ed.line(i)) == "QUOTED TEXT") {
+      found = true;
+      EXPECT_GT(i, 0);
+    }
+  }
+  EXPECT_TRUE(found);
+  // 26 letters at width 20 should be two lines plus the quoted line.
+  EXPECT_GE(wwiv::stl::size_int(ed), 3);
+  EXPECT_EQ("abcdefghijklmnopqrst", line_text(ed.line(0)));
+  EXPECT_EQ("uvwxyz", line_text(ed.line(1)));
+  EXPECT_TRUE(ed.line(0).wrapped());
+}
+
+// #1344: inserting in the middle of a full, hard-broken line must wrap
+// onto a new line instead of growing past the screen width (and must
+// not overwrite the next unwrapped paragraph).
+TEST_F(FsedModelWithViewTest, MidLineInsert_WrapsWithoutClobberingNextParagraph) {
+  ed.set_max_line_len(20);
+  // 19 characters so typing them does not itself trigger a wrap.
+  add("12345 12345 12345 1");
+  EXPECT_EQ(19, wwiv::stl::size_int(ed.curline()));
+  ed.enter();
+  add("NEXT PARAGRAPH");
+  ed.cursor_up();
+  ed.cursor_home();
+  // Insert at the start of the full line.
+  add("ZZ ");
+
+  bool found = false;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    if (line_text(ed.line(i)) == "NEXT PARAGRAPH") {
+      found = true;
+    }
+  }
+  EXPECT_TRUE(found);
+  EXPECT_LE(wwiv::stl::size_int(ed.line(0)), 20);
+  EXPECT_TRUE(ed.line(0).wrapped());
+  // The characters we shifted off the first line must still exist.
+  const auto all = joined_text(ed);
+  EXPECT_NE(std::string::npos, all.find("ZZ 12345 12345 12345 1"));
+  EXPECT_NE(std::string::npos, all.find("NEXT PARAGRAPH"));
+}
+
+// #1344: inserting into an already soft-wrapped paragraph should reflow
+// into the continuation line rather than hiding the overflow "behind" it.
+TEST_F(FsedModelWithViewTest, MidLineInsert_ReflowsSoftWrappedParagraph) {
+  ed.set_max_line_len(20);
+  add("12345 12345 12345 XXXYY");
+  ASSERT_GE(wwiv::stl::size_int(ed), 2);
+  ASSERT_TRUE(ed.line(0).wrapped());
+  const auto before = joined_text(ed);
+
+  // Go back to the start of the paragraph and insert a short prefix.
+  while (ed.curli > 0) {
+    ed.cursor_up();
+  }
+  ed.cursor_home();
+  add("ZZ ");
+
+  const auto after = joined_text(ed);
+  EXPECT_NE(std::string::npos, after.find("ZZ "));
+  // Every original character should still be present, in order, after the prefix.
+  EXPECT_EQ(std::string("ZZ ") + before, after);
+  // No line in the paragraph should exceed the max width.
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), 20) << "line " << i;
+  }
+}
+
+
+// Backspace at column 0 of a line that does not fit entirely on the line
+// above must pull back through the last space in the remaining width, not
+// a single character (the old "space = expr > 0" precedence bug).
+TEST_F(FsedModelWithViewTest, BackspaceJoin_PullsWholeWord) {
+  ed.set_max_line_len(20);
+  add("AAAA \nBBB CCC DDD EEE");
+  ed.cursor_home();
+  EXPECT_EQ(1, ed.curli);
+  EXPECT_EQ(0, ed.cx);
+
+  ed.bs();
+
+  EXPECT_EQ(0, ed.curli);
+  EXPECT_EQ(5, ed.cx);
+  EXPECT_EQ("AAAA BBB CCC DDD", line_text(ed.line(0)));
+  EXPECT_EQ(" EEE", line_text(ed.line(1)));
+}
+
+// When the next line fits on the previous one, backspace at column 0
+// joins them into a single line.
+TEST_F(FsedModelWithViewTest, BackspaceJoin_FitsEntirely) {
+  ed.set_max_line_len(20);
+  add("AAA\nBBB");
+  ed.cursor_home();
+  ed.bs();
+
+  EXPECT_EQ(0, ed.curli);
+  EXPECT_EQ(3, ed.cx);
+  EXPECT_EQ(1, wwiv::stl::size_int(ed));
+  EXPECT_EQ("AAABBB", line_text(ed.line(0)));
+}
+
+// Backspace on the top visible row must scroll the viewport instead of
+// driving cy negative.
+TEST_F(FsedModelWithViewTest, Backspace_AtTopOfViewport_DoesNotGoNegative) {
+  add_test_lines(100);
+  ed.cursor_pgup();
+  EXPECT_EQ(0, ed.cy);
+  EXPECT_EQ(90, ed.curli);
+  ed.cursor_home();
+
+  ed.bs();
+
+  EXPECT_GE(ed.cy, 0);
+  EXPECT_EQ(0, ed.cy);
+  EXPECT_EQ(89, ed.curli);
+  EXPECT_EQ(89, view->top_line());
+}
+
+TEST_F(FsedModelWithViewTest, CursorLeftRight_WrapAcrossLines) {
+  add("Hello\nWorld");
+  EXPECT_EQ(1, ed.curli);
+  ed.cursor_home();
+  EXPECT_EQ(0, ed.cx);
+
+  ed.cursor_left();
+  EXPECT_EQ(0, ed.curli);
+  EXPECT_EQ(5, ed.cx);
+  EXPECT_EQ(0, ed.cy);
+
+  ed.cursor_right();
+  EXPECT_EQ(1, ed.curli);
+  EXPECT_EQ(0, ed.cx);
+  EXPECT_EQ(1, ed.cy);
+
+  // Left at the start of the document is a no-op.
+  ed.cursor_up();
+  ed.cursor_home();
+  ed.cursor_left();
+  EXPECT_EQ(0, ed.curli);
+  EXPECT_EQ(0, ed.cx);
+
+  // Right at the end of the last line is a no-op.
+  ed.cursor_down();
+  ed.cursor_end();
+  const auto end_cx = ed.cx;
+  ed.cursor_right();
+  EXPECT_EQ(1, ed.curli);
+  EXPECT_EQ(end_cx, ed.cx);
+}
+
+TEST_F(FsedModelWithViewTest, CursorLeft_AtTopOfViewport_Scrolls) {
+  add_test_lines(100);
+  ed.cursor_pgup();
+  EXPECT_EQ(0, ed.cy);
+  EXPECT_EQ(90, ed.curli);
+  ed.cursor_home();
+
+  ed.cursor_left();
+
+  EXPECT_GE(ed.cy, 0);
+  EXPECT_EQ(0, ed.cy);
+  EXPECT_EQ(89, ed.curli);
+  EXPECT_EQ(89, view->top_line());
+  EXPECT_EQ(wwiv::stl::size_int(ed.line(89)), ed.cx);
+}

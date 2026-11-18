@@ -177,6 +177,12 @@ public:
   int curli{0};
 
 private:
+  // Wraps the current line when it is at or past max_line_len_, and reflows
+  // following soft-wrapped lines.  Moves the cursor onto the next line when
+  // it landed in the overflow.  Returns false if a new line is required but
+  // the editor is already at maxli().
+  bool wrap_line();
+
   // Max number of lines allowed
   int maxli_{255};
   // Lines of text.  mark mutable so we can add the current line
