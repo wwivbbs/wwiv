@@ -131,6 +131,7 @@ public:
   bool cursor_pgdown();
   bool cursor_home();
   bool cursor_end();
+  bool cursor_eof();
 
   bool delete_line();
   bool delete_to_eol();
@@ -177,11 +178,14 @@ public:
   int curli{0};
 
 private:
-  // Wraps the current line when it is at or past max_line_len_, and reflows
-  // following soft-wrapped lines.  Moves the cursor onto the next line when
-  // it landed in the overflow.  Returns false if a new line is required but
-  // the editor is already at maxli().
-  bool wrap_line();
+  // Reflow the paragraph from the current line through the next hard break.
+  // line.wrapped() true means this line continues onto the next (saved as
+  // a trailing \x1 by to_lines(true)).  Overflow flows into continuation
+  // lines, wrapping at word boundaries; a new line is added only at the
+  // end of the paragraph.  The cursor stays on the same logical character.
+  bool reflow_paragraph();
+  // Keep cy and top_line consistent with curli, and cy inside the viewport.
+  void sync_viewport();
 
   // Max number of lines allowed
   int maxli_{255};

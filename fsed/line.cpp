@@ -45,6 +45,10 @@ line_t::line_t(bool wrapped, std::string text) : wrapped_(wrapped) {
       state = add_cell_state_t::heart_color;
       continue;
     }
+    // WWIV soft-wrap marker; wrapped_ is already set from the trailing \x1.
+    if (c == 0x01) {
+      continue;
+    }
     cell_.emplace_back(wwiv_color_, c);
     ++size_;
   }

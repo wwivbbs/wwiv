@@ -45,7 +45,21 @@ FsedView::FsedView(const FullScreenView& fs, MessageEditorData& data, bool file)
 FullScreenView& FsedView::fs() { return fs_; }
 
 void FsedView::gotoxy(const FsedModel& ed) {
-  bout_.goxy(ed.cx + 1, ed.cy + fs_.lines_start()); // - top_line() 
+  // Keep the cursor in the message area.  cy can get one row too high
+  // (onto the bottom bar / command line) after jumping to the end of
+  // a long message.
+  auto y = ed.cy + fs_.lines_start();
+  if (y >= fs_.lines_end()) {
+    y = fs_.lines_end() - 1;
+  }
+  if (y < fs_.lines_start()) {
+    y = fs_.lines_start();
+  }
+  auto x = ed.cx + 1;
+  if (x < 1) {
+    x = 1;
+  }
+  bout_.goxy(x, y);
 }
 
 void FsedView::ClearCommandLine() { 
@@ -68,15 +82,23 @@ void FsedView::macro(Context& ctx, int cc) {
 
 void FsedView::draw_current_line(FsedModel& ed, int previous_line) { 
   if (previous_line != ed.curli) {
-    const auto py = previous_line - top_line() + fs_.lines_start();
-    bout_.goxy(0, py);
-    if (previous_line < size_int(ed)) {
-      bout_.outstr(ed.line(previous_line).to_colored_text(-1));
+    auto py = previous_line - top_line() + fs_.lines_start();
+    if (py >= fs_.lines_start() && py < fs_.lines_end()) {
+      bout_.goxy(0, py);
+      if (previous_line < size_int(ed)) {
+        bout_.outstr(ed.line(previous_line).to_colored_text(-1));
+      }
+      bout_.clreol();
     }
-    bout_.clreol();
   }
 
-  const auto y = ed.curli - top_line() + fs_.lines_start(); 
+  auto y = ed.curli - top_line() + fs_.lines_start();
+  if (y >= fs_.lines_end()) {
+    y = fs_.lines_end() - 1;
+  }
+  if (y < fs_.lines_start()) {
+    y = fs_.lines_start();
+  }
   bout_.goxy(0, y);
   bout_.ansic(0);
   for (const auto& c : ed.curline().cells()) {

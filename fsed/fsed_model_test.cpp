@@ -247,7 +247,7 @@ TEST_F(FsedModelWithViewTest, MidLineInsert_WrapsWithoutClobberingNextParagraph)
 
 // #1344: inserting into an already soft-wrapped paragraph must keep every
 // character (with spaces intact) and must not exceed the max width.  Overflow
-// is inserted as a new line rather than merged into the continuation.
+// reflows into the continuation lines of the same paragraph.
 TEST_F(FsedModelWithViewTest, MidLineInsert_ReflowsSoftWrappedParagraph) {
   ed.set_max_line_len(20);
   add("12345 12345 12345 XXXYY");
@@ -405,10 +405,21 @@ TEST_F(FsedModelWithViewTest, InsertAtStartOfFullQuote_WrapsAtWordBoundary) {
   EXPECT_NE(std::string::npos, all.find("Maryland."));
   EXPECT_NE(std::string::npos, all.find("line 3"));
   EXPECT_NE(std::string::npos, all.find("Trying this again"));
-  EXPECT_EQ(std::string::npos, all.find("nd.Trying"));
   EXPECT_EQ(std::string::npos, all.find("hisextend"));
   EXPECT_EQ(std::string::npos, all.find("umpsover"));
-  EXPECT_EQ(std::string::npos, all.find("Maryland.Trying"));
+  // joined_text concatenates hard-broken lines with no separator, so
+  // "Maryland." + "Trying" looks mashed in 'all'.  Check the actual lines.
+  bool found_trying = false;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    const auto t = line_text(ed.line(i));
+    EXPECT_EQ(std::string::npos, t.find("nd.Trying")) << t;
+    EXPECT_EQ(std::string::npos, t.find("Maryland.Trying")) << t;
+    if (t.find("Trying this again") != std::string::npos) {
+      found_trying = true;
+      EXPECT_EQ(std::string::npos, t.find("Maryland.")) << t;
+    }
+  }
+  EXPECT_TRUE(found_trying);
 }
 
 TEST_F(FsedModelWithViewTest, EnterMidLine_DoesNotConcatenateOntoNextParagraph) {
@@ -428,9 +439,18 @@ TEST_F(FsedModelWithViewTest, EnterMidLine_DoesNotConcatenateOntoNextParagraph) 
   ed.enter();
 
   const auto all = joined_text(ed);
-  EXPECT_EQ(std::string::npos, all.find("nd.Trying"));
-  EXPECT_EQ(std::string::npos, all.find("Maryland.Trying"));
   EXPECT_NE(std::string::npos, all.find("Trying this again"));
+  bool found_trying = false;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    const auto t = line_text(ed.line(i));
+    EXPECT_EQ(std::string::npos, t.find("nd.Trying")) << t;
+    EXPECT_EQ(std::string::npos, t.find("Maryland.Trying")) << t;
+    if (t.find("Trying this again") != std::string::npos) {
+      found_trying = true;
+      EXPECT_EQ(std::string::npos, t.find("Maryland.")) << t;
+    }
+  }
+  EXPECT_TRUE(found_trying);
   bool found_para = false;
   for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
     EXPECT_LE(wwiv::stl::size_int(ed.line(i)), static_cast<int>(quote.size()));
@@ -494,4 +514,153 @@ TEST_F(FsedModelWithViewTest, WrapsAtLastSpaceEvenIfInFirstHalf) {
   for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
     EXPECT_LE(wwiv::stl::size_int(ed.line(i)), 20) << line_text(ed.line(i));
   }
+}
+
+
+// Frank's video A: typing at the end of a soft-wrapped paragraph must flow
+// into the next continuation, not leave a dangling overflow line.  The BBS
+// default max_line_len_ is 79; runtime uses the screen width (often 80).
+// "Alaska... I" is 74 characters, so " am g" reaches 79 and must wrap.
+TEST_F(FsedModelWithViewTest, ParagraphReflow_OverflowJoinsContinuation) {
+  const std::string line0 =
+      "Alaska and Spain were my last two commands while I was still in uniform. I";
+  const std::string line1 =
+      "retired from the Navy in Laurel, but I continued doing the same job for the";
+  const std::string line2 = "next thirty years.";
+  ASSERT_EQ(74, static_cast<int>(line0.size()));
+  ASSERT_EQ(75, static_cast<int>(line1.size()));
+
+  ed.set_max_line_len(79);
+  std::vector<wwiv::fsed::line_t> lines;
+  lines.emplace_back(true, line0);
+  lines.emplace_back(true, line1);
+  lines.emplace_back(false, line2);
+  ed.set_lines(std::move(lines));
+  ed.curli = 0;
+  ed.cy = 0;
+  ed.cx = wwiv::stl::size_int(ed.line(0));
+  add(" am g");
+
+  const auto all = joined_text(ed);
+  EXPECT_EQ(
+      "Alaska and Spain were my last two commands while I was still in uniform. I am g retired from the Navy in Laurel, but I continued doing the same job for the next thirty years.",
+      all);
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), 79) << line_text(ed.line(i));
+  }
+  // Overflow must sit on the continuation, not a stranded line above "retired".
+  bool retired_with_overflow = false;
+  int retired_line = -1;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    const auto t = line_text(ed.line(i));
+    if (t.find("retired") != std::string::npos) {
+      retired_line = i;
+      if (t.find("g retired") != std::string::npos || t.find("am g") != std::string::npos) {
+        retired_with_overflow = true;
+      }
+    }
+  }
+  EXPECT_TRUE(retired_with_overflow) << all;
+  EXPECT_GT(retired_line, 0);
+  EXPECT_TRUE(ed.line(0).wrapped());
+  EXPECT_GE(wwiv::stl::size_int(ed.line(0)), 70);
+  // A new hard-broken overflow line would bump this to 4.
+  EXPECT_LE(wwiv::stl::size_int(ed), 3);
+}
+
+// Deleting in a soft-wrapped paragraph must pull words back up.
+TEST_F(FsedModelWithViewTest, ParagraphReflow_DeletePullsWordsUp) {
+  ed.set_max_line_len(20);
+  add("12345 12345 12345 12345 12345");
+  ASSERT_GE(wwiv::stl::size_int(ed), 2);
+  ASSERT_TRUE(ed.line(0).wrapped());
+  const int lines_before = wwiv::stl::size_int(ed);
+
+  while (ed.curli > 0) {
+    ed.cursor_up();
+  }
+  ed.cursor_home();
+  // Remove the first word and its trailing space so the next word can move up.
+  for (int i = 0; i < 6; i++) {
+    ed.del();
+  }
+
+  const auto all = joined_text(ed);
+  EXPECT_EQ("12345 12345 12345 12345", all);
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), 20) << line_text(ed.line(i));
+  }
+  EXPECT_LE(wwiv::stl::size_int(ed), lines_before);
+  EXPECT_EQ("12345 12345 12345 ", line_text(ed.line(0)));
+}
+
+// Video B: inserting at column 0 of a full-width line must wrap rather than
+// leave text past max_line_len.  Runtime width is often 80.
+TEST_F(FsedModelWithViewTest, MidLineInsert_OnFullWidthLine_WrapsAt80) {
+  const std::string retired =
+      "retired from the Navy in Laurel, but I continued doing the same job for the";
+  const std::string full = retired + " 1234"; // 80 characters
+  ASSERT_EQ(80, static_cast<int>(full.size()));
+
+  ed.set_max_line_len(80);
+  std::vector<wwiv::fsed::line_t> lines;
+  lines.emplace_back(false, full);
+  ed.set_lines(std::move(lines));
+  ed.curli = 0;
+  ed.cy = 0;
+  ed.cx = 0;
+  add("I ");
+
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), 80) << line_text(ed.line(i));
+  }
+  EXPECT_TRUE(ed.line(0).wrapped());
+  EXPECT_GE(wwiv::stl::size_int(ed), 2);
+  const auto all = joined_text(ed);
+  EXPECT_NE(std::string::npos, all.find("I "));
+  EXPECT_NE(std::string::npos, all.find(retired));
+  EXPECT_NE(std::string::npos, all.find("1234"));
+  EXPECT_EQ("I " + full, all);
+}
+
+// Video C: jumping to the end of a long message must keep cy inside the
+// viewport (not on the status-bar row).
+TEST_F(FsedModelWithViewTest, CursorEof_StaysInsideViewport) {
+  add_test_lines(100);
+  // Each line is added with a trailing enter(), so the last line is empty
+  // and curli is size-1 (100), not 99.
+  ed.cursor_eof();
+
+  EXPECT_EQ(wwiv::stl::size_int(ed) - 1, ed.curli);
+  EXPECT_GE(ed.cy, 0);
+  EXPECT_LE(ed.cy, view->max_view_lines());
+  EXPECT_EQ(ed.curli, view->top_line() + ed.cy);
+  EXPECT_EQ(wwiv::stl::size_int(ed.curline()), ed.cx);
+}
+
+TEST_F(FsedModelWithViewTest, EnterAtBottom_StaysInsideViewport) {
+  add_test_lines(15);
+  ed.cursor_eof();
+  EXPECT_LE(ed.cy, view->max_view_lines());
+  ed.enter();
+  EXPECT_GE(ed.cy, 0);
+  EXPECT_LE(ed.cy, view->max_view_lines());
+  EXPECT_EQ(ed.curli, view->top_line() + ed.cy);
+}
+
+// Soft-wrap marker must stay a flag, not a visible cell, when saving/loading.
+TEST_F(FsedModelWithViewTest, ToLines_SoftWrapMarkerIsNotText) {
+  ed.set_max_line_len(20);
+  add("12345 12345 12345 XXXYY");
+  ASSERT_TRUE(ed.line(0).wrapped());
+  const auto saved = ed.to_lines(true);
+  ASSERT_GE(saved.size(), 2u);
+  EXPECT_EQ('\x1', saved[0].back());
+  EXPECT_EQ(std::string::npos, saved[0].substr(0, saved[0].size() - 1).find('\x1'));
+
+  wwiv::fsed::line_t reloaded(true, saved[0]);
+  EXPECT_TRUE(reloaded.wrapped());
+  const auto t = line_text(reloaded);
+  EXPECT_EQ(std::string::npos, t.find('\x1'));
+  EXPECT_EQ(saved[0].substr(0, saved[0].size() - 1), t);
 }
