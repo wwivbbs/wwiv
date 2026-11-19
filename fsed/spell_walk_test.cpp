@@ -264,6 +264,30 @@ TEST(SpellWalkTest, Suggestions_LimitAndConvert) {
   EXPECT_THAT(spell_suggestions(d, "cafe"), ElementsAre("caf\x82"));
 }
 
+TEST(SpellWalkTest, Suggestions_TranspositionFirst) {
+  // Hunspell 1.7.2 en_US for "Teh" ranks short fragments above "The", so
+  // "The" is 12th and would be dropped by the 9-suggestion cap.
+  FakeDictionary d({}, {{"Teh",
+                         {"Te", "Th", "Eh", "Tet", "Ted", "Meh", "Tex", "Neh", "TeX", "T eh",
+                          "Te h", "The", "Teth", "Tech", "Tee"}}});
+  EXPECT_THAT(spell_suggestions(d, "Teh"),
+              ElementsAre("The", "Te", "Th", "Eh", "Tet", "Ted", "Meh", "Tex", "Neh"));
+}
+
+TEST(SpellWalkTest, Suggestions_PreservesHunspellOrder) {
+  FakeDictionary d(
+      {}, {{"qick",
+            {"quick", "click", "kick", "pick", "wick", "sick", "tick", "nick", "lick", "rick"}}});
+  // No adjacent transposition, no spaces: Hunspell's order, still capped at 9.
+  EXPECT_THAT(spell_suggestions(d, "qick"), ElementsAre("quick", "click", "kick", "pick", "wick",
+                                                        "sick", "tick", "nick", "lick"));
+}
+
+TEST(SpellWalkTest, Suggestions_SpacesAfterSingleWords) {
+  FakeDictionary d({}, {{"ab", {"a b", "ac", "ba", "ad"}}});
+  EXPECT_THAT(spell_suggestions(d, "ab"), ElementsAre("ba", "ac", "ad", "a b"));
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // spell_check_walk
 
@@ -288,12 +312,13 @@ TEST(SpellWalkTest, Walk_Clean) {
 TEST(SpellWalkTest, Walk_UseSuggestion) {
   auto ed = model_of({{false, "teh quick fox"}});
   FakeDictionary d(kWords, {{"teh", {"ten", "the"}}});
-  FakeIO io({'2'});
+  FakeIO io({'1'});
   const auto s = spell_check_walk(ed, d, io);
   EXPECT_EQ(spell_check_result_t::finished, s.result);
   EXPECT_THAT(text_of(ed), ElementsAre("the quick fox"));
   EXPECT_THAT(io.shown_, ElementsAre("teh"));
-  EXPECT_THAT(io.suggestions_.front(), ElementsAre("ten", "the"));
+  // "the" is a swapped-letter match for "teh", so it is listed first.
+  EXPECT_THAT(io.suggestions_.front(), ElementsAre("the", "ten"));
   EXPECT_EQ(1, s.replaced);
   EXPECT_EQ(1, io.edits_);
   EXPECT_EQ(0, io.visible_);

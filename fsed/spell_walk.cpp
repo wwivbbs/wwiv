@@ -17,6 +17,7 @@
 #include "fsed/spell_walk.h"
 
 #include "core/stl.h"
+#include "core/strings.h"
 #include "fsed/line.h"
 #include "fsed/model.h"
 #include <algorithm>
@@ -30,6 +31,7 @@
 namespace wwiv::fsed {
 
 using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 static constexpr int SPELL_ESC = 27;
 
@@ -154,6 +156,36 @@ spell_pos_t spell_replace_word(FsedModel& ed, const spell_word_t& word,
   return result;
 }
 
+// True if suggestion is word with exactly one pair of neighboring letters
+// swapped, ignoring case. "The" is a transposition of "Teh".
+static bool is_adjacent_transposition(const std::string& word, const std::string& suggestion) {
+  if (word.size() != suggestion.size() || word.size() < 2) {
+    return false;
+  }
+  const auto a = ToStringLowerCase(word);
+  const auto b = ToStringLowerCase(suggestion);
+  auto i = 0;
+  const auto n = size_int(a);
+  while (i < n && a[i] == b[i]) {
+    ++i;
+  }
+  if (i + 1 >= n || a[i] != b[i + 1] || a[i + 1] != b[i]) {
+    return false;
+  }
+  return a.compare(i + 2, std::string::npos, b, i + 2) == 0;
+}
+
+// 0: swapped-letter typo, 1: a single word, 2: a split like "T eh".
+static int suggestion_rank(const std::string& word, const std::string& suggestion) {
+  if (is_adjacent_transposition(word, suggestion)) {
+    return 0;
+  }
+  if (suggestion.find(' ') != std::string::npos) {
+    return 2;
+  }
+  return 1;
+}
+
 std::vector<std::string> spell_suggestions(const SpellDictionary& dict, const std::string& word) {
   std::vector<std::string> out;
   for (const auto& s : dict.suggest(spell_to_utf8(word))) {
@@ -169,9 +201,12 @@ std::vector<std::string> spell_suggestions(const SpellDictionary& dict, const st
       continue;
     }
     out.push_back(c);
-    if (size_int(out) >= SPELL_MAX_SUGGESTIONS) {
-      break;
-    }
+  }
+  std::stable_sort(out.begin(), out.end(), [&](const std::string& a, const std::string& b) {
+    return suggestion_rank(word, a) < suggestion_rank(word, b);
+  });
+  if (size_int(out) > SPELL_MAX_SUGGESTIONS) {
+    out.resize(SPELL_MAX_SUGGESTIONS);
   }
   return out;
 }

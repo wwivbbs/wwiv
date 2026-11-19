@@ -139,6 +139,10 @@ spell_check_stats_t spell_check_walk(FsedModel& ed, SpellDictionary& dict, Spell
 /**
  * The suggestions for word (CP437) converted to CP437, without duplicates
  * or ones that can not be shown in CP437, at most SPELL_MAX_SUGGESTIONS.
+ * Suggestions that differ from word by two swapped neighboring letters
+ * (ignoring case) are listed first, then other single words, then
+ * suggestions that contain a space. Within each group the Hunspell
+ * order is kept.
  */
 [[nodiscard]] std::vector<std::string> spell_suggestions(const SpellDictionary& dict,
                                                          const std::string& word);
