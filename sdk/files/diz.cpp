@@ -122,3 +122,51 @@ std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
 
   return {Diz(description, ext)};
 }
+
+static constexpr const char* kFileIdDiz = "FILE_ID.DIZ";
+static constexpr const char* kDescSdi = "DESC.SDI";
+
+bool wwiv::sdk::files::is_diz_filename(const std::string& filename) {
+  return strings::iequals(filename, kFileIdDiz) || strings::iequals(filename, kDescSdi);
+}
+
+// Returns all of the description files in dir, whatever their case.
+static std::vector<std::filesystem::path> diz_files_in(const std::filesystem::path& dir) {
+  std::vector<std::filesystem::path> result;
+  std::error_code ec;
+  for (std::filesystem::directory_iterator it(dir, ec), end; !ec && it != end; it.increment(ec)) {
+    std::error_code ec2;
+    if (it->is_regular_file(ec2) &&
+        wwiv::sdk::files::is_diz_filename(it->path().filename().string())) {
+      result.push_back(it->path());
+    }
+  }
+  return result;
+}
+
+int wwiv::sdk::files::remove_diz_files(const std::filesystem::path& dir) {
+  auto count = 0;
+  for (const auto& p : diz_files_in(dir)) {
+    std::error_code ec;
+    if (std::filesystem::remove(p, ec)) {
+      ++count;
+    } else {
+      LOG(WARNING) << "Unable to remove old description file: " << p << ": " << ec.message();
+    }
+  }
+  return count;
+}
+
+std::optional<std::filesystem::path>
+wwiv::sdk::files::find_diz_file(const std::filesystem::path& dir) {
+  std::optional<std::filesystem::path> sdi;
+  for (const auto& p : diz_files_in(dir)) {
+    if (strings::iequals(p.filename().string(), kFileIdDiz)) {
+      return p;
+    }
+    if (!sdi) {
+      sdi = p;
+    }
+  }
+  return sdi;
+}

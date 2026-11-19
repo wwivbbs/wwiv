@@ -112,6 +112,62 @@ TEST_F(DizTest, EmptyLinesAtStart) {
   EXPECT_EQ(d.description(), "<<< null e-magazine x00A (exec edition) >>>");
 }
 
+TEST_F(DizTest, IsDizFilename) {
+  using wwiv::sdk::files::is_diz_filename;
+  EXPECT_TRUE(is_diz_filename("FILE_ID.DIZ"));
+  EXPECT_TRUE(is_diz_filename("file_id.diz"));
+  EXPECT_TRUE(is_diz_filename("File_Id.Diz"));
+  EXPECT_TRUE(is_diz_filename("DESC.SDI"));
+  EXPECT_TRUE(is_diz_filename("desc.sdi"));
+  EXPECT_FALSE(is_diz_filename("FILE_ID.TXT"));
+  EXPECT_FALSE(is_diz_filename("README.DIZ"));
+  EXPECT_FALSE(is_diz_filename(""));
+}
+
+TEST_F(DizTest, RemoveDizFiles_AnyCase) {
+  helper.CreateTempFile("file_id.diz", "old");
+  helper.CreateTempFile("DESC.SDI", "old");
+  helper.CreateTempFile("keep.txt", "keep");
+
+  EXPECT_EQ(2, wwiv::sdk::files::remove_diz_files(helper.TempDir()));
+  EXPECT_FALSE(wwiv::sdk::files::find_diz_file(helper.TempDir()).has_value());
+  EXPECT_TRUE(std::filesystem::exists(helper.TempDir() / "keep.txt"));
+  EXPECT_EQ(0, wwiv::sdk::files::remove_diz_files(helper.TempDir()));
+}
+
+TEST_F(DizTest, FindDizFile_LowerCase) {
+  helper.CreateTempFile("file_id.diz", "lower");
+  const auto o = wwiv::sdk::files::find_diz_file(helper.TempDir());
+  ASSERT_TRUE(o.has_value());
+  EXPECT_EQ("file_id.diz", o->filename().string());
+}
+
+TEST_F(DizTest, FindDizFile_PrefersFileIdDiz) {
+  helper.CreateTempFile("desc.sdi", "sdi");
+  helper.CreateTempFile("FILE_ID.DIZ", "diz");
+  const auto o = wwiv::sdk::files::find_diz_file(helper.TempDir());
+  ASSERT_TRUE(o.has_value());
+  EXPECT_EQ("FILE_ID.DIZ", o->filename().string());
+}
+
+TEST_F(DizTest, FindDizFile_None) {
+  helper.CreateTempFile("readme.txt", "nope");
+  EXPECT_FALSE(wwiv::sdk::files::find_diz_file(helper.TempDir()).has_value());
+}
+
+// The //READIDZ bug: a lower case file_id.diz from one archive was left in
+// the temp directory and read again for every following file.
+TEST_F(DizTest, StaleLowerCaseDiz_NotReused) {
+  helper.CreateTempFile("file_id.diz", "First file description");
+  ASSERT_TRUE(wwiv::sdk::files::find_diz_file(helper.TempDir()).has_value());
+
+  // What get_file_idz does before extracting the next archive.
+  wwiv::sdk::files::remove_diz_files(helper.TempDir());
+
+  // The next archive has no description, so nothing is extracted.
+  EXPECT_FALSE(wwiv::sdk::files::find_diz_file(helper.TempDir()).has_value());
+}
+
 /**
 
 
