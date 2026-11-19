@@ -168,6 +168,50 @@ TEST_F(DizTest, StaleLowerCaseDiz_NotReused) {
   EXPECT_FALSE(wwiv::sdk::files::find_diz_file(helper.TempDir()).has_value());
 }
 
+// The first non-empty line is punctuation; a later line has the title.
+TEST_F(DizTest, SkipsNonAlphaHeader) {
+  const auto file = helper.CreateTempFile("FILE_ID.DIZ", "====\nReal Title Here\nMore info\n");
+
+  wwiv::sdk::files::DizParser p(true);
+  auto o = p.parse(file);
+  ASSERT_TRUE(o);
+
+  const auto& d = o.value();
+  EXPECT_EQ(d.description(), "Real Title Here");
+  EXPECT_EQ(d.extended_description(), "More info\n");
+}
+
+// Empty or unusable FILE_ID.DIZ files used to make DizParser::parse read
+// past the end of the line list when firstline_as_desc is true.
+TEST_F(DizTest, EmptyFile) {
+  const auto file = helper.CreateTempFile("FILE_ID.DIZ", "");
+
+  wwiv::sdk::files::DizParser p(true);
+  EXPECT_FALSE(p.parse(file).has_value());
+}
+
+TEST_F(DizTest, AllBlankLines) {
+  const auto file = helper.CreateTempFile("FILE_ID.DIZ", "\n\n\n");
+
+  wwiv::sdk::files::DizParser p(true);
+  EXPECT_FALSE(p.parse(file).has_value());
+}
+
+TEST_F(DizTest, NoAlphaChars) {
+  const auto file = helper.CreateTempFile("FILE_ID.DIZ", "====\n----\n****\n12345\n");
+
+  wwiv::sdk::files::DizParser p(true);
+  EXPECT_FALSE(p.parse(file).has_value());
+}
+
+TEST_F(DizTest, OnlyBlockChars) {
+  const char kTEXT[] = "\xDA\xC4\xC4\xC4\xBF\n\xC0\xC4\xC4\xC4\xD9\n";
+  const auto file = helper.CreateTempFile("FILE_ID.DIZ", kTEXT);
+
+  wwiv::sdk::files::DizParser p(true);
+  EXPECT_FALSE(p.parse(file).has_value());
+}
+
 /**
 
 

@@ -75,7 +75,8 @@ std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
   }
   // Save off the first non empty line.
   const auto first_real_line = iter;
-  if (lines.empty()) {
+  // iter == end covers an empty file and a file of only blank lines.
+  if (iter == end) {
     VLOG(1) << "DizParser::parse: lines empty";
     return std::nullopt;
   }
@@ -89,10 +90,19 @@ std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
         }
       }
       if (!valid_desc(ss)) {
-        do {
-          ++iter;
+        // The old do/while incremented, then dereferenced *iter, then
+        // checked iter != end, so a DIZ with no letter-bearing line
+        // (only punctuation, digits, or box-drawing) read past the end.
+        for (++iter; iter != end; ++iter) {
           ss = *iter;
-        } while (!valid_desc(ss) && iter != end);
+          if (valid_desc(ss)) {
+            break;
+          }
+        }
+        if (iter == end) {
+          VLOG(1) << "Description is empty, failed to parse.";
+          return std::nullopt;
+        }
       }
     }
     if (!ss.empty() && ss.back() == '\r') {
