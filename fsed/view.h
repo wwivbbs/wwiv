@@ -57,12 +57,17 @@ public:
   void gotoxy(const FsedModel& ed) override;
   void ClearCommandLine();
   void macro(wwiv::common::Context& ctx, int cc);
+  // Forget the last-drawn status bar so the next draw_bottom_bar writes it.
+  void invalidate_bottom_bar();
 
   // Top editor line number visible in the viewport.
   int top_line_{0};
   bool debug{false};
 
 private:
+  // ESC[K after a full-width write would erase the next row (the status bar).
+  void clear_rest_of_row(int cols_written);
+
   common::FullScreenView fs_;
   common::Output& bout_;
   common::Input& bin_;
@@ -70,10 +75,13 @@ private:
   int max_view_columns_;
   common::MessageEditorData& data_;
   bool file_{false};
-  //  Saved positions for the bottom bar caching.
+  // Saved state for the bottom bar cache.  -1 means invalid / must redraw.
   int sx{-1};
   int sy{-1};
   int sl{-1};
+  ins_ovr_mode_t smode_{ins_ovr_mode_t::ins};
+  bool sdebug_{false};
+  int sline_color_{-1};
 };
 
 }

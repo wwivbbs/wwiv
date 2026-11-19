@@ -85,8 +85,10 @@ void FsedView::draw_current_line(FsedModel& ed, int previous_line) {
     bout_.ansic(c.wwiv_color);
     bout_.outchr(c.ch);
   }
-  bout_.clreol();
-  gotoxy(ed);
+  clear_rest_of_row(size_int(ed.curline().cells()));
+  // Refresh the bar in case the previous line was a full-width last row
+  // and its trailing ESC[K landed on the status bar.
+  draw_bottom_bar(ed);
 }
 
 void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
@@ -104,7 +106,7 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
     if (i >= size_int(e)) {
       break;
     }
-    bout_.goxy(0, y);
+    bout_.goxy(1, y);
     auto& rl = e.line(i);
     if (i == e.curli) {
       for (const auto& c : rl.cells()) {
@@ -119,19 +121,22 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
     } else {
       bout_.outstr(rl.to_colored_text(-1));
     }
-    bout_.clreol();
+    clear_rest_of_row(size_int(rl.cells()));
   }
 
   // Clean up the bottom.
   // clear the current and then remaining
   if (size_int(e) == t.end.line + 1) {
     for (auto z = size_int(e) - top_line() + fs_.lines_start(); z < fs_.lines_end(); z++) {
-      bout_.goxy(0, z);
+      bout_.goxy(1, z);
       bout_.clreol();
     }
   }
 
-  gotoxy(e);
+  // Quote return, help, and viewport scroll all redraw lines through
+  // this path, and a full-width last row can wipe the status bar.
+  invalidate_bottom_bar();
+  draw_bottom_bar(e);
 }
 
 void FsedView::draw_header() {
@@ -146,9 +151,25 @@ void FsedView::draw_header() {
   bout_.setc(oldcuratr);
 }
 
+void FsedView::invalidate_bottom_bar() {
+  sx = sy = sl = -1;
+  sline_color_ = -1;
+}
+
+void FsedView::clear_rest_of_row(int cols_written) {
+  // Writing screen_width characters starting at column 1 wraps the
+  // cursor onto the next row.  The last message row's next row is the
+  // status bar (lines_end_ == screen_length_ - 1).  Skip ESC[K in that
+  // case so we do not erase the bar; a shorter line is still cleared.
+  if (cols_written < fs_.screen_width()) {
+    bout_.clreol();
+  }
+}
+
 void FsedView::redraw() { 
   draw_header(); 
   fs_.DrawTopBar();
+  invalidate_bottom_bar();
   fs_.DrawBottomBar("");
   ClearCommandLine();
 }
@@ -159,19 +180,16 @@ void FsedView::redraw(const FsedModel& ed) {
   // reset the cache that is used by draw_bottom_bar so that
   // the bottom bar will be drawn even if the cursor position
   // has not changed.
-  sx = sy = sl = -1;
+  invalidate_bottom_bar();
   draw_bottom_bar(ed);
   ClearCommandLine();
 }
 
 void FsedView::draw_bottom_bar(const FsedModel& ed) {
   const auto sc = bout_.curatr();
-  static auto smode = ed.mode();
-  static auto sdebug = debug;
-  static auto sline_color = 0;
   const auto line_color = ed.curline().wwiv_color();
-  if (sx != ed.cx || sy != ed.cy || sl != ed.curli || smode != ed.mode() || sdebug != debug ||
-      sline_color != line_color) {
+  if (sx != ed.cx || sy != ed.cy || sl != ed.curli || smode_ != ed.mode() || sdebug_ != debug ||
+      sline_color_ != line_color) {
     const auto* mode = ed.mode() == ins_ovr_mode_t::ins ? "INS" : "OVR";
     const auto cell = ed.current_cell();
     const auto text = (debug) ? fmt::format("X:{} Y:{} L:{} T:{} C:{} WC:{} WL:{} [{}]", ed.cx, ed.cy, ed.curli,
@@ -181,9 +199,9 @@ void FsedView::draw_bottom_bar(const FsedModel& ed) {
     sx = ed.cx;
     sy = ed.cy;
     sl = ed.curli;
-    smode = ed.mode();
-    sdebug = debug;
-    sline_color = line_color;
+    smode_ = ed.mode();
+    sdebug_ = debug;
+    sline_color_ = line_color;
   }
   bout_.setc(sc);
   gotoxy(ed);
