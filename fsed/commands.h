@@ -55,6 +55,12 @@ enum class fsed_command_id {
   view_redraw,
   input_wwiv_color,
   ignore,
+  cursor_word_left,
+  cursor_word_right,
+  cursor_bof,
+  cursor_doc_end,
+  delete_word_right,
+  wordstar_quick,
   none,
 };
 
