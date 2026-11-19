@@ -99,6 +99,13 @@ template <class Archive> void serialize(Archive& ar, color_config_t& n) {
   SERIALIZE(n, msg);
 }
 
+template <class Archive> void serialize(Archive& ar, spell_config_t& n) {
+  SERIALIZE(n, enabled);
+  SERIALIZE(n, check_on_save);
+  SERIALIZE(n, dictionary);
+  SERIALIZE(n, dict_dir);
+}
+
 template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, header);
   SERIALIZE(n, systempw);
@@ -157,6 +164,7 @@ template <class Archive> void serialize(Archive& ar, config_t& n) {
 
   SERIALIZE(n, toggles);
   SERIALIZE(n, colors);
+  SERIALIZE(n, spell);
 }
 
 

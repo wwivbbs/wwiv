@@ -483,6 +483,11 @@ static void edit_settings(const Config& config, wwiv::sdk::menus::MenuSet56& men
   items.add(new Label("ACS:"), new ACSEditItem(config, providers, 70, h.acs),
             "WWIV ACS required to use this menuset", 1, y);
   ++y;
+  items.add(new Label("Spell Dictionary:"),
+            new StringEditItem<std::string&>(20, h.dictionary, EditLineMode::ALL),
+            "Spell check dictionary for this menuset (i.e. fr_FR). Empty uses the BBS default",
+            1, y);
+  ++y;
   items.add(new Label("Global Menu Items:"), new MenuItemsSubDialog(config, h.items, providers),
             "Menu items to add to every menu globally", 1, y);
   items.relayout_items_and_labels();

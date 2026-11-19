@@ -224,6 +224,9 @@ struct menu_set_t {
   std::string description;
   // ACS needed to use this menuset.
   std::string acs;
+  // Spell check dictionary (i.e. fr_FR) for this menuset.  Empty means use
+  // the BBS default.
+  std::string dictionary;
   // Global menu items. These will be available in every menu in this menuset.
   std::vector<menu_item_56_t> items;
 };

@@ -8,7 +8,10 @@ set(SOURCES
  line.cpp
  model.cpp
  spell.cpp
+ spell_config.cpp
  spell_text.cpp
+ spell_ui.cpp
+ spell_walk.cpp
  view.cpp
 )
 
@@ -47,8 +50,10 @@ endif()
 
 if (WWIV_BUILD_TESTS)
   add_executable(fsed_tests
+    "spell_config_test.cpp"
     "spell_test.cpp"
     "spell_text_test.cpp"
+    "spell_walk_test.cpp"
     "fsed_test_main.cpp"
     "model_test.cpp"
     "fsed_model_test.cpp"
