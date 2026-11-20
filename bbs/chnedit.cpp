@@ -80,6 +80,7 @@ void ShowChainCommandLineHelp() {
   bout.outstr("|#1  %R |#9 DOOR.SYS Full Pathname\r\n");
   bout.outstr("|#1  %S |#9 Com Port Baud Rate\r\n");
   bout.outstr("|#1  %T |#9 Minutes Remaining\r\n");
+  bout.outstr("|#1  %V |#9 User Number\r\n");
   bout.outstr("|#1  %U |#9 Users Handle (primary name)\r\n");
   bout.outstr("|#1  %Z |#9Socket port/path '12345' or '/wwiv/bbs/e/1/scratch/wwiv.sock'\r\n");
   bout.nl();

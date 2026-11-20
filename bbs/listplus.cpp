@@ -75,46 +75,86 @@ static char _off_[] = "OFF";
 
 static bool lp_config_loaded = false;
 
-// TODO(rushfan): Convert this to use strings.
-static void colorize_foundtext(char* text, search_record* search_rec, int color) {
-  char found_color[10], normal_color[10];
-  char find[101], word[101];
+// Highlights each case-insensitive occurrence of every search word in *text:
+// the match is preceded by the "found" color code and followed by a code that
+// restores `color`.  The result is built in the std::string itself.  The old
+// version worked in place in a char buffer of text->size() * 2 + 120 bytes,
+// which each match grew by 12 bytes, so many matches (for example a one-letter
+// search) overflowed it.  This keeps the old output byte for byte:
+//  - the text is cut at the first NUL (the old strcpy/assign did that);
+//  - the search string is limited to its first 100 characters (old char[101]),
+//    split on "&|!()" with empty words skipped (strtok), and each word trimmed;
+//  - matching uses the same strcasestr();
+//  - exactly 6 characters of each color code are inserted (old strncpy(.., 6));
+//  - each word is searched in the text as colorized by the previous words;
+//  - after a match, searching resumes one character past the restore code
+//    (the old ++temp_buffer), and stops at the end of the text instead of
+//    reading past it.
+static void colorize_foundtext(std::string* text, search_record* search_rec, int color) {
+  if (const auto nul = text->find('\0'); nul != std::string::npos) {
+    text->resize(nul);
+  }
+  if (!lp_config.colorize_found_text) {
+    return;
+  }
+  const auto found_color =
+      fmt::sprintf("|%02d|%02d", lp_config.found_fore_color, lp_config.found_back_color)
+          .substr(0, 6);
+  const auto normal_color = fmt::sprintf("|16|%02d", color).substr(0, 6);
+  const auto find = std::string(search_rec->search.c_str()).substr(0, 100);
 
-  sprintf(found_color, "|%02d|%02d", lp_config.found_fore_color, lp_config.found_back_color);
-  sprintf(normal_color, "|16|%02d", color);
-
-  if (lp_config.colorize_found_text) {
-    to_char_array(find, search_rec->search);
-    char* tok = strtok(find, "&|!()");
-
-    while (tok) {
-      char* temp_buffer = text;
-      strcpy(word, tok);
-      StringTrim(word);
-
-      while (temp_buffer && word[0]) {
-        if ((temp_buffer = strcasestr(temp_buffer, word)) != nullptr) {
-          int size = ssize(temp_buffer) + 1;
-          memmove(&temp_buffer[6], &temp_buffer[0], size);
-          strncpy(temp_buffer, found_color, 6);
-          temp_buffer += strlen(word) + 6;
-          size = ssize(temp_buffer) + 1;
-          memmove(&temp_buffer[6], &temp_buffer[0], size);
-          strncpy(temp_buffer, normal_color, 6);
-          temp_buffer += 6;
-          ++temp_buffer;
-        }
+  for (auto word : SplitString(find, "&|!()")) {
+    StringTrim(&word);
+    if (word.empty()) {
+      continue;
+    }
+    std::string::size_type pos = 0;
+    while (pos < text->size()) {
+      const char* hit = strcasestr(text->c_str() + pos, word.c_str());
+      if (hit == nullptr) {
+        break;
       }
-      tok = strtok(nullptr, "&|!()");
+      const auto found = static_cast<std::string::size_type>(hit - text->c_str());
+      text->insert(found, found_color);
+      const auto after_word = found + found_color.size() + word.size();
+      text->insert(after_word, normal_color);
+      pos = after_word + normal_color.size() + 1;
     }
   }
 }
 
-static void colorize_foundtext(std::string* text, search_record* search_rec, int color) {
-  std::unique_ptr<char[]> s(new char[text->size() * 2 + (12 * 10)]); // extra padding for colorized
-  strcpy(s.get(), text->c_str());
-  colorize_foundtext(s.get(), search_rec, color);
-  text->assign(s.get());
+// Number of columns the ListPlus layout may use.  The layout was designed for
+// 80 columns; never use more than that, but shrink to the user's screen width
+// so that no row wraps (a wrapped row is a screen row that the row counting
+// used for vert_pos in lpfunc.cpp does not know about).
+static int lp_screen_cols() {
+  return std::min<int>(80, a()->user()->screen_width());
+}
+
+// Expands TABs to spaces using 8-column tab stops, the same stops
+// Output::outchr() uses (it emits 8 - (x % 8) spaces for a TAB).  The column
+// is the real screen column: `start_col` (0-based column where the text starts
+// printing) plus the visible width of the text before the TAB, measured with
+// size_without_colors() exactly as trim_to_size_ignore_colors() measures it.
+// Expanding here, before trimming, means the trimmed width equals the width on
+// screen.  (outchr() itself computes the stop from its own x_, which setc() and
+// "|nn" pipe codes advance by the length of the ANSI escape they emit, so
+// leaving TABs to the output layer can't be counted reliably.)
+static std::string lp_expand_tabs(const std::string& s, int start_col) {
+  if (s.find('\t') == std::string::npos) {
+    return s;
+  }
+  std::string out;
+  out.reserve(s.size() + 16);
+  for (const auto c : s) {
+    if (c == '\t') {
+      const auto col = start_col + size_without_colors(out);
+      out.append(8 - (col % 8), ' ');
+    } else {
+      out.push_back(c);
+    }
+  }
+  return out;
 }
 
 static void build_header() {
@@ -140,7 +180,7 @@ static void build_header() {
     desc_pos = size_int(header);
     header += "Description";
   }
-  StringJustify(&header, 79, ' ', JustificationType::LEFT);
+  StringJustify(&header, lp_screen_cols() - 1, ' ', JustificationType::LEFT);
   bout.print("|23|01{}\r\n", header);
 
   header.clear();
@@ -152,25 +192,26 @@ static void build_header() {
   }
   if (!header.empty()) {
     StringJustify(&header, desc_pos + ssize(header), ' ', JustificationType::RIGHT);
-    StringJustify(&header, 79, ' ', JustificationType::LEFT);
+    StringJustify(&header, lp_screen_cols() - 1, ' ', JustificationType::LEFT);
     bout.print("|23|01{}\r\n", header);
   }
 }
 
 static void printtitle_plus_old() {
-  bout.print("|16|15{}\r\n", std::string(79, '\xDC'));
+  bout.print("|16|15{}\r\n", std::string(lp_screen_cols() - 1, '\xDC'));
 
   const auto buf =
       fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
                    a()->dirs()[a()->current_user_dir().subnum].name,
                    a()->current_file_area()->number_of_files());
-  bout.printf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf);
+  const auto title = fmt::sprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 ", buf);
+  bout.print("{}\r\n", trim_to_size_ignore_colors(title, lp_screen_cols() - 1));
 
   if (a()->user()->data.lp_options & cfl_header) {
     build_header();
   }
 
-  bout.print("|16|08{}\r\n|#0", std::string(79, '\xDF'));
+  bout.print("|16|08{}\r\n|#0", std::string(lp_screen_cols() - 1, '\xDF'));
 }
 
 void printtitle_plus() {
@@ -183,7 +224,9 @@ void printtitle_plus() {
         fmt::format("Area {} : {: <30} ({} files)", to_number<int>(a()->current_user_dir().keys),
                     a()->dirs()[a()->current_user_dir().subnum].name,
                     a()->current_file_area()->number_of_files());
-    bout.litebar(fmt::format("{:<54} Space=Tag/?=Help", buf));
+    // litebar() prints a leading space and pads to screen_width() - 2.
+    bout.litebar(
+        trim_to_size_ignore_colors(fmt::format("{:<54} Space=Tag/?=Help", buf), lp_screen_cols() - 2));
     bout.ansic(0);
   }
 }
@@ -298,9 +341,37 @@ int lp_add_batch(const std::string& file_name, int dn, int fs) {
 }
 
 
+static std::vector<std::string> split_extended_lines(const std::string& raw);
+
+// Number of rows printinfo_plus() prints after the file line and the extended
+// description: the "UL:" date line and/or the "Upby:" line.  This must match
+// the trailer logic at the end of printinfo_plus(), which prints its last line
+// only when `buffer` (the text of the last of the filename/extension/size/
+// description columns) is non-empty; that is mirrored here.
+static int lp_trailer_lines(const uploadsrec* u) {
+  const auto opts = a()->user()->data.lp_options;
+  if (opts & cfl_date_uploaded) {
+    return (opts & cfl_upby) ? 2 : 1;
+  }
+  if (opts & cfl_description) {
+    return u->description[0] ? 1 : 0;
+  }
+  return (opts & (cfl_fname | cfl_extension | cfl_kbytes)) ? 1 : 0;
+}
+
+// Maximum number of extended description lines to show for any file.
+static int lp_num_extended() {
+  return std::max<int>(a()->user()->GetNumExtended(), lp_config.show_at_least_extended);
+}
+
 int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
                    search_record* search_rec) {
-  int numl = 0, will_fit = 78;
+  int numl = 0;
+  // Keep the file line one column short of the screen width so it never wraps.
+  const int will_fit = lp_screen_cols() - 2;
+  // Rows needed after the extended description.  They are reserved before the
+  // extended description is printed so the total never exceeds LinesLeft.
+  const auto trailer_lines = lp_trailer_lines(u);
   int char_printed = 0, extdesc_pos;
 
   files::FileName filename(u->filename);
@@ -378,7 +449,8 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     extdesc_pos = -1;
   }
 
-  auto fi = trim_to_size_ignore_colors(file_information, will_fit);
+  // The file line (including the description column) starts at column 0.
+  auto fi = trim_to_size_ignore_colors(lp_expand_tabs(file_information, 0), will_fit);
   fi += "\r\n";
   bout.outstr(fi);
   numl++;
@@ -387,15 +459,14 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     int num_extended, lines_left;
     int lines_printed;
 
-    lines_left = LinesLeft - numl;
-    num_extended = a()->user()->GetNumExtended();
-    if (num_extended < lp_config.show_at_least_extended) {
-      num_extended = lp_config.show_at_least_extended;
-    }
+    // Leave room for the trailer lines and for the extra row print_extended()
+    // ends with (see check_lines_needed()).
+    lines_left = std::max<int>(0, LinesLeft - numl - trailer_lines - 1);
+    num_extended = lp_num_extended();
     if (num_extended > lines_left) {
       num_extended = lines_left;
     }
-    if (ext_is_on && mask_extended & u->mask) {
+    if (num_extended > 0 && ext_is_on && mask_extended & u->mask) {
       lines_printed = print_extended(u->filename, num_extended, -extdesc_pos,
                                           static_cast<Color>(a()->user()->data.lp_colors[10]),
                                           search_rec);
@@ -430,10 +501,10 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
   }
 
   if (a()->user()->data.lp_options & cfl_upby) {
-    if (a()->user()->data.lp_options & cfl_date_uploaded) {
+    if (a()->user()->data.lp_options & cfl_date_uploaded && numl < LinesLeft) {
       StringJustify(&file_information, ssize(file_information) + width, ' ',
                     JustificationType::RIGHT);
-      bout.outstr(file_information);
+      bout.outstr(trim_to_size_ignore_colors(lp_expand_tabs(file_information, 0), will_fit));
       bout.nl();
       ++numl;
     }
@@ -441,20 +512,46 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     file_information = fmt::sprintf("|%02dUpby: %-15s", a()->user()->data.lp_colors[7], tmp);
   }
 
-  if (!buffer.empty()) {
+  // Never print past LinesLeft, or the listing spills into the side menu row.
+  if (!buffer.empty() && numl < LinesLeft) {
     StringJustify(&file_information, ssize(file_information) + width, ' ',
                   JustificationType::RIGHT);
-    bout.outstr(file_information);
+    bout.outstr(trim_to_size_ignore_colors(lp_expand_tabs(file_information, 0), will_fit));
     bout.nl();
     ++numl;
   }
   return numl;
 }
 
+// Splits an extended description into display lines.  Extended descriptions
+// are normally stored with "\r\n" line endings, but may also contain bare
+// "\n" (or "\r") separators.  Normalize all of them to "\n" before splitting
+// so that no line keeps a trailing '\r'.  Both print_extended() and
+// check_lines_needed() must use this so the number of rows they compute agree.
+static std::vector<std::string> split_extended_lines(const std::string& raw) {
+  std::string normalized;
+  normalized.reserve(raw.size());
+  for (std::string::size_type i = 0; i < raw.size(); ++i) {
+    if (raw[i] == '\r') {
+      if (i + 1 < raw.size() && raw[i + 1] == '\n') {
+        // CRLF: drop the CR, the LF is copied on the next iteration.
+        continue;
+      }
+      normalized.push_back('\n');
+    } else {
+      normalized.push_back(raw[i]);
+    }
+  }
+  StringTrimEnd(&normalized);
+  return SplitString(normalized, "\n", false);
+}
+
 int print_extended(const std::string& file_name, int numlist, int indent, Color color,
                         search_record* search_rec) {
 
-  const int will_fit = 80 - std::abs(indent) - 2;
+  // Each line must fit on one screen row after the indent, or it would wrap
+  // onto a row that the returned count doesn't include.
+  const int will_fit = std::max<int>(0, lp_screen_cols() - std::abs(indent) - 2);
 
   auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(file_name).value_or("");
 
@@ -468,16 +565,18 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
   if (indent > -1 && indent != 16) {
     bout.outstr("  |#9Extended Description:\n\r");
   }
-  const auto lines = SplitString(ss, "\n", false);
+  const auto lines = split_extended_lines(ss);
   auto numl = std::min<int>(size_int(lines), numlist);
   for (auto i = 0; i < numl; i++) {
     bout.Right(std::abs(indent));
-    auto l = lines.at(i);
-    if (ssize(l) > will_fit) {
-      l.resize(will_fit);
-    }
+    // Truncate (ignoring pipe color codes) so that each extended description
+    // line occupies exactly one screen row; the caller uses the returned count
+    // to position the file numbers (see vert_pos in lpfunc.cpp).
+    // The line starts printing at column abs(indent) (after bout.Right()).
+    const auto l =
+        trim_to_size_ignore_colors(lp_expand_tabs(lines.at(i), std::abs(indent)), will_fit);
     bout.setc(static_cast<uint8_t>(color));
-    bout.outstr(lines.at(i));
+    bout.outstr(l);
     bout.nl();
   }
   bout.ansic(0);
@@ -508,22 +607,30 @@ void show_fileinfo(uploadsrec* u) {
   bout.pausescr();
 }
 
+// Returns exactly the number of rows printinfo_plus() will print for this file
+// when it has enough room: 1 for the file line, the extended description lines
+// (at most lp_num_extended()) plus the extra row print_extended() ends with,
+// and lp_trailer_lines().  The optional blank
+// separator added by listfiles_plus_function() is only printed when it fits, so
+// it is not included.  The result is capped at a full page so that a file with a
+// very long description is still listed (printinfo_plus() then shortens the
+// extended description to fit).
 int check_lines_needed(uploadsrec* u) {
-  const auto num_extended = std::max<int>(a()->user()->GetNumExtended(),
-                                          lp_config.show_at_least_extended);
-  const auto max_lines = std::min<int>(num_extended, calc_max_lines());
-
   auto elines = 0;
   if (a()->user()->data.lp_options & cfl_description) {
     if (ext_is_on && mask_extended & u->mask) {
       const auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).
                            value_or("");
-      const auto lines = SplitString(ss, "\r");
-      elines = size_int(lines);
+      elines = std::min<int>(size_int(split_extended_lines(ss)), lp_num_extended());
+      if (elines > 0) {
+        // print_extended() ends with "if (bout.wherex()) { bout.nl(); ++numl; }".
+        // Output::nl() leaves x_ at 1, not 0, so after its last line that
+        // always fires: one more (blank) row, which it counts and returns.
+        ++elines;
+      }
     }
   }
-  const auto lc_lines_used = lp_configured_lines();
-  return std::min<int>(lc_lines_used + elines, max_lines - 1);
+  return std::min<int>(1 + elines + lp_trailer_lines(u), calc_max_lines());
 }
 
 int prep_search_rec(search_record* r, int type) {

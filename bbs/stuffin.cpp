@@ -110,6 +110,9 @@ std::string CommandLine::stuff_in() const {
       case 'U':
         os << a()->user()->name();
         break;
+      case 'V':
+        os << a()->user()->usernum();
+        break;
       // replacable params + everything else.
       default: {
         if (const auto it = args_.find(ch); it != std::end(args_)) {
