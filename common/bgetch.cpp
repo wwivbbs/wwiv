@@ -19,6 +19,7 @@
 #include "common/common_events.h"
 #include "common/context.h"
 #include "common/input.h"
+#include "common/ansi_keys.h"
 #include "common/output.h"
 #include "core/eventbus.h"
 #include "core/log.h"
@@ -28,6 +29,7 @@
 #include "sdk/ansi/ansi.h"
 
 #include <chrono>
+#include <string>
 
 using std::chrono::minutes;
 using std::chrono::seconds;
@@ -235,6 +237,11 @@ char Input::bgetch(bool allow_extended_input) {
     bin.SetLastKeyLocal(false);
   }
 
+  // ANSI-BBS / SyncTERM Backspace is 0x08. Remember it so a later 0x7F
+  // (their Delete key) can be translated to COMMAND_DELETE.
+  if (ch == BACKSPACE && !last_key_local_) {
+    remote_sent_bs_ = true;
+  }
   if (!allow_extended_input) {
     return HandleControlKey(ch, sess(), user());
   }
@@ -269,19 +276,9 @@ bool Input::bkbhit() {
   return false;
 }
 
-// The final character of an ansi sequence
+// CSI/SS3 introducers used by bgetch_handle_escape.
 #define OB ('[')
 #define O ('O')
-#define A_HOME ('H')
-#define A_LEFT ('D')
-#define A_END ('K')
-#define A_UP ('A')
-#define A_DOWN ('B')
-#define A_RIGHT ('C')
-#define A_PAGEUP ('V')
-#define A_PAGEDOWN ('U')
-#define A_INSERT ('r')
-#define A_DELETE ('s')
 
 static int get_numpad_command(int key) {
   switch (key) {
@@ -300,55 +297,76 @@ static int get_numpad_command(int key) {
 }
 
 
-static int get_command_for_ansi_key(int key) {
-  switch (key) {
-  case A_UP: return COMMAND_UP;
-  case A_LEFT: return COMMAND_LEFT;
-  case A_DOWN: return COMMAND_DOWN;
-  case A_RIGHT: return COMMAND_RIGHT;
-  case A_INSERT: return COMMAND_INSERT;
-  case A_DELETE: return COMMAND_DELETE;
-  case A_HOME: return COMMAND_HOME;
-  case A_END: return COMMAND_END;
-  case A_PAGEUP: return COMMAND_PAGEUP;
-  case A_PAGEDOWN: return COMMAND_PAGEDN;
-  default: return key;
-  }
-}
-
 int Input::bgetch_event(numlock_status_t numlock_mode) {
   return bgetch_event(numlock_mode, [](bgetch_timeout_status_t, int) {});
 }
 
 int Input::bgetch_handle_escape(int key) {
-  const auto esc_time1 = time(nullptr);
-  auto esc_time2 = time(nullptr);
-  do {
-    esc_time2 = time(nullptr);
-    if (bkbhitraw()) {
-      key = static_cast<int>(getkey(true));
-      if (key == OB || key == O) {
-        key = static_cast<int>(getkey(true));
-
-        // Check for a second set of brackets
-        if (key == OB || key == O) {
-          key = static_cast<int>(getkey(true));
-        }
-        return get_command_for_ansi_key(key);
+  // Read one more byte of an ESC sequence, waiting up to one second.
+  // Returns -1 on timeout or hangup.
+  const auto read_next = [this]() -> int {
+    const auto start = std::chrono::steady_clock::now();
+    while (std::chrono::steady_clock::now() - start < std::chrono::seconds(1)) {
+      bus().invoke<CheckForHangupEvent>();
+      if (sess().hangup()) {
+        return -1;
       }
-      return GET_OUT;
+      if (bkbhitraw()) {
+        return static_cast<int>(getkey(true));
+      }
+      bus().invoke<GiveupTimeslices>();
     }
-  } while (difftime(esc_time2, esc_time1) < 1);
+    return -1;
+  };
 
-  if (difftime(esc_time2, esc_time1) >= 1) { // if no keys followed ESC
+  auto is_csi_final = [](int c) { return c >= 0x40 && c <= 0x7E; };
+
+  std::string seq;
+  key = read_next();
+  if (key < 0) {
+    return GET_OUT; // bare ESC
+  }
+  if (key != OB && key != O) {
     return GET_OUT;
   }
-  return key;
+  seq.push_back(static_cast<char>(key));
+
+  key = read_next();
+  if (key < 0) {
+    return GET_OUT;
+  }
+  // A second '[' or 'O' shows up on some terminals; keep the existing
+  // behaviour of skipping it before the payload.
+  if (key == OB || key == O) {
+    seq.push_back(static_cast<char>(key));
+    key = read_next();
+    if (key < 0) {
+      return GET_OUT;
+    }
+  }
+  seq.push_back(static_cast<char>(key));
+
+  // Parameter bytes are 0x30-0x3F (digits, ';', '?'). Keep reading until a
+  // CSI final byte so trailing '~' (and modifiers like "3;2~") are consumed
+  // instead of leaking into the next keypress.
+  while (!is_csi_final(static_cast<unsigned char>(seq.back()))) {
+    key = read_next();
+    if (key < 0) {
+      return 0; // incomplete CSI; do not treat as ESC
+    }
+    seq.push_back(static_cast<char>(key));
+    if (seq.size() > 16) {
+      return 0;
+    }
+  }
+  return parse_ansi_escape_sequence(seq);
 }
 
 int Input::bgetch_handle_key_translation(int key, numlock_status_t numlock_mode) {
   if (key == CBACKSPACE) {
-    return BACKSPACE;
+    // 0x7F is Backspace on xterm/PuTTY/Linux, Delete on SyncTERM/ANSI-BBS
+    // once a remote 0x08 (their Backspace) has been seen this session.
+    return translate_cbackspace(!IsLastKeyLocal() && remote_sent_bs_);
   }
   if (key == CV) {
     return COMMAND_INSERT;

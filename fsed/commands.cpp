@@ -26,6 +26,7 @@
 #include "fsed/view.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include <cctype>
 #include <map>
 #include <utility>
 
@@ -63,6 +64,26 @@ std::map<int, fsed_command_id> CreateDefaultEditModeKeyMap() {
   map.emplace(CP, fsed_command_id::input_wwiv_color);
   map.emplace(CW, fsed_command_id::delete_word_left);
   map.emplace(CX, fsed_command_id::delete_line_left);
+
+  // Word and document movement.  Ctrl-Left/Right/Home/End come in as
+  // COMMAND_C* from xterm/PuTTY (ESC[1;5D etc.) or as the raw DOS scan
+  // codes from a local console / doorway client.  Stock SyncTERM does
+  // not transmit those keys, so also bind Ctrl-B / Ctrl-F (word) and
+  // Ctrl-Q then R/C (WordStar top/end of file).  Ctrl-Z is a one-key
+  // "end of document" substitute.
+  map.emplace(COMMAND_CLEFT, fsed_command_id::cursor_word_left);
+  map.emplace(CLARROW, fsed_command_id::cursor_word_left);
+  map.emplace(CB, fsed_command_id::cursor_word_left);
+  map.emplace(COMMAND_CRIGHT, fsed_command_id::cursor_word_right);
+  map.emplace(CRARROW, fsed_command_id::cursor_word_right);
+  map.emplace(CF, fsed_command_id::cursor_word_right);
+  map.emplace(COMMAND_CHOME, fsed_command_id::cursor_bof);
+  map.emplace(CHOME, fsed_command_id::cursor_bof);
+  map.emplace(COMMAND_CEND, fsed_command_id::cursor_doc_end);
+  map.emplace(CEND, fsed_command_id::cursor_doc_end);
+  map.emplace(CZ, fsed_command_id::cursor_doc_end);
+  map.emplace(COMMAND_CDELETE, fsed_command_id::delete_word_right);
+  map.emplace(CQ, fsed_command_id::wordstar_quick);
 
   return map;
 }
@@ -219,6 +240,41 @@ bool FsedCommands::AddAll() {
   add(FsedCommand(
       fsed_command_id::delete_word_left, "delete_word_left",
       [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_word_left(); }));
+  add(FsedCommand(
+      fsed_command_id::delete_word_right, "delete_word_right",
+      [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_word_right(); }));
+  add(FsedCommand(fsed_command_id::cursor_word_left, "cursor_word_left",
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_word_left(); }));
+  add(FsedCommand(fsed_command_id::cursor_word_right, "cursor_word_right",
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_word_right(); }));
+  add(FsedCommand(fsed_command_id::cursor_bof, "cursor_bof",
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_bof(); }));
+  add(FsedCommand(fsed_command_id::cursor_doc_end, "cursor_doc_end",
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_doc_end(); }));
+  add(FsedCommand(fsed_command_id::wordstar_quick, "wordstar_quick",
+                  [](FsedModel& ed, FsedView& view, FsedState&) -> bool {
+                    // WordStar ^Q prefix: R = top of file, C = end of file,
+                    // S = start of line, D = end of line, A = word left,
+                    // F = word right.  Accept the letter with or without Ctrl.
+                    const int k = view.bgetch(ed) & 0xff;
+                    const int upper = (k >= 1 && k <= 26) ? (k + 'A' - 1) : std::toupper(k);
+                    switch (upper) {
+                    case 'R':
+                      return ed.cursor_bof();
+                    case 'C':
+                      return ed.cursor_doc_end();
+                    case 'S':
+                      return ed.cursor_home();
+                    case 'D':
+                      return ed.cursor_end();
+                    case 'A':
+                      return ed.cursor_word_left();
+                    case 'F':
+                      return ed.cursor_word_right();
+                    default:
+                      return true;
+                    }
+                  }));
   add(FsedCommand(
       fsed_command_id::delete_line_left, "delete_line_left",
       [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_line_left(); }));

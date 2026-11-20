@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "fsed/model.h"
+#include "fsed/wordnav.h"
 
 #include "core/os.h"
 #include "core/stl.h"
@@ -487,27 +488,25 @@ bool FsedModel::delete_line_left() {
   return true;
 }
 
+static std::vector<std::string> editor_line_texts(const FsedModel& ed) {
+  std::vector<std::string> texts;
+  texts.reserve(ed.size());
+  for (int i = 0; i < static_cast<int>(ed.size()); i++) {
+    const auto& cells = ed.line(i).cells();
+    std::string s;
+    s.reserve(cells.size());
+    for (const auto& c : cells) {
+      s.push_back(c.ch);
+    }
+    texts.emplace_back(std::move(s));
+  }
+  return texts;
+}
+
 bool FsedModel::delete_word_left() {
-  if (cx <= 0) {
-    return true;
-  }
-  auto& line = curline();
-  const auto last_space = line.last_space_before(cx);
-  if (last_space == cx) {
-    return true;
-  }
-  const auto remainder = line.substr(cx);
-  cx = last_space;
-  if (last_space == 0) {
-    line.assign(remainder);
-  } else {
-    line.assign(line.substr(0, cx));
-    line.append(remainder);
-  }
-  // TODO(rushfan): Should reflow paragraph here.
-  line.wrapped(false);
-  invalidate_to_eol();
-  return true;
+  const auto texts = editor_line_texts(*this);
+  const auto target = word_left(texts, word_pos_t{curli, cx});
+  return delete_to_pos(target.line, target.x);
 }
 
 bool FsedModel::delete_right() {
@@ -515,6 +514,122 @@ bool FsedModel::delete_right() {
   del();
   invalidate_to_eol();
   view_->gotoxy(*this);
+  return true;
+}
+
+void FsedModel::settle_cursor(int previous_line) {
+  if (view_) {
+    const int max_cy = view_->max_view_lines();
+    if (curli < view_->top_line()) {
+      view_->set_top_line(curli < 0 ? 0 : curli);
+      invalidate_to_eof(view_->top_line());
+    } else if (curli - view_->top_line() > max_cy) {
+      view_->set_top_line(curli - max_cy);
+      invalidate_to_eof(view_->top_line());
+    }
+    cy = curli - view_->top_line();
+    if (cy < 0) {
+      cy = 0;
+      view_->set_top_line(curli);
+      invalidate_to_eof(view_->top_line());
+    }
+  }
+  current_line_dirty(previous_line);
+}
+
+bool FsedModel::delete_to_pos(int line, int x) {
+  int sl = curli;
+  int sx = cx;
+  int el = line;
+  int ex = x;
+  if (sl > el || (sl == el && sx > ex)) {
+    const int tl = sl;
+    const int tx = sx;
+    sl = el;
+    sx = ex;
+    el = tl;
+    ex = tx;
+  }
+  if (sl == el && sx == ex) {
+    return true;
+  }
+  const auto previous_line = curli;
+  if (sl == el) {
+    auto& ln = this->line(sl);
+    const auto prefix = ln.substr(0, sx);
+    const auto suffix = ln.substr(ex);
+    ln.assign(prefix);
+    ln.append(suffix);
+    // TODO(rushfan): Should reflow paragraph here.
+    ln.wrapped(false);
+    curli = sl;
+    cx = sx;
+    invalidate_to_eol();
+    settle_cursor(previous_line);
+    return true;
+  }
+  auto& start = this->line(sl);
+  const auto prefix = start.substr(0, sx);
+  const bool keep_wrap = this->line(el).wrapped();
+  const auto suffix = this->line(el).substr(ex);
+  start.assign(prefix);
+  start.append(suffix);
+  start.wrapped(keep_wrap);
+  for (int i = el; i > sl; --i) {
+    wwiv::stl::erase_at(lines_, i);
+  }
+  curli = sl;
+  cx = sx;
+  invalidate_to_eof(sl);
+  settle_cursor(previous_line);
+  return true;
+}
+
+bool FsedModel::delete_word_right() {
+  const auto texts = editor_line_texts(*this);
+  const auto target = word_right(texts, word_pos_t{curli, cx});
+  return delete_to_pos(target.line, target.x);
+}
+
+bool FsedModel::cursor_word_left() {
+  const auto previous_line = curli;
+  const auto texts = editor_line_texts(*this);
+  const auto target = word_left(texts, word_pos_t{curli, cx});
+  curli = target.line;
+  cx = target.x;
+  settle_cursor(previous_line);
+  return true;
+}
+
+bool FsedModel::cursor_word_right() {
+  const auto previous_line = curli;
+  const auto texts = editor_line_texts(*this);
+  const auto target = word_right(texts, word_pos_t{curli, cx});
+  curli = target.line;
+  cx = target.x;
+  settle_cursor(previous_line);
+  return true;
+}
+
+bool FsedModel::cursor_bof() {
+  const auto previous_line = curli;
+  curli = 0;
+  cx = 0;
+  settle_cursor(previous_line);
+  return true;
+}
+
+bool FsedModel::cursor_doc_end() {
+  const auto previous_line = curli;
+  if (lines_.empty()) {
+    curli = 0;
+    cx = 0;
+    cy = 0;
+    return true;
+  }
+  curli = wwiv::stl::size_int(lines_) - 1;
+  cx = wwiv::stl::size_int(curline());
+  settle_cursor(previous_line);
   return true;
 }
 

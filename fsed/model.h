@@ -138,6 +138,11 @@ public:
   bool delete_line_left();
   bool delete_word_left();
   bool delete_right();
+  bool delete_word_right();
+  bool cursor_word_left();
+  bool cursor_word_right();
+  bool cursor_bof();
+  bool cursor_doc_end();
 
   // Toggles the internal state if the editor is in INSERT or OVERWRITE mode. This
   // matters on add, bs, and del
@@ -201,6 +206,10 @@ private:
   std::vector<editor_current_line_redraw_fn> line_callbacks_;
   // Viewport for display
   std::shared_ptr<editor_viewport_t> view_;
+  // Keep cy and top_line in sync after a jump that may change curli.
+  void settle_cursor(int previous_line);
+  // Delete text from the current cursor to target, crossing lines if needed.
+  bool delete_to_pos(int line, int x);
 };
 
 }
