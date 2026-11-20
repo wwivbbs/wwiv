@@ -158,3 +158,39 @@ TEST_F(SubXtrTest, JsonSmoke) {
   EXPECT_EQ(2, subs[0].storage_type);
 
 }
+
+TEST_F(SubXtrTest, Description_SaveAndLoad) {
+  {
+    Subs subs(helper.datadir(), net_networks_, 0);
+    subboard_t s{};
+    s.name = "n1";
+    s.filename = "F1";
+    s.desc = "This is the long description";
+    ASSERT_TRUE(subs.add(s));
+    ASSERT_TRUE(subs.Save());
+  }
+
+  Subs subs(helper.datadir(), net_networks_, 0);
+  ASSERT_TRUE(subs.Load());
+  ASSERT_EQ(1, wwiv::stl::ssize(subs.subs()));
+  EXPECT_EQ("n1", subs.sub(0).name);
+  EXPECT_EQ("This is the long description", subs.sub(0).desc);
+}
+
+TEST_F(SubXtrTest, JsonDescription_MissingIsEmpty) {
+  const std::string json = R"(
+  {
+    "version": 1,
+    "subs": [
+      { "name": "n1", "filename": "F1", "storage_type": 2 }
+    ]
+  }
+ )";
+  this->CreateTempFile("subs.json", json);
+
+  std::vector<subboard_t> subs;
+  ASSERT_TRUE(Subs::LoadFromJSON(dir(), "subs.json", subs));
+  ASSERT_EQ(1, wwiv::stl::ssize(subs));
+  EXPECT_EQ("F1", subs[0].filename);
+  EXPECT_TRUE(subs[0].desc.empty());
+}
