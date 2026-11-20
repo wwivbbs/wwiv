@@ -224,10 +224,10 @@ void modify_dir(int n) {
     bout.print("|#9O) WWIV Reg     : |#2{}\r\n", YesNoString((r.mask & mask_wwivreg)));
     bout.outstr("|#9T) FTN Area Tags: |#2");
     list_area_tags(r.area_tags, list_area_tags_style_t::indent);
-    bout.print("|#9   Conferences  : |#2{}\r\n", r.conf.to_string());
+    bout.print("|#9S) Conferences  : |#2{}\r\n", r.conf.to_string());
     bout.nl(2);
-    bout.outstr("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[T|#7,|#1[|#7,|#1]|#7) : ");
-    const auto ch = onek("QABCDEFGHJKLMNOT[]", true);
+    bout.outstr("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1S|#7,|#1T|#7,|#1[|#7,|#1]|#7) : ");
+    const auto ch = onek("QABCDEFGHJKLMNOST[]", true);
     switch (ch) {
     case 'Q':
       done = true;
@@ -332,6 +332,9 @@ void modify_dir(int n) {
       if (bin.yesno()) {
         r.mask |= mask_wwivreg;
       }
+      break;
+    case 'S':
+      edit_conf_set(a()->all_confs().dirs_conf(), r.conf);
       break;
     case 'T': {
       edit_ftn_area_tags(r.area_tags);

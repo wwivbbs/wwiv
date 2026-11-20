@@ -177,10 +177,10 @@ static void modify_sub(int n) {
     bout.print("|#9P) Disable FS   : |#2{}\r\n",
                YesNoString((r.anony & anony_no_fullscreen) ? true : false));
     bout.print("|#9R) Colorize Text: |#2{}\r\n", YesNoString(r.colorize_text));
-    bout.print("|#9   Conferences  : |#2{}\r\n", r.conf.to_string());
+    bout.print("|#9S) Conferences  : |#2{}\r\n", r.conf.to_string());
     bout.nl();
-    bout.outstr("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1R|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ");
-    auto ch = onek("QABCDEFGHIJKLMNOPR[]", true);
+    bout.outstr("|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1S|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ");
+    auto ch = onek("QABCDEFGHIJKLMNOPRS[]", true);
     bout.nl();
     switch (ch) {
     case 'Q':
@@ -401,6 +401,9 @@ static void modify_sub(int n) {
       bout.nl();
       bout.outstr("|#5Attempt to colorize uncolorized message text for this sub? ");
       r.colorize_text = bin.yesno();
+      break;
+    case 'S':
+      edit_conf_set(a()->all_confs().subs_conf(), r.conf);
       break;
     }
   } while (!done && !a()->sess().hangup());
@@ -638,7 +641,9 @@ void boardedit() {
         insert_sub(subnum);
         modify_sub(subnum);
         const auto confs_size = a()->all_confs().subs_conf().size();
-        if (confs_size > 1) {
+        if (!a()->subs().sub(subnum).conf.empty()) {
+          // Conferences were already set with S) in the editor; don't ask again.
+        } else if (confs_size > 1) {
           bout.nl();
           if (auto o = select_conf("Put in which conference? ", a()->all_confs().subs_conf(), true)) {
             a()->subs().sub(subnum).conf.insert(o.value());
