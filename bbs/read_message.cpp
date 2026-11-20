@@ -30,6 +30,7 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "core/file.h"
+#include "core/findfiles.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -138,7 +139,7 @@ static void UpdateMessageOriginInfo(int system_number, int user_number, Type2Mes
       const auto filename = FilePath(regions_dir, phone_fn);
 
       std::string description;
-      if (File::Exists(filename)) {
+      if (FindFile(filename)) {
         // Try to use the town first.
         const auto phone_prefix =
             fmt::sprintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
