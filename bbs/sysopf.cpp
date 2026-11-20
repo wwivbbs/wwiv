@@ -42,6 +42,7 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "core/file.h"
+#include "core/findfiles.h"
 #include "core/inifile.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
@@ -527,7 +528,7 @@ bool print_wwivnet_net_listing(const Network& net) {
             const auto town_fn =
                 fmt::sprintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne.phone));
             std::string areacode;
-            if (File::Exists(FilePath(regions_dir, town_fn))) {
+            if (FindFile(FilePath(regions_dir, town_fn))) {
               auto town = fmt::sprintf("%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
               areacode =
                   describe_area_code_prefix(to_number<int>(csne.phone), to_number<int>(town));
