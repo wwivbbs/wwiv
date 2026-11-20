@@ -1414,11 +1414,11 @@
                 "help_text": "Configure Colors",
                 "log_text": "COLORS",
                 "instance_message": "",
-                "acs": "user.sysop == true",
+                "acs": "",
                 "password": "",
                 "actions": [
                     {
-                        "cmd": "colorconfig",
+                        "cmd": "user:colors",
                         "data": "",
                         "acs": ""
                     }
