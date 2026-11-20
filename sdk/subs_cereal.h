@@ -38,6 +38,9 @@ void serialize(Archive & ar, subboard_network_data_t& s) {
 
 template <class Archive> void serialize(Archive& ar, subboard_t& s) { 
   SERIALIZE(s, name);
+  // desc is the long description edited with //BOARDEDIT O). It was missing
+  // here, so it never reached subs.json and was lost on the next load.
+  SERIALIZE(s, desc);
   SERIALIZE(s, filename);
   SERIALIZE(s, key);
   SERIALIZE(s, read_acs);
