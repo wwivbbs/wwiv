@@ -36,10 +36,28 @@ static void advance_cy(FsedModel& ed, editor_viewport_t& view, bool invalidate =
     ++ed.cy;
   } else {
     // scroll
-    view.set_top_line(ed.curli - ed.cy);
+    view.set_top_line(std::max(0, ed.curli - ed.cy));
     if (invalidate) {
       ed.invalidate_to_eof(view.top_line());
     }
+  }
+  if (ed.cy > view.max_view_lines()) {
+    ed.cy = view.max_view_lines();
+    view.set_top_line(std::max(0, ed.curli - ed.cy));
+  }
+  if (ed.cy < 0) {
+    ed.cy = 0;
+  }
+}
+
+// Move the cursor up one visual row after curli has already been decremented.
+// Scrolls the viewport when the cursor was on the top visible row so cy
+// never goes negative.
+static void retreat_cy(FsedModel& ed, editor_viewport_t& view) {
+  if (ed.cy > 0) {
+    --ed.cy;
+  } else {
+    view.set_top_line(ed.curli);
   }
 }
 
@@ -118,38 +136,173 @@ editor_add_result_t FsedModel::add(char c) {
   }
   const auto start_line = curli;
   ++cx;
-  if (cx < max_line_len_) {
-    // no  wrapping is needed
+  // Reflow when the line is at or past the max width (including a mid-line
+  // insert that grows a full-width line), or when this line already soft-
+  // wraps onto a continuation.  Using "<=" used to skip wrap when the
+  // cursor was mid-line and the line was exactly max_line_len_ chars,
+  // leaving text past the right edge.
+  const bool needs_reflow = cx >= max_line_len_ ||
+                            size_int(curline()) >= max_line_len_ ||
+                            curline().wrapped();
+  if (!needs_reflow) {
     if (line_result == line_add_result_t::needs_redraw) {
       invalidate_range(start_line, curli);
     }
     return editor_add_result_t::added;
   }
-  const auto last_space = line.last_space_before(size_int(line));
-  line.wrapped(true);
-  const auto wwiv_color = line.wwiv_color();
-  if (last_space != -1 && (max_line_len_ - last_space) < (max_line_len_ / 2)) {
-    // Word Wrap at the position after the last space. That way the space
-    // end up on the previous line
-    const auto wrap_position = last_space + 1;
-    const auto nline = line.substr(wrap_position);
-    line.assign(line.substr(0, wrap_position));
-    ++curli;
-    insert_line();
-    curline().assign(nline);
-    cx = size_int(curline());
-  } else {
-    // Character wrap.
-    ++curli;
-    cx %= max_line_len_;
+  if (!reflow_paragraph()) {
+    return editor_add_result_t::error;
   }
-  // Create the new line and carry over line color since we wrapped (either
-  // line or character).
-  curline().set_wwiv_color(wwiv_color);
-
-  invalidate_range(start_line, curli);
-  advance_cy(*this, *view_);
+  // Lines below may have been pushed down or reflowed.  The old code only
+  // invalidated start_line..curli, so the shifted lines stayed put on
+  // screen and looked like they had been overwritten (#1343).  enter()
+  // already invalidates to EOF for the same reason.
+  invalidate_to_eof(start_line);
   return editor_add_result_t::wrapped;
+}
+
+bool FsedModel::reflow_paragraph() {
+  if (curli < 0) {
+    curli = 0;
+  }
+  // curline() will extend lines_ if curli is past the end.
+  (void)curline();
+  if (lines_.empty()) {
+    return false;
+  }
+  if (curli >= size_int(lines_)) {
+    curli = size_int(lines_) - 1;
+  }
+
+  // wrapped() means this line continues onto the next (saved as a trailing
+  // SOH / 0x01 marker by to_lines(true)).  Walk back to the start of the
+  // soft-wrapped paragraph so deletes can pull words up, then forward to
+  // the next hard break.  A blank line is a paragraph separator.
+  int start = curli;
+  while (start > 0 && line(start - 1).wrapped() && size_int(line(start)) > 0) {
+    --start;
+  }
+  int end = curli + 1;
+  while (end < size_int(lines_) && line(end - 1).wrapped()) {
+    if (size_int(line(end)) == 0) {
+      break;
+    }
+    ++end;
+  }
+
+  std::vector<cell_t> cells;
+  int offset = 0;
+  bool offset_set = false;
+  for (int i = start; i < end; ++i) {
+    auto part = line(i).cells();
+    while (!part.empty() && part.back().ch == '\x01') {
+      part.pop_back();
+    }
+    if (!cells.empty() && !part.empty()) {
+      const auto a = cells.back().ch;
+      const auto b = part.front().ch;
+      if (a != ' ' && a != '\t' && b != ' ' && b != '\t') {
+        cells.emplace_back(cells.back().wwiv_color, ' ');
+      }
+    }
+    if (i == curli && !offset_set) {
+      const int local = std::min(std::max(cx, 0), size_int(part));
+      offset = size_int(cells) + local;
+      offset_set = true;
+    }
+    cells.insert(cells.end(), part.begin(), part.end());
+  }
+  if (!offset_set) {
+    offset = size_int(cells);
+  }
+  if (offset < 0) {
+    offset = 0;
+  }
+  if (offset > size_int(cells)) {
+    offset = size_int(cells);
+  }
+
+  const int width = std::max(1, max_line_len_);
+  std::vector<line_t> wrapped;
+  int pos = 0;
+  const int n = size_int(cells);
+  while (pos < n) {
+    const int remain = n - pos;
+    int take;
+    if (remain <= width) {
+      take = remain;
+    } else {
+      int sp = -1;
+      for (int k = width - 1; k > 0; --k) {
+        const auto ch = cells[pos + k].ch;
+        if (ch == ' ' || ch == '\t') {
+          sp = k;
+          break;
+        }
+      }
+      take = (sp > 0) ? (sp + 1) : width;
+    }
+    line_t nl;
+    nl.assign(std::vector<cell_t>(cells.begin() + pos, cells.begin() + pos + take));
+    pos += take;
+    nl.wrapped(pos < n);
+    wrapped.push_back(std::move(nl));
+  }
+  if (wrapped.empty()) {
+    wrapped.emplace_back();
+  }
+  if (size_int(lines_) - (end - start) + size_int(wrapped) > maxli() &&
+      size_int(wrapped) > (end - start)) {
+    // Would exceed max lines; leave text as-is rather than drop it.
+    return false;
+  }
+
+  lines_.erase(lines_.begin() + start, lines_.begin() + end);
+  lines_.insert(lines_.begin() + start, wrapped.begin(), wrapped.end());
+
+  int left = offset;
+  curli = start;
+  cx = 0;
+  for (int i = 0; i < size_int(wrapped); ++i) {
+    const int sz = size_int(wrapped[i]);
+    if (left <= sz) {
+      curli = start + i;
+      cx = left;
+      break;
+    }
+    left -= sz;
+    curli = start + i;
+    cx = sz;
+  }
+  sync_viewport();
+  return true;
+}
+
+void FsedModel::sync_viewport() {
+  if (!view_) {
+    return;
+  }
+  const int max_cy = std::max(0, view_->max_view_lines());
+  if (curli < 0) {
+    curli = 0;
+  }
+  if (!lines_.empty() && curli >= size_int(lines_)) {
+    curli = size_int(lines_) - 1;
+  }
+  if (curli < view_->top_line()) {
+    view_->set_top_line(std::max(0, curli));
+  } else if (curli - view_->top_line() > max_cy) {
+    view_->set_top_line(curli - max_cy);
+  }
+  cy = curli - view_->top_line();
+  if (cy < 0) {
+    cy = 0;
+    view_->set_top_line(curli);
+  }
+  if (cy > max_cy) {
+    cy = max_cy;
+    view_->set_top_line(std::max(0, curli - cy));
+  }
 }
 
 cell_t FsedModel::current_cell() const {
@@ -200,16 +353,36 @@ bool FsedModel::cursor_down() {
 bool FsedModel::cursor_left() {
   if (cx > 0) {
     --cx;
+    return true;
   }
+  if (curli == 0) {
+    return true;
+  }
+  // At column 0: wrap to the end of the previous line, scrolling if we
+  // were on the top visible row.
+  const auto previous_line = curli;
+  --curli;
+  retreat_cy(*this, *view_);
+  cx = std::min<int>(max_line_len(), size_int(curline()));
+  current_line_dirty(previous_line);
   return true;
 }
 
 bool FsedModel::cursor_right() {
-  // TODO: add option to cursor right to end of view
   const auto right_max = std::min<int>(max_line_len(), size_int(curline()));
   if (cx < right_max) {
     ++cx;
+    return true;
   }
+  if (curli >= size_int(lines_) - 1) {
+    return true;
+  }
+  // At the end of the line: wrap to column 0 of the next line.
+  const auto previous_line = curli;
+  ++curli;
+  cx = 0;
+  advance_cy(*this, *view_);
+  current_line_dirty(previous_line);
   return true;
 }
 
@@ -259,6 +432,24 @@ bool FsedModel::cursor_home() {
 
 bool FsedModel::cursor_end() {
   cx = size_int(curline());
+  return true;
+}
+
+bool FsedModel::cursor_eof() {
+  const auto previous_line = curli;
+  if (lines_.empty()) {
+    curli = 0;
+    cx = 0;
+    cy = 0;
+    return true;
+  }
+  curli = size_int(lines_) - 1;
+  cx = size_int(curline());
+  sync_viewport();
+  if (view_) {
+    invalidate_to_eof(view_->top_line());
+  }
+  current_line_dirty(previous_line);
   return true;
 }
 
@@ -343,6 +534,14 @@ bool FsedModel::del() {
   if (r == line_add_result_t::error) {
     return false;
   }
+  const bool in_para = curline().wrapped() ||
+                       (curli > 0 && line(curli - 1).wrapped()) ||
+                       size_int(curline()) >= max_line_len_;
+  if (in_para) {
+    reflow_paragraph();
+    invalidate_to_eof(curli);
+    return true;
+  }
   if (r == line_add_result_t::needs_redraw) {
     invalidate_to_eof(curli);
   }
@@ -371,26 +570,55 @@ bool FsedModel::bs() {
   } else if (curli > 0 && size_int(curline()) == 0) {
     // If current line is empty then delete it and move up one line
     if (remove_line()) {
-      --cy;
       --curli;
+      retreat_cy(*this, *view_);
       cx = size_int(curline());
       invalidate_to_eof(curli);
     }
+  } else if (curli > 0 && line(curli - 1).wrapped()) {
+    // Backspace at column 0 of a soft-wrapped continuation: drop the wrap
+    // and reflow the paragraph so words pull back up.  Do not use the
+    // hard-break join, which can leave a stale wrapped() flag pointing
+    // at the next paragraph.
+    --curli;
+    retreat_cy(*this, *view_);
+    cx = size_int(curline());
+    reflow_paragraph();
+    invalidate_to_eof(curli);
   } else if (curli > 0) {
     auto& prev = line(curli - 1);
     auto& cur = curline();
+    // If two hard-broken lines would glue like "Maryland.Trying", put a
+    // separating space back.
+    const bool need_space =
+        size_int(prev) > 0 && size_int(cur) > 0 &&
+        prev.cells().back().ch != ' ' && prev.cells().back().ch != '\t' &&
+        cur.cells().front().ch != ' ' && cur.cells().front().ch != '\t';
+    if (need_space) {
+      prev.push_back(' ');
+    }
+    auto new_cx = size_int(prev);
     const auto last_pos = std::max<int>(0, max_line_len() - size_int(prev) - 1);
-    const auto new_cx = size_int(prev);
     if (ssize(cur) < last_pos) {
       prev.append(cur.cells());
       remove_line();
-    } else if (const int space = cur.last_space_before(last_pos) > 0) {
+    } else if (const int space = cur.last_space_before(last_pos); space > 0) {
+      // last_space_before returns an index, not a boolean.  The previous
+      // "space = expr > 0" form assigned 0 or 1, so a join only pulled one
+      // character back onto the line above.
       prev.append(cur.substr(0, space));
       cur.assign(cur.substr(space));
     }
-    --cy;
     --curli;
+    retreat_cy(*this, *view_);
     cx = new_cx;
+    invalidate_to_eof(curli);
+  }
+  const bool in_para = curline().wrapped() ||
+                       (curli > 0 && line(curli - 1).wrapped()) ||
+                       size_int(curline()) >= max_line_len_;
+  if (in_para) {
+    reflow_paragraph();
     invalidate_to_eof(curli);
   }
   current_line_dirty(previous_line);
@@ -419,6 +647,7 @@ bool FsedModel::enter() {
     curline().assign(ntext);
   }
   advance_cy(*this, *view_);
+  sync_viewport();
   // Restore the wwiv color on the new line so we don't reset to 0.
   curline().set_wwiv_color(previous_color);
   cx = 0;

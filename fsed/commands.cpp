@@ -49,6 +49,9 @@ std::map<int, fsed_command_id> CreateDefaultEditModeKeyMap() {
   map.emplace(CD, fsed_command_id::delete_line);
   map.emplace(COMMAND_END, fsed_command_id::cursor_end);
   map.emplace(CE, fsed_command_id::cursor_end);
+  // Ctrl-End (and the 256+ form used by some key paths) goes to EOF.
+  map.emplace(CEND, fsed_command_id::cursor_eof);
+  map.emplace(CEND + 256, fsed_command_id::cursor_eof);
   map.emplace(CK, fsed_command_id::delete_to_eol);
   map.emplace(CL, fsed_command_id::view_redraw);
   map.emplace(COMMAND_DELETE, fsed_command_id::delete_right);
@@ -176,6 +179,8 @@ bool FsedCommands::AddAll() {
                   [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_line(); }));
   add(FsedCommand(fsed_command_id::cursor_end, "cursor_end",
                   [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_end(); }));
+  add(FsedCommand(fsed_command_id::cursor_eof, "cursor_eof",
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_eof(); }));
   add(FsedCommand(fsed_command_id::delete_to_eol, "delete_to_eol",
                   [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_to_eol(); }));
   add(FsedCommand(fsed_command_id::view_redraw, "view_redraw",

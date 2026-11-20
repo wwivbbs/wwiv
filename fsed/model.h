@@ -131,6 +131,7 @@ public:
   bool cursor_pgdown();
   bool cursor_home();
   bool cursor_end();
+  bool cursor_eof();
 
   bool delete_line();
   bool delete_to_eol();
@@ -177,6 +178,15 @@ public:
   int curli{0};
 
 private:
+  // Reflow the paragraph from the current line through the next hard break.
+  // line.wrapped() true means this line continues onto the next (saved as
+  // a trailing \x1 by to_lines(true)).  Overflow flows into continuation
+  // lines, wrapping at word boundaries; a new line is added only at the
+  // end of the paragraph.  The cursor stays on the same logical character.
+  bool reflow_paragraph();
+  // Keep cy and top_line consistent with curli, and cy inside the viewport.
+  void sync_viewport();
+
   // Max number of lines allowed
   int maxli_{255};
   // Lines of text.  mark mutable so we can add the current line

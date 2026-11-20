@@ -43,6 +43,7 @@ enum class fsed_command_id {
   cursor_right,
   cursor_home,
   cursor_end,
+  cursor_eof,
   delete_to_eol,
   delete_line,
   delete_line_left,

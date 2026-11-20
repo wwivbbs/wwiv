@@ -141,10 +141,12 @@ bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
     if (key < 0xff && key >= 32) {
       const auto c = static_cast<char>(key & 0xff);
 
-      // If we're in the 1st postition and get a '/', display the menu.
-      if (c == '/' && ed.cx == 0) {
+      // '/' at column 0 of an empty line opens the same menu as ESC, so
+      // line-editor muscle memory still works (/S save, /Q quote, /A abort).
+      // On a line that already has text, '/' is inserted as a normal
+      // character so paths and comments can be typed at the start of a line.
+      if (c == '/' && ed.cx == 0 && size_int(ed.curline()) == 0) {
         if (commands.InvokeCommand(fsed_command_id::menu, ed, *view, state)) {
-          // We showed the menu
           continue;
         }
       }
