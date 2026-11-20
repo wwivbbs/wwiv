@@ -80,7 +80,11 @@ std::optional<arc_command_t> get_arc_cmd(const std::string& arc_fn, arc_command_
     return {c};
   }
   wwiv::bbs::CommandLine cl(cmdline, a()->bbspath());
-  cl.args(arc_fn, ofn);
+  // Quote filenames so names containing '&' (and other shell metacharacters)
+  // survive /bin/bash -c.  %2 is split so "FILE_ID.DIZ DESC.SDI" stays two
+  // arguments.  Skip quoting if the sysop already wrote "%1" / "%2".
+  cl.args(wwiv::bbs::quote_arg_for_command(cmdline, 1, arc_fn),
+          wwiv::bbs::quote_arg_for_command(cmdline, 2, ofn, true));
   arc_command_t c{false, cl.cmdline()};
   return {c};
 }

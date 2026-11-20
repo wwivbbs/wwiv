@@ -43,6 +43,7 @@ enum class fsed_command_id {
   cursor_right,
   cursor_home,
   cursor_end,
+  cursor_eof,
   delete_to_eol,
   delete_line,
   delete_line_left,
@@ -55,6 +56,12 @@ enum class fsed_command_id {
   view_redraw,
   input_wwiv_color,
   ignore,
+  cursor_word_left,
+  cursor_word_right,
+  cursor_bof,
+  cursor_doc_end,
+  delete_word_right,
+  wordstar_quick,
   none,
 };
 

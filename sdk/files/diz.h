@@ -48,6 +48,24 @@ private:
   bool firstline_as_desc_;
 };
 
+/**
+ * Returns true if 'filename' is FILE_ID.DIZ or DESC.SDI, ignoring case.
+ */
+[[nodiscard]] bool is_diz_filename(const std::string& filename);
+
+/**
+ * Removes every FILE_ID.DIZ or DESC.SDI in 'dir', whatever its case.
+ *
+ * Archivers keep the case stored in the archive, so on a case sensitive
+ * filesystem an extracted description may be file_id.diz rather than
+ * FILE_ID.DIZ. Returns the number of files removed.
+ */
+int remove_diz_files(const std::filesystem::path& dir);
+
+/**
+ * Finds a FILE_ID.DIZ (preferred) or DESC.SDI in 'dir', whatever its case.
+ */
+[[nodiscard]] std::optional<std::filesystem::path> find_diz_file(const std::filesystem::path& dir);
 }
 
 #endif

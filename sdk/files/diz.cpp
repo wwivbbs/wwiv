@@ -75,7 +75,8 @@ std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
   }
   // Save off the first non empty line.
   const auto first_real_line = iter;
-  if (lines.empty()) {
+  // iter == end covers an empty file and a file of only blank lines.
+  if (iter == end) {
     VLOG(1) << "DizParser::parse: lines empty";
     return std::nullopt;
   }
@@ -89,10 +90,19 @@ std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
         }
       }
       if (!valid_desc(ss)) {
-        do {
-          ++iter;
+        // The old do/while incremented, then dereferenced *iter, then
+        // checked iter != end, so a DIZ with no letter-bearing line
+        // (only punctuation, digits, or box-drawing) read past the end.
+        for (++iter; iter != end; ++iter) {
           ss = *iter;
-        } while (!valid_desc(ss) && iter != end);
+          if (valid_desc(ss)) {
+            break;
+          }
+        }
+        if (iter == end) {
+          VLOG(1) << "Description is empty, failed to parse.";
+          return std::nullopt;
+        }
       }
     }
     if (!ss.empty() && ss.back() == '\r') {
@@ -121,4 +131,52 @@ std::optional<wwiv::sdk::files::Diz> wwiv::sdk::files::DizParser::parse(
   }
 
   return {Diz(description, ext)};
+}
+
+static constexpr const char* kFileIdDiz = "FILE_ID.DIZ";
+static constexpr const char* kDescSdi = "DESC.SDI";
+
+bool wwiv::sdk::files::is_diz_filename(const std::string& filename) {
+  return strings::iequals(filename, kFileIdDiz) || strings::iequals(filename, kDescSdi);
+}
+
+// Returns all of the description files in dir, whatever their case.
+static std::vector<std::filesystem::path> diz_files_in(const std::filesystem::path& dir) {
+  std::vector<std::filesystem::path> result;
+  std::error_code ec;
+  for (std::filesystem::directory_iterator it(dir, ec), end; !ec && it != end; it.increment(ec)) {
+    std::error_code ec2;
+    if (it->is_regular_file(ec2) &&
+        wwiv::sdk::files::is_diz_filename(it->path().filename().string())) {
+      result.push_back(it->path());
+    }
+  }
+  return result;
+}
+
+int wwiv::sdk::files::remove_diz_files(const std::filesystem::path& dir) {
+  auto count = 0;
+  for (const auto& p : diz_files_in(dir)) {
+    std::error_code ec;
+    if (std::filesystem::remove(p, ec)) {
+      ++count;
+    } else {
+      LOG(WARNING) << "Unable to remove old description file: " << p << ": " << ec.message();
+    }
+  }
+  return count;
+}
+
+std::optional<std::filesystem::path>
+wwiv::sdk::files::find_diz_file(const std::filesystem::path& dir) {
+  std::optional<std::filesystem::path> sdi;
+  for (const auto& p : diz_files_in(dir)) {
+    if (strings::iequals(p.filename().string(), kFileIdDiz)) {
+      return p;
+    }
+    if (!sdi) {
+      sdi = p;
+    }
+  }
+  return sdi;
 }

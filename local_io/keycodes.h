@@ -227,6 +227,13 @@ constexpr int COMMAND_HOME = (HOME + 256);
 constexpr int COMMAND_END = (END + 256);
 constexpr int COMMAND_STAB = (STAB + 256);
 constexpr int COMMAND_DELETE = (KEY_DELETE + 256);
+// Ctrl + cursor/editing keys (DOS scan codes + 256, or VT/xterm CSI).
+constexpr int COMMAND_CLEFT = (CLARROW + 256);
+constexpr int COMMAND_CRIGHT = (CRARROW + 256);
+constexpr int COMMAND_CHOME = (CHOME + 256);
+constexpr int COMMAND_CEND = (CEND + 256);
+constexpr int KEY_CDELETE = 6;
+constexpr int COMMAND_CDELETE = (KEY_CDELETE + 256);
 
 constexpr int COMMAND_AA = (AA + 256);
 constexpr int COMMAND_AB = (AB + 256);

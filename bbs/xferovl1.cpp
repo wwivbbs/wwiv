@@ -197,8 +197,10 @@ static bool has_arc_cmd_for_ext(const std::string& ext) {
 
 static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem::path& p) {
   VLOG(1) << "PathToTempDiz: " << p;
-  File::Remove(FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ));
-  File::Remove(FilePath(a()->sess().dirs().temp_directory(), DESC_SDI));
+  // Clear out any description left from an earlier archive, whatever its
+  // case, so only one extracted from this archive can be found below.
+  const auto& temp_dir = a()->sess().dirs().temp_directory();
+  remove_diz_files(temp_dir);
 
   if (!p.has_extension() || !has_arc_cmd_for_ext(p.extension().string().substr(1))) {
     return std::nullopt;
@@ -211,27 +213,17 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
   }
   wwiv::bbs::CommandLine cl(cmd.value().cmd);
   ExecuteExternalProgram(cl, EFLAG_NOHUP | EFLAG_TEMP_DIR);
-  auto diz_fn = FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ);
-  VLOG(1) << "Checking for diz: " << diz_fn;
-  if (auto o = FindFile(diz_fn)) {
-    VLOG(1) << "Found: " << diz_fn;
-    return { o.value() };
-  }
-  diz_fn = FilePath(a()->sess().dirs().temp_directory(), DESC_SDI);
-  VLOG(1) << "Checking for diz: " << diz_fn;
-  if (auto o = FindFile(diz_fn)) {
-    VLOG(1) << "Found: " << diz_fn;
-    return { o.value() };
+  VLOG(1) << "Checking for diz in: " << temp_dir;
+  if (auto o = find_diz_file(temp_dir)) {
+    VLOG(1) << "Found: " << o.value();
+    return o;
   }
   VLOG(1) << "No diz.";
   return std::nullopt;
 }
 
 bool get_file_idz(FileRecord& fr, const directory_t& dir) {
-  auto at_exit = finally([] {
-    File::Remove(FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ));
-    File::Remove(FilePath(a()->sess().dirs().temp_directory(), DESC_SDI));
-  });
+  auto at_exit = finally([] { remove_diz_files(a()->sess().dirs().temp_directory()); });
 
   if (!a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && dir.mask & mask_cdrom) {
     return false;

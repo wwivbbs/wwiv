@@ -96,7 +96,6 @@ void HopSub() {
   }
 }
 
-
 void HopDir() {
   bool abort = false;
 
@@ -127,7 +126,13 @@ void HopDir() {
     if (okconf(a()->user())) {
       setuconf(ConferenceType::CONF_DIRS, c, -1);
     }
-    for (const auto& udir : a()->udir) {
+    // Use relative index into the current udir list.
+    // set_current_user_dir_num() expects a position in a()->udir, not the absolute
+    // directory number stored in udir.subnum. Passing the absolute number caused
+    // out-of-range clamping to directory 0 when conferencing was disabled
+    // (or when a conference contained fewer directories than the absolute index).
+    for (size_t i = 0; i < a()->udir.size(); ++i) {
+      const auto& udir = a()->udir[i];
       auto& dir = a()->dirs().dir(udir.subnum);
       auto subname = ToStringUpperCase(dir.name);
       if (subname.find(partial) != std::string::npos) {
@@ -140,7 +145,7 @@ void HopDir() {
         const auto ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
-          a()->set_current_user_dir_num(udir.subnum);
+          a()->set_current_user_dir_num(static_cast<int>(i));
           break;
         }
         if (ch == 'Q') {
@@ -161,5 +166,3 @@ void HopDir() {
     setuconf(ConferenceType::CONF_DIRS, oc, os);
   }
 }
-
-

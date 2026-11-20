@@ -84,3 +84,45 @@ TEST(FindFileTest, Smoke) {
   EXPECT_TRUE(FindFile(FilePath(helper.TempDir(), "foo")));
   EXPECT_FALSE(FindFile(FilePath(helper.TempDir(), "bad")));
 }
+
+TEST(FindFileTest, MixedCaseRegionsFilename) {
+  wwiv::core::test::FileHelper helper;
+  helper.CreateTempFile("REGIONS.843", "Charleston, South Carolina\n529\n");
+
+  // Lowercase lookup must find the on-disk mixed/upper case name (Linux).
+  auto lower = FindFile(FilePath(helper.TempDir(), "regions.843"));
+  ASSERT_TRUE(lower);
+  EXPECT_EQ("REGIONS.843", lower->filename().string());
+
+  auto upper = FindFile(FilePath(helper.TempDir(), "REGIONS.843"));
+  ASSERT_TRUE(upper);
+  EXPECT_EQ("REGIONS.843", upper->filename().string());
+
+  EXPECT_FALSE(FindFile(FilePath(helper.TempDir(), "regions.844")));
+}
+
+TEST(FindFileTest, MixedCaseRegionsDat) {
+  wwiv::core::test::FileHelper helper;
+  helper.CreateTempFile("REGIONS.DAT", "South Carolina\n843\n");
+
+  auto lower = FindFile(FilePath(helper.TempDir(), "regions.dat"));
+  ASSERT_TRUE(lower);
+  EXPECT_EQ("REGIONS.DAT", lower->filename().string());
+
+  auto upper = FindFile(FilePath(helper.TempDir(), "REGIONS.DAT"));
+  ASSERT_TRUE(upper);
+  EXPECT_EQ("REGIONS.DAT", upper->filename().string());
+}
+
+TEST(FindFileTest, ExactLowercaseName) {
+  wwiv::core::test::FileHelper helper;
+  helper.CreateTempFile("regions.843", "Charleston, South Carolina\n529\n");
+
+  auto found = FindFile(FilePath(helper.TempDir(), "regions.843"));
+  ASSERT_TRUE(found);
+  EXPECT_EQ("regions.843", found->filename().string());
+
+  auto upper = FindFile(FilePath(helper.TempDir(), "REGIONS.843"));
+  ASSERT_TRUE(upper);
+  EXPECT_EQ("regions.843", upper->filename().string());
+}

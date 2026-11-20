@@ -261,6 +261,30 @@ void edit_conf_subs(Conference& conf) {
 }
 
 
+void edit_conf_set(Conference& conf, conf_set_t& cs) {
+  if (conf.size() == 0) {
+    bout.nl();
+    bout.outstr("|#6No conferences defined.\r\n");
+    bout.pausescr();
+    return;
+  }
+  while (!a()->sess().hangup()) {
+    bout.nl();
+    const auto cur = cs.to_string();
+    bout.print("|#9Conferences: |#2{}\r\n", cur.empty() ? "None." : cur);
+    bout.outstr("|#9Toggle conference key (|#2?|#9=List, |#2ENTER|#9=Done): ");
+    const auto key = onek_ncr(StrCat("\r\n\x1b?", conf.keys_string()));
+    if (key == 0 || key == '\r' || key == '\n' || key == ESC) {
+      return;
+    }
+    if (key == '?') {
+      list_confs(conf, false);
+      continue;
+    }
+    cs.toggle(key);
+  }
+}
+
 /*
  * Function for editing the data for one conference.
  */

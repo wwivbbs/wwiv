@@ -23,6 +23,7 @@
 #include "bbs/bbslist.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/confutil.h"
 #include "bbs/defaults.h"
 #include "bbs/hop.h"
 #include "bbs/newuser.h"
@@ -357,6 +358,13 @@ Runs a WWIVbasic Script
               change_colors();
               a()->WriteCurrentUser();
             }));
+  // Deprecated alias used by the default //COLORS menu item (and existing
+  // boards that still have cmd "colorconfig"). Prefer user:colors.
+  m.emplace("colorconfig", MenuItem(R"(An alias for user:colors.
+  This alias is deprecated, please use user:colors.)", MENU_CAT_USER, [](MenuContext&) {
+              change_colors();
+              a()->WriteCurrentUser();
+            }));
 
 
   m.emplace("user:pause", MenuItem(R"(Toggles pause on page)", MENU_CAT_USER, [](MenuContext&) {
@@ -371,6 +379,9 @@ Runs a WWIVbasic Script
 
   m.emplace("user:conference", MenuItem(R"(Toggles if conferences are enables)", MENU_CAT_USER, [](MenuContext&) {
               a()->user()->toggle_flag(User::conference);
+              // Rebuild usub/udir so the area lists match the new setting,
+              // the same way the Defaults screen's C) option does.
+              changedsl();
               a()->WriteCurrentUser();
             }));
 

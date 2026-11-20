@@ -131,12 +131,18 @@ public:
   bool cursor_pgdown();
   bool cursor_home();
   bool cursor_end();
+  bool cursor_eof();
 
   bool delete_line();
   bool delete_to_eol();
   bool delete_line_left();
   bool delete_word_left();
   bool delete_right();
+  bool delete_word_right();
+  bool cursor_word_left();
+  bool cursor_word_right();
+  bool cursor_bof();
+  bool cursor_doc_end();
 
   // Toggles the internal state if the editor is in INSERT or OVERWRITE mode. This
   // matters on add, bs, and del
@@ -177,6 +183,15 @@ public:
   int curli{0};
 
 private:
+  // Reflow the paragraph from the current line through the next hard break.
+  // line.wrapped() true means this line continues onto the next (saved as
+  // a trailing \x1 by to_lines(true)).  Overflow flows into continuation
+  // lines, wrapping at word boundaries; a new line is added only at the
+  // end of the paragraph.  The cursor stays on the same logical character.
+  bool reflow_paragraph();
+  // Keep cy and top_line consistent with curli, and cy inside the viewport.
+  void sync_viewport();
+
   // Max number of lines allowed
   int maxli_{255};
   // Lines of text.  mark mutable so we can add the current line
@@ -191,6 +206,10 @@ private:
   std::vector<editor_current_line_redraw_fn> line_callbacks_;
   // Viewport for display
   std::shared_ptr<editor_viewport_t> view_;
+  // Keep cy and top_line in sync after a jump that may change curli.
+  void settle_cursor(int previous_line);
+  // Delete text from the current cursor to target, crossing lines if needed.
+  bool delete_to_pos(int line, int x);
 };
 
 }

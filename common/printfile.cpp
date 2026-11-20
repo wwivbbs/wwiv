@@ -256,21 +256,29 @@ void Output::print_local_file(const std::string& data) {
 
 bool Output::printfile_random(const std::string& data) {
   const printfile_opts opts(sess(), *this, data, true, true);
-  const auto& dir = sess().dirs().current_menu_gfiles_directory();
   const auto base_fn = opts.data();
-  if (const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0")); !File::Exists(dot_zero)) {
-    return false;
-  }
-  auto screens = 0;
-  for (auto i = 0; i < 1000; i++) {
-    if (const auto dot_n = FilePath(dir, StrCat(base_fn, ".", i)); File::Exists(dot_n)) {
-      ++screens;
-    } else {
-      break;
+  // Same search order as printfile().  At logon the menu set is not loaded yet,
+  // so current_menu_gfiles_directory() is a relative "gfiles" path; also checking
+  // the configured gfiles directory avoids depending on the process cwd.
+  const std::vector<std::filesystem::path> dirs{sess().dirs().current_menu_gfiles_directory(),
+                                                sess().dirs().gfiles_directory()};
+  for (const auto& dir : dirs) {
+    if (const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0")); !File::Exists(dot_zero)) {
+      continue;
     }
+    auto screens = 0;
+    for (auto i = 0; i < 1000; i++) {
+      if (const auto dot_n = FilePath(dir, StrCat(base_fn, ".", i)); File::Exists(dot_n)) {
+        ++screens;
+      } else {
+        break;
+      }
+    }
+    // os::random_number(max) is inclusive of max, so screens-1 picks .0 .. .(N-1).
+    return printfile_path(FilePath(dir, StrCat(base_fn, ".", os::random_number(screens - 1))),
+                          opts.abortable, opts.force_pause);
   }
-  return printfile_path(FilePath(dir, StrCat(base_fn, ".", os::random_number(screens))),
-                        opts.abortable, opts.force_pause);
+  return false;
 }
 
 } // namespace wwiv::common
