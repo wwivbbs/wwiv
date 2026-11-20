@@ -68,7 +68,8 @@ static void edit_arc(int arc_number, arcrec* a) {
   items.add(new MultilineLabel(R""""(%1 %2 etc. are parameters passed.  Minimum of two on Add and
 Extract command lines. For added security, a complete path to
 the archiver and extension should be used. i.e.:
-c:\bin\arcs\zip.exe -a %1 %2)"""" ), 1, y);
+c:\bin\arcs\zip.exe -a %1 %2
+On Unix, quote %1 so names containing '&' work, e.g. unzip -l "%1".)"""" ), 1, y);
 
   items.relayout_items_and_labels();
   items.Run(fmt::format("Archiver #{}  {}", arc_number, ((arc_number == 1) ? "(Default)" : "")));
@@ -76,22 +77,22 @@ c:\bin\arcs\zip.exe -a %1 %2)"""" ), 1, y);
 
 bool create_arcs(UIWindow* window, const std::filesystem::path& datadir) {
   std::vector<arcrec> arc;
-  arc.emplace_back(arcrec{"Zip", "ZIP", "zip -j %1 %2", "unzip -o -j -C %1 %2", "@internal",
-                          "zip -d %1 -@ < BBSADS.TXT", "zip -z %1 < COMMENT.TXT", "unzip -t %1"});
-  arc.emplace_back(arcrec{"Arj", "ARJ", "arj.exe a %1 %2", "arj.exe e %1 %2", "@internal",
-                          "arj.exe d %1 !BBSADS.TXT", "arj.exe c %1 -zCOMMENT.TXT",
-                          "arj.exe t %1"});
-  arc.emplace_back(arcrec{"Rar", "RAR", "rar.exe a -std -s- %1 %2", "rar.exe e -std -o+ %1 %2",
-                          "rar.exe l -std %1", "rar.exe d -std %1 < BBSADS.TXT ",
-                          "rar.exe zCOMMENT.TXT -std %1", "rar.exe t -std %1"});
-  arc.emplace_back(arcrec{"Lzh", "LZH", "lha.exe a %1 %2", "lha.exe eo  %1 %2", "@internal",
-                          "lha.exe d %1  < BBSADS.TXT", "", "lha.exe t %1"});
-  arc.emplace_back(arcrec{"Pak", "PAK", "pkpak.exe -a %1 %2", "pkunpak.exe -e  %1 %2",
-                          "@internal", "pkpak.exe -d %1  @BBSADS.TXT",
-                          "pkpak.exe -c %1 < COMMENT.TXT ", "pkunpak.exe -t %1"});
-  arc.emplace_back(arcrec{"Arc", "ARC", "pkpak.exe -a %1 %2", "pkunpak.exe -e  %1 %2",
-                          "@internal", "pkpak.exe -d %1  @BBSADS.TXT",
-                          "pkpak.exe -c %1 < COMMENT.TXT ", "pkunpak.exe -t %1"});
+  arc.emplace_back(arcrec{"Zip", "ZIP", "zip -j \"%1\" %2", "unzip -o -j -C \"%1\" %2", "@internal",
+                          "zip -d \"%1\" -@ < BBSADS.TXT", "zip -z \"%1\" < COMMENT.TXT", "unzip -t \"%1\""});
+  arc.emplace_back(arcrec{"Arj", "ARJ", "arj.exe a \"%1\" %2", "arj.exe e \"%1\" %2", "@internal",
+                          "arj.exe d \"%1\" !BBSADS.TXT", "arj.exe c \"%1\" -zCOMMENT.TXT",
+                          "arj.exe t \"%1\""});
+  arc.emplace_back(arcrec{"Rar", "RAR", "rar.exe a -std -s- \"%1\" %2", "rar.exe e -std -o+ \"%1\" %2",
+                          "rar.exe l -std \"%1\"", "rar.exe d -std \"%1\" < BBSADS.TXT ",
+                          "rar.exe zCOMMENT.TXT -std \"%1\"", "rar.exe t -std \"%1\""});
+  arc.emplace_back(arcrec{"Lzh", "LZH", "lha.exe a \"%1\" %2", "lha.exe eo  \"%1\" %2", "@internal",
+                          "lha.exe d \"%1\"  < BBSADS.TXT", "", "lha.exe t \"%1\""});
+  arc.emplace_back(arcrec{"Pak", "PAK", "pkpak.exe -a \"%1\" %2", "pkunpak.exe -e  \"%1\" %2",
+                          "@internal", "pkpak.exe -d \"%1\"  @BBSADS.TXT",
+                          "pkpak.exe -c \"%1\" < COMMENT.TXT ", "pkunpak.exe -t \"%1\""});
+  arc.emplace_back(arcrec{"Arc", "ARC", "pkpak.exe -a \"%1\" %2", "pkunpak.exe -e  \"%1\" %2",
+                          "@internal", "pkpak.exe -d \"%1\"  @BBSADS.TXT",
+                          "pkpak.exe -c \"%1\" < COMMENT.TXT ", "pkunpak.exe -t \"%1\""});
 
   for (int i = wwiv::stl::size_int(arc); i < MAX_ARCS; i++) {
     arc.emplace_back(arcrec{"New Archiver Name", "EXT", "archive add command",

@@ -106,7 +106,8 @@ static void qwk_receive_file(const std::string& fn, bool* received, int prot_num
 static std::filesystem::path ready_reply_packet(const std::string& packet_name, const std::string& msg_name) {
   const auto archiver = match_archiver(a()->arcs, packet_name).value_or(a()->arcs[0]);
   wwiv::bbs::CommandLine cl(archiver.arce);
-  cl.args(packet_name, msg_name);
+  cl.args(quote_arg_for_command(archiver.arce, 1, packet_name),
+          quote_arg_for_command(archiver.arce, 2, msg_name));
 
   ExecuteExternalProgram(cl, EFLAG_QWK_DIR);
 
