@@ -23,6 +23,7 @@
 #include "bbs/bbslist.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/confutil.h"
 #include "bbs/defaults.h"
 #include "bbs/hop.h"
 #include "bbs/newuser.h"
@@ -371,6 +372,9 @@ Runs a WWIVbasic Script
 
   m.emplace("user:conference", MenuItem(R"(Toggles if conferences are enables)", MENU_CAT_USER, [](MenuContext&) {
               a()->user()->toggle_flag(User::conference);
+              // Rebuild usub/udir so the area lists match the new setting,
+              // the same way the Defaults screen's C) option does.
+              changedsl();
               a()->WriteCurrentUser();
             }));
 
