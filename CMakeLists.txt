@@ -9,8 +9,30 @@ if(POLICY CMP0092)
   cmake_policy(SET CMP0092 NEW)
 endif()
 
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
-  CACHE STRING "Vcpkg toolchain file")
+# Required git submodules. Fail early with a useful message instead of a
+# confusing error later on.
+set(_wwiv_required_submodule_files
+  "vcpkg/scripts/buildsystems/vcpkg.cmake"
+  "deps/my_basic/core/my_basic.c"
+  "deps/pdcurses/CMakeLists.txt"
+)
+foreach(_f IN LISTS _wwiv_required_submodule_files)
+  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_f}")
+    message(FATAL_ERROR
+      "Missing ${_f}: the git submodules have not been checked out.\n"
+      "Run this from the top of the source tree and then configure again:\n"
+      "    git submodule update --init --recursive")
+  endif()
+endforeach()
+
+# Dependencies come from vcpkg (see vcpkg.json). This is the one place the
+# toolchain is chosen; it defaults to the vcpkg submodule but you can pass
+# -DCMAKE_TOOLCHAIN_FILE=... to use a different vcpkg install. The first
+# configure builds all of the dependencies, so expect it to take a while.
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    CACHE FILEPATH "Vcpkg toolchain file")
+endif()
 
 project(wwiv)
 
