@@ -98,7 +98,6 @@ add_library(
   basic/wwiv_io.cpp
   basic/wwiv_os.cpp
   basic/wwiv_time.cpp
-  ../deps/my_basic/core/my_basic.c
   menus/config_menus.cpp
   menus/mainmenu.cpp
   menus/menucommands.cpp
@@ -163,6 +162,7 @@ target_link_libraries(
   common
   core 
   fsed
+  my_basic
   sdk 
   nlohmann_json::nlohmann_json
 
