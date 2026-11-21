@@ -71,6 +71,20 @@ struct color_config_t {
   message_color_config_t msg;
 };
 
+// Spell check in the full screen editor (FSED).
+struct spell_config_t {
+  // Is spell check available on this BBS.
+  bool enabled{true};
+  // Run spell check when a message is saved (for users who have it on).
+  bool check_on_save{true};
+  // Default Hunspell dictionary name, i.e. en_US for en_US.aff/en_US.dic.
+  std::string dictionary{"en_US"};
+  // Optional directory to search first for dictionaries (relative paths are
+  // relative to {bbsdir}). {bbsdir}/dict and, except on Windows, the system
+  // directories are searched after it.
+  std::string dict_dir;
+};
+
 struct validation_config_t {
   // Friendly name of the validation type.
   std::string name;
@@ -192,6 +206,9 @@ struct config_t {
 
   // Color configuration
   color_config_t colors;
+
+  // FSED spell check
+  spell_config_t spell;
 };
 
 class Config final  : public BbsDirectories {
@@ -347,6 +364,10 @@ public:
 
   // System Colors.
   [[nodiscard]] color_config_t& colors() { return config_.colors; }
+
+  // FSED spell check settings.
+  [[nodiscard]] spell_config_t& spell() { return config_.spell; }
+  [[nodiscard]] const spell_config_t& spell() const { return config_.spell; }
 
   void newuser_password(const std::string&);
   // New User restrictions given by default when they sign up.

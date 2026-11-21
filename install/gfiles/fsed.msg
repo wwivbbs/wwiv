@@ -2,6 +2,7 @@
  |#7~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  |#1ESCAPE     |#9 Edit Menu (This Menu)    |#1ESCAPE + S |#9 Save Message
  |#1ESCAPE + Q |#9 Quote text from message. |#1ESCAPE + A |#9 Abort Message (Quit)
+ |#1ESCAPE + C |#9 Spell check the message.
 
 
  |#2                        Movement and Key Editing
@@ -13,3 +14,9 @@
  |#1CTRL-I     |#9 Toggle INS/OVR Mode      |#1CTRL-L       |#9 Redraw Screen     
  |#1CTRL-P+0-9 |#9 Change Color to Digit
  |#1CTRL-P+Control{A,D,F} |#9 Execute macro (control-A, control-D or control-F)
+
+ |#2                              Spell Check
+ |#7~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ |#11-9 |#9 Use that suggestion    |#1R |#9 Replace (type it) |#1I |#9 Ignore once
+ |#1G   |#9 Ignore all             |#1A |#9 Add to dictionary |#1Q |#9 Stop checking
+ |#1ESC |#9 Stop checking. When saving, go back to the editor without saving.

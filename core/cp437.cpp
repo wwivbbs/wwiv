@@ -352,6 +352,61 @@ std::wstring cp437_to_utf8w(const std::string& in) {
   return s;
 }
 
+// Decodes one UTF-8 code point starting at in[i], advancing i. Returns
+// 0xFFFFFFFF for an invalid sequence.
+static uint32_t decode_utf8(const std::string& in, std::string::size_type& i) {
+  const auto c = static_cast<uint8_t>(in[i++]);
+  if (c < 0x80) {
+    return c;
+  }
+  int extra;
+  uint32_t cp;
+  if ((c & 0xe0) == 0xc0) {
+    extra = 1;
+    cp = c & 0x1f;
+  } else if ((c & 0xf0) == 0xe0) {
+    extra = 2;
+    cp = c & 0x0f;
+  } else if ((c & 0xf8) == 0xf0) {
+    extra = 3;
+    cp = c & 0x07;
+  } else {
+    return 0xffffffff;
+  }
+  for (auto n = 0; n < extra; n++) {
+    if (i >= in.size() || (static_cast<uint8_t>(in[i]) & 0xc0) != 0x80) {
+      return 0xffffffff;
+    }
+    cp = (cp << 6) | (static_cast<uint8_t>(in[i++]) & 0x3f);
+  }
+  return cp;
+}
+
+std::string utf8_to_cp437(const std::string& in, char unknown) {
+  std::string out;
+  out.reserve(in.size());
+  std::string::size_type i = 0;
+  while (i < in.size()) {
+    const auto cp = decode_utf8(in, i);
+    if (cp < 0x80) {
+      out.push_back(static_cast<char>(cp));
+      continue;
+    }
+    auto found = false;
+    for (auto ch = 0x80; ch <= 0xff; ch++) {
+      if (static_cast<uint32_t>(dos_to_utf8_[ch]) == cp) {
+        out.push_back(static_cast<char>(ch));
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      out.push_back(unknown);
+    }
+  }
+  return out;
+}
+
 std::string cp437_to_utf8(const std::string& in) {
   const auto s = cp437_to_utf8w(in);
   std::string contents;

@@ -34,6 +34,13 @@ wchar_t cp437_to_utf8(uint8_t ch);
 std::wstring cp437_to_utf8w(const std::string& in);
 std::string cp437_to_utf8(const std::string& in);
 
+/**
+ * Converts UTF-8 text to CP437. Characters that have no CP437 equivalent
+ * (and invalid UTF-8 sequences) become the unknown character. This does not
+ * depend on the C locale.
+ */
+std::string utf8_to_cp437(const std::string& in, char unknown = '?');
+
 }
 
 #endif
