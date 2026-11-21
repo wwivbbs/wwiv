@@ -180,6 +180,21 @@ void Output::SavePosition() {
 
 void Output::RestorePosition() {
   outstr("\x1b[u");
+  // xterm, PuTTY and xterm.js (the web terminal) treat CSI u like DECRC and
+  // also restore the colors that were active at CSI s. SyncTERM and ANSI.SYS
+  // restore only the position. Re-send the current color so the terminal
+  // matches curatr() either way; otherwise text written after a restore (for
+  // example the caller's typing and Backspace in Input1's blue input field)
+  // comes out in the stale color, and the input field looks like it does not
+  // track the cursor.
+  if (okansi(user())) {
+    const auto saved_x{x_};
+    const auto attr = curatr();
+    // Passing a different "current" attribute forces makeansi to emit a
+    // full reset plus foreground, background and intensity.
+    outstr(makeansi(attr, attr ^ 0x88));
+    x_ = saved_x;
+  }
 }
 
 void Output::nl(int num_lines) {

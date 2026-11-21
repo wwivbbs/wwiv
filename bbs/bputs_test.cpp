@@ -151,3 +151,42 @@ TEST_F(BPutsTest, Pipe_BBS) {
   bout.outstr(R"(BBS Name: |{bbs.name})");
   EXPECT_EQ("BBS Name: TestBBS", helper.io()->captured());
 }
+
+// xterm, PuTTY and xterm.js restore the SGR colors saved by CSI s when they
+// see CSI u. RestorePosition re-sends the current color so the terminal
+// stays in step with curatr() (the input field color in Input1).
+TEST_F(BPutsTest, RestorePosition_ResendsCurrentColor) {
+  bout.setc(0x1F); // bright white on blue, the default input field color
+  helper.io()->Clear();
+  bout.RestorePosition();
+  EXPECT_EQ("\x1b[u\x1b[0;37;44;1m", helper.io()->rcaptured());
+  EXPECT_EQ(0x1F, bout.curatr());
+}
+
+TEST_F(BPutsTest, RestorePosition_ResendsCurrentColor_Default) {
+  bout.setc(0x07);
+  helper.io()->Clear();
+  bout.RestorePosition();
+  EXPECT_EQ("\x1b[u\x1b[0;37;40m", helper.io()->rcaptured());
+  EXPECT_EQ(0x07, bout.curatr());
+}
+
+TEST_F(BPutsTest, RestorePosition_ColorAfterSaveIsKept) {
+  // Mirrors Input1: save, switch to the field color, draw, restore.
+  bout.setc(0x07);
+  bout.SavePosition();
+  bout.setc(0x1F);
+  bout.outstr("  ");
+  helper.io()->Clear();
+  bout.RestorePosition();
+  bout.outchr('A');
+  EXPECT_EQ("\x1b[u\x1b[0;37;44;1mA", helper.io()->rcaptured());
+  EXPECT_EQ(0x1F, bout.curatr());
+}
+
+TEST_F(BPutsTest, RestorePosition_NoAnsi) {
+  helper.user()->clear_flag(wwiv::sdk::User::flag_ansi);
+  helper.io()->Clear();
+  bout.RestorePosition();
+  EXPECT_EQ("\x1b[u", helper.io()->rcaptured());
+}
