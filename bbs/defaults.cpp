@@ -147,7 +147,8 @@ static void change_spell_check() {
   auto c = wwiv::fsed::load_spell_user_config(datadir, usernum);
   bout.nl();
   bout.outstr("|#5Spell check messages when you save in the full screen editor? ");
-  c.enabled = c.enabled ? bin.yesno() : bin.noyes();
+  // Enter keeps the current setting: yesno() means Enter is No, noyes() Yes.
+  c.enabled = c.enabled ? bin.noyes() : bin.yesno();
   if (c.enabled) {
     const auto& board = a()->config()->spell();
     const auto def = wwiv::fsed::resolve_spell_dictionary(
@@ -159,15 +160,15 @@ static void change_spell_check() {
     if (d.empty() || d == def) {
       c.dictionary.clear();
     } else if (!wwiv::fsed::is_valid_spell_dictionary_name(d)) {
-      bout.pl("|#6Invalid dictionary name.");
+      // Keep the dictionary they had, but still save the Yes/No answer.
+      bout.pl("|#6Invalid dictionary name, keeping the current one.");
       bout.pausescr();
-      return;
     } else if (!wwiv::fsed::find_spell_dictionary(
                    d, wwiv::fsed::spell_dictionary_search_path(board.dict_dir,
                                                                a()->config()->root_directory()))) {
-      bout.print("|#6Dictionary {} is not installed on this BBS.\r\n", d);
+      bout.print("|#6Dictionary {} is not installed on this BBS, keeping the current one.\r\n",
+                 d);
       bout.pausescr();
-      return;
     } else {
       c.dictionary = d;
     }

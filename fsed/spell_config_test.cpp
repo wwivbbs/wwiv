@@ -27,6 +27,7 @@
 #include "sdk/config_cereal.h"
 #include "sdk/menus/menu.h"
 #include "sdk/menus/menus_cereal.h"
+#include <cstdio>
 #include <filesystem>
 #include <string>
 
@@ -185,6 +186,30 @@ TEST(SpellConfigTest, WordList_AddSave) {
   SpellWordList r(path);
   ASSERT_TRUE(r.Load());
   EXPECT_THAT(r.words(), ElementsAre("caf\xc3\xa9", "rushfan"));
+}
+
+TEST(SpellConfigTest, WordList_LoadFailed_DoesNotOverwrite) {
+  FileHelper helper;
+  const auto path = helper.CreateTempFile("user.dic", "rushfan\nwwiv\n");
+  namespace fs = std::filesystem;
+  fs::permissions(path, fs::perms::none);
+  if (std::FILE* f = std::fopen(path.string().c_str(), "rt")) {
+    // Running as root, or on Windows where this does not stop reading.
+    std::fclose(f);
+    fs::permissions(path, fs::perms::owner_all);
+    GTEST_SKIP() << "Unable to make the file unreadable";
+  }
+  SpellWordList l(path);
+  EXPECT_FALSE(l.Load());
+  EXPECT_TRUE(l.add("sysop"));
+  EXPECT_FALSE(l.Save());
+  fs::permissions(path, fs::perms::owner_all);
+
+  // A good load clears the failure.
+  ASSERT_TRUE(l.Load());
+  EXPECT_THAT(l.words(), ElementsAre("rushfan", "wwiv"));
+  EXPECT_TRUE(l.add("sysop"));
+  EXPECT_TRUE(l.Save());
 }
 
 TEST(SpellConfigTest, BoardConfig_SaveLoad) {

@@ -132,8 +132,10 @@ static void show_fsed_menu(Context& ctx, FsedModel& ed, FsedView& view, MessageE
   case 'S':
     view.ClearCommandLine();
     view.fs().PutsCommandLine("");
-    // Spell check first (when enabled), ESC there returns to the editor.
-    if (!fsed_spell_check(ctx, ed, view, spell_check_trigger_t::save)) {
+    // Spell check messages first (when enabled), ESC there returns to the
+    // editor. Not for plain files (text, ANSI or config files) since file
+    // names and config keys are not words. C still works there.
+    if (!view.file() && !fsed_spell_check(ctx, ed, view, spell_check_trigger_t::save)) {
       break;
     }
     done = save = true;

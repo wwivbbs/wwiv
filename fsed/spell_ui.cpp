@@ -98,6 +98,12 @@ public:
     return StringTrim(fs.in().input_text(word, max_len));
   }
 
+  void message(FsedModel&, const std::string& text) override {
+    auto& fs = view_.fs();
+    fs.PutsCommandLine(StrCat(text, " |#9(press any key)"));
+    fs.bgetch();
+  }
+
   void after_edit(FsedModel& ed, int) override { ed.invalidate_to_eof(view_.top_line()); }
 
   [[nodiscard]] bool hangup() const override { return ctx_.session_context().hangup(); }
@@ -144,16 +150,27 @@ private:
       for (auto x = x0; x < x1; x++) {
         out.outchr(cells.at(x).ch);
       }
+      if (l != word.line) {
+        // Only the current line is drawn cell by cell. The continuation line
+        // of a character wrapped word was drawn with its pipe codes turned
+        // into colors, so the columns after the word may not line up with
+        // the cells. Draw the rest of it cell by cell too.
+        auto last_color = -1;
+        for (auto x = x1; x < size_int(cells); x++) {
+          if (cells.at(x).wwiv_color != last_color) {
+            last_color = cells.at(x).wwiv_color;
+            out.ansic(last_color);
+          }
+          out.outchr(cells.at(x).ch);
+        }
+      }
     }
     out.setc(saved_color);
   }
 
   void prompt() {
     auto& fs = view_.fs();
-    // Leave the last column empty so the terminal does not wrap.
-    const std::string wide = SPELL_PROMPT;
-    const auto& prompt = fs.screen_width() > size_int(wide) ? wide : SPELL_PROMPT_NARROW;
-    fs.PutsCommandLine(StrCat("|#9", prompt));
+    fs.PutsCommandLine(StrCat("|#9", spell_prompt_for_width(fs.screen_width())));
   }
 
   Context& ctx_;

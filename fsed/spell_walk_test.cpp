@@ -96,6 +96,7 @@ public:
     replacements_.pop_front();
     return r;
   }
+  void message(FsedModel&, const std::string& text) override { messages_.push_back(text); }
   void after_edit(FsedModel&, int) override { ++edits_; }
   [[nodiscard]] bool hangup() const override { return hangup_; }
 
@@ -104,6 +105,7 @@ public:
   std::vector<std::string> shown_;
   std::vector<std::vector<std::string>> suggestions_;
   std::vector<std::string> prompted_;
+  std::vector<std::string> messages_;
   int visible_{0};
   int edits_{0};
   bool hangup_{false};
@@ -131,8 +133,9 @@ std::vector<bool> wraps_of(const FsedModel& ed) {
   return out;
 }
 
-FsedModel model_of(const std::vector<std::pair<bool, std::string>>& lines, int width = 80) {
-  FsedModel ed(255);
+FsedModel model_of(const std::vector<std::pair<bool, std::string>>& lines, int width = 80,
+                   int maxli = 255) {
+  FsedModel ed(maxli);
   ed.set_max_line_len(width);
   for (const auto& [w, t] : lines) {
     ed.emplace_back(line_t(w, t));
@@ -161,18 +164,20 @@ const std::set<std::string> kWords{"the", "quick", "brown", "fox", "jumps", "ove
 TEST(SpellWalkTest, Replace_SameLength) {
   auto ed = model_of({{false, "the qick brown fox"}});
   const auto pos = spell_replace_word(ed, find_word(ed, "qick"), "quik");
+  ASSERT_TRUE(pos.has_value());
   EXPECT_THAT(text_of(ed), ElementsAre("the quik brown fox"));
-  EXPECT_EQ(0, pos.line);
-  EXPECT_EQ(8, pos.x);
+  EXPECT_EQ(0, pos->line);
+  EXPECT_EQ(8, pos->x);
 }
 
 TEST(SpellWalkTest, Replace_Longer_NoWrap) {
   auto ed = model_of({{false, "the qick brown fox"}, {false, "next"}});
   const auto pos = spell_replace_word(ed, find_word(ed, "qick"), "quick");
+  ASSERT_TRUE(pos.has_value());
   EXPECT_THAT(text_of(ed), ElementsAre("the quick brown fox", "next"));
   EXPECT_THAT(wraps_of(ed), ElementsAre(false, false));
-  EXPECT_EQ(0, pos.line);
-  EXPECT_EQ(9, pos.x);
+  EXPECT_EQ(0, pos->line);
+  EXPECT_EQ(9, pos->x);
 }
 
 TEST(SpellWalkTest, Replace_KeepsColor) {
@@ -196,20 +201,22 @@ TEST(SpellWalkTest, Replace_Rewraps) {
                       {false, "next paragraph"}},
                      20);
   const auto pos = spell_replace_word(ed, find_word(ed, "fox"), "foxxxxxxxx");
+  ASSERT_TRUE(pos.has_value());
   EXPECT_THAT(text_of(ed), ElementsAre("the quick brown ", "foxxxxxxxx jumps ", "over the lazy dog",
                                        "", "next paragraph"));
   EXPECT_THAT(wraps_of(ed), ElementsAre(true, true, false, false, false));
-  EXPECT_EQ(1, pos.line);
-  EXPECT_EQ(10, pos.x);
+  EXPECT_EQ(1, pos->line);
+  EXPECT_EQ(10, pos->x);
 }
 
 TEST(SpellWalkTest, Replace_Shorter_PullsUp) {
   auto ed = model_of({{true, "the quick brown "}, {true, "foxxxxxxxx jumps "}, {false, "dog"}}, 20);
   const auto pos = spell_replace_word(ed, find_word(ed, "foxxxxxxxx"), "fox");
+  ASSERT_TRUE(pos.has_value());
   EXPECT_THAT(text_of(ed), ElementsAre("the quick brown fox ", "jumps dog"));
   EXPECT_THAT(wraps_of(ed), ElementsAre(true, false));
-  EXPECT_EQ(0, pos.line);
-  EXPECT_EQ(19, pos.x);
+  EXPECT_EQ(0, pos->line);
+  EXPECT_EQ(19, pos->x);
 }
 
 TEST(SpellWalkTest, Replace_SoftWrapMarker) {
@@ -244,9 +251,10 @@ TEST(SpellWalkTest, Replace_CharacterWrap_FirstWord) {
 TEST(SpellWalkTest, Replace_HardLinesNotJoined) {
   auto ed = model_of({{false, "hello"}, {false, "the qick fox"}, {false, "dog"}}, 20);
   const auto pos = spell_replace_word(ed, find_word(ed, "qick"), "quick");
+  ASSERT_TRUE(pos.has_value());
   EXPECT_THAT(text_of(ed), ElementsAre("hello", "the quick fox", "dog"));
-  EXPECT_EQ(1, pos.line);
-  EXPECT_EQ(9, pos.x);
+  EXPECT_EQ(1, pos->line);
+  EXPECT_EQ(9, pos->x);
 }
 
 TEST(SpellWalkTest, Replace_NoSpace_CharacterWrap) {
@@ -265,6 +273,33 @@ TEST(SpellWalkTest, Replace_ClampsCursor) {
   ASSERT_EQ(1u, ed.size());
   EXPECT_EQ(0, ed.curli);
   EXPECT_LE(ed.cx, 4);
+}
+
+TEST(SpellWalkTest, Replace_KeepsTypingColor) {
+  // The line color is what Ctrl-P set for typing at the end of the line,
+  // which can differ from the color of the last character.
+  auto ed = model_of({{true, "the qick brown "}, {false, "fox"}}, 20);
+  ed.line(1).set_wwiv_color(5);
+  const auto pos = spell_replace_word(ed, find_word(ed, "qick"), "quickest");
+  ASSERT_TRUE(pos.has_value());
+  EXPECT_THAT(text_of(ed), ElementsAre("the quickest brown ", "fox"));
+  EXPECT_EQ(5, ed.line(1).wwiv_color());
+}
+
+TEST(SpellWalkTest, Replace_TooManyLines_Refused) {
+  // Already at the 2 line limit, the longer word needs a third line.
+  auto ed = model_of({{true, "the quick brown "}, {false, "fox jumps over"}}, 20, 2);
+  const auto before = text_of(ed);
+  EXPECT_FALSE(spell_replace_word(ed, find_word(ed, "fox"), "foxxxxxxxxxx").has_value());
+  EXPECT_EQ(before, text_of(ed));
+  EXPECT_THAT(wraps_of(ed), ElementsAre(true, false));
+}
+
+TEST(SpellWalkTest, Replace_AtLineLimit_SameLineCountAllowed) {
+  auto ed = model_of({{true, "the qick brown "}, {false, "fox"}}, 20, 2);
+  const auto pos = spell_replace_word(ed, find_word(ed, "qick"), "quick");
+  ASSERT_TRUE(pos.has_value());
+  EXPECT_THAT(text_of(ed), ElementsAre("the quick brown fox"));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -465,6 +500,33 @@ TEST(SpellWalkTest, Walk_ReplaceWithPipeCodeInsideWord) {
   FakeIO io({'1'});
   EXPECT_EQ(spell_check_result_t::finished, spell_check_walk(ed, d, io).result);
   EXPECT_THAT(text_of(ed), ElementsAre("the dog"));
+}
+
+TEST(SpellWalkTest, Walk_ReplacementNoRoom_AsksAgain) {
+  auto ed = model_of({{true, "the quick brown "}, {false, "foz jumps over"}}, 20, 2);
+  FakeDictionary d(kWords, {{"foz", {"foxxxxxxxxxx"}}});
+  FakeIO io({'1', 'I'});
+  const auto s = spell_check_walk(ed, d, io);
+  EXPECT_EQ(spell_check_result_t::finished, s.result);
+  EXPECT_THAT(text_of(ed), ElementsAre("the quick brown ", "foz jumps over"));
+  EXPECT_EQ(1u, io.messages_.size());
+  EXPECT_THAT(io.shown_, ElementsAre("foz", "foz"));
+  EXPECT_EQ(0, s.replaced);
+  EXPECT_EQ(0, io.edits_);
+  EXPECT_EQ(0, io.visible_);
+}
+
+TEST(SpellWalkTest, PromptForWidth) {
+  EXPECT_EQ(SPELL_PROMPT, spell_prompt_for_width(132));
+  EXPECT_EQ(SPELL_PROMPT_NARROW, spell_prompt_for_width(80));
+  EXPECT_EQ(SPELL_PROMPT_SHORT, spell_prompt_for_width(79));
+  EXPECT_EQ(SPELL_PROMPT_SHORT, spell_prompt_for_width(50));
+  EXPECT_EQ(SPELL_PROMPT_TINY, spell_prompt_for_width(40));
+  EXPECT_EQ("1-9 R", spell_prompt_for_width(6));
+  EXPECT_EQ("", spell_prompt_for_width(0));
+  for (auto w = 1; w <= 132; w++) {
+    EXPECT_LT(spell_prompt_for_width(w).size(), static_cast<size_t>(w)) << w;
+  }
 }
 
 TEST(SpellWalkTest, Prompt) {

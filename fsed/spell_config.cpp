@@ -129,11 +129,13 @@ SpellWordList::SpellWordList(std::filesystem::path path) : path_(std::move(path)
 
 bool SpellWordList::Load() {
   words_.clear();
+  load_failed_ = false;
   if (!File::Exists(path_)) {
     return true;
   }
   TextFile f(path_, "rt");
   if (!f.IsOpen()) {
+    load_failed_ = true;
     return false;
   }
   std::string line;
@@ -148,6 +150,9 @@ bool SpellWordList::Load() {
 }
 
 bool SpellWordList::Save() const {
+  if (load_failed_) {
+    return false;
+  }
   if (const auto dir = path_.parent_path(); !dir.empty() && !File::Exists(dir)) {
     if (!File::mkdirs(dir)) {
       return false;

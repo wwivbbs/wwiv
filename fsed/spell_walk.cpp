@@ -39,11 +39,26 @@ static bool is_soft_wrapped(const line_t& l) {
   return l.wrapped() || (!l.cells().empty() && l.cells().back().ch == '\x01');
 }
 
-spell_pos_t spell_replace_word(FsedModel& ed, const spell_word_t& word,
-                               const std::string& replacement) {
+std::string spell_prompt_for_width(int screen_width) {
+  // Leave the last column empty so the terminal does not wrap.
+  const auto max_len = std::max<int>(0, screen_width - 1);
+  for (const auto* p : {SPELL_PROMPT, SPELL_PROMPT_NARROW, SPELL_PROMPT_SHORT}) {
+    if (size_int(std::string(p)) <= max_len) {
+      return p;
+    }
+  }
+  std::string tiny = SPELL_PROMPT_TINY;
+  if (size_int(tiny) > max_len) {
+    tiny.resize(max_len);
+  }
+  return tiny;
+}
+
+std::optional<spell_pos_t> spell_replace_word(FsedModel& ed, const spell_word_t& word,
+                                              const std::string& replacement) {
   const auto num_lines = size_int(ed);
   if (word.line < 0 || word.line >= num_lines) {
-    return {word.line, word.x};
+    return spell_pos_t{word.line, word.x};
   }
   // Find the paragraph.
   auto first = word.line;
@@ -59,6 +74,7 @@ spell_pos_t spell_replace_word(FsedModel& ed, const spell_word_t& word,
     ++last;
   }
   const auto last_soft = is_soft_wrapped(ed.line(last));
+  const auto last_color = ed.line(last).wwiv_color();
 
   // Join it into one run of cells (without the ^A soft wrap markers). Like
   // FsedModel's paragraph reflow and to_lines(false), put a space between
@@ -133,6 +149,13 @@ spell_pos_t spell_replace_word(FsedModel& ed, const spell_word_t& word,
   }
   chunks.emplace_back(pos, total);
 
+  // Like FsedModel::insert_line, never go past the line limit.
+  const auto old_para_lines = last - first + 1;
+  if (size_int(chunks) > old_para_lines &&
+      num_lines - old_para_lines + size_int(chunks) > ed.maxli()) {
+    return std::nullopt;
+  }
+
   // Where to continue.
   spell_pos_t result{first, 0};
   for (auto i = 0; i < size_int(chunks); i++) {
@@ -152,7 +175,12 @@ spell_pos_t spell_replace_word(FsedModel& ed, const spell_word_t& word,
     const auto [b, e] = chunks.at(i);
     line_t nl;
     nl.assign(std::vector<cell_t>(cells.begin() + b, cells.begin() + e));
-    nl.wrapped(i + 1 < size_int(chunks) || last_soft);
+    const auto is_last = i + 1 == size_int(chunks);
+    nl.wrapped(!is_last || last_soft);
+    if (is_last) {
+      // Keep the color picked for typing (Ctrl-P) at the end of the paragraph.
+      nl.set_wwiv_color(last_color);
+    }
     lines.push_back(nl);
   }
   for (auto l = last + 1; l < num_lines; l++) {
@@ -261,11 +289,20 @@ spell_check_stats_t spell_check_walk(FsedModel& ed, SpellDictionary& dict, Spell
     io.show_word(ed, w, suggestions);
     const spell_pos_t after_word{w.end_line, w.end_x};
 
+    // Returns false if there was no room for the replacement, in which case
+    // the word is shown again.
     auto replace = [&](const std::string& r) {
       io.hide_word(ed, w);
-      resume = spell_replace_word(ed, w, r);
+      const auto pos = spell_replace_word(ed, w, r);
+      if (!pos) {
+        io.message(ed, "|#6No room in the message for that replacement.");
+        io.show_word(ed, w, suggestions);
+        return false;
+      }
+      resume = pos.value();
       ++stats.replaced;
       io.after_edit(ed, w.line);
+      return true;
     };
 
     for (auto handled = false; !handled;) {
@@ -287,8 +324,7 @@ spell_check_stats_t spell_check_walk(FsedModel& ed, SpellDictionary& dict, Spell
       const auto ch = (key >= 'a' && key <= 'z') ? key - 'a' + 'A' : key;
       if (ch >= '1' && ch <= '9') {
         if (const auto n = ch - '1'; n < size_int(suggestions)) {
-          replace(suggestions.at(n));
-          handled = true;
+          handled = replace(suggestions.at(n));
         }
         continue;
       }
@@ -300,8 +336,7 @@ spell_check_stats_t spell_check_walk(FsedModel& ed, SpellDictionary& dict, Spell
           io.show_word(ed, w, suggestions);
           continue;
         }
-        replace(r);
-        handled = true;
+        handled = replace(r);
       } break;
       case 'I':
         io.hide_word(ed, w);
