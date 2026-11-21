@@ -177,7 +177,17 @@ Option | What it does
 The `windows-x86-release` and `linux-release` presets, and the release scripts in
 `builds/jenkins/wwiv` (used by CI), turn both on. To package any other build, add
 `-DWWIV_INSTALL=ON -DWWIV_ZIP_INSTALL_FILES=ON` when you configure, then run
-`cpack -G ZIP` (or `-G TGZ`) in the build directory.
+`cpack -G ZIP` (or `-G TGZ`) in the build directory. Without `WWIV_INSTALL`,
+`cpack` fails with `CPack Error: CPack project name not specified`.
+
+You also need the zip files to set up a new test BBS from your build:
+wwivconfig unpacks `data.zip` and `inifiles.zip` when it creates a new BBS, so
+configure that build directory with both options first.
+
+These are only defaults for new build directories. CMake keeps the values
+already in an existing `CMakeCache.txt`, so a `_build` or `out` directory
+configured before this change still has both ON. Delete the cache, or pass
+`-DWWIV_INSTALL=OFF -DWWIV_ZIP_INSTALL_FILES=OFF`, to pick up the new defaults.
 
 ### Troubleshooting
 

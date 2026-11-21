@@ -63,7 +63,14 @@ set(CPACK_NSIS_URL_INFO_ABOUT "http://www.wwivbbs.org")
 set(CPACK_NSIS_CONTACT "http://docs.wwivbbs.org")
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "")
-include(CPack)
+# Only set up cpack when there are install rules to package.  Otherwise cpack
+# would quietly make an empty archive.  Without CPackConfig.cmake it fails
+# ("CPack project name not specified"); configure with -DWWIV_INSTALL=ON.
+if(WWIV_INSTALL)
+  include(CPack)
+else()
+  message(STATUS "WWIV_INSTALL is OFF: cpack is not available in this build directory")
+endif()
 
 
 message(STATUS "WWIV Build Number: ${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}")
