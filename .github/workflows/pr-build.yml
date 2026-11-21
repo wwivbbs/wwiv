@@ -36,11 +36,9 @@ jobs:
       # These tests fail on main today (the main CI build ignores test
       # failures). Excluded so PRs are judged on new failures only; remove
       # each one once it is fixed.
-      #  - BasicTest.Smoke_Fail: expects no output, but script errors are
-      #    now echoed.
       #  - DateTime.MinusOne: from_time_t(-1) is clamped to t=1, which is
       #    1969-12-31 only west of UTC; the runners are on UTC.
-      CTEST_EXCLUDE: '^(BasicTest\.Smoke_Fail|DateTime\.MinusOne)$'
+      CTEST_EXCLUDE: '^(DateTime\.MinusOne)$'
 
     steps:
       - name: Check out repository code
