@@ -9,7 +9,7 @@
 
   Unless  required  by  applicable  law  or agreed to  in  writing,
   software  distributed  under  the  License  is  distributed on an
-  AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,
+  "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,
   either  express  or implied.  See  the  License for  the specific
   language governing permissions and limitations under the License.
 
@@ -54,6 +54,12 @@ function Write-Fail([string]$Name, [string]$Detail, [string[]]$Fix) {
 
 # Minimum CMake version: the larger of CMakePresets.json's cmakeMinimumRequired
 # and CMakeLists.txt's cmake_minimum_required.
+# TODO(5.10): when we branch for 5.10, also derive a minimum from the
+# CMakePresets.json schema "version" (2->3.20, 3->3.21, 4->3.23, 5->3.24,
+# 6->3.25, 7->3.27, 8->3.28, 9->3.30, 10->3.31) and use the largest of the
+# three. Schema 4 needs CMake 3.23, which this check doesn't catch yet. Also
+# default a missing major/minor/patch in cmakeMinimumRequired to 0, instead
+# of letting the [version] cast throw and silently dropping that minimum.
 function Get-MinCMakeVersion {
   $min = [version]'3.15'
   $lists = Join-Path $RepoRoot 'CMakeLists.txt'
@@ -76,6 +82,16 @@ function Get-MinCMakeVersion {
     }
   }
   return $min
+}
+
+# Runs a native command with stderr discarded and returns its stdout.
+# In Windows PowerShell 5.1, with $ErrorActionPreference = 'Stop', any stderr
+# output from a native command (even redirected with 2>$null) becomes a
+# terminating NativeCommandError, so relax the preference in this scope only.
+# Callers check $LASTEXITCODE.
+function Invoke-Native([string]$Exe, [string[]]$Arguments) {
+  $ErrorActionPreference = 'Continue'
+  & $Exe @Arguments 2>$null
 }
 
 # Returns the first tool found on PATH, else the copy bundled with Visual Studio.
@@ -136,7 +152,7 @@ if (-not $cmake) {
     'It comes with the Visual Studio C++ workload, or install it with:',
     'winget install --id Kitware.CMake -e')
 } else {
-  $out = & $cmake --version 2>$null | Select-Object -First 1
+  $out = Invoke-Native $cmake @('--version') | Select-Object -First 1
   $cmakeVer = $null
   if ($out -match '(\d+\.\d+\.\d+)') { $cmakeVer = [version]$Matches[1] }
   if (-not $cmakeVer) {
@@ -153,7 +169,7 @@ if (-not $cmake) {
 # --- Ninja --------------------------------------------------------------------
 $ninja = Find-Tool 'ninja.exe' 'Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe'
 if ($ninja) {
-  $nv = & $ninja --version 2>$null | Select-Object -First 1
+  $nv = Invoke-Native $ninja @('--version') | Select-Object -First 1
   Write-Pass 'Ninja' "$nv ($ninja)"
 } else {
   Write-Fail 'Ninja' 'not found' @(
@@ -164,7 +180,7 @@ if ($ninja) {
 # --- Git ----------------------------------------------------------------------
 $git = Find-Tool 'git.exe' $null
 if ($git) {
-  $gv = & $git --version 2>$null | Select-Object -First 1
+  $gv = Invoke-Native $git @('--version') | Select-Object -First 1
   Write-Pass 'Git' "$gv ($git)"
 } else {
   Write-Fail 'Git' 'not found' @('winget install --id Git.Git -e')
@@ -175,7 +191,7 @@ $SubFix = 'Run: git submodule update --init --recursive'
 if (-not $git) {
   Write-Fail 'Submodules' 'cannot check without git' @('Install git first, then: git submodule update --init --recursive')
 } else {
-  $status = & $git -C $RepoRoot submodule status 2>$null
+  $status = Invoke-Native $git @('-C', $RepoRoot, 'submodule', 'status')
   if ($LASTEXITCODE -ne 0) {
     Write-Fail 'Submodules' "'git submodule status' failed in $RepoRoot" @(
       'Make sure this is a git clone of WWIV (git clone --recurse-submodules ...)')
