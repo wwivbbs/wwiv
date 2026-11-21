@@ -86,6 +86,9 @@ if(WIN32 OR OS2)
   add_subdirectory(deps/pdcurses EXCLUDE_FROM_ALL)
 endif()
 
+# Targets for third-party code that has no CMakeLists.txt of its own (my_basic).
+add_subdirectory(deps)
+
 #if (NOT OS2)
 set(WWIV_BUILD_WWIVD ON)
 #endif()
