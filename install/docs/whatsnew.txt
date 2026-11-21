@@ -63,6 +63,8 @@ Users, Menus and Display
 * Regions files are found regardless of case on Linux (Loc was blank). (#1709)
 * Fixed adding/deleting/listing users for multi-email. (#1636)
 * Fixed crash reading mail when past the number of networks. (#1634)
+* Input fields keep their colors in xterm-style terminals (the current
+  color is resent after ESC[u).
 
 WWIVD
 + WWIVD now uses cpp-httplib for its HTTP server.
@@ -94,6 +96,18 @@ Build and Platform
 * Builds with fmtlib v10, GCC 12 and GCC 15. (#1696)
 * exec: STDIO pty output is drained after the child exits. (#1699)
 * arm64/aarch64 support in cmake-config.sh. (#1609)
++ builds/win/check-prereqs.ps1 checks for Visual Studio, CMake, Ninja,
+  Git and the git submodules before you build on Windows. (#1719)
+* Packaging is off by default for developer builds. The release presets
+  and CI scripts turn on WWIV_INSTALL and WWIV_ZIP_INSTALL_FILES; pass
+  both to cmake to make the zip files or run cpack. (#1722)
+* Windows: cl32.dll is copied next to the binaries when building, and the
+  stale cryptlib 3.4.2 cl32.dll was removed from the win32 platform files
+  (3.4.5 from deps/cl345 is installed). -DWWIV_SSH_CRYPTLIB=OFF works on
+  Windows again. (#1723)
+- Removed the unused deps/infozip source. my_basic now builds as its own
+  library. (#1721)
+* cryptlib links now point at https://github.com/cryptlib/cryptlib.
 
 
 What's New in WWIV 5.8.0 (2023)
