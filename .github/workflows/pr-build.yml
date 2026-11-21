@@ -33,12 +33,6 @@ jobs:
     env:
       # Matches the main CI build; the x-gha binary cache is broken.
       VCPKG_BINARY_SOURCES: clear
-      # These tests fail on main today (the main CI build ignores test
-      # failures). Excluded so PRs are judged on new failures only; remove
-      # each one once it is fixed.
-      #  - DateTime.MinusOne: from_time_t(-1) is clamped to t=1, which is
-      #    1969-12-31 only west of UTC; the runners are on UTC.
-      CTEST_EXCLUDE: '^(DateTime\.MinusOne)$'
 
     steps:
       - name: Check out repository code
@@ -78,4 +72,4 @@ jobs:
         run: cmake --build --preset ${{ matrix.preset }}
 
       - name: Test
-        run: ctest --preset ${{ matrix.preset }} --exclude-regex '${{ env.CTEST_EXCLUDE }}'
+        run: ctest --preset ${{ matrix.preset }}
