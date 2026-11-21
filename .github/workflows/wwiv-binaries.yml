@@ -152,6 +152,11 @@ jobs:
         with:
           submodules: recursive
           
+      # vcpkg.json pins builtin-baseline to an older vcpkg commit, which needs
+      # the vcpkg submodule's history; checkout clones submodules shallow.
+      - name: Unshallow vcpkg submodule
+        run: git -C vcpkg fetch --unshallow
+
       - name: Get CMake
         uses: lukka/get-cmake@latest
       - name: Setup a new vcpkg
