@@ -39,12 +39,15 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "core/strings.h"
+#include "fsed/spell.h"
+#include "fsed/spell_config.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/local_io.h"
 #include "local_io/wconstants.h"
 #include "menus/config_menus.h"
 #include "sdk/filenames.h"
+#include "sdk/menus/menu_set.h"
 #include "sdk/names.h"
 #include "sdk/usermanager.h"
 #include "sdk/files/dirs.h"
@@ -121,6 +124,60 @@ static std::string GetMailBoxStatus() {
   return StrCat("Forward to ", a()->names()->UserName(a()->user()->forward_usernum()));
 }
 
+// Spell check only works in the internal full screen editor.
+static bool spell_check_option_available() {
+  return okansi() && a()->IsUseInternalFsed() && a()->config()->spell().enabled;
+}
+
+static std::string spell_check_status() {
+  const auto c =
+      wwiv::fsed::load_spell_user_config(a()->config()->datadir(), a()->sess().user_num());
+  if (!c.enabled) {
+    return "Off";
+  }
+  const auto dict = wwiv::fsed::resolve_spell_dictionary(
+      c.dictionary, a()->sess().current_menu_set().menu_set.dictionary,
+      a()->config()->spell().dictionary);
+  return fmt::format("On ({})", dict);
+}
+
+static void change_spell_check() {
+  const auto& datadir = a()->config()->datadir();
+  const auto usernum = a()->sess().user_num();
+  auto c = wwiv::fsed::load_spell_user_config(datadir, usernum);
+  bout.nl();
+  bout.outstr("|#5Spell check messages when you save in the full screen editor? ");
+  c.enabled = c.enabled ? bin.yesno() : bin.noyes();
+  if (c.enabled) {
+    const auto& board = a()->config()->spell();
+    const auto def = wwiv::fsed::resolve_spell_dictionary(
+        "", a()->sess().current_menu_set().menu_set.dictionary, board.dictionary);
+    bout.nl();
+    bout.print("|#9Dictionary to use (|#2Enter|#9 for the default: |#2{}|#9)\r\n", def);
+    bout.outstr("|#9: ");
+    auto d = StringTrim(bin.input_text(c.dictionary, 32));
+    if (d.empty() || d == def) {
+      c.dictionary.clear();
+    } else if (!wwiv::fsed::is_valid_spell_dictionary_name(d)) {
+      bout.pl("|#6Invalid dictionary name.");
+      bout.pausescr();
+      return;
+    } else if (!wwiv::fsed::find_spell_dictionary(
+                   d, wwiv::fsed::spell_dictionary_search_path(board.dict_dir,
+                                                               a()->config()->root_directory()))) {
+      bout.print("|#6Dictionary {} is not installed on this BBS.\r\n", d);
+      bout.pausescr();
+      return;
+    } else {
+      c.dictionary = d;
+    }
+  }
+  if (!wwiv::fsed::save_spell_user_config(datadir, usernum, c)) {
+    bout.pl("|#6Unable to save your spell check settings.");
+    bout.pausescr();
+  }
+}
+
 static void print_cur_stat() {
   bout.cls();
   bout.litebar("Your Preferences");
@@ -184,6 +241,9 @@ static void print_cur_stat() {
   }
   bout.print("|#1U|#9) Use Msg AutoQuote : |#2{:<16} ", YesNoString(a()->user()->auto_quote()));
   bout.print("|#1W|#9) WWIV reg num      : |#2{}\r\n", wwiv_regnum);
+  if (spell_check_option_available()) {
+    bout.print("|#1P|#9) Spell check       : |#2{}\r\n", spell_check_status());
+  }
 
   bout.pl("|#1Q|#9) Quit to main menu");
 }
@@ -746,6 +806,9 @@ void defaults(bool& need_menu_reload) {
       if (a()->fullscreen_read_prompt()) {
         allowable.push_back('G');
       }
+      if (spell_check_option_available()) {
+        allowable.push_back('P');
+      }
     }
     switch (const auto ch = onek(allowable, true); ch) {
     case 'Q':
@@ -828,6 +891,9 @@ void defaults(bool& need_menu_reload) {
       break;
     case 'W':
       enter_regnum();
+      break;
+    case 'P':
+      change_spell_check();
       break;
     }
   } while (!done && !a()->sess().hangup());

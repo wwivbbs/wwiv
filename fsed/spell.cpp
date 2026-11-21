@@ -156,9 +156,9 @@ create_spell_dictionary(const std::string& name, const std::vector<std::filesyst
   return std::make_unique<NullSpellDictionary>();
 }
 
-// Converts CP437 text to UTF-8. This does not depend on the C locale the
-// way cp437_to_utf8(const std::string&) (wcstombs) does.
-static std::string spell_cp437_to_utf8(const std::string& in) {
+std::string spell_to_utf8(const std::string& in) {
+  // This does not depend on the C locale the way
+  // cp437_to_utf8(const std::string&) (wcstombs) does.
   std::string out;
   for (const auto ch : in) {
     const auto cp = static_cast<uint32_t>(cp437_to_utf8(static_cast<uint8_t>(ch)));
@@ -176,6 +176,8 @@ static std::string spell_cp437_to_utf8(const std::string& in) {
   return out;
 }
 
+std::string spell_from_utf8(const std::string& in) { return utf8_to_cp437(in); }
+
 std::vector<spell_word_t> misspelled_words(const std::vector<spell_word_t>& words,
                                            const SpellDictionary& dict) {
   std::vector<spell_word_t> out;
@@ -183,7 +185,7 @@ std::vector<spell_word_t> misspelled_words(const std::vector<spell_word_t>& word
     return out;
   }
   for (const auto& w : words) {
-    if (!dict.check(spell_cp437_to_utf8(w.word))) {
+    if (!dict.check(spell_to_utf8(w.word))) {
       out.push_back(w);
     }
   }

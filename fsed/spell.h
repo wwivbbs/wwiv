@@ -96,6 +96,15 @@ find_spell_dictionary(const std::string& name, const std::vector<std::filesystem
 [[nodiscard]] std::unique_ptr<SpellDictionary>
 create_spell_dictionary(const std::string& name, const std::vector<std::filesystem::path>& dirs);
 
+/** Converts a CP437 word from the editor to UTF-8 for the dictionary. */
+[[nodiscard]] std::string spell_to_utf8(const std::string& cp437);
+
+/**
+ * Converts a UTF-8 word from the dictionary (i.e. a suggestion) to CP437 for
+ * the editor. Characters with no CP437 equivalent become '?'.
+ */
+[[nodiscard]] std::string spell_from_utf8(const std::string& utf8);
+
 /**
  * Returns the words that are not in dict. Words are converted from CP437 to
  * UTF-8 before they are checked.
