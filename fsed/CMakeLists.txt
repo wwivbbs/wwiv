@@ -41,8 +41,24 @@ if (WWIV_HUNSPELL)
     message(STATUS "WWIV_HUNSPELL is ON (found Hunspell ${Hunspell_VERSION})")
     target_link_libraries(fsed Hunspell::Hunspell)
     target_compile_definitions(fsed PRIVATE WWIV_HAS_HUNSPELL)
+    if (WIN32 AND WWIV_INSTALL AND Hunspell_DLL_RELEASE)
+      # vcpkg copies the DLL next to the programs in the build directory;
+      # the release zip needs it too. Debug builds use the debug DLL.
+      if (Hunspell_DLL_DEBUG)
+        install(FILES "$<IF:$<CONFIG:Debug>,${Hunspell_DLL_DEBUG},${Hunspell_DLL_RELEASE}>"
+                DESTINATION .)
+      else()
+        install(FILES "${Hunspell_DLL_RELEASE}" DESTINATION .)
+      endif()
+    endif()
   else()
-    message(STATUS "WWIV_HUNSPELL is ON, but Hunspell was not found; FSED spell check is disabled")
+    if (WIN32)
+      message(STATUS "WWIV_HUNSPELL is ON, but Hunspell was not found; FSED spell check is disabled "
+                     "(is WWIV_HUNSPELL_VCPKG ON?)")
+    else()
+      message(STATUS "WWIV_HUNSPELL is ON, but Hunspell was not found; FSED spell check is disabled "
+                     "(apt install libhunspell-dev)")
+    endif()
   endif()
 else()
   message(STATUS "WWIV_HUNSPELL is OFF")

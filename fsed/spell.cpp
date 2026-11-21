@@ -19,6 +19,9 @@
 #include "core/cp437.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/strings.h"
+#include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <filesystem>
 #include <memory>
@@ -34,8 +37,6 @@ namespace wwiv::fsed {
 
 using namespace wwiv::core;
 
-#ifdef WWIV_HAS_HUNSPELL
-
 namespace {
 
 bool is_ascii(const std::string& s) {
@@ -47,6 +48,32 @@ bool is_ascii(const std::string& s) {
   return true;
 }
 
+} // namespace
+
+#ifdef WWIV_HAS_HUNSPELL
+
+namespace {
+
+// UTF-8 form of p. path::u8string() returns std::u8string in C++20.
+std::string path_to_utf8(const std::filesystem::path& p) {
+  const auto u8 = p.u8string();
+  return std::string(u8.begin(), u8.end());
+}
+
+// The path to give Hunspell for p. See spell_hunspell_path.
+std::string hunspell_path(const std::filesystem::path& p) {
+#ifdef _WIN32
+  std::error_code ec;
+  auto abs = std::filesystem::absolute(p, ec);
+  if (ec) {
+    abs = p;
+  }
+  return spell_hunspell_path(path_to_utf8(abs.lexically_normal()), true);
+#else
+  return spell_hunspell_path(path_to_utf8(p), false);
+#endif
+}
+
 /**
  * Hunspell backed dictionary. Hunspell expects words in the encoding of the
  * dictionary (the SET line in the .aff file). Most dictionaries today are
@@ -55,8 +82,8 @@ bool is_ascii(const std::string& s) {
 class HunspellDictionary final : public SpellDictionary {
 public:
   explicit HunspellDictionary(const spell_dictionary_files_t& files)
-      : hunspell_(
-            std::make_unique<Hunspell>(files.aff.string().c_str(), files.dic.string().c_str())) {
+      : hunspell_(std::make_unique<Hunspell>(hunspell_path(files.aff).c_str(),
+                                             hunspell_path(files.dic).c_str())) {
     utf8_ = hunspell_->get_dict_encoding() == "UTF-8";
   }
   ~HunspellDictionary() override = default;
@@ -113,16 +140,51 @@ std::vector<std::filesystem::path>
 spell_dictionary_search_path(const std::string& dict_dir, const std::filesystem::path& bbsdir) {
   std::vector<std::filesystem::path> dirs;
   if (!dict_dir.empty()) {
-    dirs.emplace_back(dict_dir);
+    // A relative dict_dir (i.e. "dict\\en") is relative to the BBS directory,
+    // not to whatever the current directory happens to be.
+    const std::filesystem::path d{dict_dir};
+    dirs.emplace_back(bbsdir.empty() ? d : File::absolute(bbsdir, d));
   }
   if (!bbsdir.empty()) {
     dirs.emplace_back(FilePath(bbsdir, "dict"));
   }
 #ifndef _WIN32
   dirs.emplace_back("/usr/share/hunspell");
+  dirs.emplace_back("/usr/local/share/hunspell");
   dirs.emplace_back("/usr/share/myspell/dicts");
+  dirs.emplace_back("/usr/share/myspell");
 #endif
   return dirs;
+}
+
+std::string spell_hunspell_path(const std::string& utf8_path, bool windows) {
+  // MAX_PATH is 260, including the terminating NUL.
+  static constexpr std::string::size_type kWindowsMaxPath = 259;
+  static const std::string kLongPathPrefix = R"(\\?\)";
+  if (!windows || utf8_path.empty()) {
+    return utf8_path;
+  }
+  if (utf8_path.rfind(kLongPathPrefix, 0) == 0) {
+    // Already has the prefix.
+    return utf8_path;
+  }
+  if (is_ascii(utf8_path) && utf8_path.size() <= kWindowsMaxPath) {
+    // fopen with the ANSI code page handles this just fine.
+    return utf8_path;
+  }
+  auto p = utf8_path;
+  std::replace(p.begin(), p.end(), '/', '\\');
+  if (p.rfind(R"(\\)", 0) == 0) {
+    // \\server\share\dir -> \\?\UNC\server\share\dir
+    return wwiv::strings::StrCat(kLongPathPrefix, "UNC\\", p.substr(2));
+  }
+  if (p.size() >= 3 && std::isalpha(static_cast<unsigned char>(p[0])) && p[1] == ':' &&
+      p[2] == '\\') {
+    // C:\dir
+    return wwiv::strings::StrCat(kLongPathPrefix, p);
+  }
+  // Not an absolute path, the prefix only works with absolute paths.
+  return utf8_path;
 }
 
 std::optional<spell_dictionary_files_t>
@@ -147,7 +209,14 @@ create_spell_dictionary(const std::string& name, const std::vector<std::filesyst
     VLOG(1) << "Using spell check dictionary: " << files->dic.string();
     return std::make_unique<HunspellDictionary>(files.value());
   }
-  LOG(INFO) << "Unable to find spell check dictionary: " << name;
+  std::string searched;
+  for (const auto& d : dirs) {
+    if (!searched.empty()) {
+      searched.append("; ");
+    }
+    searched.append(d.string());
+  }
+  LOG(INFO) << "Unable to find spell check dictionary: " << name << ".aff/.dic in: " << searched;
 #else
   // Hunspell was not compiled in, there is nothing to load.
   (void)name;

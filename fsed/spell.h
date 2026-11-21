@@ -74,12 +74,30 @@ struct spell_dictionary_files_t {
 [[nodiscard]] bool spell_check_compiled_in();
 
 /**
- * The directories to search for dictionaries, in order: dict_dir (if not
- * empty), {bbsdir}/dict, then on non-Windows platforms the system
- * directories /usr/share/hunspell and /usr/share/myspell/dicts.
+ * The directories to search for dictionaries, in order:
+ *   1. dict_dir (if not empty). A relative dict_dir is relative to bbsdir.
+ *   2. {bbsdir}/dict
+ *   3. On non-Windows platforms the system directories /usr/share/hunspell,
+ *      /usr/local/share/hunspell, /usr/share/myspell/dicts and
+ *      /usr/share/myspell. Windows has no system location, so dictionaries
+ *      go in {bbsdir}\dict (or dict_dir).
  */
 [[nodiscard]] std::vector<std::filesystem::path>
 spell_dictionary_search_path(const std::string& dict_dir, const std::filesystem::path& bbsdir);
+
+/**
+ * Returns the string to pass to Hunspell for the file at utf8_path.
+ *
+ * On Windows, Hunspell opens files using the ANSI code page unless the path
+ * is UTF-8 and starts with the long path prefix \\?\ (see hunspell.hxx).
+ * When windows is true and utf8_path (an absolute path) is not plain ASCII
+ * or is too long for MAX_PATH, the path is returned with '/' changed to
+ * '\' and the \\?\ prefix (\\?\UNC\ for \\server\share paths).
+ * Otherwise utf8_path is returned unchanged.
+ *
+ * windows is a parameter so that this can be tested on every platform.
+ */
+[[nodiscard]] std::string spell_hunspell_path(const std::string& utf8_path, bool windows);
 
 /**
  * Finds {name}.aff and {name}.dic in the first directory of dirs that has
