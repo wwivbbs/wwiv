@@ -1,15 +1,23 @@
-# This is needed to put it in to the root CMakeCache.txt
-# but only works if it's been built... sigh 
-  add_library(CL345_LIB STATIC IMPORTED GLOBAL)
+# Cryptlib (used for SSH support in the BBS).
+#
+# Windows: uses the prebuilt cl32.dll / cl32.lib that live in this directory.
+#          CL345_LIB is an imported SHARED library, so CMake knows about the
+#          DLL and wwiv_copy_runtime_dlls() can copy it next to executables.
+# Others:  builds libcl.a with cryptlib's own makefile.
+#
+# Configure with -DWWIV_SSH_CRYPTLIB=OFF to build without cryptlib (no SSH).
+
 if (WIN32) 
-  set_property(
-  TARGET 
-    CL345_LIB PROPERTY 
-  IMPORTED_LOCATION 
-    ${CMAKE_CURRENT_SOURCE_DIR}/cl32.lib)
+  add_library(CL345_LIB SHARED IMPORTED GLOBAL)
+  set_target_properties(CL345_LIB PROPERTIES
+    IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/cl32.dll"
+    IMPORTED_IMPLIB   "${CMAKE_CURRENT_SOURCE_DIR}/cl32.lib"
+  )
+  # Used by the install rules in the top-level CMakeLists.txt
   set (CL32_DLL ${CMAKE_CURRENT_SOURCE_DIR}/cl32.dll PARENT_SCOPE)
-  message(STATUS "Setting CL32_DLL: ${CL32_DLL}")
+  message(STATUS "Setting CL32_DLL: ${CMAKE_CURRENT_SOURCE_DIR}/cl32.dll")
 else()
+  add_library(CL345_LIB STATIC IMPORTED GLOBAL)
   set (LIBCL_A ${CMAKE_CURRENT_SOURCE_DIR}/libcl.a)
   add_custom_command(
     OUTPUT ${LIBCL_A}
@@ -31,4 +39,4 @@ set_property(
   APPEND PROPERTY
       INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}"
 )
-message (DEBUG "CL: ${cl345_lib}:${LIBCL_A}")
+message (DEBUG "CL: ${LIBCL_A}")
