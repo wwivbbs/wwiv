@@ -54,6 +54,29 @@ preset builds into `_build/<preset-name>`.
 
 WWIV is built as a 32-bit (x86) program on Windows.
 
+**Installing the prerequisites:** if you don't have them yet, you can install
+Git and Visual Studio 2022 Community with the C++ workload (which includes CMake
+and Ninja) using `winget`:
+
+```bat
+winget install --id Git.Git -e
+winget install --id Microsoft.VisualStudio.2022.Community -e --override "--passive --wait --add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended"
+```
+
+If you'd rather not use the ones bundled with Visual Studio, CMake and Ninja are
+`winget install --id Kitware.CMake -e` and `winget install --id Ninja-build.Ninja -e`.
+
+**Checking the prerequisites:** from the `wwiv` folder, run:
+
+```bat
+powershell -ExecutionPolicy Bypass -File builds\win\check-prereqs.ps1
+```
+
+It checks for Visual Studio 2022 (17.2) or newer (or the Build Tools) with the
+C++ tools, CMake (new enough for the presets), Ninja, Git and the git
+submodules. It prints a PASS or FAIL line for each, with how to fix any
+failures, and exits non-zero if anything is missing.
+
 **From Visual Studio:** choose *File → Open → Folder...* and pick your `wwiv`
 folder. Visual Studio reads `CMakePresets.json`; pick `Windows x86 Debug` in the
 configuration drop-down on the toolbar, wait for the configure to finish (the
