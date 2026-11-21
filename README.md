@@ -1,150 +1,156 @@
 WWIV BBS
 ========
 
-WWIV is compiled with the following compilers:
-  
-- MS Visual C++ 2019 Community Edition.
-- GCC 8.3 (or later) on Linux 
-  (tested on Debian10, Ubuntu 20.04, Centos7 with SCL/GCC-8)
-- CMake 3.18 or newer
-
-***
-
 # Building WWIV BBS
 ***
 
-We prefer contributors to FORK ```wwivbbs``` repositories to their account and work from there.
+## Requirements
 
-## Building on Windows
+| Platform | Compiler | Tools |
+| -------- | -------- | ----- |
+| Windows  | Visual Studio 2022 (17.2) or newer, with the *Desktop development with C++* workload | Git, plus the CMake and Ninja that ship with Visual Studio |
+| Linux    | GCC 10 or newer | Git, CMake 3.21+ (3.22+ on arm64), Ninja, make, ncurses and zlib dev packages |
 
-### Installing Git
+CMake 3.21 or newer is needed to use the presets described below.
 
-You will need [Git](https://git-scm.com) installed.  You can use the GitHub Desktop GUI, but it's also easy
-to use the command line tool directly.  You'll need to download [Git](https://git-scm.com/download/win) and
-install it.  Make sure the ```git``` command is in your PATH.
+### A note on dependencies
 
-If you are using GitHub Desktop, this is likely in the folder: "Documents\GitHub\WWIV".  Otherwise just
-create a directory and clone your fork.  You can follow instructions that are written by GitHub 
-[Here](https://help.github.com/en/github/getting-started-with-github/fork-a-repo). Just make sure that
-when you clone the repo, you have "Recurse Submodules" specified in the tool, or using 
-```--recurse-submodules``` on the command line.
+WWIV pulls its third-party code in two ways:
 
-### Download and Install Visual Studio
-WWIV is compiled with the VS2019 compiler for windows. 
-You can download [Microsoft Visual Studio 2019 Community](https://www.visualstudio.com/downloads/)
+* **Git submodules** (`vcpkg`, `deps/my_basic`, `deps/pdcurses`). You must clone
+  with `--recurse-submodules`, or run `git submodule update --init --recursive`
+  afterwards. CMake stops with a clear error if they are missing.
+* **vcpkg** (fmt, cereal, cpp-httplib, nlohmann-json, gtest; see `vcpkg.json`).
+  The vcpkg submodule is used automatically. **The first configure downloads and
+  builds all of these, which can take several minutes.** That's normal, it hasn't
+  hung, and later configures reuse the results.
 
-Choose to install the ```Desktop development with C++``` workload.
-You also may want to optionally install the following "Individual Components":
+## Getting the source
+
+We prefer contributors to [fork](https://help.github.com/articles/fork-a-repo/)
+the `wwivbbs/wwiv` repository and work from their fork:
+
+```bash
+# Use your GitHub username instead of YOUR-USERNAME
+git clone --recurse-submodules -j8 https://github.com/YOUR-USERNAME/wwiv.git
+cd wwiv
 ```
-   Git For Windows (Only if you do not have this already)
-   GitHub extension for Visual Studio
+
+See [contributing.md](contributing.md) for how to keep your fork up to date.
+
+## Building with CMake presets (recommended)
+
+`CMakePresets.json` defines one preset per platform and build type:
+
+| Preset | Platform |
+| ------ | -------- |
+| `windows-x86-debug`, `windows-x86-release` | Windows, 32-bit MSVC |
+| `linux-debug`, `linux-release` | Linux, GCC |
+
+Run `cmake --list-presets` to see the ones available on your machine. Each
+preset builds into `_build/<preset-name>`.
+
+### Windows
+
+WWIV is built as a 32-bit (x86) program on Windows.
+
+**From Visual Studio:** choose *File → Open → Folder...* and pick your `wwiv`
+folder. Visual Studio reads `CMakePresets.json`; pick `Windows x86 Debug` in the
+configuration drop-down on the toolbar, wait for the configure to finish (the
+first one is slow, see above), then use *Build → Build All*.
+
+**From the command line:** open the *x86 Native Tools Command Prompt for VS 2022*
+(the x86 one, not x64) and run:
+
+```bat
+cd path\to\wwiv
+cmake --preset windows-x86-debug
+cmake --build --preset windows-x86-debug
 ```
 
+To run the tests, copy the cryptlib DLL next to the build first. The tests need it
+and the build doesn't copy it yet:
 
-### Build WWIV (Windows)
-* If you cloned a git repository for your fork of WWIV, then select File then Open and choose Folder.
+```bat
+copy install\platform\win32\cl32.dll _build\windows-x86-debug\
+ctest --preset windows-x86-debug
+```
 
-* If you are using the GitHub for Windows extension, then from the Visual Studio IDE, select File and then ```Open from Source Control```
-On the bottom, you should see your local GIT repositories already.
-Above that you will see Login to GitHub, do that.
-* Now in your Local repositories (Documents\GitHub\WWIV), open the
-  folder WWIV in Visual Studio. It should recognize the CMake build
-  and be able to build WWIV.
-* When VS says "READY" on the bottom, go to Build on the menu and select Build Solution(F7). If you have any build errors, run Build one more time and see if that resolves itself as there can be timing issues on some machines.
-* You select whether or not you are building DEBUG or RELEASE on the toolbar. Those binaries and other built files will be places in a \debug and \release folder along side your github source files. ex: ```Documents\GitHub\WWIV\debug``` or ```Documents\GitHub\WWIV\release```.
+### Linux
 
+**NOTE:** Build as a non-root user; your BBS user is easiest from a file
+permissions point of view. Never use root to compile.
 
-## Building on Linux
-This only builds the binaries, it does NOT include the supporting files.
-Please follow the
-[Linux Installation](http://docs.wwivbbs.org/en/latest/linux_installation/) instructions under
-*Steps to install the software* for first installing the base system.
-
-** NOTE:** Do these steps as a non-root user; your BBS user would be the easiest from a file permissions perspective later on.  root should never be used to compile binaries.
-
-### Install pre-requisite software
+Install the prerequisites. On Debian or Ubuntu you can run
+`sudo builds/linux/install-prereqs.sh`, or install them yourself:
 
 Package | Comments
 ------- | ----------
-git | to grab the source code for compiling  
-ncurses | ncurses-devel, libncurses5-dev, etc depending on your distro
-zlib1g-dev | or zlib-dev depending on your distro
-cmake | 3.18 or later (3.22 or later if using arm64 or aarch64)
-make | for cryptlib
-ninja-build | 1.8 or later, earlier versions probably work too
-g++ | 8.3.0 or later (easiest to install via build-essential on debian/ubuntu)
+git | to get the source code
+cmake | 3.21 or later (3.22 or later on arm64/aarch64)
+ninja-build | 1.8 or later
+g++ | 10 or later (`build-essential` on Debian/Ubuntu)
+make | used to build cryptlib
+ncurses | `libncurses-dev`, `ncurses-devel`, etc. depending on your distro
+zlib | `zlib1g-dev` or `zlib-devel` depending on your distro
+pkg-config, zip | used by the build and packaging
 
-If you are on debian or ubuntu, you can use the ```/builds/linux/install-prereqs.sh``` 
-script to ensure that the right software is installed.  This command should be executed as root (using sudo)
+Then, from the `wwiv` directory:
 
-### WWIV Binaries
-Here's the list of binaries that will be built in the build directory:  
-
-* bbs/bbs  
-* network/network  
-* networkb/networkb
-* networkc/networkc
-* networkf/networkf
-* networkt/networkt
-* network1/network1
-* network2/network2
-* network3/network3
-* wwivconfig/wwivconfig  
-* wwivd/wwivd  
-* wwivutil/wwivutil  
-
-#### Getting the source from GitHub
-If you plan to have an active repo, we prefer contributors to FORK WWIVBBS
-repositories to their account and work from there.  
-
-* [Fork](https://help.github.com/articles/fork-a-repo/), then clone your fork
-    
-    ```bash
-    # Create a directory for your fork's clone.
-    mkdir git
-    chdir git
-    # Clone your fork into the current directory (git).
-    # Use your GitHub username instead of <em>YOUR-USERNAME</em>
-    git clone --recurse-submodules -j8 https://github.com/<em>YOUR-USERNAME</em>/wwiv.git
-    ```
-* Navigate to wwiv
-
-#### Compiling WWIV
-
-
-Now change directory to the ```wwiv``` directory where you cloned the repository
-and run the following:
-  ```
-  mkdir _build
-  cd _build 
-  ../cmake-config.sh 
-  cmake --build .
-  ```
-
-Copy all of the files newly built, or symlinks to them from your WWIV base install
-i.e. in /opt/wwiv/ (assuming the source is in $HOME/git/wwiv now.)
-```
- # This should be done as the wwiv user who has the source code.
- cd /opt/wwiv
- ln -s $HOME/git/wwiv/builds/tools/linux/use-built-bin.sh
- 
- export BUILT_BIN=$HOME/out/wwiv
- ./use-built-bin.sh ${BUILT_BIN} bbs wwivd wwivconfig network network?
-
+```bash
+cmake --preset linux-debug
+cmake --build --preset linux-debug
+ctest --preset linux-debug
 ```
 
-#### Out of Source Build warning
+If your CMake is older than 3.21, the older helper script still works:
 
-If you get an error about needing to do an out of source build, please make sure that
-you are executing the cmake command from a directory that is not the same as your source
-code, such as a subdirectory called ```_b``` or ```_build``` or even a different directory
-all together. I use ```/home/rushfan/out/wwiv``` myself.
+```bash
+mkdir _build && cd _build
+../cmake-config.sh
+cmake --build .
+```
 
-Once you get a warning about this, you will need to clean the build so you need to
-remove the following file and directory:
-  * CMakeFiles
-  * CMakeCache.txt 
+The script checks for the submodules and for Ninja before configuring. On
+aarch64 it also sets `VCPKG_FORCE_SYSTEM_BINARIES=1`, which vcpkg needs there.
+If you configure by hand on arm64, set that variable yourself.
 
+### What gets built
+
+Each program ends up in its own subdirectory of the build directory, e.g.
+`_build/linux-debug/bbs/bbs`. The main ones are:
+
+* `bbs/bbs`
+* `wwivconfig/wwivconfig`
+* `wwivd/wwivd`
+* `wwivutil/wwivutil`
+* `wwivfsed/wwivfsed`
+* `network/network`, `networkb/networkb`, `networkc/networkc`,
+  `networkf/networkf`, `networkt/networkt`, `network1/network1`,
+  `network2/network2`, `network3/network3`
+
+This only builds the binaries. It does not include the BBS data files. To set up
+a BBS, follow the [Linux Installation](http://docs.wwivbbs.org/en/latest/linux_installation/)
+instructions under *Steps to install the software* first, then point your
+install at the binaries you built. For example (as the user that owns the
+source, with the source in `$HOME/git/wwiv`):
+
+```bash
+cd /opt/wwiv
+ln -s $HOME/git/wwiv/builds/tools/linux/use-built-bin.sh
+./use-built-bin.sh $HOME/git/wwiv/_build/linux-debug bbs wwivd wwivconfig network network?
+```
+
+### Troubleshooting
+
+* **"Missing ... the git submodules have not been checked out"**: run
+  `git submodule update --init --recursive` and configure again.
+* **"wwiv requires an out of source build"**: you ran CMake from inside the source
+  directory. Delete the `CMakeCache.txt` file and `CMakeFiles` directory it
+  created there, then use a preset or build from `_build`.
+* **Windows: wrong architecture or link errors about x64**: make sure you are in
+  the *x86* Native Tools prompt, not the x64 one. Then delete
+  `_build/<preset>` and configure again.
 
 ## Building on ChromeOS/ChromeBook 
 

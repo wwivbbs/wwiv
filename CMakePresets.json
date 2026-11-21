@@ -1,51 +1,77 @@
 {
-    "version": 4,
-    "configurePresets": [
-        {
-            "name": "wwiv-default",
-            "displayName": "wwiv default build",
-            "description": "Ninja, x86 debug",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/_build",
-            "architecture": {
-                "value": "x86",
-                "strategy": "external"
-            },
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/install"
-            }
-        },
-        {
-            "name": "VSCode Debug",
-            "description": "",
-            "displayName": "",
-            "inherits": [
-                "windows-default"
-            ]
-        }
-    ],
-    "buildPresets": [
-        {
-            "name": "WWIV Debug Build",
-            "displayName": "WWIV Debug Build",
-            "configurePreset": "wwiv-default",
-            "description": "Default Windows debug build (MSVC)"
-        }
-    ],
-    "testPresets": [
-        {
-          "name": "wwiv-test-default",
-          "description": "Enable output on failure",
-          "configurePreset": "linux-debug",
-          "output": {
-            "outputOnFailure": true
-          }
-        },
-        {
-          "name": "core-test-windows",
-          "inherits": "wwiv-test-default",
-          "configurePreset": "x86-debug"
-        }
-      ]
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/_build/${presetName}"
+    },
+    {
+      "name": "windows-base",
+      "hidden": true,
+      "inherits": "base",
+      "description": "MSVC, 32-bit (x86). Run from an x86 Native Tools prompt, or let Visual Studio set the environment.",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" },
+      "architecture": { "value": "x86", "strategy": "external" },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "VCPKG_TARGET_TRIPLET": "x86-windows"
+      }
+    },
+    {
+      "name": "windows-x86-debug",
+      "displayName": "Windows x86 Debug",
+      "inherits": "windows-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "windows-x86-release",
+      "displayName": "Windows x86 Release",
+      "inherits": "windows-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "linux-base",
+      "hidden": true,
+      "inherits": "base",
+      "description": "GCC on Linux.",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "linux-debug",
+      "displayName": "Linux Debug",
+      "inherits": "linux-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "linux-release",
+      "displayName": "Linux Release",
+      "inherits": "linux-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "windows-x86-debug",   "configurePreset": "windows-x86-debug" },
+    { "name": "windows-x86-release", "configurePreset": "windows-x86-release" },
+    { "name": "linux-debug",         "configurePreset": "linux-debug" },
+    { "name": "linux-release",       "configurePreset": "linux-release" }
+  ],
+  "testPresets": [
+    {
+      "name": "test-base",
+      "hidden": true,
+      "output": { "outputOnFailure": true }
+    },
+    { "name": "windows-x86-debug",   "inherits": "test-base", "configurePreset": "windows-x86-debug" },
+    { "name": "windows-x86-release", "inherits": "test-base", "configurePreset": "windows-x86-release" },
+    { "name": "linux-debug",         "inherits": "test-base", "configurePreset": "linux-debug" },
+    { "name": "linux-release",       "inherits": "test-base", "configurePreset": "linux-release" }
+  ]
 }

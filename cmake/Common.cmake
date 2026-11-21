@@ -65,15 +65,15 @@ message(STATUS "WWIV Build Number: ${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}")
 macro(ENSURE_MINIMUM_COMPILER_VERSIONS)
   # Set minimum GCC version
   # See https://stackoverflow.com/questions/14933172/how-can-i-add-a-minimum-compiler-version-requisite
-  if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.3)
-      message(FATAL_ERROR "Require at least gcc-10.0; found: ${CMAKE_CXX_COMPILER_VERSION}")
+  if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
+      message(FATAL_ERROR "Require at least gcc 10.0; found: ${CMAKE_CXX_COMPILER_VERSION}")
   endif()
 
   if (MSVC)
     if (${MSVC_VERSION} LESS 1932)
       # See https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
       # for versions
-      message(FATAL_ERROR "Require at least MSVC 2022 16.2 (1932); Found: ${MSVC_VERSION}")
+      message(FATAL_ERROR "Require at least Visual Studio 2022 17.2 (MSVC 1932); Found: ${MSVC_VERSION}")
     endif()
   endif()
 endmacro(ENSURE_MINIMUM_COMPILER_VERSIONS)
@@ -149,7 +149,7 @@ MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
   IF(insource OR insourcesubdir)
     MESSAGE(FATAL_ERROR 
     "${PROJECT_NAME} requires an out of source build.
-     Please see https://github.com/wwivbbs/wwiv#out-of-source-build-warning
+     Please see https://github.com/wwivbbs/wwiv#troubleshooting
      This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
      Please delete them before re-running cmake."
     )
