@@ -11,6 +11,7 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(WWIV_BUILD_TESTS "Build WWIV test programs" ON)
 option(WWIV_SSH_CRYPTLIB "Include support for SSH using Cryptlib" ON)
+option(WWIV_HUNSPELL "Include FSED spell check using Hunspell (if found)" ON)
 option(WWIV_ZIP_INSTALL_FILES "Create the zip files for data, gfiles, etc" ON)
 option(WWIV_INSTALL "Create install packages for both zip files and binaries." ON)
 option(WWIV_USE_PIPES "Enable Named Pipes support for WWIV." ON)
