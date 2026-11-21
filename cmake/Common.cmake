@@ -197,3 +197,33 @@ IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   message(VERBOSE "Defining _DEBUG macro for debug build")
   ADD_DEFINITIONS(-D_DEBUG)
 ENDIF()
+
+# On Windows, copy the DLLs that a target links against (e.g. cryptlib's
+# cl32.dll) next to the target's executable after it is built, so it can be
+# run (and its tests discovered and run by ctest) straight from the build
+# directory.
+#
+# Only call this for targets that link at least one imported SHARED library,
+# since "cmake -E copy_if_different" fails when given no files.
+#
+# Note: call this before gtest_discover_tests() for the same target, so the
+# DLLs are in place when test discovery runs the executable.
+function(wwiv_copy_runtime_dlls target)
+  if (NOT WIN32)
+    return()
+  endif()
+  if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.21")
+    set(dlls "$<TARGET_RUNTIME_DLLS:${target}>")
+  elseif (TARGET CL345_LIB)
+    # Older CMake has no $<TARGET_RUNTIME_DLLS>; cryptlib is the one we need.
+    set(dlls "$<TARGET_FILE:CL345_LIB>")
+  else()
+    return()
+  endif()
+  add_custom_command(
+    TARGET ${target} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${dlls} "$<TARGET_FILE_DIR:${target}>"
+    COMMAND_EXPAND_LISTS
+    COMMENT "Copying runtime DLLs next to ${target}"
+  )
+endfunction()

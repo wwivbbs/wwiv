@@ -77,11 +77,5 @@ jobs:
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
 
-      # The tests need cryptlib's DLL on Windows; the build doesn't copy it yet.
-      - name: Copy cl32.dll (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: cp install/platform/win32/cl32.dll _build/${{ matrix.preset }}/
-
       - name: Test
         run: ctest --preset ${{ matrix.preset }} --exclude-regex '${{ env.CTEST_EXCLUDE }}'

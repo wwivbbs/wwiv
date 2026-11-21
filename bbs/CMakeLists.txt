@@ -182,11 +182,9 @@ endif()
 
 add_executable(bbs bbs_main.cpp)
 target_link_libraries(bbs bbs_lib fmt::fmt-header-only)
-if (WIN32)
-  add_custom_command(
-    TARGET bbs POST_BUILD
-    COMMAND cmake -E copy_if_different ${CL32_DLL} "$<TARGET_FILE_DIR:bbs>"
-  )
+if (WWIV_SSH_CRYPTLIB AND NOT OS2)
+  # Copies cl32.dll next to bbs.exe on Windows.
+  wwiv_copy_runtime_dlls(bbs)
 endif()
 
 ## Tests
@@ -219,11 +217,10 @@ if (WWIV_BUILD_TESTS)
     )
     add_executable(bbs_tests ${test_sources})
 
-    if (WIN32)
-      add_custom_command(
-        TARGET bbs_tests POST_BUILD
-        COMMAND cmake -E copy_if_different ${CL32_DLL} "$<TARGET_FILE_DIR:bbs>"
-      )
+    if (WWIV_SSH_CRYPTLIB AND NOT OS2)
+      # Copies cl32.dll next to bbs_tests.exe on Windows, so the tests
+      # can be discovered and run without copying it by hand.
+      wwiv_copy_runtime_dlls(bbs_tests)
     endif()
 
     if(APPLE)
