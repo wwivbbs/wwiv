@@ -182,7 +182,10 @@ TEST_F(BasicTest, Smoke_Fail) {
   // There is no outstr( function.
   ASSERT_FALSE(RunScript("outstr( \"Hello World\""));
 
-  EXPECT_EQ("", StringTrim(helper.io()->captured()));
+  // Script errors are echoed to the caller so they can see why it failed.
+  const auto captured = StringTrim(helper.io()->captured());
+  EXPECT_THAT(captured, testing::StartsWith("Error:"));
+  EXPECT_THAT(captured, testing::HasSubstr("Line 1"));
 }
 
 TEST_F(BasicTest, Assert_Int_False) {
