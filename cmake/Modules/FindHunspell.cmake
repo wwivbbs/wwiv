@@ -8,7 +8,8 @@
 #  Hunspell_FOUND - System has Hunspell
 #  Hunspell_INCLUDE_DIRS - The directory containing hunspell.hxx
 #  Hunspell_LIBRARIES - The libraries needed to use Hunspell
-#  Hunspell_VERSION - The version from pkg-config, if known
+#  Hunspell_VERSION - The version from pkg-config, or "1.7" if pkg-config
+#                     is not available. 1.7 or newer is required.
 #  Hunspell::Hunspell - Imported target to link against
 #
 # On Windows it also sets these cache variables when Hunspell is a DLL
@@ -32,8 +33,9 @@ find_path(Hunspell_INCLUDE_DIR
 
 # hunspell-1.7.dll is for the import library that libtool makes with MSVC
 # (hunspell-1.7.dll.lib).
+# Only 1.7 names: fsed/spell.cpp uses the std::string API added in 1.7.
 set(_hunspell_names
-  hunspell-1.7 hunspell libhunspell-1.7 libhunspell hunspell-1.7.dll hunspell-1.6)
+  hunspell-1.7 hunspell libhunspell-1.7 libhunspell hunspell-1.7.dll)
 
 if(DEFINED VCPKG_INSTALLED_DIR AND DEFINED VCPKG_TARGET_TRIPLET)
   # vcpkg installs release libraries in {triplet}/lib and debug libraries in
@@ -63,9 +65,54 @@ select_library_configurations(Hunspell)
 
 set(Hunspell_VERSION ${PC_HUNSPELL_VERSION})
 
+# fsed/spell.cpp needs the Hunspell 1.7 API (spell() and suggest() taking
+# std::string, suggest() returning std::vector<std::string>). pkg-config is
+# not always there (vcpkg on Windows), and a plain "hunspell" library name
+# could be any version, so check the header too. This only compiles, it does
+# not link, so it works the same for DLL and static builds.
+if(Hunspell_INCLUDE_DIR AND NOT DEFINED Hunspell_HAS_17_API)
+  include(CheckCXXSourceCompiles)
+  include(CMakePushCheckState)
+  cmake_push_check_state(RESET)
+  set(CMAKE_REQUIRED_INCLUDES "${Hunspell_INCLUDE_DIR}")
+  set(CMAKE_REQUIRED_DEFINITIONS -DHUNSPELL_STATIC)
+  set(CMAKE_REQUIRED_QUIET ON)
+  set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+  check_cxx_source_compiles("
+#include <hunspell.hxx>
+#include <string>
+#include <vector>
+bool wwiv_check_hunspell_17(Hunspell& h) {
+  const std::string w(\"word\");
+  std::vector<std::string> s = h.suggest(w);
+  return h.spell(w) && !s.empty() && h.add(w) == 0;
+}
+" Hunspell_HAS_17_API)
+  cmake_pop_check_state()
+endif()
+
+if(NOT Hunspell_HAS_17_API)
+  # Not found unless it is 1.7 or newer.
+  set(Hunspell_VERSION_OK FALSE)
+elseif(Hunspell_VERSION)
+  if(Hunspell_VERSION VERSION_LESS 1.7)
+    set(Hunspell_VERSION_OK FALSE)
+  else()
+    set(Hunspell_VERSION_OK TRUE)
+  endif()
+else()
+  # The 1.7 API is there, but no pkg-config to say which 1.7.x it is.
+  set(Hunspell_VERSION "1.7")
+  set(Hunspell_VERSION_OK TRUE)
+endif()
+if(NOT Hunspell_VERSION_OK AND Hunspell_LIBRARY AND Hunspell_INCLUDE_DIR)
+  message(STATUS "Hunspell in ${Hunspell_INCLUDE_DIR} is older than 1.7; "
+                 "WWIV needs Hunspell 1.7 or newer for FSED spell check")
+endif()
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Hunspell
-  REQUIRED_VARS Hunspell_LIBRARY Hunspell_INCLUDE_DIR
+  REQUIRED_VARS Hunspell_LIBRARY Hunspell_INCLUDE_DIR Hunspell_VERSION_OK
   VERSION_VAR Hunspell_VERSION)
 
 # Finds the DLL that goes with the import library lib, it is in ../bin.

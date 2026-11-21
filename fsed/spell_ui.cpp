@@ -225,7 +225,8 @@ bool fsed_spell_check(Context& ctx, FsedModel& ed, FsedView& view, spell_check_t
   FsedSpellCheckIO io(ctx, view);
   const auto stats = spell_check_walk(ed, *dict, io, [&](const std::string& word) {
     if (usernum > 0 && user_words.add(word) && !user_words.Save()) {
-      LOG(WARNING) << "Unable to save spell check words: " << user_words.path().string();
+      const auto u8 = user_words.path().u8string();
+      LOG(WARNING) << "Unable to save spell check words: " << std::string(u8.begin(), u8.end());
     }
   });
 

@@ -225,6 +225,22 @@ TEST(SpellWalkTest, Replace_SoftWrapMarker) {
   EXPECT_THAT(wraps_of(ed), ElementsAre(false));
 }
 
+TEST(SpellWalkTest, Replace_CharacterWrapKeepsWordsApart) {
+  // "hello" / "wrold" with no space at the break is saved as "hello wrold";
+  // replacing the second word must not glue it onto the first.
+  auto ed = model_of({{true, "hello"}, {false, "wrold"}}, 20);
+  spell_replace_word(ed, find_word(ed, "wrold"), "world");
+  EXPECT_THAT(text_of(ed), ElementsAre("hello world"));
+  EXPECT_THAT(wraps_of(ed), ElementsAre(false));
+  EXPECT_THAT(ed.to_lines(false), ElementsAre("hello world"));
+}
+
+TEST(SpellWalkTest, Replace_CharacterWrap_FirstWord) {
+  auto ed = model_of({{true, "helo"}, {false, "world"}}, 20);
+  spell_replace_word(ed, find_word(ed, "helo"), "hello");
+  EXPECT_THAT(ed.to_lines(false), ElementsAre("hello world"));
+}
+
 TEST(SpellWalkTest, Replace_HardLinesNotJoined) {
   auto ed = model_of({{false, "hello"}, {false, "the qick fox"}, {false, "dog"}}, 20);
   const auto pos = spell_replace_word(ed, find_word(ed, "qick"), "quick");

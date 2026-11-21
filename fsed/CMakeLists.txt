@@ -36,7 +36,7 @@ target_include_directories(fsed PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 # Optional spell check using Hunspell. When it is off or Hunspell is not
 # found, spell.cpp builds a stub that reports spell check as not available.
 if (WWIV_HUNSPELL)
-  find_package(Hunspell QUIET)
+  find_package(Hunspell 1.7 QUIET)
   if (Hunspell_FOUND)
     message(STATUS "WWIV_HUNSPELL is ON (found Hunspell ${Hunspell_VERSION})")
     target_link_libraries(fsed Hunspell::Hunspell)

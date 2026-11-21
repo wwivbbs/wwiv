@@ -21,7 +21,6 @@
 #include "fsed/line.h"
 #include "fsed/model.h"
 #include <algorithm>
-#include <cctype>
 #include <optional>
 #include <set>
 #include <string>
@@ -61,7 +60,11 @@ spell_pos_t spell_replace_word(FsedModel& ed, const spell_word_t& word,
   }
   const auto last_soft = is_soft_wrapped(ed.line(last));
 
-  // Join it into one run of cells (without the ^A soft wrap markers).
+  // Join it into one run of cells (without the ^A soft wrap markers). Like
+  // FsedModel's paragraph reflow and to_lines(false), put a space between
+  // two lines when neither side of the break is whitespace, so a character
+  // wrapped "hello" / "world" stays two words. spell_tokenize joins lines
+  // the same way.
   std::vector<cell_t> cells;
   auto start = -1;
   auto end = -1;
@@ -69,6 +72,13 @@ spell_pos_t spell_replace_word(FsedModel& ed, const spell_word_t& word,
     auto lc = ed.line(l).cells();
     if (!lc.empty() && lc.back().ch == '\x01') {
       lc.pop_back();
+    }
+    if (!cells.empty() && !lc.empty()) {
+      const auto a = cells.back().ch;
+      const auto b = lc.front().ch;
+      if (a != ' ' && a != '\t' && b != ' ' && b != '\t') {
+        cells.emplace_back(cells.back().wwiv_color, ' ');
+      }
     }
     if (l == word.line) {
       start = size_int(cells) + std::min<int>(word.x, size_int(lc));
@@ -273,7 +283,8 @@ spell_check_stats_t spell_check_walk(FsedModel& ed, SpellDictionary& dict, Spell
       if (key <= 0 || key > 255) {
         continue;
       }
-      const auto ch = std::toupper(key);
+      // ASCII only; std::toupper depends on the C locale for 0x80-0xFF.
+      const auto ch = (key >= 'a' && key <= 'z') ? key - 'a' + 'A' : key;
       if (ch >= '1' && ch <= '9') {
         if (const auto n = ch - '1'; n < size_int(suggestions)) {
           replace(suggestions.at(n));

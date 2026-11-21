@@ -18,7 +18,6 @@
 
 #include "core/stl.h"
 #include "fsed/model.h"
-#include <cctype>
 #include <string>
 #include <vector>
 
@@ -36,19 +35,22 @@ struct spell_char_t {
   int x;
 };
 
-bool is_color_code_char(char c) { return c == '#' || std::isdigit(static_cast<unsigned char>(c)); }
-
-bool is_digit(char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; }
+// Character classes are spelled out for ASCII and CP437 rather than using
+// std::isalpha/std::isdigit, which depend on the C locale and could treat
+// bytes 0x80-0xFF differently from one system (or code page) to the next.
+bool is_digit(char c) { return c >= '0' && c <= '9'; }
 bool is_upper(char c) { return c >= 'A' && c <= 'Z'; }
 bool is_lower(char c) { return c >= 'a' && c <= 'z'; }
+
+bool is_color_code_char(char c) { return c == '#' || is_digit(c); }
 
 // ASCII letters and the CP437 accented letters (0x80-0x9A and 0xA0-0xA5, not the
 // currency symbols at 0x9B-0x9F) along with sharp s (0xE1).
 bool is_letter(char c) {
-  const auto u = static_cast<unsigned char>(c);
-  if (std::isalpha(u)) {
+  if (is_upper(c) || is_lower(c)) {
     return true;
   }
+  const auto u = static_cast<unsigned char>(c);
   return (u >= 0x80 && u <= 0x9a) || (u >= 0xa0 && u <= 0xa5) || u == 0xe1;
 }
 
@@ -235,9 +237,13 @@ template <typename F>
 std::vector<spell_word_t> tokenize(int num_lines, F line_at,
                                    const spell_tokenizer_options_t& options) {
   std::vector<spell_word_t> out;
-  // The characters of the current soft-wrapped paragraph. Word wrap leaves
-  // the space at the end of the previous line, and a character wrap splits
-  // a word with no space, so the lines are joined as-is.
+  // The characters of the current soft-wrapped paragraph. The lines are
+  // joined the same way FsedModel::to_lines(false) (when the message is
+  // saved) and the editor's paragraph reflow join them: when neither side of
+  // the line break is whitespace, there is a space between them. So a
+  // character-wrapped "hello" / "world" is checked as the two words that are
+  // saved ("hello world"), not as "helloworld", and a word never spans two
+  // lines.
   std::vector<spell_char_t> paragraph;
   auto start_of_paragraph = true;
   auto skip_paragraph = false;
@@ -249,6 +255,12 @@ std::vector<spell_word_t> tokenize(int num_lines, F line_at,
     }
     if (!skip_paragraph) {
       const auto chars = strip_line(line, i);
+      if (!paragraph.empty() && !chars.empty() && !is_space(paragraph.back().ch) &&
+          !is_space(chars.front().ch)) {
+        // The space the saved message has here. It is never part of a word,
+        // so its position does not matter.
+        paragraph.push_back(spell_char_t{' ', i, 0});
+      }
       paragraph.insert(paragraph.end(), chars.begin(), chars.end());
     }
     start_of_paragraph = !is_wrapped(line);

@@ -106,10 +106,26 @@ spell_dictionary_search_path(const std::string& dict_dir, const std::filesystem:
 [[nodiscard]] std::optional<spell_dictionary_files_t>
 find_spell_dictionary(const std::string& name, const std::vector<std::filesystem::path>& dirs);
 
+/** True if p is a regular file that can be opened and has at least one byte. */
+[[nodiscard]] bool spell_file_readable(const std::filesystem::path& p);
+
+/**
+ * Returns up to max_words words from the Hunspell .dic file dic (without
+ * their /flags and morphology fields), in the dictionary's own encoding.
+ * Returns nothing when the file can not be read, or when it does not start
+ * with the entry count line every Hunspell .dic file has.
+ * create_spell_dictionary uses these to check that Hunspell really loaded
+ * the dictionary.
+ */
+[[nodiscard]] std::vector<std::string> spell_dic_sample_words(const std::filesystem::path& dic,
+                                                              int max_words = 50);
+
 /**
  * Creates the dictionary named name (i.e. "en_US") from the first directory
  * in dirs that contains it. Returns a NullSpellDictionary when Hunspell was
- * not compiled in or the dictionary can not be found.
+ * not compiled in, the dictionary can not be found, or it can not be loaded:
+ * an unreadable .aff or .dic, a .dic without the entry count line, or a
+ * dictionary that Hunspell loads with none of the .dic's own words in it.
  */
 [[nodiscard]] std::unique_ptr<SpellDictionary>
 create_spell_dictionary(const std::string& name, const std::vector<std::filesystem::path>& dirs);

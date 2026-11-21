@@ -265,3 +265,92 @@ TEST(SpellTest, CreateDictionary_NonAsciiDirectory) {
   EXPECT_TRUE(dict->check("hello"));
   EXPECT_FALSE(dict->check("helo"));
 }
+
+TEST(SpellTest, DicSampleWords) {
+  FileHelper helper;
+  const auto dic = helper.CreateTempFile(
+      "s.dic", "\xEF\xBB\xBF" "5\r\nhello/MS\r\n\tcomment\r\n\r\nworld po:noun\r\nand\\/or/X\r\nlast\r\n");
+  EXPECT_THAT(spell_dic_sample_words(dic), testing::ElementsAre("hello", "world", "and/or", "last"));
+  EXPECT_THAT(spell_dic_sample_words(dic, 2), testing::ElementsAre("hello", "world"));
+}
+
+TEST(SpellTest, DicSampleWords_NoCountLine) {
+  FileHelper helper;
+  EXPECT_TRUE(spell_dic_sample_words(helper.CreateTempFile("a.dic", "hello\nworld\n")).empty());
+  EXPECT_TRUE(spell_dic_sample_words(helper.CreateTempFile("b.dic", "")).empty());
+  EXPECT_TRUE(spell_dic_sample_words(helper.CreateTempFile("c.dic", "\x7f" "ELF\x01\x02")).empty());
+  EXPECT_TRUE(spell_dic_sample_words(helper.CreateTempFile("d.dic", "3\n")).empty());
+}
+
+TEST(SpellTest, DicSampleWords_Missing) {
+  FileHelper helper;
+  EXPECT_TRUE(spell_dic_sample_words(FilePath(helper.TempDir(), "nope.dic")).empty());
+  // A directory named like a dictionary.
+  ASSERT_TRUE(helper.Mkdir("dir.dic"));
+  EXPECT_TRUE(spell_dic_sample_words(helper.Dir("dir.dic")).empty());
+}
+
+TEST(SpellTest, FileReadable) {
+  FileHelper helper;
+  EXPECT_TRUE(spell_file_readable(helper.CreateTempFile("x.aff", "SET UTF-8\n")));
+  EXPECT_FALSE(spell_file_readable(helper.CreateTempFile("empty.aff", "")));
+  EXPECT_FALSE(spell_file_readable(FilePath(helper.TempDir(), "missing.aff")));
+  ASSERT_TRUE(helper.Mkdir("d.aff"));
+  EXPECT_FALSE(spell_file_readable(helper.Dir("d.aff")));
+}
+
+// A dictionary Hunspell can not use must not count as available, otherwise
+// every word in the message would be flagged as misspelled.
+TEST(SpellTest, CreateDictionary_CorruptDic) {
+  FileHelper helper;
+  helper.CreateTempFile("bad.aff", "SET UTF-8\n");
+  helper.CreateTempFile("bad.dic", "this is not a dictionary\n\x01\x02\x03\n");
+  auto dict = create_spell_dictionary("bad", {helper.TempDir()});
+  ASSERT_NE(nullptr, dict);
+  EXPECT_FALSE(dict->available());
+  EXPECT_TRUE(dict->check("wrold"));
+}
+
+TEST(SpellTest, CreateDictionary_EmptyDic) {
+  FileHelper helper;
+  helper.CreateTempFile("empty.aff", "SET UTF-8\n");
+  helper.CreateTempFile("empty.dic", "");
+  auto dict = create_spell_dictionary("empty", {helper.TempDir()});
+  ASSERT_NE(nullptr, dict);
+  EXPECT_FALSE(dict->available());
+}
+
+TEST(SpellTest, CreateDictionary_EmptyAff) {
+  FileHelper helper;
+  helper.CreateTempFile("noaff.aff", "");
+  helper.CreateTempFile("noaff.dic", "2\nhello\nworld\n");
+  auto dict = create_spell_dictionary("noaff", {helper.TempDir()});
+  ASSERT_NE(nullptr, dict);
+  EXPECT_FALSE(dict->available());
+}
+
+TEST(SpellTest, CreateDictionary_DicIsDirectory) {
+  FileHelper helper;
+  helper.CreateTempFile("dird.aff", "SET UTF-8\n");
+  ASSERT_TRUE(helper.Mkdir("dird.dic"));
+  auto dict = create_spell_dictionary("dird", {helper.TempDir()});
+  ASSERT_NE(nullptr, dict);
+  EXPECT_FALSE(dict->available());
+}
+
+TEST(SpellTest, CreateDictionary_FlagsInDic) {
+  // The sample words have their /flags removed before they are checked.
+  FileHelper helper;
+  helper.CreateTempFile("flags.aff", "SET UTF-8\nSFX S Y 1\nSFX S 0 s .\n");
+  helper.CreateTempFile("flags.dic", "1\ndog/S\n");
+  auto dict = create_spell_dictionary("flags", {helper.TempDir()});
+  ASSERT_NE(nullptr, dict);
+  if (!spell_check_compiled_in()) {
+    EXPECT_FALSE(dict->available());
+    return;
+  }
+  ASSERT_TRUE(dict->available());
+  EXPECT_TRUE(dict->check("dog"));
+  EXPECT_TRUE(dict->check("dogs"));
+  EXPECT_FALSE(dict->check("dogz"));
+}
