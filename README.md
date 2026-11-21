@@ -141,6 +141,21 @@ ln -s $HOME/git/wwiv/builds/tools/linux/use-built-bin.sh
 ./use-built-bin.sh $HOME/git/wwiv/_build/linux-debug bbs wwivd wwivconfig network network?
 ```
 
+### Packaging (release builds)
+
+Packaging is off by default, so the debug presets and plain `cmake` configures
+only build the programs. Two CMake options turn it on:
+
+Option | What it does
+------ | ------------
+`WWIV_INSTALL` | Adds the `install` rules (binaries, platform files, docs) that `cmake --install` and `cpack` use.
+`WWIV_ZIP_INSTALL_FILES` | Also builds `data.zip`, `gfiles.zip`, `menus.zip`, etc. into `<build>/release`. Needs `WWIV_INSTALL`.
+
+The `windows-x86-release` and `linux-release` presets, and the release scripts in
+`builds/jenkins/wwiv` (used by CI), turn both on. To package any other build, add
+`-DWWIV_INSTALL=ON -DWWIV_ZIP_INSTALL_FILES=ON` when you configure, then run
+`cpack -G ZIP` (or `-G TGZ`) in the build directory.
+
 ### Troubleshooting
 
 * **"Missing ... the git submodules have not been checked out"**: run

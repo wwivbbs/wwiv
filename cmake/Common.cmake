@@ -11,8 +11,10 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(WWIV_BUILD_TESTS "Build WWIV test programs" ON)
 option(WWIV_SSH_CRYPTLIB "Include support for SSH using Cryptlib" ON)
-option(WWIV_ZIP_INSTALL_FILES "Create the zip files for data, gfiles, etc" ON)
-option(WWIV_INSTALL "Create install packages for both zip files and binaries." ON)
+# Packaging is OFF by default so developer builds skip it. Release builds turn
+# both on: the *-release presets and builds/jenkins/wwiv/build* (used by CI).
+option(WWIV_INSTALL "Create install packages for both zip files and binaries." OFF)
+option(WWIV_ZIP_INSTALL_FILES "Create the zip files for data, gfiles, etc. Requires WWIV_INSTALL." OFF)
 option(WWIV_USE_PIPES "Enable Named Pipes support for WWIV." ON)
 
 ############################################################################### 
