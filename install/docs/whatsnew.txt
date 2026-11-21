@@ -18,6 +18,17 @@ Legend (starting with 5.3)
 What's New in WWIV 5.9.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Full Screen Editor (FSED)
++ Spell check, using Hunspell. Use ESC+C in the editor to check the
+  message, and it also runs when saving (ESC there goes back to the
+  editor). Each misspelled word offers numbered suggestions, R)eplace,
+  I)gnore once, G) ignore all, A)dd to your dictionary, or Q)uit.
++ Sysops configure spell check in wwivconfig under System Info, Spell
+  Check: on/off, check on save, the default dictionary (en_US), and an
+  optional dictionary directory. Menusets can set their own dictionary,
+  and users can turn it off or pick another dictionary in Defaults (P).
+! Spell check needs Hunspell dictionaries (.aff and .dic files) in
+  BBSDIR/dict or the system hunspell directory, e.g.
+  "apt install hunspell-en-us" on Debian/Ubuntu.
 + Delete key, Ctrl-Left/Right word movement, Ctrl-Home/End, and WordStar
   key substitutes. (#1704)
 + FSED can now be used when sending multi-email. (#1650)
