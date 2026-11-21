@@ -262,7 +262,9 @@ std::vector<std::string> spell_dic_sample_words(const std::filesystem::path& dic
     return words;
   }
   while (static_cast<int>(words.size()) < max_words && std::getline(f, line)) {
-    if (!line.empty() && line.back() == '\r') {
+    // Strip every trailing CR: a file written in text mode on Windows can
+    // end its lines with CR CR LF.
+    while (!line.empty() && line.back() == '\r') {
       line.pop_back();
     }
     if (line.empty() || line.front() == '\t' || line.front() == '/') {
@@ -278,7 +280,7 @@ std::vector<std::string> spell_dic_sample_words(const std::filesystem::path& dic
         ++j;
         continue;
       }
-      if (c == '/' || c == '\t' || c == ' ') {
+      if (c == '/' || c == '\t' || c == ' ' || c == '\r') {
         break;
       }
       w.push_back(c);

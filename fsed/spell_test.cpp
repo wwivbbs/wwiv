@@ -274,6 +274,14 @@ TEST(SpellTest, DicSampleWords) {
   EXPECT_THAT(spell_dic_sample_words(dic, 2), testing::ElementsAre("hello", "world"));
 }
 
+// CreateTempFile writes in text mode, so on Windows "\r\n" becomes CR CR LF.
+// Check that directly, so the result is the same on every platform.
+TEST(SpellTest, DicSampleWords_DoubleCR) {
+  FileHelper helper;
+  const auto dic = helper.CreateTempFile("cr.dic", "2\r\r\nhello\r\r\n\r\r\nworld\r\r\n");
+  EXPECT_THAT(spell_dic_sample_words(dic), testing::ElementsAre("hello", "world"));
+}
+
 TEST(SpellTest, DicSampleWords_NoCountLine) {
   FileHelper helper;
   EXPECT_TRUE(spell_dic_sample_words(helper.CreateTempFile("a.dic", "hello\nworld\n")).empty());
