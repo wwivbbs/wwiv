@@ -255,8 +255,10 @@ std::vector<spell_word_t> tokenize(int num_lines, F line_at,
     }
     if (!skip_paragraph) {
       const auto chars = strip_line(line, i);
-      if (!paragraph.empty() && !chars.empty() && !is_space(paragraph.back().ch) &&
-          !is_space(chars.front().ch)) {
+      // A line that is empty once codes are removed (like a lone "|#3")
+      // still separates words, so a word can never span two lines.
+      if (!paragraph.empty() && !is_space(paragraph.back().ch) &&
+          (chars.empty() || !is_space(chars.front().ch))) {
         // The space the saved message has here. It is never part of a word,
         // so its position does not matter.
         paragraph.push_back(spell_char_t{' ', i, 0});

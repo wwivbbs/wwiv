@@ -133,37 +133,23 @@ private:
   }
 
   void highlight(const FsedModel& ed, const spell_word_t& word, int top) {
+    // A word is always on one line (word.end_line == word.line).
+    if (word.line >= size_int(ed)) {
+      return;
+    }
     auto& fs = view_.fs();
+    const auto y = word.line - top + fs.lines_start();
+    if (y >= fs.lines_end()) {
+      return;
+    }
     auto& out = fs.out();
     const auto saved_color = out.curatr();
-    for (auto l = word.line; l <= word.end_line && l < size_int(ed); l++) {
-      const auto y = l - top + fs.lines_start();
-      if (y >= fs.lines_end()) {
-        break;
-      }
-      const auto& cells = ed.line(l).cells();
-      const auto x0 = l == word.line ? word.x : 0;
-      const auto x1 =
-          std::min<int>(l == word.end_line ? word.end_x : size_int(cells), size_int(cells));
-      out.goxy(x0 + 1, y);
-      out.setc(SPELL_HIGHLIGHT_COLOR);
-      for (auto x = x0; x < x1; x++) {
-        out.outchr(cells.at(x).ch);
-      }
-      if (l != word.line) {
-        // Only the current line is drawn cell by cell. The continuation line
-        // of a character wrapped word was drawn with its pipe codes turned
-        // into colors, so the columns after the word may not line up with
-        // the cells. Draw the rest of it cell by cell too.
-        auto last_color = -1;
-        for (auto x = x1; x < size_int(cells); x++) {
-          if (cells.at(x).wwiv_color != last_color) {
-            last_color = cells.at(x).wwiv_color;
-            out.ansic(last_color);
-          }
-          out.outchr(cells.at(x).ch);
-        }
-      }
+    const auto& cells = ed.line(word.line).cells();
+    const auto x1 = std::min<int>(word.end_x, size_int(cells));
+    out.goxy(word.x + 1, y);
+    out.setc(SPELL_HIGHLIGHT_COLOR);
+    for (auto x = word.x; x < x1; x++) {
+      out.outchr(cells.at(x).ch);
     }
     out.setc(saved_color);
   }
@@ -214,10 +200,13 @@ bool fsed_spell_check(Context& ctx, FsedModel& ed, FsedView& view, spell_check_t
       settings.dictionary,
       spell_dictionary_search_path(settings.dict_dir, config.root_directory()));
   if (!dict || !dict->available()) {
-    LOG(WARNING) << "Spell check dictionary not found: " << settings.dictionary;
     if (from_menu) {
+      LOG(WARNING) << "Spell check dictionary not found: " << settings.dictionary;
       spell_message(view, fmt::format("|#6Spell check is not available (no dictionary {}).",
                                       settings.dictionary));
+    } else {
+      // Saving with no dictionary installed is normal, so don't warn on every save.
+      VLOG(1) << "Spell check dictionary not found: " << settings.dictionary;
     }
     return true;
   }

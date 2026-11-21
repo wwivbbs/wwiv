@@ -70,6 +70,16 @@ set(Hunspell_VERSION ${PC_HUNSPELL_VERSION})
 # not always there (vcpkg on Windows), and a plain "hunspell" library name
 # could be any version, so check the header too. This only compiles, it does
 # not link, so it works the same for DLL and static builds.
+# The result is cached. Check again when the headers move, and after a failed
+# check, so that upgrading to 1.7 does not need the cache entry deleted.
+if(Hunspell_INCLUDE_DIR)
+  if(NOT Hunspell_HAS_17_API OR
+     NOT "${Hunspell_INCLUDE_DIR}" STREQUAL "${_Hunspell_CHECKED_INCLUDE_DIR}")
+    unset(Hunspell_HAS_17_API CACHE)
+  endif()
+  set(_Hunspell_CHECKED_INCLUDE_DIR "${Hunspell_INCLUDE_DIR}" CACHE INTERNAL
+      "Hunspell_INCLUDE_DIR used for Hunspell_HAS_17_API")
+endif()
 if(Hunspell_INCLUDE_DIR AND NOT DEFINED Hunspell_HAS_17_API)
   include(CheckCXXSourceCompiles)
   include(CMakePushCheckState)

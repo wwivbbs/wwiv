@@ -188,6 +188,24 @@ TEST(SpellConfigTest, WordList_AddSave) {
   EXPECT_THAT(r.words(), ElementsAre("caf\xc3\xa9", "rushfan"));
 }
 
+TEST(SpellConfigTest, WordList_Save_KeepsWordsSavedElsewhere) {
+  // The same user on two nodes: both load, each adds a word and saves.
+  FileHelper helper;
+  const auto path = helper.CreateTempFile("user.dic", "rushfan\n");
+  SpellWordList node1(path);
+  SpellWordList node2(path);
+  ASSERT_TRUE(node1.Load());
+  ASSERT_TRUE(node2.Load());
+  EXPECT_TRUE(node1.add("wwiv"));
+  ASSERT_TRUE(node1.Save());
+  EXPECT_TRUE(node2.add("sysop"));
+  ASSERT_TRUE(node2.Save());
+
+  SpellWordList r(path);
+  ASSERT_TRUE(r.Load());
+  EXPECT_THAT(r.words(), ElementsAre("rushfan", "sysop", "wwiv"));
+}
+
 TEST(SpellConfigTest, WordList_LoadFailed_DoesNotOverwrite) {
   FileHelper helper;
   const auto path = helper.CreateTempFile("user.dic", "rushfan\nwwiv\n");

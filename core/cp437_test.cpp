@@ -69,6 +69,25 @@ TEST(Cp437Test, Utf8ToCp437_Unknown) {
   EXPECT_EQ("?", utf8_to_cp437("\xc3"));
 }
 
+TEST(Cp437Test, Utf8ToCp437_Invalid) {
+  // Overlong encodings must not smuggle in NUL, '/' or other ASCII.
+  EXPECT_EQ(std::string("a?b"), utf8_to_cp437("a\xc0\x80" "b"));
+  EXPECT_EQ("?", utf8_to_cp437("\xc1\xbf"));
+  EXPECT_EQ("?", utf8_to_cp437("\xe0\x80\xaf"));
+  EXPECT_EQ("?", utf8_to_cp437("\xf0\x80\x80\xaf"));
+  // Overlong 3 byte form of U+00E9 (would otherwise be CP437 0x82).
+  EXPECT_EQ("?", utf8_to_cp437("\xe0\x83\xa9"));
+  // UTF-16 surrogates and code points past U+10FFFF.
+  EXPECT_EQ("?", utf8_to_cp437("\xed\xa0\x80"));
+  EXPECT_EQ("?", utf8_to_cp437("\xed\xbf\xbf"));
+  EXPECT_EQ("?", utf8_to_cp437("\xf4\x90\x80\x80"));
+  // The shortest form still works; valid code points CP437 lacks are unknown.
+  EXPECT_EQ("\x82", utf8_to_cp437("\xc3\xa9"));
+  EXPECT_EQ("?", utf8_to_cp437("\xc2\x80"));
+  EXPECT_EQ("?", utf8_to_cp437("\xef\xbf\xbd"));
+  EXPECT_EQ("?", utf8_to_cp437("\xf4\x8f\xbf\xbf"));
+}
+
 TEST(Cp437Test, Utf8ToCp437_RoundTrip) {
   std::string all;
   for (auto c = 0x80; c <= 0xff; c++) {

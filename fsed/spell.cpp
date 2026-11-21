@@ -54,7 +54,8 @@ bool is_ascii_letter(char c) { return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <
 // UTF-8 form of p. path::u8string() returns std::u8string in C++20. Unlike
 // path::string(), this never depends on (or throws because of) the Windows
 // ANSI code page, so it is safe for logging any path.
-std::string path_to_utf8(const std::filesystem::path& p) {
+// Only used when Hunspell is compiled in.
+[[maybe_unused]] std::string path_to_utf8(const std::filesystem::path& p) {
   const auto u8 = p.u8string();
   return std::string(u8.begin(), u8.end());
 }
@@ -326,7 +327,9 @@ create_spell_dictionary(const std::string& name, const std::vector<std::filesyst
     }
     searched.append(path_to_utf8(d));
   }
-  LOG(INFO) << "Unable to find spell check dictionary: " << name << ".aff/.dic in: " << searched;
+  // Not an error: many BBSes have no dictionary installed, and this runs on
+  // every message save.
+  VLOG(1) << "Unable to find spell check dictionary: " << name << ".aff/.dic in: " << searched;
 #else
   // Hunspell was not compiled in, there is nothing to load.
   (void)name;

@@ -251,6 +251,18 @@ TEST(SpellTextTest, SoftWrap_HelloWorld) {
   }
 }
 
+TEST(SpellTextTest, SoftWrap_CodeOnlyLineSeparatesWords) {
+  // A soft-wrapped line with only a pipe code (or nothing) on it still
+  // separates words, so no word spans two lines.
+  const auto words = spell_tokenize(
+      {line_t{true, "hel"}, line_t{true, "|#3"}, line_t{true, "lo"}, line_t{true, ""},
+       line_t{false, "world"}});
+  ASSERT_THAT(words_of(words), ElementsAre("hel", "lo", "world"));
+  for (const auto& w : words) {
+    EXPECT_EQ(w.line, w.end_line) << w.word;
+  }
+}
+
 TEST(SpellTextTest, SoftWrap_LeadingSpaceOnNextLine) {
   EXPECT_THAT(words_of_lines({line_t{true, "hello"}, line_t{false, " world"}}),
               ElementsAre("hello", "world"));

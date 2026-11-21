@@ -158,11 +158,21 @@ bool SpellWordList::Save() const {
       return false;
     }
   }
+  // Keep words saved since this list was loaded, e.g. by the same user on
+  // another node, instead of the last save winning.
+  auto words = words_;
+  if (File::Exists(path_)) {
+    SpellWordList on_disk(path_);
+    if (!on_disk.Load()) {
+      return false;
+    }
+    words.insert(on_disk.words_.begin(), on_disk.words_.end());
+  }
   TextFile f(path_, "wt");
   if (!f.IsOpen()) {
     return false;
   }
-  for (const auto& w : words_) {
+  for (const auto& w : words) {
     f.WriteLine(w);
   }
   return true;

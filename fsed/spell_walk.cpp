@@ -126,28 +126,32 @@ std::optional<spell_pos_t> spell_replace_word(FsedModel& ed, const spell_word_t&
   cells.insert(cells.begin() + start, rep.begin(), rep.end());
   const auto resume = start + size_int(rep);
 
-  // Rewrap. A line holds at most width characters plus the space that it
-  // was broken at, the same as typing in the editor does.
-  // TODO: Use FsedModel::reflow_paragraph once it exists on main.
-  const auto width = ed.max_line_len() > 1 ? ed.max_line_len() - 1 : 79;
+  // Rewrap the same way FsedModel::reflow_paragraph does: a line holds at
+  // most max_line_len cells, breaking after the last space or tab that fits,
+  // and a word with nowhere to break is split at max_line_len.
+  const auto width = std::max<int>(1, ed.max_line_len());
   std::vector<std::pair<int, int>> chunks; // [begin, end)
   auto pos = 0;
   const auto total = size_int(cells);
-  while (total - pos > width) {
-    auto brk = -1;
-    for (auto i = pos + width; i > pos; i--) {
-      if (cells.at(i).ch == ' ') {
-        brk = i + 1;
-        break;
+  while (pos < total) {
+    auto take = total - pos;
+    if (take > width) {
+      auto sp = -1;
+      for (auto k = width - 1; k > 0; k--) {
+        const auto ch = cells.at(pos + k).ch;
+        if (ch == ' ' || ch == '\t') {
+          sp = k;
+          break;
+        }
       }
+      take = sp > 0 ? sp + 1 : width;
     }
-    if (brk <= pos || brk - pos > width + 1) {
-      brk = pos + width;
-    }
-    chunks.emplace_back(pos, brk);
-    pos = brk;
+    chunks.emplace_back(pos, pos + take);
+    pos += take;
   }
-  chunks.emplace_back(pos, total);
+  if (chunks.empty()) {
+    chunks.emplace_back(0, 0);
+  }
 
   // Like FsedModel::insert_line, never go past the line limit.
   const auto old_para_lines = last - first + 1;

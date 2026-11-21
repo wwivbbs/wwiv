@@ -124,9 +124,11 @@ static std::string GetMailBoxStatus() {
   return StrCat("Forward to ", a()->names()->UserName(a()->user()->forward_usernum()));
 }
 
-// Spell check only works in the internal full screen editor.
+// Spell check only works in the internal full screen editor, and only when
+// this build has Hunspell.
 static bool spell_check_option_available() {
-  return okansi() && a()->IsUseInternalFsed() && a()->config()->spell().enabled;
+  return wwiv::fsed::spell_check_compiled_in() && okansi() && a()->IsUseInternalFsed() &&
+         a()->config()->spell().enabled;
 }
 
 static std::string spell_check_status() {

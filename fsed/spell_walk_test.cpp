@@ -260,9 +260,31 @@ TEST(SpellWalkTest, Replace_HardLinesNotJoined) {
 TEST(SpellWalkTest, Replace_NoSpace_CharacterWrap) {
   auto ed = model_of({{false, "a bbbbbbbbbb"}}, 10);
   spell_replace_word(ed, find_word(ed, "bbbbbbbbbb"), "cccccccccccc");
-  // width 9: "a " then 9 c's then 3 c's.
-  EXPECT_THAT(text_of(ed), ElementsAre("a ", "ccccccccc", "ccc"));
+  // Like FsedModel::reflow_paragraph, a word with nowhere to break is split
+  // at the full width: "a " then 10 c's then 2 c's.
+  EXPECT_THAT(text_of(ed), ElementsAre("a ", "cccccccccc", "cc"));
   EXPECT_THAT(wraps_of(ed), ElementsAre(true, true, false));
+}
+
+TEST(SpellWalkTest, Replace_WrapsLikeTyping) {
+  // A replacement must leave the paragraph wrapped exactly the way typing it
+  // in the editor (FsedModel::reflow_paragraph) does: same width, and tabs
+  // are break points too.
+  const std::string before = "the qick\tbrown fox jumps over\tthe lazy dog and keeps going a bit";
+  const std::string after = "the quickest\tbrown fox jumps over\tthe lazy dog and keeps going a bit";
+  for (const auto width : {10, 11, 16, 20, 21}) {
+    SCOPED_TRACE(width);
+    auto ed = model_of({{false, before}}, width);
+    ASSERT_TRUE(spell_replace_word(ed, find_word(ed, "qick"), "quickest").has_value());
+
+    FsedModel typed(255);
+    typed.set_max_line_len(width);
+    for (const auto ch : after) {
+      typed.add(ch);
+    }
+    EXPECT_EQ(text_of(typed), text_of(ed));
+    EXPECT_EQ(wraps_of(typed), wraps_of(ed));
+  }
 }
 
 TEST(SpellWalkTest, Replace_ClampsCursor) {
