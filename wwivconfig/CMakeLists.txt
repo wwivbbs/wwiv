@@ -15,6 +15,7 @@ set(COMMON_SOURCES
   "paths.cpp"
   "protocols.cpp"
   "script_ui.cpp"
+  "spell_check.cpp"
   "subacc.cpp"
   "subsdirs.cpp"
   "system_info.cpp"

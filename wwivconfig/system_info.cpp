@@ -26,6 +26,7 @@
 #include "sdk/vardec.h"
 #include "wwivconfig/new_user.h"
 #include "wwivconfig/colors.h"
+#include "wwivconfig/spell_check.h"
 #include "wwivconfig/toggles.h"
 #include "wwivconfig/utility.h"
 #include <cstdint>
@@ -220,6 +221,11 @@ void sysinfo1(wwiv::sdk::Config& config) {
   items.add(new Label("System Colors:"),
             new NewUserSubDialog<wwiv::sdk::color_config_t>(config, config.colors(), colors), 1,
             y);
+  ++y;
+  items.add(new Label("Spell Check:"),
+            new NewUserSubDialog<wwiv::sdk::spell_config_t>(config, config.spell(),
+                                                            spell_check_settings),
+            1, y);
   ++y;
 
   items.add_aligned_width_column(1);
