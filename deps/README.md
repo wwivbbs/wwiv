@@ -33,7 +33,7 @@ submodules are present.
 
 ### Cryptlib
 * dir: `cl345` (checked in, not a submodule)
-* url: https://www.cs.auckland.ac.nz/~pgut001/cryptlib/
+* url: https://github.com/cryptlib/cryptlib
 * license: see `cl345/COPYING`
 * Provides SSH support when `WWIV_SSH_CRYPTLIB` is on. On Windows the
   prebuilt `cl32.lib`/`cl32.dll` are used; elsewhere it is built with its
