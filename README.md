@@ -68,13 +68,15 @@ cmake --preset windows-x86-debug
 cmake --build --preset windows-x86-debug
 ```
 
-To run the tests, copy the cryptlib DLL next to the build first. The tests need it
-and the build doesn't copy it yet:
+To run the tests:
 
 ```bat
-copy install\platform\win32\cl32.dll _build\windows-x86-debug\
 ctest --preset windows-x86-debug
 ```
+
+The build copies cryptlib's DLL (`cl32.dll`, from `deps\cl345`) next to every
+program that needs it (`bbs.exe` and `bbs_tests.exe`), so there is nothing to copy
+by hand.
 
 ### Linux
 
@@ -151,6 +153,12 @@ ln -s $HOME/git/wwiv/builds/tools/linux/use-built-bin.sh
 * **Windows: wrong architecture or link errors about x64**: make sure you are in
   the *x86* Native Tools prompt, not the x64 one. Then delete
   `_build/<preset>` and configure again.
+* **Problems with cryptlib**: cryptlib is only used for SSH support in the BBS.
+  You can build without it by turning it off when you configure, e.g.
+  `cmake --preset windows-x86-debug -DWWIV_SSH_CRYPTLIB=OFF` (or
+  `cmake --preset linux-debug -DWWIV_SSH_CRYPTLIB=OFF`). Everything else builds
+  and works as normal; the BBS just won't accept SSH connections. On Linux this
+  also skips the cryptlib `make` step.
 
 ## Building on ChromeOS/ChromeBook 
 
