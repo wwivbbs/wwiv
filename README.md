@@ -164,6 +164,31 @@ ln -s $HOME/git/wwiv/builds/tools/linux/use-built-bin.sh
 ./use-built-bin.sh $HOME/git/wwiv/_build/linux-debug bbs wwivd wwivconfig network network?
 ```
 
+### Packaging (release builds)
+
+Packaging is off by default, so the debug presets and plain `cmake` configures
+only build the programs. Two CMake options turn it on:
+
+Option | What it does
+------ | ------------
+`WWIV_INSTALL` | Adds the `install` rules (binaries, platform files, docs) that `cmake --install` and `cpack` use.
+`WWIV_ZIP_INSTALL_FILES` | Also builds `data.zip`, `gfiles.zip`, `menus.zip`, etc. into `<build>/release`. Needs `WWIV_INSTALL`.
+
+The `windows-x86-release` and `linux-release` presets, and the release scripts in
+`builds/jenkins/wwiv` (used by CI), turn both on. To package any other build, add
+`-DWWIV_INSTALL=ON -DWWIV_ZIP_INSTALL_FILES=ON` when you configure, then run
+`cpack -G ZIP` (or `-G TGZ`) in the build directory. Without `WWIV_INSTALL`,
+`cpack` fails with `CPack Error: CPack project name not specified`.
+
+You also need the zip files to set up a new test BBS from your build:
+wwivconfig unpacks `data.zip` and `inifiles.zip` when it creates a new BBS, so
+configure that build directory with both options first.
+
+These are only defaults for new build directories. CMake keeps the values
+already in an existing `CMakeCache.txt`, so a `_build` or `out` directory
+configured before this change still has both ON. Delete the cache, or pass
+`-DWWIV_INSTALL=OFF -DWWIV_ZIP_INSTALL_FILES=OFF`, to pick up the new defaults.
+
 ### Troubleshooting
 
 * **"Missing ... the git submodules have not been checked out"**: run

@@ -12,8 +12,14 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 option(WWIV_BUILD_TESTS "Build WWIV test programs" ON)
 option(WWIV_SSH_CRYPTLIB "Include support for SSH using Cryptlib" ON)
 option(WWIV_HUNSPELL "Include FSED spell check using Hunspell (if found)" ON)
-option(WWIV_ZIP_INSTALL_FILES "Create the zip files for data, gfiles, etc" ON)
-option(WWIV_INSTALL "Create install packages for both zip files and binaries." ON)
+# Packaging is OFF by default so developer builds skip it. Release builds turn
+# both on: the *-release presets and builds/jenkins/wwiv/build* (used by CI).
+option(WWIV_INSTALL "Create install packages for both zip files and binaries." OFF)
+option(WWIV_ZIP_INSTALL_FILES "Create the zip files for data, gfiles, etc. Requires WWIV_INSTALL." OFF)
+if(WWIV_ZIP_INSTALL_FILES AND NOT WWIV_INSTALL)
+  message(WARNING "WWIV_ZIP_INSTALL_FILES=ON is ignored because WWIV_INSTALL is OFF. "
+                  "Pass -DWWIV_INSTALL=ON as well to build the zip files.")
+endif()
 option(WWIV_USE_PIPES "Enable Named Pipes support for WWIV." ON)
 
 ############################################################################### 
@@ -57,7 +63,14 @@ set(CPACK_NSIS_URL_INFO_ABOUT "http://www.wwivbbs.org")
 set(CPACK_NSIS_CONTACT "http://docs.wwivbbs.org")
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "")
-include(CPack)
+# Only set up cpack when there are install rules to package.  Otherwise cpack
+# would quietly make an empty archive.  Without CPackConfig.cmake it fails
+# ("CPack project name not specified"); configure with -DWWIV_INSTALL=ON.
+if(WWIV_INSTALL)
+  include(CPack)
+else()
+  message(STATUS "WWIV_INSTALL is OFF: cpack is not available in this build directory")
+endif()
 
 
 message(STATUS "WWIV Build Number: ${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}")

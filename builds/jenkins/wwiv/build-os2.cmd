@@ -53,6 +53,8 @@ cmake -DCMAKE_BUILD_TYPE=Release ^
       -DWWIV_ARCH=%WWIV_ARCH%  ^
       -DWWIV_BUILD_NUMBER=%BUILD_NUMBER% ^
       -DWWIV_DISTRO=%WWIV_DISTRO% ^
+      -DWWIV_INSTALL=ON ^
+      -DWWIV_ZIP_INSTALL_FILES=ON ^
       %WORKSPACE%
 
 cmake --build . --config Release
