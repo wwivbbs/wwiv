@@ -27,6 +27,7 @@
 #include <sys/ttydefaults.h>
 #undef TTYDEFCHARS
 
+#include <fcntl.h>
 #include <unistd.h>
 
 #if defined(__APPLE__)
@@ -47,6 +48,7 @@
 #include "core/os.h"
 #include "sdk/vardec.h"
 
+#include <optional>
 #include <tuple>
 
 static const char SHELL[] = "/bin/bash";
@@ -84,7 +86,12 @@ static int ReadWriteNonBinary(int sock, int pty_fd, fd_set& rfd) {
   }
   if (FD_ISSET(pty_fd, &rfd)) {
     char input{};
-    read(pty_fd, &input, 1);
+    const auto n = read(pty_fd, &input, 1);
+    if (n <= 0) {
+      // EOF or error (including EAGAIN once the slave has closed). Do not
+      // write a leftover NUL to the socket.
+      return 0;
+    }
     if (input == '\n') {
       VLOG(1) << "Performed LF -> CRLF translation.";
       write(sock, "\r\n", 2);
@@ -123,7 +130,41 @@ static int ReadWriteBinary(int sock, int pty_fd, fd_set& rfd) {
   return 0;
 }
 
-static void pump_stdio(int sock, int pty_fd, pid_t pid, bool binary) {
+// Copy any remaining child output to the socket after the process exits.
+// unzip -l and other short-lived programs often exit while most of their
+// listing is still sitting in the pty buffer.
+static void drain_pty_to_sock(int sock, int pty_fd, bool binary) {
+  if (pty_fd < 0) {
+    return;
+  }
+  const auto fl = fcntl(pty_fd, F_GETFL, 0);
+  if (fl >= 0) {
+    fcntl(pty_fd, F_SETFL, fl | O_NONBLOCK);
+  }
+  char buf[READ_SIZE];
+  for (;;) {
+    const auto n = read(pty_fd, buf, sizeof(buf));
+    if (n <= 0) {
+      break;
+    }
+    if (binary) {
+      write(sock, buf, n);
+      continue;
+    }
+    for (int i = 0; i < n; i++) {
+      if (buf[i] == '\n') {
+        write(sock, "\r\n", 2);
+      } else {
+        write(sock, &buf[i], 1);
+      }
+    }
+  }
+}
+
+// Pumps stdio until the child exits or the socket closes.
+// Returns the child's wait status if this function reaped it, otherwise
+// nullopt so the caller can still waitpid.
+static std::optional<int> pump_stdio(int sock, int pty_fd, pid_t pid, bool binary) {
   const auto max_fd = std::max<int>(sock, pty_fd) + 1;
   for (;;) {
     fd_set rfd;
@@ -139,6 +180,21 @@ static void pump_stdio(int sock, int pty_fd, pid_t pid, bool binary) {
       LOG(INFO) << "select returned <0";
       break;
     }
+
+    // Pump any available data before checking whether the child has
+    // exited. The previous order reaped unzip (and similar) first and
+    // returned with the listing still in the pty.
+    if (pty_fd != -1) {
+      // Only do this in STDIO mode.
+      if (binary) {
+        ReadWriteBinary(sock, pty_fd, rfd);
+      } else {
+        if (ReadWriteNonBinary(sock, pty_fd, rfd) == -1) {
+          return std::nullopt;
+        }
+      }
+    }
+
     // N.B. This has been copied to ExecSocket::process_active
     int status_code = 0;
     pid_t wp = waitpid(pid, &status_code, WNOHANG);
@@ -147,30 +203,18 @@ static void pump_stdio(int sock, int pty_fd, pid_t pid, bool binary) {
       VLOG(2) << "waitpid returned: " << wp << "; errno: " << errno;
       if (WIFEXITED(status_code)) {
         VLOG(1) << "child exited with code: " << WEXITSTATUS(status_code);
-        return;
-      }
-      if (WIFSIGNALED(status_code)) {
+      } else if (WIFSIGNALED(status_code)) {
         VLOG(1) << "child caught signal: " << WTERMSIG(status_code);
+        LOG(INFO) << "core dump? : " << WCOREDUMP(status_code);
       } else {
         LOG(INFO) << "Raw status_code: " << status_code;
+        LOG(INFO) << "core dump? : " << WCOREDUMP(status_code);
       }
-      LOG(INFO) << "core dump? : " << WCOREDUMP(status_code);
-      return;
-    }
-
-    if (pty_fd != -1) {
-      // Only do this in STDIO mode.
-      if (binary) {
-        ReadWriteBinary(sock, pty_fd, rfd);
-      } else {
-        if (ReadWriteNonBinary(sock, pty_fd, rfd) == -1) {
-          close(pty_fd);
-          return;
-        }
-      }
+      drain_pty_to_sock(sock, pty_fd, binary);
+      return status_code;
     }
   }
-
+  return std::nullopt;
 }
 
 static int wait_for_exit(pid_t pid) {
@@ -286,8 +330,13 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
     return 1;
   }
 
+  int result = 0;
+  bool reaped = false;
   if (flags & EFLAG_STDIO) {
-    pump_stdio(sock, pty, pid, (flags & EFLAG_BINARY));
+    if (const auto status = pump_stdio(sock, pty, pid, (flags & EFLAG_BINARY))) {
+      result = status.value();
+      reaped = true;
+    }
   } else if (exec_socket) {
     if (const auto sock = exec_socket->accept()) {
       DCHECK(bout.remoteIO());
@@ -304,8 +353,16 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
     }
   }
 
-  // Wait for child to exit.
-  const auto result = wait_for_exit(pid);
+  if (pty >= 0) {
+    close(pty);
+  }
+
+  // Wait for child to exit if the stdio pump did not already reap it.
+  // Reaping twice returns ECHILD and -1, which list_arc_out treats as
+  // failure and aborts the View after the first More? prompt.
+  if (!reaped) {
+    result = wait_for_exit(pid);
+  }
 
   // reengage comm stuff
   if (need_reopen_io) {

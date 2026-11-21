@@ -27,6 +27,8 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "common/remote_io.h"
+#include "core/file.h"
+#include "core/findfiles.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -415,7 +417,9 @@ bool play_sdf(const std::string& sound_filename, bool abortable) {
  * @param nAreaCode The area code to describe
  */
 std::string describe_area_code(int nAreaCode) {
-  TextFile file(FilePath(a()->config()->datadir(), REGIONS_DAT), "rt");
+  const auto candidate = FilePath(a()->config()->datadir(), REGIONS_DAT);
+  const auto path = FindFile(candidate).value_or(candidate);
+  TextFile file(path, "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";
@@ -445,7 +449,9 @@ std::string describe_area_code(int nAreaCode) {
 std::string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
   const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
   const auto filename = fmt::sprintf("%s.%-3d", REGIONS_DIR, nAreaCode);
-  TextFile file(FilePath(regions_dir, filename), "rt");
+  const auto candidate = FilePath(regions_dir, filename);
+  const auto path = FindFile(candidate).value_or(candidate);
+  TextFile file(path, "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";

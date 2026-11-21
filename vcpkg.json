@@ -1,6 +1,7 @@
 {
-    "name": "wwiv",
-    "version-string": "5.8.0",
+  "name": "wwiv",
+  "version-string": "5.8.0",
+  "builtin-baseline": "5ad826e734679a0c8f0993531e6101650dee8365",
   "dependencies": [
     "cereal",
     "fmt",
@@ -8,4 +9,4 @@
     "nlohmann-json",
     "gtest"
   ]
-  }
+}

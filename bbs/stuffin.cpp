@@ -110,6 +110,9 @@ std::string CommandLine::stuff_in() const {
       case 'U':
         os << a()->user()->name();
         break;
+      case 'V':
+        os << a()->user()->usernum();
+        break;
       // replacable params + everything else.
       default: {
         if (const auto it = args_.find(ch); it != std::end(args_)) {
@@ -135,6 +138,78 @@ std::string CommandLine::cmdline() const {
 
 void CommandLine::add(char key, std::string value) {
   args_.emplace(to_upper_case_char(key), value);
+}
+
+namespace {
+
+bool placeholder_is_quoted(const std::string& cmd, int n) {
+  if (n < 0 || n > 9) {
+    return false;
+  }
+  const auto digit = static_cast<char>('0' + n);
+  const auto dq = std::string("\"%") + digit + '"';
+  const auto sq = std::string("'%") + digit + '\'';
+  return cmd.find(dq) != std::string::npos || cmd.find(sq) != std::string::npos;
+}
+
+// Characters that must be quoted for bash -c / cmd.  * and ? are omitted so
+// shell globs in archiver %2 values (e.g. *.*) still expand.
+constexpr const char kShellMeta[] = " \t\n\r\"'\\$&;|<>(){}[]`!#~";
+
+bool needs_shell_quote(const std::string& s) {
+  return s.find_first_of(kShellMeta) != std::string::npos;
+}
+
+std::string quote_one_arg(const std::string& s) {
+  if (s.empty() || !needs_shell_quote(s)) {
+    return s;
+  }
+#ifdef _WIN32
+  // CreateProcess argument quoting: wrap in double quotes.
+  std::string out = "\"";
+  for (const auto c : s) {
+    if (c == '"') {
+      out += "\\\"";
+    } else {
+      out += c;
+    }
+  }
+  out += '"';
+  return out;
+#else
+  // POSIX: single quotes preserve every character except '.
+  std::string out = "'";
+  for (const auto c : s) {
+    if (c == '\'') {
+      out += "'\\''";
+    } else {
+      out += c;
+    }
+  }
+  out += '\'';
+  return out;
+#endif
+}
+
+} // namespace
+
+std::string quote_arg_for_command(const std::string& cmd_template, int n,
+                                  const std::string& value, bool split_tokens) {
+  if (value.empty() || placeholder_is_quoted(cmd_template, n)) {
+    return value;
+  }
+  if (!split_tokens) {
+    return quote_one_arg(value);
+  }
+  const auto parts = SplitString(value, " \t");
+  std::string out;
+  for (const auto& part : parts) {
+    if (!out.empty()) {
+      out.push_back(' ');
+    }
+    out.append(quote_one_arg(part));
+  }
+  return out;
 }
 
 }

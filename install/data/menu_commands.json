@@ -793,6 +793,11 @@
         },
         {
             "cat": "User",
+            "cmd": "colorconfig",
+            "help": "An alias for user:colors.\n  This alias is deprecated, please use user:colors."
+        },
+        {
+            "cat": "User",
             "cmd": "user:comptype",
             "help": "Allows the user to change their computer type"
         },

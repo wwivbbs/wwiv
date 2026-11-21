@@ -20,6 +20,7 @@
 
 #include "core/transaction.h"
 #include "sdk/conf/conf.h"
+#include "sdk/conf/conf_set.h"
 #include <string>
 
 namespace wwiv::bbs {
@@ -57,5 +58,10 @@ std::optional<char> select_conf(const std::string& prompt_text, wwiv::sdk::Confe
  * Select the conferences to which dirs and subs belong.
  */
 void edit_conf_subs(wwiv::sdk::Conference& conf);
+
+/**
+ * Toggle the conferences one sub or dir belongs to, from its edit screen.
+ */
+void edit_conf_set(wwiv::sdk::Conference& conf, wwiv::sdk::conf_set_t& cs);
 
 #endif

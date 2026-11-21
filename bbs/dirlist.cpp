@@ -113,7 +113,7 @@ void dirlist(int mode) {
                                             is ? firstp : firstp + 1, lastp);
           std::string ss = mmkey(MMKeyAreaType::dirs, true);
           if (isdigit(ss[0])) {
-            for (uint16_t i3 = 0; i3 < static_cast<uint16_t>(a()->dirs().size()); i3++) {
+            for (uint16_t i3 = 0; i3 < static_cast<uint16_t>(a()->udir.size()); i3++) {
               if (ss == a()->udir[i3].keys) {
                 a()->set_current_user_dir_num(i3);
                 os = a()->current_user_dir().subnum;
@@ -179,7 +179,7 @@ void dirlist(int mode) {
         is = false;
       }
       if (isdigit(ss.front())) {
-        for (uint16_t i3 = 0; i3 < a()->dirs().size(); i3++) {
+        for (uint16_t i3 = 0; i3 < a()->udir.size(); i3++) {
           if (ss == a()->udir[i3].keys) {
             a()->set_current_user_dir_num(i3);
             os = a()->current_user_dir().subnum;

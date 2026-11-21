@@ -276,6 +276,9 @@ private:
   bool last_key_local_{true};
   int nsp_{0};
   bool okskey_{true};
+  // Set when a remote 0x08 (BS) is received. Used to treat a later 0x7F as
+  // Delete on ANSI-BBS terminals such as SyncTERM (see translate_cbackspace).
+  bool remote_sent_bs_{false};
 
   std::chrono::duration<double> non_sysop_key_timeout_ = std::chrono::minutes(3);
   std::chrono::duration<double> default_key_timeout_ = std::chrono::minutes(3);

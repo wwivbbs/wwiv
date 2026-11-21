@@ -152,6 +152,11 @@ jobs:
         with:
           submodules: recursive
           
+      # vcpkg.json pins builtin-baseline to an older vcpkg commit, which needs
+      # the vcpkg submodule's history; checkout clones submodules shallow.
+      - name: Unshallow vcpkg submodule
+        run: git -C vcpkg fetch --unshallow
+
       - name: Get CMake
         uses: lukka/get-cmake@latest
       - name: Setup a new vcpkg
@@ -176,6 +181,7 @@ jobs:
         env:
           WWIV_ARCH: x86
           WWIV_RELEASE: 5.9.0
+          VCPKG_BINARY_SOURCES: clear
 
       - name: Build (Linux)
         if: ${{ matrix.os != 'windows-2022' }}
@@ -184,6 +190,7 @@ jobs:
         env:
           WWIV_ARCH: x86
           WWIV_RELEASE: 5.9.0
+          VCPKG_BINARY_SOURCES: clear
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3

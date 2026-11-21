@@ -136,3 +136,63 @@ TEST_F(StuffInTest, Add) {
   cm.add('z', "BAR");
   EXPECT_EQ(cm.cmdline(), "FOO BAR");
 }
+
+TEST(QuoteArgForCommand, QuotesAmpersand) {
+#ifdef _WIN32
+  const std::string expected = "\"foo&bar.zip\"";
+#else
+  const std::string expected = "'foo&bar.zip'";
+#endif
+  EXPECT_EQ(expected, wwiv::bbs::quote_arg_for_command("unzip -l %1", 1, "foo&bar.zip"));
+}
+
+TEST(QuoteArgForCommand, AlreadyDoubleQuotedLeftAlone) {
+  EXPECT_EQ("foo&bar.zip",
+            wwiv::bbs::quote_arg_for_command("unzip -l \"%1\"", 1, "foo&bar.zip"));
+}
+
+TEST(QuoteArgForCommand, AlreadySingleQuotedLeftAlone) {
+  EXPECT_EQ("foo&bar.zip",
+            wwiv::bbs::quote_arg_for_command("unzip -l '%1'", 1, "foo&bar.zip"));
+}
+
+TEST(QuoteArgForCommand, SafeNameUnquoted) {
+  EXPECT_EQ("wwiv.zip", wwiv::bbs::quote_arg_for_command("unzip -l %1", 1, "wwiv.zip"));
+}
+
+TEST(QuoteArgForCommand, EmptyUnchanged) {
+  EXPECT_EQ("", wwiv::bbs::quote_arg_for_command("unzip -l %1", 1, ""));
+}
+
+TEST(QuoteArgForCommand, GlobUnquoted) {
+  EXPECT_EQ("*.*", wwiv::bbs::quote_arg_for_command("zip -j %1 %2", 2, "*.*"));
+}
+
+TEST(QuoteArgForCommand, SplitTokensQuotesOnlyMetachar) {
+#ifdef _WIN32
+  const std::string expected = "\"a&b.diz\" DESC.SDI";
+#else
+  const std::string expected = "'a&b.diz' DESC.SDI";
+#endif
+  EXPECT_EQ(expected, wwiv::bbs::quote_arg_for_command("unzip -o %1 %2", 2,
+                                                      "a&b.diz DESC.SDI", true));
+}
+
+TEST(QuoteArgForCommand, QuotesEmbeddedSpaces) {
+#ifdef _WIN32
+  const std::string expected = "\"foo bar.zip\"";
+#else
+  const std::string expected = "'foo bar.zip'";
+#endif
+  EXPECT_EQ(expected, wwiv::bbs::quote_arg_for_command("unzip -l %1", 1, "foo bar.zip"));
+}
+
+TEST_F(StuffInTest, AmpersandFilenameInCommandLine) {
+  wwiv::bbs::CommandLine cl("unzip -l %1");
+  cl.args(wwiv::bbs::quote_arg_for_command("unzip -l %1", 1, "foo&bar.zip"));
+#ifdef _WIN32
+  EXPECT_EQ("unzip -l \"foo&bar.zip\"", cl.cmdline());
+#else
+  EXPECT_EQ("unzip -l 'foo&bar.zip'", cl.cmdline());
+#endif
+}
