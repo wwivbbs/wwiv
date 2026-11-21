@@ -23,6 +23,7 @@
 #include "common/quote.h"
 #include "core/stl.h"
 #include "fsed/model.h"
+#include "fsed/spell_ui.h"
 #include "fsed/view.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
@@ -123,15 +124,23 @@ bool FsedCommands::add(const FsedCommand& cmd) {
 static void show_fsed_menu(Context& ctx, FsedModel& ed, FsedView& view, MessageEditorData& data,
                            bool& done, bool& save) {
   view.fs().PutsCommandLine(
-      "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, "
-      "|#2T|#9=Title, |#2?|#9=Help): ");
+      "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2C|#9=Spell, "
+      "|#2D|#9=Debug, |#2T|#9=Title, |#2?|#9=Help): ");
   const auto cmd = std::toupper(view.fs().bgetch() & 0xff);
   view.ClearCommandLine();
   switch (cmd) {
   case 'S':
     view.ClearCommandLine();
     view.fs().PutsCommandLine("");
+    // Spell check first (when enabled), ESC there returns to the editor.
+    if (!fsed_spell_check(ctx, ed, view, spell_check_trigger_t::save)) {
+      break;
+    }
     done = save = true;
+    break;
+  case 'C':
+    view.ClearCommandLine();
+    fsed_spell_check(ctx, ed, view, spell_check_trigger_t::menu);
     break;
   case 'A':
     done = true;
