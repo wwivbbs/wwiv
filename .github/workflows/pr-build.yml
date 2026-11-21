@@ -27,17 +27,20 @@ jobs:
         include:
           - os: ubuntu-22.04
             preset: linux-debug
-            # These fail on main today (the main CI build ignores test
-            # failures). Excluded so PRs are judged on new failures only;
-            # remove each one once it is fixed.
-            ctest_exclude: '^(BasicTest\.Smoke_Fail|DateTime\.MinusOne)$'
           - os: windows-2022
             preset: windows-x86-debug
-            ctest_exclude: '^BasicTest\.Smoke_Fail$'
     runs-on: ${{ matrix.os }}
     env:
       # Matches the main CI build; the x-gha binary cache is broken.
       VCPKG_BINARY_SOURCES: clear
+      # These tests fail on main today (the main CI build ignores test
+      # failures). Excluded so PRs are judged on new failures only; remove
+      # each one once it is fixed.
+      #  - BasicTest.Smoke_Fail: expects no output, but script errors are
+      #    now echoed.
+      #  - DateTime.MinusOne: from_time_t(-1) is clamped to t=1, which is
+      #    1969-12-31 only west of UTC; the runners are on UTC.
+      CTEST_EXCLUDE: '^(BasicTest\.Smoke_Fail|DateTime\.MinusOne)$'
 
     steps:
       - name: Check out repository code
@@ -78,4 +81,4 @@ jobs:
         run: cp install/platform/win32/cl32.dll _build/${{ matrix.preset }}/
 
       - name: Test
-        run: ctest --preset ${{ matrix.preset }} --exclude-regex "${{ matrix.ctest_exclude }}"
+        run: ctest --preset ${{ matrix.preset }} --exclude-regex '${{ env.CTEST_EXCLUDE }}'
