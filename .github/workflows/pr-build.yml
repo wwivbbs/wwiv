@@ -50,8 +50,13 @@ jobs:
 
       # vcpkg.json pins builtin-baseline to an older vcpkg commit, which needs
       # the vcpkg submodule's history; checkout clones submodules shallow.
+      # Self-hosted runners keep their workspace, so it may already be complete.
       - name: Unshallow vcpkg submodule
-        run: git -C vcpkg fetch --unshallow
+        shell: bash
+        run: |
+          if [ "$(git -C vcpkg rev-parse --is-shallow-repository)" = "true" ]; then
+            git -C vcpkg fetch --unshallow
+          fi
 
       - name: Get CMake and Ninja
         uses: lukka/get-cmake@latest
