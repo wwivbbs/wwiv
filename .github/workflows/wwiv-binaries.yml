@@ -176,6 +176,7 @@ jobs:
         env:
           WWIV_ARCH: x86
           WWIV_RELEASE: 5.9.0
+          VCPKG_BINARY_SOURCES: clear
 
       - name: Build (Linux)
         if: ${{ matrix.os != 'windows-2022' }}
@@ -184,6 +185,7 @@ jobs:
         env:
           WWIV_ARCH: x86
           WWIV_RELEASE: 5.9.0
+          VCPKG_BINARY_SOURCES: clear
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
