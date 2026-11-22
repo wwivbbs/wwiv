@@ -2,7 +2,9 @@
 # Copyright (C)2023, WWIV Software Services
 #
 
-name: WWIV 5.10
+# GitHub lists every branch's runs of this file under main's `name:`, so it
+# has no version in it. Each run's title (`run-name:`) has the version.
+name: WWIV Binaries
 run-name: WWIV 5.10 CI
 
 # ** IMPORTANT: ONLY allow on push events here since WWIV
