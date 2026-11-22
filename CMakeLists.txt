@@ -8,6 +8,12 @@ if(POLICY CMP0092)
   # MSVC warning flags are not in CMAKE_<LANG>_FLAGS by default.
   cmake_policy(SET CMP0092 NEW)
 endif()
+if(POLICY CMP0141)
+  # MSVC debug info format is chosen by CMAKE_MSVC_DEBUG_INFORMATION_FORMAT,
+  # which cmake/BuildSpeed.cmake uses to select /Z7 for ccache/sccache. The
+  # default is unchanged (/Zi for Debug). Must be set before project().
+  cmake_policy(SET CMP0141 NEW)
+endif()
 
 # Required git submodules. Fail early with a useful message instead of a
 # confusing error later on.
@@ -60,6 +66,8 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include_directories(${CMAKE_SOURCE_DIR})
 
 include(Common)
+# ccache/sccache and mold/lld, when installed. Before any targets are created.
+include(BuildSpeed)
 include(FindASan)
 find_package(fmt CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
@@ -101,6 +109,9 @@ if(WIN32 OR OS2)
   add_definitions(-DPDC_WIDE)
   add_subdirectory(deps/pdcurses EXCLUDE_FROM_ALL)
 endif()
+
+# Targets for third-party code that has no CMakeLists.txt of its own (my_basic).
+add_subdirectory(deps)
 
 #if (NOT OS2)
 set(WWIV_BUILD_WWIVD ON)
@@ -188,7 +199,9 @@ endif()
       message(DEBUG "Installing Platform Specific File: ${file}")
       INSTALL(FILES "${file}" DESTINATION .)
     endforeach()
-    INSTALL(FILES "${CL32_DLL}" DESTINATION .)
+    if (CL32_DLL)
+      INSTALL(FILES "${CL32_DLL}" DESTINATION .)
+    endif()
 
   elseif(OS2)
     set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/os2")

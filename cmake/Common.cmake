@@ -11,10 +11,14 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(WWIV_BUILD_TESTS "Build WWIV test programs" ON)
 option(WWIV_SSH_CRYPTLIB "Include support for SSH using Cryptlib" ON)
-# WWIV_HUNSPELL and WWIV_HUNSPELL_VCPKG are in the top level CMakeLists.txt
-# since vcpkg needs them before project().
-option(WWIV_ZIP_INSTALL_FILES "Create the zip files for data, gfiles, etc" ON)
-option(WWIV_INSTALL "Create install packages for both zip files and binaries." ON)
+# Packaging is OFF by default so developer builds skip it. Release builds turn
+# both on: the *-release presets and builds/jenkins/wwiv/build* (used by CI).
+option(WWIV_INSTALL "Create install packages for both zip files and binaries." OFF)
+option(WWIV_ZIP_INSTALL_FILES "Create the zip files for data, gfiles, etc. Requires WWIV_INSTALL." OFF)
+if(WWIV_ZIP_INSTALL_FILES AND NOT WWIV_INSTALL)
+  message(WARNING "WWIV_ZIP_INSTALL_FILES=ON is ignored because WWIV_INSTALL is OFF. "
+                  "Pass -DWWIV_INSTALL=ON as well to build the zip files.")
+endif()
 option(WWIV_USE_PIPES "Enable Named Pipes support for WWIV." ON)
 
 ############################################################################### 
@@ -58,7 +62,14 @@ set(CPACK_NSIS_URL_INFO_ABOUT "http://www.wwivbbs.org")
 set(CPACK_NSIS_CONTACT "http://docs.wwivbbs.org")
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "")
-include(CPack)
+# Only set up cpack when there are install rules to package.  Otherwise cpack
+# would quietly make an empty archive.  Without CPackConfig.cmake it fails
+# ("CPack project name not specified"); configure with -DWWIV_INSTALL=ON.
+if(WWIV_INSTALL)
+  include(CPack)
+else()
+  message(STATUS "WWIV_INSTALL is OFF: cpack is not available in this build directory")
+endif()
 
 
 message(STATUS "WWIV Build Number: ${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}")
@@ -185,3 +196,33 @@ IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   message(VERBOSE "Defining _DEBUG macro for debug build")
   ADD_DEFINITIONS(-D_DEBUG)
 ENDIF()
+
+# On Windows, copy the DLLs that a target links against (e.g. cryptlib's
+# cl32.dll) next to the target's executable after it is built, so it can be
+# run (and its tests discovered and run by ctest) straight from the build
+# directory.
+#
+# Only call this for targets that link at least one imported SHARED library,
+# since "cmake -E copy_if_different" fails when given no files.
+#
+# Note: call this before gtest_discover_tests() for the same target, so the
+# DLLs are in place when test discovery runs the executable.
+function(wwiv_copy_runtime_dlls target)
+  if (NOT WIN32)
+    return()
+  endif()
+  if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.21")
+    set(dlls "$<TARGET_RUNTIME_DLLS:${target}>")
+  elseif (TARGET CL345_LIB)
+    # Older CMake has no $<TARGET_RUNTIME_DLLS>; cryptlib is the one we need.
+    set(dlls "$<TARGET_FILE:CL345_LIB>")
+  else()
+    return()
+  endif()
+  add_custom_command(
+    TARGET ${target} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${dlls} "$<TARGET_FILE_DIR:${target}>"
+    COMMAND_EXPAND_LISTS
+    COMMENT "Copying runtime DLLs next to ${target}"
+  )
+endfunction()

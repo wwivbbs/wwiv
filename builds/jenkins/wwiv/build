@@ -40,6 +40,10 @@ ${CMAKE_BIN} -G "Ninja" \
       -DWWIV_ARCH=${WWIV_ARCH}  \
       -DWWIV_BUILD_NUMBER=${BUILD_NUMBER} \
       -DWWIV_DISTRO=${WWIV_DISTRO} \
+      -DWWIV_INSTALL=ON \
+      -DWWIV_ZIP_INSTALL_FILES=ON \
+      -DWWIV_USE_COMPILER_CACHE=OFF \
+      -DWWIV_USE_FAST_LINKER=OFF \
       ${WORKSPACE} || exit /b
 
 ${CMAKE_BIN} --build . --config Debug

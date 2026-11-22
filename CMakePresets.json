@@ -31,7 +31,11 @@
       "name": "windows-x86-release",
       "displayName": "Windows x86 Release",
       "inherits": "windows-base",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "WWIV_INSTALL": "ON",
+        "WWIV_ZIP_INSTALL_FILES": "ON"
+      }
     },
     {
       "name": "linux-base",
@@ -54,7 +58,11 @@
       "name": "linux-release",
       "displayName": "Linux Release",
       "inherits": "linux-base",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "WWIV_INSTALL": "ON",
+        "WWIV_ZIP_INSTALL_FILES": "ON"
+      }
     }
   ],
   "buildPresets": [

@@ -54,6 +54,29 @@ preset builds into `_build/<preset-name>`.
 
 WWIV is built as a 32-bit (x86) program on Windows.
 
+**Installing the prerequisites:** if you don't have them yet, you can install
+Git and Visual Studio 2022 Community with the C++ workload (which includes CMake
+and Ninja) using `winget`:
+
+```bat
+winget install --id Git.Git -e
+winget install --id Microsoft.VisualStudio.2022.Community -e --override "--passive --wait --add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended"
+```
+
+If you'd rather not use the ones bundled with Visual Studio, CMake and Ninja are
+`winget install --id Kitware.CMake -e` and `winget install --id Ninja-build.Ninja -e`.
+
+**Checking the prerequisites:** from the `wwiv` folder, run:
+
+```bat
+powershell -ExecutionPolicy Bypass -File builds\win\check-prereqs.ps1
+```
+
+It checks for Visual Studio 2022 (17.2) or newer (or the Build Tools) with the
+C++ tools, CMake (new enough for the presets), Ninja, Git and the git
+submodules. It prints a PASS or FAIL line for each, with how to fix any
+failures, and exits non-zero if anything is missing.
+
 **From Visual Studio:** choose *File → Open → Folder...* and pick your `wwiv`
 folder. Visual Studio reads `CMakePresets.json`; pick `Windows x86 Debug` in the
 configuration drop-down on the toolbar, wait for the configure to finish (the
@@ -68,13 +91,15 @@ cmake --preset windows-x86-debug
 cmake --build --preset windows-x86-debug
 ```
 
-To run the tests, copy the cryptlib DLL next to the build first. The tests need it
-and the build doesn't copy it yet:
+To run the tests:
 
 ```bat
-copy install\platform\win32\cl32.dll _build\windows-x86-debug\
 ctest --preset windows-x86-debug
 ```
+
+The build copies cryptlib's DLL (`cl32.dll`, from `deps\cl345`) next to every
+program that needs it (`bbs.exe` and `bbs_tests.exe`), so there is nothing to copy
+by hand.
 
 ### Linux
 
@@ -141,6 +166,47 @@ ln -s $HOME/git/wwiv/builds/tools/linux/use-built-bin.sh
 ./use-built-bin.sh $HOME/git/wwiv/_build/linux-debug bbs wwivd wwivconfig network network?
 ```
 
+### Packaging (release builds)
+
+Packaging is off by default, so the debug presets and plain `cmake` configures
+only build the programs. Two CMake options turn it on:
+
+Option | What it does
+------ | ------------
+`WWIV_INSTALL` | Adds the `install` rules (binaries, platform files, docs) that `cmake --install` and `cpack` use.
+`WWIV_ZIP_INSTALL_FILES` | Also builds `data.zip`, `gfiles.zip`, `menus.zip`, etc. into `<build>/release`. Needs `WWIV_INSTALL`.
+
+The `windows-x86-release` and `linux-release` presets, and the release scripts in
+`builds/jenkins/wwiv` (used by CI), turn both on. To package any other build, add
+`-DWWIV_INSTALL=ON -DWWIV_ZIP_INSTALL_FILES=ON` when you configure, then run
+`cpack -G ZIP` (or `-G TGZ`) in the build directory. Without `WWIV_INSTALL`,
+`cpack` fails with `CPack Error: CPack project name not specified`.
+
+You also need the zip files to set up a new test BBS from your build:
+wwivconfig unpacks `data.zip` and `inifiles.zip` when it creates a new BBS, so
+configure that build directory with both options first.
+
+These are only defaults for new build directories. CMake keeps the values
+already in an existing `CMakeCache.txt`, so a `_build` or `out` directory
+configured before this change still has both ON. Delete the cache, or pass
+`-DWWIV_INSTALL=OFF -DWWIV_ZIP_INSTALL_FILES=OFF`, to pick up the new defaults.
+
+### Faster builds
+
+The build uses these automatically when they are installed; nothing else to
+configure. Re-run the configure step after installing one.
+
+Tool | What it does
+---- | ------------
+[ccache](https://ccache.dev/) or [sccache](https://github.com/mozilla/sccache) | Caches compiled objects, so rebuilding unchanged files (after switching branches, or in a fresh build directory) is nearly instant. On Linux: `sudo apt install ccache`. With MSVC this needs CMake 3.25 or newer, and the build then puts debug info in the object files (`/Z7`) instead of a shared PDB.
+[mold](https://github.com/rui314/mold) or lld | A much faster linker than the default GNU `ld` (Linux only). On Debian/Ubuntu: `sudo apt install mold` (needs GCC 12+) or `sudo apt install lld`.
+
+To turn them off, configure with `-DWWIV_USE_COMPILER_CACHE=OFF` or
+`-DWWIV_USE_FAST_LINKER=OFF`. The release build scripts in `builds/jenkins/wwiv`
+turn both off, so released binaries don't depend on what the build machine has
+installed. Building only what you are working on also helps,
+e.g. `cmake --build --preset linux-debug --target bbs`.
+
 ### Troubleshooting
 
 * **"Missing ... the git submodules have not been checked out"**: run
@@ -151,6 +217,12 @@ ln -s $HOME/git/wwiv/builds/tools/linux/use-built-bin.sh
 * **Windows: wrong architecture or link errors about x64**: make sure you are in
   the *x86* Native Tools prompt, not the x64 one. Then delete
   `_build/<preset>` and configure again.
+* **Problems with cryptlib**: cryptlib is only used for SSH support in the BBS.
+  You can build without it by turning it off when you configure, e.g.
+  `cmake --preset windows-x86-debug -DWWIV_SSH_CRYPTLIB=OFF` (or
+  `cmake --preset linux-debug -DWWIV_SSH_CRYPTLIB=OFF`). Everything else builds
+  and works as normal; the BBS just won't accept SSH connections. On Linux this
+  also skips the cryptlib `make` step.
 
 ## Building on ChromeOS/ChromeBook 
 

@@ -202,7 +202,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ===============================================================================
-** cryptlib 3.4.2 (http://www.cryptlib.com/security-software/download-form/download-security-toolkit)
+** cryptlib 3.4.5 (https://github.com/cryptlib/cryptlib)
 
 cryptlib is distributed under a dual license that allows free, open-source use
 under a GPL-compatible license and closed-source use under a standard
