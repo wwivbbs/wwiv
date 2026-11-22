@@ -198,11 +198,14 @@ if (WWIV_BUILD_TESTS)
       bputs_test.cpp
       bputch_test.cpp
       datetime_test.cpp
+      dropfile_test.cpp
       dsz_test.cpp
       email_test.cpp
       input_test.cpp
       make_abs_test.cpp
+      message_file_test.cpp
       msgbase1_test.cpp
+      netsup_test.cpp
       pause_test.cpp
       printfile_test.cpp
       quote_test.cpp
@@ -212,6 +215,7 @@ if (WWIV_BUILD_TESTS)
       utility_test.cpp
       wutil_test.cpp
       xfer_test.cpp
+      xferovl_test.cpp
       basic/basic_test.cpp
       basic/util_test.cpp
     )

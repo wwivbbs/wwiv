@@ -49,7 +49,9 @@
 #include "sdk/files/allow.h"
 #include "sdk/files/files.h"
 
+#include <optional>
 #include <string>
+#include <vector>
 
 using namespace wwiv::core;
 using namespace wwiv::local::io;
@@ -399,6 +401,63 @@ bool maybe_upload(const std::string& file_name, int directory_num, const std::st
   return true;
 }
 
+std::vector<UploadListEntry> parse_upload_list(const std::vector<std::string>& lines, int type) {
+  std::vector<UploadListEntry> entries;
+  for (const auto& line : lines) {
+    if (line.empty() || line[0] < SPACE) {
+      continue;
+    }
+    if (line[0] == SPACE) {
+      // An extended description line for the previous file. Leading
+      // whitespace, and an optional '|' margin marker, are dropped.
+      if (entries.empty()) {
+        continue;
+      }
+      auto start = line.find_first_not_of(" \t");
+      if (start != std::string::npos && line[start] == '|') {
+        start = line.find_first_not_of(" \t", start + 1);
+      }
+      const auto text = start == std::string::npos ? std::string{} : line.substr(start);
+      entries.back().extended_description.append(text.substr(0, text.find('\n'))).append("\r\n");
+      continue;
+    }
+
+    // Splits off the next token the same way strtok does: skip leading
+    // delimiters, then take everything up to the next delimiter.
+    std::string::size_type pos = 0;
+    auto next_token = [&line, &pos](const char* delims) -> std::optional<std::string> {
+      pos = line.find_first_not_of(delims, pos);
+      if (pos == std::string::npos) {
+        return std::nullopt;
+      }
+      const auto end = line.find_first_of(delims, pos);
+      auto token = line.substr(pos, end == std::string::npos ? end : end - pos);
+      pos = end == std::string::npos ? line.size() : end + 1;
+      return token;
+    };
+
+    const auto fn = next_token(" \t\n");
+    if (!fn) {
+      continue;
+    }
+    auto has_optional_words = true;
+    for (auto i = 0; has_optional_words && i < type; i++) {
+      has_optional_words = next_token(" \t\n").has_value();
+    }
+    if (!has_optional_words) {
+      continue;
+    }
+    const auto description = next_token("\n");
+    if (!description) {
+      continue;
+    }
+    const auto start = description->find_first_not_of(" \t");
+    entries.push_back(
+        {*fn, start == std::string::npos ? std::string{} : description->substr(start), {}});
+  }
+  return entries;
+}
+
 /* This assumes the file holds listings of files, one per line, to be
  * uploaded.  The first word (delimited by space/tab) must be the filename.
  * after the filename are optional tab/space separated words (such as file
@@ -408,107 +467,42 @@ bool maybe_upload(const std::string& file_name, int directory_num, const std::st
  * the optional words (size, date/time) are ignored completely.
  */
 void upload_files(const std::string& file_name, int directory_num, int type) {
-  char s[255], *fn1, *description = nullptr, *ext = nullptr;
-  bool abort = false;
-  bool ok = true;
-
-  std::string last_fn;
   const auto& dir = a()->dirs()[a()->udir[directory_num].subnum];
   dliscan1(dir);
 
   auto file = std::make_unique<TextFile>(file_name, "r");
   if (!file->IsOpen()) {
     const auto default_fn = FilePath(dir.path, file_name);
-    file.reset(new TextFile(default_fn, "r"));
+    file = std::make_unique<TextFile>(default_fn, "r");
   }
   if (!file->IsOpen()) {
     bout.print("{}: not found.\r\n", file_name);
-  } else {
-    while (ok && file->ReadLine(s, 250)) {
-      if (s[0] < SPACE) {
-        continue;
-      }
-      if (s[0] == SPACE) {
-        if (!last_fn.empty()) {
-          if (!ext) {
-            ext = static_cast<char*>(BbsAllocA(4096L));
-            *ext = 0;
-          }
-          for (description = s; *description == ' ' || *description == '\t'; description++)
-            ;
-          if (*description == '|') {
-            do {
-              description++;
-            }
-            while (*description == ' ' || *description == '\t');
-          }
-          fn1 = strchr(description, '\n');
-          if (fn1) {
-            *fn1 = 0;
-          }
-          strcat(ext, description);
-          strcat(ext, "\r\n");
-        }
-      } else {
-        int ok1 = 0;
-        fn1 = strtok(s, " \t\n");
-        if (fn1) {
-          ok1 = 1;
-          for (int i = 0; ok1 && (i < type); i++) {
-            if (strtok(nullptr, " \t\n") == nullptr) {
-              ok1 = 0;
-            }
-          }
-          if (ok1) {
-            description = strtok(nullptr, "\n");
-            if (!description) {
-              ok1 = 0;
-            }
-          }
-        }
-        if (ok1) {
-          if (!last_fn.empty() && ext && *ext) {
-            auto f = a()->current_file_area()->ReadFile(1);
-            if (iequals(last_fn, f.aligned_filename())) {
-              add_to_file_database(f);
-              if (a()->current_file_area()->UpdateFile(f, 1, ext)) {
-                a()->current_file_area()->Save();
-              }
-            }
-            *ext = 0;
-          }
-          while (*description == ' ' || *description == '\t') {
-            ++description;
-          }
-          ok = maybe_upload(fn1, directory_num, description);
-          bin.checka(&abort);
-          if (abort) {
-            ok = false;
-          }
-          if (ok) {
-            last_fn = fn1;
-            last_fn = aligns(last_fn);
-            if (ext) {
-              *ext = 0;
-            }
-          }
-        }
-      }
-    }
-    file->Close();
-    if (ok && last_fn[0] && ext && *ext) {
-      auto f = a()->current_file_area()->ReadFile(1);
-      if (iequals(last_fn, f.aligned_filename())) {
-        add_to_file_database(f);
-        if (a()->current_file_area()->UpdateFile(f, 1, ext)) {
-          a()->current_file_area()->Save();
-        }
-      }
-    }
+    return;
   }
+  std::vector<std::string> lines;
+  char s[255];
+  while (file->ReadLine(s, 250)) {
+    lines.emplace_back(s);
+  }
+  file->Close();
 
-  if (ext) {
-    free(ext);
+  for (const auto& entry : parse_upload_list(lines, type)) {
+    const auto ok = maybe_upload(entry.file_name, directory_num, entry.description);
+    auto abort = false;
+    bin.checka(&abort);
+    if (!ok || abort) {
+      break;
+    }
+    if (entry.extended_description.empty()) {
+      continue;
+    }
+    auto f = a()->current_file_area()->ReadFile(1);
+    if (iequals(aligns(entry.file_name), f.aligned_filename())) {
+      add_to_file_database(f);
+      if (a()->current_file_area()->UpdateFile(f, 1, entry.extended_description)) {
+        a()->current_file_area()->Save();
+      }
+    }
   }
 }
 
