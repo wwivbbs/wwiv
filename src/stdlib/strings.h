@@ -1,6 +1,8 @@
 #pragma once
 
 #include "value.h"
+#include <string>
+#include <vector>
 
 namespace wwivbasic::stdlib {
 

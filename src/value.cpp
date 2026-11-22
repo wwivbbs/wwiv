@@ -1,7 +1,7 @@
 #include "value.h"
-#include "core/textfile.h"
+
 #include "core/stl.h"
-#include "executor.h"
+
 #include "utils.h"
 #include "fmt/format.h"
 
@@ -16,27 +16,23 @@ using namespace wwiv::stl;
 
 namespace wwivbasic {
 
-Value::Value(const std::any& a) {
+Value::Value(const std::any& a) : value_(std::string()), type(Type::STRING) {
   if (!a.has_value()) {
-    debug = "WTF";
     return;
   }
-  if (a.type() == typeid(bool)) {
+  if (a.type() == typeid(Value)) {
+    *this = std::any_cast<Value>(a);
+  } else if (a.type() == typeid(bool)) {
     type = Type::BOOLEAN;
     value_ = std::any_cast<bool>(a);
-    debug = fmt::format("{}", std::get<bool>(value_));
   } else if (a.type() == typeid(int)) {
     type = Type::INTEGER;
     value_ = std::any_cast<int>(a);
-    debug = fmt::format("{}", std::get<int>(value_));
   } else if (a.type() == typeid(std::string)) {
     type = Type::STRING;
     value_ = std::any_cast<std::string>(a);
-    debug = fmt::format("{}", std::get<std::string>(value_));
   } else {
-    type = Type::STRING;
-    debug = fmt::format("WTF! {}", a.type().name());
-    value_ = std::any_cast<std::string>(a);
+    throw BasicError(fmt::format("Internal error: unexpected value type: {}", a.type().name()));
   }
 }
 
@@ -110,7 +106,7 @@ Value Value::operator+(const Value& that) const {
   case Type::INTEGER:
     return Value(toInt() + that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that));
+    return Value(fmt::format("{}{}", toString(), that.toString()));
   }
   return Value(false);
 }
@@ -122,7 +118,7 @@ Value Value::operator-(const Value& that) const {
   case Type::INTEGER:
     return Value(toInt() - that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that));
+    return Value(fmt::format("{}{}", toString(), that.toString()));
   }
   return Value(false);
 }
@@ -134,7 +130,7 @@ Value Value::operator*(const Value& that) const {
   case Type::INTEGER:
     return Value(toInt() * that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that)); // ????!
+    return Value(fmt::format("{}{}", toString(), that.toString())); // ????!
   }
   return Value(false);
 }
@@ -144,9 +140,12 @@ Value Value::operator/(const Value& that) const {
   case Type::BOOLEAN:
     return Value(false); // TODO WARN
   case Type::INTEGER:
+    if (that.toInt() == 0) {
+      throw BasicError("Division by zero");
+    }
     return Value(toInt() / that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that));
+    return Value(fmt::format("{}{}", toString(), that.toString()));
   }
   return Value(false);
 }
@@ -156,9 +155,12 @@ Value Value::operator%(const Value& that) const {
   case Type::BOOLEAN:
     return Value(false); // TODO WARN
   case Type::INTEGER:
+    if (that.toInt() == 0) {
+      throw BasicError("Division by zero");
+    }
     return Value(toInt() % that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that));
+    return Value(fmt::format("{}{}", toString(), that.toString()));
   }
   return Value(false);
 }
@@ -206,7 +208,7 @@ Value Value::operator||(const Value& that) const {
   case Type::INTEGER:
     return Value(toInt() || that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that)); // Is this right
+    return Value(fmt::format("{}{}", toString(), that.toString())); // Is this right
   }
   return Value(false);
 }
@@ -218,7 +220,7 @@ Value Value::operator&&(const Value& that) const {
   case Type::INTEGER:
     return Value(toInt() && that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that)); // Is this right
+    return Value(fmt::format("{}{}", toString(), that.toString())); // Is this right
   }
   return Value(false);
 }

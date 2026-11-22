@@ -1,33 +1,12 @@
 lexer grammar BasicLexer;
 
-// These are all supported lexer sections:
-
-// Lexer file header. Appears at the top of h + cpp files. Use e.g. for copyrights.
-@lexer::header {/* lexer header section */}
-
-// Appears before any #include in h + cpp files.
-@lexer::preinclude {/* lexer precinclude section */}
-
 // Follows directly after the standard #includes in h + cpp files.
 @lexer::postinclude {
-/* lexer postinclude section */
 #ifndef _WIN32
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 }
 
-// Directly preceds the lexer class declaration in the h file (e.g. for additional types etc.).
-@lexer::context {/* lexer context section */}
-
-// Appears in the public part of the lexer in the h file.
-@lexer::members {/* public lexer declarations section */
-}
-
-// Appears in the private part of the lexer in the h file.
-@lexer::declarations {/* private lexer declarations/members section */}
-
-// Appears in line with the other class member definitions in the cpp file.
-@lexer::definitions {/* lexer definitions section */}
 options { caseInsensitive=true; }
 
 channels { CommentsChannel, DirectiveChannel }
@@ -37,13 +16,12 @@ tokens {
 }
 
 INT: Digit+;
-Digit: [0-9];
+fragment Digit: [0-9];
 
 TRUE: 'TRUE';
 FALSE: 'FALSE';
 
-// BinaryOperators
-
+// Operators
 LT: '<';
 LE: '<=';
 GT:  '>';
@@ -68,11 +46,10 @@ RPAREN: ')';
 COMMA: ',';
 DOT: '.';
 AT: '@';
- 
 
 // KEYWORDS
 
-// methods
+// procedures
 DEF : 'DEF';
 ENDDEF : 'ENDDEF';
 RETURN : 'RETURN';
@@ -89,14 +66,27 @@ NEXT: 'NEXT';
 STEP: 'STEP';
 TO: 'TO';
 
+WHILE: 'WHILE';
+WEND: 'WEND';
+DO: 'DO';
+UNTIL: 'UNTIL';
+
+EXIT: 'EXIT';
+BREAK: 'BREAK';
+END: 'END';
+
+PRINT: 'PRINT';
+
 // modules
 MODULE: 'MODULE';
 IMPORT: 'IMPORT';
 
-STRING options { caseInsensitive=false; } : '"' .*? '"';
-ID: LETTER (LETTER | '.' | '0'..'9')*;
+STRING options { caseInsensitive=false; } : '"' ~["\r\n]* '"';
+ID: (LETTER | '_') (LETTER | '_' | '.' | Digit)*;
 fragment LETTER : [A-Z];
 
-Comment : '\'' ~[\r\n]* '\r'? '\n' -> channel(CommentsChannel);
-WS: [ \t]+ -> channel(99);
-NEWLINE: WS? ('\r'? '\n') WS?;
+// A comment runs to the end of the line; the newline itself stays a NEWLINE
+// token so the statement before the comment is still terminated.
+COMMENT : '\'' ~[\r\n]* -> channel(CommentsChannel);
+WS: [ \t]+ -> channel(HIDDEN);
+NEWLINE: ('\r'? '\n');

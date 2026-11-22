@@ -1,39 +1,39 @@
 #pragma once
 
-#include "BasicLexer.h"
-#include "BasicParser.h"
-#include "core/stl.h"
 #include "fmt/format.h"
 
 #include <any>
-#include <deque>
 #include <iosfwd>
-#include <filesystem>
-#include <functional>
-#include <map>
-#include <memory>
+#include <stdexcept>
 #include <string>
-#include <type_traits>
+#include <string_view>
 #include <variant>
-#include <vector>
 
 namespace wwivbasic {
+
+// An error raised while running a script. The executor fills in the source
+// location of the statement being executed if it was not already set.
+class BasicError : public std::runtime_error {
+public:
+  explicit BasicError(const std::string& msg) : std::runtime_error(msg) {}
+  std::string file;
+  size_t line{0};
+};
 
 class Value {
 public:
   enum class Type { BOOLEAN, INTEGER, STRING };
 
-  Value() : value_(std::string()), type(Type::STRING) { debug = ""; }
-  explicit Value(bool b) : value_(b), type(Type::BOOLEAN) { debug = fmt::format("{}", b); }
-  explicit Value(int i) : value_(i), type(Type::INTEGER) { debug = fmt::format("{}", i); }
-  explicit Value(const std::string& s) : value_(s), type(Type::STRING) { debug = s; }
-  explicit Value(const char* s) : value_(std::string(s)), type(Type::STRING) { debug = s; }
+  Value() : value_(std::string()), type(Type::STRING) {}
+  explicit Value(bool b) : value_(b), type(Type::BOOLEAN) {}
+  explicit Value(int i) : value_(i), type(Type::INTEGER) {}
+  explicit Value(const std::string& s) : value_(s), type(Type::STRING) {}
+  explicit Value(const char* s) : value_(std::string(s)), type(Type::STRING) {}
   explicit Value(const std::any& a);
 
   int set(int i) {
     value_ = i;
     type = Type::INTEGER;
-    debug = fmt::format("{}", i);
     return i;
   }
 
@@ -41,9 +41,10 @@ public:
     auto s = std::string(sv);
     value_ = s;
     type = Type::STRING;
-    debug = fmt::format("{}", s);
     return s;
   }
+
+  Type value_type() const { return type; }
 
   bool toBool() const;
   int toInt() const;
@@ -71,20 +72,14 @@ public:
 private:
   std::variant<bool, int, std::string> value_;
   Type type;
-  std::string debug;
-
 };
 
 std::ostream& operator<<(std::ostream& os, const Value& v);
 
-
 } // namespace wwivbasic
 
-template <> class fmt::formatter<wwivbasic::Value> {
-public:
-  constexpr auto parse(fmt::format_parse_context& ctx) { return ctx.begin(); }
-  template <typename Context>
-  constexpr auto format(wwivbasic::Value const& v, Context& ctx) const {
-    return format_to(ctx.out(), "{}", v.toString());
+template <> struct fmt::formatter<wwivbasic::Value> : fmt::formatter<std::string> {
+  auto format(const wwivbasic::Value& v, format_context& ctx) const {
+    return fmt::formatter<std::string>::format(v.toString(), ctx);
   }
 };

@@ -10,291 +10,370 @@ namespace wwivbasic {
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+// Deep enough for any reasonable script, shallow enough not to overflow the
+// C++ stack on runaway recursion.
+static constexpr int kMaxCallDepth = 1000;
+
+Value ExecutionVisitor::eval(BasicParser::ExprContext* e) {
+  return Value(visit(e));
+}
+
 std::any ExecutionVisitor::visitMain(BasicParser::MainContext* context) {
   // When starting, reset the module to the root.
   ec_.module = ec_.root;
+  flow_ = Flow::NORMAL;
+  for (auto* child : context->children) {
+    try {
+      visit(child);
+    } catch (BasicError& e) {
+      // Top-level IMPORT/MODULE are not statements, so give their errors a
+      // location here.
+      if (auto* rule = dynamic_cast<antlr4::ParserRuleContext*>(child); rule && e.line == 0) {
+        e.line = rule->getStart()->getLine();
+        e.file = filename_;
+      }
+      throw;
+    }
+    if (flow_ == Flow::END) {
+      break;
+    }
+    // RETURN or EXIT at the top level just stop the current statement.
+    flow_ = Flow::NORMAL;
+  }
+  return {};
+}
 
-  return visitChildren(context);
+Value ExecutionVisitor::call(const std::string& name, const std::vector<Value>& params) {
+  auto [owner, fn] = ec_.find_function(name);
+  ec_.trace_log("CALL {} ({} args)", name, params.size());
+
+  if (fn->type == BasicFunction::Type::NATIVE) {
+    return fn->cpp_fn(params);
+  }
+
+  if (params.size() != fn->params.size()) {
+    throw BasicError(fmt::format("{}: expected {} argument(s), got {}", name, fn->params.size(),
+                                 params.size()));
+  }
+  if (call_depth_ >= kMaxCallDepth) {
+    throw BasicError(fmt::format("{}: too many nested calls (limit {})", name, kMaxCallDepth));
+  }
+
+  Scope fnscope(fn->name);
+  for (size_t i = 0; i < params.size(); i++) {
+    fnscope.local_vars.insert_or_assign(fn->params.at(i), Var(fn->params.at(i), params.at(i)));
+  }
+
+  // Run the body in the module that defines the function.
+  auto* saved_module = ec_.module;
+  ec_.module = owner;
+  owner->scopes.push_back(fnscope);
+  ++call_depth_;
+
+  struct Restore {
+    ExecutionVisitor* v;
+    Module* owner;
+    Module* saved;
+    ~Restore() {
+      owner->scopes.pop_back();
+      v->ec_.module = saved;
+      --v->call_depth_;
+    }
+  } restore{this, owner, saved_module};
+
+  return_value_ = Value();
+  visit(fn->def_fn->statements());
+
+  Value result;
+  if (flow_ == Flow::RETURN) {
+    result = return_value_;
+    flow_ = Flow::NORMAL;
+  } else if (flow_ == Flow::EXIT_LOOP) {
+    // EXIT outside of a loop leaves the function.
+    flow_ = Flow::NORMAL;
+  }
+  ec_.trace_log("{} RETURNED '{}'", name, result);
+  return result;
 }
 
 std::any ExecutionVisitor::visitProcedureCall(BasicParser::ProcedureCallContext* ctx) {
-  if (!ctx->procedureName()) {
-    return {};
-  }
   const auto fn_name = ctx->procedureName()->getText();
-  std::cout << "Procedure Call: " << fn_name << std::endl;
   std::vector<Value> params;
   if (ctx->parameterList()) {
-    const auto ctxparams = visit(ctx->parameterList());
-    params = std::any_cast<std::vector<Value>>(ctxparams);
+    params = std::any_cast<std::vector<Value>>(visit(ctx->parameterList()));
   }
-  auto val = ec_.call(fn_name, params, this);
-  return_ = false;
-  return val.toAny();
+  return call(fn_name, params);
 }
 
 std::any ExecutionVisitor::visitParameterList(BasicParser::ParameterListContext* context) {
   std::vector<Value> result;
   for (auto* expr : context->expr()) {
-    result.push_back(Value(visit(expr)));
+    result.push_back(eval(expr));
   }
   return result;
 }
 
-std::any
-ExecutionVisitor::visitProcedureDefinition(BasicParser::ProcedureDefinitionContext* context) {
-  // Ignore procedure defintions while executing, we've already grabbed a
-  // reference to it earlier in another visitor.
+std::any ExecutionVisitor::visitProcedureDefinition(BasicParser::ProcedureDefinitionContext*) {
+  // Procedure definitions were collected by FunctionDefVisitor.
+  return {};
+}
+
+std::any ExecutionVisitor::visitModuleDefinition(BasicParser::ModuleDefinitionContext*) {
+  // Handled by FunctionDefVisitor.
   return {};
 }
 
 std::any ExecutionVisitor::visitImportModule(BasicParser::ImportModuleContext* context) {
+  std::string name;
   if (context->ID()) {
-    // import package
-    auto modulename = context->ID()->getText();
-    fmt::print("Import module: '{}'\n", modulename);
-    ec_.module->imported_modules.emplace(modulename);
+    name = context->ID()->getText();
+  } else {
+    name = remove_quotes(context->STRING()->getText());
+    if (!starts_with(name, "@")) {
+      // TODO(rushfan): Load and run the imported source file (M2).
+      throw BasicError(fmt::format("Importing source files is not supported yet: '{}'", name));
+    }
+    name = name.substr(1);
   }
-  else if (context->STRING()) {
-    auto fn = remove_quotes(context->STRING()->getText());
-    fmt::print("Import file: '{}'\n", fn);
+  if (!contains(ec_.modules, name)) {
+    throw BasicError(fmt::format("Unknown module: '@{}'", name));
   }
-  else {
-    fmt::print("Malformed import statement: '{}'\n", context->getText());
-
-  }
-
+  ec_.trace_log("IMPORT @{}", name);
+  ec_.module->imported_modules.emplace(name);
   return {};
 }
 
 std::any ExecutionVisitor::visitStatements(BasicParser::StatementsContext* context) {
-  std::any result;
   for (auto* stmt : context->statement()) {
-    result = visitStatement(stmt);
-    if (return_) {
-      return result;
+    visit(stmt);
+    if (flow_ != Flow::NORMAL) {
+      break;
     }
-  }
-  return result;
-}
-
-std::any ExecutionVisitor::visitStatement(BasicParser::StatementContext* context) {
-  return visitChildren(context);
-}
-
-std::any ExecutionVisitor::visitParens(BasicParser::ParensContext* context) {
-  return visit(context->children.front());
-}
-
-std::any ExecutionVisitor::visitString(BasicParser::StringContext* context) {
-  return remove_quotes(context->getText());
-}
-
-std::any ExecutionVisitor::visitBooleanExpr(BasicParser::BooleanExprContext* context) {
-  return context->TRUE() != nullptr;
-}
-
-std::any ExecutionVisitor::visitInt(BasicParser::IntContext* context) {
-  return to_number<int>(context->getText());
-}
-
-std::any
-ExecutionVisitor::visitAssignmentStatement(BasicParser::AssignmentStatementContext* context) {
-  // TODO(rushfan): make this return the lvalue if we want to support chaining
-  // of assignments like:
-  // a = b = 10
-  const auto lvalue_name = context->lvalue()->getText();
-  if (context->expr()) {
-    const auto value = Value(visit(context->expr()));
-    std::cout << "ASSIGN: " << lvalue_name << " = " << value << std::endl;
-    ec_.upsert(lvalue_name, value);
-  }
-  else if (context->rvalue()) {
-    const auto rvalueName = context->rvalue()->getText();
-    if (auto rvalue = ec_.var(rvalueName)) {
-      std::cout << "ASSIGN LVALUE=RVALUE: " << lvalue_name << " = " << rvalue.value().value() << std::endl;
-      ec_.upsert(lvalue_name, rvalue.value().value());
-    }
-  }
-  else {
-    fmt::print("Need expr or rvalue for assignment.");
   }
   return {};
 }
- 
-std::any ExecutionVisitor::visitRelation(BasicParser::RelationContext* context) {
 
-  const auto op = context->relationaloperator()->getStart();
-  Value left(visit(context->expr(0)));
-  Value right(visit(context->expr(1)));
-  bool result{false};
-  switch (op->getType()) {
-  case BasicLexer::GT: {
-    result = left > right;
-  } break;
-  case BasicLexer::GE: {
-    result = left == right || left > right;
-  } break;
-  case BasicLexer::LT: {
-    result = left < right;
-  } break;
-  case BasicLexer::LE: {
-    result = left == right || left < right;
-  } break;
-  case BasicLexer::NE: {
-    result = left != right;
-  } break;
-  case BasicLexer::EQ: {
-    result = left == right;
-  } break;
-  default:
-    std::cerr << "WTF: " << context->getText();
-    return {};
+std::any ExecutionVisitor::visitStatement(BasicParser::StatementContext* context) {
+  try {
+    return visitChildren(context);
+  } catch (BasicError& e) {
+    // Record the innermost statement that failed.
+    if (e.line == 0) {
+      e.line = context->getStart()->getLine();
+      e.file = filename_;
+    }
+    throw;
   }
-  std::cout << left << op->getText() << right << " = " << std::boolalpha
-            << result << std::endl;
-  return result;
+}
+
+// Expressions
+
+std::any ExecutionVisitor::visitProcCall(BasicParser::ProcCallContext* context) {
+  return visit(context->procedureCall());
+}
+
+std::any ExecutionVisitor::visitParens(BasicParser::ParensContext* context) {
+  return visit(context->expr());
 }
 
 std::any ExecutionVisitor::visitIdent(BasicParser::IdentContext* context) {
-  LOG(INFO) << fmt::format("visitIdent: '{}'", context->getText());
-  return visitRvalue(context->rvalue());
+  return visit(context->rvalue());
 }
 
+std::any ExecutionVisitor::visitRvalue(BasicParser::RvalueContext* context) {
+  if (auto v = ec_.var(context->getText())) {
+    return v->value();
+  }
+  // Like most BASICs, an unset variable reads as empty.
+  return Value();
+}
+
+std::any ExecutionVisitor::visitInt(BasicParser::IntContext* context) {
+  const auto text = context->getText();
+  try {
+    return Value(std::stoi(text));
+  } catch (const std::out_of_range&) {
+    throw BasicError(fmt::format("Number out of range: {}", text));
+  }
+}
+
+std::any ExecutionVisitor::visitString(BasicParser::StringContext* context) {
+  return Value(remove_quotes(context->getText()));
+}
+
+std::any ExecutionVisitor::visitBoolean(BasicParser::BooleanContext* context) {
+  return Value(context->booleanExpr()->TRUE() != nullptr);
+}
+
+std::any ExecutionVisitor::visitNegate(BasicParser::NegateContext* context) {
+  return Value(-eval(context->expr()).toInt());
+}
 
 std::any ExecutionVisitor::visitMulDiv(BasicParser::MulDivContext* context) {
-  const auto op = context->multiplicativeoperator()->getStart();
-  Value left(visit(context->expr(0)));
-  Value right(visit(context->expr(1)));
-  Value result;
-  switch (op->getType()) {
-  case BasicLexer::STAR: {
-    result = left * right;
-  } break;
-  case BasicLexer::SLASH: {
-    result = left / right;
-  } break;
-  case BasicLexer::MOD: {
-    result = left % right;
-  } break;
-  case BasicLexer::AND: {
-    result = left && right;
-  } break;
-  default:
-    std::cerr << "WTF: " << context->getText();
-    return {};
+  const auto left = eval(context->expr(0));
+  const auto right = eval(context->expr(1));
+  switch (context->op->getType()) {
+  case BasicLexer::STAR:
+    return left * right;
+  case BasicLexer::SLASH:
+    return left / right;
+  case BasicLexer::MOD:
+    return left % right;
   }
-  std::cout << left << op << right << " = " << result << std::endl;
-  return result.toAny();
+  throw BasicError(fmt::format("Unknown operator: {}", context->op->getText()));
 }
 
 std::any ExecutionVisitor::visitAddSub(BasicParser::AddSubContext* context) {
-  const auto op = context->additiveoperator()->getStart();
-  Value left(visit(context->expr(0)));
-  Value right(visit(context->expr(1)));
-  Value result;
-  switch (op->getType()) {
-  case BasicLexer::PLUS: {
-    result = left + right;
-  } break;
-  case BasicLexer::MINUS: {
-    result = left - right;
-  } break;
-  case BasicLexer::OR: {
-    result = left || right;
-  } break;
-  default:
-    std::cerr << "WTF: " << context->getText();
-    return {};
+  const auto left = eval(context->expr(0));
+  const auto right = eval(context->expr(1));
+  switch (context->op->getType()) {
+  case BasicLexer::PLUS:
+    return left + right;
+  case BasicLexer::MINUS:
+    return left - right;
   }
-  std::cout << left << op << right << " = " << result << std::endl;
-  return result.toAny();
+  throw BasicError(fmt::format("Unknown operator: {}", context->op->getText()));
 }
 
-std::any ExecutionVisitor::visitIfThenStatement(BasicParser::IfThenStatementContext* context) {
-  if (const auto result = std::any_cast<bool>(visit(context->expr())); !result) {
-    return {};
+std::any ExecutionVisitor::visitRelation(BasicParser::RelationContext* context) {
+  const auto left = eval(context->expr(0));
+  const auto right = eval(context->expr(1));
+  switch (context->op->getType()) {
+  case BasicLexer::GT:
+    return Value(left > right);
+  case BasicLexer::GE:
+    return Value(left == right || left > right);
+  case BasicLexer::LT:
+    return Value(left < right);
+  case BasicLexer::LE:
+    return Value(left == right || left < right);
+  case BasicLexer::NE:
+    return Value(left != right);
+  case BasicLexer::EQ:
+    return Value(left == right);
   }
-  return visit(context->statements());
+  throw BasicError(fmt::format("Unknown operator: {}", context->op->getText()));
 }
+
+std::any ExecutionVisitor::visitNot(BasicParser::NotContext* context) {
+  return Value(!eval(context->expr()).toBool());
+}
+
+std::any ExecutionVisitor::visitAnd(BasicParser::AndContext* context) {
+  // Short-circuit: the right side is not evaluated if the left is false.
+  return Value(eval(context->expr(0)).toBool() && eval(context->expr(1)).toBool());
+}
+
+std::any ExecutionVisitor::visitOr(BasicParser::OrContext* context) {
+  return Value(eval(context->expr(0)).toBool() || eval(context->expr(1)).toBool());
+}
+
+// Statements
 
 std::any
-ExecutionVisitor::visitIfThenElseStatement(BasicParser::IfThenElseStatementContext* context) {
-  if (const auto result = std::any_cast<bool>(visit(context->expr()))) {
-    return visit(context->statements(0));
-  } 
-  return visit(context->statements(1));
+ExecutionVisitor::visitAssignmentStatement(BasicParser::AssignmentStatementContext* context) {
+  const auto name = context->lvalue()->getText();
+  const auto value = eval(context->expr());
+  ec_.trace_log("ASSIGN {} = '{}'", name, value);
+  ec_.upsert(name, value);
+  return {};
 }
 
-std::any ExecutionVisitor::visitIfThenElseIfElseStatement(
-    BasicParser::IfThenElseIfElseStatementContext* context) {
-  // Visit the IF and any ELSEIF clauses (that have relation expressions)
-  for (int i = 0; i < context->expr().size(); i++) {
-    if (const auto result = std::any_cast<bool>(visit(context->expr(i)))) {
+std::any ExecutionVisitor::visitIfStatement(BasicParser::IfStatementContext* context) {
+  // expr(i) guards statements(i); a trailing extra statements() is the ELSE.
+  const auto conditions = context->expr();
+  for (size_t i = 0; i < conditions.size(); i++) {
+    if (eval(conditions[i]).toBool()) {
       return visit(context->statements(i));
     }
   }
-  if (context->ELSE() != nullptr) {
-    // We have an else
+  if (context->ELSE()) {
     return visit(context->statements().back());
   }
   return {};
 }
 
+bool ExecutionVisitor::run_loop_body(BasicParser::StatementsContext* body) {
+  visit(body);
+  if (flow_ == Flow::EXIT_LOOP) {
+    flow_ = Flow::NORMAL;
+    return false;
+  }
+  return flow_ == Flow::NORMAL;
+}
+
 std::any ExecutionVisitor::visitForStatement(BasicParser::ForStatementContext* ctx) {
-  auto steptoken = ctx->STEP();
-  const int step = steptoken ? to_number<int>(ctx->INT()->getText()) : 1;
-  const auto start = Value(visit(ctx->expr(0)));
-  const auto end = Value(visit(ctx->expr(1)));
-
-  const auto varname = ctx->ID()->getText();
-  const auto scope_name = fmt::format("FOR {}", varname);
-
-  {
-    Scope fnscope(scope_name);
-    fnscope.local_vars.insert_or_assign(varname, Var(varname, start));
-    // Put the scope on top fo the stack
-    ec_.module->scopes.push_back(fnscope);
+  const auto varname = ctx->ID(0)->getText();
+  if (ctx->ID().size() > 1 && !iequals(ctx->ID(1)->getText(), varname)) {
+    throw BasicError(
+        fmt::format("NEXT {} does not match FOR {}", ctx->ID(1)->getText(), varname));
   }
-  auto& var = ec_.module->scopes.back().local_vars.at(varname);
-  // TODO(rushfan): May need to change to a while loop.
-  // TODO(rushfan): Need to figure out how to add RETURN and BREAK support here.
-  for (int current = start.toInt(); current != end.toInt(); current += step) {
-    var.value().set(current);
-    visit(ctx->statements());
-    current = var.value().toInt();
+  const auto start = eval(ctx->expr(0)).toInt();
+  const auto end = eval(ctx->expr(1)).toInt();
+  const auto step = ctx->STEP() ? eval(ctx->expr(2)).toInt() : 1;
+  if (step == 0) {
+    throw BasicError("FOR loop STEP must not be 0");
   }
-  // Handle last loop where current == end;
-  var.value().set(end.toInt());
-  visit(ctx->statements());
 
-  // remove latest scope.
-  ec_.module->scopes.pop_back();
+  ec_.upsert(varname, Value(start));
+  while (true) {
+    const auto current = ec_.var(varname).value_or(Var(varname, Value(0))).value().toInt();
+    if ((step > 0 && current > end) || (step < 0 && current < end)) {
+      break;
+    }
+    if (!run_loop_body(ctx->statements())) {
+      break;
+    }
+    const auto next = ec_.var(varname).value_or(Var(varname, Value(0))).value().toInt() + step;
+    ec_.upsert(varname, Value(next));
+  }
+  return {};
+}
+
+std::any ExecutionVisitor::visitWhileStatement(BasicParser::WhileStatementContext* ctx) {
+  while (eval(ctx->expr()).toBool()) {
+    if (!run_loop_body(ctx->statements())) {
+      break;
+    }
+  }
+  return {};
+}
+
+std::any ExecutionVisitor::visitDoUntilStatement(BasicParser::DoUntilStatementContext* ctx) {
+  do {
+    if (!run_loop_body(ctx->statements())) {
+      break;
+    }
+  } while (!eval(ctx->expr()).toBool());
+  return {};
+}
+
+std::any ExecutionVisitor::visitPrintStatement(BasicParser::PrintStatementContext* ctx) {
+  std::string line;
+  for (auto* item : ctx->printItem()) {
+    line.append(eval(item->expr()).toString());
+  }
+  if (!ctx->trailing) {
+    line.push_back('\n');
+  }
+  ec_.out(line);
   return {};
 }
 
 std::any ExecutionVisitor::visitReturnStatement(BasicParser::ReturnStatementContext* context) {
-  auto result = visit(context->expr());
-  std::cout << "RETURN: " << Value(result) << std::endl;
-  return_ = true;
-  return result;
-}
-
-std::any ExecutionVisitor::visitVariable(BasicParser::VariableContext* context) {
-  if (auto v = ec_.var(context->getText())) {
-    return v->value().toAny();
-  }
+  return_value_ = context->expr() ? eval(context->expr()) : Value();
+  flow_ = Flow::RETURN;
   return {};
 }
 
-// RValue variable, unless we support RValue references, always treat it as
-// a value
-std::any ExecutionVisitor::visitRvalue(BasicParser::RvalueContext* context) {
-  if (auto v = ec_.var(context->getText())) {
-    return v->value().toAny();
-  }
+std::any ExecutionVisitor::visitExitStatement(BasicParser::ExitStatementContext*) {
+  flow_ = Flow::EXIT_LOOP;
   return {};
 }
 
+std::any ExecutionVisitor::visitEndStatement(BasicParser::EndStatementContext*) {
+  flow_ = Flow::END;
+  return {};
+}
 
 } // namespace wwivbasic

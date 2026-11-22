@@ -1,7 +1,4 @@
-import @wwiv.io
-import "common.bas"
-
-wwiv.io.print(VERSION())
+' Functions, ELSEIF chains, and mixed-case keywords.
 
 def foo(a, b)
 Return a + b
@@ -17,6 +14,7 @@ if a = 20 and 2 = 1 then
 endif 
 
 f = foo(a, 123 + 17)
+print "f=", f
 a = a + 12
 
 If a = 1 Then

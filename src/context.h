@@ -12,6 +12,8 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
+#include <set>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -31,7 +33,7 @@ private:
 
 class Scope {
 public:
-  Scope(const std::string& name) : fn_name(name) {}
+  explicit Scope(const std::string& name) : fn_name(name) {}
   std::string fn_name;
   std::map<std::string, Var, wwiv::stl::ci_less> local_vars;
 };
@@ -57,14 +59,35 @@ public:
   std::vector<std::string> params;
 };
 
-#define REGISTER_NATIVE(module, func)                                                              \
-  do {                                                                                             \
-    module->native_functionl(#func, make_basic_fn(func));                                           \
-  } while (0)
-#define REGISTER_NATIVEL(module, func)                                                              \
-  do {                                                                                             \
-    module->native_functionl(#func, func);                                           \
-  } while (0)
+// Converts a script Value into the C++ type a native function expects.
+template <typename T> T from_value(const Value& v) {
+  using D = std::decay_t<T>;
+  if constexpr (std::is_same_v<D, Value>) {
+    return v;
+  } else if constexpr (std::is_same_v<D, bool>) {
+    return v.toBool();
+  } else if constexpr (std::is_integral_v<D>) {
+    return static_cast<D>(v.toInt());
+  } else if constexpr (std::is_same_v<D, std::string>) {
+    return v.toString();
+  } else {
+    static_assert(sizeof(D) == 0, "Unsupported native function parameter type");
+  }
+}
+
+// Converts a native function's return value into a script Value.
+template <typename R> Value to_value(R&& r) {
+  using D = std::decay_t<R>;
+  if constexpr (std::is_same_v<D, Value>) {
+    return r;
+  } else if constexpr (std::is_same_v<D, bool>) {
+    return Value(static_cast<bool>(r));
+  } else if constexpr (std::is_integral_v<D>) {
+    return Value(static_cast<int>(r));
+  } else {
+    return Value(std::string(r));
+  }
+}
 
 template<class T>
 struct AsFunction
@@ -92,80 +115,73 @@ auto as_fn(F f) -> typename AsFunction<F>::type {
   return { f };
 }
 
-template<typename F, typename R, typename P1>
-basic_function_fn make_basic_fn_(std::function<R(P1)> f) {
-  basic_function_fn f1 = [=](std::vector<Value> params) -> Value {
-    if (params.size() < 1) {
-      return Value(false); // ERROR
-    }
-    return Value(f(params.at(0).get<P1>()));
-  };
-  return f1;
+template <typename R, typename... Args, size_t... I>
+Value call_native_(const std::function<R(Args...)>& f, const std::vector<Value>& params,
+                   std::index_sequence<I...>) {
+  if constexpr (std::is_void_v<R>) {
+    f(from_value<Args>(params.at(I))...);
+    return {};
+  } else {
+    return to_value(f(from_value<Args>(params.at(I))...));
+  }
 }
 
-template<typename F, typename R, typename P1, typename P2>
-basic_function_fn make_basic_fn_(std::function<R(P1, P2)> f) {
-  basic_function_fn f1 = [=](std::vector<Value> params) -> Value {
-    if (params.size() < 2) {
-      return Value(false); // ERROR
+// Wraps a C++ function taking and returning int, bool, std::string or Value
+// as a basic_function_fn. Arguments are converted to the declared types.
+template <typename R, typename... Args>
+basic_function_fn make_basic_fn_(const std::string& name, std::function<R(Args...)> f) {
+  return [=](const std::vector<Value>& params) -> Value {
+    if (params.size() != sizeof...(Args)) {
+      throw BasicError(fmt::format("{}: expected {} argument(s), got {}", name, sizeof...(Args),
+                                   params.size()));
     }
-    return Value(f(params.at(0).get<P1>(), params.at(1).get<P2>()));
+    return call_native_(f, params, std::index_sequence_for<Args...>{});
   };
-  return f1;
 }
 
 template<class F>
-basic_function_fn make_basic_fn(F f) {
-  return make_basic_fn_<F>(as_fn(std::forward<F>(f)));
+basic_function_fn make_basic_fn(const std::string& name, F f) {
+  return make_basic_fn_(name, as_fn(f));
 }
-
-
-class ExecutionVisitor;
 
 class Module {
 public:
-  Module(const std::string& name) : name_(name) {}
+  explicit Module(const std::string& name) : name_(name) {
+    scopes.emplace_back("<GLOBAL>");
+  }
 
-  // Creates a variable at the top scope or updates existing variable.
+  // Creates a variable in the current function scope or updates an existing
+  // visible variable.
   void upsert(const std::string& name, const Value& value);
-  // Gets the value of a variable.
+  // Gets a visible variable: one in the current function's scope, or a global.
   std::optional<Var> var(const std::string& name);
-  // Calls a function
-  Value call(const std::string& function_name, const std::vector<Value>& params,
-    ExecutionVisitor* visitor);
-
   bool has_var(const std::string& name) const;
   bool has_fn(const std::string& name) const;
 
-  void native_functionl(const std::string& name, const basic_function_fn& fn,
-    const std::vector<std::string>& params) {
-    functions.insert_or_assign(name, BasicFunction(name, fn, params));
-  }
-
+  // Registers a native function that takes its arguments as a vector, with no
+  // argument count checking.
   void native_functionl(const std::string& name, const basic_function_fn& fn) {
-    std::vector<std::string> v;
-    native_functionl(name, fn, v);
+    functions.insert_or_assign(name, BasicFunction(name, fn, {}));
   }
 
-  template<class F>
-  void native_function(const std::string& name, F f, const std::vector<std::string>& params) {
-    functions.insert_or_assign(name, BasicFunction(name, make_basic_fn_<F>(as_fn(std::forward<F>(f))), params));
-  }
-
+  // Registers a native C++ function or lambda; arguments are converted to the
+  // declared parameter types and the argument count is checked.
   template<class F>
   void native_function(const std::string& name, F f) {
-    std::vector<std::string> params;
-    //native_functionl(name, make_basic_fn_<F>(as_fn(std::forward<F>(f))), params);
-    functions.insert_or_assign(name, BasicFunction(name, make_basic_fn_<F>(as_fn(std::forward<F>(f))), params));
+    functions.insert_or_assign(name, BasicFunction(name, make_basic_fn(name, f), {}));
   }
 
+  const std::string& name() const { return name_; }
 
+  // scopes.front() is the module's global scope; each function call pushes
+  // a new scope.
   std::deque<Scope> scopes;
   std::map<std::string, BasicFunction, wwiv::stl::ci_less> functions;
   // list of modules currently imported using "IMPORT @module"
   std::set<std::string, wwiv::stl::ci_less> imported_modules;
 
 private:
+  Var* find_var(const std::string& name);
   std::string name_;
 };
 
@@ -185,6 +201,8 @@ public:
   SourceUnit(const std::string& filename, const std::string& text)
       : filename_(filename), text_(text), input_(text), lexer_(&input_), tokens_(&lexer_),
         parser_(&tokens_), parserError_(this) {
+    lexer_.removeErrorListeners();
+    lexer_.addErrorListener(&parserError_);
     parser_.removeErrorListeners();
     parser_.addErrorListener(&parserError_);
     tree_ = parser_.main();
@@ -205,43 +223,48 @@ public:
   std::vector<std::string> errors;
 };
 
+// A resolved function along with the module that owns it.
+struct ResolvedFunction {
+  Module* module{nullptr};
+  BasicFunction* fn{nullptr};
+};
+
 class Context {
 public:
-  Context(const std::filesystem::path& path);
+  explicit Context(const std::filesystem::path& path);
   Context();
+  // Modules hold pointers into each other via root/module.
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
 
   // Creates a variable at the top scope or updates existing variable.
   void upsert(const std::string& name, const Value& value);
   // Gets the value of a variable.
   std::optional<Var> var(const std::string& name);
-  // Calls a function
-  Value call(const std::string& function_name, const std::vector<Value>& params,
-    ExecutionVisitor* visitor);
+  // Finds a function by (possibly qualified) name. Unqualified names are
+  // looked up in the current module, the root module, then in modules
+  // imported by the current module. Throws BasicError if not found.
+  ResolvedFunction find_function(const std::string& function_name);
 
-  bool add_source(const std::filesystem::path& path, const std::string& text) {
-    auto su = std::make_unique<SourceUnit>(path.string(), text);
-    if (!su->errors.empty()) {
-      errors.insert(std::end(errors), std::begin(su->errors), std::end(su->errors));
-    }
-    sources.insert_or_assign(path, std::move(su));
-    return true;
-  }
+  // Adds a native module, replacing any existing module with the same name.
+  Module& add_module(const std::string& name);
 
+  bool add_source(const std::filesystem::path& path, const std::string& text);
   bool add_source(const std::filesystem::path& path);
 
-  // Gets the parse tree for some unit
-  std::optional<antlr4::tree::ParseTree*> parseTree(const std::filesystem::path& filename) {
-    if (!wwiv::stl::contains(sources, filename)) {
-      return std::nullopt;
+  // Gets the parse tree for some unit; nullopt (with errors) on parse failure.
+  std::optional<antlr4::tree::ParseTree*> parseTree(const std::filesystem::path& filename);
+
+  // Writes script output (PRINT). Defaults to stdout.
+  std::function<void(const std::string&)> out;
+
+  // When true, the interpreter logs execution details to stderr.
+  bool trace{false};
+
+  template <typename... Args> void trace_log(fmt::format_string<Args...> f, Args&&... args) {
+    if (trace) {
+      fmt::print(stderr, "TRACE: {}\n", fmt::format(f, std::forward<Args>(args)...));
     }
-    auto& su = sources.at(filename);
-    if (!su->errors.empty()) {
-      for (const auto& err : su->errors) {
-        fmt::print("ERROR: {}\r\n", err);
-      }
-      return std::nullopt;
-    }
-    return su->tree();
   }
 
   // All registered modules

@@ -13,9 +13,9 @@ std::tuple<std::string, std::string> split_package_from_id(const std::string& s)
 template<typename C>
 std::tuple<std::string, std::string> find_package_and_id(C packages, const std::string& s) {
   for (auto it = std::crbegin(packages); it != std::crend(packages); it++) {
-    if (wwiv::strings::starts_with(s, *it)) {
-      const auto idx = s.rfind('.');
-      return std::make_tuple(*it, s.substr(idx + 1));
+    const std::string& pkg = *it;
+    if (s.size() > pkg.size() + 1 && wwiv::strings::starts_with(s, pkg) && s[pkg.size()] == '.') {
+      return std::make_tuple(pkg, s.substr(pkg.size() + 1));
     }
   }
   return std::make_tuple("", s);

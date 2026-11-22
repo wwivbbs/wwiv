@@ -71,7 +71,7 @@ configure_file(version_internal.h.in version_internal.h @ONLY)
 
 #target_compile_options(core PRIVATE  /fsanitize=address)
 target_compile_definitions(core PRIVATE _CRT_SECURE_NO_WARNINGS)
-target_link_libraries(core PUBLIC fmt::fmt-header-only)
+target_link_libraries(core PUBLIC fmt::fmt)
 target_link_libraries(core PUBLIC cereal::cereal)
 target_include_directories(core PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

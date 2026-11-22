@@ -1,43 +1,35 @@
-#include "BasicLexer.h"
-#include "BasicParser.h"
-#include "BasicParserBaseVisitor.h"
-#include "antlr4-runtime.h"
+// Runs a WWIVbasic script from the command line.
+//
+//   basicrun [--check] [--show_parsetree] [--trace] script.bas
+//
+// Script output goes to stdout; errors go to stderr as
+// "file:line[:column]: error: message". Exits 1 on any error.
+
+#include "context.h"
+#include "interpreter.h"
 #include "core/command_line.h"
 #include "core/log.h"
-#include "core/textfile.h"
-#include "context.h"
-#include "executor.h"
 #include "fmt/format.h"
-#include "function_def_visitor.h"
-#include <cerrno>
+
 #include <cstdio>
-#include <iostream>
-#include <optional>
 #include <string>
-#include <string_view>
 
 using namespace wwivbasic;
 using namespace wwiv::core;
 
-std::string easy(std::string s) {
-  fmt::print("easy: {}\n", s);
-  return {};
-}
-
-std::string easy2(std::string s, std::string s1) {
-  fmt::print("easy2: {} {}\n", s, s1);
-  return {};
-}
-
 int main(int argc, char* argv[]) {
   LoggerConfig config;
-
+  // Log to the console only; don't leave basicrun.log files next to scripts.
+  config.register_file_destinations = false;
   Logger::Init(argc, argv, config);
-  wwiv::core::CommandLine cmdline(argc, argv, {});
+
+  CommandLine cmdline(argc, argv, {});
   cmdline.add_argument(BooleanCommandLineArgument(
     "show_parsetree", 't', "Display the parse tree before executing", false));
-  cmdline.add_argument(BooleanCommandLineArgument(
-    "execute", 'e', "Execute the script", true));
+  cmdline.add_argument(
+      BooleanCommandLineArgument("check", 'c', "Only parse the script; do not run it", false));
+  cmdline.add_argument(
+      BooleanCommandLineArgument("trace", 'v', "Log execution details to stderr", false));
   if (!cmdline.Parse()) {
     return 2;
   }
@@ -47,57 +39,22 @@ int main(int argc, char* argv[]) {
     return 2;
   }
 
-  const auto& filename = cmdline.remaining().front();
-  wwivbasic::Context ec(filename);
-  auto tree = ec.parseTree(filename);
+  const std::string filename = cmdline.remaining().front();
+  Context ctx;
+  ctx.trace = cmdline.barg("trace");
 
-  if (!tree) {
-    fmt::print("Unable to parse tree");
-    return 1;
+  RunOptions options;
+  options.execute = !cmdline.barg("check") && !cmdline.barg("show_parsetree");
+  auto result = run_file(ctx, filename, options);
+
+  if (cmdline.barg("show_parsetree") && result.ok()) {
+    auto& su = ctx.sources.at(filename);
+    fmt::print("{}\n", su->tree()->toStringTree(su->parser(), true));
   }
 
-  if (cmdline.barg("show_parsetree")) {
-    auto& su = ec.sources.at(filename);
-    const auto s = su->tree()->toStringTree(su->parser(), true);
-    fmt::print("Parse Tree: {}\r\n\n\n", s);
+  for (const auto& err : result.errors) {
+    fmt::print(stderr, "{}\n", err);
   }
-
-  wwivbasic::FunctionDefVisitor fd(ec);
-  fd.visit(tree.value());
-
-  Module io("wwiv.io");
-  io.native_functionl("PRINT", [](std::vector<Value> args) -> Value {
-    if (!args.empty()) {
-      fmt::print("WWIV.IO: {}\r\n", args.front().toString());
-    }
-    return {};
-    });
-  ec.modules.insert_or_assign("wwiv.io", io);
-
-  ec.root->native_functionl("PRINT", [](std::vector<Value> args) -> Value {
-    for (const auto& arg : args) {
-      std::cout << arg.toString() << " ";
-    }
-    std::cout << std::endl;
-    return {};
-  });
-  REGISTER_NATIVE(ec.root, easy);
-  REGISTER_NATIVE(ec.root, easy2);
-  ec.root->native_function("EASY3", [](int a, int b) -> int {
-    return a + b;
-    });
-  ec.root->native_functionl("PRINT", [](std::vector<Value> args) -> Value {
-    for (const auto& arg : args) {
-      std::cout << arg.toString() << " ";
-    }
-    std::cout << std::endl;
-    return {};
-    });
-
-  if (cmdline.barg("execute")) {
-    ExecutionVisitor v(ec);
-    v.visit(tree.value());
-  }
-
-  return 0;
+  std::fflush(stdout);
+  return result.ok() ? 0 : 1;
 }
