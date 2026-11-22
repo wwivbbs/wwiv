@@ -95,6 +95,56 @@ _build/linux-debug/basicrun --show_parsetree script.bas
 Script output goes to stdout. Errors go to stderr as `file:line: error: message`, and the exit
 code is 1 on error.
 
+## Tools for working on the grammar
+
+**See how a script parses.** `--show_parsetree` prints the parse tree without running the
+script. It's the quickest way to check precedence or see which rule matched:
+
+```sh
+$ _build/linux-debug/basicrun --show_parsetree t.bas      # t.bas: a = 1 + 2 * 3
+(main
+    (statement
+        (assignmentStatement
+            (lvalue
+                (variable a)) =
+            (expr
+                (expr 1) +
+                (expr
+                    (expr 2) *
+                    (expr 3)))
+            ...
+```
+
+**See what the script does.** `--trace` logs each function call, return value and assignment to
+stderr:
+
+```sh
+$ _build/linux-debug/basicrun --trace t.bas
+TRACE: ASSIGN a = '7'
+```
+
+**Use the ANTLR tool directly.** This uses the grammar files as they are, so you can try a change
+without rebuilding. `-tokens` shows what the lexer produced, including the hidden whitespace
+(channel 1) and comment (channel 2) tokens; that's useful when a keyword or identifier isn't
+lexing the way you expect. `-tree` prints the parse tree.
+
+```sh
+java -cp antlr/antlr-4.13.2-complete.jar org.antlr.v4.gui.Interpreter \
+    BasicLexer.g4 BasicParser.g4 main -tokens -tree t.bas
+```
+
+```
+[@0,0:0='a',<ID>,1:0]
+[@1,1:1=' ',<WS>,channel=1,1:1]
+[@2,2:2='=',<'='>,1:2]
+...
+[@14,14:19='' note',<COMMENT>,channel=2,1:14]
+[@15,20:20='\n',<NEWLINE>,1:20]
+```
+
+Use `-gui` instead to open a graphical tree viewer (`a.cmd t.bas` on Windows does this). The
+viewer needs a desktop and a full Java runtime; the `-headless` packages can't show it.
+
 ## Layout
 
 | Path | Contents |

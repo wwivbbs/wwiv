@@ -56,8 +56,10 @@ _build/linux-debug/basicrun tests/golden/loops.bas
   the next configure). Check the expected output by hand; don't just capture whatever runs.
 - `core/` tests are only built with `-DWWIV_BUILD_TESTS=ON`. That option comes from the
   WWIV tree and isn't wired up here.
-- To inspect a parse visually, use the ANTLR GUI: `a.cmd <file>` (Windows), or the equivalent
-  `java -cp antlr/antlr-4.13.2-complete.jar org.antlr.v4.gui.Interpreter ...`.
+- To debug the grammar, use `basicrun --show_parsetree file.bas`, or the ANTLR tool directly:
+  `java -cp antlr/antlr-4.13.2-complete.jar org.antlr.v4.gui.Interpreter BasicLexer.g4 BasicParser.g4 main -tokens -tree file.bas`
+  (no rebuild needed). `basicrun --trace` logs calls and assignments. See "Tools for working on
+  the grammar" in README.md.
 
 Before you finish a change, build it and make sure `ctest` passes.
 
