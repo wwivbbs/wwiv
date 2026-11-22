@@ -20,6 +20,7 @@
 #include "fsed/spell.h"
 #include "fsed/spell_text.h"
 #include <functional>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -37,6 +38,19 @@ inline constexpr const char* SPELL_PROMPT =
  */
 inline constexpr const char* SPELL_PROMPT_NARROW =
     "(1-9)=use suggestion (R)eplace (I)gnore i(G)nore all (A)dd to dictionary (Q)uit";
+
+/** A shorter prompt for screens narrower than SPELL_PROMPT_NARROW. */
+inline constexpr const char* SPELL_PROMPT_SHORT = "1-9 (R)eplace (I)gnore i(G)nore all (A)dd (Q)uit";
+
+/** The shortest prompt, for very narrow screens. */
+inline constexpr const char* SPELL_PROMPT_TINY = "1-9 R I G A Q";
+
+/**
+ * The longest spell check prompt that fits on a screen screen_width columns
+ * wide, leaving the last column empty so the terminal does not wrap. If none
+ * fit, SPELL_PROMPT_TINY is cut to fit.
+ */
+[[nodiscard]] std::string spell_prompt_for_width(int screen_width);
 
 /** Most suggestions offered for one word (keys 1-9). */
 inline constexpr int SPELL_MAX_SUGGESTIONS = 9;
@@ -57,10 +71,14 @@ struct spell_pos_t {
  * after the last space that fits (or mid word if there is none). Lines
  * outside of the paragraph are not changed, but may move up or down.
  *
+ * The line color (the color used for typing) of the last line of the
+ * paragraph is kept.
+ *
  * Returns the position just past the replacement, which is where checking
- * continues.
+ * continues. Returns std::nullopt (and leaves ed unchanged) if the rewrapped
+ * paragraph would need more lines than ed.maxli() allows.
  */
-spell_pos_t spell_replace_word(FsedModel& ed, const spell_word_t& word,
+std::optional<spell_pos_t> spell_replace_word(FsedModel& ed, const spell_word_t& word,
                                const std::string& replacement);
 
 /** How the walk through the misspelled words ended. */
@@ -109,6 +127,8 @@ public:
   virtual int getkey(FsedModel& ed) = 0;
   /** Asks for the replacement (CP437) for word. Empty means none. */
   virtual std::string input_replacement(FsedModel& ed, const std::string& word) = 0;
+  /** Shows a message (WWIV pipe codes allowed) and waits for a key. */
+  virtual void message(FsedModel& ed, const std::string& text) = 0;
   /** Called after the text changed (starting at first_line). */
   virtual void after_edit(FsedModel& ed, int first_line) = 0;
   /** True if the caller has hung up. */
@@ -126,6 +146,8 @@ using spell_add_word_fn = std::function<void(const std::string& utf8_word)>;
  * what to do with each one:
  *   1-9  replace with that suggestion
  *   R    replace with a word the user types
+ *        (if the message has no room for the replacement, the user is told
+ *        and asked again)
  *   I    ignore this one time
  *   G    ignore every time for the rest of this check
  *   A    add to the user's dictionary (and ignore)

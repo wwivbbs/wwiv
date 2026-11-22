@@ -79,8 +79,9 @@ struct spell_config_t {
   bool check_on_save{true};
   // Default Hunspell dictionary name, i.e. en_US for en_US.aff/en_US.dic.
   std::string dictionary{"en_US"};
-  // Optional directory to search first for dictionaries.  When empty
-  // {bbsdir}/dict and the system directories are searched.
+  // Optional directory to search first for dictionaries (relative paths are
+  // relative to {bbsdir}). {bbsdir}/dict and, except on Windows, the system
+  // directories are searched after it.
   std::string dict_dir;
 };
 
