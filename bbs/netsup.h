@@ -23,8 +23,20 @@
 #include <vector>
 
 struct net_header_rec;
+namespace wwiv::sdk::net {
+class Network;
+}
 
 void cleanup_net();
+
+/**
+ * Builds the "from" name line written when gating a message from from_net to
+ * the network whose system number is to_sysnum, and updates nh.fromsys and
+ * nh.fromuser to match. nm is the message's original name line, without its
+ * "\r\n". from_this_system is true when the message originated on this system.
+ */
+std::string gate_msg_from_name(net_header_rec& nh, std::string nm, bool from_this_system,
+                               const wwiv::sdk::net::Network& from_net, uint16_t to_sysnum);
 void print_pending_list();
 void gate_msg(net_header_rec* nh, char* messageText, int net_number, const std::string& author_name,
               std::vector<uint16_t> list, int nFromNetworkNumber);

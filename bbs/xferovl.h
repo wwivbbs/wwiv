@@ -19,10 +19,27 @@
 #define INCLUDED_BBS_XFEROVL_H
 
 #include <string>
+#include <vector>
 
 namespace wwiv::sdk::files {
 class FileRecord;
 }
+
+/** One file to upload, as listed in an upload list file. See upload_files. */
+struct UploadListEntry {
+  std::string file_name;
+  std::string description;
+  /** Extended description lines, each ending in "\r\n". */
+  std::string extended_description;
+};
+
+/**
+ * Parses the lines of an upload list file, as read by fgets (so each line may
+ * still end in '\n'). type is the number of words to skip between the file
+ * name and the description. Lines starting with a space are extended
+ * description lines for the file before them.
+ */
+std::vector<UploadListEntry> parse_upload_list(const std::vector<std::string>& lines, int type);
 
 void move_file();
 void sortdir(int directory_num, int type);

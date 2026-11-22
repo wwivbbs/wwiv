@@ -275,6 +275,11 @@ public:
   /** Returns the WWIV SDK Config Object. */
   [[nodiscard]] wwiv::sdk::Config* config() const;
   void set_config_for_test(const wwiv::sdk::Config& config);
+  /**
+   * Creates the status manager (with no change callback) and the instances
+   * list from config(), which startup normally does.
+   */
+  void init_status_and_instances_for_test();
 
   /** Returns the WWIV Names.LST Config Object. */
   [[nodiscard]] wwiv::sdk::Names* names() const;

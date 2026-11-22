@@ -28,8 +28,10 @@
 #include "sdk/filenames.h"
 #include "sdk/msgapi/type2_text.h"
 #include "sdk/status.h"
+#include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -224,8 +226,6 @@ std::optional<std::string> readfile(const messagerec* msg, const std::string& fi
 }
 
 void lineadd(const messagerec* msg, const std::string& sx, std::string fileName) {
-  const auto line = fmt::sprintf("%s\r\n\x1a", sx);
-
   switch (msg->storage_type) {
   case 0:
   case 1:
@@ -238,33 +238,46 @@ void lineadd(const messagerec* msg, const std::string& sx, std::string fileName)
     while (new1 < GAT_NUMBER_ELEMENTS && gat[new1] != 0) {
       ++new1;
     }
+    // Walk to the last block of the message. The chain comes from disk, so
+    // stop on an out of range index or a cycle instead of reading past gat.
     auto i = static_cast<int>(msg->stored_as % GAT_NUMBER_ELEMENTS);
-    while (gat[i] != 65535) {
+    auto found_last_block = false;
+    for (auto steps = 0; steps < GAT_NUMBER_ELEMENTS && i > 0 && i < GAT_NUMBER_ELEMENTS; ++steps) {
+      if (gat[i] == 65535) {
+        found_last_block = true;
+        break;
+      }
       i = gat[i];
     }
-    char *b = nullptr;
-    // The +1 may not be needed but BbsAllocA did it.
-    if ((b = static_cast<char*>(calloc(GAT_NUMBER_ELEMENTS + 1, 1))) == nullptr) {
+    if (!found_last_block) {
       message_file->Close();
       return;
     }
+    // The last block, plus room for one overflow block.
+    std::vector<char> b(2 * MSG_BLOCK_SIZE, 0);
     message_file->Seek(MSG_STARTING(gat_section) + static_cast<long>(i) * MSG_BLOCK_SIZE, File::Whence::begin);
-    message_file->Read(b, MSG_BLOCK_SIZE);
+    message_file->Read(b.data(), MSG_BLOCK_SIZE);
     int j = 0;
     while (j < MSG_BLOCK_SIZE && b[j] != wwiv::local::io::CZ) {
       ++j;
     }
-    strcpy(&(b[j]), line.c_str());
+    // Truncate the text so the line, including its trailing "\r\n^Z" and a
+    // null terminator (readfile stops each block at the first null), fits
+    // in the two blocks.
+    constexpr std::string::size_type line_end_size = 3 + 1;
+    const auto max_text = b.size() - j - line_end_size;
+    const auto line = fmt::sprintf("%s\r\n\x1a", sx.substr(0, max_text));
+    std::copy(line.begin(), line.end(), b.begin() + j);
+    b[j + line.size()] = '\0';
     message_file->Seek(MSG_STARTING(gat_section) + static_cast<long>(i) * MSG_BLOCK_SIZE, File::Whence::begin);
-    message_file->Write(b, MSG_BLOCK_SIZE);
+    message_file->Write(b.data(), MSG_BLOCK_SIZE);
     if (j + line.size() > MSG_BLOCK_SIZE && new1 != GAT_NUMBER_ELEMENTS) {
       message_file->Seek(MSG_STARTING(gat_section) + static_cast<long>(new1)  * MSG_BLOCK_SIZE, File::Whence::begin);
-      message_file->Write(b + MSG_BLOCK_SIZE, MSG_BLOCK_SIZE);
+      message_file->Write(b.data() + MSG_BLOCK_SIZE, MSG_BLOCK_SIZE);
       gat[new1] = 65535;
       gat[i] = static_cast<gati_t>(new1);
       save_gat(*message_file);
     }
-    free(b);
     message_file->Close();
   }
   break;

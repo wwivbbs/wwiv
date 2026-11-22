@@ -287,11 +287,77 @@ void print_pending_list() {
   }
 }
 
+std::string gate_msg_from_name(net_header_rec& nh, std::string nm, bool from_this_system,
+                               const Network& from_net, uint16_t to_sysnum) {
+  auto is_digit = [](char c) { return c >= '0' && c <= '9'; };
+
+  if (from_this_system) {
+    const auto at = nm.rfind('@');
+    if (at == std::string::npos) {
+      return nm;
+    }
+    // Replace the system number after the last '@' with ours.
+    auto rest = at + 1;
+    while (rest < nm.size() && is_digit(nm[rest])) {
+      ++rest;
+    }
+    nh.fromsys = to_sysnum;
+    return StrCat(nm.substr(0, at + 1), std::to_string(to_sysnum), nm.substr(rest), "\r\n");
+  }
+
+  std::string qn;
+  std::string on;
+  int i = 0;
+  if (nm.size() >= 2 && nm[0] == '`' && nm[1] == '`') {
+    for (i = wwiv::strings::ssize(nm) - 2; i > 0; i--) {
+      if (nm[i] == '`' && nm[i + 1] == '`') {
+        break;
+      }
+    }
+    if (i > 0) {
+      i += 2;
+      qn = StrCat(nm.substr(0, i), " ");
+    }
+  }
+  if (qn.empty()) {
+    if (const auto hash = nm.rfind('#');
+        hash != std::string::npos && hash + 1 < nm.size() && is_digit(nm[hash + 1])) {
+      // Drop the "#nnn" user number and any spaces before it, but never
+      // the first character.
+      nm.resize(hash);
+      while (nm.size() > 1 && nm.back() == ' ') {
+        nm.pop_back();
+      }
+    }
+    if (!nm.empty()) {
+      if (nh.fromuser) {
+        qn = StrCat("``", nm, "`` ");
+      } else {
+        on = nm;
+      }
+    }
+  }
+  if (on.empty() && nh.fromuser == 0) {
+    on = nm.substr(i);
+  }
+  const auto fromsys = static_cast<unsigned>(nh.fromsys);
+  std::string newname;
+  if (from_net.sysnum == 1 && !on.empty() &&
+      (from_net.type == network_type_t::internet || from_net.type == network_type_t::news)) {
+    newname = StrCat(qn, on);
+  } else if (!on.empty()) {
+    newname = fmt::format("{}{}@{}.{}\r\n", qn, on, fromsys, from_net.name);
+  } else {
+    newname = fmt::format("{}#{}@{}.{}\r\n", qn, static_cast<unsigned>(nh.fromuser), fromsys,
+                          from_net.name);
+  }
+  nh.fromsys = to_sysnum;
+  nh.fromuser = 0;
+  return newname;
+}
+
 void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
               const std::string& subtype_or_author, std::vector<uint16_t> list, int nFromNetworkNumber) {
-  char newname[256], qn[200], on[200];
-  char nm[205];
-  int i;
   const auto& from_net = a()->nets()[nFromNetworkNumber];
   const auto& to_net = a()->nets()[nNetNumber];
 
@@ -304,8 +370,9 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
   auto ntl = static_cast<uint16_t>(nh->length - strlen(original_text) - 1);
   auto* ss = strchr(messageText, '\r');
   if (ss && (ss - messageText < 200) && (ss - messageText < ntl)) {
-    strncpy(nm, messageText, ss - messageText);
-    nm[ss - messageText] = 0;
+    // The name comes from the incoming network message, so it is handled as
+    // a std::string rather than in fixed size buffers.
+    const std::string nm(messageText, ss - messageText);
     ss++;
     if (*ss == '\n') {
       ss++;
@@ -314,85 +381,10 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
     ntl = ntl - static_cast<uint16_t>(ss - messageText);
     messageText = ss;
 
-    qn[0] = on[0] = '\0';
+    const auto from_this_system = nFromNetworkNumber == -1 || nh->fromsys == from_net.sysnum;
+    const auto newname = gate_msg_from_name(*nh, nm, from_this_system, from_net, to_net.sysnum);
 
-    if (nFromNetworkNumber == -1 || nh->fromsys == from_net.sysnum) {
-
-      strcpy(newname, nm);
-      ss = strrchr(newname, '@');
-      if (ss) {
-        sprintf(ss + 1, "%u", to_net.sysnum);
-        ss = strrchr(nm, '@');
-        if (ss) {
-          ++ss;
-          while (*ss >= '0' && *ss <= '9') {
-            ++ss;
-          }
-          strcat(newname, ss);
-        }
-        strcat(newname, "\r\n");
-        nh->fromsys = to_net.sysnum;
-      }
-    } else {
-      if (nm[0] == '`' && nm[1] == '`') {
-        for (i = wwiv::strings::ssize(nm) - 2; i > 0; i--) {
-          if (nm[i] == '`' && nm[i + 1] == '`') {
-            break;
-          }
-        }
-        if (i > 0) {
-          i += 2;
-          strncpy(qn, nm, i);
-          qn[i] = ' ';
-          qn[i + 1] = 0;
-        }
-      } else {
-        i = 0;
-      }
-      if (qn[0] == 0) {
-        ss = strrchr(nm, '#');
-        if (ss) {
-          if (ss[1] >= '0' && ss[1] <= '9') {
-            *ss = 0;
-            ss--;
-            while (ss > nm && *ss == ' ') {
-              *ss = 0;
-              ss--;
-            }
-          }
-        }
-        if (nm[0]) {
-          if (nh->fromuser) {
-            sprintf(qn, "``%s`` ", nm);
-          } else {
-            strcpy(on, nm);
-          }
-        }
-      }
-      if (on[0] == 0 && nh->fromuser == 0) {
-        strcpy(on, nm + i);
-      }
-      if (from_net.sysnum == 1 && on[0] &&
-          from_net.type == network_type_t::internet) {
-        sprintf(newname, "%s%s", qn, on);
-      } else if (from_net.sysnum == 1 && on[0] &&
-                 from_net.type == network_type_t::news) {
-        sprintf(newname, "%s%s", qn, on);
-      }
-      else {
-        if (on[0]) {
-          sprintf(newname, "%s%s@%u.%s\r\n", qn, on, nh->fromsys,
-                  from_net.name.c_str());
-        } else {
-          sprintf(newname, "%s#%u@%u.%s\r\n", qn, nh->fromuser, nh->fromsys,
-                  from_net.name.c_str());
-        }
-      }
-      nh->fromsys = to_net.sysnum;
-      nh->fromuser = 0;
-    }
-
-    nh->length += strlen(newname);
+    nh->length += size_uint32(newname);
     if (nh->main_type == main_type_email_name || nh->main_type == main_type_new_post) {
       nh->length += size_uint32(subtype_or_author) + 1;
     }
@@ -414,7 +406,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
         file.Write(subtype_or_author.c_str(), subtype_or_author.size() + 1);
       }
       file.Write(original_text, strlen(original_text) + 1);
-      file.Write(newname, strlen(newname));
+      file.Write(newname.data(), newname.size());
       file.Write(messageText, ntl);
       file.Close();
     }

@@ -42,51 +42,6 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-#pragma pack(push, 1)
-
-// See http://wiki.bbs.nz/doors:dropfiles:pcboardsys
-// Note, this doesn't seem to match perfectly what that states, but this
-// is the same pcboard.sys format wwiv has done for years.
-struct pcboard_sys_rec {
-  char display[2], printer[2], page_bell[2], alarm[2], sysop_next, errcheck[2], graphics, nodechat,
-      openbps[5], connectbps[5];
-
-  int16_t usernum;
-
-  char firstname[15], password[12];
-
-  int16_t time_on, prev_used;
-
-  char time_logged[5];
-
-  int16_t time_limit, down_limit;
-
-  char curconf, bitmap1[5], bitmap2[5];
-
-  int16_t time_added, time_credit;
-
-  char slanguage[4], name[25];
-
-  int16_t sminsleft;
-
-  char snodenum, seventtime[5], seventactive[2], sslide[2], smemmsg[4], scomport, packflag, bpsflag;
-
-  // PCB 14.5 extra stuff
-  char ansi, lastevent[8];
-
-  int16_t lasteventmin;
-
-  char exittodos, eventupcoming;
-
-  int16_t lastconfarea;
-
-  char hconfbitmap;
-  // end PCB 14.5 additions
-};
-#pragma pack(pop)
-
-[[maybe_unused]] static constexpr auto sizeof_pcboard_sys = sizeof(pcboard_sys_rec);
-
 static constexpr int NULL_HANDLE = 0;
 
 static int GetDoor32CommType() {
@@ -210,18 +165,22 @@ void CreatePCBoardSysDropFile() {
       pcb.ansi = '0';
     }
     pcb.nodechat = 32;
-    auto modem_speed_str = std::to_string(a()->modem_speed_);
-    sprintf(pcb.openbps, "%-5.5s", modem_speed_str.c_str());
+    // The pcboard.sys fields are fixed-width and not null terminated, so
+    // never write a terminator past the end of a field.
+    to_char_array_no_null(pcb.openbps, fmt::format("{:<5.5}", std::to_string(a()->modem_speed_)));
     if (!a()->sess().incom()) {
       memcpy(pcb.connectbps, "Local", 5);
     } else {
       snprintf(pcb.connectbps, 5, "%-5.5d", a()->modem_speed_);
     }
     pcb.usernum = static_cast<int16_t>(u.usernum());
-    char szName[255];
-    sprintf(szName, "%-25.25s", u.GetName());
-    char* firstname = strtok(szName, " \t");
-    sprintf(pcb.firstname, "%-15.15s", firstname);
+    const std::string full_name{u.GetName()};
+    std::string first_name;
+    if (const auto start = full_name.find_first_not_of(" \t"); start != std::string::npos) {
+      const auto end = full_name.find_first_of(" \t", start);
+      first_name = full_name.substr(start, end == std::string::npos ? end : end - start);
+    }
+    to_char_array_no_null(pcb.firstname, fmt::format("{:<15.15}", first_name));
     // Don't write password  security
     strcpy(pcb.password, "XXX");
     const auto timeon_sec = duration_cast<seconds>(u.timeon()).count();
@@ -236,8 +195,8 @@ void CreatePCBoardSysDropFile() {
     pcb.time_limit = static_cast<int16_t>(nsl());
     pcb.down_limit = 1024;
     pcb.curconf = static_cast<char>(a()->sess().current_user_sub_conf_num());
-    strcpy(pcb.slanguage, a()->sess().current_language().c_str());
-    strcpy(pcb.name, u.GetName());
+    to_char_array_no_null(pcb.slanguage, a()->sess().current_language());
+    to_char_array_no_null(pcb.name, full_name);
     pcb.sminsleft = pcb.time_limit;
     pcb.snodenum = static_cast<char>((num_instances() > 1) ? a()->sess().instance_number() : 0);
     memcpy(pcb.seventtime, "01:00", 5);

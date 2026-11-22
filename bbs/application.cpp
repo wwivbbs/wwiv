@@ -1217,6 +1217,11 @@ void Application::set_config_for_test(const wwiv::sdk::Config& config) {
   }
 }
 
+void Application::init_status_and_instances_for_test() {
+  statusMgr = std::make_unique<StatusMgr>(config()->datadir());
+  instances_ = std::make_unique<Instances>(*config());
+}
+
 /** Returns the WWIV Names.LST Config Object. */
 Names* Application::names() const { return names_.get(); }
 
