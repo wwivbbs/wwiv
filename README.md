@@ -9,7 +9,7 @@ WWIV BBS
 | Platform | Compiler | Tools |
 | -------- | -------- | ----- |
 | Windows  | Visual Studio 2022 (17.2) or newer, with the *Desktop development with C++* workload | Git, plus the CMake and Ninja that ship with Visual Studio |
-| Linux    | GCC 10 or newer | Git, CMake 3.21+ (3.22+ on arm64), Ninja, make, ncurses and zlib dev packages |
+| Linux    | GCC 14 or newer | Git, CMake 3.21+ (3.22+ on arm64), Ninja, make, ncurses and zlib dev packages |
 
 CMake 3.21 or newer is needed to use the presets described below.
 
@@ -114,7 +114,7 @@ Package | Comments
 git | to get the source code
 cmake | 3.21 or later (3.22 or later on arm64/aarch64)
 ninja-build | 1.8 or later
-g++ | 10 or later (`build-essential` on Debian/Ubuntu)
+g++ | 14 or later (`build-essential` on Debian/Ubuntu)
 make | used to build cryptlib
 ncurses | `libncurses-dev`, `ncurses-devel`, etc. depending on your distro
 zlib | `zlib1g-dev` or `zlib-devel` depending on your distro

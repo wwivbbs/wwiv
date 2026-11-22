@@ -86,39 +86,19 @@ jobs:
       - wwiv-build-number
     strategy:
         matrix:
-          os: 
+          os:
             - windows-2022
-            - ubuntu-22.04
-            - debian-11
-            - debian-12
-            # - ubuntu-20.04
+            - ubuntu-26.04
           include:
-            # Disabled since it's failing to link with cryptlib for some reason
-            # - os: ubuntu-20.04 
-            #   lib_suffix: so
-            #   archive_suffix: tar.gz
-            #   wwiv_distro: linux-ubuntu2004 
-
-            # Run's on the weatherstation private cloud
-            - os: debian-11
+            # GitHub hosted runner (WWIV requires GCC 14 or newer)
+            - os: ubuntu-26.04
               lib_suffix: so
-              wwiv_distro: linux-debian11
+              wwiv_distro: linux-ubuntu2604
               archive_suffix: tar.gz
-            # Run's on the weatherstation private cloud
-            - os: debian-12
-              lib_suffix: so
-              wwiv_distro: linux-debian12
-              archive_suffix: tar.gz
-
-            # Github hosted runner
-            - os: ubuntu-22.04
-              lib_suffix: so
-              wwiv_distro: linux-ubuntu2204 
-              archive_suffix: tar.gz
-            # Github hosted runner
+            # GitHub hosted runner
             - os: windows-2022
               lib_suffix: dll
-              wwiv_distro: win-x86 
+              wwiv_distro: win-x86
               archive_suffix: zip
         fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -171,6 +151,13 @@ jobs:
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
+
+      - name: Install packages (Linux)
+        if: ${{ matrix.os != 'windows-2022' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libncurses-dev zlib1g-dev pkg-config zip
+
       - name: Setup a new vcpkg
         uses: lukka/run-vcpkg@v11   # Always specify the specific _version_ of the
 
