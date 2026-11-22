@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "fsed/view.h"
+#include "fsed/view_rows.h"
 
 #include "common/full_screen.h"
 #include "common/message_editor_data.h"
@@ -35,6 +36,43 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 namespace wwiv::fsed {
+
+// Clear the row first, then write cells with outchr (never outstr, so a
+// '|' in the message cannot be taken as a WWIV pipe code).  After a
+// nearly full write, park the cursor on this row so VT autowrap cannot
+// leave a tail on the next row.
+static void paint_edit_row(Output& bout, int y, int screen_width, int screen_length,
+                           const std::vector<cell_t>& cells) {
+  // Never paint on or past the last terminal row (the command line).
+  // A full-width write there autowraps and scrolls the header off the top.
+  if (row_below_frame(y, screen_length) || y >= screen_length) {
+    return;
+  }
+  y = clamp_screen_row(y, screen_length);
+  bout.goxy(1, y);
+  bout.clreol();
+  bout.goxy(1, y);
+  // Never write more cells than the wrap width.  A line that somehow
+  // grew past max_line_len would otherwise autowrap onto the next row
+  // and be painted over by the following model line.
+  const int max_cells = editor_wrap_columns(screen_width);
+  int last_color = -1;
+  int written = 0;
+  for (const auto& c : cells) {
+    if (written >= max_cells) {
+      break;
+    }
+    if (c.wwiv_color != last_color) {
+      last_color = c.wwiv_color;
+      bout.ansic(c.wwiv_color);
+    }
+    bout.outchr(c.ch);
+    ++written;
+  }
+  if (written >= screen_width - 1) {
+    bout.goxy(1, y);
+  }
+}
 
 FsedView::FsedView(const FullScreenView& fs, MessageEditorData& data, bool file)
     : fs_(fs), bout_(fs_.out()), bin_(fs_.in()), data_(data), file_(file) {
@@ -82,94 +120,80 @@ void FsedView::macro(Context& ctx, int cc) {
 
 void FsedView::draw_current_line(FsedModel& ed, int previous_line) { 
   if (previous_line != ed.curli) {
-    auto py = previous_line - top_line() + fs_.lines_start();
-    if (py >= fs_.lines_start() && py < fs_.lines_end()) {
-      bout_.goxy(0, py);
-      if (previous_line < size_int(ed)) {
-        bout_.outstr(ed.line(previous_line).to_colored_text(-1));
-      }
-      bout_.clreol();
+    if (const auto py = row_for_line(previous_line, top_line(), fs_.lines_start(), fs_.lines_end())) {
+      const std::vector<cell_t> cells =
+          previous_line < size_int(ed) ? ed.line(previous_line).cells() : std::vector<cell_t>{};
+      paint_edit_row(bout_, *py, fs_.screen_width(), fs_.screen_length(), cells);
     }
   }
 
-  auto y = ed.curli - top_line() + fs_.lines_start();
-  if (y >= fs_.lines_end()) {
-    y = fs_.lines_end() - 1;
+  const auto yopt = row_for_line(ed.curli, top_line(), fs_.lines_start(), fs_.lines_end());
+  if (!yopt) {
+    draw_bottom_bar(ed);
+    return;
   }
-  if (y < fs_.lines_start()) {
-    y = fs_.lines_start();
-  }
-  bout_.goxy(0, y);
-  bout_.ansic(0);
-  for (const auto& c : ed.curline().cells()) {
-    // Draw char by char for the current line so we don't display
-    // color codes where we are editing.
-    bout_.ansic(c.wwiv_color);
-    bout_.outchr(c.ch);
-  }
-  clear_rest_of_row(size_int(ed.curline().cells()));
-  // Refresh the bar in case the previous line was a full-width last row
-  // and its trailing ESC[K landed on the status bar.
+  paint_edit_row(bout_, *yopt, fs_.screen_width(), fs_.screen_length(), ed.curline().cells());
+  // Refresh the bar in case a previous full-width write wrapped onto it.
   draw_bottom_bar(ed);
 }
 
-void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
-  // TODO: optimize for first line
+void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t) {
+  // Always repaint the header and every visible edit row.  If the
+  // terminal scrolled (a newline or a wrap on the last row shifts the
+  // whole screen up), the header is otherwise never rewritten and
+  // leftover message text stays in rows 1-5.
+  draw_header();
+  fs_.DrawTopBar();
 
-  // Never go below top line.
-  const auto start_line = std::max<int>(t.start.line, top_line());
-  auto last_color = -1;
+  // Never write at or below lines_end() (the status bar).
+  const auto paints = plan_edit_area_paints(top_line(), size_int(e),
+                                            fs_.lines_start(), fs_.lines_end());
 
-  for (auto i = start_line; i <= t.end.line; i++) {
-    auto y = i - top_line() + fs_.lines_start();
-    if (y >= fs_.lines_end()) {
-      break;
+  for (const auto& p : paints) {
+    if (!row_in_edit_area(p.y, fs_.lines_start(), fs_.lines_end())) {
+      continue;
     }
-    if (i >= size_int(e)) {
-      break;
+    if (p.line < 0) {
+      paint_edit_row(bout_, p.y, fs_.screen_width(), fs_.screen_length(), {});
+      continue;
     }
-    bout_.goxy(1, y);
-    auto& rl = e.line(i);
-    if (i == e.curli) {
-      for (const auto& c : rl.cells()) {
-        // Draw char by char for the current line so we don't display
-        // color codes where we are editing.
-        if (c.wwiv_color != last_color) {
-          last_color = c.wwiv_color;
-          bout_.ansic(c.wwiv_color);
-        }
-        bout_.outchr(c.ch);
-      }
-    } else {
-      bout_.outstr(rl.to_colored_text(-1));
-    }
-    clear_rest_of_row(size_int(rl.cells()));
-  }
-
-  // Clean up the bottom.
-  // clear the current and then remaining
-  if (size_int(e) == t.end.line + 1) {
-    for (auto z = size_int(e) - top_line() + fs_.lines_start(); z < fs_.lines_end(); z++) {
-      bout_.goxy(1, z);
-      bout_.clreol();
-    }
+    paint_edit_row(bout_, p.y, fs_.screen_width(), fs_.screen_length(), e.line(p.line).cells());
   }
 
   // Quote return, help, and viewport scroll all redraw lines through
   // this path, and a full-width last row can wipe the status bar.
   invalidate_bottom_bar();
   draw_bottom_bar(e);
+  // Rewrite the command line (the last terminal row) carefully, then
+  // park the cursor back in the edit area so a later write cannot
+  // autowrap off the bottom and scroll the screen.
+  ClearCommandLine();
+  clear_below_frame();
+  gotoxy(e);
 }
 
 void FsedView::draw_header() {
+  // Position each header row with CUP, never CR/LF.  A newline issued
+  // while the cursor is on the last terminal row scrolls the whole
+  // screen and the header is replaced by leftover message text.
   const auto oldcuratr = bout_.curatr();
-  bout_.cls();
   const auto to = data_.to_name.empty() ? "All" : data_.to_name;
-  bout_.print("|#7From: |#2{}\r\n", data_.from_name);
-  bout_.print("|#7To:   |#2{}\r\n", to);
-  bout_.print("|#7Area: |#2{}\r\n", data_.sub_name);
-  bout_.print("|#7{}|#2{}\r\n", (file_ ? "File: " : "Subj: "), data_.title);
-
+  const std::string lines[4] = {
+      fmt::format("|#7From: |#2{}", data_.from_name),
+      fmt::format("|#7To:   |#2{}", to),
+      fmt::format("|#7Area: |#2{}", data_.sub_name),
+      fmt::format("|#7{}|#2{}", (file_ ? "File: " : "Subj: "), data_.title),
+  };
+  const int last = fs_.screen_length();
+  for (int i = 0; i < 4; ++i) {
+    const int y = clamp_screen_row(i + 1, last);
+    bout_.goxy(1, y);
+    bout_.clreol();
+    bout_.goxy(1, y);
+    bout_.outstr(lines[i]);
+    // Long From/Subj lines must not autowrap onto the next header row.
+    bout_.goxy(1, y);
+  }
   bout_.setc(oldcuratr);
 }
 
@@ -178,25 +202,36 @@ void FsedView::invalidate_bottom_bar() {
   sline_color_ = -1;
 }
 
-void FsedView::clear_rest_of_row(int cols_written) {
-  // Writing screen_width characters starting at column 1 wraps the
-  // cursor onto the next row.  The last message row's next row is the
-  // status bar (lines_end_ == screen_length_ - 1).  Skip ESC[K in that
-  // case so we do not erase the bar; a shorter line is still cleared.
-  if (cols_written < fs_.screen_width()) {
+void FsedView::clear_below_frame() {
+  // The command line is the last row of the frame (row 24 on an 80x24
+  // terminal).  Do not CUP to row 25 or beyond: Output::goxy only clamps
+  // to the *session* line count (often the stock 25), so a 24-row web
+  // terminal can be sent "row 25", which scrolls the whole screen and
+  // wipes the header.  There is nothing below the command line to clear
+  // on a frame that already fills the terminal.
+  const int max_y = fs_.screen_length();
+  const int first = fs_.command_line() + 1;
+  for (int y = first; y <= first + 2; ++y) {
+    if (row_below_frame(y, max_y)) {
+      break;
+    }
+    bout_.goxy(1, clamp_screen_row(y, max_y));
     bout_.clreol();
   }
 }
 
 void FsedView::redraw() { 
+  bout_.cls();
   draw_header(); 
   fs_.DrawTopBar();
   invalidate_bottom_bar();
   fs_.DrawBottomBar("");
   ClearCommandLine();
+  clear_below_frame();
 }
 
 void FsedView::redraw(const FsedModel& ed) {
+  bout_.cls();
   draw_header();
   fs_.DrawTopBar();
   // reset the cache that is used by draw_bottom_bar so that
@@ -205,6 +240,7 @@ void FsedView::redraw(const FsedModel& ed) {
   invalidate_bottom_bar();
   draw_bottom_bar(ed);
   ClearCommandLine();
+  clear_below_frame();
 }
 
 void FsedView::draw_bottom_bar(const FsedModel& ed) {

@@ -19,8 +19,11 @@
 #include "bbs/bbs_helper.h"
 #include "core/stl.h"
 #include "fsed/model.h"
+#include "fsed/view_rows.h"
+#include "fsed/newline.h"
 
 #include "gtest/gtest.h"
+#include <algorithm>
 #include <memory>
 #include <string>
 
@@ -462,7 +465,7 @@ TEST_F(FsedModelWithViewTest, EnterMidLine_DoesNotConcatenateOntoNextParagraph) 
 }
 
 TEST_F(FsedModelWithViewTest, BackspaceJoin_PreservesSpaceAfterMaryland) {
-  ed.set_max_line_len(80);
+  ed.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
   add("are from Maryland.\nTrying this");
   ed.cursor_home();
   ed.bs();
@@ -519,7 +522,9 @@ TEST_F(FsedModelWithViewTest, WrapsAtLastSpaceEvenIfInFirstHalf) {
 
 // Frank's video A: typing at the end of a soft-wrapped paragraph must flow
 // into the next continuation, not leave a dangling overflow line.  The BBS
-// default max_line_len_ is 79; runtime uses the screen width (often 80).
+// default max_line_len_ is 79; runtime wraps at screen width minus 1
+// (79 on an 80-column terminal) so a full-width write cannot autowrap
+// onto the status bar.
 // "Alaska... I" is 74 characters, so " am g" reaches 79 and must wrap.
 TEST_F(FsedModelWithViewTest, ParagraphReflow_OverflowJoinsContinuation) {
   const std::string line0 =
@@ -595,14 +600,14 @@ TEST_F(FsedModelWithViewTest, ParagraphReflow_DeletePullsWordsUp) {
 }
 
 // Video B: inserting at column 0 of a full-width line must wrap rather than
-// leave text past max_line_len.  Runtime width is often 80.
-TEST_F(FsedModelWithViewTest, MidLineInsert_OnFullWidthLine_WrapsAt80) {
+// leave text past max_line_len.  Runtime wrap is screen width minus 1 (79).
+TEST_F(FsedModelWithViewTest, MidLineInsert_OnFullWidthLine_WrapsAtWidthMinusOne) {
   const std::string retired =
       "retired from the Navy in Laurel, but I continued doing the same job for the";
-  const std::string full = retired + " 1234"; // 80 characters
-  ASSERT_EQ(80, static_cast<int>(full.size()));
+  const std::string full = retired + " 123"; // 79 characters
+  ASSERT_EQ(79, static_cast<int>(full.size()));
 
-  ed.set_max_line_len(80);
+  ed.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
   std::vector<wwiv::fsed::line_t> lines;
   lines.emplace_back(false, full);
   ed.set_lines(std::move(lines));
@@ -612,14 +617,14 @@ TEST_F(FsedModelWithViewTest, MidLineInsert_OnFullWidthLine_WrapsAt80) {
   add("I ");
 
   for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
-    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), 80) << line_text(ed.line(i));
+    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), 79) << line_text(ed.line(i));
   }
   EXPECT_TRUE(ed.line(0).wrapped());
   EXPECT_GE(wwiv::stl::size_int(ed), 2);
   const auto all = joined_text(ed);
   EXPECT_NE(std::string::npos, all.find("I "));
   EXPECT_NE(std::string::npos, all.find(retired));
-  EXPECT_NE(std::string::npos, all.find("1234"));
+  EXPECT_NE(std::string::npos, all.find(" 123"));
   EXPECT_EQ("I " + full, all);
 }
 
@@ -663,4 +668,325 @@ TEST_F(FsedModelWithViewTest, ToLines_SoftWrapMarkerIsNotText) {
   const auto t = line_text(reloaded);
   EXPECT_EQ(std::string::npos, t.find('\x1'));
   EXPECT_EQ(saved[0].substr(0, saved[0].size() - 1), t);
+}
+
+
+static void expect_viewport_consistent(const wwiv::fsed::FsedModel& ed, const FakeView& view,
+                                       const char* where) {
+  EXPECT_GE(ed.cy, 0) << where;
+  EXPECT_LE(ed.cy, view.max_view_lines()) << where;
+  EXPECT_GE(view.top_line(), 0) << where;
+  EXPECT_EQ(ed.curli, view.top_line() + ed.cy) << where;
+}
+
+// Enter on the last visible row must scroll top_line, not grow cy past the
+// viewport (the paste path: each CR is enter()).
+TEST_F(FsedModelWithViewTest, EnterAtBottom_ScrollsTopLine) {
+  const int vis = view->max_view_lines(); // max cy; visible rows = vis+1
+  for (int i = 0; i < vis; i++) {
+    ed.enter();
+    expect_viewport_consistent(ed, *view, "filling");
+  }
+  EXPECT_EQ(0, view->top_line());
+  EXPECT_EQ(vis, ed.cy);
+  EXPECT_EQ(vis, ed.curli);
+
+  ed.enter();
+  expect_viewport_consistent(ed, *view, "first scroll");
+  EXPECT_EQ(1, view->top_line());
+  EXPECT_EQ(vis, ed.cy);
+  EXPECT_EQ(vis + 1, ed.curli);
+
+  for (int i = 0; i < 5; i++) {
+    ed.enter();
+    expect_viewport_consistent(ed, *view, "more enters");
+  }
+  EXPECT_EQ(6, view->top_line());
+}
+
+// Simulate a web-terminal paste: a long burst of characters and CRs, including
+// blank lines and lines longer than the viewport width.
+TEST_F(FsedModelWithViewTest, PasteBurst_LongDocument_ViewportConsistent) {
+  ed.set_max_line_len(wwiv::fsed::editor_wrap_columns(view->max_view_columns()));
+  std::string burst;
+  burst += "# Title\n\n";
+  for (int i = 0; i < 120; i++) {
+    if (i % 7 == 0) {
+      burst += "\n";
+      continue;
+    }
+    if (i % 5 == 0) {
+      burst += "This is a long pasted line that will wrap past the viewport width for sure!\n";
+      continue;
+    }
+    burst += fmt::format("Line number {} of the pasted document.\n", i);
+  }
+  add(burst);
+  expect_viewport_consistent(ed, *view, "after paste");
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), ed.max_line_len()) << line_text(ed.line(i));
+  }
+  EXPECT_GT(view->top_line(), 0);
+  EXPECT_GT(ed.curli, view->max_view_lines());
+
+  // Scroll to the top, then back to the bottom.
+  while (ed.curli > 0) {
+    ed.cursor_up();
+    expect_viewport_consistent(ed, *view, "scrolling up");
+  }
+  EXPECT_EQ(0, view->top_line());
+  EXPECT_EQ(0, ed.cy);
+
+  while (ed.curli < wwiv::stl::size_int(ed) - 1) {
+    ed.cursor_down();
+    expect_viewport_consistent(ed, *view, "scrolling down");
+  }
+  EXPECT_EQ(ed.curli, view->top_line() + ed.cy);
+  EXPECT_LE(ed.cy, view->max_view_lines());
+}
+
+TEST_F(FsedModelWithViewTest, ScrollUpDown_ShortThenLong) {
+  add_test_lines(40);
+  ed.cursor_eof();
+  expect_viewport_consistent(ed, *view, "eof");
+  const int bottom_top = view->top_line();
+  EXPECT_GT(bottom_top, 0);
+
+  for (int i = 0; i < 15; i++) {
+    ed.cursor_up();
+    expect_viewport_consistent(ed, *view, "up");
+  }
+  for (int i = 0; i < 30; i++) {
+    ed.cursor_down();
+    expect_viewport_consistent(ed, *view, "down");
+  }
+  expect_viewport_consistent(ed, *view, "done");
+}
+
+
+// Apply a paste the same way the FSED key loop does: CR and a lone LF
+// start a new line; LF after CR is ignored (Windows CRLF).
+static void paste_keys(wwiv::fsed::FsedModel& ed, const std::string& s) {
+  bool last_was_cr = false;
+  for (const unsigned char ch : s) {
+    if (wwiv::fsed::consume_line_break(static_cast<int>(ch), last_was_cr)) {
+      ed.enter();
+      continue;
+    }
+    if (ch >= 32) {
+      ed.add(static_cast<char>(ch));
+    }
+  }
+}
+
+static int max_line_cells(const wwiv::fsed::FsedModel& ed) {
+  int m = 0;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    m = std::max(m, wwiv::stl::size_int(ed.line(i)));
+  }
+  return m;
+}
+
+TEST_F(FsedModelWithViewTest, Paste_CrLf_LongListItemsWrapAndDoNotDuplicate) {
+  ed.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
+  const std::string burst =
+      "Ordinary paragraph that has plenty of spaces and wraps cleanly onto the next editor row.\r\n"
+      "\r\n"
+      "1. **Build + tokenizer**  CMake/FindHunspell, `SpellDictionary` + stub, `spell_text` and tests. No UI, no config schema.\r\n"
+      "2. **Config + FSED UI** \xE2\x80\x94 `spell_config_t`, menuset field, sidecar + word lists, defaults **P**.\r\n"
+      "A digit applies that suggestion; then reflow. Ignore (I) skips this occurrence; 'G' ignores that word for the rest of the pass. 'A' adds the word to the user's personal dictionary.\r\n"
+      "5. **Scope:** FSED only for v1, or should the line editor get a later hook?\r\n";
+  paste_keys(ed, burst);
+
+  EXPECT_LE(max_line_cells(ed), ed.max_line_len());
+  bool found_item1 = false;
+  bool found_scope = false;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    const auto t = line_text(ed.line(i));
+    if (t.find("1. **Build + tokenizer**") == 0) {
+      found_item1 = true;
+      EXPECT_LE(wwiv::stl::size_int(ed.line(i)), ed.max_line_len()) << t;
+      // The rest of the list item must continue on the next soft-wrapped line,
+      // not be cut off in the model.
+      EXPECT_TRUE(ed.line(i).wrapped());
+      ASSERT_LT(i + 1, wwiv::stl::size_int(ed));
+      EXPECT_NE(std::string::npos, line_text(ed.line(i + 1)).find("No UI, no config schema."));
+    }
+    if (t.find("5. **Scope:**") == 0) {
+      found_scope = true;
+    }
+    if (i > 0 && !t.empty()) {
+      EXPECT_NE(t, line_text(ed.line(i - 1))) << "consecutive duplicate line at " << i;
+    }
+  }
+  EXPECT_TRUE(found_item1);
+  EXPECT_TRUE(found_scope);
+  expect_viewport_consistent(ed, *view, "after crlf paste");
+}
+
+TEST_F(FsedModelWithViewTest, Paste_UnixLf_KeepsHardBreaksAndWraps) {
+  ed.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
+  const std::string burst =
+      "1. **Build + tokenizer**  CMake/FindHunspell, `SpellDictionary` + stub, `spell_text` and tests.\n"
+      "5. **Scope:** FSED only for v1, or should the line editor get a later hook?\n";
+  paste_keys(ed, burst);
+
+  EXPECT_LE(max_line_cells(ed), ed.max_line_len());
+  bool found_item1 = false;
+  bool found_scope = false;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    const auto t = line_text(ed.line(i));
+    if (t.find("1. **Build + tokenizer**") == 0) {
+      found_item1 = true;
+    }
+    if (t.find("5. **Scope:**") == 0) {
+      found_scope = true;
+      // A lone LF must start a new paragraph, not join this onto item 1.
+      EXPECT_EQ(std::string::npos, t.find("spell_text"));
+    }
+  }
+  EXPECT_TRUE(found_item1);
+  EXPECT_TRUE(found_scope);
+}
+
+TEST_F(FsedModelWithViewTest, WrapOntoNextRow_NewLineHasOnlyOverflow) {
+  ed.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
+  const std::string line = "5. **Scope:** FSED only for v1, or should the line editor get a later hook?";
+  ASSERT_LT(static_cast<int>(line.size()), ed.max_line_len());
+  paste_keys(ed, line);
+  ASSERT_EQ(1, wwiv::stl::size_int(ed)); // may be 2 if trailing empty? no newline
+  // Type enough to wrap the last word onto a new row.
+  paste_keys(ed, " extra words that force a wrap onto the next editor row now");
+  EXPECT_LE(max_line_cells(ed), ed.max_line_len());
+  EXPECT_GE(wwiv::stl::size_int(ed), 2);
+  EXPECT_TRUE(ed.line(0).wrapped());
+  const auto last = line_text(ed.line(wwiv::stl::size_int(ed) - 1));
+  // The new row is only the overflow; it must not still contain the whole
+  // original line (the stale-tail bug).
+  EXPECT_EQ(std::string::npos, last.find("5. **Scope:**"));
+  EXPECT_NE(std::string::npos, joined_text(ed).find("later hook?"));
+  EXPECT_NE(std::string::npos, joined_text(ed).find("extra words that force a wrap"));
+}
+
+TEST_F(FsedModelWithViewTest, Paste_PipeCodesStayInTheLine) {
+  ed.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
+  paste_keys(ed, "strip heart and pipe (`|#n`, `|nn`) codes; skip quoted lines.\r\n");
+  bool found = false;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    const auto t = line_text(ed.line(i));
+    if (t.find("|#n") != std::string::npos || t.find("|nn") != std::string::npos) {
+      found = true;
+    }
+    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), ed.max_line_len()) << t;
+  }
+  EXPECT_TRUE(found);
+}
+
+
+// Exact last block of the spellcheck plan (Unix newlines;
+// item 4 uses typographic quotes).  Wrapped at 79 this is about 12 lines,
+// but a sysop paste of the whole plan is 173 lines and hits
+// GetMaxMessageLinesAllowed() (120).  Refusing to reflow at that cap
+// left these items wider than the screen.
+static const char kOpenQuestionsBlock[] =
+    "## Open questions for Rushfan\n"
+    "\n"
+    "1. **License:** is optional, dynamically linked Hunspell acceptable for an Apache-2.0 tree? Static vcpkg linking on Windows may be harder. Alternative engines?\n"
+    "2. **User storage:** agree on the `data/spell/users/{usernum}.json` sidecar, or prefer burning `res_byte`/`res_char` in `userrec` (without changing the 1024-byte layout)?\n"
+    "3. **Dictionaries:** require the sysop to install them, or ship `en_US` under `install/dict`?\n"
+    "4. **Save behavior:** auto-run the walk on Save when enabled (as above), or prompt \xE2\x80\x9CSpell check before saving?\xE2\x80\x9D first?\n"
+    "5. **Scope:** FSED only for v1, or should the line editor get a later hook?\n";
+
+static void expect_open_questions_wrapped(const wwiv::fsed::FsedModel& ed,
+                                          const char* where) {
+  EXPECT_LE(max_line_cells(ed), ed.max_line_len()) << where;
+  const auto all = joined_text(ed);
+  EXPECT_NE(std::string::npos, all.find("Apache-2.0 tree?")) << where;
+  EXPECT_NE(std::string::npos, all.find("or prefer burning `res_byte`")) << where;
+  EXPECT_NE(std::string::npos, all.find("`install/dict`?")) << where;
+  EXPECT_NE(std::string::npos, all.find("4. **Save behavior:**")) << where;
+  EXPECT_NE(std::string::npos, all.find("5. **Scope:** FSED only for v1")) << where;
+
+  bool saw_apache = false;
+  for (int i = 0; i < wwiv::stl::size_int(ed); i++) {
+    const auto t = line_text(ed.line(i));
+    EXPECT_LE(wwiv::stl::size_int(ed.line(i)), ed.max_line_len()) << where << " :" << t;
+    // Mid-word terminal autowrap of unwrapped item 1 split at column 80:
+    // "... an Apach" / "e-2.0 tree?...".  Word wrap keeps Apache-2.0 intact.
+    EXPECT_NE(0u, t.find("e-2.0 tree?")) << where << " :" << t;
+    EXPECT_FALSE(t.size() >= 5 && t.compare(t.size() - 5, 5, "Apach") == 0) << where << " :" << t;
+    if (t.find("Apache-2.0") != std::string::npos) {
+      saw_apache = true;
+    }
+    if (t.find("2. **User storage:**") == 0) {
+      EXPECT_TRUE(ed.line(i).wrapped()) << where;
+      ASSERT_LT(i + 1, wwiv::stl::size_int(ed)) << where;
+      EXPECT_NE(std::string::npos, line_text(ed.line(i + 1)).find("or prefer burning"))
+          << where;
+    }
+  }
+  EXPECT_TRUE(saw_apache) << where;
+}
+
+static std::string crlf_copy(const std::string& s) {
+  std::string out;
+  out.reserve(s.size() + 8);
+  for (char c : s) {
+    if (c == '\n') {
+      out += "\r\n";
+    } else {
+      out += c;
+    }
+  }
+  return out;
+}
+
+TEST_F(FsedModelWithViewTest, Paste_OpenQuestionsBlock_WrapsAtWordBoundaries) {
+  ed.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
+  paste_keys(ed, kOpenQuestionsBlock);
+  expect_open_questions_wrapped(ed, "unix lf, under maxli");
+  expect_viewport_consistent(ed, *view, "unix lf, under maxli");
+}
+
+TEST_F(FsedModelWithViewTest, Paste_OpenQuestionsBlock_CrLf_WrapsAtWordBoundaries) {
+  ed.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
+  paste_keys(ed, crlf_copy(kOpenQuestionsBlock));
+  expect_open_questions_wrapped(ed, "crlf, under maxli");
+}
+
+// Sysop cap is 120 lines.  Fill almost to that cap, then paste the exact
+// final block.  Reflow must still wrap; otherwise the last items stay
+// 159/170-character lines and the terminal autowraps mid-word at column 80.
+TEST_F(FsedModelWithViewTest, Paste_OpenQuestionsBlock_AtSysopMaxli_StillWraps) {
+  wwiv::fsed::FsedModel ed120{120};
+  auto v = std::make_shared<FakeView>();
+  ed120.set_view(v);
+  ed120.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
+
+  std::string burst;
+  // 118 short lines plus the heading/blank of the block reaches the cap
+  // before item 1 would wrap (same situation as the full 173-line plan).
+  for (int i = 0; i < 118; i++) {
+    burst += "Filler line.\n";
+  }
+  burst += kOpenQuestionsBlock;
+  paste_keys(ed120, burst);
+  expect_open_questions_wrapped(ed120, "unix lf, at sysop maxli");
+  expect_viewport_consistent(ed120, *v, "unix lf, at sysop maxli");
+  EXPECT_GT(wwiv::stl::size_int(ed120), 120);
+}
+
+TEST_F(FsedModelWithViewTest, Paste_OpenQuestionsBlock_AtSysopMaxli_CrLf_StillWraps) {
+  wwiv::fsed::FsedModel ed120{120};
+  auto v = std::make_shared<FakeView>();
+  ed120.set_view(v);
+  ed120.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
+
+  std::string burst;
+  for (int i = 0; i < 118; i++) {
+    burst += "Filler line.\n";
+  }
+  burst += crlf_copy(kOpenQuestionsBlock);
+  paste_keys(ed120, burst);
+  expect_open_questions_wrapped(ed120, "crlf, at sysop maxli");
 }

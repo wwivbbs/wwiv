@@ -30,13 +30,17 @@
 #include "fsed/common.h"
 #include "fsed/line.h"
 #include "fsed/model.h"
+#include "fsed/newline.h"
 #include "fsed/view.h"
+#include "fsed/view_rows.h"
+#include "local_io/keycodes.h"
 
 #include <memory>
 #include <string>
 
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::local::io;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -44,7 +48,12 @@ namespace wwiv::fsed {
 
 static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file, const wwiv::sdk::User* user) {
   const auto screen_width = (user != nullptr) ? user->screen_width() : 80;
-  const auto screen_length = (user != nullptr) ? user->screen_lines() - 1 : 24;
+  // Do not blindly use screen_lines()-1: a user who already set 24 to
+  // match the web terminal would get a 23-row frame and leftover text
+  // on the two rows under the status bar.  A 25-line default still
+  // becomes 24, which fills an 80x24 web client.
+  const auto screen_length = fullscreen_length_for_user_lines(
+      (user != nullptr) ? user->screen_lines() : 24);
   const auto num_header_lines = 4;
   auto fs = FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
   auto view = std::make_shared<FsedView>(fs, data, file);
@@ -113,7 +122,8 @@ bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
   auto view = create_frame(data, file, &ctx.u());
   ed.set_view(view);
   auto& fs = view->fs();
-  ed.set_max_line_len(view->max_view_columns());
+  // Wrap at width-1 so a full line cannot autowrap onto the status bar.
+  ed.set_max_line_len(editor_wrap_columns(view->max_view_columns()));
   ed.add_callback([&view](FsedModel& e, editor_range_t t) {
     view->handle_editor_invalidate(e, t);
     });
@@ -133,11 +143,29 @@ bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
   // Add the menu command since that needs the state variables
   // from here.
 
+  // So a CRLF paste does not insert a blank line after every line, and a
+  // lone LF (Unix clipboard) still starts a new paragraph.
+  bool last_was_cr = false;
+
   // top editor line number in thw viewable area.
   while (!state.done) {
+    // When a paste burst (or any run of keys) has drained, repaint every
+    // visible row before waiting for the next key.  That clears leftover
+    // terminal autowrap from a long unwrapped line and restores the
+    // header if anything still scrolled.
+    if (!bin.bkbhit()) {
+      ed.invalidate_to_eof(view->top_line());
+    }
     view->gotoxy(ed);
 
     const auto key = view->bgetch(ed);
+    if (key == RETURN || key == SOFTRETURN) {
+      if (consume_line_break(key, last_was_cr)) {
+        commands.InvokeCommand(fsed_command_id::key_return, ed, *view, state);
+      }
+      continue;
+    }
+    last_was_cr = false;
     if (key < 0xff && key >= 32) {
       const auto c = static_cast<char>(key & 0xff);
 
@@ -150,8 +178,13 @@ bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
           continue;
         }
       }
-      view->gotoxy(ed);
-      view->outchr(ed.curline().wwiv_color(), c);
+      // Do not echo a character that would wrap from the last column onto
+      // the next row (the status bar, if this is the last edit row).  Let
+      // add() reflow and the viewport redraw handle the display instead.
+      if (ed.cx < ed.max_line_len()) {
+        view->gotoxy(ed);
+        view->outchr(ed.curline().wwiv_color(), c);
+      }
       ed.add(c);
       continue;
     }
@@ -160,8 +193,9 @@ bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
     }
   }
 
-  fs.ClearCommandLine();
-  fs.PutsCommandLine("");
+  // Leave a clean screen so the caller can print "Aborted." / "Saving..."
+  // without leftover editor text on the same lines.
+  view->cls();
   return state.save;
 }
 

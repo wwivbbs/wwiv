@@ -59,6 +59,10 @@ static void retreat_cy(FsedModel& ed, editor_viewport_t& view) {
     --ed.cy;
   } else {
     view.set_top_line(ed.curli);
+    // Scrolling the viewport must repaint the whole visible window;
+    // otherwise the first rows keep stale text (and a paste of many
+    // lines leaves the original first line frozen at the top).
+    ed.invalidate_to_eof(view.top_line());
   }
 }
 
@@ -154,11 +158,10 @@ editor_add_result_t FsedModel::add(char c) {
   if (!reflow_paragraph()) {
     return editor_add_result_t::error;
   }
-  // Lines below may have been pushed down or reflowed.  The old code only
-  // invalidated start_line..curli, so the shifted lines stayed put on
-  // screen and looked like they had been overwritten (#1343).  enter()
-  // already invalidates to EOF for the same reason.
-  invalidate_to_eof(start_line);
+  // Reflow can grow the paragraph and sync_viewport() may scroll
+  // top_line.  Always repaint from the first *visible* line; starting
+  // at start_line after a scroll leaves the top rows stale.
+  invalidate_to_eof(view_ ? view_->top_line() : start_line);
   return editor_add_result_t::wrapped;
 }
 
@@ -252,12 +255,12 @@ bool FsedModel::reflow_paragraph() {
   if (wrapped.empty()) {
     wrapped.emplace_back();
   }
-  if (size_int(lines_) - (end - start) + size_int(wrapped) > maxli() &&
-      size_int(wrapped) > (end - start)) {
-    // Would exceed max lines; leave text as-is rather than drop it.
-    return false;
-  }
-
+  // Always install the wrapped lines, even if that grows the document
+  // past maxli().  maxli() still stops insert_line() from adding a new
+  // hard-broken paragraph, but refusing to reflow leaves a line wider
+  // than the screen.  The terminal then autowraps mid-word onto the next
+  // row, and later lines paint over that overflow.  That is what broke
+  // the last block of a long paste once the sysop 120-line cap was hit.
   lines_.erase(lines_.begin() + start, lines_.begin() + end);
   lines_.insert(lines_.begin() + start, wrapped.begin(), wrapped.end());
 
@@ -766,7 +769,9 @@ bool FsedModel::enter() {
   // Restore the wwiv color on the new line so we don't reset to 0.
   curline().set_wwiv_color(previous_color);
   cx = 0;
-  invalidate_to_eof(orig_start_line);
+  // After Enter at the last visible row, top_line has moved.  Repaint
+  // the whole window so the first visible row is not left frozen.
+  invalidate_to_eof(view_ ? view_->top_line() : orig_start_line);
   current_line_dirty(orig_start_line);
   return true;
 }
