@@ -353,7 +353,8 @@ std::wstring cp437_to_utf8w(const std::string& in) {
 }
 
 // Decodes one UTF-8 code point starting at in[i], advancing i. Returns
-// 0xFFFFFFFF for an invalid sequence.
+// 0xFFFFFFFF for an invalid sequence, including overlong encodings (like
+// C0 80 for NUL), UTF-16 surrogates and anything past U+10FFFF.
 static uint32_t decode_utf8(const std::string& in, std::string::size_type& i) {
   const auto c = static_cast<uint8_t>(in[i++]);
   if (c < 0x80) {
@@ -378,6 +379,10 @@ static uint32_t decode_utf8(const std::string& in, std::string::size_type& i) {
       return 0xffffffff;
     }
     cp = (cp << 6) | (static_cast<uint8_t>(in[i++]) & 0x3f);
+  }
+  static constexpr uint32_t min_cp[] = {0, 0x80, 0x800, 0x10000};
+  if (cp < min_cp[extra] || (cp >= 0xd800 && cp <= 0xdfff) || cp > 0x10ffff) {
+    return 0xffffffff;
   }
   return cp;
 }

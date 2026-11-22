@@ -191,6 +191,22 @@ already in an existing `CMakeCache.txt`, so a `_build` or `out` directory
 configured before this change still has both ON. Delete the cache, or pass
 `-DWWIV_INSTALL=OFF -DWWIV_ZIP_INSTALL_FILES=OFF`, to pick up the new defaults.
 
+### Faster builds
+
+The build uses these automatically when they are installed; nothing else to
+configure. Re-run the configure step after installing one.
+
+Tool | What it does
+---- | ------------
+[ccache](https://ccache.dev/) or [sccache](https://github.com/mozilla/sccache) | Caches compiled objects, so rebuilding unchanged files (after switching branches, or in a fresh build directory) is nearly instant. On Linux: `sudo apt install ccache`. With MSVC this needs CMake 3.25 or newer, and the build then puts debug info in the object files (`/Z7`) instead of a shared PDB.
+[mold](https://github.com/rui314/mold) or lld | A much faster linker than the default GNU `ld` (Linux only). On Debian/Ubuntu: `sudo apt install mold` (needs GCC 12+) or `sudo apt install lld`.
+
+To turn them off, configure with `-DWWIV_USE_COMPILER_CACHE=OFF` or
+`-DWWIV_USE_FAST_LINKER=OFF`. The release build scripts in `builds/jenkins/wwiv`
+turn both off, so released binaries don't depend on what the build machine has
+installed. Building only what you are working on also helps,
+e.g. `cmake --build --preset linux-debug --target bbs`.
+
 ### Troubleshooting
 
 * **"Missing ... the git submodules have not been checked out"**: run

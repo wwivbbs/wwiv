@@ -41,8 +41,7 @@ void spell_check_settings(wwiv::sdk::Config&, wwiv::sdk::spell_config_t& s, Curs
   ++y;
   items.add(new Label("Dictionary Dir:"),
             new StringEditItem<std::string&>(60, s.dict_dir, EditLineMode::ALL),
-            "Directory searched first for dictionaries. Empty uses BBSDIR/dict, "
-            "/usr/share/hunspell",
+            "Checked first (relative to BBSDIR), then BBSDIR/dict, then /usr/share/hunspell",
             1, y);
 
   items.add_aligned_width_column(1);

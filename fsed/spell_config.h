@@ -103,7 +103,10 @@ public:
 
   // Loads the list. A missing file is an empty list and still succeeds.
   bool Load();
-  // Saves the list, creating the directory if needed.
+  // Saves the list, creating the directory if needed. Fails without writing
+  // anything if the last Load failed, so that a list that could not be read
+  // is not replaced by only the words added since. Words already in the
+  // file (added elsewhere since the Load) are kept.
   bool Save() const;
   // Adds a word. Returns false if the word is empty or already present.
   bool add(const std::string& word);
@@ -114,6 +117,7 @@ public:
 private:
   std::filesystem::path path_;
   std::set<std::string> words_;
+  bool load_failed_{false};
 };
 
 } // namespace wwiv::fsed

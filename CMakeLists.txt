@@ -8,6 +8,12 @@ if(POLICY CMP0092)
   # MSVC warning flags are not in CMAKE_<LANG>_FLAGS by default.
   cmake_policy(SET CMP0092 NEW)
 endif()
+if(POLICY CMP0141)
+  # MSVC debug info format is chosen by CMAKE_MSVC_DEBUG_INFORMATION_FORMAT,
+  # which cmake/BuildSpeed.cmake uses to select /Z7 for ccache/sccache. The
+  # default is unchanged (/Zi for Debug). Must be set before project().
+  cmake_policy(SET CMP0141 NEW)
+endif()
 
 # Required git submodules. Fail early with a useful message instead of a
 # confusing error later on.
@@ -34,6 +40,22 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     CACHE FILEPATH "Vcpkg toolchain file")
 endif()
 
+# FSED spell check (Hunspell). This has to be decided before project() since
+# that is when vcpkg installs the packages from vcpkg.json. Windows has no
+# system Hunspell, so by default vcpkg builds it there (the "spellcheck"
+# feature in vcpkg.json). Linux uses the distro package (libhunspell-dev).
+option(WWIV_HUNSPELL "Include FSED spell check using Hunspell (if found)" ON)
+if(CMAKE_HOST_WIN32)
+  set(_wwiv_hunspell_vcpkg_default ON)
+else()
+  set(_wwiv_hunspell_vcpkg_default OFF)
+endif()
+option(WWIV_HUNSPELL_VCPKG "Have vcpkg build Hunspell (the spellcheck feature in vcpkg.json)"
+  ${_wwiv_hunspell_vcpkg_default})
+if(WWIV_HUNSPELL AND WWIV_HUNSPELL_VCPKG AND NOT "spellcheck" IN_LIST VCPKG_MANIFEST_FEATURES)
+  list(APPEND VCPKG_MANIFEST_FEATURES "spellcheck")
+endif()
+
 project(wwiv)
 
 
@@ -44,6 +66,8 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include_directories(${CMAKE_SOURCE_DIR})
 
 include(Common)
+# ccache/sccache and mold/lld, when installed. Before any targets are created.
+include(BuildSpeed)
 include(FindASan)
 find_package(fmt CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)

@@ -152,14 +152,20 @@ jobs:
         with:
           submodules: recursive
           
-      # vcpkg.json pins builtin-baseline to an older vcpkg commit, which needs
-      # the vcpkg submodule's history; checkout clones submodules shallow.
-      # Self-hosted runners keep their workspace, so it may already be complete.
-      - name: Unshallow vcpkg submodule
+      # vcpkg.json pins builtin-baseline to an older vcpkg commit than the
+      # submodule's, and checkout clones submodules shallow. vcpkg only needs
+      # that one commit (not the whole history), so fetch just it.
+      # Self-hosted runners keep their workspace, so it may already be there.
+      - name: Fetch vcpkg baseline commit
         shell: bash
         run: |
-          if [ "$(git -C vcpkg rev-parse --is-shallow-repository)" = "true" ]; then
-            git -C vcpkg fetch --unshallow
+          baseline=$(sed -n 's/.*"builtin-baseline": *"\([0-9a-f]*\)".*/\1/p' vcpkg.json)
+          if [ -z "${baseline}" ]; then
+            echo '::error::Could not read builtin-baseline from vcpkg.json (expected "builtin-baseline": "<sha>" on one line)'
+            exit 1
+          fi
+          if ! git -C vcpkg cat-file -e "${baseline}^{commit}" 2>/dev/null; then
+            git -C vcpkg fetch --depth=1 origin "${baseline}"
           fi
 
       - name: Get CMake
@@ -186,7 +192,10 @@ jobs:
         env:
           WWIV_ARCH: x86
           WWIV_RELEASE: 5.9.0
-          VCPKG_BINARY_SOURCES: clear
+          # vcpkg default local binary cache. Self-hosted runners keep it
+          # between runs, so dependencies are not rebuilt every time; on
+          # GitHub-hosted runners it starts empty. Only pushes to main run here.
+          VCPKG_BINARY_SOURCES: clear;default,readwrite
 
       - name: Build (Linux)
         if: ${{ matrix.os != 'windows-2022' }}
@@ -195,7 +204,10 @@ jobs:
         env:
           WWIV_ARCH: x86
           WWIV_RELEASE: 5.9.0
-          VCPKG_BINARY_SOURCES: clear
+          # vcpkg default local binary cache. Self-hosted runners keep it
+          # between runs, so dependencies are not rebuilt every time; on
+          # GitHub-hosted runners it starts empty. Only pushes to main run here.
+          VCPKG_BINARY_SOURCES: clear;default,readwrite
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
