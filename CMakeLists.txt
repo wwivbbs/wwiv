@@ -122,3 +122,9 @@ foreach(script ${WWIVBASIC_GOLDEN_SCRIPTS})
                    -DEXPECTED=${dir}/${name}.expected
                    -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_golden.cmake)
 endforeach()
+
+# basicrun accepts relative script paths that start with "./".
+add_test(NAME basicrun.dot_relative_path
+         COMMAND basicrun ./for.bas
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/golden)
+set_tests_properties(basicrun.dot_relative_path PROPERTIES PASS_REGULAR_EXPRESSION "^1\n2\n")

@@ -235,14 +235,15 @@ int CommandLineCommand::Parse(int start_pos) {
       }
       const auto value = s.substr(2);
       HandleCommandLineArgument(key, value);
-    } else if (s.front() == '.') {
-      // Were handling dot arguments.
-      if (!dot_argument_.empty()) {
-        // LOG's use of command_line never defines dot arguments.
-        VLOG(3) << "Ignoring dot argument since no mapping is defined by the application.";
-        const auto value = s.substr(1);
-        HandleCommandLineArgument(dot_argument_, value);
-      }
+    } else if (s.front() == '.' && !dot_argument_.empty()) {
+      // Dot arguments (".value") are only special when the application
+      // passes a non-empty dot_argument to the CommandLine constructor (the
+      // network tools pass "net", so ".1" means "--net=1"). Otherwise they
+      // are positional arguments, so that relative paths like "./file" work.
+      // TODO(rushfan): Port this fix to WWIV's core/command_line.cpp, which
+      // still drops "." arguments when dot_argument is empty.
+      const auto value = s.substr(1);
+      HandleCommandLineArgument(dot_argument_, value);
     } else {
       if (contains(commands_allowed_, s)) {
         // If s is a sub-command, parse it, incrementing our pointer.
