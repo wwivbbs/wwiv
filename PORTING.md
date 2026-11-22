@@ -23,6 +23,11 @@ form, and why.
 GOTO/GOSUB and labels, classes, lambdas and coroutines are not supported. Use
 `DEF ... ENDDEF` functions instead.
 
+Not supported: the `^` operator, numbers written with an exponent (`1e3`), and
+the functions `SQR`, `SIN`, `COS`, `TAN`, `ASIN`, `ACOS`, `ATAN`, `EXP`, `LOG`,
+`RND` and `SRND`. WWIV scripts need real numbers only for things like file
+sizes, times and ratios.
+
 Dicts (`dict()`) are not supported yet. WWIV's `wwiv.data.save` and `load` only
 support lists.
 
@@ -54,3 +59,14 @@ oneliners.bas:42: error: Unknown function 'outsrt'
 
 my_basic reported some of these and silently ignored others. Variables that
 were never assigned still read as empty, as before.
+
+## Real numbers
+
+Real numbers work as in my_basic: `7 / 2` is `3.5`, `6 / 2` is the integer
+`3`, a result that is a whole number becomes an integer (`1.5 + 1.5` is `3`),
+`MOD` works on integers, and reals print like `%g` (`3.14159`, `0.5`).
+
+The difference is precision: my_basic (as WWIV builds it) used 32-bit floats,
+which keep about 7 significant digits, and wwivbasic uses 64-bit doubles. A
+calculation can come out slightly differently in its last digits, but
+printed results (6 significant digits) are almost always the same.

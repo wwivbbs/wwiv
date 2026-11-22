@@ -15,6 +15,8 @@ tokens {
 	DUMMY
 }
 
+// A real number: 1.5 or .5. Listed before INT so "1.5" is one token.
+REAL: Digit+ '.' Digit+ | '.' Digit+;
 INT: Digit+;
 fragment Digit: [0-9];
 

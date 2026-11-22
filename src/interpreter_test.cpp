@@ -406,3 +406,35 @@ TEST_F(InterpreterTest, BooleanTimesIsInteger) {
 TEST_F(InterpreterTest, LenWithNoArgs) {
   EXPECT_EQ("0\n", run("print len()\n"));
 }
+
+// Real numbers (M3)
+
+TEST_F(InterpreterTest, RealLiterals) {
+  EXPECT_EQ("1.5 0.5 3.14159\n", run("print 1.5; \" \"; .5; \" \"; 3.14159265\n"));
+  EXPECT_TRUE(errors.empty()) << errors.front();
+}
+
+TEST_F(InterpreterTest, RealArithmetic) {
+  const std::string script = R"(
+print 7 / 2; " "; 6 / 2; " "; 0.1 + 0.2; " "; -1.5; " "; 10 - 2.5
+print 1 < 1.5; " "; 2 = 2.0; " "; 7.9 mod 2
+)";
+  EXPECT_EQ("3.5 3 0.3 -1.5 7.5\nTRUE TRUE 1\n", run(script));
+}
+
+TEST_F(InterpreterTest, NumberFunctions) {
+  const std::string script = R"(
+print abs(-1.5); " "; abs(-3); " "; sgn(-0.5); " "; round(2.5); " "; round(-2.5)
+print floor(-1.5); " "; ceil(1.2); " "; fix(-1.7); " "; val("1.5") + 1; " "; str(0.5) + "!"
+)";
+  EXPECT_EQ("1.5 3 -1 3 -3\n-2 2 -1 2.5 0.5!\n", run(script));
+}
+
+TEST_F(InterpreterTest, NativeFunctionWithDouble) {
+  interp.globals().native_function("KB", [](double bytes) { return bytes / 1024; });
+  EXPECT_EQ("1.5\n", run("print kb(1536)\n"));
+}
+
+TEST_F(InterpreterTest, SortReals) {
+  EXPECT_EQ("0.5 1 2.5 x ", run("for v in sort(list(\"x\", 2.5, 1, 0.5))\nprint v; \" \";\nnext\n"));
+}

@@ -8,7 +8,8 @@ Value val(const std::vector<Value>& v) {
   if (v.empty()) {
     return Value(0);
   }
-  return Value(v.front().toInt());
+  // VAL("1.5") is 1.5 and VAL("12") is 12; text that isn't a number is 0.
+  return Value::number(v.front().toDouble());
 }
 
 // LEN(s) is the length of a string; LEN(l) is the number of items in a list.

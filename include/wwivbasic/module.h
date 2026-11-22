@@ -40,6 +40,8 @@ template <typename T> T from_value(const Value& v) {
     return v.toBool();
   } else if constexpr (std::is_integral_v<D>) {
     return static_cast<D>(v.toInt());
+  } else if constexpr (std::is_floating_point_v<D>) {
+    return static_cast<D>(v.toDouble());
   } else if constexpr (std::is_same_v<D, std::string>) {
     return v.toString();
   } else {
@@ -56,6 +58,8 @@ template <typename R> Value to_value(R&& r) {
     return Value(static_cast<bool>(r));
   } else if constexpr (std::is_integral_v<D>) {
     return Value(static_cast<int>(r));
+  } else if constexpr (std::is_floating_point_v<D>) {
+    return Value(static_cast<double>(r));
   } else {
     return Value(std::string(r));
   }
@@ -105,7 +109,7 @@ basic_function_fn make_basic_fn(const std::string& name, std::function<R(Args...
 
 } // namespace detail
 
-// Wraps a C++ function taking and returning int, bool, std::string or Value
+// Wraps a C++ function taking and returning int, double, bool, std::string or Value
 // (or returning void) as a basic_function_fn. Arguments are converted to the
 // declared types and the argument count is checked.
 template <class F> basic_function_fn make_basic_fn(const std::string& name, F f) {

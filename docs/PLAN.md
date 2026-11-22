@@ -123,7 +123,7 @@ working.
       resolved at runtime (a module path if there is one, otherwise members
       of a variable), so `wwiv.io.outstr()` keeps working and
       `area.headers().count` parses
-- [ ] Floating-point numbers (`REAL`); `wwiv.data` files can contain REALs
+- [x] Floating-point numbers (`REAL`); `wwiv.data` files can contain REALs
 - [ ] Build options for embedding: use the embedder's `core` target when one
       exists, and skip `basicrun` and the tests
 

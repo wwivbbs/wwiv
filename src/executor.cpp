@@ -262,6 +262,10 @@ std::any ExecutionVisitor::visitRvalue(BasicParser::RvalueContext* context) {
   return Value();
 }
 
+std::any ExecutionVisitor::visitReal(BasicParser::RealContext* context) {
+  return Value(std::stod(context->getText()));
+}
+
 std::any ExecutionVisitor::visitInt(BasicParser::IntContext* context) {
   const auto text = context->getText();
   try {
@@ -280,7 +284,11 @@ std::any ExecutionVisitor::visitBoolean(BasicParser::BooleanContext* context) {
 }
 
 std::any ExecutionVisitor::visitNegate(BasicParser::NegateContext* context) {
-  return Value(-eval(context->expr()).toInt());
+  const auto v = eval(context->expr());
+  if (v.value_type() == Value::Type::REAL) {
+    return Value(-v.toDouble());
+  }
+  return Value::number(-static_cast<double>(v.toInt()));
 }
 
 std::any ExecutionVisitor::visitMulDiv(BasicParser::MulDivContext* context) {

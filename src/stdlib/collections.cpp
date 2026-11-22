@@ -157,11 +157,12 @@ void register_collections(Module& m) {
   m.native_functionl("SORT", [](const Args& args) {
     check_args("SORT", args, 1, 1);
     auto& items = args[0].list("SORT")->items;
-    // 0 for numbers and booleans, 1 for strings; lists can't be sorted.
+    // 0 for numbers (and booleans), 1 for strings; lists can't be sorted.
     auto rank = [](const Value& v) {
       switch (v.value_type()) {
       case Value::Type::BOOLEAN:
       case Value::Type::INTEGER:
+      case Value::Type::REAL:
         return 0;
       case Value::Type::STRING:
         return 1;
@@ -180,7 +181,7 @@ void register_collections(Module& m) {
       if (ra != rb) {
         return ra < rb;
       }
-      return ra == 0 ? a.toInt() < b.toInt() : a.toString() < b.toString();
+      return ra == 0 ? a.toDouble() < b.toDouble() : a.toString() < b.toString();
     });
     return args[0];
   });

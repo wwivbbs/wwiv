@@ -59,7 +59,7 @@ Context::Context(Console& console) : console(console) {
   root = module = &add_module("");
 
   // Numeric
-  root->native_function("ABS", stdlib::abs);
+  stdlib::register_numbers(*root);
 
   // common
   root->native_functionl("LEN", stdlib::len);

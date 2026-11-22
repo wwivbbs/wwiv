@@ -33,16 +33,21 @@ class Value {
 public:
   // LIST and ITERATOR values are references: copying the Value shares the
   // underlying list, as in my_basic.
-  enum class Type { BOOLEAN, INTEGER, STRING, LIST, ITERATOR };
+  enum class Type { BOOLEAN, INTEGER, REAL, STRING, LIST, ITERATOR };
 
   Value() : value_(std::string()), type(Type::STRING) {}
   explicit Value(bool b) : value_(b), type(Type::BOOLEAN) {}
   explicit Value(int i) : value_(i), type(Type::INTEGER) {}
+  explicit Value(double d) : value_(d), type(Type::REAL) {}
   explicit Value(const std::string& s) : value_(s), type(Type::STRING) {}
   explicit Value(const char* s) : value_(std::string(s)), type(Type::STRING) {}
   explicit Value(ListPtr l) : value_(std::move(l)), type(Type::LIST) {}
   explicit Value(IteratorPtr it) : value_(std::move(it)), type(Type::ITERATOR) {}
   explicit Value(const std::any& a);
+
+  // A REAL, or an INTEGER if d is a whole number that fits in one, like
+  // my_basic: arithmetic results go through this, so 1.5 + 1.5 is 3.
+  static Value number(double d);
 
   // Creates a new, empty list.
   static Value new_list();
@@ -63,6 +68,8 @@ public:
   Type value_type() const { return type; }
   bool is_list() const { return type == Type::LIST; }
   bool is_iterator() const { return type == Type::ITERATOR; }
+  // BOOLEAN, INTEGER or REAL.
+  bool is_number() const;
 
   // The list, or throws BasicError naming `fn` if this is not a list.
   ListPtr list(std::string_view fn) const;
@@ -70,8 +77,11 @@ public:
   IteratorPtr iterator(std::string_view fn) const;
 
   bool toBool() const;
+  // REALs are truncated toward zero.
   int toInt() const;
-  // Lists print as "LIST" and iterators as "ITERATOR", like my_basic.
+  double toDouble() const;
+  // REALs print like printf("%g") (3.14159, 0.5). Lists print as "LIST" and
+  // iterators as "ITERATOR", like my_basic.
   std::string toString() const;
   // The type name used in error messages: BOOLEAN, INTEGER, STRING, ...
   std::string type_name() const;
@@ -96,7 +106,7 @@ private:
   // Throws unless both operands are scalars (BOOLEAN, INTEGER, STRING).
   void check_scalar(const Value& that, std::string_view op) const;
 
-  std::variant<bool, int, std::string, ListPtr, IteratorPtr> value_;
+  std::variant<bool, int, double, std::string, ListPtr, IteratorPtr> value_;
   Type type;
 };
 

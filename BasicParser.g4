@@ -82,6 +82,7 @@ expr
     | LPAREN expr RPAREN                                # Parens
     | rvalue                                            # Ident
     | INT                                               # Int
+    | REAL                                              # Real
     | STRING                                            # String
     | booleanExpr                                       # Boolean
     | MINUS expr                                        # Negate

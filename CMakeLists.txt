@@ -117,6 +117,7 @@ add_executable(wwivbasic_tests
                "src/stdlib/strings_test.cpp"
                "src/interpreter_test.cpp"
                "src/embedding_test.cpp"
+               "src/value_test.cpp"
 )
 
 target_link_libraries(wwivbasic_tests PRIVATE GTest::gtest_main wwivbasic_interpreter)

@@ -36,6 +36,7 @@ public:
   std::any visitParens(BasicParser::ParensContext* context) override;
   std::any visitIdent(BasicParser::IdentContext* context) override;
   std::any visitInt(BasicParser::IntContext* context) override;
+  std::any visitReal(BasicParser::RealContext* context) override;
   std::any visitString(BasicParser::StringContext* context) override;
   std::any visitBoolean(BasicParser::BooleanContext* context) override;
   std::any visitNegate(BasicParser::NegateContext* context) override;
