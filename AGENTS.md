@@ -29,8 +29,10 @@ scripts should keep running unchanged.
 ## Build
 
 Dependencies come from vcpkg in manifest mode (`vcpkg.json`): antlr4, fmt, cereal, gtest,
-cpp-httplib, nlohmann-json. You also need Java for ANTLR code generation. Set `VCPKG_ROOT`
-to a vcpkg checkout (WWIV's `vcpkg` submodule works), then:
+cpp-httplib, nlohmann-json. Versions are pinned by `builtin-baseline`; when updating it, keep
+`antlr/antlr-*-complete.jar` at the same version as the antlr4 runtime. You also need Java for
+ANTLR code generation. CMake finds vcpkg from `CMAKE_TOOLCHAIN_FILE`, then `VCPKG_ROOT`, then
+`../wwiv/vcpkg`, so with WWIV checked out alongside no setup is needed:
 
 ```sh
 cmake --preset linux-debug          # or windows-x64-debug

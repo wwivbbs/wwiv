@@ -1,6 +1,7 @@
 {
   "name": "wwivbasic",
   "version-string": "0.0.0",
+  "builtin-baseline": "fe45b1c379a7d32edeb29ce0d7eff13835896762",
   "dependencies": [
     "antlr4",
     "cereal",

@@ -1,9 +1,22 @@
 cmake_minimum_required(VERSION 3.20)
 
-# Dependencies come from vcpkg (see vcpkg.json). Pass -DCMAKE_TOOLCHAIN_FILE
-# or set VCPKG_ROOT to your vcpkg checkout.
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND DEFINED ENV{VCPKG_ROOT})
-  set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+# Dependencies come from vcpkg (see vcpkg.json, which pins the versions with
+# builtin-baseline). vcpkg is found from, in order:
+#   1. -DCMAKE_TOOLCHAIN_FILE=...
+#   2. the VCPKG_ROOT environment variable
+#   3. the vcpkg submodule of a WWIV checkout next to this one (../wwiv/vcpkg)
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  if(DEFINED ENV{VCPKG_ROOT})
+    set(WWIVBASIC_VCPKG_ROOT "$ENV{VCPKG_ROOT}")
+  elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../wwiv/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    get_filename_component(WWIVBASIC_VCPKG_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../wwiv/vcpkg" ABSOLUTE)
+  else()
+    message(FATAL_ERROR
+      "vcpkg not found. Set VCPKG_ROOT to a vcpkg checkout (for example the vcpkg "
+      "submodule of WWIV), or check out WWIV next to this directory as ../wwiv.")
+  endif()
+  message(STATUS "Using vcpkg from ${WWIVBASIC_VCPKG_ROOT}")
+  set(CMAKE_TOOLCHAIN_FILE "${WWIVBASIC_VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     CACHE FILEPATH "Vcpkg toolchain file")
 endif()
 

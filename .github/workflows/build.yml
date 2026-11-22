@@ -36,9 +36,13 @@ jobs:
 
       # GitHub-hosted runners include vcpkg and a Java runtime (for the
       # ANTLR tool).
+      # vcpkg.json pins builtin-baseline to a vcpkg commit, which may be newer
+      # than the runner's copy, so fetch its history first.
       - name: Use the runner's vcpkg
         shell: bash
-        run: echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
+        run: |
+          git -C "$VCPKG_INSTALLATION_ROOT" fetch --quiet origin
+          echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
 
       - name: Get CMake and Ninja
         uses: lukka/get-cmake@latest
