@@ -20,6 +20,7 @@
 #include "fsed/line.h"
 #include "fsed/model.h"
 #include "fsed/spell_text.h"
+#include <clocale>
 #include <string>
 #include <vector>
 
@@ -184,6 +185,35 @@ TEST(SpellTextTest, Cp437Letters) {
   EXPECT_THAT(words_of_text("caf\x82 ok"), ElementsAre("caf\x82", "ok"));
 }
 
+TEST(SpellTextTest, Cp437Letters_All) {
+  // Accented letters 0x80-0x9A and 0xA0-0xA5 and sharp s 0xE1 are letters.
+  EXPECT_THAT(words_of_text("\x8e" "rger Stra\xe1" "e ni\xa4o"),
+              ElementsAre("\x8e" "rger", "Stra\xe1" "e", "ni\xa4o"));
+  // The currency symbols 0x9B-0x9F, box drawing and the rest break words.
+  EXPECT_THAT(words_of_text("abc\x9c" "def ghi\xc4\xc4jkl mno\xe2pqr"),
+              ElementsAre("abc", "def", "ghi", "jkl", "mno", "pqr"));
+}
+
+TEST(SpellTextTest, Cp437Letters_IgnoresLocale) {
+  // Text is CP437 whatever the C locale says. In a Latin-1 or cp1252 locale
+  // std::isalpha(0xC4) is true (A-umlaut), but in CP437 it is box drawing.
+  const std::string saved = std::setlocale(LC_CTYPE, nullptr);
+  bool set = false;
+  for (const char* name : {"de_DE.ISO-8859-1", "de_DE.iso88591", "de_DE@euro", "en_US.ISO-8859-1",
+                           "German_Germany.1252", ".1252"}) {
+    if (std::setlocale(LC_CTYPE, name) != nullptr) {
+      set = true;
+      break;
+    }
+  }
+  const auto words = words_of_text("ghi\xc4\xc4jkl \xaa" "bc de\xb2" "fg mno\xe2pqr");
+  std::setlocale(LC_CTYPE, saved.c_str());
+  EXPECT_THAT(words, ElementsAre("ghi", "jkl", "bc", "de", "fg", "mno", "pqr"));
+  if (!set) {
+    GTEST_SKIP() << "no Latin-1 or cp1252 locale installed; checked the C locale only";
+  }
+}
+
 TEST(SpellTextTest, SoftWrap_WordWrap) {
   // Word wrap leaves the space at the end of the previous line.
   const auto words = spell_tokenize({line_t{true, "Hello "}, line_t{false, "world"}});
@@ -195,22 +225,66 @@ TEST(SpellTextTest, SoftWrap_WordWrap) {
 }
 
 TEST(SpellTextTest, SoftWrap_CharacterWrap) {
-  // A character wrap splits the word with no space.
+  // A character wrap splits a word with no space, but the saved message
+  // (FsedModel::to_lines(false)) and the editor's reflow put a space there,
+  // so it is checked as the two words that are saved.
   const auto words = spell_tokenize({line_t{true, "This is char"}, line_t{false, "acter wrapped"}});
-  ASSERT_THAT(words_of(words), ElementsAre("This", "is", "character", "wrapped"));
+  ASSERT_THAT(words_of(words), ElementsAre("This", "is", "char", "acter", "wrapped"));
   EXPECT_EQ(0, words[2].line);
   EXPECT_EQ(8, words[2].x);
-  EXPECT_EQ(1, words[2].end_line);
-  EXPECT_EQ(5, words[2].end_x);
+  EXPECT_EQ(0, words[2].end_line);
+  EXPECT_EQ(12, words[2].end_x);
   EXPECT_EQ(1, words[3].line);
-  EXPECT_EQ(6, words[3].x);
+  EXPECT_EQ(0, words[3].x);
+  EXPECT_EQ(1, words[3].end_line);
+  EXPECT_EQ(5, words[3].end_x);
+  EXPECT_EQ(1, words[4].line);
+  EXPECT_EQ(6, words[4].x);
+}
+
+TEST(SpellTextTest, SoftWrap_HelloWorld) {
+  // The example from the review of #1706.
+  const auto words = spell_tokenize({line_t{true, "hello"}, line_t{false, "world"}});
+  ASSERT_THAT(words_of(words), ElementsAre("hello", "world"));
+  for (const auto& w : words) {
+    EXPECT_EQ(w.line, w.end_line) << w.word;
+  }
+}
+
+TEST(SpellTextTest, SoftWrap_CodeOnlyLineSeparatesWords) {
+  // A soft-wrapped line with only a pipe code (or nothing) on it still
+  // separates words, so no word spans two lines.
+  const auto words = spell_tokenize(
+      {line_t{true, "hel"}, line_t{true, "|#3"}, line_t{true, "lo"}, line_t{true, ""},
+       line_t{false, "world"}});
+  ASSERT_THAT(words_of(words), ElementsAre("hel", "lo", "world"));
+  for (const auto& w : words) {
+    EXPECT_EQ(w.line, w.end_line) << w.word;
+  }
+}
+
+TEST(SpellTextTest, SoftWrap_LeadingSpaceOnNextLine) {
+  EXPECT_THAT(words_of_lines({line_t{true, "hello"}, line_t{false, " world"}}),
+              ElementsAre("hello", "world"));
+}
+
+TEST(SpellTextTest, SoftWrap_MatchesSavedText) {
+  // Whatever the wrapping, the words are the words of the saved text.
+  FsedModel model(10);
+  model.emplace_back(line_t{true, "Thsi is a lon"});
+  model.emplace_back(line_t{true, "g line "});
+  model.emplace_back(line_t{false, "wrapped"});
+  const auto saved = model.to_lines(false);
+  ASSERT_EQ(1u, saved.size());
+  EXPECT_EQ(words_of_text(saved.front()), words_of(spell_tokenize(model)));
 }
 
 TEST(SpellTextTest, SoftWrap_Marker) {
   // fsed() loads a saved message with wrapped set from the trailing ^A.
-  // Whether line_t keeps the ^A as a cell or drops it, the word is joined.
+  // Whether line_t keeps the ^A as a cell or drops it, the lines are joined
+  // with a space, the same as when the message is saved.
   EXPECT_THAT(words_of_lines({line_t{true, "char\x01"}, line_t{false, "acter"}}),
-              ElementsAre("character"));
+              ElementsAre("char", "acter"));
 }
 
 TEST(SpellTextTest, SoftWrap_NotWrapped) {

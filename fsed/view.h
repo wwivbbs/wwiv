@@ -38,6 +38,8 @@ public:
   common::FullScreenView& fs();
   [[nodiscard]] int max_view_lines() const override { return max_view_lines_; }
   [[nodiscard]] int max_view_columns() const override { return max_view_columns_; }
+  // True when editing a plain file (not a message).
+  [[nodiscard]] bool file() const noexcept { return file_; }
   // Draws the current line without colors, and redraws the previous
   // line with colors.
   void draw_current_line(FsedModel& e, int previous_line);

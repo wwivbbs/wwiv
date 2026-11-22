@@ -28,9 +28,9 @@ class FsedModel;
 /**
  * A single word found in the editor that should be spell checked.
  *
- * Soft-wrapped lines are joined before splitting into words, so a word that
- * was character wrapped (no space at the end of the line) can start on one
- * line and end on the next.
+ * Soft-wrapped lines are joined before splitting into words. Like the saved
+ * message, a character wrapped "hello" / "world" (no space at the end of the
+ * line) is two words, so a word never spans two lines: end_line == line.
  */
 struct spell_word_t {
   // Text of the word in CP437 with any color codes removed.
@@ -39,8 +39,8 @@ struct spell_word_t {
   int line{0};
   // Cell index of the first character on that line.
   int x{0};
-  // Line number of the last character. Same as line unless the word was
-  // character wrapped onto the next line.
+  // Line number of the last character. Always the same as line, since the
+  // tokenizer puts a space between soft-wrapped lines.
   int end_line{0};
   // Cell index one past the last character on end_line. When a pipe code
   // is inside of the word this is more than x + word.size().
