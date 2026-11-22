@@ -78,8 +78,8 @@ message(STATUS "WWIV Build Number: ${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}")
 macro(ENSURE_MINIMUM_COMPILER_VERSIONS)
   # Set minimum GCC version
   # See https://stackoverflow.com/questions/14933172/how-can-i-add-a-minimum-compiler-version-requisite
-  if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
-      message(FATAL_ERROR "Require at least gcc 10.0; found: ${CMAKE_CXX_COMPILER_VERSION}")
+  if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14.0)
+      message(FATAL_ERROR "Require at least gcc 14.0; found: ${CMAKE_CXX_COMPILER_VERSION}")
   endif()
 
   if (MSVC)

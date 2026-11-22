@@ -193,7 +193,7 @@ struct hash<wwiv::sdk::fido::FidoAddress> {
 template <> struct fmt::formatter<wwiv::sdk::fido::FidoAddress> : fmt::formatter<string_view> {
   // parse is inherited from formatter<string_view>.
   template <typename FormatContext>
-  auto format(wwiv::sdk::fido::FidoAddress a, FormatContext& ctx) {
+  auto format(const wwiv::sdk::fido::FidoAddress& a, FormatContext& ctx) const {
     return formatter<string_view>::format(a.as_string(true, true), ctx);
   }
 };

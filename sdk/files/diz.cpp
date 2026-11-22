@@ -23,7 +23,9 @@
 #include "core/textfile.h"
 #include <utility>
 
-static const char* invalid_chars = "Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ÐÒÅÎØ×°±²ÛßÜÝÞ";
+// CP437 box drawing and block characters, written as escapes so the file
+// stays ASCII (MSVC compiles with /utf-8, required by fmt 11+).
+static const char* invalid_chars = "\xda\xbf\xc0\xd9\xc4\xb3\xc3\xb4\xc1\xc2\xc9\xbb\xc8\xbc\xcd\xba\xcc\xb9\xca\xcb\xd5\xb8\xd4\xbe\xcd\xb3\xc6\xb5\xcf\xd1\xd6\xb7\xd3\xbd\xc4\xba\xc7\xb6\xd0\xd2\xc5\xce\xd8\xd7\xb0\xb1\xb2\xdb\xdf\xdc\xdd\xde";
 
 wwiv::sdk::files::Diz::Diz(std::string description, std::string extended_description)
     : description_(std::move(description)), extended_description_(std::move(extended_description)) {}

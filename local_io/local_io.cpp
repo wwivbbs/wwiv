@@ -19,6 +19,7 @@
 #include "local_io/local_io.h"
 
 #include "core/strings.h"
+#include <memory>
 
 namespace wwiv::local::io {
 

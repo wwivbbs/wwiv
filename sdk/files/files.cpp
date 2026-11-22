@@ -199,10 +199,10 @@ std::map<FileAreaSortType, UlrCompare> CreateSortFunctions() {
     return r.daten < l.daten;
   });
   m.emplace(FileAreaSortType::FILENAME_ASC, [](const uploadsrec& l, const uploadsrec& r){
-    return StringCompare(l.filename, r.filename) == -1;
+    return StringCompare(l.filename, r.filename) < 0;
   });
   m.emplace(FileAreaSortType::FILENAME_DESC, [](const uploadsrec& l, const uploadsrec& r){
-    return StringCompare(r.filename, l.filename) == -1;
+    return StringCompare(r.filename, l.filename) < 0;
   });
   return m;
 }

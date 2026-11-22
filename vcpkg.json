@@ -1,7 +1,7 @@
 {
   "name": "wwiv",
   "version-string": "5.10.0",
-  "builtin-baseline": "5ad826e734679a0c8f0993531e6101650dee8365",
+  "builtin-baseline": "93ad765c7b66ab9ce97469ec23a90b15c3a14ee5",
   "dependencies": [
     "cereal",
     "fmt",
