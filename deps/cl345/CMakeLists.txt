@@ -23,7 +23,9 @@ else()
     OUTPUT ${LIBCL_A}
     COMMAND cmake -E environment
     COMMAND env
-    COMMAND make
+    # The makefile's default CFLAGS plus -w: cryptlib is third-party code, so
+    # don't bury WWIV's own warnings under its warnings.
+    COMMAND make "CFLAGS=-c -D__UNIX__ -DNDEBUG -I. -w"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Cryptlib makefile target."
     )
