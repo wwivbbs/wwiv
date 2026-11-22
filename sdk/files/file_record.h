@@ -111,7 +111,7 @@ std::filesystem::path FilePath(const std::filesystem::path& directory_name,
 template <> struct fmt::formatter<wwiv::sdk::files::FileRecord> : fmt::formatter<string_view> {
   // parse is inherited from formatter<string_view>.
   template <typename FormatContext>
-  auto format(wwiv::sdk::files::FileRecord r, FormatContext& ctx) {
+  auto format(const wwiv::sdk::files::FileRecord& r, FormatContext& ctx) const {
     return formatter<string_view>::format(r.unaligned_filename(), ctx);
   }
 };

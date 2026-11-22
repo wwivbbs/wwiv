@@ -68,6 +68,7 @@
 #include "bbs/prot/crctab.h"
 #include "bbs/prot/zmodem.h"
 #include "bbs/prot/zmutil.h"
+#include "core/datetime.h"
 #include "core/log.h"
 #include "fmt/chrono.h"
 #include "fmt/format.h"
@@ -341,8 +342,7 @@ void zmodemlog_impl(fmt::string_view format, fmt::format_args args) {
   }
 
   if (do_ts) {
-    const auto t = time(nullptr);
-    const auto ts = fmt::format("{:%Y-%m-%d %H:%M:%S} ", fmt::localtime(t));
+    const auto ts = fmt::format("{:%Y-%m-%d %H:%M:%S} ", wwiv::core::DateTime::now().to_tm());
     fputs(ts.c_str(), zmodemlogfile);
   }
   do_ts = true; // find_char_at_end(format, '\n');

@@ -97,7 +97,7 @@ std::ostream& operator<<(std::ostream& os, const Value& a);
 template <> struct fmt::formatter<wwiv::sdk::value::Value> : fmt::formatter<string_view> {
   // parse is inherited from formatter<string_view>.
   template <typename FormatContext>
-  auto format(const wwiv::sdk::value::Value& v, FormatContext& ctx) {
+  auto format(const wwiv::sdk::value::Value& v, FormatContext& ctx) const {
     return formatter<string_view>::format(v.as_string(), ctx);
   }
 };
