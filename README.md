@@ -8,8 +8,9 @@ Most existing WWIVbasic scripts should run unchanged.
 
 Work in progress. See [docs/PLAN.md](docs/PLAN.md) for the milestones.
 
-- Done: build and test baseline (M0), and parsing the existing WWIV scripts (M1).
-- Next: lists and `FOR EACH` (M2), then the `wwiv.*` modules (M3) and integration into WWIV (M4).
+- Done: build and test baseline (M0), parsing the existing WWIV scripts (M1), and lists,
+  imports and stub `wwiv.*` modules so those scripts run (M2).
+- Next: the real `wwiv.*` modules (M3), then integration into WWIV (M4).
 
 Where wwivbasic intentionally differs from my_basic, [PORTING.md](PORTING.md) describes the change.
 
@@ -81,6 +82,8 @@ There are two kinds of test:
   checks their output and errors.
 - **Golden tests** in `tests/golden/`. Each `NAME.bas` is run and its output compared with
   `NAME.expected`. If the expected file starts with `#exit N`, the script must exit with code N.
+  If there is a `NAME.input`, it is fed to the script as input (one line per `GETS`, `YN` and so
+  on). `wwiv_hello.bas` and `wwiv_oneliners.bas` are unchanged copies of the scripts WWIV ships.
   To add one, drop in both files and re-run `cmake --preset ...`.
 
 ## Running scripts
@@ -94,6 +97,15 @@ _build/linux-debug/basicrun --show_parsetree script.bas
 
 Script output goes to stdout. Errors go to stderr as `file:line: error: message`, and the exit
 code is 1 on error.
+
+`basicrun` provides stand-in versions of the `wwiv`, `wwiv.io` and `wwiv.data` modules, so
+scripts written for the BBS can run. Input (`GETS`, `GETKEY`, `YN`, `NY`) is read from stdin a
+line at a time, screen actions such as `CLS` print a marker like `[cls]`, and `wwiv.data` keeps
+saved lists in memory only:
+
+```sh
+printf 'Y\n3\nHello\nN\nN\n' | _build/linux-debug/basicrun tests/golden/wwiv_oneliners.bas
+```
 
 ## Tools for working on the grammar
 

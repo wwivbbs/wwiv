@@ -71,6 +71,29 @@ antlr4_generate(wwivbasic_parser
                 "${ANTLR4_TOKEN_DIRECTORY_wwivbasic_lexer}"
 )
  
+# Compiler warnings for our own code (src/). Warnings don't fail the build.
+# The generated ANTLR sources and the vendored core/ library are left alone.
+if(MSVC)
+  set(WWIVBASIC_WARNINGS /W4)
+  set(WWIVBASIC_NO_WARNINGS /W0)
+else()
+  set(WWIVBASIC_WARNINGS -Wall -Wextra)
+  set(WWIVBASIC_NO_WARNINGS -w)
+endif()
+
+# The generated lexer and parser, in their own target so they build without
+# our warning flags. Their headers are SYSTEM includes so their warnings don't
+# show up in our code either.
+add_library(wwivbasic_parser OBJECT
+            ${ANTLR4_SRC_FILES_wwivbasic_lexer}
+            ${ANTLR4_SRC_FILES_wwivbasic_parser}
+)
+target_include_directories(wwivbasic_parser SYSTEM PUBLIC ${ANTLR4_INCLUDE_DIR}
+                           ${ANTLR4_INCLUDE_DIR_wwivbasic_lexer}
+                           ${ANTLR4_INCLUDE_DIR_wwivbasic_parser})
+target_link_libraries(wwivbasic_parser PUBLIC ${WWIVBASIC_ANTLR_LIB})
+target_compile_options(wwivbasic_parser PRIVATE ${WWIVBASIC_NO_WARNINGS})
+
 add_library(wwivbasic_interpreter
             "src/context.cpp"
             "src/executor.cpp"
@@ -78,12 +101,13 @@ add_library(wwivbasic_interpreter
             "src/interpreter.cpp"
             "src/utils.cpp"
             "src/value.cpp"
+            "src/stdlib/collections.cpp"
             "src/stdlib/common.cpp"
             "src/stdlib/numbers.cpp"
             "src/stdlib/strings.cpp"
-            ${ANTLR4_SRC_FILES_wwivbasic_lexer} 
-            ${ANTLR4_SRC_FILES_wwivbasic_parser}
 )
+target_link_libraries(wwivbasic_interpreter wwivbasic_parser fmt::fmt core)
+target_compile_definitions(wwivbasic_interpreter PUBLIC _CRT_SECURE_NO_WARNINGS)
 
 add_executable(wwivbasic_tests
                "src/utils_test.cpp"
@@ -94,15 +118,9 @@ add_executable(wwivbasic_tests
 target_link_libraries(wwivbasic_tests PRIVATE GTest::gtest_main wwivbasic_interpreter)
 
 
-target_include_directories(wwivbasic_interpreter PUBLIC ${ANTLR4_INCLUDE_DIR} 
-                           ${ANTLR4_INCLUDE_DIR_wwivbasic_lexer} 
-                           ${ANTLR4_INCLUDE_DIR_wwivbasic_parser})
-target_link_libraries(wwivbasic_interpreter ${WWIVBASIC_ANTLR_LIB} fmt::fmt core)
-target_compile_definitions(wwivbasic_interpreter PUBLIC _CRT_SECURE_NO_WARNINGS)
-
-
 add_executable(basicrun
-               "src/basicrun.cpp")
+               "src/basicrun.cpp"
+               "src/wwiv_stub.cpp")
 target_link_libraries(basicrun wwivbasic_interpreter)
 
 # Unit tests
@@ -110,7 +128,11 @@ include(GoogleTest)
 gtest_discover_tests(wwivbasic_tests)
 
 # Golden tests: each tests/golden/NAME.bas is run with basicrun and its stdout
-# compared with NAME.expected. See tests/run_golden.cmake.
+# compared with NAME.expected; NAME.input, if present, is its stdin. See
+# tests/run_golden.cmake.
+# Golden tests without a NAME.input file get this empty file as stdin.
+set(WWIVBASIC_EMPTY_INPUT "${CMAKE_CURRENT_BINARY_DIR}/golden_empty.input")
+file(WRITE "${WWIVBASIC_EMPTY_INPUT}" "")
 file(GLOB WWIVBASIC_GOLDEN_SCRIPTS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tests/golden/*.bas")
 foreach(script ${WWIVBASIC_GOLDEN_SCRIPTS})
   get_filename_component(name "${script}" NAME_WE)
@@ -120,6 +142,7 @@ foreach(script ${WWIVBASIC_GOLDEN_SCRIPTS})
                    -DBASICRUN=$<TARGET_FILE:basicrun>
                    -DSCRIPT=${script}
                    -DEXPECTED=${dir}/${name}.expected
+                   -DEMPTY_INPUT=${WWIVBASIC_EMPTY_INPUT}
                    -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_golden.cmake)
 endforeach()
 
@@ -128,3 +151,7 @@ add_test(NAME basicrun.dot_relative_path
          COMMAND basicrun ./for.bas
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/golden)
 set_tests_properties(basicrun.dot_relative_path PROPERTIES PASS_REGULAR_EXPRESSION "^1\n2\n")
+
+foreach(target wwivbasic_interpreter wwivbasic_tests basicrun)
+  target_compile_options(${target} PRIVATE ${WWIVBASIC_WARNINGS})
+endforeach()

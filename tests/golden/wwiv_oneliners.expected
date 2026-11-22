@@ -1,0 +1,10 @@
+[cls]
+[printfile: oneliner]
+
+|#9Would you like to add an oneliner? |15 1:White|01 2:DkBlue|10 3:Green|12 4:Red|13 5:Purple|07 6:Gray|11 7:Cyan|14 8:Yellow|09 9:Blue
+What Color? 
+|10Enter Your One Liner:
+|#9: |10Anonymous? [printfile: oneliner]
+|10SYSOP #1 - Hello from the stub
+
+|#9Would you like to add an oneliner? 

@@ -1,18 +1,9 @@
 #include "value.h"
-
-#include "core/stl.h"
-
-#include "utils.h"
 #include "fmt/format.h"
 
 #include <any>
 #include <iostream>
-#include <map>
-#include <stack>
 #include <string>
-#include <vector>
-
-using namespace wwiv::stl;
 
 namespace wwivbasic {
 
@@ -36,193 +27,251 @@ Value::Value(const std::any& a) : value_(std::string()), type(Type::STRING) {
   }
 }
 
+Value Value::new_list() {
+  return Value(std::make_shared<ListData>());
+}
+
+ListPtr Value::list(std::string_view fn) const {
+  if (type != Type::LIST) {
+    throw BasicError(fmt::format("{}: expected a LIST, got {}", fn, type_name()));
+  }
+  return std::get<ListPtr>(value_);
+}
+
+IteratorPtr Value::iterator(std::string_view fn) const {
+  if (type != Type::ITERATOR) {
+    throw BasicError(fmt::format("{}: expected an ITERATOR, got {}", fn, type_name()));
+  }
+  return std::get<IteratorPtr>(value_);
+}
+
+std::string Value::type_name() const {
+  switch (type) {
+  case Type::BOOLEAN:
+    return "BOOLEAN";
+  case Type::INTEGER:
+    return "INTEGER";
+  case Type::STRING:
+    return "STRING";
+  case Type::LIST:
+    return "LIST";
+  case Type::ITERATOR:
+    return "ITERATOR";
+  }
+  return "UNKNOWN";
+}
+
 bool Value::toBool() const {
   switch (type) {
-  case Type::BOOLEAN: {
+  case Type::BOOLEAN:
     return std::get<bool>(value_);
-  } break;
-  case Type::INTEGER: {
-    const auto i = std::get<int>(value_);
-    return i != 0;
-  } break;
-  case Type::STRING: {
-    const auto& s = std::get<std::string>(value_);
-    return s == "TRUE";
-  } break;
+  case Type::INTEGER:
+    return std::get<int>(value_) != 0;
+  case Type::STRING:
+    return std::get<std::string>(value_) == "TRUE";
+  case Type::LIST:
+  case Type::ITERATOR:
+    return true;
   }
   return false;
 }
 
 int Value::toInt() const {
   switch (type) {
-  case Type::BOOLEAN: {
-    const auto b = std::get<bool>(value_);
-    return b ? 1 : 0;
-  } break;
-  case Type::INTEGER: {
+  case Type::BOOLEAN:
+    return std::get<bool>(value_) ? 1 : 0;
+  case Type::INTEGER:
     return std::get<int>(value_);
-  } break;
-  case Type::STRING: {
-    const auto s = std::get<std::string>(value_);
+  case Type::STRING:
     try {
-      return std::stoi(s);
+      return std::stoi(std::get<std::string>(value_));
     } catch (const std::exception&) {
       return 0;
     }
-  } break;
+  case Type::LIST:
+  case Type::ITERATOR:
+    return 0;
   }
   return 0;
 }
 
 std::string Value::toString() const {
   switch (type) {
-  case Type::BOOLEAN: {
-    const auto b = std::get<bool>(value_);
-    return b ? "TRUE" : "FALSE";
-  } break;
-  case Type::INTEGER: {
+  case Type::BOOLEAN:
+    return std::get<bool>(value_) ? "TRUE" : "FALSE";
+  case Type::INTEGER:
     return std::to_string(std::get<int>(value_));
-  } break;
-  case Type::STRING: {
+  case Type::STRING:
     return std::get<std::string>(value_);
-  } break;
+  case Type::LIST:
+  case Type::ITERATOR:
+    return type_name();
   }
   return {};
 }
 
-std::any Value::toAny() const { 
-  switch (type) {
-  case Type::BOOLEAN: return std::make_any<bool>(std::get<bool>(value_));
-  case Type::INTEGER: return std::make_any<int>(std::get<int>(value_));
-  case Type::STRING:return std::make_any<std::string>(std::get<std::string>(value_));
+void Value::check_scalar(const Value& that, std::string_view op) const {
+  for (const auto* v : {this, &that}) {
+    if (v->type == Type::LIST || v->type == Type::ITERATOR) {
+      throw BasicError(fmt::format("Operator '{}' cannot be used with a {}", op, v->type_name()));
+    }
   }
-  return {};
+}
+
+// The arithmetic and comparison operators dispatch on the left operand's
+// type. Each switch lists every Type (no default:) so the compiler flags any
+// new Type that isn't handled. LIST and ITERATOR are rejected by
+// check_scalar() before the switch, so those cases are unreachable.
+
+[[noreturn]] static void unreachable_type(std::string_view op) {
+  throw BasicError(fmt::format("Internal error: unhandled type in operator '{}'", op));
 }
 
 Value Value::operator+(const Value& that) const {
+  check_scalar(that, "+");
   switch (type) {
   case Type::BOOLEAN:
     return Value(toBool() || that.toBool());
   case Type::INTEGER:
     return Value(toInt() + that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that.toString()));
+    return Value(toString() + that.toString());
+  case Type::LIST:
+  case Type::ITERATOR:
+    break;
   }
-  return Value(false);
+  unreachable_type("+");
 }
 
 Value Value::operator-(const Value& that) const {
+  check_scalar(that, "-");
   switch (type) {
   case Type::BOOLEAN:
     return Value(!(toBool() && that.toBool()));
   case Type::INTEGER:
     return Value(toInt() - that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that.toString()));
+    return Value(toString() + that.toString());
+  case Type::LIST:
+  case Type::ITERATOR:
+    break;
   }
-  return Value(false);
+  unreachable_type("-");
 }
 
 Value Value::operator*(const Value& that) const {
+  check_scalar(that, "*");
   switch (type) {
   case Type::BOOLEAN:
-    return Value(toBool() * that.toBool());
+    // TRUE * TRUE is 1, an INTEGER (as before lists were added).
+    return Value(static_cast<int>(toBool() && that.toBool()));
   case Type::INTEGER:
     return Value(toInt() * that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that.toString())); // ????!
+    return Value(toString() + that.toString());
+  case Type::LIST:
+  case Type::ITERATOR:
+    break;
   }
-  return Value(false);
+  unreachable_type("*");
 }
 
 Value Value::operator/(const Value& that) const {
+  check_scalar(that, "/");
   switch (type) {
   case Type::BOOLEAN:
-    return Value(false); // TODO WARN
+    return Value(false);
   case Type::INTEGER:
     if (that.toInt() == 0) {
       throw BasicError("Division by zero");
     }
     return Value(toInt() / that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that.toString()));
+    return Value(toString() + that.toString());
+  case Type::LIST:
+  case Type::ITERATOR:
+    break;
   }
-  return Value(false);
+  unreachable_type("/");
 }
 
 Value Value::operator%(const Value& that) const {
+  check_scalar(that, "MOD");
   switch (type) {
   case Type::BOOLEAN:
-    return Value(false); // TODO WARN
+    return Value(false);
   case Type::INTEGER:
     if (that.toInt() == 0) {
       throw BasicError("Division by zero");
     }
     return Value(toInt() % that.toInt());
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that.toString()));
+    return Value(toString() + that.toString());
+  case Type::LIST:
+  case Type::ITERATOR:
+    break;
   }
-  return Value(false);
+  unreachable_type("MOD");
 }
 
 bool Value::operator<(const Value& that) const {
+  check_scalar(that, "<");
   switch (type) {
   case Type::BOOLEAN:
-    return (toBool() < that.toBool());
+    return toBool() < that.toBool();
   case Type::INTEGER:
-    return (toInt() < that.toInt());
+    return toInt() < that.toInt();
   case Type::STRING:
-    return (toString() < that.toString());
+    return toString() < that.toString();
+  case Type::LIST:
+  case Type::ITERATOR:
+    break;
   }
-  return (false);
+  unreachable_type("<");
 }
 
 bool Value::operator>(const Value& that) const {
+  check_scalar(that, ">");
   switch (type) {
   case Type::BOOLEAN:
-    return (toBool() > that.toBool());
+    return toBool() > that.toBool();
   case Type::INTEGER:
-    return (toInt() > that.toInt());
+    return toInt() > that.toInt();
   case Type::STRING:
-    return (toString() > that.toString());
+    return toString() > that.toString();
+  case Type::LIST:
+  case Type::ITERATOR:
+    break;
   }
-  return (false);
+  unreachable_type(">");
 }
 
 bool Value::operator==(const Value& that) const {
   switch (type) {
   case Type::BOOLEAN:
-    return (toBool() == that.toBool());
   case Type::INTEGER:
-    return (toInt() == that.toInt());
   case Type::STRING:
-    return (toString() == that.toString());
+    if (that.type == Type::LIST || that.type == Type::ITERATOR) {
+      return false;
+    }
+    break;
+  case Type::LIST:
+  case Type::ITERATOR:
+    // Same type and the same underlying object.
+    return type == that.type && value_ == that.value_;
   }
-  return (false);
-}
-
-Value Value::operator||(const Value& that) const {
   switch (type) {
   case Type::BOOLEAN:
-    return Value(toBool() || that.toBool());
+    return toBool() == that.toBool();
   case Type::INTEGER:
-    return Value(toInt() || that.toInt());
+    return toInt() == that.toInt();
   case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that.toString())); // Is this right
+    return toString() == that.toString();
+  case Type::LIST:
+  case Type::ITERATOR:
+    break;
   }
-  return Value(false);
-}
-
-Value Value::operator&&(const Value& that) const {
-  switch (type) {
-  case Type::BOOLEAN:
-    return Value(toBool() && that.toBool());
-  case Type::INTEGER:
-    return Value(toInt() && that.toInt());
-  case Type::STRING:
-    return Value(fmt::format("{}{}", toString(), that.toString())); // Is this right
-  }
-  return Value(false);
+  unreachable_type("=");
 }
 
 std::ostream& operator<<(std::ostream& os, const Value& v) {

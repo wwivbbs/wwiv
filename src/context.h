@@ -55,6 +55,8 @@ public:
   std::string name;
   Type type{Type::BASIC};
   BasicParser::ProcedureDefinitionContext* def_fn{nullptr};
+  // Source file that defines a BASIC function (for error messages).
+  std::string filename;
   basic_function_fn cpp_fn;
   std::vector<std::string> params;
 };
@@ -245,10 +247,14 @@ public:
   // looked up in the current module, the root module, then in modules
   // imported by the current module. Throws BasicError if not found.
   ResolvedFunction find_function(const std::string& function_name);
+  // Like find_function, but returns nullopt instead of throwing.
+  std::optional<ResolvedFunction> try_find_function(const std::string& function_name);
 
   // Adds a native module, replacing any existing module with the same name.
   Module& add_module(const std::string& name);
 
+  // Parses source text. A path that is already loaded is not replaced, since
+  // parse trees in use point into it.
   bool add_source(const std::filesystem::path& path, const std::string& text);
   bool add_source(const std::filesystem::path& path);
 
@@ -270,6 +276,12 @@ public:
   // All registered modules
   std::map<std::string, Module, wwiv::stl::ci_less> modules;
   std::map<std::filesystem::path, std::unique_ptr<SourceUnit>> sources;
+  // Source files loaded with IMPORT "file.bas", so each is only run once.
+  std::set<std::filesystem::path> imported_files;
+
+  // The key used for imported_files: the canonical path if it can be found,
+  // so different spellings of the same file match.
+  static std::filesystem::path import_key(const std::filesystem::path& path);
   Module* root{ nullptr };
   Module* module{ nullptr };
   std::vector<std::string> errors;

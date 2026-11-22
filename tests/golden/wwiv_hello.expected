@@ -1,0 +1,17 @@
+|11Hello |10World
+wwiv
+You are running version: 5.9.0.stub
+len: 4
+l=LIST[end]
+PrintList: 
+LIST
+a
+b
+c
+d
+PrintList: 
+LIST
+a
+b
+c
+d

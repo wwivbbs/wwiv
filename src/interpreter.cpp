@@ -44,6 +44,9 @@ static RunResult run_loaded(Context& ctx, const std::filesystem::path& path,
 }
 
 RunResult run_file(Context& ctx, const std::filesystem::path& path, const RunOptions& options) {
+  // The entry script counts as imported, so an import cycle back to it is
+  // skipped instead of reloading it.
+  ctx.imported_files.insert(Context::import_key(path));
   if (!ctx.add_source(path)) {
     RunResult result;
     result.errors = ctx.errors;
@@ -54,6 +57,7 @@ RunResult run_file(Context& ctx, const std::filesystem::path& path, const RunOpt
 
 RunResult run_source(Context& ctx, const std::string& filename, const std::string& text,
                      const RunOptions& options) {
+  ctx.imported_files.insert(Context::import_key(filename));
   ctx.add_source(filename, text);
   return run_loaded(ctx, filename, options);
 }

@@ -11,30 +11,20 @@ form, and why.
 - `'` comments, `IF/ELSEIF/ELSE/ENDIF`, `FOR/NEXT`, `WHILE/WEND`, `DEF/ENDDEF`
 - `PRINT a, b` and `PRINT a; b` (see "PRINT output" for how the output is laid out)
 - `import "@wwiv.io"`, and calling `outstr()` etc. without the module prefix
+- `import "file.bas"`, relative to the importing script
+- Lists: `list()`, `push`, `get`, `remove`, `len` and the other my_basic list functions,
+  `FOR x IN l`, and `iterator`/`move_next`/`get`. Indices start at 0, and printing a list
+  prints `LIST`.
 - Keywords and names are case-insensitive
 - The `wwiv.*` module functions keep their names and behaviour
-
-## Loops over lists (proposed)
-
-```basic
-' my_basic
-i = iterator(l)
-while move_next(i)
-  print get(i)
-wend
-
-' wwivbasic
-for each x in l
-  print x
-next
-```
-
-Why: shorter, and it avoids exposing iterator objects.
 
 ## Removed features (proposed)
 
 GOTO/GOSUB and labels, classes, lambdas and coroutines are not supported. Use
 `DEF ... ENDDEF` functions instead.
+
+Dicts (`dict()`) are not supported yet. WWIV's `wwiv.data.save` and `load` only
+support lists.
 
 ## PRINT output
 

@@ -51,6 +51,7 @@ public:
   std::any visitAssignmentStatement(BasicParser::AssignmentStatementContext* context) override;
   std::any visitIfStatement(BasicParser::IfStatementContext* context) override;
   std::any visitForStatement(BasicParser::ForStatementContext* ctx) override;
+  std::any visitForInStatement(BasicParser::ForInStatementContext* ctx) override;
   std::any visitWhileStatement(BasicParser::WhileStatementContext* ctx) override;
   std::any visitDoUntilStatement(BasicParser::DoUntilStatementContext* ctx) override;
   std::any visitPrintStatement(BasicParser::PrintStatementContext* ctx) override;
@@ -65,6 +66,8 @@ private:
   Value eval(BasicParser::ExprContext* e);
   // Runs a loop body; returns false if the loop must stop (EXIT/RETURN/END).
   bool run_loop_body(BasicParser::StatementsContext* body);
+  // Loads, defines and runs IMPORT "file.bas" (once per file).
+  void import_file(const std::string& name);
 
   Context& ec_;
   std::string filename_;

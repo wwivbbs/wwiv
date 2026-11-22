@@ -4,14 +4,19 @@
 //
 // Script output goes to stdout; errors go to stderr as
 // "file:line[:column]: error: message". Exits 1 on any error.
+//
+// The wwiv, wwiv.io and wwiv.data modules are stand-ins (see wwiv_stub.h);
+// script input such as GETS and YN is read from stdin, one line per call.
 
 #include "context.h"
 #include "interpreter.h"
+#include "wwiv_stub.h"
 #include "core/command_line.h"
 #include "core/log.h"
 #include "fmt/format.h"
 
 #include <cstdio>
+#include <iostream>
 #include <string>
 
 using namespace wwivbasic;
@@ -42,6 +47,8 @@ int main(int argc, char* argv[]) {
   const std::string filename = cmdline.remaining().front();
   Context ctx;
   ctx.trace = cmdline.barg("trace");
+  // Stand-in wwiv.* modules; input for GETS, GETKEY, YN and NY comes from stdin.
+  WwivStub wwiv_stub(ctx, std::cin);
 
   RunOptions options;
   options.execute = !cmdline.barg("check") && !cmdline.barg("show_parsetree");

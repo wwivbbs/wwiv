@@ -65,6 +65,7 @@ FOR: 'FOR';
 NEXT: 'NEXT';
 STEP: 'STEP';
 TO: 'TO';
+IN: 'IN';
 
 WHILE: 'WHILE';
 WEND: 'WEND';

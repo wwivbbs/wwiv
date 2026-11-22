@@ -62,6 +62,7 @@ statement
     : assignmentStatement
     | ifStatement
     | forStatement
+    | forInStatement
     | whileStatement
     | doUntilStatement
     | printStatement
@@ -112,6 +113,11 @@ ifStatement
 
 forStatement
   : FOR ID EQ expr TO expr (STEP expr)? eos statements NEXT ID? eos
+;
+
+// FOR x IN l ... NEXT runs the body once for each item of the list l.
+forInStatement
+  : FOR ID IN expr eos statements NEXT ID? eos
 ;
 
 whileStatement

@@ -3,6 +3,7 @@
 #include "core/stl.h"
 #include "utils.h"
 #include "fmt/format.h"
+#include "stdlib/collections.h"
 #include "stdlib/common.h"
 #include "stdlib/numbers.h"
 #include "stdlib/strings.h"
@@ -72,6 +73,10 @@ Context::Context() {
   root->native_function("LEFT", stdlib::left);
   root->native_function("RIGHT", stdlib::right);
   root->native_functionl("MID", stdlib::mid);
+  root->native_function("STR", [](Value v) { return v.toString(); });
+
+  // collections
+  stdlib::register_collections(*root);
 }
 
 Context::Context(const std::filesystem::path& path) : Context() {
@@ -122,21 +127,21 @@ std::optional<Var> Context::var(const std::string& name) {
   return module->var(name);
 }
 
-ResolvedFunction Context::find_function(const std::string& function_name) {
+std::optional<ResolvedFunction> Context::try_find_function(const std::string& function_name) {
   if (const auto [pkg, id] = split_package_from_id(function_name); !pkg.empty()) {
     if (!contains(modules, pkg)) {
-      throw BasicError(fmt::format("Unknown module '{}' calling '{}'", pkg, function_name));
+      return std::nullopt;
     }
     auto& m = modules.at(pkg);
     if (auto it = m.functions.find(id); it != m.functions.end()) {
-      return {&m, &it->second};
+      return ResolvedFunction{&m, &it->second};
     }
-    throw BasicError(fmt::format("Unknown function '{}'", function_name));
+    return std::nullopt;
   }
 
   for (auto* m : {module, root}) {
     if (auto it = m->functions.find(function_name); it != m->functions.end()) {
-      return {m, &it->second};
+      return ResolvedFunction{m, &it->second};
     }
   }
   // Modules imported with IMPORT "@name" can be called without the prefix.
@@ -148,14 +153,35 @@ ResolvedFunction Context::find_function(const std::string& function_name) {
       }
       auto& im = modules.at(*it);
       if (auto fit = im.functions.find(function_name); fit != im.functions.end()) {
-        return {&im, &fit->second};
+        return ResolvedFunction{&im, &fit->second};
       }
     }
+  }
+  return std::nullopt;
+}
+
+ResolvedFunction Context::find_function(const std::string& function_name) {
+  if (auto f = try_find_function(function_name)) {
+    return *f;
+  }
+  if (const auto [pkg, id] = split_package_from_id(function_name);
+      !pkg.empty() && !contains(modules, pkg)) {
+    throw BasicError(fmt::format("Unknown module '{}' calling '{}'", pkg, function_name));
   }
   throw BasicError(fmt::format("Unknown function '{}'", function_name));
 }
 
+std::filesystem::path Context::import_key(const std::filesystem::path& path) {
+  std::error_code ec;
+  auto key = std::filesystem::weakly_canonical(path, ec);
+  return ec ? path.lexically_normal() : key;
+}
+
+
 bool Context::add_source(const std::filesystem::path& path, const std::string& raw_text) {
+  if (contains(sources, path)) {
+    return true;
+  }
   auto text = raw_text;
   // Every statement ends in a newline, so make sure the last one does too.
   if (text.empty() || text.back() != '\n') {

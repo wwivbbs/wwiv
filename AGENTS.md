@@ -18,11 +18,11 @@ scripts should keep running unchanged.
 | Path | Contents |
 | --- | --- |
 | `BasicLexer.g4`, `BasicParser.g4` | Grammar. The C++ lexer and parser are generated into `_build/<preset>/antlr4_generated_src/` (namespace `wwivbasic`). |
-| `src/` | The interpreter: `context.*` (scopes, variables, modules, function lookup), `executor.*` (`ExecutionVisitor`, which walks the parse tree), `function_def_visitor.*` (collects `DEF`s before execution), `interpreter.*` (`run_file`/`run_source`: parse, run, collect errors), `value.*` (`Value`: BOOLEAN/INTEGER/STRING, and `BasicError`), `utils.*` |
-| `src/stdlib/` | Built-in functions (`strings`, `numbers`, `common`) |
+| `src/` | The interpreter: `context.*` (scopes, variables, modules, function lookup), `executor.*` (`ExecutionVisitor`, which walks the parse tree), `function_def_visitor.*` (collects `DEF`s before execution), `interpreter.*` (`run_file`/`run_source`: parse, run, collect errors), `value.*` (`Value`: BOOLEAN/INTEGER/STRING, plus LIST/ITERATOR which share their data by reference; and `BasicError`), `wwiv_stub.*` (stand-in `wwiv`, `wwiv.io`, `wwiv.data` modules used by `basicrun`; replaced in M3), `utils.*` |
+| `src/stdlib/` | Built-in functions (`strings`, `numbers`, `common`, `collections`: my_basic's list functions) |
 | `src/basicrun.cpp` | CLI that runs one `.bas` file: `--check`/`-c` parses only, `--show_parsetree`/`-t` prints the parse tree, `--trace`/`-v` logs execution to stderr. Script output goes to stdout, errors to stderr as `file:line[:col]: error: ...`, exit code 1 on error. |
 | `core/` | A vendored copy of WWIV's `core/` library (files, strings, logging, command line and so on). Treat it as upstream code: avoid edits unless they're required, and keep them minimal. It will be replaced by WWIV's own `core/` in M4. |
-| `tests/golden/` | Golden tests: each `NAME.bas` is run by `basicrun` and its stdout compared with `NAME.expected`. A first line `#exit N` in the expected file sets the expected exit code. |
+| `tests/golden/` | Golden tests: each `NAME.bas` is run by `basicrun` and its stdout compared with `NAME.expected`. A first line `#exit N` in the expected file sets the expected exit code; `NAME.input`, if present, is the script's stdin. `lib/` holds files imported by tests (not tests themselves). `wwiv_*.bas` are unchanged copies of scripts WWIV ships; keep them identical. |
 | `tests/run_golden.cmake` | The golden-test runner used by CTest. |
 | `antlr/antlr-4.13.2-complete.jar` | ANTLR tool used by the build (needs Java on `PATH`). Keep it at the same version as the vcpkg antlr4 runtime. |
 
@@ -65,7 +65,9 @@ Before you finish a change, build it and make sure `ctest` passes.
 
 ## Code style
 
-- C++23 (GCC 14 or newer, or a current MSVC; CMake 3.20 or newer). Format with the repo's
+- C++23 (GCC 14 or newer, or a current MSVC; CMake 3.20 or newer). Our code builds with
+  `-Wall -Wextra` (`/W4` on MSVC); keep it warning-free. Generated ANTLR code and `core/` are
+  excluded. Format with the repo's
   `.clang-format` (LLVM base, 2-space indent, 100 columns, `int* p` pointer alignment).
 - Under C++20 and later, fmt checks format strings at compile time, so a `{}` without a
   matching argument is a build error. Use `fmt::runtime(s)` only for genuinely dynamic formats.
@@ -74,6 +76,8 @@ Before you finish a change, build it and make sure `ctest` passes.
   of adding new dependencies.
 - BASIC keywords and identifiers are case-insensitive. Use case-insensitive comparison and
   containers (`ci_less`) for names.
+- Switch statements over enums list every case instead of using `default:`, so the compiler
+  flags a new enum value that isn't handled.
 - Keep the `wwiv.*` module names and behaviour compatible with my_basic (see
   "Compatibility policy" in `docs/PLAN.md`).
 

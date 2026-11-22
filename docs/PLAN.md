@@ -26,8 +26,8 @@ Keep compatible: `'` comments, `WHILE/WEND`, `NOT`, `PRINT a, b` / `PRINT a; b`
 without parentheses, `import "@wwiv.io"`, a trailing `;` on a statement,
 module/function names and behaviour, case-insensitivity.
 
-Intentional breaks (proposed): `iterator`/`move_next`/`get` → `FOR EACH`;
-no GOTO/GOSUB, classes, lambdas or coroutines; integers only for now.
+Intentional breaks (proposed): no GOTO/GOSUB, classes, lambdas or coroutines; integers
+only for now; no dicts yet.
 
 ## Milestones
 
@@ -59,12 +59,13 @@ Done when `hello.bas` and `oneliners.bas` parse without errors.
 
 Done when both scripts run against stub WWIV modules and match golden output.
 
-- [ ] List type in `Value` (reference semantics)
-- [ ] `list()`, `len`, `push`, `remove`, `get`, indexing
-- [ ] `FOR EACH x IN l` (plus iterator shim if kept)
+- [x] List type in `Value` (reference semantics)
+- [x] `list()`, `len`, `push`, `remove`, `get`, indexing, and the rest of my_basic's list functions
+- [x] `FOR x IN l` (my_basic's syntax) and `iterator`/`move_next`/`get`
 - [x] Runtime errors for unknown functions/modules and bad arity
-- [ ] `import "file.bas"` loads the file
-- [ ] stdlib gaps the scripts need
+- [x] `import "file.bas"` loads the file (relative to the importing script, once per file)
+- [x] stdlib gaps the scripts need (`STR`, `LEN` on lists)
+- [x] Stub `wwiv`, `wwiv.io`, `wwiv.data` modules; `hello.bas` and `oneliners.bas` run unchanged as golden tests
 
 ### M3: WWIV modules
 
@@ -88,9 +89,11 @@ Done when WWIV uses wwivbasic by default and `deps/my_basic` is deleted.
 
 - Unqualified names after import — implemented as recommended (script and root
   functions win over imported ones); revisit if needed
-- Keep the iterator shim for one release? — M2
+- Iterators: resolved, no break needed. my_basic already has `FOR x IN l`, so both it
+  and `iterator`/`move_next`/`get` are supported
 - Floating-point numbers now or later? — M2
-- Do any scripts use `dict()`? — M2
+- Dicts: not implemented. Do any scripts use `dict()`? WWIV's `wwiv.data` only
+  saves lists — M3
 - Repo layout: move into WWIV tree or submodule? — M4
 - Debugger required before removing my_basic? — M4
 - ANTLR runtime + Java build step in WWIV, or check in generated parser? — M4

@@ -1,9 +1,13 @@
 #include "executor.h"
+#include "function_def_visitor.h"
+#include "stdlib/collections.h"
 #include "utils.h"
 #include "BasicLexer.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+
+#include <filesystem>
 
 namespace wwivbasic {
 
@@ -70,16 +74,24 @@ Value ExecutionVisitor::call(const std::string& name, const std::vector<Value>& 
   owner->scopes.push_back(fnscope);
   ++call_depth_;
 
+  // Errors in the body are reported against the file that defines it.
+  auto saved_filename = filename_;
+  if (!fn->filename.empty()) {
+    filename_ = fn->filename;
+  }
+
   struct Restore {
     ExecutionVisitor* v;
     Module* owner;
     Module* saved;
+    std::string saved_filename;
     ~Restore() {
       owner->scopes.pop_back();
       v->ec_.module = saved;
+      v->filename_ = saved_filename;
       --v->call_depth_;
     }
-  } restore{this, owner, saved_module};
+  } restore{this, owner, saved_module, saved_filename};
 
   return_value_ = Value();
   visit(fn->def_fn->statements());
@@ -101,6 +113,16 @@ std::any ExecutionVisitor::visitProcedureCall(BasicParser::ProcedureCallContext*
   std::vector<Value> params;
   if (ctx->parameterList()) {
     params = std::any_cast<std::vector<Value>>(visit(ctx->parameterList()));
+  }
+  // l(i) reads item i of list l, unless a function named l exists.
+  if (!ec_.try_find_function(fn_name)) {
+    if (auto v = ec_.var(fn_name); v && v->value().is_list()) {
+      if (params.size() != 1) {
+        throw BasicError(fmt::format("{}(): a list index takes 1 argument, got {}", fn_name,
+                                     params.size()));
+      }
+      return stdlib::list_get(v->value(), params.front(), fn_name + "()");
+    }
   }
   return call(fn_name, params);
 }
@@ -130,8 +152,8 @@ std::any ExecutionVisitor::visitImportModule(BasicParser::ImportModuleContext* c
   } else {
     name = remove_quotes(context->STRING()->getText());
     if (!starts_with(name, "@")) {
-      // TODO(rushfan): Load and run the imported source file (M2).
-      throw BasicError(fmt::format("Importing source files is not supported yet: '{}'", name));
+      import_file(name);
+      return {};
     }
     name = name.substr(1);
   }
@@ -141,6 +163,58 @@ std::any ExecutionVisitor::visitImportModule(BasicParser::ImportModuleContext* c
   ec_.trace_log("IMPORT @{}", name);
   ec_.module->imported_modules.emplace(name);
   return {};
+}
+
+void ExecutionVisitor::import_file(const std::string& name) {
+  // Like WWIV's scripts directory, paths are relative to the importing script.
+  const auto base = std::filesystem::path(filename_).parent_path();
+  const auto path = (base / name).lexically_normal();
+  // Each file is only loaded once, which also stops import cycles. The entry
+  // script is registered by run_file/run_source, so a cycle back to it stops
+  // here too.
+  if (!ec_.imported_files.insert(Context::import_key(path)).second) {
+    return;
+  }
+  ec_.trace_log("IMPORT \"{}\"", path.string());
+
+  const auto errors_before = ec_.errors.size();
+  // Reports every error added since errors_before.
+  auto import_error = [&]() {
+    std::string msg = fmt::format("Unable to import '{}'", name);
+    for (auto i = errors_before; i < ec_.errors.size(); i++) {
+      msg += "\n  " + ec_.errors[i];
+    }
+    return BasicError(msg);
+  };
+
+  ec_.add_source(path);
+  const auto tree = ec_.parseTree(path);
+  if (!tree || ec_.errors.size() != errors_before) {
+    throw import_error();
+  }
+
+  // Imported functions are defined in the importing module (or the module a
+  // MODULE statement in the file names), and its top-level code runs now.
+  auto* saved_module = ec_.module;
+  struct RestoreModule {
+    Context& ec;
+    Module* saved;
+    ~RestoreModule() { ec.module = saved; }
+  } restore{ec_, saved_module};
+
+  FunctionDefVisitor fd(ec_, path.string());
+  fd.visit(tree.value());
+  if (ec_.errors.size() != errors_before) {
+    throw import_error();
+  }
+  ec_.module = saved_module;
+
+  ExecutionVisitor v(ec_, path.string());
+  v.call_depth_ = call_depth_;
+  v.visit(tree.value());
+  if (v.ended()) {
+    flow_ = Flow::END;
+  }
 }
 
 std::any ExecutionVisitor::visitStatements(BasicParser::StatementsContext* context) {
@@ -326,6 +400,24 @@ std::any ExecutionVisitor::visitForStatement(BasicParser::ForStatementContext* c
     }
     const auto next = ec_.var(varname).value_or(Var(varname, Value(0))).value().toInt() + step;
     ec_.upsert(varname, Value(next));
+  }
+  return {};
+}
+
+std::any ExecutionVisitor::visitForInStatement(BasicParser::ForInStatementContext* ctx) {
+  const auto varname = ctx->ID(0)->getText();
+  if (ctx->ID().size() > 1 && !iequals(ctx->ID(1)->getText(), varname)) {
+    throw BasicError(
+        fmt::format("NEXT {} does not match FOR {}", ctx->ID(1)->getText(), varname));
+  }
+  const auto list = eval(ctx->expr()).list("FOR ... IN");
+  // Indexing (rather than iterators) keeps this safe if the body changes the
+  // list: items added during the loop are visited, removed ones are not.
+  for (size_t i = 0; i < list->items.size(); i++) {
+    ec_.upsert(varname, list->items[i]);
+    if (!run_loop_body(ctx->statements())) {
+      break;
+    }
   }
   return {};
 }

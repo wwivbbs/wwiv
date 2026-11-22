@@ -4,10 +4,12 @@
 
 #include <any>
 #include <iosfwd>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <variant>
+#include <vector>
 
 namespace wwivbasic {
 
@@ -20,16 +22,30 @@ public:
   size_t line{0};
 };
 
+class Value;
+struct ListData;
+struct IteratorData;
+
+using ListPtr = std::shared_ptr<ListData>;
+using IteratorPtr = std::shared_ptr<IteratorData>;
+
 class Value {
 public:
-  enum class Type { BOOLEAN, INTEGER, STRING };
+  // LIST and ITERATOR values are references: copying the Value shares the
+  // underlying list, as in my_basic.
+  enum class Type { BOOLEAN, INTEGER, STRING, LIST, ITERATOR };
 
   Value() : value_(std::string()), type(Type::STRING) {}
   explicit Value(bool b) : value_(b), type(Type::BOOLEAN) {}
   explicit Value(int i) : value_(i), type(Type::INTEGER) {}
   explicit Value(const std::string& s) : value_(s), type(Type::STRING) {}
   explicit Value(const char* s) : value_(std::string(s)), type(Type::STRING) {}
+  explicit Value(ListPtr l) : value_(std::move(l)), type(Type::LIST) {}
+  explicit Value(IteratorPtr it) : value_(std::move(it)), type(Type::ITERATOR) {}
   explicit Value(const std::any& a);
+
+  // Creates a new, empty list.
+  static Value new_list();
 
   int set(int i) {
     value_ = i;
@@ -45,13 +61,22 @@ public:
   }
 
   Type value_type() const { return type; }
+  bool is_list() const { return type == Type::LIST; }
+  bool is_iterator() const { return type == Type::ITERATOR; }
+
+  // The list, or throws BasicError naming `fn` if this is not a list.
+  ListPtr list(std::string_view fn) const;
+  // The iterator, or throws BasicError naming `fn` if this is not an iterator.
+  IteratorPtr iterator(std::string_view fn) const;
 
   bool toBool() const;
   int toInt() const;
+  // Lists print as "LIST" and iterators as "ITERATOR", like my_basic.
   std::string toString() const;
-  std::any toAny() const;
+  // The type name used in error messages: BOOLEAN, INTEGER, STRING, ...
+  std::string type_name() const;
 
-  template <typename T> 
+  template <typename T>
   T get() const { return std::get<T>(value_); }
 
   // operators
@@ -61,17 +86,28 @@ public:
   Value operator/(const Value& that) const;
   Value operator%(const Value& that) const;
 
-  Value operator||(const Value& that) const;
-  Value operator&&(const Value& that) const;
-
   bool operator<(const Value& that) const;
   bool operator>(const Value& that) const;
+  // Scalars compare by value; lists and iterators by identity.
   bool operator==(const Value& that) const;
   bool operator!=(const Value& that) const { return !(*this == that); }
 
 private:
-  std::variant<bool, int, std::string> value_;
+  // Throws unless both operands are scalars (BOOLEAN, INTEGER, STRING).
+  void check_scalar(const Value& that, std::string_view op) const;
+
+  std::variant<bool, int, std::string, ListPtr, IteratorPtr> value_;
   Type type;
+};
+
+struct ListData {
+  std::vector<Value> items;
+};
+
+// Position within a list. Starts before the first item; MOVE_NEXT advances.
+struct IteratorData {
+  ListPtr list;
+  int pos{-1};
 };
 
 std::ostream& operator<<(std::ostream& os, const Value& v);

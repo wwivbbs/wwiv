@@ -22,7 +22,9 @@ FunctionDefVisitor::visitProcedureDefinition(BasicParser::ProcedureDefinitionCon
     ec_.errors.push_back(fmt::format("{}:{}: error: function '{}' is already defined", filename_,
                                      context->getStart()->getLine(), name));
   }
-  ec_.module->functions.insert_or_assign(name, BasicFunction(name, context, params));
+  BasicFunction fn(name, context, params);
+  fn.filename = filename_;
+  ec_.module->functions.insert_or_assign(name, fn);
   return {};
 }
 
