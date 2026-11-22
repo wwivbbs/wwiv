@@ -116,7 +116,7 @@ FileView::FileView(IOClass *InputOutput, BREditArguments *FA, EditorFileClass *F
 	IO->MoveTo(0, 1);
 	int i;
 	for(i=1;i<BREditArgs->MaxColumns;i++)
-		IO->Output('Ä');
+		IO->Output('\xc4');
 	ShowHelpPage(File);
 	if (BREditArgs->EnhancedMode==ON)
 		IO->EANSI_DefineRegion(HELP_TOP_LINE, HELP_DISPLAY_LINES+HELP_TOP_LINE);

@@ -416,7 +416,7 @@ static void insert_after_routing(std::string& text, const std::string& text2inse
 // Give us 3000 extra bytes to play with in the message text
 static constexpr int PAD_SPACE = 3000;
 
-// Takes text, deletes all ascii '10' and converts '13' to '227' (ã)
+// Takes text, deletes all ascii '10' and converts '13' to '227' (CP437 pi)
 // And does other conversions as specified
 // TODO(rushfan): This whole thing needs to be redone.
 static std::string make_qwk_ready(const std::string& text, const std::string& address) {

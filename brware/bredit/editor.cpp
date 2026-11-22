@@ -641,10 +641,10 @@ void EditorClass::ShowTitleAndBar(void)
 	IO->MoveTo(0, 1);
         IO->SetColor(7);       // 7
 	for(i=0;i<(BREditArgs->MaxColumns/2)-1;i++)
-                IO->Output('Ä');    // Ä
-        IO->Output('Ä');            // Á
+                IO->Output('\xc4');    // CP437 196 (horizontal line)
+        IO->Output('\xc4');            // CP437 193 (up tee)
 	for(i=0;i<(BREditArgs->MaxColumns/2)-1;i++)
-                IO->Output('Ä');   // Ä
+                IO->Output('\xc4');   // CP437 196 (horizontal line)
 	IO->SetColor(0);
 	TopLine=2;
 	IO->EANSI_DefineRegion(TopLine, DisplayLines+TopLine);
@@ -672,10 +672,10 @@ void EditorClass::ShowTitle()
 	IO->MoveTo(0,0);
 	IO->Output("[ BREdit v");
 	IO->Output(VERSION);
-	IO->Output(" ù /H for help ");
+	IO->Output(" \xf9 /H for help ");
 	if (QuotesAvailable)
-		IO->Output("ù /Q to quote ");
-	IO->Output("ù Max ");
+		IO->Output("\xf9 /Q to quote ");
+	IO->Output("\xf9 Max ");
 	IO->Output(BREditArgs->MaxLines);
 	IO->Output(" lines ]");
 	ShowInsertStatus();
@@ -718,7 +718,7 @@ void EditorClass::ShowInfo(void)
 	IO->MoveTo(0,1);
 	IO->SetColor(7);
 	for(i=0;i<79;i++)
-		IO->Output('Ä');
+		IO->Output('\xc4');
 	i=3;
 	ShowInfoLine("Enhanced Mode", (BREditArgs->EnhancedMode==ON) ? "ON" :
 							 "OFF (Try using VT102 Emulation)", i);

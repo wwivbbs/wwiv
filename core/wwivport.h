@@ -39,12 +39,13 @@ typedef uint32_t daten_t;
 #error "Visual Studio 2022 version 17.2.0 or later is required"
 #endif // _MSC_VER < 1932
 
-#ifdef _WIN64
-typedef int64_t ssize_t;
-#else
-// Most places seem to use long, and httplib grumbles
-typedef long ssize_t;
-#endif // _WIN64
+// cpp-httplib defines ssize_t as __int64 on all Windows builds unless
+// _SSIZE_T_DEFINED is set, so use the same type (on 32-bit too) and the same
+// guard. Both headers then agree whichever one is included first.
+#ifndef _SSIZE_T_DEFINED
+using ssize_t = __int64;
+#define _SSIZE_T_DEFINED
+#endif // _SSIZE_T_DEFINED
 
 #ifdef _WIN32
 typedef int pid_t;
