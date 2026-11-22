@@ -39,7 +39,7 @@ Done when the project builds with one command and the tests pass.
 - [x] Golden-test runner: run each `.bas`, compare with `.expected` (wired into CTest)
 - [x] Turn `bas/*.bas` into golden tests (`tests/golden/`)
 - [x] Parse errors report file:line:column and exit non-zero
-- [ ] CI workflow (`.github/workflows/build.yml`) green on Linux and Windows
+- [x] CI workflow (`.github/workflows/build.yml`) green on Linux and Windows
 
 ### M1: The existing scripts parse
 
