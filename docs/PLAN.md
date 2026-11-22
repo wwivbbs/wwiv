@@ -47,7 +47,8 @@ RunBasicScript(name)                       (WWIV)
   helpers. Adding a binding never requires changing the interpreter.
 - **Building and choosing the engine.** A CMake option (`WWIV_WWIVBASIC_NEXT`,
   off at first) decides whether the new engine is built at all, so WWIV builds
-  without ANTLR or Java until it's ready. In builds that have both, a runtime
+  without the ANTLR runtime until it's ready (the generated parser is checked
+  in, so Java is never needed). In builds that have both, a runtime
   setting chooses the engine (a `wwiv.json` setting, plus
   `bbs --basic_engine=legacy|next` for testing), so sysops can try it and fall
   back without rebuilding, and scripts can be run on both and their output
@@ -124,8 +125,10 @@ working.
       of a variable), so `wwiv.io.outstr()` keeps working and
       `area.headers().count` parses
 - [x] Floating-point numbers (`REAL`); `wwiv.data` files can contain REALs
-- [ ] Build options for embedding: use the embedder's `core` target when one
+- [x] Build options for embedding: use the embedder's `core` target when one
       exists, and skip `basicrun` and the tests
+- [x] Check in the generated parser (`generated/`), regenerated when the
+      grammar changes and Java is available, so WWIV's build doesn't need Java
 
 ### M4: Integrate into WWIV (behind a CMake option)
 
@@ -145,7 +148,7 @@ WWIV's existing `bbs/basic` tests pass against the new engine.
 - [ ] Port WWIV's `bbs/basic/basic_test.cpp` cases to run against the new
       engine
 - [ ] Side-by-side check: run scripts on both engines and diff the output
-- [ ] WWIV CI builds one configuration with the option on (needs Java)
+- [ ] WWIV CI builds one configuration with the option on
 
 ### M5: SDK bindings (WWIV)
 
@@ -188,5 +191,11 @@ Done when wwivbasic is WWIV's only BASIC engine.
   write function? — M4
 - Debugger: decided, required before removing my_basic (M6). Move it earlier
   if it's needed day to day
-- ANTLR runtime + Java build step in WWIV, or check in the generated parser?
-  — M4
+- Generated parser: decided, checked in under `generated/`; builds with Java
+  regenerate it when the grammar changes, builds without Java use it as is
+- WWIV builds as C++17; wwivbasic needs C++23 and makes targets that link it
+  build as C++23. Either the `bbs` target (or a small library holding the
+  bindings) builds as C++23, or WWIV moves to C++23 — M4
+- WWIV's `core/parser/lexer.cpp` has a `fmt::format` call with a missing
+  argument, which C++20 and later reject at compile time. Our copy has the
+  fix; upstream it — M4

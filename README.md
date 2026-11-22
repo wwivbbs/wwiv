@@ -42,7 +42,7 @@ You need:
 
 - CMake 3.21 or newer, and Ninja
 - A C++23 compiler: GCC 14 or newer, or a current Visual Studio
-- Java, to run the ANTLR code generator (`antlr/antlr-4.13.2-complete.jar`)
+- Java 11 or newer, only if you change the grammar (see below)
 - vcpkg (see below)
 
 ```sh
@@ -52,6 +52,15 @@ cmake --build --preset linux-debug
 
 On Windows, run these in an x64 Native Tools prompt and use the `windows-x64-debug` preset.
 Build output goes to `_build/<preset>/`.
+
+### The generated parser
+
+The C++ lexer and parser are generated from `BasicLexer.g4` and `BasicParser.g4` by ANTLR
+(`antlr/antlr-4.13.2-complete.jar`) and checked in under `generated/`, so a build doesn't need
+Java. If Java is installed, editing a grammar file regenerates them on the next build; commit
+the regenerated files with the grammar change. Without Java, the checked-in files are used, and
+configuring fails if the grammar no longer matches them (`generated/grammar.sha256` records
+which grammar they came from). CI fails if the checked-in files are out of date.
 
 ### vcpkg
 
@@ -162,7 +171,13 @@ viewer needs a desktop and a full Java runtime; the `-headless` packages can't s
 ## Embedding
 
 Programs such as WWIV use wwivbasic through the headers in `include/wwivbasic/`
-and the `wwivbasic_interpreter` library. A host provides a `Console` (where
+and the `wwivbasic_interpreter` library. Add it with `add_subdirectory` after the
+embedder's `core` target (WWIV's `core/` library, with `core/...` headers on the
+include path); wwivbasic then uses that `core` and builds only the library, not
+`basicrun` or the tests (turn those on with `WWIVBASIC_BUILD_TOOLS` and
+`WWIVBASIC_BUILD_TESTS`). Its dependencies (antlr4, fmt) come from the
+embedder's vcpkg manifest. Targets that link `wwivbasic_interpreter` build as
+C++23. A host provides a `Console` (where
 `PRINT` writes and input comes from) and adds modules of native functions:
 
 ```cpp
@@ -217,6 +232,8 @@ Objects are shared by reference, like lists, and print as their class name.
 | Path | Contents |
 | --- | --- |
 | `BasicLexer.g4`, `BasicParser.g4` | The grammar |
+| `generated/` | The lexer and parser ANTLR generates from the grammar (don't edit) |
+| `cmake/` | Build helpers: regenerating the parser |
 | `include/wwivbasic/` | The public embedding API |
 | `src/` | The interpreter, the `basicrun` CLI and the unit tests |
 | `src/stdlib/` | Built-in functions |

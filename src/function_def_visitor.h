@@ -1,8 +1,6 @@
 #pragma once
 
-#include "BasicParser.h"
-#include "BasicParserBaseVisitor.h"
-#include "antlr4-runtime.h"
+#include "antlr.h"
 #include "context.h"
 
 #include <string>

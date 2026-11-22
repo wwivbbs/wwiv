@@ -3,7 +3,6 @@
 #include "stdlib/collections.h"
 #include "wwivbasic/object.h"
 #include "utils.h"
-#include "BasicLexer.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"

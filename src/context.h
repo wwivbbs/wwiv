@@ -2,8 +2,7 @@
 
 // Internal: the interpreter's state. Embedders use wwivbasic/interpreter.h.
 
-#include "BasicLexer.h"
-#include "BasicParser.h"
+#include "antlr.h"
 #include "wwivbasic/console.h"
 #include "wwivbasic/module.h"
 #include "wwivbasic/value.h"

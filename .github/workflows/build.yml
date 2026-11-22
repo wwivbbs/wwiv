@@ -79,3 +79,16 @@ jobs:
 
       - name: Test
         run: ctest --preset ${{ matrix.preset }}
+
+      # The build regenerates generated/ if the grammar doesn't match it, so
+      # any change here means the regenerated parser wasn't committed.
+      - name: Check the checked-in parser matches the grammar
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain -- generated)" ]; then
+            git status --short -- generated
+            git diff --stat -- generated
+            git diff -- generated | head -60
+            echo "::error::generated/ is out of date: rebuild with Java and commit the regenerated parser."
+            exit 1
+          fi
