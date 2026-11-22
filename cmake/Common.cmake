@@ -25,7 +25,7 @@ option(WWIV_USE_PIPES "Enable Named Pipes support for WWIV." ON)
 #
 # Build variables to come from Jenkins, environment, etc.
 
-set(WWIV_RELEASE "5.9.0" CACHE STRING "WWIV Release Major Version to 3 digits")
+set(WWIV_RELEASE "5.10.0" CACHE STRING "WWIV Release Major Version to 3 digits")
 set(WWIV_BUILD_NUMBER "development" CACHE STRING "WWIV Build Number")
 set(WWIV_ARCH "x86" CACHE STRING "x86 or x64")
 set(WWIV_DISTRO "unknown" CACHE STRING "WWIV OS Distribution e.g. (win-x86 | linux-debian10) ")

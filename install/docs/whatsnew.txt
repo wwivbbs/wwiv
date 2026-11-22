@@ -15,6 +15,9 @@ Legend (starting with 5.3)
     so that you don't overwrite any files (or use winmerge or meld
     to compare new changes)
 
+What's New in WWIV 5.10.0 (2026)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 What's New in WWIV 5.9.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Full Screen Editor (FSED)

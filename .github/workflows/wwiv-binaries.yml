@@ -2,8 +2,8 @@
 # Copyright (C)2023, WWIV Software Services
 #
 
-name: WWIV 5.9
-run-name: WWIV 5.9 CI
+name: WWIV 5.10
+run-name: WWIV 5.10 CI
 
 # ** IMPORTANT: ONLY allow on push events here since WWIV
 # has some self hosted runners
@@ -18,8 +18,10 @@ env:
     CTEST_BIN: ctest
     CPACK_BIN: cpack
     WORKSPACE: ${{ github.workspace }}
-    WWIV_RELEASE: 5.9.0
-    WWIV_RELEASE_LABEL: wwiv59
+    # The release version and the prefix for build tags (e.g. wwiv5.10_3779).
+    # Update both when starting a new release.
+    WWIV_RELEASE: 5.10.0
+    WWIV_RELEASE_LABEL: wwiv5.10
     # TODO - rushfan - we should probably remove this.
     BUILD_NUMBER: 8675309
 
@@ -30,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build_number: ${{ steps.buildnumber.outputs.build_number }}
+      wwiv_release: ${{ env.WWIV_RELEASE }}
       wwiv_tag: ${{ steps.generate_tag.outputs.wwiv_tag }}
     steps:
       - name: Checkout, Tag and Build Number
@@ -119,13 +122,11 @@ jobs:
               archive_suffix: zip
         fail-fast: false
     runs-on: ${{ matrix.os }}
-    # TODO: Update this on new releases
-    environment: WWIV59
     env:
       BUILD_NUMBER: ${{needs.wwiv-build-number.outputs.build_number}}
       WWIV_TAG: ${{needs.wwiv-build-number.outputs.wwiv_tag}}
       WWIV_DISTRO: ${{ matrix.wwiv_distro }}
-      WWIV_RELEASE_ARCHIVE_FILE: wwiv-${{ matrix.wwiv_distro }}-${{ vars.WWIV_RELEASE }}.${{needs.wwiv-build-number.outputs.build_number}}.${{ matrix.archive_suffix }}
+      WWIV_RELEASE_ARCHIVE_FILE: wwiv-${{ matrix.wwiv_distro }}-${{ needs.wwiv-build-number.outputs.wwiv_release }}.${{needs.wwiv-build-number.outputs.build_number}}.${{ matrix.archive_suffix }}
       CMAKE_BINARY_DIR: '${{ github.workspace }}/_build'
       WWIV_RELEASE_DIR: '${{ github.workspace }}/_build/release'
       
@@ -191,7 +192,6 @@ jobs:
         run: builds\jenkins\wwiv\build.cmd
         env:
           WWIV_ARCH: x86
-          WWIV_RELEASE: 5.9.0
           # vcpkg default local binary cache. Self-hosted runners keep it
           # between runs, so dependencies are not rebuilt every time; on
           # GitHub-hosted runners it starts empty. Only pushes to main run here.
@@ -203,7 +203,6 @@ jobs:
         run: builds/jenkins/wwiv/build
         env:
           WWIV_ARCH: x86
-          WWIV_RELEASE: 5.9.0
           # vcpkg default local binary cache. Self-hosted runners keep it
           # between runs, so dependencies are not rebuilt every time; on
           # GitHub-hosted runners it starts empty. Only pushes to main run here.
