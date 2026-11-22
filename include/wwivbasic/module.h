@@ -59,7 +59,8 @@ template <typename R> Value to_value(R&& r) {
   } else if constexpr (std::is_integral_v<D>) {
     return Value(static_cast<int>(r));
   } else if constexpr (std::is_floating_point_v<D>) {
-    return Value(static_cast<double>(r));
+    // Whole results become INTEGERs, as in arithmetic.
+    return Value::number(static_cast<double>(r));
   } else {
     return Value(std::string(r));
   }

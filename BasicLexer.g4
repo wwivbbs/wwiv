@@ -85,7 +85,7 @@ MODULE: 'MODULE';
 IMPORT: 'IMPORT';
 
 STRING options { caseInsensitive=false; } : '"' ~["\r\n]* '"';
-ID: (LETTER | '_') (LETTER | '_' | '.' | Digit)*;
+ID: (LETTER | '_') (LETTER | '_' | Digit)*;
 fragment LETTER : [A-Z];
 
 // A comment runs to the end of the line; the newline itself stays a NEWLINE

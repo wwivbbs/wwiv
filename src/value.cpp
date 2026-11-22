@@ -3,6 +3,8 @@
 
 #include <any>
 #include <cmath>
+#include <cctype>
+#include <charconv>
 #include <cstdlib>
 #include <limits>
 #include <iostream>
@@ -59,6 +61,13 @@ IteratorPtr Value::iterator(std::string_view fn) const {
   return std::get<IteratorPtr>(value_);
 }
 
+std::string Value::a_type_name() const {
+  const auto name = type_name();
+  const bool vowel =
+      !name.empty() && std::string_view("AEIOU").find(name.front()) != std::string_view::npos;
+  return (vowel ? "an " : "a ") + name;
+}
+
 std::string Value::type_name() const {
   switch (type) {
   case Type::BOOLEAN:
@@ -108,31 +117,57 @@ bool Value::toBool() const {
   return false;
 }
 
+std::optional<double> Value::parse_number(std::string_view s) {
+  size_t i = 0;
+  while (i < s.size() && (s[i] == ' ' || s[i] == '\t')) {
+    i++;
+  }
+  bool negative = false;
+  if (i < s.size() && (s[i] == '+' || s[i] == '-')) {
+    negative = s[i] == '-';
+    i++;
+  }
+  // Only decimal digits or a '.' can start a number; from_chars would also
+  // accept "inf" and "nan".
+  if (i >= s.size() || !(std::isdigit(static_cast<unsigned char>(s[i])) || s[i] == '.')) {
+    return std::nullopt;
+  }
+  double d{};
+  const auto [ptr, ec] = std::from_chars(s.data() + i, s.data() + s.size(), d);
+  if (ec != std::errc() || !std::isfinite(d)) {
+    return std::nullopt;
+  }
+  return negative ? -d : d;
+}
+
+namespace {
+
+// Truncates toward zero and clamps to the INTEGER range.
+int clamp_to_int(double d) {
+  if (std::isnan(d)) {
+    return 0;
+  }
+  if (d >= static_cast<double>(std::numeric_limits<int>::max())) {
+    return std::numeric_limits<int>::max();
+  }
+  if (d <= static_cast<double>(std::numeric_limits<int>::min())) {
+    return std::numeric_limits<int>::min();
+  }
+  return static_cast<int>(d);
+}
+
+} // namespace
+
 int Value::toInt() const {
   switch (type) {
   case Type::BOOLEAN:
     return std::get<bool>(value_) ? 1 : 0;
   case Type::INTEGER:
     return std::get<int>(value_);
-  case Type::REAL: {
-    const auto d = std::get<double>(value_);
-    if (std::isnan(d)) {
-      return 0;
-    }
-    if (d >= static_cast<double>(std::numeric_limits<int>::max())) {
-      return std::numeric_limits<int>::max();
-    }
-    if (d <= static_cast<double>(std::numeric_limits<int>::min())) {
-      return std::numeric_limits<int>::min();
-    }
-    return static_cast<int>(d);
-  }
+  case Type::REAL:
+    return clamp_to_int(std::get<double>(value_));
   case Type::STRING:
-    try {
-      return std::stoi(std::get<std::string>(value_));
-    } catch (const std::exception&) {
-      return 0;
-    }
+    return clamp_to_int(parse_number(std::get<std::string>(value_)).value_or(0));
   case Type::LIST:
   case Type::ITERATOR:
     return 0;
@@ -148,10 +183,8 @@ double Value::toDouble() const {
     return std::get<int>(value_);
   case Type::REAL:
     return std::get<double>(value_);
-  case Type::STRING: {
-    const auto& s = std::get<std::string>(value_);
-    return std::strtod(s.c_str(), nullptr);
-  }
+  case Type::STRING:
+    return parse_number(std::get<std::string>(value_)).value_or(0);
   case Type::LIST:
   case Type::ITERATOR:
     return 0;
@@ -179,7 +212,7 @@ std::string Value::toString() const {
 void Value::check_scalar(const Value& that, std::string_view op) const {
   for (const auto* v : {this, &that}) {
     if (v->type == Type::LIST || v->type == Type::ITERATOR) {
-      throw BasicError(fmt::format("Operator '{}' cannot be used with a {}", op, v->type_name()));
+      throw BasicError(fmt::format("Operator '{}' cannot be used with {}", op, v->a_type_name()));
     }
   }
 }
@@ -194,8 +227,8 @@ void Value::check_scalar(const Value& that, std::string_view op) const {
 
 namespace {
 
-// True if v is an INTEGER or BOOLEAN, or a STRING holding a whole number:
-// arithmetic on two of these stays in integers.
+// True if v is an INTEGER or BOOLEAN, or a STRING holding a whole number that
+// fits in an INTEGER. Arithmetic on two of these stays in integers.
 bool is_integral(const Value& v) {
   switch (v.value_type()) {
   case Value::Type::BOOLEAN:
@@ -207,7 +240,9 @@ bool is_integral(const Value& v) {
     return false;
   case Value::Type::STRING: {
     const auto d = v.toDouble();
-    return std::trunc(d) == d;
+    // Whole and small enough for an INTEGER; "1e30" is not.
+    return std::trunc(d) == d && d >= std::numeric_limits<int>::min() &&
+           d <= std::numeric_limits<int>::max();
   }
   }
   return false;
@@ -219,7 +254,7 @@ bool is_integral(const Value& v) {
 Value arithmetic(const Value& a, const Value& b, char op) {
   if (a.value_type() == Value::Type::INTEGER && is_integral(b)) {
     const long long x = a.toInt();
-    const long long y = static_cast<long long>(b.toDouble());
+    const long long y = b.toInt();
     long long r = 0;
     switch (op) {
     case '+':
@@ -261,11 +296,22 @@ Value arithmetic(const Value& a, const Value& b, char op) {
   throw BasicError(fmt::format("Internal error: unknown operator '{}'", op));
 }
 
-// True if comparisons between a and b should be numeric: both are numbers
-// and at least one is a REAL (INTEGER and BOOLEAN keep their existing rules).
-bool compare_as_reals(const Value& a, const Value& b) {
-  return a.is_number() && b.is_number() &&
-         (a.value_type() == Value::Type::REAL || b.value_type() == Value::Type::REAL);
+// True if a comparison should compare numbers: the left side is an INTEGER or
+// REAL (a STRING on the right is read as a number, as in arithmetic), or a
+// BOOLEAN compared with a REAL. Otherwise the left side's type decides.
+bool compare_numerically(const Value& a, const Value& b) {
+  switch (a.value_type()) {
+  case Value::Type::INTEGER:
+  case Value::Type::REAL:
+    return true;
+  case Value::Type::BOOLEAN:
+    return b.value_type() == Value::Type::REAL;
+  case Value::Type::STRING:
+  case Value::Type::LIST:
+  case Value::Type::ITERATOR:
+    return false;
+  }
+  return false;
 }
 
 } // namespace
@@ -339,18 +385,23 @@ Value Value::operator/(const Value& that) const {
   unreachable_type("/");
 }
 
-// MOD works on integers; REALs are truncated first, like my_basic.
+// MOD works on integers: REALs are truncated first, like my_basic, so
+// 7.5 MOD 0.5 is a division by zero there too.
 Value Value::operator%(const Value& that) const {
   check_scalar(that, "MOD");
   switch (type) {
   case Type::BOOLEAN:
     return Value(false);
   case Type::INTEGER:
-  case Type::REAL:
-    if (that.toInt() == 0) {
+  case Type::REAL: {
+    // 64 bits, so INT_MIN MOD -1 doesn't overflow.
+    const long long x = toInt();
+    const long long y = that.toInt();
+    if (y == 0) {
       throw BasicError("Division by zero");
     }
-    return Value(toInt() % that.toInt());
+    return Value(static_cast<int>(x % y));
+  }
   case Type::STRING:
     return Value(toString() + that.toString());
   case Type::LIST:
@@ -362,7 +413,7 @@ Value Value::operator%(const Value& that) const {
 
 bool Value::operator<(const Value& that) const {
   check_scalar(that, "<");
-  if (compare_as_reals(*this, that)) {
+  if (compare_numerically(*this, that)) {
     return toDouble() < that.toDouble();
   }
   switch (type) {
@@ -383,7 +434,7 @@ bool Value::operator<(const Value& that) const {
 
 bool Value::operator>(const Value& that) const {
   check_scalar(that, ">");
-  if (compare_as_reals(*this, that)) {
+  if (compare_numerically(*this, that)) {
     return toDouble() > that.toDouble();
   }
   switch (type) {
@@ -417,7 +468,7 @@ bool Value::operator==(const Value& that) const {
     // Same type and the same underlying object.
     return type == that.type && value_ == that.value_;
   }
-  if (compare_as_reals(*this, that)) {
+  if (compare_numerically(*this, that)) {
     return toDouble() == that.toDouble();
   }
   switch (type) {

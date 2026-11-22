@@ -436,5 +436,139 @@ TEST_F(InterpreterTest, NativeFunctionWithDouble) {
 }
 
 TEST_F(InterpreterTest, SortReals) {
-  EXPECT_EQ("0.5 1 2.5 x ", run("for v in sort(list(\"x\", 2.5, 1, 0.5))\nprint v; \" \";\nnext\n"));
+  EXPECT_EQ("0.5 1 2.5 x ",
+            run("for v in sort(list(\"x\", 2.5, 1, 0.5))\nprint v; \" \";\nnext\n"));
+}
+
+// Member access (M3). No values have members yet, so these check parsing,
+// module paths, and the errors for members of plain values.
+
+TEST_F(InterpreterTest, MemberChainsParse) {
+  RunOptions options;
+  options.execute = false;
+  const auto result = interp.run_source(
+      "t.bas", "x = area.headers().count\narea.name = \"x\"\nprint a.b(1).c().d\nobj.go()\n",
+      options);
+  EXPECT_TRUE(result.ok()) << result.errors.front();
+}
+
+TEST_F(InterpreterTest, ModulePathsStillWork) {
+  auto& io = interp.add_module("wwiv.io");
+  io.native_function("OUTSTR", [this](std::string s) { output += s; });
+  interp.add_module("wwiv").native_function("VERSION", []() { return std::string("5"); });
+  EXPECT_EQ("v5", run("import @wwiv.io\nwwiv.io.outstr(\"v\")\noutstr(wwiv.version())\n"));
+  EXPECT_TRUE(errors.empty()) << errors.front();
+}
+
+TEST_F(InterpreterTest, SpacesAroundDots) {
+  interp.add_module("wwiv").native_function("VERSION", []() { return std::string("5"); });
+  EXPECT_EQ("5\n", run("print wwiv . version()\n"));
+}
+
+TEST_F(InterpreterTest, UnknownFunctionInModule) {
+  interp.add_module("wwiv.io");
+  run("wwiv.io.nosuch()\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:1: error: Unknown function 'wwiv.io.nosuch'", errors.front());
+}
+
+TEST_F(InterpreterTest, MemberOfPlainValueIsAnError) {
+  run("s = \"text\"\nprint s.size\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:2: error: Cannot read member 'size' of a STRING", errors.front());
+}
+
+TEST_F(InterpreterTest, SetMemberOfPlainValueIsAnError) {
+  run("n = 1\nn.x = 2\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:2: error: Cannot set member 'x' of an INTEGER", errors.front());
+}
+
+TEST_F(InterpreterTest, MethodOfPlainValueIsAnError) {
+  run("l = list()\nl.clear()\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:2: error: Cannot call method 'clear' on a LIST", errors.front());
+}
+
+TEST_F(InterpreterTest, MemberOfCallResultIsAnError) {
+  run("print str(1).x\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:1: error: Cannot read member 'x' of a STRING", errors.front());
+}
+
+TEST_F(InterpreterTest, UnknownMemberPathRoot) {
+  run("print nosuch.x\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:1: error: Unknown variable or module 'nosuch' in 'nosuch.x'",
+            errors.front());
+}
+
+TEST_F(InterpreterTest, RealLiteralRules) {
+  // A whole real literal is an INTEGER, and -0.0 prints 0, like my_basic.
+  EXPECT_EQ("2 0 0.5\n", run("print 2.0; \" \"; -0.0; \" \"; -(-0.5)\n"));
+}
+
+TEST_F(InterpreterTest, RealLiteralOutOfRange) {
+  run("x = ." + std::string(400, '0') + "1\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ(0u, errors.front().rfind("test.bas:1: error: Number out of range: .000", 0))
+      << errors.front();
+}
+
+TEST_F(InterpreterTest, ForLoopWithRealStep) {
+  EXPECT_EQ("0 0.25 0.5 0.75 1 ", run("for x = 0 to 1 step 0.25\nprint x; \" \";\nnext\n"));
+}
+
+TEST_F(InterpreterTest, ForLoopWithRealBoundsCountingDown) {
+  EXPECT_EQ("1.5 1 0.5 ", run("for x = 1.5 to 0.5 step -0.5\nprint x; \" \";\nnext\n"));
+}
+
+TEST_F(InterpreterTest, ValOfNonDecimal) {
+  EXPECT_EQ("0 0 -2.5 1\n", run("print val(\"nan\"); \" \"; val(\"0x10\"); \" \"; "
+                                "val(\" -2.5\"); \" \"; 1 + \"0x10\"\n"));
+}
+
+// Dotted names through module variables (PR #6 review).
+
+TEST_F(InterpreterTest, IndexListInModule) {
+  EXPECT_EQ("20\n", run("module \"m\"\nm.items = list(10, 20)\nprint m.items(1)\n"));
+  EXPECT_TRUE(errors.empty()) << errors.front();
+}
+
+TEST_F(InterpreterTest, MemberOfModuleVariable) {
+  // m.items is found as module m's variable; .x is then a member of the LIST.
+  run("module \"m\"\nm.items = list()\nprint m.items.x\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:3: error: Cannot read member 'x' of a LIST", errors.front());
+}
+
+TEST_F(InterpreterTest, LongestModulePrefixWins) {
+  interp.add_module("wwiv");
+  interp.add_module("wwiv.io").native_function("NAME", []() { return std::string("io"); });
+  EXPECT_EQ("io\n", run("print wwiv.io.name()\n"));
+  EXPECT_TRUE(errors.empty()) << errors.front();
+}
+
+TEST_F(InterpreterTest, UnknownSubmoduleNamesTheWholePrefix) {
+  interp.add_module("wwiv");
+  run("wwiv.nosuchsub.foo()\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:1: error: Unknown variable or module 'wwiv.nosuchsub' in "
+            "'wwiv.nosuchsub.foo'",
+            errors.front());
+}
+
+TEST_F(InterpreterTest, UnsetModuleVariableReadsEmpty) {
+  EXPECT_EQ("[]\n", run("module \"m\"\nprint \"[\" + m.nosuch + \"]\"\n"));
+}
+
+TEST_F(InterpreterTest, ForWithModuleVariable) {
+  EXPECT_EQ("12", run("module \"m\"\nfor m.i = 1 to 2\nprint m.i;\nnext m.i\n"));
+  EXPECT_TRUE(errors.empty()) << errors.front();
+}
+
+TEST_F(InterpreterTest, NextMustMatchFor) {
+  run("for i = 1 to 2\nnext j\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:1: error: NEXT j does not match FOR i", errors.front());
 }

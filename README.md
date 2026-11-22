@@ -120,7 +120,7 @@ $ _build/linux-debug/basicrun --show_parsetree t.bas      # t.bas: a = 1 + 2 * 3
     (statement
         (assignmentStatement
             (lvalue
-                (variable a)) =
+                (qualifiedName a)) =
             (expr
                 (expr 1) +
                 (expr

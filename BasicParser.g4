@@ -27,8 +27,11 @@ eos
   : SEMICOLON? NEWLINE
   ;
 
+// A call: name(args), where name may be dotted (wwiv.io.outstr) and is
+// resolved at runtime: a module path if one matches, otherwise a variable and
+// its members (obj.method).
 procedureCall
-  : procedureName LPAREN (parameterList)? RPAREN
+  : qualifiedName LPAREN (parameterList)? RPAREN
   ;
 
 parameterList
@@ -46,7 +49,7 @@ parameterDefinitionList
 // IMPORT "@wwiv.io" and IMPORT @wwiv.io import a native module,
 // IMPORT "file.bas" imports another source file.
 importModule
-  : IMPORT AT ID eos
+  : IMPORT AT qualifiedName eos
   | IMPORT STRING eos
 ;
 
@@ -66,7 +69,7 @@ statement
     | whileStatement
     | doUntilStatement
     | printStatement
-    | procedureCall eos
+    | callChain eos
     | returnStatement
     | exitStatement
     | endStatement
@@ -78,7 +81,7 @@ emptyStatement : eos;
 // Precedence, highest first: unary minus, * / MOD, + -, comparisons,
 // NOT, AND, OR.
 expr
-    : procedureCall                                     # ProcCall
+    : callChain                                         # ProcCall
     | LPAREN expr RPAREN                                # Parens
     | rvalue                                            # Ident
     | INT                                               # Int
@@ -113,12 +116,12 @@ ifStatement
 ;
 
 forStatement
-  : FOR ID EQ expr TO expr (STEP expr)? eos statements NEXT ID? eos
+  : FOR qualifiedName EQ expr TO expr (STEP expr)? eos statements NEXT qualifiedName? eos
 ;
 
 // FOR x IN l ... NEXT runs the body once for each item of the list l.
 forInStatement
-  : FOR ID IN expr eos statements NEXT ID? eos
+  : FOR qualifiedName IN expr eos statements NEXT qualifiedName? eos
 ;
 
 whileStatement
@@ -152,10 +155,18 @@ endStatement
   : END eos
 ;
 
-lvalue :   variable;
+lvalue : qualifiedName;
 
 id: ID;
 
-variable :   ID;
-rvalue :   ID;
+rvalue : qualifiedName;
 procedureName : ID;
+
+// A name with optional dotted parts: x, wwiv.io, area.name.
+qualifiedName : ID (DOT ID)*;
+
+// A call followed by member accesses and method calls: f().x, a.b(1).c().
+callChain : procedureCall memberSuffix*;
+
+// .name reads a member; .name(args) calls a method.
+memberSuffix : DOT ID (LPAREN (parameterList)? RPAREN)?;

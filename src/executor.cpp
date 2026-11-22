@@ -108,23 +108,98 @@ Value ExecutionVisitor::call(const std::string& name, const std::vector<Value>& 
   return result;
 }
 
+// Dotted names are resolved at runtime. The longest prefix that names a
+// module is a module path: wwiv.io.outstr() calls module wwiv.io's OUTSTR, and
+// m.x is module m's variable x. Otherwise the first part is a variable. Any
+// parts after the variable are members of its value (area.name, m.obj.name,
+// obj.method()).
+
+ExecutionVisitor::NamePath ExecutionVisitor::resolve_name(const std::string& name) const {
+  const auto parts = SplitString(name, ".");
+  NamePath path;
+  size_t first_member = 1;
+  path.variable = parts.front();
+  for (auto k = parts.size() - 1; k >= 1; k--) {
+    std::string prefix = parts.front();
+    for (size_t i = 1; i < k; i++) {
+      prefix += "." + parts[i];
+    }
+    if (contains(ec_.modules, prefix)) {
+      path.variable = prefix + "." + parts[k];
+      first_member = k + 1;
+      break;
+    }
+  }
+  path.members.assign(parts.begin() + static_cast<std::ptrdiff_t>(first_member), parts.end());
+  return path;
+}
+
+Value ExecutionVisitor::path_variable(const NamePath& path, const std::string& name) {
+  auto v = ec_.var(path.variable);
+  if (!v) {
+    throw BasicError(fmt::format("Unknown variable or module '{}' in '{}'", path.variable, name));
+  }
+  return v->value();
+}
+
+Value ExecutionVisitor::get_member(const Value& object, const std::string& member) {
+  throw BasicError(fmt::format("Cannot read member '{}' of {}", member, object.a_type_name()));
+}
+
+void ExecutionVisitor::set_member(const Value& object, const std::string& member, const Value&) {
+  throw BasicError(fmt::format("Cannot set member '{}' of {}", member, object.a_type_name()));
+}
+
+Value ExecutionVisitor::call_method(const Value& object, const std::string& method,
+                                    const std::vector<Value>&) {
+  throw BasicError(fmt::format("Cannot call method '{}' on {}", method, object.a_type_name()));
+}
+
 std::any ExecutionVisitor::visitProcedureCall(BasicParser::ProcedureCallContext* ctx) {
-  const auto fn_name = ctx->procedureName()->getText();
+  const auto fn_name = ctx->qualifiedName()->getText();
   std::vector<Value> params;
   if (ctx->parameterList()) {
     params = std::any_cast<std::vector<Value>>(visit(ctx->parameterList()));
   }
-  // l(i) reads item i of list l, unless a function named l exists.
-  if (!ec_.try_find_function(fn_name)) {
-    if (auto v = ec_.var(fn_name); v && v->value().is_list()) {
+  if (ec_.try_find_function(fn_name)) {
+    return call(fn_name, params);
+  }
+  const auto path = resolve_name(fn_name);
+  if (path.members.empty()) {
+    // l(i) or m.l(i) reads item i of a list.
+    if (auto v = ec_.var(path.variable); v && v->value().is_list()) {
       if (params.size() != 1) {
         throw BasicError(fmt::format("{}(): a list index takes 1 argument, got {}", fn_name,
                                      params.size()));
       }
       return stdlib::list_get(v->value(), params.front(), fn_name + "()");
     }
+    // Not a function or a list: report the unknown function or module.
+    return call(fn_name, params);
   }
-  return call(fn_name, params);
+  // obj.a.method(args)
+  auto object = path_variable(path, fn_name);
+  for (size_t i = 0; i + 1 < path.members.size(); i++) {
+    object = get_member(object, path.members[i]);
+  }
+  return call_method(object, path.members.back(), params);
+}
+
+std::any ExecutionVisitor::visitCallChain(BasicParser::CallChainContext* ctx) {
+  auto value = Value(visit(ctx->procedureCall()));
+  for (auto* suffix : ctx->memberSuffix()) {
+    const auto name = suffix->ID()->getText();
+    if (suffix->LPAREN()) {
+      std::vector<Value> params;
+      if (suffix->parameterList()) {
+        params = std::any_cast<std::vector<Value>>(visit(suffix->parameterList()));
+      }
+      value = call_method(value, name, params);
+    } else {
+      value = get_member(value, name);
+    }
+  }
+  return value;
 }
 
 std::any ExecutionVisitor::visitParameterList(BasicParser::ParameterListContext* context) {
@@ -147,8 +222,8 @@ std::any ExecutionVisitor::visitModuleDefinition(BasicParser::ModuleDefinitionCo
 
 std::any ExecutionVisitor::visitImportModule(BasicParser::ImportModuleContext* context) {
   std::string name;
-  if (context->ID()) {
-    name = context->ID()->getText();
+  if (context->qualifiedName()) {
+    name = context->qualifiedName()->getText();
   } else {
     name = remove_quotes(context->STRING()->getText());
     if (!starts_with(name, "@")) {
@@ -243,7 +318,7 @@ std::any ExecutionVisitor::visitStatement(BasicParser::StatementContext* context
 // Expressions
 
 std::any ExecutionVisitor::visitProcCall(BasicParser::ProcCallContext* context) {
-  return visit(context->procedureCall());
+  return visit(context->callChain());
 }
 
 std::any ExecutionVisitor::visitParens(BasicParser::ParensContext* context) {
@@ -255,7 +330,17 @@ std::any ExecutionVisitor::visitIdent(BasicParser::IdentContext* context) {
 }
 
 std::any ExecutionVisitor::visitRvalue(BasicParser::RvalueContext* context) {
-  if (auto v = ec_.var(context->getText())) {
+  const auto name = context->getText();
+  const auto path = resolve_name(name);
+  if (!path.members.empty()) {
+    // obj.a.b or m.obj.a
+    auto value = path_variable(path, name);
+    for (const auto& member : path.members) {
+      value = get_member(value, member);
+    }
+    return value;
+  }
+  if (auto v = ec_.var(path.variable)) {
     return v->value();
   }
   // Like most BASICs, an unset variable reads as empty.
@@ -263,7 +348,15 @@ std::any ExecutionVisitor::visitRvalue(BasicParser::RvalueContext* context) {
 }
 
 std::any ExecutionVisitor::visitReal(BasicParser::RealContext* context) {
-  return Value(std::stod(context->getText()));
+  // REAL tokens are only digits and a '.', so parse_number fails only when
+  // the value is too large.
+  const auto text = context->getText();
+  const auto d = Value::parse_number(text);
+  if (!d) {
+    throw BasicError(fmt::format("Number out of range: {}", text));
+  }
+  // Like my_basic, a whole number such as 2.0 is an INTEGER.
+  return Value::number(*d);
 }
 
 std::any ExecutionVisitor::visitInt(BasicParser::IntContext* context) {
@@ -286,7 +379,8 @@ std::any ExecutionVisitor::visitBoolean(BasicParser::BooleanContext* context) {
 std::any ExecutionVisitor::visitNegate(BasicParser::NegateContext* context) {
   const auto v = eval(context->expr());
   if (v.value_type() == Value::Type::REAL) {
-    return Value(-v.toDouble());
+    // Value::number, so -0.0 prints 0 like my_basic.
+    return Value::number(-v.toDouble());
   }
   return Value::number(-static_cast<double>(v.toInt()));
 }
@@ -357,7 +451,17 @@ ExecutionVisitor::visitAssignmentStatement(BasicParser::AssignmentStatementConte
   const auto name = context->lvalue()->getText();
   const auto value = eval(context->expr());
   ec_.trace_log("ASSIGN {} = '{}'", name, value);
-  ec_.upsert(name, value);
+  const auto path = resolve_name(name);
+  if (!path.members.empty()) {
+    // obj.a.b = value
+    auto object = path_variable(path, name);
+    for (size_t i = 0; i + 1 < path.members.size(); i++) {
+      object = get_member(object, path.members[i]);
+    }
+    set_member(object, path.members.back(), value);
+    return {};
+  }
+  ec_.upsert(path.variable, value);
   return {};
 }
 
@@ -385,38 +489,41 @@ bool ExecutionVisitor::run_loop_body(BasicParser::StatementsContext* body) {
 }
 
 std::any ExecutionVisitor::visitForStatement(BasicParser::ForStatementContext* ctx) {
-  const auto varname = ctx->ID(0)->getText();
-  if (ctx->ID().size() > 1 && !iequals(ctx->ID(1)->getText(), varname)) {
+  const auto varname = ctx->qualifiedName(0)->getText();
+  if (ctx->qualifiedName().size() > 1 && !iequals(ctx->qualifiedName(1)->getText(), varname)) {
     throw BasicError(
-        fmt::format("NEXT {} does not match FOR {}", ctx->ID(1)->getText(), varname));
+        fmt::format("NEXT {} does not match FOR {}", ctx->qualifiedName(1)->getText(), varname));
   }
-  const auto start = eval(ctx->expr(0)).toInt();
-  const auto end = eval(ctx->expr(1)).toInt();
-  const auto step = ctx->STEP() ? eval(ctx->expr(2)).toInt() : 1;
+  // Computed in doubles so REAL bounds and steps work (FOR x = 0 TO 1 STEP
+  // 0.25); Value::number keeps the loop variable an INTEGER when it's whole.
+  const auto start = eval(ctx->expr(0)).toDouble();
+  const auto end = eval(ctx->expr(1)).toDouble();
+  const auto step = ctx->STEP() ? eval(ctx->expr(2)).toDouble() : 1.0;
   if (step == 0) {
     throw BasicError("FOR loop STEP must not be 0");
   }
 
-  ec_.upsert(varname, Value(start));
+  ec_.upsert(varname, Value::number(start));
   while (true) {
-    const auto current = ec_.var(varname).value_or(Var(varname, Value(0))).value().toInt();
+    const auto current = ec_.var(varname).value_or(Var(varname, Value(0))).value().toDouble();
     if ((step > 0 && current > end) || (step < 0 && current < end)) {
       break;
     }
     if (!run_loop_body(ctx->statements())) {
       break;
     }
-    const auto next = ec_.var(varname).value_or(Var(varname, Value(0))).value().toInt() + step;
-    ec_.upsert(varname, Value(next));
+    // The body may change the loop variable, so read it again.
+    const auto next = ec_.var(varname).value_or(Var(varname, Value(0))).value().toDouble() + step;
+    ec_.upsert(varname, Value::number(next));
   }
   return {};
 }
 
 std::any ExecutionVisitor::visitForInStatement(BasicParser::ForInStatementContext* ctx) {
-  const auto varname = ctx->ID(0)->getText();
-  if (ctx->ID().size() > 1 && !iequals(ctx->ID(1)->getText(), varname)) {
+  const auto varname = ctx->qualifiedName(0)->getText();
+  if (ctx->qualifiedName().size() > 1 && !iequals(ctx->qualifiedName(1)->getText(), varname)) {
     throw BasicError(
-        fmt::format("NEXT {} does not match FOR {}", ctx->ID(1)->getText(), varname));
+        fmt::format("NEXT {} does not match FOR {}", ctx->qualifiedName(1)->getText(), varname));
   }
   const auto list = eval(ctx->expr()).list("FOR ... IN");
   // Indexing (rather than iterators) keeps this safe if the body changes the

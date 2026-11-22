@@ -74,3 +74,18 @@ TEST(StdioConsoleTest, ReadKeyAndEndOfInput) {
   console.clear_screen();
   EXPECT_EQ("[cls]\n", out.str());
 }
+
+TEST(EmbeddingTest, SecondRunIsAnError) {
+  std::ostringstream out;
+  std::istringstream in;
+  StdioConsole console(out, in);
+  Interpreter interp(console);
+
+  ASSERT_TRUE(interp.run_source("one.bas", "print 1\n").ok());
+  const auto result = interp.run_source("two.bas", "print 2\n");
+  ASSERT_EQ(1u, result.errors.size());
+  EXPECT_EQ("two.bas: error: this Interpreter has already run a script; use a new one",
+            result.errors.front());
+  // The second script didn't run.
+  EXPECT_EQ("1\n", out.str());
+}

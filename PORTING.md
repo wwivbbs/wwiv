@@ -58,13 +58,18 @@ oneliners.bas:42: error: Unknown function 'outsrt'
 ```
 
 my_basic reported some of these and silently ignored others. Variables that
-were never assigned still read as empty, as before.
+were never assigned still read as empty, as before, but a dotted name such as
+`player.name` whose first part is neither a module nor a variable is an error
+(`Unknown variable or module 'player'`).
 
 ## Real numbers
 
 Real numbers work as in my_basic: `7 / 2` is `3.5`, `6 / 2` is the integer
 `3`, a result that is a whole number becomes an integer (`1.5 + 1.5` is `3`),
-`MOD` works on integers, and reals print like `%g` (`3.14159`, `0.5`).
+`MOD` works on integers, reals print like `%g` (`3.14159`, `0.5`), and `FOR`
+loops can count in reals (`FOR x = 0 TO 1 STEP 0.25`). Text is read as a
+number in decimal only: `VAL("2.5")` is `2.5`, but `"0x10"`, `"inf"` and
+`"nan"` read as 0.
 
 The difference is precision: my_basic (as WWIV builds it) used 32-bit floats,
 which keep about 7 significant digits, and wwivbasic uses 64-bit doubles. A

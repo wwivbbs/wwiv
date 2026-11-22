@@ -119,7 +119,7 @@ working.
       like lists
 - [ ] Class binding helper, roughly
       `m.class_<T>("name").property(...).method(...)`
-- [ ] Member access in the grammar: `.` becomes an operator and `a.b.c` is
+- [x] Member access in the grammar: `.` becomes an operator and `a.b.c` is
       resolved at runtime (a module path if there is one, otherwise members
       of a variable), so `wwiv.io.outstr()` keeps working and
       `area.headers().count` parses

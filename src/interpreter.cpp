@@ -55,7 +55,21 @@ Module& Interpreter::globals() { return *ctx_->root; }
 
 void Interpreter::set_trace(bool trace) { ctx_->trace = trace; }
 
+std::optional<RunResult> Interpreter::check_first_run(const std::string& name) {
+  if (!ran_) {
+    ran_ = true;
+    return std::nullopt;
+  }
+  RunResult result;
+  result.errors.push_back(fmt::format(
+      "{}: error: this Interpreter has already run a script; use a new one", name));
+  return result;
+}
+
 RunResult Interpreter::run_file(const std::filesystem::path& path, const RunOptions& options) {
+  if (auto error = check_first_run(path.string())) {
+    return *error;
+  }
   // The entry script counts as imported, so an import cycle back to it is
   // skipped instead of reloading it.
   ctx_->imported_files.insert(Context::import_key(path));
@@ -69,6 +83,9 @@ RunResult Interpreter::run_file(const std::filesystem::path& path, const RunOpti
 
 RunResult Interpreter::run_source(const std::string& filename, const std::string& text,
                                   const RunOptions& options) {
+  if (auto error = check_first_run(filename)) {
+    return *error;
+  }
   ctx_->imported_files.insert(Context::import_key(filename));
   ctx_->add_source(filename, text);
   return run_loaded(*ctx_, filename, options);

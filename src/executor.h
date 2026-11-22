@@ -24,6 +24,7 @@ public:
 
   std::any visitMain(BasicParser::MainContext* context) override;
   std::any visitProcedureCall(BasicParser::ProcedureCallContext* context) override;
+  std::any visitCallChain(BasicParser::CallChainContext* ctx) override;
   std::any visitParameterList(BasicParser::ParameterListContext* context) override;
   std::any visitProcedureDefinition(BasicParser::ProcedureDefinitionContext* context) override;
   std::any visitImportModule(BasicParser::ImportModuleContext* context) override;
@@ -67,6 +68,23 @@ private:
   Value eval(BasicParser::ExprContext* e);
   // Runs a loop body; returns false if the loop must stop (EXIT/RETURN/END).
   bool run_loop_body(BasicParser::StatementsContext* body);
+  // A dotted name split into the variable it starts with and the members
+  // after it. `variable` is "x", or "m.x" for module m's variable x.
+  struct NamePath {
+    std::string variable;
+    std::vector<std::string> members;
+  };
+  // Resolves a dotted name: the longest prefix that names a module, then
+  // that module's variable; otherwise the first part is a variable.
+  NamePath resolve_name(const std::string& name) const;
+  // The value of a path's variable, or an error if there is none.
+  Value path_variable(const NamePath& path, const std::string& name);
+  // Members and methods of values (obj.name, obj.name = v, obj.name(args)).
+  // No values have members yet; these raise errors. See docs/PLAN.md (M3).
+  Value get_member(const Value& object, const std::string& member);
+  void set_member(const Value& object, const std::string& member, const Value& value);
+  Value call_method(const Value& object, const std::string& method,
+                    const std::vector<Value>& params);
   // Loads, defines and runs IMPORT "file.bas" (once per file).
   void import_file(const std::string& name);
 

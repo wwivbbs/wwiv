@@ -52,7 +52,8 @@ public:
   Module& globals();
 
   // Parses the script at path and, unless options.execute is false, runs it.
-  // An interpreter runs one script; use a new one for the next.
+  // An interpreter runs one script: calling run_file or run_source again
+  // returns an error. Use a new Interpreter for the next script.
   RunResult run_file(const std::filesystem::path& path, const RunOptions& options = {});
 
   // Parses and runs script text. The filename is used in error messages and
@@ -68,7 +69,11 @@ public:
   void set_trace(bool trace);
 
 private:
+  // Returns an error result if a script has already been run.
+  std::optional<RunResult> check_first_run(const std::string& name);
+
   std::unique_ptr<Context> ctx_;
+  bool ran_{false};
 };
 
 } // namespace wwivbasic

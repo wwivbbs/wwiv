@@ -170,7 +170,7 @@ void register_collections(Module& m) {
       case Value::Type::ITERATOR:
         break;
       }
-      throw BasicError(fmt::format("SORT: cannot sort a list containing a {}", v.type_name()));
+      throw BasicError(fmt::format("SORT: cannot sort a list containing {}", v.a_type_name()));
     };
     for (const auto& v : items) {
       rank(v);
