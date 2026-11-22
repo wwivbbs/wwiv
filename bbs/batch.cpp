@@ -212,7 +212,7 @@ static void uploaded(const std::string& file_name, long cps) {
               }
             }
             if (file.IsOpen()) {
-              f.set_numbytes(file.length());
+              f.set_numbytes(static_cast<int>(file.length()));
               file.Close();
               get_file_idz(f, a()->dirs()[b.dir()]);
               a()->user()->increment_uploaded();

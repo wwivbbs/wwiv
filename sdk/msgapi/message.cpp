@@ -83,7 +83,7 @@ int MessageHeader::net_number() const {
 }
 
 void MessageHeader::set_net_number(int nn) {
-  header_.network.network_msg.net_number = nn;
+  header_.network.network_msg.net_number = static_cast<decltype(header_.network.network_msg.net_number)>(nn);
 }
 
 bool MessageHeader::pending_network() const {

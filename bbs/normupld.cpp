@@ -212,7 +212,7 @@ void normalupload(int dn) {
         }
         if (ok) {
           if (ok == 1) {
-            f.set_numbytes(file.length());
+            f.set_numbytes(static_cast<int>(file.length()));
             file.Close();
             a()->user()->increment_uploaded();
             add_to_file_database(f);

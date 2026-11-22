@@ -112,7 +112,7 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
   }
   if (nb) {
     file.Seek(pos, File::Whence::begin);
-    const int num_read = file.Read(b, nb);
+    const auto num_read = static_cast<int>(file.Read(b, nb));
     for (auto i = num_read; i < nb; i++) {
       b[i] = '\0';
     }
@@ -235,7 +235,7 @@ void xymodem_send(const std::filesystem::path& path, bool *sent, double *percent
     abort = true;
   }
   if (use_ymodem && !abort && !a()->sess().hangup()) {
-    ch = send_b(file, file_size, 5, 0, &use_crc, fn, &terr, &abort);
+    ch = send_b(file, static_cast<long>(file_size), 5, 0, &use_crc, fn, &terr, &abort);
     if (ch == CX) {
       abort = true;
     }

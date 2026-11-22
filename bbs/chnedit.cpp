@@ -291,7 +291,7 @@ static void modify_chain(ssize_t chain_num) {
       c.usage = bin.input_number(c.usage);
     } break;
     case 'J':
-      modify_chain_sponsors(chain_num, c);
+      modify_chain_sponsors(static_cast<int>(chain_num), c);
       break;
     case 'K': {
 #ifdef _WIN32

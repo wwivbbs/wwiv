@@ -728,7 +728,7 @@ void finish_qwk(qwk_state *qwk_info) {
       qwk_info->abort = true;
       return;
     }
-    numbytes = qwk_file_to_send_file.length();
+    numbytes = static_cast<long>(qwk_file_to_send_file.length());
 
     if (numbytes == 0L) {
       bout.outstr("File has nothing in it.");

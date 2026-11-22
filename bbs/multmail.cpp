@@ -364,7 +364,7 @@ void slash_e() {
         bout.outstr("Unknown mailing list.\r\n\n");
       } else {
         auto i1 = fileMailList.length();
-        mml_s = static_cast<char *>(BbsAllocA(i1 + 10L));
+        mml_s = static_cast<char *>(BbsAllocA(static_cast<size_t>(i1) + 10));
         fileMailList.Read(mml_s, i1);
         mml_s[i1] = '\n';
         mml_s[i1 + 1] = 0;

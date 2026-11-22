@@ -317,7 +317,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
       return true;
     }
     const auto fs = fileUpload.length();
-    f.set_numbytes(fs);
+    f.set_numbytes(static_cast<int>(fs));
     fileUpload.Close();
     to_char_array(f.u().upby, a()->user()->name_and_number());
     f.set_date(DateTime::now());
@@ -349,7 +349,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     if (!(d.mask & mask_cdrom)) {
       add_to_file_database(f);
     }
-    a()->user()->set_uk(a()->user()->uk() + bytes_to_k(fs));
+    a()->user()->set_uk(a()->user()->uk() + static_cast<uint32_t>(bytes_to_k(fs)));
     f.set_date(DateTime::now());
     if (a()->current_file_area()->AddFile(f)) {
       a()->current_file_area()->Save();

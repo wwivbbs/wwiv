@@ -604,7 +604,7 @@ int ftn_bytes_waiting(const Network& net, const FidoAddress& dest) {
     }
     for (const auto& [flow_entry_name, _] : flo.flo_entries()) {
       File f(flow_entry_name);
-      size += f.length();
+      size += static_cast<int>(f.length());
     }
   }
   VLOG(2) << "ftn_bytes_waiting: size: " << size;

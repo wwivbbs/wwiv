@@ -430,7 +430,7 @@ static void gfile_sec(int sn) {
               file.Close();
               bool sent = false;
               abort = false;
-              send_file(file_name, &sent, &abort, g[i2 - 1].filename, -1, file_size);
+              send_file(file_name, &sent, &abort, g[i2 - 1].filename, -1, static_cast<long>(file_size));
               std::string s1;
               if (sent) {
                 s1 = fmt::format("|#2{} |#9successfully transferred|#1.|#0\r\n", g[i2 - 1].filename);

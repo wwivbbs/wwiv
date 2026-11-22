@@ -781,7 +781,7 @@ void mailr() {
           pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
           pFileEmail->Read(&m1, sizeof(mailrec));
           if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
-            delmail(*pFileEmail.get(), nRecordNumber);
+            delmail(*pFileEmail.get(), static_cast<size_t>(nRecordNumber));
             bool found = false;
             if (m.status & status_file) {
               File attachFile(FilePath(a()->config()->datadir(), ATTACH_DAT));

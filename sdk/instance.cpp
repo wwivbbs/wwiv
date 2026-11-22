@@ -271,7 +271,7 @@ Instances::Instances(const Config& config)
 
 Instances::size_type Instances::size() const {
   if (const auto file = DataFile<instancerec>(path_, File::modeBinary | File::modeReadOnly)) {
-    return std::max<int>(0, file.number_of_records() - 1);
+    return std::max<int>(0, static_cast<int>(file.number_of_records()) - 1);
   }
   return 0;
 }

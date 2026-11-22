@@ -58,7 +58,7 @@ static bool checkFileSize(File& file, unsigned long len) {
   if (!file.IsOpen()) {
     file.Open(File::modeReadOnly | File::modeBinary);
   }
-  const unsigned long actual = file.length();
+  const auto actual = static_cast<unsigned long>(file.length());
   file.Close();
   if (actual < len) {
     LOG(INFO) << file << " too short (" << actual << "<" << len << ").";

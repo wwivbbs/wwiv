@@ -117,7 +117,7 @@ std::tuple<NetPacket, ReadNetPacketResponse> read_packet(File& f, bool process_d
     std::string read_text;
     read_text.resize(length);
     num_read = f.Read(&read_text[0], packet.nh.length);
-    read_text.resize(num_read);
+    read_text.resize(static_cast<std::size_t>(num_read));
     packet.set_text(std::move(read_text));
   }
   packet.set_end_offset(f.current_position());
