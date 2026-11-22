@@ -187,7 +187,7 @@ void QuoteClass::Quote(int LineNumber)
 	IO->SetColor(7);
 	IO->MoveTo(0, 2);
 	for(i=1;i<BREditArgs->MaxColumns;i++)
-		IO->Output('Ä');
+		IO->Output('\xc4');
 	ShowQuotePage(&QuoteFile);
 	if (BREditArgs->EnhancedMode==ON)
 		IO->EANSI_DefineRegion(QUOTE_TOP_LINE, QUOTE_DISPLAY_LINES+QUOTE_TOP_LINE);

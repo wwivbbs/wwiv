@@ -221,9 +221,9 @@ bool Ansi::write_in_sequence(char c) {
     // intermediate then final bytes:
     // From Wikipedia: https://en.wikipedia.org/wiki/ANSI_escape_code#CSI_sequences
     // The ESC [ is followed by any number (including none) of "parameter bytes" in the
-    // range 0x30–0x3F (ASCII 0–9:;<=>?), then by any number of "intermediate bytes"
-    // in the range 0x20–0x2F (ASCII space and !"#$%&'()*+,-./), then finally by a
-    // single "final byte" in the range 0x40–0x7E (ASCII @A–Z[\]^_`a–z{|}~)
+    // range 0x30-0x3F (ASCII 0-9:;<=>?), then by any number of "intermediate bytes"
+    // in the range 0x20-0x2F (ASCII space and !"#$%&'()*+,-./), then finally by a
+    // single "final byte" in the range 0x40-0x7E (ASCII @A-Z[\]^_`a-z{|}~)
     if (std::isdigit(static_cast<unsigned char>(c)) || c == ';' || c == '?') {
       ansi_sequence_.push_back(c);
       return true;

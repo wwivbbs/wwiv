@@ -147,9 +147,9 @@ SOCKET CreateListenSocket(int port) {
 
 bool is_rfc1918_private_address(const std::string& ip) {
   // RFC 1918 defined private address space:
-  // 10.0.0.0/8 IP addresses: 10.0.0.0  10.255.255.255
-  // 172.16.0.0/12 IP addresses: 172.16.0.0  172.31.255.255
-  // 192.168.0.0/16 IP addresses: 192.168.0.0  192.168.255.255
+  // 10.0.0.0/8 IP addresses: 10.0.0.0 - 10.255.255.255
+  // 172.16.0.0/12 IP addresses: 172.16.0.0 - 172.31.255.255
+  // 192.168.0.0/16 IP addresses: 192.168.0.0 - 192.168.255.255
   auto parts = SplitString(ip, ".");
   if (parts.size() != 4) {
     return false;

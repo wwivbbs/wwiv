@@ -414,7 +414,7 @@ void time_bank() {
   }
 
   if (okansi()) {
-    strcpy(bc, "Ú¿ÀÙÄ³ÂÃÅ´Á");
+    strcpy(bc, "\xda\xbf\xc0\xd9\xc4\xb3\xc2\xc3\xc5\xb4\xc1");
   } else {
     strcpy(bc, "++++-|+++++");
   }

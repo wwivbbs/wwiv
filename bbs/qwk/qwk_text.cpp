@@ -42,7 +42,7 @@ std::optional<std::string> get_qwk_from_message(const std::string& text) {
   return std::nullopt;
 }
 
-// Takes reply packet and converts '227' (ã) to '13' and removes QWK style
+// Takes reply packet and converts '227' (CP437 pi) to '13' and removes QWK style
 // space padding at the end.
 std::string make_text_ready(const std::string& text) {
   std::string temp;
