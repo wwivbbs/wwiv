@@ -34,15 +34,33 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      # GitHub-hosted runners include vcpkg and a Java runtime (for the
-      # ANTLR tool).
-      # vcpkg.json pins builtin-baseline to a vcpkg commit, which may be newer
-      # than the runner's copy, so fetch its history first.
-      - name: Use the runner's vcpkg
+      # vcpkg.json pins builtin-baseline to a vcpkg commit, and vcpkg reads its
+      # version database from the checked-out files, so use a clone of exactly
+      # that commit rather than the runner's preinstalled vcpkg.
+      - name: Check out the pinned vcpkg
         shell: bash
         run: |
-          git -C "$VCPKG_INSTALLATION_ROOT" fetch --quiet origin
-          echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
+          baseline=$(sed -n 's/.*"builtin-baseline": *"\([0-9a-f]*\)".*/\1/p' vcpkg.json)
+          echo "vcpkg baseline: $baseline"
+          vcpkg_root="$RUNNER_TEMP/vcpkg"
+          git init --quiet "$vcpkg_root"
+          cd "$vcpkg_root"
+          git fetch --quiet --depth 1 https://github.com/microsoft/vcpkg.git "$baseline"
+          git checkout --quiet FETCH_HEAD
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            cmd //c bootstrap-vcpkg.bat -disableMetrics
+          else
+            ./bootstrap-vcpkg.sh -disableMetrics
+          fi
+          echo "VCPKG_ROOT=$vcpkg_root" >> "$GITHUB_ENV"
+
+      # The ANTLR tool needs Java 11 or newer; the Windows runner defaults to
+      # Java 8.
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
 
       - name: Get CMake and Ninja
         uses: lukka/get-cmake@latest
