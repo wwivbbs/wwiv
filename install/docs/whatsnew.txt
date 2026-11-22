@@ -1,6 +1,6 @@
 ==============================================================================
                            WWIV BBS What's New List
-                 Copyright 1999-2023, WWIV Software Services
+                 Copyright 1999-2026, WWIV Software Services
 ==============================================================================
 Legend (starting with 5.3)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -15,9 +15,99 @@ Legend (starting with 5.3)
     so that you don't overwrite any files (or use winmerge or meld
     to compare new changes)
 
-What's New in WWIV 5.9.0 (2023)
+What's New in WWIV 5.9.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* 
+Full Screen Editor (FSED)
++ Spell check, using Hunspell. Use ESC+C in the editor to check the
+  message, and it also runs when saving (ESC there goes back to the
+  editor). Each misspelled word offers numbered suggestions, R)eplace,
+  I)gnore once, G) ignore all, A)dd to your dictionary, or Q)uit.
++ Sysops configure spell check in wwivconfig under System Info, Spell
+  Check: on/off, check on save, the default dictionary (en_US), and an
+  optional dictionary directory. Menusets can set their own dictionary,
+  and users can turn it off or pick another dictionary in Defaults (P).
+! Spell check needs Hunspell dictionaries (.aff and .dic files) in
+  BBSDIR/dict or the system hunspell directory, e.g.
+  "apt install hunspell-en-us" on Debian/Ubuntu.
++ Delete key, Ctrl-Left/Right word movement, Ctrl-Home/End, and WordStar
+  key substitutes. (#1704)
++ FSED can now be used when sending multi-email. (#1650)
+* FSED TopBar and BottomBar colors now match. (#1622)
+* Status bar stays visible after quoting and scrolling. (#1705)
+* Fixed newline handling in FSED. (#1703)
+
+Files and ListPlus
++ ListPlus is now switchable, including from find description. (#1673)
+* Fixed ListPlus file-number placement and related display bugs. (#1693)
+* Fixed uploads. (#1669)
+* Fixed //READIDZ using a stale lower case file_id.diz, and DizParser
+  reading past the end of the file. (#1707)
+* Fixed HopDir to use a relative index into udir. (#1694)
+* Archiver filenames are quoted when run through bash -c. (#1613)
+* Fixed ZModem remote download path. (#1689)
+
+Subs, Dirs and Conferences
++ subedit/diredit: new S) Conferences to edit an area's conferences in
+  place. (#1697)
+* Sub descriptions edited with O) are saved to subs.json and survive a
+  reload. (#1686, #1710)
+* Menus rebuild area lists when user:conference toggles conferencing. (#1695)
+
+Users, Menus and Display
++ New user config option to require the user to enter a full real name.
+* Fixed //COLORS menu command. (#1630)
+* Fixed off-by-one in printfile_random. (#1637)
+* Added / help message to the file viewer. (#1658)
+* Chains display now updates properly after ChainEdit. (#1526, #1600)
+* Fixed -1 Chatroom and being unable to exit when CH_PROMPT=1. (#1605)
+* Regions files are found regardless of case on Linux (Loc was blank). (#1709)
+* Fixed adding/deleting/listing users for multi-email. (#1636)
+* Fixed crash reading mail when past the number of networks. (#1634)
+* Input fields keep their colors in xterm-style terminals (the current
+  color is resent after ESC[u).
+
+WWIVD
++ WWIVD now uses cpp-httplib for its HTTP server.
++ New /status API, plus /instances, /blocking, /sysop and /laston
+  endpoints, and node manager enhancements. (#1682)
+* Fixed RFC1918 private address detection (172.16.0.0/12), which kept
+  autoblocking from working for some public IPs. (#1681)
+* Fixed remote peer discovery.
+* Improved .bsy file handling. (#1601)
+
+Networking / FTN
+* Adding a new FTN network now creates the outbound directory. (#1662)
+* net_number is now stored in type-2 messages. (#1573)
+* Fixed "Too old FTN message" when maxage was 0. (#1602)
+* Dupe database entries are added after the age check. (#1603)
+* Fixed crash with the nodelist on Linux Mint 22.
+* Fixed a couple of other FTN issues.
+
+WWIVbasic
+* Errors are logged to the log file and shown to the caller.
+* Fixed typo that broke the oneliners.bas script.
+
+Build and Platform
++ Release builds now come from GitHub Actions (Windows, Ubuntu,
+  Debian 11 and 12).
++ Working CMake presets for Windows and Linux; README build section
+  rewritten. (#1714)
+! GCC 10 is now the minimum supported compiler. (#1714)
+* Builds with fmtlib v10, GCC 12 and GCC 15. (#1696)
+* exec: STDIO pty output is drained after the child exits. (#1699)
+* arm64/aarch64 support in cmake-config.sh. (#1609)
++ builds/win/check-prereqs.ps1 checks for Visual Studio, CMake, Ninja,
+  Git and the git submodules before you build on Windows. (#1719)
+* Packaging is off by default for developer builds. The release presets
+  and CI scripts turn on WWIV_INSTALL and WWIV_ZIP_INSTALL_FILES; pass
+  both to cmake to make the zip files or run cpack. (#1722)
+* Windows: cl32.dll is copied next to the binaries when building, and the
+  stale cryptlib 3.4.2 cl32.dll was removed from the win32 platform files
+  (3.4.5 from deps/cl345 is installed). -DWWIV_SSH_CRYPTLIB=OFF works on
+  Windows again. (#1723)
+- Removed the unused deps/infozip source. my_basic now builds as its own
+  library. (#1721)
+* cryptlib links now point at https://github.com/cryptlib/cryptlib.
 
 
 What's New in WWIV 5.8.0 (2023)
