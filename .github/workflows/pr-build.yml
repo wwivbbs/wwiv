@@ -3,6 +3,14 @@
 # Builds and runs the tests for pull requests using the same CMake presets
 # described in README.md. This only uses GitHub-hosted runners (never the
 # self-hosted ones), and it never tags, releases or publishes anything.
+#
+# It also runs on pushes to main, to fill the build caches (compiler cache and
+# vcpkg packages) that pull requests restore from.
+#
+# Cache safety: only runs for pushes to main save caches. Pull request runs
+# restore them but never save, so a pull request can't change what any other
+# build gets from the cache. (GitHub also scopes anything a pull request saves
+# to that pull request.) Never add a pull_request_target trigger here.
 
 name: PR Build
 
@@ -10,13 +18,16 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
 
 concurrency:
-  group: pr-build-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  group: pr-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -27,12 +38,14 @@ jobs:
         include:
           - os: ubuntu-22.04
             preset: linux-debug
+            compiler_cache: ccache
           - os: windows-2022
             preset: windows-x86-debug
+            compiler_cache: sccache
     runs-on: ${{ matrix.os }}
     env:
-      # Matches the main CI build; the x-gha binary cache is broken.
-      VCPKG_BINARY_SOURCES: clear
+      # Only pushes to main save caches; see "Cache safety" above.
+      SAVE_CACHES: ${{ github.event_name == 'push' }}
       # These tests fail on main today (the main CI build ignores test
       # failures). Excluded so PRs are judged on new failures only; remove
       # each one once it is fixed.
@@ -46,14 +59,15 @@ jobs:
         with:
           submodules: recursive
 
-      # vcpkg.json pins builtin-baseline to an older vcpkg commit, which needs
-      # the vcpkg submodule's history; checkout clones submodules shallow.
-      # Self-hosted runners keep their workspace, so it may already be complete.
-      - name: Unshallow vcpkg submodule
+      # vcpkg.json pins builtin-baseline to an older vcpkg commit than the
+      # submodule's, and checkout clones submodules shallow. vcpkg only needs
+      # that one commit (not the whole history), so fetch just it.
+      - name: Fetch vcpkg baseline commit
         shell: bash
         run: |
-          if [ "$(git -C vcpkg rev-parse --is-shallow-repository)" = "true" ]; then
-            git -C vcpkg fetch --unshallow
+          baseline=$(sed -n 's/.*"builtin-baseline": *"\([0-9a-f]*\)".*/\1/p' vcpkg.json)
+          if ! git -C vcpkg cat-file -e "${baseline}^{commit}" 2>/dev/null; then
+            git -C vcpkg fetch --depth=1 origin "${baseline}"
           fi
 
       - name: Get CMake and Ninja
@@ -63,13 +77,51 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libncurses-dev zlib1g-dev pkg-config zip
+          sudo apt-get install -y libncurses-dev zlib1g-dev pkg-config zip lld
 
       - name: Set up Visual Studio x86 environment (Windows)
         if: runner.os == 'Windows'
         uses: egor-tensin/vs-shell@v2
         with:
           arch: x86
+
+      # Installs ccache (Linux) or sccache (Windows) and restores its cache.
+      # CMake picks it up automatically (see cmake/BuildSpeed.cmake).
+      - name: Set up compiler cache
+        uses: hendrikmuhs/ccache-action@e91f31892a1d1b8c44424b1a94c0b7f52d337168 # v1.2.26
+        with:
+          variant: ${{ matrix.compiler_cache }}
+          key: ${{ matrix.preset }}
+          max-size: 1G
+          save: ${{ env.SAVE_CACHES }}
+          # Keep only what this build used, so the saved cache stays small.
+          evict-old-files: job
+
+      # vcpkg's own binary cache, so the dependencies (fmt, gtest, ...) are not
+      # rebuilt every time. vcpkg keys packages by an ABI hash, so a stale
+      # cache only means a miss, never a wrong package.
+      - name: Set up vcpkg binary cache
+        id: vcpkg-cache
+        shell: bash
+        run: |
+          dir="${RUNNER_TEMP//\\//}/vcpkg-bincache"
+          mkdir -p "${dir}"
+          echo "dir=${dir}" >> "$GITHUB_OUTPUT"
+          echo "VCPKG_BINARY_SOURCES=clear;files,${dir},readwrite" >> "$GITHUB_ENV"
+
+      - name: Restore vcpkg binary cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.vcpkg-cache.outputs.dir }}
+          key: vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
+          restore-keys: |
+            vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}-
+            vcpkg-${{ matrix.preset }}-
+
+      - name: Count cached vcpkg packages
+        id: vcpkg-before
+        shell: bash
+        run: echo "count=$(find '${{ steps.vcpkg-cache.outputs.dir }}' -type f | wc -l)" >> "$GITHUB_OUTPUT"
 
       - name: Configure
         run: cmake --preset ${{ matrix.preset }}
@@ -79,3 +131,22 @@ jobs:
 
       - name: Test
         run: ctest --preset ${{ matrix.preset }} --exclude-regex '${{ env.CTEST_EXCLUDE }}'
+
+      # On main, save a new vcpkg cache entry only when vcpkg built something.
+      - name: Check for new vcpkg packages
+        id: vcpkg-after
+        if: always() && env.SAVE_CACHES == 'true'
+        shell: bash
+        run: |
+          count=$(find '${{ steps.vcpkg-cache.outputs.dir }}' -type f | wc -l)
+          echo "Cached vcpkg packages: ${{ steps.vcpkg-before.outputs.count }} before, ${count} after"
+          if [ "${count}" != "${{ steps.vcpkg-before.outputs.count }}" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Save vcpkg binary cache
+        if: always() && steps.vcpkg-after.outputs.changed == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.vcpkg-cache.outputs.dir }}
+          key: vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
