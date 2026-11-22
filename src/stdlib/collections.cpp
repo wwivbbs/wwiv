@@ -1,7 +1,7 @@
 #include "stdlib/collections.h"
 
 #include "context.h"
-#include "value.h"
+#include "wwivbasic/value.h"
 #include "fmt/format.h"
 
 #include <algorithm>

@@ -99,6 +99,7 @@ add_library(wwivbasic_interpreter
             "src/executor.cpp"
             "src/function_def_visitor.cpp"
             "src/interpreter.cpp"
+            "src/stdio_console.cpp"
             "src/utils.cpp"
             "src/value.cpp"
             "src/stdlib/collections.cpp"
@@ -106,6 +107,8 @@ add_library(wwivbasic_interpreter
             "src/stdlib/numbers.cpp"
             "src/stdlib/strings.cpp"
 )
+# Public headers (the embedding API) are in include/wwivbasic/.
+target_include_directories(wwivbasic_interpreter PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(wwivbasic_interpreter wwivbasic_parser fmt::fmt core)
 target_compile_definitions(wwivbasic_interpreter PUBLIC _CRT_SECURE_NO_WARNINGS)
 
@@ -113,6 +116,7 @@ add_executable(wwivbasic_tests
                "src/utils_test.cpp"
                "src/stdlib/strings_test.cpp"
                "src/interpreter_test.cpp"
+               "src/embedding_test.cpp"
 )
 
 target_link_libraries(wwivbasic_tests PRIVATE GTest::gtest_main wwivbasic_interpreter)

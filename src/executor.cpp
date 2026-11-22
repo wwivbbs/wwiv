@@ -94,7 +94,7 @@ Value ExecutionVisitor::call(const std::string& name, const std::vector<Value>& 
   } restore{this, owner, saved_module, saved_filename};
 
   return_value_ = Value();
-  visit(fn->def_fn->statements());
+  visit(static_cast<BasicParser::ProcedureDefinitionContext*>(fn->def_fn)->statements());
 
   Value result;
   if (flow_ == Flow::RETURN) {
@@ -445,10 +445,10 @@ std::any ExecutionVisitor::visitPrintStatement(BasicParser::PrintStatementContex
   for (auto* item : ctx->printItem()) {
     line.append(eval(item->expr()).toString());
   }
+  ec_.console.write(line);
   if (!ctx->trailing) {
-    line.push_back('\n');
+    ec_.console.newline();
   }
-  ec_.out(line);
   return {};
 }
 

@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
-#include "context.h"
-#include "interpreter.h"
+#include "testing/fake_console.h"
+#include "wwivbasic/interpreter.h"
 
 #include <string>
 #include <vector>
@@ -9,21 +9,20 @@ using namespace wwivbasic;
 
 namespace {
 
+// Runs scripts through the public embedding API with a fake console.
 class InterpreterTest : public ::testing::Test {
 protected:
-  InterpreterTest() {
-    ctx.out = [this](const std::string& s) { output += s; };
-  }
-
   // Runs the script and returns its output. Errors are kept in `errors`.
   std::string run(const std::string& text) {
-    auto result = run_source(ctx, "test.bas", text);
+    auto result = interp.run_source("test.bas", text);
     errors = result.errors;
     return output;
   }
 
-  Context ctx;
-  std::string output;
+  wwivbasic::testing::FakeConsole console;
+  Interpreter interp{console};
+  // What the script printed so far.
+  std::string& output{console.output};
   std::vector<std::string> errors;
 };
 
@@ -187,27 +186,27 @@ TEST_F(InterpreterTest, Builtins) {
 }
 
 TEST_F(InterpreterTest, NativeFunctionConvertsArguments) {
-  ctx.root->native_function("ADD", [](int a, int b) { return a + b; });
+  interp.globals().native_function("ADD", [](int a, int b) { return a + b; });
   EXPECT_EQ("5\n", run("print add(\"2\", 3)\n"));
   EXPECT_TRUE(errors.empty());
 }
 
 TEST_F(InterpreterTest, NativeFunctionWrongArgCount) {
-  ctx.root->native_function("ADD", [](int a, int b) { return a + b; });
+  interp.globals().native_function("ADD", [](int a, int b) { return a + b; });
   run("print \"x\"\nprint add(1)\n");
   ASSERT_EQ(1u, errors.size());
   EXPECT_EQ("test.bas:2: error: ADD: expected 2 argument(s), got 1", errors.front());
 }
 
 TEST_F(InterpreterTest, ImportModuleQuotedAndUnqualified) {
-  auto& io = ctx.add_module("wwiv.io");
+  auto& io = interp.add_module("wwiv.io");
   io.native_function("OUTSTR", [this](std::string s) { output += "[" + s + "]"; });
   EXPECT_EQ("[a][b]", run("import \"@wwiv.io\"\noutstr(\"a\")\nwwiv.io.outstr(\"b\")\n"));
   EXPECT_TRUE(errors.empty());
 }
 
 TEST_F(InterpreterTest, UnqualifiedNeedsImport) {
-  auto& io = ctx.add_module("wwiv.io");
+  auto& io = interp.add_module("wwiv.io");
   io.native_function("OUTSTR", [](std::string) {});
   run("outstr(\"a\")\n");
   ASSERT_EQ(1u, errors.size());
@@ -215,7 +214,7 @@ TEST_F(InterpreterTest, UnqualifiedNeedsImport) {
 }
 
 TEST_F(InterpreterTest, ScriptFunctionWinsOverImported) {
-  auto& io = ctx.add_module("wwiv.io");
+  auto& io = interp.add_module("wwiv.io");
   io.native_function("NL", [this]() { output += "native"; });
   EXPECT_EQ("script\n", run("import \"@wwiv.io\"\ndef nl()\nprint \"script\"\nenddef\nnl()\n"));
 }

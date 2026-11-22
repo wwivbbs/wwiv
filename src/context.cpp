@@ -54,9 +54,7 @@ bool Module::has_fn(const std::string& name) const {
   return contains(functions, name);
 }
 
-Context::Context() {
-  out = [](const std::string& s) { std::cout << s; };
-
+Context::Context(Console& console) : console(console) {
   // Start off with only global scope
   root = module = &add_module("");
 
@@ -77,10 +75,6 @@ Context::Context() {
 
   // collections
   stdlib::register_collections(*root);
-}
-
-Context::Context(const std::filesystem::path& path) : Context() {
-  add_source(path);
 }
 
 Module& Context::add_module(const std::string& name) {

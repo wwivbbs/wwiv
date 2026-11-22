@@ -1,6 +1,6 @@
 #pragma once
 
-#include "value.h"
+#include "wwivbasic/value.h"
 
 #include <string_view>
 

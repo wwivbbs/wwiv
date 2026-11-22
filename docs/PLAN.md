@@ -111,9 +111,9 @@ Done when a binding can expose a C++ class to scripts, and a fake-backed test
 binding shows `obj.property`, `obj.method()` and `FOR x IN obj.items()`
 working.
 
-- [ ] Public headers for the embedding API (`Context`, `Module`, `Value`,
-      native functions, errors); internals stay private
-- [ ] `Console` interface; `PRINT` and the console go through it; a fake for
+- [x] Public headers for the embedding API (`Interpreter`, `Module`, `Value`,
+      native functions, errors) in `include/wwivbasic/`; internals stay in `src/`
+- [x] `Console` interface; `PRINT` and the console go through it; a fake for
       tests and a stdin/stdout one for `basicrun`
 - [ ] Object values: a `Value` that wraps a C++ object, shared by reference
       like lists

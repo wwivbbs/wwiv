@@ -8,8 +8,8 @@
 // The wwiv, wwiv.io and wwiv.data modules are stand-ins (see wwiv_stub.h);
 // script input such as GETS and YN is read from stdin, one line per call.
 
-#include "context.h"
-#include "interpreter.h"
+#include "wwivbasic/interpreter.h"
+#include "wwivbasic/stdio_console.h"
 #include "wwiv_stub.h"
 #include "core/command_line.h"
 #include "core/log.h"
@@ -45,23 +45,23 @@ int main(int argc, char* argv[]) {
   }
 
   const std::string filename = cmdline.remaining().front();
-  Context ctx;
-  ctx.trace = cmdline.barg("trace");
+  StdioConsole console;
+  Interpreter interp(console);
+  interp.set_trace(cmdline.barg("trace"));
   // Stand-in wwiv.* modules; input for GETS, GETKEY, YN and NY comes from stdin.
-  WwivStub wwiv_stub(ctx, std::cin);
+  WwivStub wwiv_stub(interp, console);
 
   RunOptions options;
   options.execute = !cmdline.barg("check") && !cmdline.barg("show_parsetree");
-  auto result = run_file(ctx, filename, options);
+  const auto result = interp.run_file(filename, options);
 
   if (cmdline.barg("show_parsetree") && result.ok()) {
-    auto& su = ctx.sources.at(filename);
-    fmt::print("{}\n", su->tree()->toStringTree(su->parser(), true));
+    fmt::print("{}\n", interp.parse_tree(filename).value_or(""));
   }
 
+  std::cout.flush();
   for (const auto& err : result.errors) {
     fmt::print(stderr, "{}\n", err);
   }
-  std::fflush(stdout);
   return result.ok() ? 0 : 1;
 }

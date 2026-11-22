@@ -159,11 +159,38 @@ java -cp antlr/antlr-4.13.2-complete.jar org.antlr.v4.gui.Interpreter \
 Use `-gui` instead to open a graphical tree viewer (`a.cmd t.bas` on Windows does this). The
 viewer needs a desktop and a full Java runtime; the `-headless` packages can't show it.
 
+## Embedding
+
+Programs such as WWIV use wwivbasic through the headers in `include/wwivbasic/`
+and the `wwivbasic_interpreter` library. A host provides a `Console` (where
+`PRINT` writes and input comes from) and adds modules of native functions:
+
+```cpp
+#include "wwivbasic/interpreter.h"
+#include "wwivbasic/stdio_console.h"
+
+wwivbasic::StdioConsole console;   // or your own Console implementation
+wwivbasic::Interpreter interp(console);
+
+auto& io = interp.add_module("my.io");
+io.native_function("HELLO", [](std::string name) { return "Hello, " + name; });
+
+auto result = interp.run_file("script.bas");
+for (const auto& error : result.errors) {
+  // "script.bas:3: error: ..."
+}
+```
+
+Scripts call `my.io.hello("x")`, or `hello("x")` after `import "@my.io"`. Native
+functions can take and return `int`, `bool`, `std::string` or
+`wwivbasic::Value`; arguments are converted and their count is checked.
+
 ## Layout
 
 | Path | Contents |
 | --- | --- |
 | `BasicLexer.g4`, `BasicParser.g4` | The grammar |
+| `include/wwivbasic/` | The public embedding API |
 | `src/` | The interpreter, the `basicrun` CLI and the unit tests |
 | `src/stdlib/` | Built-in functions |
 | `tests/golden/` | Golden test scripts |
