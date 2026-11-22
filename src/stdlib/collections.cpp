@@ -168,6 +168,7 @@ void register_collections(Module& m) {
         return 1;
       case Value::Type::LIST:
       case Value::Type::ITERATOR:
+      case Value::Type::OBJECT:
         break;
       }
       throw BasicError(fmt::format("SORT: cannot sort a list containing {}", v.a_type_name()));

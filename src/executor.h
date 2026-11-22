@@ -80,7 +80,7 @@ private:
   // The value of a path's variable, or an error if there is none.
   Value path_variable(const NamePath& path, const std::string& name);
   // Members and methods of values (obj.name, obj.name = v, obj.name(args)).
-  // No values have members yet; these raise errors. See docs/PLAN.md (M3).
+  // Objects get theirs from their ClassBinding; other values have none.
   Value get_member(const Value& object, const std::string& member);
   void set_member(const Value& object, const std::string& member, const Value& value);
   Value call_method(const Value& object, const std::string& method,

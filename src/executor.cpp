@@ -1,6 +1,7 @@
 #include "executor.h"
 #include "function_def_visitor.h"
 #include "stdlib/collections.h"
+#include "wwivbasic/object.h"
 #include "utils.h"
 #include "BasicLexer.h"
 #include "core/stl.h"
@@ -17,6 +18,21 @@ using namespace wwiv::strings;
 // Deep enough for any reasonable script, shallow enough not to overflow the
 // C++ stack on runaway recursion.
 static constexpr int kMaxCallDepth = 1000;
+
+// Runs native code (a native function, or an object's getter, setter or
+// method), turning C++ exceptions into script errors so a bug or a failed
+// lookup in the embedder's code doesn't end the host program.
+template <class F> static auto guard_native(const std::string& what, F&& f) {
+  try {
+    return f();
+  } catch (const BasicError&) {
+    throw;
+  } catch (const std::exception& e) {
+    throw BasicError(fmt::format("{}: {}", what, e.what()));
+  } catch (...) {
+    throw BasicError(fmt::format("{}: unknown C++ exception", what));
+  }
+}
 
 Value ExecutionVisitor::eval(BasicParser::ExprContext* e) {
   return Value(visit(e));
@@ -52,7 +68,7 @@ Value ExecutionVisitor::call(const std::string& name, const std::vector<Value>& 
   ec_.trace_log("CALL {} ({} args)", name, params.size());
 
   if (fn->type == BasicFunction::Type::NATIVE) {
-    return fn->cpp_fn(params);
+    return guard_native(fn->name, [&] { return fn->cpp_fn(params); });
   }
 
   if (params.size() != fn->params.size()) {
@@ -142,17 +158,82 @@ Value ExecutionVisitor::path_variable(const NamePath& path, const std::string& n
   return v->value();
 }
 
-Value ExecutionVisitor::get_member(const Value& object, const std::string& member) {
-  throw BasicError(fmt::format("Cannot read member '{}' of {}", member, object.a_type_name()));
+// Members and methods come from the object's ClassBinding (wwivbasic/object.h).
+// Other values have none.
+
+namespace {
+
+// The object behind a value, checked: a value built by hand (not with wrap)
+// could hold no object.
+const ObjectData& checked_object(const Value& object, std::string_view what) {
+  const auto data = object.object(what);
+  if (!data || !data->self || !data->cls) {
+    throw BasicError(fmt::format("{}: the object is missing (null)", what));
+  }
+  return *data;
 }
 
-void ExecutionVisitor::set_member(const Value& object, const std::string& member, const Value&) {
-  throw BasicError(fmt::format("Cannot set member '{}' of {}", member, object.a_type_name()));
+} // namespace
+
+Value ExecutionVisitor::get_member(const Value& object, const std::string& member) {
+  if (!object.is_object()) {
+    throw BasicError(fmt::format("Cannot read member '{}' of {}", member, object.a_type_name()));
+  }
+  const auto& data = checked_object(object, member);
+  const auto& cls = *data.cls;
+  const auto it = cls.properties.find(member);
+  if (it == cls.properties.end()) {
+    if (cls.methods.contains(member)) {
+      throw BasicError(fmt::format("{}.{} is a method; call it with ()", cls.name, member));
+    }
+    throw BasicError(fmt::format("{} has no member '{}'", cls.name, member));
+  }
+  return guard_native(cls.name + "." + member, [&] { return it->second.get(data.self.get()); });
+}
+
+void ExecutionVisitor::set_member(const Value& object, const std::string& member,
+                                  const Value& value) {
+  if (!object.is_object()) {
+    throw BasicError(fmt::format("Cannot set member '{}' of {}", member, object.a_type_name()));
+  }
+  const auto& data = checked_object(object, member);
+  const auto& cls = *data.cls;
+  const auto it = cls.properties.find(member);
+  if (it == cls.properties.end()) {
+    throw BasicError(fmt::format("{} has no member '{}'", cls.name, member));
+  }
+  if (!it->second.set) {
+    throw BasicError(fmt::format("{}.{} is read-only", cls.name, member));
+  }
+  const auto what = cls.name + "." + member;
+  guard_native(what, [&] {
+    try {
+      it->second.set(data.self.get(), value);
+    } catch (const ArgumentError& e) {
+      // Type errors from converting the value don't know the property's name.
+      throw BasicError(fmt::format("{}: {}", what, e.what()));
+    }
+    return 0;
+  });
 }
 
 Value ExecutionVisitor::call_method(const Value& object, const std::string& method,
-                                    const std::vector<Value>&) {
-  throw BasicError(fmt::format("Cannot call method '{}' on {}", method, object.a_type_name()));
+                                    const std::vector<Value>& params) {
+  if (!object.is_object()) {
+    throw BasicError(fmt::format("Cannot call method '{}' on {}", method, object.a_type_name()));
+  }
+  const auto& data = checked_object(object, method);
+  const auto& cls = *data.cls;
+  const auto it = cls.methods.find(method);
+  if (it == cls.methods.end()) {
+    if (cls.properties.contains(method)) {
+      throw BasicError(fmt::format("{}.{} is a property, not a method; use it without ()",
+                                   cls.name, method));
+    }
+    throw BasicError(fmt::format("{} has no method '{}'", cls.name, method));
+  }
+  return guard_native(cls.name + "." + method,
+                      [&] { return it->second(data.self.get(), params); });
 }
 
 std::any ExecutionVisitor::visitProcedureCall(BasicParser::ProcedureCallContext* ctx) {
@@ -188,7 +269,7 @@ std::any ExecutionVisitor::visitProcedureCall(BasicParser::ProcedureCallContext*
 std::any ExecutionVisitor::visitCallChain(BasicParser::CallChainContext* ctx) {
   auto value = Value(visit(ctx->procedureCall()));
   for (auto* suffix : ctx->memberSuffix()) {
-    const auto name = suffix->ID()->getText();
+    const auto name = suffix->memberName()->getText();
     if (suffix->LPAREN()) {
       std::vector<Value> params;
       if (suffix->parameterList()) {

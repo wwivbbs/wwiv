@@ -44,7 +44,8 @@ public:
 
   // Adds a module of native functions, such as "wwiv.io". Scripts call its
   // functions as wwiv.io.name(), or as name() after IMPORT "@wwiv.io".
-  // Replaces any existing module with the same name.
+  // Returns the existing module if there is already one with this name (it is
+  // never replaced, so references to its functions and classes stay valid).
   Module& add_module(const std::string& name);
 
   // The global module, which holds the built-in functions. Functions added

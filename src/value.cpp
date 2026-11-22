@@ -1,4 +1,5 @@
 #include "wwivbasic/value.h"
+#include "wwivbasic/object.h"
 #include "fmt/format.h"
 
 #include <any>
@@ -43,6 +44,12 @@ Value Value::number(double d) {
   return Value(d);
 }
 
+Value Value::make_list(std::vector<Value> items) {
+  auto l = new_list();
+  l.list("make_list")->items = std::move(items);
+  return l;
+}
+
 Value Value::new_list() {
   return Value(std::make_shared<ListData>());
 }
@@ -61,7 +68,19 @@ IteratorPtr Value::iterator(std::string_view fn) const {
   return std::get<IteratorPtr>(value_);
 }
 
+ObjectPtr Value::object(std::string_view fn) const {
+  if (type != Type::OBJECT) {
+    throw BasicError(fmt::format("{}: expected an object, got {}", fn, a_type_name()));
+  }
+  return std::get<ObjectPtr>(value_);
+}
+
 std::string Value::a_type_name() const {
+  if (type == Type::OBJECT) {
+    // Class names are the embedder's, so don't guess "a" or "an".
+    return "an object of class " + type_name();
+  }
+  // The built-in type names; only INTEGER and ITERATOR start with a vowel.
   const auto name = type_name();
   const bool vowel =
       !name.empty() && std::string_view("AEIOU").find(name.front()) != std::string_view::npos;
@@ -82,6 +101,8 @@ std::string Value::type_name() const {
     return "LIST";
   case Type::ITERATOR:
     return "ITERATOR";
+  case Type::OBJECT:
+    return std::get<ObjectPtr>(value_)->cls->name;
   }
   return "UNKNOWN";
 }
@@ -95,6 +116,7 @@ bool Value::is_number() const {
   case Type::STRING:
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     return false;
   }
   return false;
@@ -112,6 +134,7 @@ bool Value::toBool() const {
     return std::get<std::string>(value_) == "TRUE";
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     return true;
   }
   return false;
@@ -142,6 +165,16 @@ std::optional<double> Value::parse_number(std::string_view s) {
 
 namespace {
 
+// Formats a REAL. Whole numbers with up to 10 digits print in full
+// (3000000000), since timestamps and file sizes are common; others print
+// like printf("%g") (0.5, 3.14159, 1e+10), as in my_basic.
+std::string format_real(double d) {
+  if (std::trunc(d) == d && std::fabs(d) < 1e10) {
+    return fmt::format("{:.0f}", d);
+  }
+  return fmt::format("{:g}", d);
+}
+
 // Truncates toward zero and clamps to the INTEGER range.
 int clamp_to_int(double d) {
   if (std::isnan(d)) {
@@ -170,6 +203,7 @@ int Value::toInt() const {
     return clamp_to_int(parse_number(std::get<std::string>(value_)).value_or(0));
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     return 0;
   }
   return 0;
@@ -187,6 +221,7 @@ double Value::toDouble() const {
     return parse_number(std::get<std::string>(value_)).value_or(0);
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     return 0;
   }
   return 0;
@@ -199,11 +234,12 @@ std::string Value::toString() const {
   case Type::INTEGER:
     return std::to_string(std::get<int>(value_));
   case Type::REAL:
-    return fmt::format("{:g}", std::get<double>(value_));
+    return format_real(std::get<double>(value_));
   case Type::STRING:
     return std::get<std::string>(value_);
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     return type_name();
   }
   return {};
@@ -211,14 +247,14 @@ std::string Value::toString() const {
 
 void Value::check_scalar(const Value& that, std::string_view op) const {
   for (const auto* v : {this, &that}) {
-    if (v->type == Type::LIST || v->type == Type::ITERATOR) {
+    if (v->type == Type::LIST || v->type == Type::ITERATOR || v->type == Type::OBJECT) {
       throw BasicError(fmt::format("Operator '{}' cannot be used with {}", op, v->a_type_name()));
     }
   }
 }
 
 // Each switch lists every Type (no default:) so the compiler flags any new
-// Type that isn't handled. LIST and ITERATOR are rejected by check_scalar()
+// Type that isn't handled. LIST, ITERATOR and OBJECT are rejected by check_scalar()
 // before the switch, so those cases are unreachable.
 
 [[noreturn]] static void unreachable_type(std::string_view op) {
@@ -237,6 +273,7 @@ bool is_integral(const Value& v) {
   case Value::Type::REAL:
   case Value::Type::LIST:
   case Value::Type::ITERATOR:
+  case Value::Type::OBJECT:
     return false;
   case Value::Type::STRING: {
     const auto d = v.toDouble();
@@ -309,6 +346,7 @@ bool compare_numerically(const Value& a, const Value& b) {
   case Value::Type::STRING:
   case Value::Type::LIST:
   case Value::Type::ITERATOR:
+  case Value::Type::OBJECT:
     return false;
   }
   return false;
@@ -328,6 +366,7 @@ Value Value::operator+(const Value& that) const {
     return Value(toString() + that.toString());
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     break;
   }
   unreachable_type("+");
@@ -345,6 +384,7 @@ Value Value::operator-(const Value& that) const {
     return Value(toString() + that.toString());
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     break;
   }
   unreachable_type("-");
@@ -363,6 +403,7 @@ Value Value::operator*(const Value& that) const {
     return Value(toString() + that.toString());
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     break;
   }
   unreachable_type("*");
@@ -380,6 +421,7 @@ Value Value::operator/(const Value& that) const {
     return Value(toString() + that.toString());
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     break;
   }
   unreachable_type("/");
@@ -406,6 +448,7 @@ Value Value::operator%(const Value& that) const {
     return Value(toString() + that.toString());
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     break;
   }
   unreachable_type("MOD");
@@ -427,6 +470,7 @@ bool Value::operator<(const Value& that) const {
     return toString() < that.toString();
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     break;
   }
   unreachable_type("<");
@@ -448,6 +492,7 @@ bool Value::operator>(const Value& that) const {
     return toString() > that.toString();
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     break;
   }
   unreachable_type(">");
@@ -459,14 +504,23 @@ bool Value::operator==(const Value& that) const {
   case Type::INTEGER:
   case Type::REAL:
   case Type::STRING:
-    if (that.type == Type::LIST || that.type == Type::ITERATOR) {
+    if (that.type == Type::LIST || that.type == Type::ITERATOR || that.type == Type::OBJECT) {
       return false;
     }
     break;
   case Type::LIST:
   case Type::ITERATOR:
-    // Same type and the same underlying object.
+    // Same type and the same underlying list.
     return type == that.type && value_ == that.value_;
+  case Type::OBJECT: {
+    // The same C++ object, even if it was wrapped twice.
+    if (that.type != Type::OBJECT) {
+      return false;
+    }
+    const auto& a = std::get<ObjectPtr>(value_);
+    const auto& b = std::get<ObjectPtr>(that.value_);
+    return a && b && a->self.get() == b->self.get() && a->cls == b->cls;
+  }
   }
   if (compare_numerically(*this, that)) {
     return toDouble() == that.toDouble();
@@ -482,6 +536,7 @@ bool Value::operator==(const Value& that) const {
     return toString() == that.toString();
   case Type::LIST:
   case Type::ITERATOR:
+  case Type::OBJECT:
     break;
   }
   unreachable_type("=");

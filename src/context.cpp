@@ -78,8 +78,9 @@ Context::Context(Console& console) : console(console) {
 }
 
 Module& Context::add_module(const std::string& name) {
-  modules.insert_or_assign(name, Module(name));
-  return modules.at(name);
+  // Never replace a module: its class bindings may be referenced by native
+  // functions that captured them.
+  return modules.try_emplace(name, name).first->second;
 }
 
 void BasicParserErrorListener::syntaxError(antlr4::Recognizer*, antlr4::Token*, size_t line,

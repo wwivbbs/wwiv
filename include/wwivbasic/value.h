@@ -23,18 +23,28 @@ public:
   size_t line{0};
 };
 
+// A native function or method argument (or a property value) had the wrong
+// type. The wrappers add the function's name to the message.
+class ArgumentError : public BasicError {
+public:
+  explicit ArgumentError(const std::string& msg) : BasicError(msg) {}
+};
+
 class Value;
 struct ListData;
+struct ObjectData;
 struct IteratorData;
 
 using ListPtr = std::shared_ptr<ListData>;
 using IteratorPtr = std::shared_ptr<IteratorData>;
+// A C++ object exposed to scripts through a ClassBinding (see object.h).
+using ObjectPtr = std::shared_ptr<ObjectData>;
 
 class Value {
 public:
-  // LIST and ITERATOR values are references: copying the Value shares the
-  // underlying list, as in my_basic.
-  enum class Type { BOOLEAN, INTEGER, REAL, STRING, LIST, ITERATOR };
+  // LIST, ITERATOR and OBJECT values are references: copying the Value shares
+  // the underlying list or object, as in my_basic.
+  enum class Type { BOOLEAN, INTEGER, REAL, STRING, LIST, ITERATOR, OBJECT };
 
   Value() : value_(std::string()), type(Type::STRING) {}
   explicit Value(bool b) : value_(b), type(Type::BOOLEAN) {}
@@ -44,6 +54,7 @@ public:
   explicit Value(const char* s) : value_(std::string(s)), type(Type::STRING) {}
   explicit Value(ListPtr l) : value_(std::move(l)), type(Type::LIST) {}
   explicit Value(IteratorPtr it) : value_(std::move(it)), type(Type::ITERATOR) {}
+  explicit Value(ObjectPtr o) : value_(std::move(o)), type(Type::OBJECT) {}
   explicit Value(const std::any& a);
 
   // A REAL, or an INTEGER if d is a whole number that fits in one, like
@@ -58,6 +69,8 @@ public:
 
   // Creates a new, empty list.
   static Value new_list();
+  // Creates a list holding the given items.
+  static Value make_list(std::vector<Value> items);
 
   int set(int i) {
     value_ = i;
@@ -75,6 +88,7 @@ public:
   Type value_type() const { return type; }
   bool is_list() const { return type == Type::LIST; }
   bool is_iterator() const { return type == Type::ITERATOR; }
+  bool is_object() const { return type == Type::OBJECT; }
   // BOOLEAN, INTEGER or REAL.
   bool is_number() const;
 
@@ -82,17 +96,22 @@ public:
   ListPtr list(std::string_view fn) const;
   // The iterator, or throws BasicError naming `fn` if this is not an iterator.
   IteratorPtr iterator(std::string_view fn) const;
+  // The object, or throws BasicError naming `fn` if this is not an object.
+  ObjectPtr object(std::string_view fn) const;
 
   bool toBool() const;
   // REALs are truncated toward zero.
   int toInt() const;
   double toDouble() const;
-  // REALs print like printf("%g") (3.14159, 0.5). Lists print as "LIST" and
-  // iterators as "ITERATOR", like my_basic.
+  // REALs print like printf("%g") (3.14159, 0.5), except whole numbers with up
+  // to 10 digits, which print in full (3000000000). Lists print as "LIST" and
+  // iterators as "ITERATOR", like my_basic; objects print as their class name.
   std::string toString() const;
-  // The type name used in error messages: BOOLEAN, INTEGER, STRING, ...
+  // The type name used in error messages: BOOLEAN, INTEGER, STRING, ..., or an
+  // object's class name.
   std::string type_name() const;
-  // The type name with "a" or "an": "a STRING", "an INTEGER".
+  // The type name with "a" or "an": "a STRING", "an INTEGER", or "an object
+  // of class user" for objects.
   std::string a_type_name() const;
 
   template <typename T>
@@ -115,7 +134,7 @@ private:
   // Throws unless both operands are scalars (BOOLEAN, INTEGER, REAL, STRING).
   void check_scalar(const Value& that, std::string_view op) const;
 
-  std::variant<bool, int, double, std::string, ListPtr, IteratorPtr> value_;
+  std::variant<bool, int, double, std::string, ListPtr, IteratorPtr, ObjectPtr> value_;
   Type type;
 };
 

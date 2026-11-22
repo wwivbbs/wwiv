@@ -82,7 +82,7 @@ public:
   // Like find_function, but returns nullopt instead of throwing.
   std::optional<ResolvedFunction> try_find_function(const std::string& function_name);
 
-  // Adds a native module, replacing any existing module with the same name.
+  // Adds a module, or returns the existing one with the same name.
   Module& add_module(const std::string& name);
 
   // Parses source text. A path that is already loaded is not replaced, since

@@ -104,3 +104,13 @@ TEST(ValueTest, NativeWholeDoubleIsInteger) {
   EXPECT_EQ(Value::Type::INTEGER, to_value(4.0).value_type());
   EXPECT_EQ(Value::Type::REAL, to_value(4.5).value_type());
 }
+
+TEST(ValueTest, WholeRealsUpToTenDigitsPrintInFull) {
+  EXPECT_EQ("3000000000", Value(3000000000.0).toString());
+  EXPECT_EQ("-3000000000", Value(-3000000000.0).toString());
+  EXPECT_EQ("9999999999", Value(9999999999.0).toString());
+  // 11 digits and fractions keep %g.
+  EXPECT_EQ("1e+10", Value(1e10).toString());
+  EXPECT_EQ("1.5e+09", Value(1500000000.5).toString());
+  EXPECT_EQ("0.5", Value(0.5).toString());
+}

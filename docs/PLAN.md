@@ -115,9 +115,9 @@ working.
       native functions, errors) in `include/wwivbasic/`; internals stay in `src/`
 - [x] `Console` interface; `PRINT` and the console go through it; a fake for
       tests and a stdin/stdout one for `basicrun`
-- [ ] Object values: a `Value` that wraps a C++ object, shared by reference
+- [x] Object values: a `Value` that wraps a C++ object, shared by reference
       like lists
-- [ ] Class binding helper, roughly
+- [x] Class binding helper, roughly
       `m.class_<T>("name").property(...).method(...)`
 - [x] Member access in the grammar: `.` becomes an operator and `a.b.c` is
       resolved at runtime (a module path if there is one, otherwise members

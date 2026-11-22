@@ -75,3 +75,7 @@ The difference is precision: my_basic (as WWIV builds it) used 32-bit floats,
 which keep about 7 significant digits, and wwivbasic uses 64-bit doubles. A
 calculation can come out slightly differently in its last digits, but
 printed results (6 significant digits) are almost always the same.
+
+One printing difference: a whole number too large for an integer, such as a
+timestamp or a file size in bytes, prints in full up to 10 digits
+(`3000000000`), where my_basic printed `3e+09`.

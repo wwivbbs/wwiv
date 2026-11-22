@@ -162,11 +162,20 @@ id: ID;
 rvalue : qualifiedName;
 procedureName : ID;
 
-// A name with optional dotted parts: x, wwiv.io, area.name.
-qualifiedName : ID (DOT ID)*;
+// A name with optional dotted parts: x, wwiv.io, area.name. Parts after a dot
+// may be keywords (wwiv.io.print, msg.next), since they name members.
+qualifiedName : ID (DOT memberName)*;
 
 // A call followed by member accesses and method calls: f().x, a.b(1).c().
 callChain : procedureCall memberSuffix*;
 
 // .name reads a member; .name(args) calls a method.
-memberSuffix : DOT ID (LPAREN (parameterList)? RPAREN)?;
+memberSuffix : DOT memberName (LPAREN (parameterList)? RPAREN)?;
+
+// A name after a dot: an identifier or any keyword.
+memberName
+  : ID
+  | TRUE | FALSE | AND | OR | NOT | LET | MOD | DEF | ENDDEF | RETURN | IF | THEN | ELSE
+  | ELSEIF | ENDIF | FOR | NEXT | STEP | TO | IN | WHILE | WEND | DO | UNTIL | EXIT | BREAK
+  | END | PRINT | MODULE | IMPORT
+  ;

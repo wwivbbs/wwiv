@@ -182,8 +182,35 @@ for (const auto& error : result.errors) {
 ```
 
 Scripts call `my.io.hello("x")`, or `hello("x")` after `import "@my.io"`. Native
-functions can take and return `int`, `bool`, `std::string` or
-`wwivbasic::Value`; arguments are converted and their count is checked.
+functions can take and return `int`, `double`, `bool`, `std::string` or
+`wwivbasic::Value` (and can return a `std::vector`, which becomes a list);
+arguments are converted and their count is checked.
+
+### Objects
+
+A module can describe a C++ class so scripts can use its objects' properties
+and methods (`include/wwivbasic/object.h`):
+
+```cpp
+struct Header { int number; std::string subject; std::string summary(int width) const; };
+
+auto& header = io.class_<Header>("header");
+header.property("number", &Header::number)                 // read-only
+      .property("subject", &Header::subject, &Header::subject)  // read-write
+      .method("summary", &Header::summary);
+io.native_function("FIRST", [&]() { return header.wrap(Header{1, "Hello"}); });
+```
+
+```basic
+h = my.io.first()
+print h.number; ": "; h.subject; " "; h.summary(3)
+h.subject = "Re: Hello"
+```
+
+Properties and methods can be data members, member functions or lambdas, and
+member names are case-insensitive. `wrap()` turns a C++ object (or a
+`std::shared_ptr` to one) into a script value, and `unwrap()` turns it back.
+Objects are shared by reference, like lists, and print as their class name.
 
 ## Layout
 
