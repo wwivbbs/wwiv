@@ -8,7 +8,7 @@ wwivbasic is a BASIC interpreter written in C++23 on top of an ANTLR 4 grammar. 
 replace the my_basic interpreter behind `RunBasicScript` in WWIV (the BBS). Most existing
 scripts should keep running unchanged.
 
-- `docs/PLAN.md` lists the milestones (M0–M4) and open decisions. Tick items off there when
+- `docs/PLAN.md` lists the milestones (M0–M6), the architecture (engine switch, bindings, repo layout) and open decisions. Tick items off there when
   they land.
 - `PORTING.md` records every intentional difference from my_basic. If a change breaks
   compatibility with my_basic, add an entry (old form, new form, why) in the same change.
@@ -18,10 +18,10 @@ scripts should keep running unchanged.
 | Path | Contents |
 | --- | --- |
 | `BasicLexer.g4`, `BasicParser.g4` | Grammar. The C++ lexer and parser are generated into `_build/<preset>/antlr4_generated_src/` (namespace `wwivbasic`). |
-| `src/` | The interpreter: `context.*` (scopes, variables, modules, function lookup), `executor.*` (`ExecutionVisitor`, which walks the parse tree), `function_def_visitor.*` (collects `DEF`s before execution), `interpreter.*` (`run_file`/`run_source`: parse, run, collect errors), `value.*` (`Value`: BOOLEAN/INTEGER/STRING, plus LIST/ITERATOR which share their data by reference; and `BasicError`), `wwiv_stub.*` (stand-in `wwiv`, `wwiv.io`, `wwiv.data` modules used by `basicrun`; replaced in M3), `utils.*` |
+| `src/` | The interpreter: `context.*` (scopes, variables, modules, function lookup), `executor.*` (`ExecutionVisitor`, which walks the parse tree), `function_def_visitor.*` (collects `DEF`s before execution), `interpreter.*` (`run_file`/`run_source`: parse, run, collect errors), `value.*` (`Value`: BOOLEAN/INTEGER/STRING, plus LIST/ITERATOR which share their data by reference; and `BasicError`), `wwiv_stub.*` (stand-in `wwiv`, `wwiv.io`, `wwiv.data` modules used by `basicrun`; the real ones are bindings in WWIV, see M4), `utils.*` |
 | `src/stdlib/` | Built-in functions (`strings`, `numbers`, `common`, `collections`: my_basic's list functions) |
 | `src/basicrun.cpp` | CLI that runs one `.bas` file: `--check`/`-c` parses only, `--show_parsetree`/`-t` prints the parse tree, `--trace`/`-v` logs execution to stderr. Script output goes to stdout, errors to stderr as `file:line[:col]: error: ...`, exit code 1 on error. |
-| `core/` | A vendored copy of WWIV's `core/` library (files, strings, logging, command line and so on). Treat it as upstream code: avoid edits unless they're required, and keep them minimal. It will be replaced by WWIV's own `core/` in M4. |
+| `core/` | A vendored copy of WWIV's `core/` library (files, strings, logging, command line and so on). Treat it as upstream code: avoid edits unless they're required, and keep them minimal. Inside WWIV's build, WWIV's own `core/` is used instead (M3). |
 | `tests/golden/` | Golden tests: each `NAME.bas` is run by `basicrun` and its stdout compared with `NAME.expected`. A first line `#exit N` in the expected file sets the expected exit code; `NAME.input`, if present, is the script's stdin. `lib/` holds files imported by tests (not tests themselves). `wwiv_*.bas` are unchanged copies of scripts WWIV ships; keep them identical. |
 | `tests/run_golden.cmake` | The golden-test runner used by CTest. |
 | `antlr/antlr-4.13.2-complete.jar` | ANTLR tool used by the build (needs Java on `PATH`). Keep it at the same version as the vcpkg antlr4 runtime. |

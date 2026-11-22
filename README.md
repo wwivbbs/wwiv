@@ -10,7 +10,9 @@ Work in progress. See [docs/PLAN.md](docs/PLAN.md) for the milestones.
 
 - Done: build and test baseline (M0), parsing the existing WWIV scripts (M1), and lists,
   imports and stub `wwiv.*` modules so those scripts run (M2).
-- Next: the real `wwiv.*` modules (M3), then integration into WWIV (M4).
+- Next: an embedding API with object values and member access (M3), then running inside
+  WWIV behind a build option with the `wwiv.*` modules as bindings (M4), then SDK bindings such
+  as messages and users (M5).
 
 Where wwivbasic intentionally differs from my_basic, [PORTING.md](PORTING.md) describes the change.
 

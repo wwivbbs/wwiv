@@ -19,7 +19,8 @@ class Context;
 // COMMAND) print a marker such as "[cls]" instead. wwiv.data keeps saved
 // lists in memory only.
 //
-// TODO(M3): replace with a host interface that WWIV implements.
+// TODO(M3/M4): basicrun will use a stdin/stdout Console instead, and the real
+// wwiv.* modules become bindings in WWIV (see docs/PLAN.md).
 class WwivStub {
 public:
   WwivStub(Context& ctx, std::istream& in);
