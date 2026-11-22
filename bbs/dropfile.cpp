@@ -171,7 +171,7 @@ void CreatePCBoardSysDropFile() {
     if (!a()->sess().incom()) {
       memcpy(pcb.connectbps, "Local", 5);
     } else {
-      snprintf(pcb.connectbps, 5, "%-5.5d", a()->modem_speed_);
+      to_char_array_no_null(pcb.connectbps, fmt::format("{:<5.5}", std::to_string(a()->modem_speed_)));
     }
     pcb.usernum = static_cast<int16_t>(u.usernum());
     const std::string full_name{u.GetName()};

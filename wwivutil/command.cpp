@@ -38,7 +38,11 @@ UtilCommand::UtilCommand(const std::string& name, const std::string& description
   : CommandLineCommand(name, description) {}
 UtilCommand::~UtilCommand() = default;
 
-bool UtilCommand::add(std::shared_ptr<UtilCommand> cmd) {
+bool UtilCommand::add(std::shared_ptr<core::CommandLineCommand> c) {
+  auto cmd = std::dynamic_pointer_cast<UtilCommand>(c);
+  if (!cmd) {
+    return CommandLineCommand::add(std::move(c));
+  }
   subcommands_.push_back(cmd);
   cmd->AddStandardArgs();
   const auto added = CommandLineCommand::add(cmd);

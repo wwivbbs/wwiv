@@ -26,14 +26,14 @@
 
 namespace wwiv::sdk::msgapi {
 
-[[nodiscard]] uint32_t MessageAreaLastRead::last_read(int user_number) {
+[[nodiscard]] uint32_t MessageAreaLastRead::last_read(int /*user_number*/) {
   if (message_area_number_ < 0) {
     return 0;
   }
   return api_->last_read(message_area_number_);
 }
 
-bool MessageAreaLastRead::set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) {
+bool MessageAreaLastRead::set_last_read(int /*user_number*/, uint32_t last_read, uint32_t highest_read) {
   if (message_area_number_ >= 0) {
     api_->set_last_read(message_area_number_, std::max<uint32_t>(last_read, highest_read));
   }

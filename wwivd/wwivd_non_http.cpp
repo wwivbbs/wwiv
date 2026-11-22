@@ -102,7 +102,7 @@ std::filesystem::path node_file(const Config& config, ConnectionType ct, int nod
 
 // HACK: Copied out of SocketConnection class
 // TODO(rushfan): Make this available in core::net
-bool SetNoDelayMode(SOCKET sock, bool no_delay) {
+bool SetNoDelayMode([[maybe_unused]] SOCKET sock, [[maybe_unused]] bool no_delay) {
 #ifdef _WIN32
   int one = no_delay ? 1 : 0;
   return setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&one), sizeof(one)) !=

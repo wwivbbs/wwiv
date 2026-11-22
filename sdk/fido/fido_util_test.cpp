@@ -313,8 +313,10 @@ TEST_F(FidoUtilTest, FindRouteAddress) {
   const FidoAddress a11_other("11:1/1");
   const FidoAddress a12("12:1/1");
 
-  fido_node_config_t c11{"11:*"};
-  fido_node_config_t c12{"12:*"};
+  fido_node_config_t c11{};
+  c11.routes = "11:*";
+  fido_node_config_t c12{};
+  c12.routes = "12:*";
   const std::map<FidoAddress, fido_node_config_t> m = {{a11, c11}, {a12, c12}};
   EXPECT_EQ(a11, FindRouteToAddress(a, m).value());
   EXPECT_EQ(a12, FindRouteToAddress(b, m).value());

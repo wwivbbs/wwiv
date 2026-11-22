@@ -22,6 +22,7 @@
  *
  *	January, 1995
  */
+#include <cinttypes>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -303,7 +304,7 @@ void parseFileName(ZModem* info, char* fileinfo) {
     free(info->filename);
   }
   info->filename = strdup(fileinfo);
-  sscanf(ptr, "%d %lo %o %o %d %d %d", &info->len, &info->date, &info->mode, &serial,
+  sscanf(ptr, "%d %" SCNo32 " %o %o %d %d %d", &info->len, &info->date, &info->mode, &serial,
          &info->filesRem, &info->bytesRem, &info->fileType);
 }
 

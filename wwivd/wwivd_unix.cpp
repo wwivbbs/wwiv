@@ -157,7 +157,7 @@ void SwitchToNonRootUser(const std::string& wwiv_user) {
   }
 }
 
-bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
+bool ExecCommandAndWait(const wwivd_config_t& /*wc*/, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
                         SOCKET sock) {
   char sh[21];
