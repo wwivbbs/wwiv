@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*           Copyright (C)2020-2022, WWIV Software Services               */
+/*                Copyright (C)2026, WWIV Software Services               */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -183,24 +183,6 @@ TEST(ViewRows, ClampScreenRowNeverPastLastLine) {
   EXPECT_EQ(1, clamp_screen_row(-3, 24));
 }
 
-// On an 80x24 web terminal the command line is already row 24.  CUP to
-// 25/26/27 (the old clear_below_frame loop) can scroll the header off.
-TEST(ViewRows, RowsBelowAFullFrameMustNotBeAddressed) {
-  const int screen_length = 24;
-  EXPECT_FALSE(row_below_frame(24, screen_length));
-  EXPECT_TRUE(row_below_frame(25, screen_length));
-  EXPECT_TRUE(row_below_frame(26, screen_length));
-  // Nothing to clear below the command line when it is the last row.
-  int writes = 0;
-  for (int y = screen_length + 1; y <= screen_length + 3; ++y) {
-    if (row_below_frame(y, screen_length)) {
-      break;
-    }
-    ++writes;
-  }
-  EXPECT_EQ(0, writes);
-}
-
 // Layout reminder: header 1-4, top bar 5, edit 6-22, status 23, command 24.
 TEST(ViewRows, HeaderOccupiesFirstFiveRowsOn24LineScreen) {
   const int num_header_lines = 4;
@@ -208,4 +190,61 @@ TEST(ViewRows, HeaderOccupiesFirstFiveRowsOn24LineScreen) {
   EXPECT_EQ(6, lines_start);
   EXPECT_FALSE(row_in_edit_area(5, 6, 23));
   EXPECT_TRUE(row_in_edit_area(6, 6, 23));
+}
+
+// A one-line change repaints one row, not the whole window (#1729 review).
+TEST(ViewRows, RangePaintsOnlyTheInvalidatedRow) {
+  // Rows 6..22 show lines 10..26 of a 40-line document.
+  const auto p = plan_range_paints(12, 12, false, 10, 40, 6, 23);
+  ASSERT_EQ(1u, p.size());
+  EXPECT_EQ(8, p[0].y);
+  EXPECT_EQ(12, p[0].line);
+}
+
+TEST(ViewRows, RangePaintsAreClippedToTheViewport) {
+  // Lines 5..12 changed, but only 10..12 are visible.
+  const auto p = plan_range_paints(5, 12, false, 10, 40, 6, 23);
+  ASSERT_EQ(3u, p.size());
+  EXPECT_EQ(6, p.front().y);
+  EXPECT_EQ(10, p.front().line);
+  EXPECT_EQ(12, p.back().line);
+  // Entirely off screen: nothing to paint.
+  EXPECT_TRUE(plan_range_paints(30, 35, false, 10, 40, 6, 23).empty());
+  EXPECT_TRUE(plan_range_paints(1, 3, false, 10, 40, 6, 23).empty());
+}
+
+TEST(ViewRows, RangeToEofClearsRowsPastTheDocument) {
+  // A 5-line document after a delete: lines 3..4 repaint, rows for 5..16 clear.
+  const auto p = plan_range_paints(3, 4, true, 0, 5, 6, 23);
+  ASSERT_EQ(14u, p.size());
+  EXPECT_EQ(9, p[0].y);
+  EXPECT_EQ(3, p[0].line);
+  EXPECT_EQ(4, p[1].line);
+  for (size_t i = 2; i < p.size(); ++i) {
+    EXPECT_EQ(-1, p[i].line);
+  }
+  EXPECT_EQ(22, p.back().y);
+  for (const auto& x : p) {
+    EXPECT_TRUE(row_in_edit_area(x.y, 6, 23));
+  }
+}
+
+// Normal typing never triggers a full-frame repaint; a paste does, once.
+TEST(ViewRows, PasteBurstOnlyFiresAfterAQueuedRun) {
+  paste_burst_t b;
+  // Typing: nothing queued on each pass.
+  for (int i = 0; i < 50; ++i) {
+    EXPECT_FALSE(b.drained(false));
+  }
+  // A key or two queued (fast typist) is not a paste.
+  EXPECT_FALSE(b.drained(true));
+  EXPECT_FALSE(b.drained(true));
+  EXPECT_FALSE(b.drained(false));
+  // A paste: many keys already waiting, then the queue drains.
+  for (int i = 0; i < 200; ++i) {
+    EXPECT_FALSE(b.drained(true));
+  }
+  EXPECT_TRUE(b.drained(false));
+  // Only once.
+  EXPECT_FALSE(b.drained(false));
 }

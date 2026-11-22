@@ -955,38 +955,85 @@ TEST_F(FsedModelWithViewTest, Paste_OpenQuestionsBlock_CrLf_WrapsAtWordBoundarie
 }
 
 // Sysop cap is 120 lines.  Fill almost to that cap, then paste the exact
-// final block.  Reflow must still wrap; otherwise the last items stay
-// 159/170-character lines and the terminal autowraps mid-word at column 80.
-TEST_F(FsedModelWithViewTest, Paste_OpenQuestionsBlock_AtSysopMaxli_StillWraps) {
-  wwiv::fsed::FsedModel ed120{120};
-  auto v = std::make_shared<FakeView>();
-  ed120.set_view(v);
-  ed120.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
-
-  std::string burst;
-  // 118 short lines plus the heading/blank of the block reaches the cap
-  // before item 1 would wrap (same situation as the full 173-line plan).
-  for (int i = 0; i < 118; i++) {
-    burst += "Filler line.\n";
-  }
-  burst += kOpenQuestionsBlock;
-  paste_keys(ed120, burst);
-  expect_open_questions_wrapped(ed120, "unix lf, at sysop maxli");
-  expect_viewport_consistent(ed120, *v, "unix lf, at sysop maxli");
-  EXPECT_GT(wwiv::stl::size_int(ed120), 120);
+// final block.  The message must never grow past maxli, and no line may be
+// left wider than the screen (refusing to reflow used to leave 159/170-
+// character lines that the terminal autowrapped mid-word at column 80).
+// Text that does not fit is dropped, as with any other key at the limit.
+static void expect_capped_at_maxli(wwiv::fsed::FsedModel& ed, const char* where) {
+  EXPECT_LE(wwiv::stl::size_int(ed), ed.maxli()) << where;
+  EXPECT_LE(max_line_cells(ed), ed.max_line_len()) << where;
+  const auto lines = ed.to_lines(true);
+  EXPECT_LE(wwiv::stl::size_int(lines), ed.maxli()) << where;
+  const auto all = joined_text(ed);
+  EXPECT_NE(std::string::npos, all.find("## Open questions for Rushfan")) << where;
+  // The start of item 1 fits; the rest of the block is past the limit.
+  EXPECT_NE(std::string::npos, all.find("1. **License:**")) << where;
+  EXPECT_EQ(std::string::npos, all.find("5. **Scope:**")) << where;
 }
 
-TEST_F(FsedModelWithViewTest, Paste_OpenQuestionsBlock_AtSysopMaxli_CrLf_StillWraps) {
+static std::string filler_then(const std::string& tail, int n) {
+  std::string burst;
+  for (int i = 0; i < n; i++) {
+    burst += "Filler line.\n";
+  }
+  return burst + tail;
+}
+
+TEST_F(FsedModelWithViewTest, Paste_OpenQuestionsBlock_AtSysopMaxli_StopsAtLimit) {
   wwiv::fsed::FsedModel ed120{120};
   auto v = std::make_shared<FakeView>();
   ed120.set_view(v);
   ed120.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
+  // 117 short lines plus the heading/blank of the block leaves one line
+  // for item 1, which needs two once wrapped.
+  paste_keys(ed120, filler_then(kOpenQuestionsBlock, 117));
+  expect_capped_at_maxli(ed120, "unix lf, at sysop maxli");
+  expect_viewport_consistent(ed120, *v, "unix lf, at sysop maxli");
+}
 
-  std::string burst;
-  for (int i = 0; i < 118; i++) {
-    burst += "Filler line.\n";
+TEST_F(FsedModelWithViewTest, Paste_OpenQuestionsBlock_AtSysopMaxli_CrLf_StopsAtLimit) {
+  wwiv::fsed::FsedModel ed120{120};
+  auto v = std::make_shared<FakeView>();
+  ed120.set_view(v);
+  ed120.set_max_line_len(wwiv::fsed::editor_wrap_columns(80));
+  paste_keys(ed120, filler_then(crlf_copy(kOpenQuestionsBlock), 117));
+  expect_capped_at_maxli(ed120, "crlf, at sysop maxli");
+}
+
+// A single wrapped paragraph must not grow past maxli either, and the
+// character that would need the extra line is rejected, not kept.
+TEST_F(FsedModelWithViewTest, Wrap_AtMaxli_RejectsCharacterInsteadOfGrowing) {
+  wwiv::fsed::FsedModel small{2};
+  auto v = std::make_shared<FakeView>();
+  small.set_view(v);
+  small.set_max_line_len(10);
+  for (const char c : std::string("aaaa bbbb cccc dddd")) {
+    small.add(c);
   }
-  burst += crlf_copy(kOpenQuestionsBlock);
-  paste_keys(ed120, burst);
-  expect_open_questions_wrapped(ed120, "crlf, at sysop maxli");
+  ASSERT_EQ(2, wwiv::stl::size_int(small));
+  // Filling the second line is fine; one more character needs a third line.
+  EXPECT_NE(wwiv::fsed::editor_add_result_t::error, small.add('x'));
+  ASSERT_EQ(2, wwiv::stl::size_int(small));
+  const auto before = joined_text(small);
+  const auto cx = small.cx;
+  const auto curli = small.curli;
+  EXPECT_EQ(wwiv::fsed::editor_add_result_t::error, small.add('y'));
+  EXPECT_EQ(2, wwiv::stl::size_int(small));
+  EXPECT_LE(max_line_cells(small), small.max_line_len());
+  EXPECT_EQ(before, joined_text(small));
+  EXPECT_EQ(curli, small.curli);
+  EXPECT_EQ(cx, small.cx);
+}
+
+TEST_F(FsedModelWithViewTest, Enter_AtMaxli_DoesNotAddALine) {
+  wwiv::fsed::FsedModel small{2};
+  auto v = std::make_shared<FakeView>();
+  small.set_view(v);
+  small.add('a');
+  EXPECT_TRUE(small.enter());
+  small.add('b');
+  EXPECT_FALSE(small.enter());
+  EXPECT_EQ(2, wwiv::stl::size_int(small));
+  EXPECT_EQ(1, small.curli);
+  EXPECT_EQ(1, small.cx);
 }

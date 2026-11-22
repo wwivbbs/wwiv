@@ -45,18 +45,20 @@ static void paint_edit_row(Output& bout, int y, int screen_width, int screen_len
                            const std::vector<cell_t>& cells) {
   // Never paint on or past the last terminal row (the command line).
   // A full-width write there autowraps and scrolls the header off the top.
-  if (row_below_frame(y, screen_length) || y >= screen_length) {
+  if (y >= screen_length) {
     return;
   }
-  y = clamp_screen_row(y, screen_length);
   bout.goxy(1, y);
+  // Clear with the default color, not whatever the previous row or the
+  // status bar left set, so the cleared row has no colored background.
+  bout.ansic(0);
   bout.clreol();
   bout.goxy(1, y);
   // Never write more cells than the wrap width.  A line that somehow
   // grew past max_line_len would otherwise autowrap onto the next row
   // and be painted over by the following model line.
   const int max_cells = editor_wrap_columns(screen_width);
-  int last_color = -1;
+  int last_color = 0;
   int written = 0;
   for (const auto& c : cells) {
     if (written >= max_cells) {
@@ -119,6 +121,11 @@ void FsedView::macro(Context& ctx, int cc) {
 }
 
 void FsedView::draw_current_line(FsedModel& ed, int previous_line) { 
+  if (frame_dirty_ || painted_top_line_ != top_line()) {
+    // The viewport scrolled (or the frame needs a repaint); every row moved.
+    repaint_frame(ed);
+    return;
+  }
   if (previous_line != ed.curli) {
     if (const auto py = row_for_line(previous_line, top_line(), fs_.lines_start(), fs_.lines_end())) {
       const std::vector<cell_t> cells =
@@ -137,39 +144,46 @@ void FsedView::draw_current_line(FsedModel& ed, int previous_line) {
   draw_bottom_bar(ed);
 }
 
-void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t) {
-  // Always repaint the header and every visible edit row.  If the
-  // terminal scrolled (a newline or a wrap on the last row shifts the
-  // whole screen up), the header is otherwise never rewritten and
-  // leftover message text stays in rows 1-5.
+void FsedView::repaint_frame(FsedModel& e) {
+  // Repaint the header and every visible edit row.  Used when the
+  // viewport scrolled, after a paste burst, or when invalidate_frame()
+  // was called, so a terminal that scrolled (e.g. from autowrap on the
+  // last row) gets its header back.
   draw_header();
   fs_.DrawTopBar();
+  for (const auto& p : plan_edit_area_paints(top_line(), size_int(e), fs_.lines_start(),
+                                             fs_.lines_end())) {
+    paint_edit_row(bout_, p.y, fs_.screen_width(), fs_.screen_length(),
+                   p.line < 0 ? std::vector<cell_t>{} : e.line(p.line).cells());
+  }
+  invalidate_bottom_bar();
+  draw_bottom_bar(e);
+  ClearCommandLine();
+  frame_dirty_ = false;
+  painted_top_line_ = top_line();
+  gotoxy(e);
+}
 
-  // Never write at or below lines_end() (the status bar).
-  const auto paints = plan_edit_area_paints(top_line(), size_int(e),
-                                            fs_.lines_start(), fs_.lines_end());
-
-  for (const auto& p : paints) {
-    if (!row_in_edit_area(p.y, fs_.lines_start(), fs_.lines_end())) {
-      continue;
-    }
-    if (p.line < 0) {
-      paint_edit_row(bout_, p.y, fs_.screen_width(), fs_.screen_length(), {});
-      continue;
-    }
-    paint_edit_row(bout_, p.y, fs_.screen_width(), fs_.screen_length(), e.line(p.line).cells());
+void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
+  if (frame_dirty_ || painted_top_line_ != top_line()) {
+    repaint_frame(e);
+    return;
+  }
+  // Only repaint the invalidated rows.  Typing a character or changing
+  // one line costs one row, not the whole screen.  Never write at or
+  // below lines_end() (the status bar).
+  const auto doc_lines = size_int(e);
+  const bool to_eof = t.end.line >= doc_lines - 1;
+  for (const auto& p : plan_range_paints(t.start.line, t.end.line, to_eof, top_line(), doc_lines,
+                                         fs_.lines_start(), fs_.lines_end())) {
+    paint_edit_row(bout_, p.y, fs_.screen_width(), fs_.screen_length(),
+                   p.line < 0 ? std::vector<cell_t>{} : e.line(p.line).cells());
   }
 
   // Quote return, help, and viewport scroll all redraw lines through
   // this path, and a full-width last row can wipe the status bar.
   invalidate_bottom_bar();
   draw_bottom_bar(e);
-  // Rewrite the command line (the last terminal row) carefully, then
-  // park the cursor back in the edit area so a later write cannot
-  // autowrap off the bottom and scroll the screen.
-  ClearCommandLine();
-  clear_below_frame();
-  gotoxy(e);
 }
 
 void FsedView::draw_header() {
@@ -202,24 +216,6 @@ void FsedView::invalidate_bottom_bar() {
   sline_color_ = -1;
 }
 
-void FsedView::clear_below_frame() {
-  // The command line is the last row of the frame (row 24 on an 80x24
-  // terminal).  Do not CUP to row 25 or beyond: Output::goxy only clamps
-  // to the *session* line count (often the stock 25), so a 24-row web
-  // terminal can be sent "row 25", which scrolls the whole screen and
-  // wipes the header.  There is nothing below the command line to clear
-  // on a frame that already fills the terminal.
-  const int max_y = fs_.screen_length();
-  const int first = fs_.command_line() + 1;
-  for (int y = first; y <= first + 2; ++y) {
-    if (row_below_frame(y, max_y)) {
-      break;
-    }
-    bout_.goxy(1, clamp_screen_row(y, max_y));
-    bout_.clreol();
-  }
-}
-
 void FsedView::redraw() { 
   bout_.cls();
   draw_header(); 
@@ -227,7 +223,9 @@ void FsedView::redraw() {
   invalidate_bottom_bar();
   fs_.DrawBottomBar("");
   ClearCommandLine();
-  clear_below_frame();
+  // No model here, so the edit rows are still blank: the next
+  // invalidate must repaint the whole frame.
+  frame_dirty_ = true;
 }
 
 void FsedView::redraw(const FsedModel& ed) {
@@ -240,7 +238,10 @@ void FsedView::redraw(const FsedModel& ed) {
   invalidate_bottom_bar();
   draw_bottom_bar(ed);
   ClearCommandLine();
-  clear_below_frame();
+  // The frame is fresh.  Callers follow this with invalidate_to_eof(),
+  // which repaints the (now blank) edit rows.
+  frame_dirty_ = false;
+  painted_top_line_ = top_line();
 }
 
 void FsedView::draw_bottom_bar(const FsedModel& ed) {

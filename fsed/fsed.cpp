@@ -106,6 +106,11 @@ bool fsed(Context& ctx, std::vector<std::string>& lin, int maxli, MessageEditorD
   }
 
   lin = ed.to_lines(true);
+  // The editor enforces maxli, but never hand the caller more lines than
+  // the sysop allows.
+  if (maxli > 0 && size_int(lin) > maxli) {
+    lin.resize(maxli);
+  }
   return true;
 }
 
@@ -146,14 +151,16 @@ bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
   // So a CRLF paste does not insert a blank line after every line, and a
   // lone LF (Unix clipboard) still starts a new paragraph.
   bool last_was_cr = false;
+  paste_burst_t paste_burst;
 
   // top editor line number in thw viewable area.
   while (!state.done) {
-    // When a paste burst (or any run of keys) has drained, repaint every
-    // visible row before waiting for the next key.  That clears leftover
-    // terminal autowrap from a long unwrapped line and restores the
-    // header if anything still scrolled.
-    if (!bin.bkbhit()) {
+    // Once a paste (a run of keys that were already queued) has drained,
+    // repaint the whole frame one time.  That clears any leftover terminal
+    // autowrap and restores the header if anything scrolled.  Normal
+    // typing never has keys queued, so it only repaints what changed.
+    if (paste_burst.drained(bin.bkbhit())) {
+      view->invalidate_frame();
       ed.invalidate_to_eof(view->top_line());
     }
     view->gotoxy(ed);
@@ -185,7 +192,11 @@ bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
         view->gotoxy(ed);
         view->outchr(ed.curline().wwiv_color(), c);
       }
-      ed.add(c);
+      if (ed.add(c) == editor_add_result_t::error) {
+        // Rejected (e.g. the message is at the sysop's line limit).
+        // Repaint the line to remove the character echoed above.
+        ed.invalidate_range(ed.curli, ed.curli);
+      }
       continue;
     }
     if (!commands.TryInterpretChar(key, ed, *view, state)) {

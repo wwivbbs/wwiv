@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*              Copyright (C)2020-2022, WWIV Software Services            */
+/*                Copyright (C)2026, WWIV Software Services               */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -104,9 +104,58 @@ inline int clamp_screen_row(int y, int screen_length) {
   return y;
 }
 
-inline bool row_below_frame(int y, int screen_length) {
-  return y > screen_length;
+// Plan the paints for an invalidated document range [start_line, end_line].
+// Only rows inside the viewport are returned, so a one-line change costs
+// one row instead of the whole screen.  When to_eof is set, visible rows
+// past the end of the document are cleared (line == -1) so a shrinking
+// document does not leave stale text behind.
+inline std::vector<edit_area_paint> plan_range_paints(int start_line, int end_line, bool to_eof,
+                                                      int top_line, int doc_lines,
+                                                      int lines_start, int lines_end) {
+  std::vector<edit_area_paint> out;
+  if (lines_end <= lines_start || top_line < 0) {
+    return out;
+  }
+  const int first = std::max(start_line, top_line);
+  for (int y = lines_start; y < lines_end; ++y) {
+    const int line = top_line + (y - lines_start);
+    if (line < first) {
+      continue;
+    }
+    if (line < doc_lines && line <= end_line) {
+      out.push_back(edit_area_paint{y, line});
+    } else if (to_eof && line >= doc_lines) {
+      out.push_back(edit_area_paint{y, -1});
+    } else {
+      break;
+    }
+  }
+  return out;
 }
+
+// Detects a run of keys that were already queued when the editor loop
+// came round (a paste, or a macro).  drained() returns true once, when
+// such a run ends, so the editor can do one full repaint for the whole
+// paste instead of repainting the screen for every key.  Normal typing
+// never has more than a key or two waiting, so it never triggers this.
+class paste_burst_t {
+public:
+  explicit paste_burst_t(int threshold = 4) : threshold_(threshold) {}
+  // Call once per loop pass with whether another key is already waiting.
+  bool drained(bool key_waiting) {
+    if (key_waiting) {
+      ++queued_;
+      return false;
+    }
+    const bool burst = queued_ >= threshold_;
+    queued_ = 0;
+    return burst;
+  }
+
+private:
+  int threshold_;
+  int queued_{0};
+};
 
 } // namespace wwiv::fsed
 

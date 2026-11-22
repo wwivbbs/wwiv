@@ -135,6 +135,10 @@ bool FsedModel::remove_line() {
 
 editor_add_result_t FsedModel::add(char c) {
   auto& line = curline();
+  // Kept so the character can be taken back out if the reflow below would
+  // push the message past the sysop's line limit.
+  const auto saved_line = line;
+  const auto saved_cx = cx;
   const auto line_result = line.add(cx, c, mode_);
   if (line_result == line_add_result_t::error) {
     return editor_add_result_t::error;
@@ -156,12 +160,18 @@ editor_add_result_t FsedModel::add(char c) {
     return editor_add_result_t::added;
   }
   if (!reflow_paragraph()) {
+    // The wrapped paragraph would not fit in maxli() lines.  Drop the
+    // character rather than leave a line wider than the screen.
+    curli = start_line;
+    curline() = saved_line;
+    cx = saved_cx;
     return editor_add_result_t::error;
   }
-  // Reflow can grow the paragraph and sync_viewport() may scroll
-  // top_line.  Always repaint from the first *visible* line; starting
-  // at start_line after a scroll leaves the top rows stale.
-  invalidate_to_eof(view_ ? view_->top_line() : start_line);
+  // Lines below may have been pushed down or reflowed.  The old code only
+  // invalidated start_line..curli, so the shifted lines stayed put on
+  // screen and looked like they had been overwritten (#1343).  If the
+  // reflow scrolled the viewport, the view repaints the whole window.
+  invalidate_to_eof(start_line);
   return editor_add_result_t::wrapped;
 }
 
@@ -255,12 +265,14 @@ bool FsedModel::reflow_paragraph() {
   if (wrapped.empty()) {
     wrapped.emplace_back();
   }
-  // Always install the wrapped lines, even if that grows the document
-  // past maxli().  maxli() still stops insert_line() from adding a new
-  // hard-broken paragraph, but refusing to reflow leaves a line wider
-  // than the screen.  The terminal then autowraps mid-word onto the next
-  // row, and later lines paint over that overflow.  That is what broke
-  // the last block of a long paste once the sysop 120-line cap was hit.
+  if (size_int(lines_) - (end - start) + size_int(wrapped) > maxli() &&
+      size_int(wrapped) > (end - start)) {
+    // Would exceed the sysop's max lines.  Leave the model untouched;
+    // add() then takes the new character back out, so the message never
+    // grows past maxli() and no line is left wider than the screen.
+    return false;
+  }
+
   lines_.erase(lines_.begin() + start, lines_.begin() + end);
   lines_.insert(lines_.begin() + start, wrapped.begin(), wrapped.end());
 
@@ -746,6 +758,12 @@ bool FsedModel::bs() {
 }
 
 bool FsedModel::enter() {
+  // Enter always adds a line.  At the sysop's line limit, refuse it
+  // before touching anything (insert_line() alone would fail, but the
+  // curline() call below would still append a line past the end).
+  if (size_int(lines_) >= maxli()) {
+    return false;
+  }
   const auto orig_start_line = curli;
   curline().wrapped(false);
   const auto previous_color = curline().wwiv_color();
@@ -769,9 +787,8 @@ bool FsedModel::enter() {
   // Restore the wwiv color on the new line so we don't reset to 0.
   curline().set_wwiv_color(previous_color);
   cx = 0;
-  // After Enter at the last visible row, top_line has moved.  Repaint
-  // the whole window so the first visible row is not left frozen.
-  invalidate_to_eof(view_ ? view_->top_line() : orig_start_line);
+  // If Enter scrolled the viewport, the view repaints the whole window.
+  invalidate_to_eof(orig_start_line);
   current_line_dirty(orig_start_line);
   return true;
 }
