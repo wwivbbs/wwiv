@@ -11,7 +11,7 @@ run-name: WWIV 5.9 CI
 on:
   push:
     branches: 
-      - main
+      - wwiv59
 
 env:
     CMAKE_BIN: cmake
