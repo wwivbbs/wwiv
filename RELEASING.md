@@ -53,7 +53,9 @@ the first binaries from that branch.
 Open a PR against main that changes:
 
 * `.github/workflows/wwiv-binaries.yml`:
-  * `name:` and `run-name:` (`WWIV 5.11`, `WWIV 5.11 CI`)
+  * `run-name:` (`WWIV 5.11 CI`). Leave `name:` (`WWIV Binaries`) alone: GitHub
+    lists every branch's runs of this workflow under main's `name:`, so it
+    has no version in it, and `run-name:` tells the runs apart.
   * `WWIV_RELEASE` in the top-level `env:` (`5.11.0`)
   * `WWIV_RELEASE_LABEL` in the top-level `env:` (`wwiv5.11`)
 * `cmake/Common.cmake`: `set(WWIV_RELEASE "5.11.0" ...)`
