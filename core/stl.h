@@ -97,15 +97,10 @@ int8_t size_int8(C const& c) {
   return static_cast<int8_t>(size);
 }
 
-// From https://en.cppreference.com/w/cpp/iterator/size (The C++20 version)
-template <class C>
-constexpr auto ssize(const C& c) 
-    -> std::common_type_t<std::ptrdiff_t,
-                          std::make_signed_t<decltype(c.size())>> 
-{
-    using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>;
-    return static_cast<R>(c.size());
-}
+// C++20 std::ssize. WWIV used to define its own copy; this keeps existing
+// wwiv::stl::ssize calls working, and unqualified calls on std containers (which
+// also find std::ssize by ADL) resolve to the same function.
+using std::ssize;
 
 template <typename C>
 int size_int(const C& c) {

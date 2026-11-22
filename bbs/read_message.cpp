@@ -128,7 +128,7 @@ static void UpdateMessageOriginInfo(int system_number, int user_number, Type2Mes
         if (csne->other & other_net_coord) {
           netstatus = "{NC}";
         } else if (csne->other & other_group_coord) {
-          netstatus = fmt::format("{GC{}}", csne->group);
+          netstatus = fmt::format("{{GC{}}}", csne->group);
         } else if (csne->other & other_area_coord) {
           netstatus = "{AC}";
         }

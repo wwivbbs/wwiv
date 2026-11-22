@@ -81,7 +81,7 @@ public:
 
   template <class... Args> void Format(const char* format_str, Args&&... args) {
     // Process arguments
-    return Puts(fmt::format(format_str, std::forward<Args>(args)...));
+    return Puts(fmt::format(fmt::runtime(format_str), std::forward<Args>(args)...));
   }
 
   /**

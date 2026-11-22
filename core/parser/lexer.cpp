@@ -190,7 +190,7 @@ void Lexer::character() {
         emit(TokenType::character, tx);
         return;
       } else {
-        error(fmt::format("Expected a single character, got '{}'"));
+        error(fmt::format("Expected a single character, got '{}'", tx));
         return;
       }
       return;
