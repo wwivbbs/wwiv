@@ -236,9 +236,18 @@ TEST(DateTime, ParseTimeSpan_Invalid) {
   ASSERT_FALSE(parse_time_span("-1s"));
 }
 
+// Negative times are clamped to 1, since MSVC's localtime() returns null for
+// any negative time_t. The expected local date is computed from localtime(1)
+// here so the test does not depend on the machine's time zone.
 TEST(DateTime, MinusOne) {
   const auto d = DateTime::from_time_t(-1);
-  EXPECT_EQ(d.year(), 1969);
-  EXPECT_EQ(d.month(), 12);
-  EXPECT_EQ(d.day(), 31);
+  EXPECT_EQ(d.to_time_t(), 1);
+
+  constexpr time_t one = 1;
+  const auto* expected_tm = localtime(&one);
+  ASSERT_NE(expected_tm, nullptr);
+  const auto expected = *expected_tm;
+  EXPECT_EQ(d.year(), expected.tm_year + 1900);
+  EXPECT_EQ(d.month(), expected.tm_mon + 1);
+  EXPECT_EQ(d.day(), expected.tm_mday);
 }
