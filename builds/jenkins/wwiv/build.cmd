@@ -44,6 +44,8 @@ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ^
     -DWWIV_DISTRO=%WWIV_DISTRO% ^
     -DWWIV_INSTALL=ON ^
     -DWWIV_ZIP_INSTALL_FILES=ON ^
+    -DWWIV_USE_COMPILER_CACHE=OFF ^
+    -DWWIV_USE_FAST_LINKER=OFF ^
     %WORKSPACE% || exit /b
 
 cmake --build . --config Release || exit /b

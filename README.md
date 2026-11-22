@@ -202,7 +202,9 @@ Tool | What it does
 [mold](https://github.com/rui314/mold) or lld | A much faster linker than the default GNU `ld` (Linux only). On Debian/Ubuntu: `sudo apt install mold` (needs GCC 12+) or `sudo apt install lld`.
 
 To turn them off, configure with `-DWWIV_USE_COMPILER_CACHE=OFF` or
-`-DWWIV_USE_FAST_LINKER=OFF`. Building only what you are working on also helps,
+`-DWWIV_USE_FAST_LINKER=OFF`. The release build scripts in `builds/jenkins/wwiv`
+turn both off, so released binaries don't depend on what the build machine has
+installed. Building only what you are working on also helps,
 e.g. `cmake --build --preset linux-debug --target bbs`.
 
 ### Troubleshooting

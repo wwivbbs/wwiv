@@ -66,6 +66,10 @@ jobs:
         shell: bash
         run: |
           baseline=$(sed -n 's/.*"builtin-baseline": *"\([0-9a-f]*\)".*/\1/p' vcpkg.json)
+          if [ -z "${baseline}" ]; then
+            echo '::error::Could not read builtin-baseline from vcpkg.json (expected "builtin-baseline": "<sha>" on one line)'
+            exit 1
+          fi
           if ! git -C vcpkg cat-file -e "${baseline}^{commit}" 2>/dev/null; then
             git -C vcpkg fetch --depth=1 origin "${baseline}"
           fi
@@ -118,12 +122,16 @@ jobs:
             vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}-
             vcpkg-${{ matrix.preset }}-
 
-      - name: Count cached vcpkg packages
+      - name: List cached vcpkg packages
         id: vcpkg-before
         shell: bash
-        run: echo "count=$(find '${{ steps.vcpkg-cache.outputs.dir }}' -type f | wc -l)" >> "$GITHUB_OUTPUT"
+        run: |
+          cd '${{ steps.vcpkg-cache.outputs.dir }}'
+          echo "count=$(find . -type f | wc -l)" >> "$GITHUB_OUTPUT"
+          echo "hash=$(find . -type f | sort | sha256sum | cut -c1-64)" >> "$GITHUB_OUTPUT"
 
       - name: Configure
+        id: configure
         run: cmake --preset ${{ matrix.preset }}
 
       - name: Build
@@ -132,15 +140,41 @@ jobs:
       - name: Test
         run: ctest --preset ${{ matrix.preset }} --exclude-regex '${{ env.CTEST_EXCLUDE }}'
 
-      # On main, save a new vcpkg cache entry only when vcpkg built something.
-      - name: Check for new vcpkg packages
+      # On main, drop cached packages this build didn't use (so the entry
+      # doesn't keep growing toward the repository's cache limit and push out
+      # the compiler cache), then save a new entry only if anything changed.
+      # The files provider stores each package as <abi[0:2]>/<abi>.zip, and
+      # vcpkg's status file lists the ABI hash of every installed package.
+      # Runs even if the build or tests failed, but only once configure (which
+      # runs vcpkg install) succeeded, so the package list is complete.
+      - name: Prune and check vcpkg binary cache
         id: vcpkg-after
-        if: always() && env.SAVE_CACHES == 'true'
+        if: >-
+          always() && env.SAVE_CACHES == 'true'
+          && steps.vcpkg-before.outcome == 'success'
+          && steps.configure.outcome == 'success'
         shell: bash
         run: |
-          count=$(find '${{ steps.vcpkg-cache.outputs.dir }}' -type f | wc -l)
-          echo "Cached vcpkg packages: ${{ steps.vcpkg-before.outputs.count }} before, ${count} after"
-          if [ "${count}" != "${{ steps.vcpkg-before.outputs.count }}" ]; then
+          status='_build/${{ matrix.preset }}/vcpkg_installed/vcpkg/status'
+          used=$(sed -n 's/^Abi: *\([0-9a-f]*\).*/\1/p' "${status}" | sort -u)
+          if [ -z "${used}" ]; then
+            echo "::error::No package ABI hashes in ${status}; not touching the cache"
+            exit 1
+          fi
+          cd '${{ steps.vcpkg-cache.outputs.dir }}'
+          pruned=0
+          while IFS= read -r f; do
+            abi=$(basename "${f}" .zip)
+            if ! grep -qxF "${abi}" <<< "${used}"; then
+              rm -f "${f}"
+              pruned=$((pruned + 1))
+            fi
+          done < <(find . -type f)
+          find . -type d -empty -delete
+          count=$(find . -type f | wc -l)
+          hash=$(find . -type f | sort | sha256sum | cut -c1-64)
+          echo "Cached vcpkg packages: ${{ steps.vcpkg-before.outputs.count }} before, ${pruned} unused pruned, ${count} after"
+          if [ "${hash}" != "${{ steps.vcpkg-before.outputs.hash }}" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 

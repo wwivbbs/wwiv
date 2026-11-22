@@ -160,6 +160,10 @@ jobs:
         shell: bash
         run: |
           baseline=$(sed -n 's/.*"builtin-baseline": *"\([0-9a-f]*\)".*/\1/p' vcpkg.json)
+          if [ -z "${baseline}" ]; then
+            echo '::error::Could not read builtin-baseline from vcpkg.json (expected "builtin-baseline": "<sha>" on one line)'
+            exit 1
+          fi
           if ! git -C vcpkg cat-file -e "${baseline}^{commit}" 2>/dev/null; then
             git -C vcpkg fetch --depth=1 origin "${baseline}"
           fi
