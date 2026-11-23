@@ -20,6 +20,7 @@
 
 #include "bbs/wwivfoss_inband.h"
 #include <string>
+#include <vector>
 
 using namespace wwiv::bbs;
 using namespace std::string_literals;
@@ -62,6 +63,14 @@ TEST(WWIVFossInbandTest, Decode_DtrDropAndRaise) {
   EXPECT_FALSE(d.dtr());
   EXPECT_EQ(WWIVFOSS_LINE_RTS, d.line_state());
   EXPECT_EQ("", decode(d, "\xFF\x03"s));
+  EXPECT_TRUE(d.dtr());
+}
+
+TEST(WWIVFossInbandTest, Decode_LineStatesInOrder) {
+  WWIVFossDecoder d;
+  EXPECT_EQ("ab", decode(d, "a\xFF\x01\xFF\x07" "b"s));
+  EXPECT_EQ((std::vector<uint8_t>{0x01, 0x07}), d.take_line_states());
+  EXPECT_TRUE(d.take_line_states().empty());
   EXPECT_TRUE(d.dtr());
 }
 

@@ -58,9 +58,16 @@ std::string WWIVFossDecoder::decode(const char* data, size_t len) {
       out.push_back(static_cast<char>(ch));
     } else {
       line_state_ = ch;
+      line_states_.push_back(ch);
     }
   }
   return out;
+}
+
+std::vector<uint8_t> WWIVFossDecoder::take_line_states() {
+  std::vector<uint8_t> states;
+  states.swap(line_states_);
+  return states;
 }
 
 } // namespace wwiv::bbs

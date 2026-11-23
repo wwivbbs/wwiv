@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace wwiv::bbs {
 
@@ -56,6 +57,9 @@ public:
   /** Returns the data bytes in data, consuming any line state messages. */
   std::string decode(const char* data, size_t len);
 
+  /** Line states decoded since the last call, oldest first. */
+  std::vector<uint8_t> take_line_states();
+
   /** The door's most recent line state. */
   [[nodiscard]] uint8_t line_state() const noexcept { return line_state_; }
 
@@ -65,6 +69,7 @@ public:
 private:
   bool escape_{false};
   uint8_t line_state_{WWIVFOSS_LINE_UP};
+  std::vector<uint8_t> line_states_;
 };
 
 } // namespace wwiv::bbs

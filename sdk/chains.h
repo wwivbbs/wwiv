@@ -29,7 +29,8 @@
 
 namespace wwiv::sdk {
 
-// N.B. Only append new values; these are stored as integers in chains.dat.
+// Saved by name in chains.json; keep the lists in chains_cereal.h in sync.
+// The legacy chains.dat has no bits for the socket modes.
 enum class chain_exec_mode_t : uint8_t {
   none = 0,
   dos,

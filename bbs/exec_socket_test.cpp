@@ -212,6 +212,27 @@ TEST(ExecSocketWWIVFossTest, DoorLowersDtr_ReturnsCallerAfterGrace) {
   EXPECT_LT(r.elapsed.count(), 5000);
 }
 
+TEST(ExecSocketWWIVFossTest, DoorPulsesDtr_StillHangsUp) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.enable_wwivfoss(fast_options());
+  FakeCallerIO io;
+
+  const auto r = run_door(es, io, [](int sock) {
+    const auto drop = "bye\xFF\x01"s;
+    send(sock, drop.data(), drop.size(), 0);
+    usleep(150000);
+    const auto raise = "\xFF\x03"s;
+    send(sock, raise.data(), raise.size(), 0);
+    sleep(30); // Waits for a carrier loss that never comes.
+    return std::string();
+  });
+
+  EXPECT_EQ(pump_socket_result_t::socket_error, r.result);
+  EXPECT_GE(r.elapsed.count(), 400);
+  EXPECT_LT(r.elapsed.count(), 5000);
+}
+
 TEST(ExecSocketWWIVFossTest, DoorLowersDtr_ExitsWithinGrace) {
   ExecSocket es(0);
   ASSERT_TRUE(es.listening());
@@ -219,7 +240,7 @@ TEST(ExecSocketWWIVFossTest, DoorLowersDtr_ExitsWithinGrace) {
   FakeCallerIO io;
 
   const auto r = run_door(es, io, [](int sock) {
-    const auto out = "\xFF\x01"s;
+    const auto out = "bye\xFF\x01"s;
     send(sock, out.data(), out.size(), 0);
     usleep(100000);
     return std::string();
@@ -237,7 +258,7 @@ TEST(ExecSocketWWIVFossTest, DoorLowersDtr_CallerKeysDiscarded) {
   io.typed_at = steady_clock::now() + milliseconds(200);
 
   const auto r = run_door(es, io, [](int sock) {
-    const auto out = "\xFF\x01"s;
+    const auto out = "bye\xFF\x01"s;
     send(sock, out.data(), out.size(), 0);
     // Stay up within the grace period, collecting anything sent to us.
     return read_until(sock, [](const auto&) { return false; }, milliseconds(400));
@@ -247,6 +268,25 @@ TEST(ExecSocketWWIVFossTest, DoorLowersDtr_CallerKeysDiscarded) {
   // Neither sent to the door nor left queued to run as BBS commands.
   EXPECT_EQ("\xFF\x03"s, r.door_received);
   EXPECT_TRUE(io.input.empty());
+}
+
+TEST(ExecSocketWWIVFossTest, DoorLowersDtr_IgnoredBeforeDoorSpeaks) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.enable_wwivfoss(fast_options());
+  FakeCallerIO io;
+  io.typed = "k";
+  io.typed_at = steady_clock::now() + milliseconds(200);
+
+  // A stale FF 01 before the door has said anything: not a hangup.
+  const auto r = run_door(es, io, [](int sock) {
+    const auto out = "\xFF\x01"s;
+    send(sock, out.data(), out.size(), 0);
+    return read_until(sock, [](const auto& s) { return contains(s, "k"); }, milliseconds(2000));
+  });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+  EXPECT_EQ("\xFF\x03k"s, r.door_received);
 }
 
 TEST(ExecSocketWWIVFossTest, DoorClosesSocket_GetsLongerGrace) {
@@ -321,4 +361,34 @@ TEST(ExecSocketWWIVFossTest, Heartbeat) {
   EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
   // The initial FF 03 plus two heartbeats.
   EXPECT_EQ("\xFF\x03\xFF\x03\xFF\x03"s, r.door_received);
+}
+
+TEST(ExecSocketWWIVFossTest, BulkBothWays_DoorNotReading) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.enable_wwivfoss(fast_options());
+  FakeCallerIO io;
+  static constexpr size_t size = 1024 * 1024;
+  io.input = std::string(size, 'c');
+
+  // Writes everything before reading anything, so if the pump blocks
+  // sending to the door, both sides wait on each other.
+  const auto r = run_door(es, io, [](int sock) {
+    const std::string out(size, 'd');
+    for (size_t sent = 0; sent < out.size();) {
+      const auto n = send(sock, out.data() + sent, out.size() - sent, 0);
+      if (n <= 0) {
+        return std::string("send failed");
+      }
+      sent += static_cast<size_t>(n);
+    }
+    const auto got = read_until(sock, [](const auto& s) { return s.size() >= size + 2; },
+                                milliseconds(10000));
+    return std::to_string(got.size());
+  });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+  EXPECT_EQ(std::to_string(size + 2), r.door_received);
+  EXPECT_EQ(size, io.output.size());
+  EXPECT_LT(r.elapsed.count(), 10000);
 }
