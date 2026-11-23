@@ -103,7 +103,7 @@ uint32_t exec_flags(const ExecOptions& o) {
 
 // The wwiv.os module (bbs/basic/wwiv_os.cpp), registered only when the sysop
 // enables it: runs external programs.
-void RegisterWwivOs(wwivbasic::Interpreter& interp, const WwivBindings&) {
+void RegisterWwivOs(wwivbasic::Interpreter& interp, const WwivBindings& b) {
   auto& m = interp.add_module("wwiv.os");
   auto& options_class = m.class_<ExecOptions>("exec_options");
 
@@ -118,11 +118,14 @@ void RegisterWwivOs(wwivbasic::Interpreter& interp, const WwivBindings&) {
   });
 
   // EXEC(options, command) runs command; returns 1 if it exited with 0, else 0.
-  m.native_function("EXEC", [&options_class](Value options, std::string cmd) {
+  m.native_function("EXEC", [b, &options_class](Value options, std::string cmd) {
     const auto opts = options_class.unwrap(options);
     if (!opts) {
       throw BasicError(fmt::format("EXEC: expected options from wwiv.os.exec_options, got {}",
                                    options.a_type_name()));
+    }
+    if (!b.ctx) {
+      throw BasicError("EXEC: no session to run the program in");
     }
     LOG(INFO) << "Execute Command: " << cmd;
     CommandLine cl(cmd);
