@@ -235,11 +235,14 @@ int CommandLineCommand::Parse(int start_pos) {
       }
       const auto value = s.substr(2);
       HandleCommandLineArgument(key, value);
-    } else if (s.front() == '.') {
-      // Were handling dot arguments.
-      if (!dot_argument_.empty()) {
-        // LOG's use of command_line never defines dot arguments.
+    } else if (s.front() == '.' && (!dot_argument_.empty() || !dot_args_positional_)) {
+      // Dot arguments: ".1" means --<dot_argument>=1 (the network tools use
+      // "net"). Without a dot_argument they're ignored (LOG's use of
+      // command_line never defines one), unless set_dot_args_positional(true)
+      // made them positional arguments, handled below.
+      if (dot_argument_.empty()) {
         VLOG(3) << "Ignoring dot argument since no mapping is defined by the application.";
+      } else {
         const auto value = s.substr(1);
         HandleCommandLineArgument(dot_argument_, value);
       }

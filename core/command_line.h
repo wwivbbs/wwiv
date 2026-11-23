@@ -169,6 +169,7 @@ public:
   virtual bool add(std::shared_ptr<CommandLineCommand> cmd) {
     cmd->set_raw_args(raw_args_);
     cmd->set_dot_argument(dot_argument_);
+    cmd->set_dot_args_positional(dot_args_positional_);
     commands_allowed_[cmd->name()] = std::move(cmd);
     return true;
   }
@@ -197,6 +198,14 @@ public:
   [[nodiscard]] std::string GetUsage() const override { return ""; }
   void set_unknown_args_allowed(bool u) { unknown_args_allowed_ = u; }
   [[nodiscard]] bool unknown_args_allowed() const { return unknown_args_allowed_; }
+
+  /**
+   * Without a dot_argument, arguments starting with "." are ignored. Set this
+   * to make them positional arguments instead (in remaining()), for programs
+   * that take relative paths such as "./file.bas".
+   */
+  void set_dot_args_positional(bool p) { dot_args_positional_ = p; }
+  [[nodiscard]] bool dot_args_positional() const { return dot_args_positional_; }
 
   /**
    * Sets a new default value. NetworkCommandLine will get these from
@@ -244,6 +253,7 @@ private:
   const std::string help_text_;
   std::string dot_argument_;
   bool unknown_args_allowed_{false};
+  bool dot_args_positional_{false};
 };
 
 /**

@@ -56,6 +56,15 @@ if(WWIV_HUNSPELL AND WWIV_HUNSPELL_VCPKG AND NOT "spellcheck" IN_LIST VCPKG_MANI
   list(APPEND VCPKG_MANIFEST_FEATURES "spellcheck")
 endif()
 
+# wwivbasic, the new BASIC interpreter (wwivbasic/), is experimental and off by
+# default. Turning it on adds the "wwivbasic" feature in vcpkg.json (the ANTLR
+# runtime), so like the spellcheck feature above it has to be decided before
+# project().
+option(WWIV_WWIVBASIC_NEXT "Build wwivbasic, the new (experimental) BASIC interpreter" OFF)
+if(WWIV_WWIVBASIC_NEXT AND NOT "wwivbasic" IN_LIST VCPKG_MANIFEST_FEATURES)
+  list(APPEND VCPKG_MANIFEST_FEATURES "wwivbasic")
+endif()
+
 project(wwiv)
 
 
@@ -142,6 +151,10 @@ endif()
 
 add_subdirectory(wwivfsed)
 add_subdirectory(wwivutil)
+
+if (WWIV_WWIVBASIC_NEXT)
+  add_subdirectory(wwivbasic)
+endif()
 
 if (WWIV_INSTALL)
   # Create build.nfo

@@ -115,6 +115,26 @@ TEST_F(CommandLineTest, DotArg) {
   EXPECT_EQ(123, cmdline.arg("net").as_int());
 }
 
+TEST_F(CommandLineTest, DotArg_IgnoredWithoutDotArgument) {
+  CommandLine cmdline({"foo.exe", ".1", "--foo=bar"}, "");
+  cmdline.add_argument({"foo", "help for foo"});
+
+  ASSERT_TRUE(cmdline.Parse());
+  EXPECT_EQ("bar", cmdline.arg("foo").as_string());
+  EXPECT_TRUE(cmdline.remaining().empty());
+}
+
+TEST_F(CommandLineTest, DotArg_Positional) {
+  CommandLine cmdline({"foo.exe", "--foo=bar", "./file.bas"}, "");
+  cmdline.add_argument({"foo", "help for foo"});
+  cmdline.set_dot_args_positional(true);
+
+  ASSERT_TRUE(cmdline.Parse());
+  EXPECT_EQ("bar", cmdline.arg("foo").as_string());
+  ASSERT_EQ(1u, cmdline.remaining().size());
+  EXPECT_EQ("./file.bas", cmdline.remaining().front());
+}
+
 TEST_F(CommandLineTest, Help) {
   CommandLine cmdline({"foo.exe", "-?"}, "net");
   cmdline.add_argument(BooleanCommandLineArgument("help", '?', "display help", false));
