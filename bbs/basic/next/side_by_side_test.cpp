@@ -28,10 +28,13 @@
 #include "core/textfile.h"
 #include "core/version.h"
 #include "sdk/config.h"
+#include "side_by_side_scripts.h"
 
 #include <cstring>
 #include <filesystem>
+#include <fstream>
 #include <string>
+#include <vector>
 
 using namespace wwiv::bbs::basic;
 using namespace wwiv::core;
@@ -47,12 +50,17 @@ protected:
     helper.config().scripting_enabled(true);
     // Input is typed ahead; without ANSI the line editor echoes plain text.
     helper.user()->set_flag(wwiv::sdk::User::flag_ansi, false);
-    std::filesystem::create_directories(helper.config().scriptdir());
-    for (const auto* name : {"hello.bas", "oneliners.bas"}) {
-      std::filesystem::copy_file(std::filesystem::path(WWIV_SCRIPTS_SOURCE_DIR) / name,
-                                 FilePath(helper.config().scriptdir(), name),
-                                 std::filesystem::copy_options::overwrite_existing);
-    }
+    // The scripts, byte for byte, from install/scripts (see bbs/CMakeLists.txt).
+    WriteScript("hello.bas", k_hello_bas, sizeof(k_hello_bas));
+    WriteScript("oneliners.bas", k_oneliners_bas, sizeof(k_oneliners_bas));
+  }
+
+  void WriteScript(const std::string& name, const unsigned char* bytes, size_t size) {
+    const auto dir = helper.config().scriptdir();
+    std::filesystem::create_directories(dir);
+    std::ofstream f(FilePath(dir, name), std::ios::binary);
+    f.write(reinterpret_cast<const char*>(bytes), static_cast<std::streamsize>(size));
+    ASSERT_TRUE(f.good()) << name;
   }
 
   void TearDown() override {
@@ -69,10 +77,15 @@ protected:
   }
 
   void RemoveDataFiles() {
+    // Collect first: removing entries while iterating is unspecified.
+    std::vector<std::filesystem::path> files;
     for (const auto& f : std::filesystem::directory_iterator(helper.config().datadir())) {
       if (ends_with(f.path().filename().string(), ".script.json")) {
-        File::Remove(f.path());
+        files.push_back(f.path());
       }
+    }
+    for (const auto& f : files) {
+      File::Remove(f);
     }
   }
 

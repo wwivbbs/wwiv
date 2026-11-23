@@ -30,6 +30,7 @@
 #include "wwivbasic/interpreter.h"
 
 #include <algorithm>
+#include <utility>
 #include <optional>
 
 namespace wwiv::bbs::basic {

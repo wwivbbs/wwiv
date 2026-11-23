@@ -31,6 +31,7 @@
 
 #include <filesystem>
 #include <string>
+#include <vector>
 
 using namespace wwiv::bbs::basic;
 using namespace wwiv::core;
@@ -75,10 +76,15 @@ protected:
 
   // Removes the data files written so far, so each engine starts clean.
   void RemoveDataFiles() {
+    // Collect first: removing entries while iterating is unspecified.
+    std::vector<std::filesystem::path> files;
     for (const auto& f : std::filesystem::directory_iterator(helper.config().datadir())) {
       if (ends_with(f.path().filename().string(), ".script.json")) {
-        File::Remove(f.path());
+        files.push_back(f.path());
       }
+    }
+    for (const auto& f : files) {
+      File::Remove(f);
     }
   }
 

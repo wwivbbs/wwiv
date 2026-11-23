@@ -30,6 +30,7 @@
 #include "deps/my_basic/core/my_basic.h"
 #include "fmt/format.h"
 #include <cmath>
+#include <optional>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -97,39 +98,51 @@ protected:
     auto normalize = [](const Value& v) {
       return v.value_type() == Value::Type::BOOLEAN ? Value(v.toBool() ? 1 : 0) : v;
     };
-    auto equals = [normalize](const Value& a0, const Value& b0) {
+    // Why a and b differ, or nullopt if they are equal.
+    auto differ = [normalize](const Value& a0, const Value& b0) -> std::optional<std::string> {
       const auto a = normalize(a0);
       const auto b = normalize(b0);
       if (a.value_type() != b.value_type()) {
-        std::cerr << "ASSERT: different types: " << a.a_type_name() << " and " << b.a_type_name()
-                  << std::endl;
-        return false;
+        return fmt::format("different types: {} and {}", a.a_type_name(), b.a_type_name());
       }
       switch (a.value_type()) {
       case Value::Type::INTEGER:
-        return a.toInt() == b.toInt();
+        if (a.toInt() == b.toInt()) {
+          return std::nullopt;
+        }
+        break;
       case Value::Type::REAL:
-        return std::abs(a.toDouble() - b.toDouble()) < 0.001;
+        if (std::abs(a.toDouble() - b.toDouble()) < 0.001) {
+          return std::nullopt;
+        }
+        break;
       case Value::Type::STRING:
-        return a.toString() == b.toString();
+        if (a.toString() == b.toString()) {
+          return std::nullopt;
+        }
+        break;
       case Value::Type::BOOLEAN:
       case Value::Type::LIST:
       case Value::Type::ITERATOR:
       case Value::Type::OBJECT:
-        std::cerr << "ASSERT: can't compare " << a.a_type_name() << std::endl;
-        return false;
+        return fmt::format("can't compare {}", a.a_type_name());
       }
-      return false;
+      return fmt::format("'{}' != '{}'", a.toString(), b.toString());
     };
-    auto check = [equals](const char* fn, bool want_equal) {
+    // The error says why, so tests can tell an ASSERT failure from others.
+    auto check = [differ](const char* fn, bool want_equal) {
       return [=](const std::vector<Value>& args) {
         if (args.size() < 2 || args.size() > 3) {
           throw wwivbasic::BasicError(fmt::format("{}: expected 2 or 3 arguments", fn));
         }
-        if (equals(args[0], args[1]) != want_equal) {
-          throw wwivbasic::BasicError(fmt::format("{} failed: '{}', '{}' {}", fn, args[0].toString(),
-                                                  args[1].toString(),
-                                                  args.size() > 2 ? args[2].toString() : ""));
+        const auto why = differ(args[0], args[1]);
+        const auto msg = args.size() > 2 ? " " + args[2].toString() : std::string();
+        if (want_equal && why) {
+          throw wwivbasic::BasicError(fmt::format("{} failed: {}{}", fn, *why, msg));
+        }
+        if (!want_equal && !why) {
+          throw wwivbasic::BasicError(
+              fmt::format("{} failed: both are '{}'{}", fn, args[0].toString(), msg));
         }
         return Value();
       };
@@ -239,6 +252,16 @@ protected:
     mb_end_module(basi);
   }
 
+  // After a script that should fail on an ASSERT: on the new engine, checks
+  // that it was the ASSERT that failed (and why), not some other error. The
+  // legacy ASSERT logs to stderr, so there's nothing to check there.
+  void ExpectAssertFailure(const std::string& why) {
+    const auto captured = helper.io()->captured();
+    if (engine_ == script_engine_t::next) {
+      EXPECT_THAT(captured, testing::HasSubstr("ASSERT.EQUALS failed: " + why));
+    }
+  }
+
   BbsHelper helper{};
   std::unique_ptr<Basic> basic;
   script_engine_t engine_{script_engine_t::legacy};
@@ -279,8 +302,8 @@ TEST_F(BasicTest, Smoke_Fail) {
       EXPECT_THAT(captured, testing::HasSubstr("Line 1"));
     } else {
       // The new engine's errors are "name:line[:column]: error: message".
-      EXPECT_THAT(captured, testing::StartsWith("BasicTest#Smoke_Fail:1"));
-      EXPECT_THAT(captured, testing::HasSubstr("error:"));
+      // It's the parse error, not some other failure.
+      EXPECT_THAT(captured, testing::StartsWith("BasicTest#Smoke_Fail:1:22: error: missing ')'"));
     }
   }
 }
@@ -291,6 +314,7 @@ TEST_F(BasicTest, Assert_Int_False) {
     Use(e);
     BASIC_ASSERT_NE(1, 2);
     ASSERT_FALSE(RunScript("ASSERT.EQUALS(1, 2)"));
+    ExpectAssertFailure("'1' != '2'");
   }
 }
 
@@ -324,6 +348,7 @@ TEST_F(BasicTest, Assert_Real_False) {
     SCOPED_TRACE(to_string(e));
     Use(e);
     ASSERT_FALSE(RunScript("ASSERT.EQUALS(1.1, 1.2)"));
+    ExpectAssertFailure("'1.1' != '1.2'");
   }
 }
 
@@ -340,6 +365,7 @@ TEST_F(BasicTest, Assert_DifferentTypes) {
     SCOPED_TRACE(to_string(e));
     Use(e);
     ASSERT_FALSE(RunScript(R"( ASSERT.EQUALS("1.1", 1.1) )"));
+    ExpectAssertFailure("different types: a STRING and a REAL");
   }
 }
 
@@ -429,6 +455,11 @@ TEST_F(BasicTest, WWIV_Eval_Pass) {
     SCOPED_TRACE(to_string(e));
     Use(e);
     EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS(wwiv.eval("user.sl > 100"), TRUE) )"));
+    // ASSERT compares a BOOLEAN as an INTEGER, so also check what PRINT shows:
+    // EVAL returns the integer 1, as in my_basic, not TRUE.
+    helper.io()->Clear();
+    EXPECT_TRUE(RunScript(R"( print wwiv.eval("user.sl > 100") )"));
+    EXPECT_EQ("1\r\n", helper.io()->captured());
   }
 }
 
@@ -438,6 +469,9 @@ TEST_F(BasicTest, WWIV_Eval_Fail) {
     SCOPED_TRACE(to_string(e));
     Use(e);
     EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS(wwiv.eval("user.sl < 200"), FALSE) )"));
+    helper.io()->Clear();
+    EXPECT_TRUE(RunScript(R"( print wwiv.eval("user.sl < 200") )"));
+    EXPECT_EQ("0\r\n", helper.io()->captured());
   }
 }
 
