@@ -15,6 +15,9 @@ on:
     branches: 
       - main
 
+# Jobs get only the permissions they need (see each job).
+permissions: {}
+
 env:
     CMAKE_BIN: cmake
     CTEST_BIN: ctest
@@ -32,6 +35,9 @@ jobs:
     name: Create Build Number
     if: github.repository_owner == 'wwivbbs'
     runs-on: ubuntu-latest
+    permissions:
+      # build-tag-number stores the counter in a ref; the build tag is created here too.
+      contents: write
     outputs:
       build_number: ${{ steps.buildnumber.outputs.build_number }}
       wwiv_release: ${{ env.WWIV_RELEASE }}
@@ -39,52 +45,38 @@ jobs:
     steps:
       - name: Checkout, Tag and Build Number
         id: buildnumber
-        uses: onyxmueller/build-tag-number@v1
+        uses: onyxmueller/build-tag-number@eab99bb956086490d1aa6b747dc265b5776e8eae # v1.1.0
         with:
           token: ${{secrets.github_token}}  
-          
-      - name: Check out repository code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
           
       - name: Generate Tag Name
         id: generate_tag
         shell: bash
+        env:
+          BUILD_NUMBER: ${{ steps.buildnumber.outputs.build_number }}
         run: |
-          echo "wwiv_tag=${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
-          echo "WWIV_TAG=${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_ENV
+          echo "wwiv_tag=${WWIV_RELEASE_LABEL}_${BUILD_NUMBER}" >> "$GITHUB_OUTPUT"
 
-      - name: Tag the latet commit repository with tag ${{ env.WWIV_TAG }}
-        id: tag
+      # Create the annotated build tag with the API, so this job needs no
+      # checkout (and no git credentials on disk).
+      - name: Tag the commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WWIV_TAG: ${{ steps.generate_tag.outputs.wwiv_tag }}
         run: |
-          echo "WWIV_TAG: ${{ env.WWIV_TAG }}"
-          git config --global user.email "gh-action@wwivbbs.org"
-          git config --global user.name "GitHub Action"
-          git tag -f -a "${{ env.WWIV_TAG }}" -m "${{ env.WWIV_TAG }} SHA: " ${{ github.sha }}
-          git push origin ${{ env.WWIV_TAG }}
-
-  create_release:
-    name: Create Release
-    needs: wwiv-build-number
-    runs-on: ubuntu-latest
-    env:
-      WWIV_TAG: ${{needs.wwiv-build-number.outputs.wwiv_tag}}
-    steps:
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: "${{ env.WWIV_TAG }}"
-          draft: false
-          prerelease: true
-          generate_release_notes: false   
-          tag_name: "${{ env.WWIV_TAG }}"
+          echo "WWIV_TAG: ${WWIV_TAG}"
+          tag_sha=$(gh api "repos/${GITHUB_REPOSITORY}/git/tags" \
+            -f tag="${WWIV_TAG}" -f message="${WWIV_TAG} SHA: ${GITHUB_SHA}" \
+            -f object="${GITHUB_SHA}" -f type=commit \
+            -f "tagger[name]=GitHub Action" -f "tagger[email]=gh-action@wwivbbs.org" \
+            --jq .sha)
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f ref="refs/tags/${WWIV_TAG}" -f sha="${tag_sha}" > /dev/null
 
   wwiv-release:
     name: Build and Publish
-    needs: 
-      - create_release
+    needs:
       - wwiv-build-number
     strategy:
         matrix:
@@ -104,6 +96,8 @@ jobs:
               archive_suffix: zip
         fail-fast: false
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     env:
       BUILD_NUMBER: ${{needs.wwiv-build-number.outputs.build_number}}
       WWIV_TAG: ${{needs.wwiv-build-number.outputs.wwiv_tag}}
@@ -131,9 +125,10 @@ jobs:
 
       # Check it out again since now it's a new job.
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
           
       # vcpkg.json pins builtin-baseline to an older vcpkg commit than the
       # submodule's, and checkout clones submodules shallow. vcpkg only needs
@@ -152,7 +147,7 @@ jobs:
           fi
 
       - name: Get CMake
-        uses: lukka/get-cmake@latest
+        uses: lukka/get-cmake@a1a8216777d3cbbf5602c73b9ddd3e98257ecdc4 # v4.5.1
 
       - name: Install packages (Linux)
         if: ${{ matrix.os != 'windows-2022' }}
@@ -161,7 +156,7 @@ jobs:
           sudo apt-get install -y libncurses-dev zlib1g-dev pkg-config zip
 
       - name: Setup a new vcpkg
-        uses: lukka/run-vcpkg@v11   # Always specify the specific _version_ of the
+        uses: lukka/run-vcpkg@b1a0dd252f06b9e25b3c022a9a03bd7a427fb6a2 # v11.6
 
       - name: Locate Visual Studio (Windows)
         if: ${{ matrix.os == 'windows-2022' }}
@@ -170,14 +165,16 @@ jobs:
           echo VCVARS_ALL="${vcbase}\VC\Auxiliary\Build\vcvarsall.bat" >> "$env:GITHUB_ENV"
 
       - name: Set up Visual Studio Env (Windows)
-        uses: egor-tensin/vs-shell@v2
+        uses: egor-tensin/vs-shell@3b829f5acc8082151a836f5a3a179f69336ae1f2 # v2.3.0
         if: ${{ matrix.os == 'windows-2022' }}
         with:
           arch: x86
 
       - name: Build (Windows)
         if: ${{ matrix.os == 'windows-2022' }}
-        shell: cmd
+        # build.cmd checks errors itself (it is also the Jenkins script), so
+        # cmd's lack of fail-on-error doesn't matter here.
+        shell: cmd # zizmor: ignore[misfeature]
         run: builds\jenkins\wwiv\build.cmd
         env:
           WWIV_ARCH: x86
@@ -198,20 +195,56 @@ jobs:
           VCPKG_BINARY_SOURCES: clear;default,readwrite
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           
       - name: Look for output file
-        run: ls ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
+        shell: bash
+        run: ls "${WWIV_RELEASE_ARCHIVE_FILE}"
   
-      - uses: actions/upload-artifact@v4
+      - name: Upload archive
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
           path: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
 
-      - name: Release to Latest
-        uses: softprops/action-gh-release@v1
+  # Creates the GitHub release once the builds are done, with every archive
+  # that was built. Creating it at the end (instead of before the builds)
+  # means nobody sees an empty or half-uploaded release. If one build fails,
+  # the release still goes out with the other platform's archive; if every
+  # build fails, no release is created (the build tag is still pushed).
+  publish-release:
+    name: Publish Release
+    needs:
+      - wwiv-build-number
+      - wwiv-release
+    if: ${{ !cancelled() && needs.wwiv-build-number.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      WWIV_TAG: ${{ needs.wwiv-build-number.outputs.wwiv_tag }}
+    steps:
+      - name: Download archives
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          tag_name: "${{ env.WWIV_TAG }}"
-          files: ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
+          pattern: wwiv-*
+          path: archives
+          merge-multiple: true
+
+      - name: Create release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          shopt -s nullglob
+          files=(archives/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No build succeeded, so release ${WWIV_TAG} was not created."
+            exit 1
+          fi
+          ls -l archives
+          gh release create "${WWIV_TAG}" "${files[@]}" \
+            --title "${WWIV_TAG}" --prerelease --verify-tag --notes ""
