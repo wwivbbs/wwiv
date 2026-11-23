@@ -131,14 +131,6 @@ int line_t::wwiv_color() const noexcept {
   return wwiv_color_; 
 }
 
-line_t& line_t::operator=(const line_t& o) {
-  wrapped_ = o.wrapped_;
-  cell_ = o.cell_;
-  size_ = o.size_;
-  wwiv_color_ = o.wwiv_color_;
-  return *this;
-}
-
 void line_t::assign(const std::vector<cell_t>& cells) {
   if (cells.empty()) {
     cell_.clear();
