@@ -1,0 +1,68 @@
+# On-demand Claude code review for pull requests.
+#
+# A maintainer comments "/claude-review" on a pull request (at the start of
+# the comment) and Claude posts a review as inline comments plus a summary.
+# Nothing runs automatically, so API spend only happens when someone asks.
+#
+# Safety:
+# - Only people with write access can trigger it. The `if:` below is a cheap
+#   pre-filter; claude-code-action itself refuses any actor without write
+#   access (and refuses all bots, since allowed_bots is left empty).
+# - issue_comment workflows always run the workflow file from main, so a pull
+#   request can't change this file to get at the secret.
+# - Uses the job's GITHUB_TOKEN instead of the Claude GitHub App, so the only
+#   write access is commenting: contents is read-only, so Claude can't push
+#   branches or commits. The token expires when the job ends.
+# - Never builds or runs pull request code. On pull requests from authors
+#   without write access, the action also blocks commands that run code
+#   (restrict_untrusted_prs, on by default) and takes CLAUDE.md/.claude/ from
+#   main instead of the pull request.
+# - Never add pull_request_target here, and never set allowed_non_write_users,
+#   allowed_bots or show_full_output.
+
+name: Claude Review
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+concurrency:
+  group: claude-review-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  review:
+    name: Claude review
+    if: >-
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/claude-review') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Run Claude review
+        uses: anthropics/claude-code-action@acfe7992852970efb4fee683d63d628e3e52df67 # v1.0.286
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          trigger_phrase: "/claude-review"
+          plugin_marketplaces: "https://github.com/anthropics/claude-plugins-official.git"
+          plugins: "code-review@claude-plugins-official"
+          prompt: "/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.issue.number }}"
+          claude_args: >-
+            --model claude-sonnet-5-5
+            --max-turns 40
+            --allowedTools "mcp__github_inline_comment__create_inline_comment"
+            --disallowedTools "Bash(git commit:*),Bash(git push:*)"
