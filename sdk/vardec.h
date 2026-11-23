@@ -279,6 +279,8 @@ struct configrec_header_t {
 constexpr uint16_t script_flag_disable_script = 0x0001;
 constexpr uint16_t script_flag_enable_file    = 0x0002;
 constexpr uint16_t script_flag_enable_os      = 0x0004;
+// Run scripts on wwivbasic (the "next" engine) instead of my_basic.
+constexpr uint16_t script_flag_engine_next   = 0x0008;
 
 // STATIC SYSTEM INFORMATION
 struct configrec {

@@ -20,6 +20,7 @@
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
+#include "bbs/basic/script_engine.h"
 #include "bbs/basic/util.h"
 #include "bbs/basic/wwiv.h"
 #include "bbs/basic/wwiv_data.h"
@@ -292,8 +293,12 @@ bool Basic::RunScript(const std::string& script_name) {
 
 
 bool RunBasicScript(const std::string& script_name) {
-  Basic basic(bin, bout, *a()->config(), &a()->context());
-  return basic.RunScript(script_name);
+  const auto engine_type = SelectScriptEngine(a()->sess().basic_engine(), *a()->config());
+  const auto engine = CreateScriptEngine(engine_type, bin, bout, *a()->config(), &a()->context());
+  if (!engine) {
+    return false;
+  }
+  return engine->RunScript(script_name);
 }
 
 }

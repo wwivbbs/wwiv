@@ -49,10 +49,11 @@ RunBasicScript(name)                       (WWIV)
   off at first) decides whether the new engine is built at all, so WWIV builds
   without the ANTLR runtime until it's ready (the generated parser is checked
   in, so Java is never needed). In builds that have both, a runtime
-  setting chooses the engine (a `wwiv.json` setting, plus
-  `bbs --basic_engine=legacy|next` for testing), so sysops can try it and fall
-  back without rebuilding, and scripts can be run on both and their output
-  compared.
+  setting chooses the engine (the `script_flag_engine_next` bit in
+  `config.json`'s `script_flags`, "Use New Engine" in wwivconfig's scripting
+  settings, plus `bbs --basic_engine=legacy|next` for testing), so sysops
+  can try it and fall back without rebuilding, and scripts can be run on both
+  and their output compared.
 - **Repo layout.** wwivbasic lives in the WWIV repo under `wwivbasic/`, a
   library next to `core/` and `sdk/` that depends only on `core/`, the ANTLR
   runtime and fmt. Its public headers are at the top of `wwivbasic/`
@@ -147,9 +148,12 @@ WWIV's existing `bbs/basic` tests pass against the new engine.
       `core/`, dropping the vendored copy
 - [x] `core`: `CommandLine::set_dot_args_positional()`, so `basicrun ./x.bas`
       works without changing how other programs treat `.N` arguments
-- [ ] `ScriptEngine` interface in WWIV; today's `Basic` becomes the legacy
-      engine; `RunBasicScript` picks the engine from a `wwiv.json` setting and
-      `bbs --basic_engine=legacy|next`
+- [x] `ScriptEngine` interface in WWIV (`bbs/basic/script_engine.h`); today's
+      `Basic` becomes the legacy engine; `RunBasicScript` picks the engine
+      from `config.json` (`script_flags` bit `0x0008`) and
+      `bbs --basic_engine=legacy|next`. `NextEngine` (`bbs/basic/next/`) is a
+      stub until the Console lands; with `--debug` it will warn and run
+      without the debugger until M6
 - [ ] `Console` implemented with `bout`/`bin`
 - [ ] `wwiv.*` bindings in WWIV, same names and behaviour: `wwiv`, `wwiv.io`,
       `wwiv.data` (same on-disk format), `wwiv.time`, and `wwiv.io.file` /
@@ -190,7 +194,10 @@ Done when wwivbasic is WWIV's only BASIC engine.
 - Floating-point numbers: decided, added in M3 (needed by `wwiv.data` and the
   SDK)
 - Engine selection: decided, a CMake option to build the new engine plus a
-  runtime setting to choose it
+  runtime setting to choose it: a bit in `config.json`'s `script_flags`
+  (default legacy), overridden by `bbs --basic_engine`. If `config.json` asks
+  for the new engine in a build without it, WWIV logs a warning and uses
+  legacy; `--basic_engine=next` in such a build is an error
 - Repo layout: decided, moved into the WWIV repo under `wwivbasic/` at the
   start of M4 (was going to be a submodule until M6); bindings live in
   `bbs/basic/`

@@ -82,6 +82,8 @@ private:
   std::string initial_module_source_;
 };
 
+// Runs scriptdir/script_name on the engine chosen by bbs --basic_engine or
+// config.json (see script_engine.h).
 bool RunBasicScript(const std::string& script_name);
 
 } // namespace wwiv::bbs
