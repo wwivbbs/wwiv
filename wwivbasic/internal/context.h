@@ -10,6 +10,7 @@
 #include "fmt/format.h"
 
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <memory>
 #include <optional>
@@ -57,6 +58,11 @@ public:
   std::vector<std::string> errors;
 };
 
+// Thrown when the embedder's stop check asks the script to stop. Not a
+// BasicError, so statements and native-function guards pass it through, and
+// not a std::exception, so generic handlers don't turn it into an error.
+struct StopScript {};
+
 // A resolved function along with the module that owns it.
 struct ResolvedFunction {
   Module* module{nullptr};
@@ -97,6 +103,19 @@ public:
 
   // When true, the interpreter logs execution details to stderr.
   bool trace{false};
+
+  // Set by Interpreter::set_stop_check; see check_stop.
+  std::function<bool()> stop_check;
+  // Throws StopScript if stop_check says the script should stop.
+  void check_stop() const {
+    if (stop_check && stop_check()) {
+      throw StopScript{};
+    }
+  }
+
+  // Set by Interpreter::set_import_root: IMPORT "file.bas" may only load files
+  // under this directory (normalized, without a trailing separator).
+  std::optional<std::filesystem::path> import_root;
 
   template <typename... Args> void trace_log(fmt::format_string<Args...> f, Args&&... args) {
     if (trace) {

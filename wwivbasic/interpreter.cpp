@@ -35,6 +35,8 @@ static RunResult run_loaded(Context& ctx, const std::filesystem::path& path,
   ExecutionVisitor v(ctx, filename);
   try {
     v.visit(tree.value());
+  } catch (const StopScript&) {
+    result.stopped = true;
   } catch (const BasicError& e) {
     if (e.line > 0) {
       result.errors.push_back(fmt::format("{}:{}: error: {}", e.file, e.line, e.what()));
@@ -54,6 +56,18 @@ Module& Interpreter::add_module(const std::string& name) { return ctx_->add_modu
 Module& Interpreter::globals() { return *ctx_->root; }
 
 void Interpreter::set_trace(bool trace) { ctx_->trace = trace; }
+
+void Interpreter::set_stop_check(std::function<bool()> stop) { ctx_->stop_check = std::move(stop); }
+
+void Interpreter::set_import_root(const std::filesystem::path& dir) {
+  auto root = dir.lexically_normal();
+  // "scripts/" normalizes to "scripts/", whose last element is empty; drop it
+  // so lexically_relative compares whole directory names.
+  if (root.has_relative_path() && root.filename().empty()) {
+    root = root.parent_path();
+  }
+  ctx_->import_root = root;
+}
 
 std::optional<RunResult> Interpreter::check_first_run(const std::string& name) {
   if (!ran_) {

@@ -14,6 +14,7 @@
 #include "wwivbasic/value.h"
 
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -29,9 +30,14 @@ struct RunOptions {
 };
 
 struct RunResult {
-  bool ok() const { return errors.empty(); }
-  // Errors formatted as "file:line[:column]: error: message".
+  bool ok() const { return errors.empty() && !stopped; }
+  // Errors formatted as "file:line[:column]: error: message". An error that
+  // spans several lines (such as one from an imported file) has '\n' between
+  // them.
   std::vector<std::string> errors;
+  // True if the stop check (Interpreter::set_stop_check) stopped the script.
+  // That isn't an error, so errors is empty, but the script didn't finish.
+  bool stopped{false};
 };
 
 class Interpreter {
@@ -68,6 +74,16 @@ public:
 
   // When on, logs function calls and assignments to stderr.
   void set_trace(bool trace);
+
+  // Called before each statement and each loop iteration. When it returns
+  // true the script stops, and the RunResult has stopped set. WWIV uses it to
+  // end a script when the caller hangs up. It should be cheap.
+  void set_stop_check(std::function<bool()> stop);
+
+  // Only files under dir can be loaded with IMPORT "file.bas"; importing
+  // anything else, such as "../x.bas" or an absolute path elsewhere, is an
+  // error. By default any file can be imported.
+  void set_import_root(const std::filesystem::path& dir);
 
 private:
   // Returns an error result if a script has already been run.

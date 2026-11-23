@@ -176,6 +176,7 @@ target_include_directories(bbs_lib PRIVATE ${CPP_HTTPLIB_INCLUDE_DIRS})
 # WWIV_WWIVBASIC_NEXT only the legacy (my_basic) engine is built.
 if (WWIV_WWIVBASIC_NEXT)
   target_sources(bbs_lib PRIVATE
+    basic/next/bbs_console.cpp
     basic/next/next_engine.cpp
   )
   target_link_libraries(bbs_lib wwivbasic_interpreter)
@@ -230,6 +231,9 @@ if (WWIV_BUILD_TESTS)
       basic/script_engine_test.cpp
       basic/util_test.cpp
     )
+    if (WWIV_WWIVBASIC_NEXT)
+      list(APPEND test_sources basic/next/next_engine_test.cpp)
+    endif()
     add_executable(bbs_tests ${test_sources})
 
     if (WWIV_SSH_CRYPTLIB AND NOT OS2)

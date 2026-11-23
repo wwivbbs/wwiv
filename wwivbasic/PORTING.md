@@ -11,7 +11,9 @@ form, and why.
 - `'` comments, `IF/ELSEIF/ELSE/ENDIF`, `FOR/NEXT`, `WHILE/WEND`, `DEF/ENDDEF`
 - `PRINT a, b` and `PRINT a; b` (see "PRINT output" for how the output is laid out)
 - `import "@wwiv.io"`, and calling `outstr()` etc. without the module prefix
-- `import "file.bas"`, relative to the importing script
+- `import "file.bas"`, relative to the importing script. In the BBS, as before, only
+  files in the scripts directory can be imported: `"../x.bas"` or an absolute path
+  elsewhere is an error.
 - Lists: `list()`, `push`, `get`, `remove`, `len` and the other my_basic list functions,
   `FOR x IN l`, and `iterator`/`move_next`/`get`. Indices start at 0, and printing a list
   prints `LIST`.
@@ -57,10 +59,12 @@ arguments, or dividing by zero now stops the script with a message such as:
 oneliners.bas:42: error: Unknown function 'outsrt'
 ```
 
-my_basic reported some of these and silently ignored others. Variables that
-were never assigned still read as empty, as before, but a dotted name such as
-`player.name` whose first part is neither a module nor a variable is an error
-(`Unknown variable or module 'player'`).
+my_basic reported some of these and silently ignored others. In the BBS the
+error is shown in color 6 as that one line, with the script's name relative to
+the scripts directory, instead of my_basic's "Error: Line, Col, Code, Message"
+block. Variables that were never assigned still read as empty, as before, but
+a dotted name such as `player.name` whose first part is neither a module nor a
+variable is an error (`Unknown variable or module 'player'`).
 
 ## Real numbers
 

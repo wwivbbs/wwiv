@@ -6,6 +6,8 @@
 #include "wwivbasic/stdio_console.h"
 
 #include <cstdint>
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <sstream>
 #include <stdexcept>
@@ -392,4 +394,167 @@ TEST(EmbeddingTest, KeywordsAsMemberNames) {
   };
   EXPECT_EQ("[x]1 1\n",
             run_one(setup, "c = m.new()\nprint wwiv.io.print(\"x\"); c.next(); \" \"; c.end\n"));
+}
+
+TEST(EmbeddingTest, StopCheck_StopsBetweenStatements) {
+  std::ostringstream out;
+  std::istringstream in;
+  StdioConsole console(out, in);
+  Interpreter interp(console);
+  int calls = 0;
+  // Stop once two statements have run.
+  interp.set_stop_check([&calls]() { return ++calls > 2; });
+
+  const auto result = interp.run_source("t.bas", "print 1\nprint 2\nprint 3\n");
+  EXPECT_TRUE(result.stopped);
+  EXPECT_TRUE(result.errors.empty());
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ("1\n2\n", out.str());
+}
+
+TEST(EmbeddingTest, StopCheck_StopsAnEmptyLoop) {
+  std::ostringstream out;
+  std::istringstream in;
+  StdioConsole console(out, in);
+  Interpreter interp(console);
+  int calls = 0;
+  interp.set_stop_check([&calls]() { return ++calls > 1000; });
+
+  const auto result = interp.run_source("t.bas", "while 1\nwend\nprint \"never\"\n");
+  EXPECT_TRUE(result.stopped);
+  EXPECT_EQ("", out.str());
+}
+
+TEST(EmbeddingTest, StopCheck_StopsAFunctionCalledFromNativeCode) {
+  std::ostringstream out;
+  std::istringstream in;
+  StdioConsole console(out, in);
+  Interpreter interp(console);
+  bool stop = false;
+  interp.globals().native_function("HANGUP", [&stop]() { stop = true; });
+  interp.set_stop_check([&stop]() { return stop; });
+
+  const auto result = interp.run_source("t.bas", R"(
+def f()
+  hangup()
+  print "not reached"
+enddef
+f()
+print "not reached either"
+)");
+  EXPECT_TRUE(result.stopped);
+  EXPECT_TRUE(result.errors.empty());
+  EXPECT_EQ("", out.str());
+}
+
+TEST(EmbeddingTest, StopCheck_DefaultNeverStops) {
+  std::ostringstream out;
+  std::istringstream in;
+  StdioConsole console(out, in);
+  Interpreter interp(console);
+  const auto result = interp.run_source("t.bas", "for i = 1 to 3\nprint i;\nnext\n");
+  EXPECT_TRUE(result.ok());
+  EXPECT_FALSE(result.stopped);
+  EXPECT_EQ("123", out.str());
+}
+
+namespace {
+// A directory with some .bas files for the import tests, removed afterwards.
+class ImportDir {
+public:
+  ImportDir() {
+    root_ = std::filesystem::temp_directory_path() /
+            ("wwivbasic_import_" + std::to_string(reinterpret_cast<std::uintptr_t>(this)));
+    std::filesystem::create_directories(root_ / "scripts" / "sub");
+    write("scripts/lib.bas", "def greet()\n  return \"hi\"\nenddef\n");
+    write("scripts/sub/inner.bas", "def inner()\n  return \"in\"\nenddef\n");
+    write("secret.bas", "def secret()\n  return \"leak\"\nenddef\n");
+  }
+  ~ImportDir() {
+    std::error_code ec;
+    std::filesystem::remove_all(root_, ec);
+  }
+  void write(const std::string& name, const std::string& text) const {
+    std::ofstream f(root_ / name);
+    f << text;
+  }
+  std::filesystem::path scripts() const { return root_ / "scripts"; }
+  std::filesystem::path root() const { return root_; }
+
+private:
+  std::filesystem::path root_;
+};
+} // namespace
+
+TEST(EmbeddingTest, ImportRoot_AllowsFilesUnderIt) {
+  ImportDir dir;
+  std::ostringstream out;
+  std::istringstream in;
+  StdioConsole console(out, in);
+  Interpreter interp(console);
+  interp.set_import_root(dir.scripts());
+
+  const auto main = (dir.scripts() / "main.bas").string();
+  const auto result = interp.run_source(
+      main, "import \"lib.bas\"\nimport \"sub/inner.bas\"\nprint greet(); inner()\n");
+  ASSERT_TRUE(result.ok()) << result.errors.front();
+  EXPECT_EQ("hiin\n", out.str());
+}
+
+TEST(EmbeddingTest, ImportRoot_TrailingSeparator) {
+  ImportDir dir;
+  std::ostringstream out;
+  std::istringstream in;
+  StdioConsole console(out, in);
+  Interpreter interp(console);
+  interp.set_import_root(dir.scripts().string() + "/");
+
+  const auto main = (dir.scripts() / "main.bas").string();
+  const auto result = interp.run_source(main, "import \"lib.bas\"\nprint greet()\n");
+  ASSERT_TRUE(result.ok()) << result.errors.front();
+  EXPECT_EQ("hi\n", out.str());
+}
+
+TEST(EmbeddingTest, ImportRoot_RejectsParent) {
+  ImportDir dir;
+  std::ostringstream out;
+  std::istringstream in;
+  StdioConsole console(out, in);
+  Interpreter interp(console);
+  interp.set_import_root(dir.scripts());
+
+  const auto main = (dir.scripts() / "main.bas").string();
+  const auto result = interp.run_source(main, "import \"../secret.bas\"\nprint secret()\n");
+  ASSERT_EQ(1u, result.errors.size());
+  EXPECT_NE(std::string::npos, result.errors.front().find("Can't import '../secret.bas'"))
+      << result.errors.front();
+  EXPECT_EQ("", out.str());
+}
+
+TEST(EmbeddingTest, ImportRoot_RejectsAbsolutePath) {
+  ImportDir dir;
+  std::ostringstream out;
+  std::istringstream in;
+  StdioConsole console(out, in);
+  Interpreter interp(console);
+  interp.set_import_root(dir.scripts());
+
+  const auto secret = (dir.root() / "secret.bas").generic_string();
+  const auto main = (dir.scripts() / "main.bas").string();
+  const auto result = interp.run_source(main, "import \"" + secret + "\"\nprint secret()\n");
+  ASSERT_EQ(1u, result.errors.size());
+  EXPECT_NE(std::string::npos, result.errors.front().find("Can't import")) << result.errors.front();
+}
+
+TEST(EmbeddingTest, ImportRoot_DefaultAllowsAnyFile) {
+  ImportDir dir;
+  std::ostringstream out;
+  std::istringstream in;
+  StdioConsole console(out, in);
+  Interpreter interp(console);
+
+  const auto main = (dir.scripts() / "main.bas").string();
+  const auto result = interp.run_source(main, "import \"../secret.bas\"\nprint secret()\n");
+  ASSERT_TRUE(result.ok()) << result.errors.front();
+  EXPECT_EQ("leak\n", out.str());
 }

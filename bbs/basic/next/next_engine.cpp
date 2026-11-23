@@ -17,6 +17,8 @@
 /**************************************************************************/
 #include "bbs/basic/next/next_engine.h"
 
+#include "bbs/basic/next/bbs_console.h"
+
 #include "common/context.h"
 #include "common/output.h"
 #include "core/file.h"
@@ -26,6 +28,7 @@
 #include "sdk/config.h"
 #include "wwivbasic/interpreter.h"
 
+#include <algorithm>
 #include <optional>
 
 namespace wwiv::bbs::basic {
@@ -46,17 +49,20 @@ std::string ScriptBaseName(const std::string& script_name) {
 }
 
 // Reads scriptdir/script_name, with the same checks and messages as the
-// legacy engine (Basic::RunScript and ReadBasicFile in basic.cpp).
+// legacy engine (Basic::RunScript and ReadBasicFile in basic.cpp), except
+// that ".." is rejected before the file is looked for.
 std::optional<std::string> ReadScriptFile(common::Output& out, const std::filesystem::path& dir,
                                           const std::string& script_name) {
-  const auto path = FilePath(dir, script_name);
-  if (!File::Exists(path)) {
-    out.print("|#6Unable to locate script: {}", script_name);
-    return std::nullopt;
-  }
+  // Reject ".." before looking for the file, so the messages don't tell the
+  // caller which files exist outside scriptdir.
   if (script_name.find("..") != std::string::npos) {
     LOG(ERROR) << "Invalid script name: " << script_name;
     out.print("|#6Invalid script name: {}\r\n", script_name);
+    return std::nullopt;
+  }
+  const auto path = FilePath(dir, script_name);
+  if (!File::Exists(path)) {
+    out.print("|#6Unable to locate script: {}", script_name);
     return std::nullopt;
   }
   TextFile file(path, "r");
@@ -81,25 +87,71 @@ bool NextEngine::RunScript(const std::string& script_name) {
   if (!text) {
     return false;
   }
-  return RunScript(ScriptBaseName(script_name), text.value());
+  return RunText(script_name, text.value());
 }
 
-bool NextEngine::RunScript(const std::string& module, const std::string&) {
+bool NextEngine::RunScript(const std::string& module, const std::string& text) {
+  return RunText(module, text);
+}
+
+bool NextEngine::RunText(const std::string& name, const std::string& text) {
   if (!config_.scripting_enabled()) {
     out_.outstr("WWIVbasic scripting is not enabled on this system.");
     return false;
   }
+  const auto module = ScriptBaseName(name);
   if (ctx_ && ctx_->session_context().debug_wwivbasic()) {
     // TODO(M6): the debugger (/debug/v1) for the new engine.
     LOG(WARNING) << "The WWIVbasic debugger isn't supported on the new engine yet; running '"
                  << module << "' without it.";
     out_.pl("|#6The debugger isn't supported on the new BASIC engine yet.");
   }
-  // TODO(M4): run the text on a wwivbasic::Interpreter with the Console over
-  // bout/bin and the wwiv.* modules.
-  LOG(ERROR) << "The new BASIC engine can't run scripts yet: '" << module << "'";
-  out_.pl("|#6The new BASIC engine can't run scripts yet.");
+
+  // Stop the script (and end input) once the caller hangs up.
+  auto hung_up = [ctx = ctx_]() { return ctx && ctx->session_context().hangup(); };
+  BbsConsole console(in_, out_, hung_up);
+  wwivbasic::Interpreter interp(console);
+  interp.set_stop_check(hung_up);
+  // As with the legacy engine, scripts can only import files in scriptdir.
+  interp.set_import_root(config_.scriptdir());
+  // TODO(M4): register the wwiv.* modules.
+
+  // The full path, so that IMPORT "file.bas" is found next to the script.
+  const auto path = FilePath(config_.scriptdir(), name);
+  const auto result = interp.run_source(path.string(), text);
+  if (result.stopped) {
+    LOG(INFO) << "Stopped script '" << module << "': the caller hung up.";
+    return false;
+  }
+  if (result.ok()) {
+    return true;
+  }
+  // Paths in errors are shown relative to scriptdir: the prefix is whatever
+  // FilePath put before the name.
+  const auto full = path.string();
+  const auto prefix = full.substr(0, full.size() - std::min(full.size(), name.size()));
+  for (const auto& e : result.errors) {
+    auto msg = e;
+    if (!prefix.empty()) {
+      StringReplace(&msg, prefix, "");
+    }
+    LOG(ERROR) << msg;
+    // An error can span several lines (one from an IMPORTed file does).
+    for (const auto& line : SplitString(msg, "\n")) {
+      ShowError(line);
+    }
+  }
   return false;
+}
+
+void NextEngine::ShowError(const std::string& line) {
+  // Shown as text: pipe or heart codes in the message (from the script's
+  // source, say) must not change colors.
+  out_.outstr("|#6");
+  for (const auto ch : line) {
+    out_.outchr(ch);
+  }
+  out_.nl();
 }
 
 } // namespace wwiv::bbs::basic
