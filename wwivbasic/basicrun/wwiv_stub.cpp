@@ -83,10 +83,12 @@ WwivStub::WwivStub(Interpreter& interp, Console& console) : console_(console) {
   data.native_function("SAVE", [this](std::string scope, Value list) {
     data_[ToStringUpperCase(scope)] = list.list("wwiv.data.save")->items;
   });
+  // LOAD appends the saved items to the list, as WWIV does.
   data.native_function("LOAD", [this](std::string scope, Value list) {
     auto& items = list.list("wwiv.data.load")->items;
-    const auto it = data_.find(ToStringUpperCase(scope));
-    items = it == data_.end() ? std::vector<Value>{} : it->second;
+    if (const auto it = data_.find(ToStringUpperCase(scope)); it != data_.end()) {
+      items.insert(items.end(), it->second.begin(), it->second.end());
+    }
   });
 }
 

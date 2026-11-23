@@ -88,19 +88,21 @@ bool NextEngine::RunScript(const std::string& script_name) {
   if (!text) {
     return false;
   }
-  return RunText(script_name, text.value());
+  return RunText(script_name, ScriptBaseName(script_name), text.value());
 }
 
 bool NextEngine::RunScript(const std::string& module, const std::string& text) {
-  return RunText(module, text);
+  // The legacy engine keeps this name as given (in upper case; wwiv.data
+  // lowers it again).
+  return RunText(module, ToStringLowerCase(module), text);
 }
 
-bool NextEngine::RunText(const std::string& name, const std::string& text) {
+bool NextEngine::RunText(const std::string& name, const std::string& module,
+                         const std::string& text) {
   if (!config_.scripting_enabled()) {
     out_.outstr("WWIVbasic scripting is not enabled on this system.");
     return false;
   }
-  const auto module = ScriptBaseName(name);
   if (ctx_ && ctx_->session_context().debug_wwivbasic()) {
     // TODO(M6): the debugger (/debug/v1) for the new engine.
     LOG(WARNING) << "The WWIVbasic debugger isn't supported on the new engine yet; running '"
@@ -115,11 +117,17 @@ bool NextEngine::RunText(const std::string& name, const std::string& text) {
   interp.set_stop_check(hung_up);
   // As with the legacy engine, scripts can only import files in scriptdir.
   interp.set_import_root(config_.scriptdir());
-  const WwivBindings bindings{in_, out_, console, config_, ctx_};
+  const WwivBindings bindings{in_, out_, console, config_, ctx_, module};
   RegisterWwiv(interp, bindings);
   RegisterWwivIo(interp, bindings);
-  // TODO(M4): wwiv.data, and wwiv.io.file and wwiv.os when the sysop enables
-  // them (config_.script_package_file_enabled(), script_package_os_enabled()).
+  RegisterWwivData(interp, bindings);
+  // As in the legacy engine, these exist only when the sysop enables them.
+  if (config_.script_package_file_enabled()) {
+    RegisterWwivIoFile(interp, bindings);
+  }
+  if (config_.script_package_os_enabled()) {
+    RegisterWwivOs(interp, bindings);
+  }
   RegisterWwivTime(interp, bindings);
 
   // The full path, so that IMPORT "file.bas" is found next to the script.

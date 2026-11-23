@@ -155,10 +155,10 @@ WWIV's existing `bbs/basic` tests pass against the new engine.
       (`bbs/basic/next/`) warns and runs without the debugger until M6
 - [x] `Console` implemented with `bout`/`bin` (`bbs/basic/next/bbs_console.*`);
       `NextEngine` runs scripts, without the `wwiv.*` modules yet
-- [ ] `wwiv.*` bindings in WWIV, same names and behaviour: `wwiv`, `wwiv.io`,
-      `wwiv.data` (same on-disk format), `wwiv.time`, and `wwiv.io.file` /
-      `wwiv.os` only when the sysop enables them (`bbs/basic/next/`; done:
-      `wwiv`, `wwiv.io`, `wwiv.time`)
+- [x] `wwiv.*` bindings in WWIV (`bbs/basic/next/`), same names and
+      behaviour: `wwiv`, `wwiv.io`, `wwiv.data` (same on-disk format),
+      `wwiv.time`, and `wwiv.io.file` / `wwiv.os` only when the sysop enables
+      them. `wwiv.io.file` gains `WRITE`, `WRITELINE` and `CLOSE`
 - [ ] Port WWIV's `bbs/basic/basic_test.cpp` cases to run against the new
       engine
 - [ ] Side-by-side check: run scripts on both engines and diff the output
@@ -204,9 +204,10 @@ Done when wwivbasic is WWIV's only BASIC engine.
   `bbs/basic/`
 - Dicts: not implemented. Do any scripts use `dict()`? The SDK may need dicts
   or records — M3/M5
-- `wwiv.io.file.open(..., "W")` truncates the file but there is no write
-  function, so it can only wipe a gfiles file. Make it an error, or add a
-  write function? — M4
+- `wwiv.io.file.open(..., "W")`: decided, add `WRITE(file, text...)`,
+  `WRITELINE(file, text...)` and `CLOSE(file)` (M4). `OPEN_OPTIONS("MENUS")`
+  now reads from the current menu set's gfiles directory and can't be opened
+  for writing (legacy used the BBS's gfiles)
 - Debugger: decided, required before removing my_basic (M6). Move it earlier
   if it's needed day to day
 - Generated parser: decided, checked in under `generated/`; builds with Java

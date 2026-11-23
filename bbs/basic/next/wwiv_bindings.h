@@ -18,6 +18,8 @@
 #ifndef INCLUDED_BBS_BASIC_NEXT_WWIV_BINDINGS_H
 #define INCLUDED_BBS_BASIC_NEXT_WWIV_BINDINGS_H
 
+#include <string>
+
 namespace wwiv::common {
 class Context;
 class Input;
@@ -44,12 +46,20 @@ struct WwivBindings {
   wwivbasic::Console& console;
   const sdk::Config& config;
   common::Context* ctx;
+  // The script's module name in lower case: its file name without ".bas", or
+  // the name given to ScriptEngine::RunScript(module, text). wwiv.data names
+  // its files after it, as the legacy engine does.
+  std::string module;
 };
 
 // The wwiv.* modules, with the same functions, arguments, return values and
 // side effects as the legacy (my_basic) ones in bbs/basic/wwiv*.cpp.
 void RegisterWwiv(wwivbasic::Interpreter& interp, const WwivBindings& b);
 void RegisterWwivIo(wwivbasic::Interpreter& interp, const WwivBindings& b);
+void RegisterWwivData(wwivbasic::Interpreter& interp, const WwivBindings& b);
+// Registered only when the sysop enables them (see NextEngine).
+void RegisterWwivIoFile(wwivbasic::Interpreter& interp, const WwivBindings& b);
+void RegisterWwivOs(wwivbasic::Interpreter& interp, const WwivBindings& b);
 void RegisterWwivTime(wwivbasic::Interpreter& interp, const WwivBindings& b);
 
 } // namespace wwiv::bbs::basic

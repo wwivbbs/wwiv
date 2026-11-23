@@ -56,9 +56,6 @@ public:
   void set_wwiv_color(int c);
   [[nodiscard]] int wwiv_color() const noexcept;
 
-  // operators
-  line_t& operator=(const line_t& o);
-
   void assign(const std::vector<cell_t>& cells);
   void append(const std::vector<cell_t>& cells);
   [[nodiscard]] const std::vector<cell_t>& cells() const { return cell_; }
