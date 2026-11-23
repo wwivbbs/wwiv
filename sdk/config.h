@@ -398,6 +398,9 @@ public:
   /** Is WWIVBasic package wwiv.os enabled */
   [[nodiscard]] bool script_package_os_enabled() const noexcept;
   void script_package_os_enabled(bool) noexcept;
+  /** Run WWIVbasic scripts on the new engine (wwivbasic) instead of my_basic */
+  [[nodiscard]] bool script_engine_next() const noexcept;
+  void script_engine_next(bool) noexcept;
 
   /** Modern header */
   [[nodiscard]] config_header_t& header() { return config_.header; }

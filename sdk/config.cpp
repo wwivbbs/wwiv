@@ -253,6 +253,14 @@ void Config::script_package_os_enabled(bool b) noexcept {
   set_script_flag(config_.script_flags, script_flag_enable_os, b);
 }
 
+bool Config::script_engine_next() const noexcept {
+  return config_.script_flags & script_flag_engine_next;
+}
+
+void Config::script_engine_next(bool b) noexcept {
+  set_script_flag(config_.script_flags, script_flag_engine_next, b);
+}
+
 std::filesystem::path Config::to_abs_path(const std::string& dir) const {
   return File::absolute(root_directory_, dir).string();
 }

@@ -31,6 +31,7 @@ void script_ui(Config& config) {
   auto allow_script = config.scripting_enabled();
   auto enable_file = config.script_package_file_enabled();
   auto enable_os = config.script_package_os_enabled();
+  auto engine_next = config.script_engine_next();
 
   auto y = 1;
   EditItems items{};
@@ -46,6 +47,10 @@ void script_ui(Config& config) {
             new BooleanEditItem(&enable_os),
     "Enable package wwiv.os (allows executing external binaries).", 1, y);
   ++y;
+  items.add(new Label("Use New Engine:"),
+            new BooleanEditItem(&engine_next),
+    "Run scripts on wwivbasic, the new engine (needs a BBS built with WWIV_WWIVBASIC_NEXT).", 1, y);
+  ++y;
 
   items.relayout_items_and_labels();
   items.Run("Scripting Configuration");
@@ -53,4 +58,5 @@ void script_ui(Config& config) {
   config.scripting_enabled(allow_script);
   config.script_package_os_enabled(enable_os);
   config.script_package_file_enabled(enable_file);
+  config.script_engine_next(engine_next);
 }

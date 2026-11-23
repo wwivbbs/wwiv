@@ -98,6 +98,7 @@ add_library(
   basic/wwiv_io.cpp
   basic/wwiv_os.cpp
   basic/wwiv_time.cpp
+  basic/script_engine.cpp
   menus/config_menus.cpp
   menus/mainmenu.cpp
   menus/menucommands.cpp
@@ -171,6 +172,16 @@ target_link_libraries(
  find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
 target_include_directories(bbs_lib PRIVATE ${CPP_HTTPLIB_INCLUDE_DIRS})
 
+# The new BASIC engine (wwivbasic) and its wwiv.* bindings. Without
+# WWIV_WWIVBASIC_NEXT only the legacy (my_basic) engine is built.
+if (WWIV_WWIVBASIC_NEXT)
+  target_sources(bbs_lib PRIVATE
+    basic/next/next_engine.cpp
+  )
+  target_link_libraries(bbs_lib wwivbasic_interpreter)
+  target_compile_definitions(bbs_lib PUBLIC WWIV_WWIVBASIC_NEXT)
+endif()
+
 if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
   message(STATUS "WWIV_SSH_CRYPTLIB is ON")
   target_sources(bbs_lib PRIVATE ssh.cpp)
@@ -216,6 +227,7 @@ if (WWIV_BUILD_TESTS)
       xfer_test.cpp
       xferovl_test.cpp
       basic/basic_test.cpp
+      basic/script_engine_test.cpp
       basic/util_test.cpp
     )
     add_executable(bbs_tests ${test_sources})
