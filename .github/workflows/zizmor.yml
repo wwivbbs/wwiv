@@ -1,0 +1,35 @@
+# Security analysis of the GitHub Actions workflows with zizmor
+# (https://github.com/zizmorcore/zizmor): template injection, overly broad
+# permissions, credential persistence, cache poisoning, unpinned actions, etc.
+#
+# Findings are uploaded to the repository's Security > Code scanning tab and
+# shown as annotations on pull requests. The job itself only fails on internal
+# errors, not on findings; use a ruleset with code scanning merge protection
+# to make findings block merges.
+
+name: zizmor
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "**"
+
+permissions: {}
+
+jobs:
+  zizmor:
+    name: Analyze workflows
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@bd12b495c90993a4301c73398142281a61499af3 # v0.9.0
