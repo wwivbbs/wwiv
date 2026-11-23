@@ -187,6 +187,41 @@ jobs:
           # Keep only what this build used, so the saved cache stays small.
           evict-old-files: job
 
+      # vcpkg's binary cache for releases, separate from PR Build's (key
+      # "release-vcpkg-<distro>-..."), so the dependencies aren't rebuilt from
+      # source on every release (hunspell's libiconv alone takes minutes on
+      # Windows). Like the compiler cache, only runs of this workflow on main
+      # and release branches can save it. vcpkg keys each package by an ABI
+      # hash of everything that went into building it, so a stale entry is
+      # only a miss, never a wrong package.
+      - name: Set up vcpkg binary cache
+        id: vcpkg-cache
+        shell: bash
+        run: |
+          dir="${RUNNER_TEMP//\\//}/vcpkg-bincache"
+          mkdir -p "${dir}"
+          echo "dir=${dir}" >> "$GITHUB_OUTPUT"
+          echo "VCPKG_BINARY_SOURCES=clear;files,${dir},readwrite" >> "$GITHUB_ENV"
+
+      - name: Restore vcpkg binary cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0 # zizmor: ignore[cache-poisoning]
+        with:
+          path: ${{ steps.vcpkg-cache.outputs.dir }}
+          key: release-vcpkg-${{ matrix.wwiv_distro }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
+          restore-keys: |
+            release-vcpkg-${{ matrix.wwiv_distro }}-${{ hashFiles('vcpkg.json') }}-
+            release-vcpkg-${{ matrix.wwiv_distro }}-
+
+      - name: List cached vcpkg packages
+        id: vcpkg-before
+        shell: bash
+        env:
+          VCPKG_CACHE_DIR: ${{ steps.vcpkg-cache.outputs.dir }}
+        run: |
+          cd "${VCPKG_CACHE_DIR}"
+          echo "count=$(find . -type f | wc -l)" >> "$GITHUB_OUTPUT"
+          echo "hash=$(find . -type f | sort | sha256sum | cut -c1-64)" >> "$GITHUB_OUTPUT"
+
       - name: Build (Windows)
         if: ${{ matrix.os == 'windows-2022' }}
         # build.cmd checks errors itself (it is also the Jenkins script), so
@@ -196,10 +231,6 @@ jobs:
         env:
           WWIV_ARCH: x86
           WWIV_USE_COMPILER_CACHE: "ON"
-          # vcpkg default local binary cache. Self-hosted runners keep it
-          # between runs, so dependencies are not rebuilt every time; on
-          # GitHub-hosted runners it starts empty. Only pushes to main run here.
-          VCPKG_BINARY_SOURCES: clear;default,readwrite
 
       - name: Build (Linux)
         if: ${{ matrix.os != 'windows-2022' }}
@@ -208,10 +239,55 @@ jobs:
         env:
           WWIV_ARCH: x86
           WWIV_USE_COMPILER_CACHE: "ON"
-          # vcpkg default local binary cache. Self-hosted runners keep it
-          # between runs, so dependencies are not rebuilt every time; on
-          # GitHub-hosted runners it starts empty. Only pushes to main run here.
-          VCPKG_BINARY_SOURCES: clear;default,readwrite
+
+      # Drop cached packages this build didn't use (so the entry doesn't keep
+      # growing toward the repository's cache limit), then save a new entry
+      # only if anything changed. The files provider stores each package as
+      # <abi[0:2]>/<abi>.zip, and vcpkg's status file lists the ABI hash of
+      # every installed package. Runs even if the build failed, as long as
+      # vcpkg got far enough to write its status file.
+      - name: Prune and check vcpkg binary cache
+        id: vcpkg-after
+        if: always() && steps.vcpkg-before.outcome == 'success'
+        shell: bash
+        env:
+          VCPKG_CACHE_DIR: ${{ steps.vcpkg-cache.outputs.dir }}
+          BEFORE_COUNT: ${{ steps.vcpkg-before.outputs.count }}
+          BEFORE_HASH: ${{ steps.vcpkg-before.outputs.hash }}
+        run: |
+          status="${CMAKE_BINARY_DIR//\\//}/vcpkg_installed/vcpkg/status"
+          if [ ! -f "${status}" ]; then
+            echo "::notice::No vcpkg status file at ${status}; not saving the vcpkg cache"
+            exit 0
+          fi
+          used=$(sed -n 's/^Abi: *\([0-9a-f]*\).*/\1/p' "${status}" | sort -u)
+          if [ -z "${used}" ]; then
+            echo "::error::No package ABI hashes in ${status}; not touching the cache"
+            exit 1
+          fi
+          cd "${VCPKG_CACHE_DIR}"
+          pruned=0
+          while IFS= read -r f; do
+            abi=$(basename "${f}" .zip)
+            if ! grep -qxF "${abi}" <<< "${used}"; then
+              rm -f "${f}"
+              pruned=$((pruned + 1))
+            fi
+          done < <(find . -type f)
+          find . -type d -empty -delete
+          count=$(find . -type f | wc -l)
+          hash=$(find . -type f | sort | sha256sum | cut -c1-64)
+          echo "Cached vcpkg packages: ${BEFORE_COUNT} before, ${pruned} unused pruned, ${count} after"
+          if [ "${hash}" != "${BEFORE_HASH}" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Save vcpkg binary cache
+        if: always() && steps.vcpkg-after.outputs.changed == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.vcpkg-cache.outputs.dir }}
+          key: release-vcpkg-${{ matrix.wwiv_distro }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
