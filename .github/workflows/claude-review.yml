@@ -13,10 +13,12 @@
 # - Uses the job's GITHUB_TOKEN instead of the Claude GitHub App, so the only
 #   write access is commenting: contents is read-only, so Claude can't push
 #   branches or commits. The token expires when the job ends.
-# - Never builds or runs pull request code. On pull requests from authors
-#   without write access, the action also blocks commands that run code
-#   (restrict_untrusted_prs, on by default) and takes CLAUDE.md/.claude/ from
-#   main instead of the pull request.
+# - Claude reads the pull request's code but never builds or runs it. The
+#   action checks out the pull request's head itself, after its write-access
+#   check (a fork's branch as pr-N, locally only). On pull requests from
+#   authors without write access it blocks commands that run code
+#   (restrict_untrusted_prs, on by default), turns off git hooks, and takes
+#   CLAUDE.md/.claude/ from main instead of the pull request.
 # - Never add pull_request_target here, and never set allowed_non_write_users,
 #   allowed_bots or show_full_output.
 
@@ -24,9 +26,9 @@ name: Claude Review
 
 # zizmor flags every issue_comment trigger (dangerous-triggers). The risks it
 # guards against don't apply here: the job only runs for actors with write
-# access (checked here and again inside the action), it checks out main rather
-# than the pull request, it never interpolates comment text into a shell, and
-# its token can only comment.
+# access (checked here and again inside the action), the pull request's code
+# is only read, never built or run, comment text is never interpolated into a
+# shell, and its token can only comment.
 on:
   issue_comment: # zizmor: ignore[dangerous-triggers]
     types: [created]
