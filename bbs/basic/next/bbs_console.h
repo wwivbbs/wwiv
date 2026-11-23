@@ -37,9 +37,12 @@ namespace wwiv::bbs::basic {
 // read_line and read_key return "".
 class BbsConsole final : public wwivbasic::Console {
 public:
-  // The longest line the BBS line editor (Input::input_text) accepts; it is
-  // also what read_line(0), "no limit", reads.
+  // What read_line(0), "no limit", reads: the longest line the BBS line
+  // editor (Input::input_text) accepts from an ANSI user.
   static constexpr int kMaxLineLength = 78;
+  // The most read_line reads. Input::input_text reads a non-ANSI user's line
+  // into a 255-byte buffer, so a longer max_length would overflow it.
+  static constexpr int kMaxInputLength = 254;
 
   // hung_up says whether the caller has hung up; empty means never.
   BbsConsole(common::Input& in, common::Output& out, std::function<bool()> hung_up = {})

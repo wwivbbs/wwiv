@@ -244,9 +244,17 @@ public:
   explicit Module(const std::string& name) : name_(name) { scopes.emplace_back("<GLOBAL>"); }
 
   // Registers a native function that takes its arguments as a vector, with no
-  // argument count checking.
+  // argument count checking. An ArgumentError it throws (from from_value, say)
+  // is reported with the function's name, as for native_function.
   void native_functionl(const std::string& name, const basic_function_fn& fn) {
-    functions.insert_or_assign(name, BasicFunction(name, fn, {}));
+    auto named = [name, fn](std::vector<Value> params) -> Value {
+      try {
+        return fn(std::move(params));
+      } catch (const ArgumentError& e) {
+        throw BasicError(fmt::format("{}: {}", name, e.what()));
+      }
+    };
+    functions.insert_or_assign(name, BasicFunction(name, named, {}));
   }
 
   // Registers a native C++ function or lambda; arguments are converted to the

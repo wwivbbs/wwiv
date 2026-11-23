@@ -558,3 +558,20 @@ TEST(EmbeddingTest, ImportRoot_DefaultAllowsAnyFile) {
   ASSERT_TRUE(result.ok()) << result.errors.front();
   EXPECT_EQ("leak\n", out.str());
 }
+
+TEST(EmbeddingTest, NativeFunctionL_TypeErrorsNameTheFunction) {
+  std::ostringstream out;
+  std::istringstream in;
+  StdioConsole console(out, in);
+  Interpreter interp(console);
+  interp.globals().native_functionl("SHOW", [](const std::vector<Value>& args) {
+    for (const auto& a : args) {
+      (void)from_value<std::string>(a);
+    }
+    return Value();
+  });
+
+  const auto result = interp.run_source("t.bas", "show(\"a\", list(1))\n");
+  ASSERT_EQ(1u, result.errors.size());
+  EXPECT_EQ("t.bas:1: error: SHOW: expected a STRING, got a LIST", result.errors.front());
+}

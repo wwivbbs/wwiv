@@ -32,7 +32,9 @@ std::string BbsConsole::read_line(int max_length) {
   if (hung_up()) {
     return {};
   }
-  const auto len = max_length > 0 ? std::min(max_length, kMaxLineLength) : kMaxLineLength;
+  // A positive max_length goes to input_text as is, like the legacy GETS
+  // (input_text itself stops an ANSI user at 78 characters).
+  const auto len = max_length > 0 ? std::min(max_length, kMaxInputLength) : kMaxLineLength;
   auto line = in_.input_text("", len);
   // Input returns at once after a hangup, with whatever was typed so far.
   return hung_up() ? std::string{} : line;

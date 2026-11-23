@@ -18,32 +18,73 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "bbs/basic/next/bbs_console.h"
 #include "bbs/basic/next/next_engine.h"
 #include "bbs/bbs.h"
 #include "bbs/bbs_helper.h"
+#include "common/common_events.h"
 #include "common/input.h"
 #include "common/output.h"
 #include "core/datetime.h"
+#include "core/eventbus.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "sdk/config.h"
 
+#include <cstring>
 #include <string>
 
 using namespace wwiv::bbs::basic;
 using namespace wwiv::strings;
 using testing::HasSubstr;
+using testing::Not;
+
+namespace {
+
+// The session to hang up the next time Input::getkey checks for a hangup, or
+// nullptr. getkey checks at the start of every call, before it reads a key
+// that is already typed ahead, so this hangs up in the middle of a read.
+wwiv::common::SessionContext* hang_up_on_check = nullptr;
+
+void HangUpDuringNextRead(wwiv::common::SessionContext& sess) {
+  [[maybe_unused]] static const auto registered = [] {
+    wwiv::core::bus().add_handler<wwiv::common::CheckForHangupEvent>([] {
+      if (hang_up_on_check) {
+        hang_up_on_check->hangup(true);
+      }
+    });
+    return true;
+  }();
+  hang_up_on_check = &sess;
+}
+
+} // namespace
 
 // The wwiv, wwiv.io and wwiv.time modules on the new engine. These mirror the
-// legacy engine's tests in bbs/basic/basic_test.cpp. Functions that read
-// input (GETS, GETKEY, YN, NY, PAUSE) aren't covered: the test helpers can't
-// feed keys to bin.
+// legacy engine's tests in bbs/basic/basic_test.cpp. Input is typed ahead into
+// bin's character buffer. PAUSE isn't covered.
 class WwivBindingsTest : public ::testing::Test {
 protected:
   void SetUp() override {
     helper.SetUp();
     helper.config().scripting_enabled(true);
   }
+
+  void TearDown() override {
+    hang_up_on_check = nullptr;
+    bin.charbufferpointer_ = 0;
+    bin.charbuffer[0] = '\0';
+    bin.charbuffer[1] = '\0';
+  }
+
+  // Types keys ahead, as if the caller had typed them.
+  static void TypeAhead(const std::string& keys) {
+    ASSERT_LT(keys.size(), sizeof(bin.charbuffer) - 1);
+    std::strcpy(&bin.charbuffer[1], keys.c_str());
+    bin.charbufferpointer_ = 1;
+  }
+
+  wwiv::common::SessionContext& sess() { return helper.context().session_context(); }
 
   [[nodiscard]] bool Run(const std::string& text) {
     NextEngine engine(bin, bout, helper.config(), &helper.context());
@@ -166,12 +207,94 @@ TEST_F(WwivBindingsTest, WWIV_IO_Import_Unqualified) {
   EXPECT_EQ("ab\r\n", helper.io()->captured());
 }
 
-TEST_F(WwivBindingsTest, WWIV_IO_HungUp_GetsAndGetKeyReturnEmpty) {
-  // Input after a hangup is at its end, and the script stops at the next
-  // statement, so nothing after the call runs.
-  helper.context().session_context().hangup(true);
-  EXPECT_FALSE(Run("x = wwiv.io.getkey()\nprint \"not reached\""));
-  EXPECT_EQ("", helper.io()->captured());
+TEST_F(WwivBindingsTest, WWIV_IO_GetKey) {
+  TypeAhead("x");
+  ASSERT_TRUE(Run("print \"[\" + wwiv.io.getkey() + \"]\""));
+  EXPECT_EQ("[x]\r\n", helper.io()->captured());
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_Gets) {
+  helper.user()->set_flag(wwiv::sdk::User::flag_ansi, false);
+  TypeAhead("hello\r");
+  ASSERT_TRUE(Run("x = wwiv.io.gets(10)\nprint \"[\" + x + \"]\""));
+  EXPECT_THAT(helper.io()->captured(), HasSubstr("[hello]"));
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_Gets_StopsAtTheLength) {
+  helper.user()->set_flag(wwiv::sdk::User::flag_ansi, false);
+  TypeAhead("hello world\r");
+  ASSERT_TRUE(Run("x = wwiv.io.gets(5)\nprint \"[\" + x + \"]\""));
+  EXPECT_THAT(helper.io()->captured(), HasSubstr("[hello]"));
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_Gets_LongerThanALine) {
+  // Like the legacy GETS, the length goes to input_text as is; only an ANSI
+  // caller's line editor stops at 78 characters.
+  helper.user()->set_flag(wwiv::sdk::User::flag_ansi, false);
+  const std::string line(100, 'a');
+  TypeAhead(line + "\r");
+  ASSERT_TRUE(Run("x = wwiv.io.gets(160)\nprint \"[\" + x + \"]\""));
+  EXPECT_THAT(helper.io()->captured(), HasSubstr("[" + line + "]"));
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_YN) {
+  TypeAhead("Y");
+  ASSERT_TRUE(Run("print \"[\"; wwiv.io.yn(\"Sure? \"); \"]\""));
+  const auto captured = helper.io()->captured();
+  EXPECT_THAT(captured, HasSubstr("Sure? "));
+  EXPECT_THAT(captured, HasSubstr("[1]"));
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_YN_DefaultsToNo) {
+  TypeAhead("\r");
+  ASSERT_TRUE(Run("print \"[\"; wwiv.io.yn(); \"]\""));
+  EXPECT_THAT(helper.io()->captured(), HasSubstr("[0]"));
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_NY) {
+  TypeAhead("N");
+  ASSERT_TRUE(Run("print \"[\"; wwiv.io.ny(\"Sure? \"); \"]\""));
+  EXPECT_THAT(helper.io()->captured(), HasSubstr("[0]"));
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_NY_DefaultsToYes) {
+  TypeAhead("\r");
+  ASSERT_TRUE(Run("print \"[\"; wwiv.io.ny(); \"]\""));
+  EXPECT_THAT(helper.io()->captured(), HasSubstr("[1]"));
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_HangUpDuringGetKey_ReturnsEmpty) {
+  // getkey returns the typed-ahead key even though the caller hung up during
+  // the call; GETKEY returns "" instead, and the script stops.
+  TypeAhead("x");
+  HangUpDuringNextRead(sess());
+  EXPECT_FALSE(Run("k = wwiv.io.getkey()\nprint \"not reached\""));
+  EXPECT_THAT(helper.io()->captured(), Not(HasSubstr("not reached")));
+
+  BbsConsole console(bin, bout, [this] { return sess().hangup(); });
+  sess().hangup(false);
+  TypeAhead("x");
+  HangUpDuringNextRead(sess());
+  EXPECT_EQ("", console.read_key());
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_HangUpDuringGets_ReturnsEmpty) {
+  helper.user()->set_flag(wwiv::sdk::User::flag_ansi, false);
+  TypeAhead("abc\r");
+  HangUpDuringNextRead(sess());
+  EXPECT_FALSE(Run("x = wwiv.io.gets(10)\nprint \"not reached\""));
+  EXPECT_THAT(helper.io()->captured(), Not(HasSubstr("not reached")));
+
+  BbsConsole console(bin, bout, [this] { return sess().hangup(); });
+  sess().hangup(false);
+  TypeAhead("abc\r");
+  HangUpDuringNextRead(sess());
+  EXPECT_EQ("", console.read_line(10));
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_TypeErrorNamesTheFunction) {
+  EXPECT_FALSE(Run("l = list(1)\nwwiv.io.outstr(l)"));
+  EXPECT_THAT(helper.io()->captured(), HasSubstr("OUTSTR: expected a STRING, got a LIST"));
 }
 
 TEST_F(WwivBindingsTest, WWIV_Time_Format) {

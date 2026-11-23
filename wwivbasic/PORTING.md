@@ -75,11 +75,15 @@ Small differences in how arguments are checked:
 - A number passed where text is expected is converted to text, as `PRINT`
   would show it (`wwiv.io.outstr(42)` writes `42`). my_basic stopped the script
   with an error.
-- Too many arguments (such as `wwiv.io.nl(1, 2)`) or a missing required one
-  (`wwiv.command()`, `wwiv.time.format(t)`) stop the script with an error that
-  names the function.
+- Too many arguments (such as `wwiv.io.nl(1, 2)`), a missing required one
+  (`wwiv.command()`, `wwiv.time.format(t)`) or one of the wrong type
+  (`wwiv.io.outstr(list())`) stop the script with an error that names the
+  function, such as `OUTSTR: expected a STRING, got a LIST`.
 - `wwiv.io.gets()` with no length, or a length that isn't positive, reads
   nothing and returns `""`; my_basic returned no value at all.
+- `wwiv.io.gets(n)` reads at most 254 characters; my_basic overflowed a
+  buffer for a longer `n` when the caller didn't use ANSI. (With ANSI, both
+  stop at 78, the width of the line editor.)
 - Once the caller has hung up, `wwiv.io.getkey()` and `wwiv.io.gets()` return
   `""` and the script stops at the next statement.
 
