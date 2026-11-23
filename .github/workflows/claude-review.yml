@@ -22,8 +22,13 @@
 
 name: Claude Review
 
+# zizmor flags every issue_comment trigger (dangerous-triggers). The risks it
+# guards against don't apply here: the job only runs for actors with write
+# access (checked here and again inside the action), it checks out main rather
+# than the pull request, it never interpolates comment text into a shell, and
+# its token can only comment.
 on:
-  issue_comment:
+  issue_comment: # zizmor: ignore[dangerous-triggers]
     types: [created]
 
 permissions: {}
