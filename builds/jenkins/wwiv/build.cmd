@@ -37,6 +37,9 @@ mkdir "%WWIV_RELEASE_DIR%"
 
 echo * Building WWIV
 cd "%CMAKE_BINARY_DIR%"
+@rem Off unless the caller turns it on (the GitHub release workflow does).
+if not defined WWIV_USE_COMPILER_CACHE set WWIV_USE_COMPILER_CACHE=OFF
+
 cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ^
     -DWWIV_RELEASE=%WWIV_RELEASE% ^
     -DWWIV_ARCH=%WWIV_ARCH%  ^
@@ -44,7 +47,7 @@ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ^
     -DWWIV_DISTRO=%WWIV_DISTRO% ^
     -DWWIV_INSTALL=ON ^
     -DWWIV_ZIP_INSTALL_FILES=ON ^
-    -DWWIV_USE_COMPILER_CACHE=OFF ^
+    -DWWIV_USE_COMPILER_CACHE=%WWIV_USE_COMPILER_CACHE% ^
     -DWWIV_USE_FAST_LINKER=OFF ^
     %WORKSPACE% || exit /b
 

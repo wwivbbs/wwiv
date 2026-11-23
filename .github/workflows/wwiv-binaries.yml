@@ -89,11 +89,13 @@ jobs:
               lib_suffix: so
               wwiv_distro: linux-ubuntu2604
               archive_suffix: tar.gz
+              compiler_cache: ccache
             # GitHub hosted runner
             - os: windows-2022
               lib_suffix: dll
               wwiv_distro: win-x86
               archive_suffix: zip
+              compiler_cache: sccache
         fail-fast: false
     runs-on: ${{ matrix.os }}
     permissions:
@@ -170,6 +172,21 @@ jobs:
         with:
           arch: x86
 
+      # Release builds have their own compiler cache, separate from PR Build's
+      # (different key, "release-<distro>"). This workflow only runs on pushes
+      # to main and release branches, and GitHub only lets a run write caches
+      # in its own branch's scope, so only merged code writes this cache; pull
+      # requests can't. ccache/sccache key entries on the compiler, flags and
+      # preprocessed source, so a hit is the same object a cold build makes.
+      - name: Set up compiler cache
+        uses: hendrikmuhs/ccache-action@e91f31892a1d1b8c44424b1a94c0b7f52d337168 # v1.2.26 # zizmor: ignore[cache-poisoning]
+        with:
+          variant: ${{ matrix.compiler_cache }}
+          key: release-${{ matrix.wwiv_distro }}
+          max-size: 1G
+          # Keep only what this build used, so the saved cache stays small.
+          evict-old-files: job
+
       - name: Build (Windows)
         if: ${{ matrix.os == 'windows-2022' }}
         # build.cmd checks errors itself (it is also the Jenkins script), so
@@ -178,6 +195,7 @@ jobs:
         run: builds\jenkins\wwiv\build.cmd
         env:
           WWIV_ARCH: x86
+          WWIV_USE_COMPILER_CACHE: "ON"
           # vcpkg default local binary cache. Self-hosted runners keep it
           # between runs, so dependencies are not rebuilt every time; on
           # GitHub-hosted runners it starts empty. Only pushes to main run here.
@@ -189,6 +207,7 @@ jobs:
         run: builds/jenkins/wwiv/build
         env:
           WWIV_ARCH: x86
+          WWIV_USE_COMPILER_CACHE: "ON"
           # vcpkg default local binary cache. Self-hosted runners keep it
           # between runs, so dependencies are not rebuilt every time; on
           # GitHub-hosted runners it starts empty. Only pushes to main run here.
