@@ -203,9 +203,10 @@ Tool | What it does
 
 To turn them off, configure with `-DWWIV_USE_COMPILER_CACHE=OFF` or
 `-DWWIV_USE_FAST_LINKER=OFF`. The release build scripts in `builds/jenkins/wwiv`
-turn both off, so released binaries don't depend on what the build machine has
-installed. Building only what you are working on also helps,
-e.g. `cmake --build --preset linux-debug --target bbs`.
+turn the compiler cache off, so released binaries are always compiled from
+scratch. Linux releases and the PR builds both link with mold (the CI jobs
+install it), so CI links the same way the releases do. Building only what you
+are working on also helps, e.g. `cmake --build --preset linux-debug --target bbs`.
 
 ### Troubleshooting
 

@@ -153,7 +153,7 @@ jobs:
         if: ${{ matrix.os != 'windows-2022' }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y libncurses-dev zlib1g-dev pkg-config zip
+          sudo apt-get install -y libncurses-dev zlib1g-dev pkg-config zip mold
 
       - name: Setup a new vcpkg
         uses: lukka/run-vcpkg@b1a0dd252f06b9e25b3c022a9a03bd7a427fb6a2 # v11.6
