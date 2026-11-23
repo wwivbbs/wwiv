@@ -20,7 +20,12 @@
 
 #include "bbs/basic/script_engine.h"
 
+#include <functional>
 #include <string>
+
+namespace wwivbasic {
+class Interpreter;
+}
 
 namespace wwiv::bbs::basic {
 
@@ -28,8 +33,12 @@ namespace wwiv::bbs::basic {
 // modules (wwiv_bindings.h). Built only with WWIV_WWIVBASIC_NEXT.
 class NextEngine final : public ScriptEngine {
 public:
+  // Called with each script's interpreter after the wwiv.* modules are added
+  // and before the script runs. Tests use it to add an ASSERT module.
+  using setup_fn = std::function<void(wwivbasic::Interpreter&)>;
+
   NextEngine(common::Input& in, common::Output& out, const sdk::Config& config,
-             common::Context* ctx);
+             common::Context* ctx, setup_fn on_setup = {});
   ~NextEngine() override;
 
   bool RunScript(const std::string& script_name) override;
@@ -46,6 +55,7 @@ private:
   common::Output& out_;
   const sdk::Config& config_;
   common::Context* ctx_;
+  setup_fn on_setup_;
 };
 
 } // namespace wwiv::bbs::basic

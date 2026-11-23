@@ -159,9 +159,12 @@ WWIV's existing `bbs/basic` tests pass against the new engine.
       behaviour: `wwiv`, `wwiv.io`, `wwiv.data` (same on-disk format),
       `wwiv.time`, and `wwiv.io.file` / `wwiv.os` only when the sysop enables
       them. `wwiv.io.file` gains `WRITE`, `WRITELINE` and `CLOSE`
-- [ ] Port WWIV's `bbs/basic/basic_test.cpp` cases to run against the new
-      engine
-- [ ] Side-by-side check: run scripts on both engines and diff the output
+- [x] Port WWIV's `bbs/basic/basic_test.cpp` cases to run against the new
+      engine (each case runs on every engine in the build)
+- [x] Side-by-side check: run scripts on both engines and diff the output
+      (`bbs/basic/next/side_by_side_test.cpp`: `hello.bas` matches apart from
+      the documented PRINT layout, `oneliners.bas` matches exactly, and the
+      engines read each other's `wwiv.data` files)
 - [x] WWIV CI builds with the option on (both jobs), and fails if the
       checked-in parser doesn't match the grammar
 

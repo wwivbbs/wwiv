@@ -50,6 +50,18 @@ print "Name? ";         ' wwivbasic: no newline, the cursor stays on the line
 
 Why: output that is laid out the way the script reads.
 
+## TRUE and FALSE
+
+my_basic's `TRUE` and `FALSE` were the integers 1 and 0. In wwivbasic they are
+booleans:
+
+- `PRINT TRUE` prints `TRUE` (my_basic: `1`), and `"x" + TRUE` is `xTRUE`.
+- Comparing with numbers works as before: `1 = TRUE` and `0 = FALSE` are
+  true, so `IF wwiv.eval(...) = TRUE` still works.
+- In arithmetic, the left operand decides the result's type: `1 + TRUE` is
+  `2`, but `TRUE + 1` is `TRUE`. Don't do arithmetic on `TRUE` and `FALSE`.
+- `wwiv.data` saves them as 1 and 0, as my_basic did.
+
 ## Errors
 
 Calling a function or module that doesn't exist, passing the wrong number of
