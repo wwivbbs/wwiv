@@ -49,7 +49,7 @@ jobs:
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
 
@@ -69,7 +69,7 @@ jobs:
           fi
 
       - name: Get CMake and Ninja
-        uses: lukka/get-cmake@latest
+        uses: lukka/get-cmake@a1a8216777d3cbbf5602c73b9ddd3e98257ecdc4 # v4.5.1
 
       - name: Install packages (Linux)
         if: runner.os == 'Linux'
@@ -79,7 +79,7 @@ jobs:
 
       - name: Set up Visual Studio x86 environment (Windows)
         if: runner.os == 'Windows'
-        uses: egor-tensin/vs-shell@v2
+        uses: egor-tensin/vs-shell@3b829f5acc8082151a836f5a3a179f69336ae1f2 # v2.3.0
         with:
           arch: x86
 
@@ -108,7 +108,7 @@ jobs:
           echo "VCPKG_BINARY_SOURCES=clear;files,${dir},readwrite" >> "$GITHUB_ENV"
 
       - name: Restore vcpkg binary cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ steps.vcpkg-cache.outputs.dir }}
           key: vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
@@ -174,7 +174,7 @@ jobs:
 
       - name: Save vcpkg binary cache
         if: always() && steps.vcpkg-after.outputs.changed == 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ steps.vcpkg-cache.outputs.dir }}
           key: vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
