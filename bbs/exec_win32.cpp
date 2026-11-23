@@ -37,6 +37,7 @@
 #include "core/textfile.h"
 #include "fmt/format.h"
 #include <algorithm>
+#include <vector>
 #include <atomic>
 #include <sstream>
 #include <string>
@@ -371,10 +372,11 @@ static int exec_cmdline_sync(wwiv::bbs::CommandLine& cmdline, int flags, int nSy
   const auto current_directory = File::current_directory().string();
 
   // Need a non-const string for the commandline
-  char szTempWorkingCommandline[MAX_PATH + 1];
-  to_char_array(szTempWorkingCommandline, working_cmdline);
+  // (sized to fit: a MAX_PATH buffer silently cut off long command lines).
+  std::vector<char> szTempWorkingCommandline(working_cmdline.begin(), working_cmdline.end());
+  szTempWorkingCommandline.push_back('\0');
   const auto bRetCP =
-      CreateProcess(nullptr, szTempWorkingCommandline, nullptr, nullptr, TRUE, dwCreationFlags,
+      CreateProcess(nullptr, szTempWorkingCommandline.data(), nullptr, nullptr, TRUE, dwCreationFlags,
                     nullptr, // a()->xenviron not using nullptr causes things to not work.
                     current_directory.c_str(), &si, &pi);
 
@@ -601,10 +603,11 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
   const auto current_directory = File::current_directory().string();
 
   // Need a non-const string for the commandline
-  char szTempWorkingCommandline[MAX_PATH+1];
-  to_char_array(szTempWorkingCommandline, working_cmdline);
+  // (sized to fit: a MAX_PATH buffer silently cut off long command lines).
+  std::vector<char> szTempWorkingCommandline(working_cmdline.begin(), working_cmdline.end());
+  szTempWorkingCommandline.push_back('\0');
   DWORD dwCreationFlags = 0;
-  if (!CreateProcess(nullptr, szTempWorkingCommandline, nullptr, nullptr, TRUE, dwCreationFlags,
+  if (!CreateProcess(nullptr, szTempWorkingCommandline.data(), nullptr, nullptr, TRUE, dwCreationFlags,
                      nullptr, // a()->xenviron not using nullptr causes things to not work.
                      current_directory.c_str(), &si, &pi)) {
     const auto error_code = ::GetLastError();

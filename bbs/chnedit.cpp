@@ -235,7 +235,7 @@ static void modify_chain(ssize_t chain_num) {
       bout.cls();
       ShowChainCommandLineHelp();
       bout.outstr("\r\n|#9Enter Command Line.\r\n|#7:");
-      c.filename = bin.input_cmdline(c.filename, 79);
+      c.filename = bin.input_cmdline(c.filename, 160);
     } break;
     case 'C': {
       bout.nl();

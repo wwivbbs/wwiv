@@ -9,6 +9,7 @@ set(COMMON_SOURCES
  "datetime.cpp"
  "full_screen.cpp"
  "input.cpp"
+ "input_line_editor.cpp"
  "input_range.cpp"
  "iobase.cpp"
  "language.cpp"
@@ -56,6 +57,7 @@ if (WWIV_BUILD_TESTS)
 
   set(common_test_sources
     "acs_test.cpp"
+    "input_line_editor_test.cpp"
     "input_range_test.cpp"
     "common_test_main.cpp"
     "menu_data_util_test.cpp"
