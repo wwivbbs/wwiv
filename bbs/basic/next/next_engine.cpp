@@ -17,6 +17,8 @@
 /**************************************************************************/
 #include "bbs/basic/next/next_engine.h"
 
+#include "bbs/basic/next/bbs_console.h"
+
 #include "common/context.h"
 #include "common/output.h"
 #include "core/file.h"
@@ -26,6 +28,7 @@
 #include "sdk/config.h"
 #include "wwivbasic/interpreter.h"
 
+#include <algorithm>
 #include <optional>
 
 namespace wwiv::bbs::basic {
@@ -81,24 +84,45 @@ bool NextEngine::RunScript(const std::string& script_name) {
   if (!text) {
     return false;
   }
-  return RunScript(ScriptBaseName(script_name), text.value());
+  return RunText(script_name, text.value());
 }
 
-bool NextEngine::RunScript(const std::string& module, const std::string&) {
+bool NextEngine::RunScript(const std::string& module, const std::string& text) {
+  return RunText(module, text);
+}
+
+bool NextEngine::RunText(const std::string& name, const std::string& text) {
   if (!config_.scripting_enabled()) {
     out_.outstr("WWIVbasic scripting is not enabled on this system.");
     return false;
   }
+  const auto module = ScriptBaseName(name);
   if (ctx_ && ctx_->session_context().debug_wwivbasic()) {
     // TODO(M6): the debugger (/debug/v1) for the new engine.
     LOG(WARNING) << "The WWIVbasic debugger isn't supported on the new engine yet; running '"
                  << module << "' without it.";
     out_.pl("|#6The debugger isn't supported on the new BASIC engine yet.");
   }
-  // TODO(M4): run the text on a wwivbasic::Interpreter with the Console over
-  // bout/bin and the wwiv.* modules.
-  LOG(ERROR) << "The new BASIC engine can't run scripts yet: '" << module << "'";
-  out_.pl("|#6The new BASIC engine can't run scripts yet.");
+
+  BbsConsole console(in_, out_);
+  wwivbasic::Interpreter interp(console);
+  // TODO(M4): register the wwiv.* modules.
+
+  // The full path, so that IMPORT "file.bas" is found next to the script.
+  const auto path = FilePath(config_.scriptdir(), name);
+  const auto result = interp.run_source(path.string(), text);
+  if (result.ok()) {
+    return true;
+  }
+  // Errors start with the script's full path; show it relative to scriptdir.
+  // The prefix is whatever FilePath put before the name.
+  const auto full = path.string();
+  const auto prefix = full.substr(0, full.size() - std::min(full.size(), name.size()));
+  for (const auto& e : result.errors) {
+    const auto msg = starts_with(e, prefix) ? e.substr(prefix.size()) : e;
+    LOG(ERROR) << msg;
+    out_.print("|#6{}\r\n", msg);
+  }
   return false;
 }
 

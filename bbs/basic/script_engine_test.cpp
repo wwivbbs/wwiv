@@ -147,11 +147,7 @@ TEST_F(ScriptEngineTest, Next_ScriptFile_IsRead) {
   auto engine = CreateScriptEngine(script_engine_t::next, bin, bout, helper.config(),
                                    &helper.context());
   ASSERT_NE(nullptr, engine);
-  // The file is found and read; the engine can't run it yet.
-  // TODO(M4): expect "Hello World" once the new engine runs scripts.
-  EXPECT_FALSE(engine->RunScript("hello.bas"));
-  const auto captured = helper.io()->captured();
-  EXPECT_THAT(captured, testing::Not(testing::HasSubstr("Unable to")));
-  EXPECT_THAT(captured, testing::HasSubstr("can't run scripts yet"));
+  EXPECT_TRUE(engine->RunScript("hello.bas"));
+  EXPECT_EQ("Hello World", StringTrim(helper.io()->captured()));
 }
 #endif

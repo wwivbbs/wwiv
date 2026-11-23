@@ -151,10 +151,10 @@ WWIV's existing `bbs/basic` tests pass against the new engine.
 - [x] `ScriptEngine` interface in WWIV (`bbs/basic/script_engine.h`); today's
       `Basic` becomes the legacy engine; `RunBasicScript` picks the engine
       from `config.json` (`script_flags` bit `0x0008`) and
-      `bbs --basic_engine=legacy|next`. `NextEngine` (`bbs/basic/next/`) is a
-      stub until the Console lands; with `--debug` it will warn and run
-      without the debugger until M6
-- [ ] `Console` implemented with `bout`/`bin`
+      `bbs --basic_engine=legacy|next`. With `--debug`, `NextEngine`
+      (`bbs/basic/next/`) warns and runs without the debugger until M6
+- [x] `Console` implemented with `bout`/`bin` (`bbs/basic/next/bbs_console.*`);
+      `NextEngine` runs scripts, without the `wwiv.*` modules yet
 - [ ] `wwiv.*` bindings in WWIV, same names and behaviour: `wwiv`, `wwiv.io`,
       `wwiv.data` (same on-disk format), `wwiv.time`, and `wwiv.io.file` /
       `wwiv.os` only when the sysop enables them

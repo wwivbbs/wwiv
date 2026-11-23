@@ -57,10 +57,12 @@ arguments, or dividing by zero now stops the script with a message such as:
 oneliners.bas:42: error: Unknown function 'outsrt'
 ```
 
-my_basic reported some of these and silently ignored others. Variables that
-were never assigned still read as empty, as before, but a dotted name such as
-`player.name` whose first part is neither a module nor a variable is an error
-(`Unknown variable or module 'player'`).
+my_basic reported some of these and silently ignored others. In the BBS the
+error is shown in color 6 as that one line, with the script's name relative to
+the scripts directory, instead of my_basic's "Error: Line, Col, Code, Message"
+block. Variables that were never assigned still read as empty, as before, but
+a dotted name such as `player.name` whose first part is neither a module nor a
+variable is an error (`Unknown variable or module 'player'`).
 
 ## Real numbers
 

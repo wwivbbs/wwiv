@@ -24,10 +24,10 @@
 
 namespace wwiv::bbs::basic {
 
-// Runs scripts on wwivbasic. Built only with WWIV_WWIVBASIC_NEXT.
+// Runs scripts on wwivbasic, with a BbsConsole over bout/bin. Built only with
+// WWIV_WWIVBASIC_NEXT.
 //
-// TODO(M4): scripts don't run yet; the Console over bout/bin and the wwiv.*
-// bindings come next (see wwivbasic/docs/PLAN.md).
+// TODO(M4): the wwiv.* modules (see wwivbasic/docs/PLAN.md).
 class NextEngine final : public ScriptEngine {
 public:
   NextEngine(common::Input& in, common::Output& out, const sdk::Config& config,
@@ -38,7 +38,11 @@ public:
   bool RunScript(const std::string& module, const std::string& text) override;
 
 private:
-  [[maybe_unused]] common::Input& in_;  // TODO(M4): the Console reads from it
+  // Runs text as the script scriptdir/name. Errors are shown with paths
+  // relative to scriptdir.
+  bool RunText(const std::string& name, const std::string& text);
+
+  common::Input& in_;
   common::Output& out_;
   const sdk::Config& config_;
   common::Context* ctx_;
