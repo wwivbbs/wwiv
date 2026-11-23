@@ -949,6 +949,10 @@ constexpr uint32_t EFLAG_QWK_DIR = 0x2000;
 constexpr uint32_t EFLAG_LISTEN_SOCK = 0x4000;
 // Use Listening UNIX Socket for connectivity
 constexpr uint32_t EFLAG_UNIX_SOCK = 0x8000;
+// With EFLAG_LISTEN_SOCK or EFLAG_UNIX_SOCK: the door runs under WWIVFOSS -E,
+// so carrier and DTR travel in-band in the socket data, and WWIV sends
+// heartbeats (see bbs/wwivfoss_inband.h).
+constexpr uint32_t EFLAG_WWIVFOSS = 0x10000;
 
 ///////////////////////////////////////////////////////////////////////////////
 

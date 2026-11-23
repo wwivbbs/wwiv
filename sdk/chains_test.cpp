@@ -19,6 +19,7 @@
 #include "gtest/gtest.h"
 
 #include "sdk/chains.h"
+#include "sdk/vardec.h"
 
 using namespace wwiv::sdk;
 
@@ -31,6 +32,15 @@ TEST(ChainsTest, ExecMode_Operator) {
   ASSERT_EQ(chain_exec_mode_t::netfoss, t++);
   ASSERT_EQ(chain_exec_mode_t::sock_port, t++);
   ASSERT_EQ(chain_exec_mode_t::sock_unix, t++);
+  ASSERT_EQ(chain_exec_mode_t::sock_wwivfoss, t++);
+  ASSERT_EQ(chain_exec_mode_t::none, t);
+}
+
+TEST(ChainsTest, ExecFlags_WWIVFoss) {
+  const auto flags = Chains::to_exec_flags(chain_exec_mode_t::sock_wwivfoss);
+  EXPECT_TRUE(flags & EFLAG_LISTEN_SOCK);
+  EXPECT_TRUE(flags & EFLAG_WWIVFOSS);
+  EXPECT_FALSE(Chains::to_exec_flags(chain_exec_mode_t::sock_port) & EFLAG_WWIVFOSS);
 }
 
 TEST(ChainsTest, ExecDir_Operator) {
