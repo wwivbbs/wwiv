@@ -61,15 +61,15 @@ public:
   void macro(wwiv::common::Context& ctx, int cc);
   // Forget the last-drawn status bar so the next draw_bottom_bar writes it.
   void invalidate_bottom_bar();
+  // Force the next invalidate to repaint the whole frame (header, bars
+  // and every visible row), e.g. once after a paste burst drains.
+  void invalidate_frame() { frame_dirty_ = true; }
 
   // Top editor line number visible in the viewport.
   int top_line_{0};
   bool debug{false};
 
 private:
-  // ESC[K after a full-width write would erase the next row (the status bar).
-  void clear_rest_of_row(int cols_written);
-
   common::FullScreenView fs_;
   common::Output& bout_;
   common::Input& bin_;
@@ -84,6 +84,12 @@ private:
   ins_ovr_mode_t smode_{ins_ovr_mode_t::ins};
   bool sdebug_{false};
   int sline_color_{-1};
+  // Full-frame repaint state.  A scroll (top_line changed since the last
+  // full paint) or an explicit invalidate_frame() repaints everything;
+  // otherwise only the invalidated rows are written.
+  void repaint_frame(FsedModel& e);
+  bool frame_dirty_{true};
+  int painted_top_line_{-1};
 };
 
 }

@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "fsed/view.h"
+#include "fsed/view_rows.h"
 
 #include "common/full_screen.h"
 #include "common/message_editor_data.h"
@@ -35,6 +36,45 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 namespace wwiv::fsed {
+
+// Clear the row first, then write cells with outchr (never outstr, so a
+// '|' in the message cannot be taken as a WWIV pipe code).  After a
+// nearly full write, park the cursor on this row so VT autowrap cannot
+// leave a tail on the next row.
+static void paint_edit_row(Output& bout, int y, int screen_width, int screen_length,
+                           const std::vector<cell_t>& cells) {
+  // Never paint on or past the last terminal row (the command line).
+  // A full-width write there autowraps and scrolls the header off the top.
+  if (y >= screen_length) {
+    return;
+  }
+  bout.goxy(1, y);
+  // Clear with the default color, not whatever the previous row or the
+  // status bar left set, so the cleared row has no colored background.
+  bout.ansic(0);
+  bout.clreol();
+  bout.goxy(1, y);
+  // Never write more cells than the wrap width.  A line that somehow
+  // grew past max_line_len would otherwise autowrap onto the next row
+  // and be painted over by the following model line.
+  const int max_cells = editor_wrap_columns(screen_width);
+  int last_color = 0;
+  int written = 0;
+  for (const auto& c : cells) {
+    if (written >= max_cells) {
+      break;
+    }
+    if (c.wwiv_color != last_color) {
+      last_color = c.wwiv_color;
+      bout.ansic(c.wwiv_color);
+    }
+    bout.outchr(c.ch);
+    ++written;
+  }
+  if (written >= screen_width - 1) {
+    bout.goxy(1, y);
+  }
+}
 
 FsedView::FsedView(const FullScreenView& fs, MessageEditorData& data, bool file)
     : fs_(fs), bout_(fs_.out()), bin_(fs_.in()), data_(data), file_(file) {
@@ -81,78 +121,63 @@ void FsedView::macro(Context& ctx, int cc) {
 }
 
 void FsedView::draw_current_line(FsedModel& ed, int previous_line) { 
+  if (frame_dirty_ || painted_top_line_ != top_line()) {
+    // The viewport scrolled (or the frame needs a repaint); every row moved.
+    repaint_frame(ed);
+    return;
+  }
   if (previous_line != ed.curli) {
-    auto py = previous_line - top_line() + fs_.lines_start();
-    if (py >= fs_.lines_start() && py < fs_.lines_end()) {
-      bout_.goxy(0, py);
-      if (previous_line < size_int(ed)) {
-        bout_.outstr(ed.line(previous_line).to_colored_text(-1));
-      }
-      bout_.clreol();
+    if (const auto py = row_for_line(previous_line, top_line(), fs_.lines_start(), fs_.lines_end())) {
+      const std::vector<cell_t> cells =
+          previous_line < size_int(ed) ? ed.line(previous_line).cells() : std::vector<cell_t>{};
+      paint_edit_row(bout_, *py, fs_.screen_width(), fs_.screen_length(), cells);
     }
   }
 
-  auto y = ed.curli - top_line() + fs_.lines_start();
-  if (y >= fs_.lines_end()) {
-    y = fs_.lines_end() - 1;
+  const auto yopt = row_for_line(ed.curli, top_line(), fs_.lines_start(), fs_.lines_end());
+  if (!yopt) {
+    draw_bottom_bar(ed);
+    return;
   }
-  if (y < fs_.lines_start()) {
-    y = fs_.lines_start();
-  }
-  bout_.goxy(0, y);
-  bout_.ansic(0);
-  for (const auto& c : ed.curline().cells()) {
-    // Draw char by char for the current line so we don't display
-    // color codes where we are editing.
-    bout_.ansic(c.wwiv_color);
-    bout_.outchr(c.ch);
-  }
-  clear_rest_of_row(size_int(ed.curline().cells()));
-  // Refresh the bar in case the previous line was a full-width last row
-  // and its trailing ESC[K landed on the status bar.
+  paint_edit_row(bout_, *yopt, fs_.screen_width(), fs_.screen_length(), ed.curline().cells());
+  // Refresh the bar in case a previous full-width write wrapped onto it.
   draw_bottom_bar(ed);
 }
 
-void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
-  // TODO: optimize for first line
-
-  // Never go below top line.
-  const auto start_line = std::max<int>(t.start.line, top_line());
-  auto last_color = -1;
-
-  for (auto i = start_line; i <= t.end.line; i++) {
-    auto y = i - top_line() + fs_.lines_start();
-    if (y >= fs_.lines_end()) {
-      break;
-    }
-    if (i >= size_int(e)) {
-      break;
-    }
-    bout_.goxy(1, y);
-    auto& rl = e.line(i);
-    if (i == e.curli) {
-      for (const auto& c : rl.cells()) {
-        // Draw char by char for the current line so we don't display
-        // color codes where we are editing.
-        if (c.wwiv_color != last_color) {
-          last_color = c.wwiv_color;
-          bout_.ansic(c.wwiv_color);
-        }
-        bout_.outchr(c.ch);
-      }
-    } else {
-      bout_.outstr(rl.to_colored_text(-1));
-    }
-    clear_rest_of_row(size_int(rl.cells()));
+void FsedView::repaint_frame(FsedModel& e) {
+  // Repaint the header and every visible edit row.  Used when the
+  // viewport scrolled, after a paste burst, or when invalidate_frame()
+  // was called, so a terminal that scrolled (e.g. from autowrap on the
+  // last row) gets its header back.
+  draw_header();
+  fs_.DrawTopBar();
+  for (const auto& p : plan_edit_area_paints(top_line(), size_int(e), fs_.lines_start(),
+                                             fs_.lines_end())) {
+    paint_edit_row(bout_, p.y, fs_.screen_width(), fs_.screen_length(),
+                   p.line < 0 ? std::vector<cell_t>{} : e.line(p.line).cells());
   }
+  invalidate_bottom_bar();
+  draw_bottom_bar(e);
+  ClearCommandLine();
+  frame_dirty_ = false;
+  painted_top_line_ = top_line();
+  gotoxy(e);
+}
 
-  // Clean up the bottom.
-  // clear the current and then remaining
-  if (size_int(e) == t.end.line + 1) {
-    for (auto z = size_int(e) - top_line() + fs_.lines_start(); z < fs_.lines_end(); z++) {
-      bout_.goxy(1, z);
-      bout_.clreol();
-    }
+void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
+  if (frame_dirty_ || painted_top_line_ != top_line()) {
+    repaint_frame(e);
+    return;
+  }
+  // Only repaint the invalidated rows.  Typing a character or changing
+  // one line costs one row, not the whole screen.  Never write at or
+  // below lines_end() (the status bar).
+  const auto doc_lines = size_int(e);
+  const bool to_eof = t.end.line >= doc_lines - 1;
+  for (const auto& p : plan_range_paints(t.start.line, t.end.line, to_eof, top_line(), doc_lines,
+                                         fs_.lines_start(), fs_.lines_end())) {
+    paint_edit_row(bout_, p.y, fs_.screen_width(), fs_.screen_length(),
+                   p.line < 0 ? std::vector<cell_t>{} : e.line(p.line).cells());
   }
 
   // Quote return, help, and viewport scroll all redraw lines through
@@ -162,14 +187,27 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
 }
 
 void FsedView::draw_header() {
+  // Position each header row with CUP, never CR/LF.  A newline issued
+  // while the cursor is on the last terminal row scrolls the whole
+  // screen and the header is replaced by leftover message text.
   const auto oldcuratr = bout_.curatr();
-  bout_.cls();
   const auto to = data_.to_name.empty() ? "All" : data_.to_name;
-  bout_.print("|#7From: |#2{}\r\n", data_.from_name);
-  bout_.print("|#7To:   |#2{}\r\n", to);
-  bout_.print("|#7Area: |#2{}\r\n", data_.sub_name);
-  bout_.print("|#7{}|#2{}\r\n", (file_ ? "File: " : "Subj: "), data_.title);
-
+  const std::string lines[4] = {
+      fmt::format("|#7From: |#2{}", data_.from_name),
+      fmt::format("|#7To:   |#2{}", to),
+      fmt::format("|#7Area: |#2{}", data_.sub_name),
+      fmt::format("|#7{}|#2{}", (file_ ? "File: " : "Subj: "), data_.title),
+  };
+  const int last = fs_.screen_length();
+  for (int i = 0; i < 4; ++i) {
+    const int y = clamp_screen_row(i + 1, last);
+    bout_.goxy(1, y);
+    bout_.clreol();
+    bout_.goxy(1, y);
+    bout_.outstr(lines[i]);
+    // Long From/Subj lines must not autowrap onto the next header row.
+    bout_.goxy(1, y);
+  }
   bout_.setc(oldcuratr);
 }
 
@@ -178,25 +216,20 @@ void FsedView::invalidate_bottom_bar() {
   sline_color_ = -1;
 }
 
-void FsedView::clear_rest_of_row(int cols_written) {
-  // Writing screen_width characters starting at column 1 wraps the
-  // cursor onto the next row.  The last message row's next row is the
-  // status bar (lines_end_ == screen_length_ - 1).  Skip ESC[K in that
-  // case so we do not erase the bar; a shorter line is still cleared.
-  if (cols_written < fs_.screen_width()) {
-    bout_.clreol();
-  }
-}
-
 void FsedView::redraw() { 
+  bout_.cls();
   draw_header(); 
   fs_.DrawTopBar();
   invalidate_bottom_bar();
   fs_.DrawBottomBar("");
   ClearCommandLine();
+  // No model here, so the edit rows are still blank: the next
+  // invalidate must repaint the whole frame.
+  frame_dirty_ = true;
 }
 
 void FsedView::redraw(const FsedModel& ed) {
+  bout_.cls();
   draw_header();
   fs_.DrawTopBar();
   // reset the cache that is used by draw_bottom_bar so that
@@ -205,6 +238,10 @@ void FsedView::redraw(const FsedModel& ed) {
   invalidate_bottom_bar();
   draw_bottom_bar(ed);
   ClearCommandLine();
+  // The frame is fresh.  Callers follow this with invalidate_to_eof(),
+  // which repaints the (now blank) edit rows.
+  frame_dirty_ = false;
+  painted_top_line_ = top_line();
 }
 
 void FsedView::draw_bottom_bar(const FsedModel& ed) {

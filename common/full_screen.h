@@ -50,6 +50,7 @@ public:
   [[nodiscard]] int lines_end() const noexcept { return lines_end_; }
   [[nodiscard]] int num_header_lines() const noexcept { return num_header_lines_; }
   [[nodiscard]] int screen_width() const noexcept { return screen_width_; }
+  [[nodiscard]] int screen_length() const noexcept { return screen_length_; }
 
   // Runs bgetch_event with error message and warning displayed
   // on the status line.

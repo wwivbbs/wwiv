@@ -38,6 +38,16 @@ Full Screen Editor (FSED)
 * FSED TopBar and BottomBar colors now match. (#1622)
 * Status bar stays visible after quoting and scrolling. (#1705)
 * Fixed newline handling in FSED. (#1703)
+* FSED now wraps at the screen width minus one (79 columns on an 80
+  column screen), so existing full-width lines reflow when edited, and
+  pasted text no longer corrupts or scrolls the screen. (#1729)
+* FSED screen length: a user setting of 24 lines now uses all 24 rows
+  (25 or more still subtracts one, as before). (#1729)
+* FSED: a bare LF (Ctrl-J or a Unix-style paste) now starts a new line,
+  and CRLF pastes no longer insert blank lines. (#1729)
+* FSED clears the screen when you leave the editor. (#1729)
+* FSED never lets a message grow past the sysop's line limit; text
+  typed or pasted past the limit is not added. (#1729)
 
 Files and ListPlus
 + ListPlus is now switchable, including from find description. (#1673)

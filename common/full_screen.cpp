@@ -72,6 +72,9 @@ void FullScreenView::PutsCommandLine(const std::string& text) {
   bout_.goxy(1, command_line_);
   bout_.outstr(text);
   bout_.clreol();
+  // The command line is often the last terminal row.  Park the cursor
+  // so a full-width write cannot stay wrap-pending and scroll the screen.
+  bout_.goxy(1, command_line_);
 }
 
 void FullScreenView::ClearMessageArea() {
@@ -83,10 +86,14 @@ void FullScreenView::ClearMessageArea() {
 }
 
 void FullScreenView::DrawTopBar() {
-  bout_.goxy(1, num_header_lines_ + 1);
+  const auto y = num_header_lines_ + 1;
+  bout_.goxy(1, y);
   bout_.print("|#7{:c}{}{:c}", static_cast<unsigned char>(198),
               std::string(std::max<int>(40, screen_width_) - 2, static_cast<unsigned char>(205)),
               static_cast<unsigned char>(181));
+  // A full-width write leaves the cursor wrap-pending on the first edit
+  // row.  Park it back on the bar so the next write cannot wrap there.
+  bout_.goxy(1, y);
 }
 
 void FullScreenView::DrawBottomBar(const std::string& text) {
@@ -98,6 +105,9 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
   bout_.print("|#7{:c}{}{:c}", static_cast<unsigned char>(198),
               std::string(screen_width_ - 2, static_cast<unsigned char>(205)),
               static_cast<unsigned char>(181));
+  // Cancel autowrap so the next write (or the badge below) cannot land
+  // on the command line under the status bar.
+  bout_.goxy(1, y);
 
   if (text.empty()) {
     return;
@@ -107,6 +117,7 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
   bout_.goxy(x, y);
   bout_.print("|#7{:c}|17|14 {} |16|09{:c}", static_cast<unsigned char>(181), text,
               static_cast<unsigned char>(198));
+  bout_.goxy(1, y);
 }
 
 void FullScreenView::GotoContentAreaTop() { bout_.goxy(1, num_header_lines_ + 2); }
