@@ -76,7 +76,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libncurses-dev zlib1g-dev pkg-config zip lld
+          sudo apt-get install -y libncurses-dev zlib1g-dev pkg-config zip mold
 
       - name: Set up Visual Studio x86 environment (Windows)
         if: runner.os == 'Windows'
