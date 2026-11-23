@@ -41,19 +41,19 @@ namespace wwiv::fsed {
 // '|' in the message cannot be taken as a WWIV pipe code).  After a
 // nearly full write, park the cursor on this row so VT autowrap cannot
 // leave a tail on the next row.
-static void paint_edit_row(Output& bout, int y, int screen_width, int screen_length,
+static void paint_edit_row(Output& out, int y, int screen_width, int screen_length,
                            const std::vector<cell_t>& cells) {
   // Never paint on or past the last terminal row (the command line).
   // A full-width write there autowraps and scrolls the header off the top.
   if (y >= screen_length) {
     return;
   }
-  bout.goxy(1, y);
+  out.goxy(1, y);
   // Clear with the default color, not whatever the previous row or the
   // status bar left set, so the cleared row has no colored background.
-  bout.ansic(0);
-  bout.clreol();
-  bout.goxy(1, y);
+  out.ansic(0);
+  out.clreol();
+  out.goxy(1, y);
   // Never write more cells than the wrap width.  A line that somehow
   // grew past max_line_len would otherwise autowrap onto the next row
   // and be painted over by the following model line.
@@ -66,13 +66,13 @@ static void paint_edit_row(Output& bout, int y, int screen_width, int screen_len
     }
     if (c.wwiv_color != last_color) {
       last_color = c.wwiv_color;
-      bout.ansic(c.wwiv_color);
+      out.ansic(c.wwiv_color);
     }
-    bout.outchr(c.ch);
+    out.outchr(c.ch);
     ++written;
   }
   if (written >= screen_width - 1) {
-    bout.goxy(1, y);
+    out.goxy(1, y);
   }
 }
 
