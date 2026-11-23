@@ -74,46 +74,11 @@ _build/linux-debug/wwivbasic/basicrun wwivbasic/tests/golden/loops.bas
 
 Before you finish a change, build it and make sure `ctest` passes.
 
-## Working on M4 (integrating with the BBS)
-
-M4 in `docs/PLAN.md` is the current milestone; its checklist says what's done. Decisions
-already made, so don't revisit them without asking:
-
-- **Where code goes.** The my_basic engine stays where it is (`bbs/basic/basic.*`,
-  `bbs/basic/wwiv_*.cpp`, the debugger); don't move or restructure it, since M6 deletes it. The
-  engine interface goes in `bbs/basic/` (`script_engine.h`), and everything for the new engine in
-  `bbs/basic/next/`: the engine adapter, a `Console` over `bout`/`bin`, and the `wwiv.*`
-  bindings. Build `bbs/basic/next/` only with `WWIV_WWIVBASIC_NEXT`; the BBS must still build and
-  behave exactly as before without it.
-- **Dependencies.** `wwivbasic/` depends only on `core/`, antlr4 and fmt. Bindings that need
-  `bbs/`, `sdk/` or `common/` live in `bbs/basic/next/` and use only wwivbasic's public headers
-  (`wwivbasic/*.h`), never `wwivbasic/internal/`. If a binding needs something the API doesn't
-  have, add it to the API (with a test in `embedding_test.cpp`).
-- **Choosing the engine.** `RunBasicScript` (`bbs/basic/basic.cpp`; called from
-  `bbs/application.cpp`, `bbs/execexternal.cpp` and `bbs/menus/menucommands.cpp`) picks the
-  engine at runtime: a `wwiv.json` setting, overridden by `bbs --basic_engine=legacy|next`.
-  The default stays legacy.
-- **Bindings match my_basic.** The existing bindings in `bbs/basic/wwiv*.cpp` are the spec:
-  same module and function names, arguments, return values and side effects. `wwiv.data` must
-  read and write the same files in the same format. `wwiv.io.file` and `wwiv.os` are only
-  registered when `config.script_package_file_enabled()` / `script_package_os_enabled()` are
-  set, and nothing runs unless `scripting_enabled()`, as in `Basic` today.
-  `basicrun/wwiv_stub.cpp` already implements these modules against the public API with fake
-  backends, so it's a useful starting point. Any intentional difference goes in `PORTING.md`.
-- **Tests.** Port the cases in `bbs/basic/basic_test.cpp` so they run on both engines, and
-  check `install/scripts/hello.bas` and `oneliners.bas` give the same output on both.
-
-Ask the user rather than choosing:
-
-- the name and shape of the `wwiv.json` engine setting;
-- what `wwiv.io.file.open(..., "W")` should do (see "Open decisions" in `docs/PLAN.md`);
-- anything that changes script-visible behaviour from my_basic.
-
-Things that have bitten us:
+## Things that have bitten us
 
 - **Windows CI is 32-bit (x86).** WWIV's PR build uses `windows-x86-debug`; wwivbasic was only
-  tested on x64 before the move. Watch for `size_t`/`int64_t` assumptions and type clashes
-  (for example the `ssize_t` workaround in `internal/antlr.h`).
+  tested on x64 before it moved into WWIV. Watch for `size_t`/`int64_t` assumptions and type
+  clashes (for example the `ssize_t` workaround in `internal/antlr.h`).
 - **Line endings.** Some WWIV files use CRLF, including the top-level `CMakeLists.txt` and
   `core/command_line.h`. Keep each file's existing line endings; a whole-file line-ending change
   makes the diff unreadable.
@@ -139,9 +104,5 @@ Things that have bitten us:
 
 ## Git
 
-- Do work on a feature branch and open a pull request to `wwivbbs/wwiv` `main`. Never push to
-  `main`. The user reviews and merges pull requests themselves, as squash merges; don't merge
-  them yourself.
-- Before handing a pull request over, build with `-DWWIV_WWIVBASIC_NEXT=ON`, run `ctest`, and
-  check that CI passes on both jobs (`linux-debug` and `windows-x86-debug`).
+- Do work on a feature branch and merge through a pull request to WWIV's `main`.
 - Commit messages are short and imperative ("Add support for TRUE, FALSE").
