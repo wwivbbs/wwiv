@@ -87,6 +87,16 @@ Small differences in how arguments are checked:
 - Once the caller has hung up, `wwiv.io.getkey()` and `wwiv.io.gets()` return
   `""` and the script stops at the next statement.
 
+`wwiv.data` reads and writes the same files as before, in the same format, so
+data saved by a script on one engine loads on the other. `LOAD` still appends
+to the list. Two things to know:
+
+- `TRUE` and `FALSE` are saved as the integers 1 and 0, as in my_basic (where
+  they were integers).
+- Real numbers are saved with 32-bit precision, as before, so a REAL that is
+  saved and loaded again may differ in its last digits from the 64-bit value
+  the script had.
+
 ## Real numbers
 
 Real numbers work as in my_basic: `7 / 2` is `3.5`, `6 / 2` is the integer

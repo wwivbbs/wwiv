@@ -158,7 +158,7 @@ WWIV's existing `bbs/basic` tests pass against the new engine.
 - [ ] `wwiv.*` bindings in WWIV, same names and behaviour: `wwiv`, `wwiv.io`,
       `wwiv.data` (same on-disk format), `wwiv.time`, and `wwiv.io.file` /
       `wwiv.os` only when the sysop enables them (`bbs/basic/next/`; done:
-      `wwiv`, `wwiv.io`, `wwiv.time`)
+      `wwiv`, `wwiv.io`, `wwiv.time`, `wwiv.data`)
 - [ ] Port WWIV's `bbs/basic/basic_test.cpp` cases to run against the new
       engine
 - [ ] Side-by-side check: run scripts on both engines and diff the output

@@ -36,9 +36,9 @@ public:
   bool RunScript(const std::string& module, const std::string& text) override;
 
 private:
-  // Runs text as the script scriptdir/name. Errors are shown with paths
-  // relative to scriptdir.
-  bool RunText(const std::string& name, const std::string& text);
+  // Runs text as the script scriptdir/name, with the module name module
+  // (lower case). Errors are shown with paths relative to scriptdir.
+  bool RunText(const std::string& name, const std::string& module, const std::string& text);
   // Shows one line of an error message in color 6, without interpreting it.
   void ShowError(const std::string& line);
 
