@@ -28,7 +28,7 @@ What's New in WWIV 5.10.0 (2026)
   so the door sees the caller hang up, and a door that lowers DTR returns
   the caller to the BBS. WWIV also sends heartbeats every
   WWIVFOSS_HEARTBEAT seconds (wwiv.ini, default 10); run the door with
-  WWIVFOSS -E -H10 to match.
+  WWIVFOSS -E -H10 (the -H value must be at least WWIVFOSS_HEARTBEAT).
 
 What's New in WWIV 5.9.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -53,6 +53,9 @@ struct wwivfoss_options_t {
   // How long the door has to exit after the caller hangs up (and WWIV sends
   // DTR low) before it's killed.
   std::chrono::milliseconds caller_hangup_grace{10000};
+  // How long the door has to exit after its socket closes or fails. Longer
+  // than door_hangup_grace: a door may still be writing drop or score files.
+  std::chrono::milliseconds socket_closed_grace{10000};
 };
 
 class ExecSocket final {

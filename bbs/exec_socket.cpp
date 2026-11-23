@@ -191,23 +191,19 @@ bool ExecSocket::process_still_active(EXEC_SOCKET_HANDLE h) {
   }
   return true;
 #elif defined(__unix__)
-  int status_code = 0;
-  pid_t wp = waitpid(h, &status_code, WNOHANG);
-  if (wp == -1 || wp > 0) {
-    // -1 means error and >0 is the pid
-    VLOG(2) << "waitpid returned: " << wp << "; errno: " << errno;
-    if (WIFEXITED(status_code)) {
-      VLOG(1) << "child exited with code: " << WEXITSTATUS(status_code);
-      return false;
-    }
-    if (WIFSIGNALED(status_code)) {
-      VLOG(1) << "child caught signal: " << WTERMSIG(status_code);
-    } else {
-      LOG(INFO) << "Raw status_code: " << status_code;
-    }
-    LOG(INFO) << "core dump? : " << WCOREDUMP(status_code);
+  // WNOWAIT leaves the child to be reaped by the caller, so it still gets
+  // the door's real exit status.
+  siginfo_t info{};
+  if (waitid(P_PID, static_cast<id_t>(h), &info, WEXITED | WNOHANG | WNOWAIT) == -1) {
+    // ECHILD: already reaped (or not our child), so it isn't running.
+    VLOG(2) << "waitid failed; errno: " << errno;
+    return errno == EINTR;
   }
-  return true;
+  if (info.si_pid == 0) {
+    return true;
+  }
+  VLOG(1) << "child exited; code: " << info.si_code << "; status: " << info.si_status;
+  return false;
 #endif
 }
 
@@ -340,9 +336,10 @@ pump_socket_result_t ExecSocket::pump_socket_wwivfoss(EXEC_SOCKET_HANDLE hProces
         VLOG(1) << "Door raised DTR again.";
         door_hangup_deadline.reset();
       }
-    } else if (num_read == 0) {
-      VLOG(1) << "Exiting pump_socket: door closed the socket.";
-      return wait_for_exit(hProcess, sock, opts.door_hangup_grace)
+    } else if (num_read == 0 || !would_block()) {
+      VLOG(1) << "Exiting pump_socket: door socket "
+              << (num_read == 0 ? "closed." : "failed.");
+      return wait_for_exit(hProcess, sock, opts.socket_closed_grace)
                  ? pump_socket_result_t::process_exit
                  : pump_socket_result_t::socket_error;
     }
@@ -355,8 +352,10 @@ pump_socket_result_t ExecSocket::pump_socket_wwivfoss(EXEC_SOCKET_HANDLE hProces
                  : pump_socket_result_t::socket_error;
     }
 
-    if (!door_hangup_deadline && io.incoming()) {
-      if (auto num_read = io.read(buf, sizeof(buf)); num_read > 0) {
+    if (io.incoming()) {
+      if (auto num_read = io.read(buf, sizeof(buf)); num_read > 0 && !door_hangup_deadline) {
+        // While the door has DTR low the caller's keys are discarded, so
+        // they don't run as BBS commands once the caller returns.
         if (!send_all(sock, wwivfoss_escape(buf, num_read))) {
           VLOG(1) << "Exiting pump_socket; Write to socket failed";
           return pump_socket_result_t::socket_error;

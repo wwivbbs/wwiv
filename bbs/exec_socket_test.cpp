@@ -39,8 +39,8 @@ using namespace wwiv::bbs;
 
 namespace {
 
-// A caller: hands the pump scripted input once, captures what it writes,
-// and can hang up at a given time.
+// A caller: hands the pump scripted input (some of it only after a given
+// time), captures what it writes, and can hang up at a given time.
 class FakeCallerIO final : public wwiv::common::RemoteIO {
 public:
   bool open() override { return true; }
@@ -63,12 +63,21 @@ public:
     return static_cast<unsigned int>(n);
   }
   bool connected() override { return !hangup_at || steady_clock::now() < *hangup_at; }
-  bool incoming() override { return !input.empty(); }
+  bool incoming() override {
+    if (typed_at && steady_clock::now() >= *typed_at) {
+      input += typed;
+      typed_at.reset();
+    }
+    return !input.empty();
+  }
   [[nodiscard]] unsigned int GetHandle() const override { return 0; }
 
   std::string input;
   std::string output;
   std::optional<steady_clock::time_point> hangup_at;
+  // Added to input at typed_at.
+  std::string typed;
+  std::optional<steady_clock::time_point> typed_at;
 };
 
 // Reads from sock until want returns true for what was received, or it
@@ -99,6 +108,9 @@ struct PumpRun {
   pump_socket_result_t result;
   std::string door_received;
   milliseconds elapsed;
+  // The door's exit status from waitpid, or -1 if it had already been
+  // reaped (which would lose the door's real exit code).
+  int wait_status{-1};
 };
 
 PumpRun run_door(ExecSocket& es, FakeCallerIO& io,
@@ -132,7 +144,10 @@ PumpRun run_door(ExecSocket& es, FakeCallerIO& io,
   if (r.result != pump_socket_result_t::process_exit) {
     kill(pid, SIGKILL);
   }
-  waitpid(pid, nullptr, 0);
+  int status = 0;
+  if (waitpid(pid, &status, 0) == pid) {
+    r.wait_status = status;
+  }
   char buf[1024];
   for (ssize_t n; (n = ::read(fds[0], buf, sizeof(buf))) > 0;) {
     r.door_received.append(buf, n);
@@ -146,6 +161,7 @@ wwivfoss_options_t fast_options() {
   o.heartbeat = seconds(0);
   o.door_hangup_grace = milliseconds(500);
   o.caller_hangup_grace = milliseconds(2000);
+  o.socket_closed_grace = milliseconds(1000);
   return o;
 }
 
@@ -170,6 +186,10 @@ TEST(ExecSocketWWIVFossTest, DataBothWays) {
   // DTR up first, then the caller's data with FF doubled.
   EXPECT_EQ("\xFF\x03" "a\xFF\xFF" "b"s, r.door_received);
   EXPECT_EQ("hi\xFF!"s, io.output);
+  // The pump must not reap the door: exec_cmdline needs its exit status.
+  ASSERT_NE(-1, r.wait_status);
+  EXPECT_TRUE(WIFEXITED(r.wait_status));
+  EXPECT_EQ(0, WEXITSTATUS(r.wait_status));
 }
 
 TEST(ExecSocketWWIVFossTest, DoorLowersDtr_ReturnsCallerAfterGrace) {
@@ -206,6 +226,68 @@ TEST(ExecSocketWWIVFossTest, DoorLowersDtr_ExitsWithinGrace) {
   });
 
   EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+}
+
+TEST(ExecSocketWWIVFossTest, DoorLowersDtr_CallerKeysDiscarded) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.enable_wwivfoss(fast_options());
+  FakeCallerIO io;
+  io.typed = "xyz";
+  io.typed_at = steady_clock::now() + milliseconds(200);
+
+  const auto r = run_door(es, io, [](int sock) {
+    const auto out = "\xFF\x01"s;
+    send(sock, out.data(), out.size(), 0);
+    // Stay up within the grace period, collecting anything sent to us.
+    return read_until(sock, [](const auto&) { return false; }, milliseconds(400));
+  });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+  // Neither sent to the door nor left queued to run as BBS commands.
+  EXPECT_EQ("\xFF\x03"s, r.door_received);
+  EXPECT_TRUE(io.input.empty());
+}
+
+TEST(ExecSocketWWIVFossTest, DoorClosesSocket_GetsLongerGrace) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.enable_wwivfoss(fast_options());
+  FakeCallerIO io;
+
+  // Closes the socket, then keeps working (e.g. writing score files) for
+  // longer than door_hangup_grace but within socket_closed_grace.
+  const auto r = run_door(es, io, [](int sock) {
+    ::close(sock);
+    usleep(700000);
+    return std::string();
+  });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+}
+
+TEST(ExecSocketWWIVFossTest, DoorSocketReset) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.enable_wwivfoss(fast_options());
+  FakeCallerIO io;
+
+  // Resets the connection (RST, not FIN) and never exits. On Linux a later
+  // recv returns 0 anyway; on Windows recv keeps failing with WSAECONNRESET,
+  // which only the read error check catches.
+  const auto r = run_door(es, io, [](int sock) {
+    usleep(200000);
+    linger lg{1, 0};
+    setsockopt(sock, SOL_SOCKET, SO_LINGER, &lg, sizeof(lg));
+    ::close(sock);
+    sleep(30);
+    return std::string();
+  });
+
+  EXPECT_EQ(pump_socket_result_t::socket_error, r.result);
+  // Noticed right away and waited socket_closed_grace, not a heartbeat.
+  EXPECT_GE(r.elapsed.count(), 900);
+  EXPECT_LT(r.elapsed.count(), 4000);
 }
 
 TEST(ExecSocketWWIVFossTest, CallerHangup_SendsDtrLow) {
