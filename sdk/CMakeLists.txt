@@ -130,7 +130,7 @@ add_executable(sdk_tests ${test_sources})
 set_max_warnings(sdk_tests)
 target_link_libraries(sdk_tests core core_fixtures GTest::gtest sdk sdk_fixtures)
 
-gtest_discover_tests(sdk_tests)
+gtest_discover_tests(sdk_tests EXTRA_ARGS "--wwiv_testdata=${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
 
 endif()
