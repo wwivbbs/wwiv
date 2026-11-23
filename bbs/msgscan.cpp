@@ -614,11 +614,15 @@ static void HandleMessageDownload(int msgnum) {
     File::Remove(f);
     TextFile tf(f, "wt");
     tf.Write(b);
+    // Close (and flush) the file before sending it, otherwise the
+    // transfer protocol reads an empty or partial file.
+    tf.Close();
 
     bool bFileAbortStatus;
     bool bStatus;
-    send_file(f, &bStatus, &bFileAbortStatus, f.string(), -1, b.length());
-    bout.print("|#1Message download... |#2{}", bStatus ? "successful" : "unsuccessful");
+    send_file(f, &bStatus, &bFileAbortStatus, filename, -1, b.length());
+    bout.nl();
+    bout.print("|#1Message download... |#2{}\r\n", bStatus ? "successful" : "unsuccessful");
     if (bStatus) {
       sysoplog("Downloaded message");
     }
