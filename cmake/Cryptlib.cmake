@@ -37,6 +37,24 @@ else()
   add_custom_target(cryptlib_builder DEPENDS "${LIBCL_A}")
   add_dependencies(cryptlib cryptlib_builder)
   set_target_properties(cryptlib PROPERTIES IMPORTED_LOCATION "${LIBCL_A}")
+
+  # Libraries libcl.a itself needs, so they come after it on the link line
+  # (GNU ld only searches libraries that follow the one that needs them).
+  # See tools/getlibs.sh: on Linux that's -lresolv -lpthread (-ldl), and
+  # tools/ccopts.sh builds with the system zlib whenever
+  # /usr/include/zlib.h exists.
+  set(_cryptlib_deps)
+  find_package(Threads REQUIRED)
+  list(APPEND _cryptlib_deps Threads::Threads ${CMAKE_DL_LIBS})
+  find_library(WWIV_RESOLV_LIBRARY resolv)
+  if (WWIV_RESOLV_LIBRARY)
+    list(APPEND _cryptlib_deps "${WWIV_RESOLV_LIBRARY}")
+  endif()
+  if (EXISTS "/usr/include/zlib.h")
+    find_package(ZLIB REQUIRED)
+    list(APPEND _cryptlib_deps ZLIB::ZLIB)
+  endif()
+  set_target_properties(cryptlib PROPERTIES INTERFACE_LINK_LIBRARIES "${_cryptlib_deps}")
 endif()
 
 set_target_properties(cryptlib PROPERTIES
