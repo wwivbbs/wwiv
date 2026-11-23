@@ -1,0 +1,333 @@
+/**************************************************************************/
+/*                                                                        */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2022, WWIV Software Services             */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/*                                                                        */
+/**************************************************************************/
+#ifndef INCLUDED_CORE_STRINGS_H
+#define INCLUDED_CORE_STRINGS_H
+
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cstring> // strncpy
+// ReSharper disable once CppUnusedIncludeDirective
+#include <ctime>   // struct tm
+#include <functional>
+#include <limits>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <vector>
+
+// NOTE(rushfan): Keep all of these since sometimes windows headers get
+// included before this one.
+#ifdef StrCat
+#undef StrCat
+#endif // StrCat
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
+
+namespace wwiv::strings {
+
+enum class JustificationType { LEFT, RIGHT };
+
+template <typename A> std::string StrCat(const A& a) noexcept {
+  try {
+    std::ostringstream ss;
+    ss << a;
+    return ss.str();
+  } catch (...) {
+    return {};
+  }
+}
+
+template <typename A, typename... Args> std::string StrCat(const A& a, const Args&... args) noexcept {
+  try {
+    std::ostringstream ss;
+    ss << a << StrCat(args...);
+    return ss.str();
+  } catch (...) {
+    return {};
+  }
+}
+
+  /**
+   * Safe string -> character array. Ensures the character
+   * array is null-terminated.
+   * NB: Will assert on Windows if out is too small. Will attempt
+   * to use safe versions of the CRT as possible in the future.
+   */
+  template <size_t SIZE> bool to_char_array(char (&out)[SIZE], const std::string& s) noexcept {
+#ifdef _MSC_VER
+    strncpy_s(out, s.c_str(), SIZE);
+#else
+    strncpy(out, s.c_str(), SIZE);
+#endif // _WIN32
+    out[SIZE - 1] = '\0';
+    return s.size() <= SIZE;
+  }
+
+  /**
+   * Safe string -> character array.
+   * ** NB: ** Does not ensure the character array is null-terminated.
+   * Also won't assert on Windows if out is too small.
+   */
+  template <size_t SIZE> bool to_char_array_no_null(char (&out)[SIZE], const std::string& s) {
+    strncpy(out, s.c_str(), SIZE);
+    return s.size() <= SIZE;
+  }
+
+  /**
+   * Safe string -> character array. Ensures the character
+   * array is null-terminated.
+   * NB: will trim the output if it's too long.
+   */
+  template <size_t SIZE> bool to_char_array_trim(char (&out)[SIZE], const std::string& s) noexcept {
+    strncpy(out, s.c_str(), SIZE);
+    out[SIZE - 1] = '\0';
+    return s.size() <= SIZE;
+  }
+
+  // Comparisons
+  [[nodiscard]] bool IsEquals(const char* str1, const char* str2);
+  [[nodiscard]] bool iequals(const char* str1, const char* str2);
+  [[nodiscard]] bool iequals(const std::string& s1, const std::string& s2);
+  [[nodiscard]] int StringCompareIgnoreCase(const char* str1, const char* str2);
+  [[nodiscard]] int StringCompare(const char* str1, const char* str2);
+
+  /**
+   * @brief Replace all occurences in `orig` of `old_string` with `new_string`.
+   * @param[in,out] orig original string containing the text to which to apply substitutions
+   * @param[in]     old_string    substrings to be replaced by new_string
+   * @param[in]     new_string    substrings to replace old_string
+  */
+  void StringReplace(std::string* orig, const std::string& old_string,
+                     const std::string& new_string);
+
+  /**
+   * @brief Splits a string on the boundaries defined by delims 
+   * 
+   * @param[in] original_string The string to be split
+   * @param[in] delims          the boundaries at which to split the strong
+   * @return                    A vector containing original_string split at delims
+  */
+  std::vector<std::string> SplitString(const std::string& original_string,
+                                       const std::string& delims);
+
+  /**
+   * @brief Splits a string on the boundaries defined by delims
+   * 
+   * @param[in] original_string The string to be split
+   * @param[in] delims          the boundaries at which to split the strong
+   * @param[in[ skip_empty      Should empty strings be not included in the returned std::vector.
+   * @return                    A vector containing original_string split at delims
+   */
+  [[nodiscard]] std::vector<std::string> SplitString(const std::string& original_string,
+                                       const std::string& delims, bool skip_empty);
+
+  /**
+   * @brief Splits a string on the boundaries defined by delims
+   * 
+   * @param[in] original_string The string to be split
+   * @param[in] delims          the boundaries at which to split the strong
+   * @param[out] out            A vector containing original_string split at delims
+   */
+  void SplitString(const std::string& original_string, const std::string& delims,
+                   std::vector<std::string>* out);
+
+  /**
+   * @brief Splits a string on the boundaries defined by delims
+   * 
+   * @param[in] original_string The string to be split
+   * @param[in] delims          the boundaries at which to split the strong
+   * @param[in[ skip_empty      Should empty strings be not included in the returned std::vector.
+   * @param[out] out            A vector containing original_string split at delims
+   */
+  void SplitString(const std::string& original_string, const std::string& delims, bool skip_empty,
+                   std::vector<std::string>* out);
+
+  /**
+   * Splits a string once on the first occurrence of any character in delims.
+   */
+  std::tuple<std::string, std::string> SplitOnce(const std::string& original_string, const std::string& delims);
+
+  /**
+   * Splits a string once on the last occurrence of any character in delims.
+   */
+  std::tuple<std::string, std::string> SplitOnceLast(const std::string& original_string, const std::string& delims);
+
+  [[nodiscard]] bool starts_with(const std::string& input, const std::string& match);
+  [[nodiscard]] bool ends_with(const std::string& input, const std::string& match);
+
+  void StringJustify(std::string* s, int length, char bg,
+                     JustificationType just_type);
+  void StringTrim(char* str);
+  void StringTrim(std::string* s);
+  [[nodiscard]] std::string StringTrim(const std::string& orig);
+
+  void StringTrimCRLF(std::string* s);
+
+  /**
+   * Removes the whitespace from the end of the string
+   * 
+   * @param str The string from which to remove the trailing whitespace
+   */
+  void StringTrimEnd(std::string* s);
+  std::string StringTrimEnd(std::string_view s);
+
+  void StringTrimBegin(std::string* s);
+  void StringUpperCase(std::string* s);
+  [[nodiscard]] std::string ToStringUpperCase(const std::string& s);
+  void StringLowerCase(std::string* s);
+  [[nodiscard]] std::string ToStringLowerCase(const std::string& s);
+
+  /**
+   * Joints the strings in lines, using end_of_line in between each line.
+   */
+  [[nodiscard]] std::string JoinStrings(const std::vector<std::string>& lines, const std::string& end_of_line);
+
+  // String length without colors
+  [[nodiscard]] int size_without_colors(const std::string& s);
+
+  /** returns a copy of orig trimmed to size, excluding colors. */
+  [[nodiscard]] std::string trim_to_size_ignore_colors(const std::string& orig, int size);
+
+  /**
+   * Returns orig padded to size, excluding color codes.
+   */
+  [[nodiscard]] std::string pad_to_ignore_colors(const std::string& orig, int size);
+
+  // String length
+  [[nodiscard]] std::string::size_type size(const std::string& s);
+
+  // String length
+  [[nodiscard]] std::string::size_type size(const char* s);
+
+  // String length as an int
+  [[nodiscard]] int ssize(const char* s);
+
+  // String length as an int
+  [[nodiscard]] int ssize(const unsigned char* s);
+
+  // String length as an int
+  [[nodiscard]] int ssize(const std::string& s);
+
+  // String length as an int
+  [[nodiscard]] int size_int(const char* s);
+
+  // String length as an int
+  [[nodiscard]] int size_int(const unsigned char* s);
+
+  // String length as an int
+  [[nodiscard]] int size_int(const std::string& s);
+
+  /** returns a copy of orig trimmed to size, excluding colors. */
+  std::string trim_to_size(const std::string& orig, int size);
+
+  /** Type-safe version of toupper */
+  template<class T, typename = std::enable_if_t<std::is_convertible_v<T, char>, char>>
+  T to_upper_case(const T a) { return static_cast<T>(::toupper(a)); }
+
+  template<class T>
+  std::enable_if_t<std::is_convertible_v<T, char>, char>
+  to_upper_case_char(const T a) { return static_cast<T>(::toupper(a)); }
+
+  /** Type safe version of toupper */
+  template<class T, typename = std::enable_if_t<std::is_convertible_v<T, char>, char>>
+  T to_lower_case(const T a) { return static_cast<T>(::tolower(a)); }
+
+  template<class T>
+  std::enable_if_t<std::is_convertible_v<T, char>, char>
+  to_lower_case_char(const T a) { return static_cast<T>(::tolower(a)); }
+
+  template <typename T, typename std::enable_if<std::is_unsigned<T>::value, T>::type* = nullptr>
+  T to_number(const std::string& s, int b = 10) {
+    char* end;
+    auto result = strtoul(s.c_str(), &end, b);
+    if (errno == ERANGE) {
+      return 0;
+    }
+    if (result > std::numeric_limits<T>::max()) {
+      return std::numeric_limits<T>::max();
+    }
+    if (result < std::numeric_limits<T>::min()) {
+      return std::numeric_limits<T>::min();
+    }
+    return static_cast<T>(result);
+  }
+
+  template <typename T, typename std::enable_if<std::is_signed<T>::value, T>::type* = nullptr>
+  T to_number(const std::string& s, int b = 10) {
+    char* end;
+    auto result = strtol(s.c_str(), &end, b);
+    if (errno == ERANGE) {
+      return 0;
+    }
+    if (result > std::numeric_limits<T>::max()) {
+      return std::numeric_limits<T>::max();
+    }
+    if (result < std::numeric_limits<T>::min()) {
+      return std::numeric_limits<T>::min();
+    }
+    return static_cast<T>(result);
+  }
+
+  /**
+   * Return true if haystack contains needed as a substring.
+   *
+   * Like boost::contains.
+   * See http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1679r3.html
+   * for proposal to add as std::string::contains.
+   */
+  bool contains(const std::string& haystack, const std::string_view& needle) noexcept;
+
+  } // namespace wwiv
+
+  // Function Prototypes
+  [[nodiscard]] char* stripcolors(const char* str);
+  [[nodiscard]] std::string stripcolors(const std::string& orig);
+  [[nodiscard]] unsigned char upcase(unsigned char ch);
+  [[nodiscard]] unsigned char locase(unsigned char ch);
+
+  void properize(char* text);
+  [[nodiscard]] std::string properize(const std::string& text);
+
+  extern const char* DELIMS_WHITE;
+
+  /** returns true if needle is found in haystack ,ignoring case */
+  [[nodiscard]] bool ifind_first(const std::string& haystack, const std::string& needle);
+
+#ifdef _WIN32
+#ifndef strcasecmp
+  #define strcasecmp(a, b) _stricmp(a, b)
+#endif
+#ifndef strncasecmp
+  #define strncasecmp(a, b, c) _strnicmp(a, b, c)
+#endif
+
+  char* strcasestr(const char* haystack, const char* needle);
+
+#else // _WIN32
+  char* strupr(char* s);
+  char* strrev(char* s);
+
+#endif // _WIN32
+
+#endif // __INCLUDED_STRINGS_H__
