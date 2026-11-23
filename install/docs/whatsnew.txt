@@ -17,6 +17,11 @@ Legend (starting with 5.3)
 
 What's New in WWIV 5.10.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* cryptlib (used for SSH) updated from 3.4.5 to 3.4.9.6. It's now a git
+  submodule (deps/cryptlib) of https://github.com/wwivbbs/cryptlib.
+! Linux: the SSH server now offers aes128-ctr/aes256-ctr, so current
+  OpenSSH clients connect without enabling legacy CBC ciphers (-c aes128-cbc).
+  Windows still uses cryptlib's prebuilt DLL, which only offers CBC.
 
 What's New in WWIV 5.9.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

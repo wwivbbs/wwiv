@@ -97,7 +97,7 @@ To run the tests:
 ctest --preset windows-x86-debug
 ```
 
-The build copies cryptlib's DLL (`cl32.dll`, from `deps\cl345`) next to every
+The build copies cryptlib's DLL (`cl32.dll`, from `deps\cryptlib`) next to every
 program that needs it (`bbs.exe` and `bbs_tests.exe`), so there is nothing to copy
 by hand.
 

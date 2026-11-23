@@ -8,3 +8,7 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/Microsoft/vcpkg
+[submodule "deps/cryptlib"]
+	path = deps/cryptlib
+	url = https://github.com/wwivbbs/cryptlib
+	ignore = dirty

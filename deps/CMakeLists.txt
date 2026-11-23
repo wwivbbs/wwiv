@@ -2,8 +2,8 @@
 # CMakeLists.txt of its own. These are defined here, rather than inside the
 # submodules, so the submodules stay unmodified.
 #
-# pdcurses and cl345 have their own CMakeLists.txt and are added from the top
-# level CMakeLists.txt.
+# pdcurses has its own CMakeLists.txt and is added from the top level
+# CMakeLists.txt; cryptlib is set up by cmake/Cryptlib.cmake.
 
 # My-Basic: the BASIC interpreter used by bbs/basic.
 add_library(my_basic STATIC my_basic/core/my_basic.c)
