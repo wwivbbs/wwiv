@@ -23,10 +23,13 @@
 #include "bbs/bbs_helper.h"
 #include "common/input.h"
 #include "common/output.h"
+#include "core/file.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "sdk/config.h"
 
 using namespace wwiv::bbs::basic;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 class ScriptEngineTest : public ::testing::Test {
@@ -121,5 +124,34 @@ TEST_F(ScriptEngineTest, Next_ScriptingDisabled) {
   ASSERT_NE(nullptr, engine);
   EXPECT_FALSE(engine->RunScript("ScriptEngineTest", "print \"Hello World\""));
   EXPECT_THAT(helper.io()->captured(), testing::HasSubstr("not enabled"));
+}
+#endif
+
+#ifdef WWIV_WWIVBASIC_NEXT
+TEST_F(ScriptEngineTest, Next_ScriptFile_Missing) {
+  auto engine = CreateScriptEngine(script_engine_t::next, bin, bout, helper.config(),
+                                   &helper.context());
+  ASSERT_NE(nullptr, engine);
+  EXPECT_FALSE(engine->RunScript("missing.bas"));
+  EXPECT_THAT(helper.io()->captured(), testing::HasSubstr("Unable to locate script: missing.bas"));
+}
+
+TEST_F(ScriptEngineTest, Next_ScriptFile_IsRead) {
+  const auto dir = helper.config().scriptdir();
+  std::filesystem::create_directories(dir);
+  {
+    TextFile f(FilePath(dir, "hello.bas"), "wt");
+    ASSERT_TRUE(f.IsOpen());
+    f.Write("print \"Hello World\"\n");
+  }
+  auto engine = CreateScriptEngine(script_engine_t::next, bin, bout, helper.config(),
+                                   &helper.context());
+  ASSERT_NE(nullptr, engine);
+  // The file is found and read; the engine can't run it yet.
+  // TODO(M4): expect "Hello World" once the new engine runs scripts.
+  EXPECT_FALSE(engine->RunScript("hello.bas"));
+  const auto captured = helper.io()->captured();
+  EXPECT_THAT(captured, testing::Not(testing::HasSubstr("Unable to")));
+  EXPECT_THAT(captured, testing::HasSubstr("can't run scripts yet"));
 }
 #endif

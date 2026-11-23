@@ -19,20 +19,69 @@
 
 #include "common/context.h"
 #include "common/output.h"
+#include "core/file.h"
 #include "core/log.h"
+#include "core/strings.h"
+#include "core/textfile.h"
 #include "sdk/config.h"
 #include "wwivbasic/interpreter.h"
 
+#include <optional>
+
 namespace wwiv::bbs::basic {
 
+using namespace wwiv::core;
+using namespace wwiv::strings;
+
+namespace {
+
+// The module name for a script file: its name in lower case without ".bas",
+// as the legacy engine does.
+std::string ScriptBaseName(const std::string& script_name) {
+  auto basename = ToStringLowerCase(script_name);
+  if (ends_with(basename, ".bas")) {
+    return basename.substr(0, basename.find_last_of('.'));
+  }
+  return basename;
+}
+
+// Reads scriptdir/script_name, with the same checks and messages as the
+// legacy engine (Basic::RunScript and ReadBasicFile in basic.cpp).
+std::optional<std::string> ReadScriptFile(common::Output& out, const std::filesystem::path& dir,
+                                          const std::string& script_name) {
+  const auto path = FilePath(dir, script_name);
+  if (!File::Exists(path)) {
+    out.print("|#6Unable to locate script: {}", script_name);
+    return std::nullopt;
+  }
+  if (script_name.find("..") != std::string::npos) {
+    LOG(ERROR) << "Invalid script name: " << script_name;
+    out.print("|#6Invalid script name: {}\r\n", script_name);
+    return std::nullopt;
+  }
+  TextFile file(path, "r");
+  if (!file) {
+    LOG(ERROR) << "Unable to read script: " << path;
+    out.print("|#6Unable to read script: {}\r\n", script_name);
+    return std::nullopt;
+  }
+  return file.ReadFileIntoString();
+}
+
+} // namespace
+
 NextEngine::NextEngine(common::Input& in, common::Output& out, const sdk::Config& config,
-                       common::Context* ctx, setup_fn on_setup)
-    : in_(in), out_(out), config_(config), ctx_(ctx), on_setup_(std::move(on_setup)) {}
+                       common::Context* ctx)
+    : in_(in), out_(out), config_(config), ctx_(ctx) {}
 
 NextEngine::~NextEngine() = default;
 
 bool NextEngine::RunScript(const std::string& script_name) {
-  return RunScript(script_name, std::string{});
+  const auto text = ReadScriptFile(out_, config_.scriptdir(), script_name);
+  if (!text) {
+    return false;
+  }
+  return RunScript(ScriptBaseName(script_name), text.value());
 }
 
 bool NextEngine::RunScript(const std::string& module, const std::string&) {
@@ -46,6 +95,8 @@ bool NextEngine::RunScript(const std::string& module, const std::string&) {
                  << module << "' without it.";
     out_.pl("|#6The debugger isn't supported on the new BASIC engine yet.");
   }
+  // TODO(M4): run the text on a wwivbasic::Interpreter with the Console over
+  // bout/bin and the wwiv.* modules.
   LOG(ERROR) << "The new BASIC engine can't run scripts yet: '" << module << "'";
   out_.pl("|#6The new BASIC engine can't run scripts yet.");
   return false;

@@ -22,6 +22,8 @@
 #include "core/strings.h"
 #include "sdk/config.h"
 
+#include <mutex>
+
 #ifdef WWIV_WWIVBASIC_NEXT
 #include "bbs/basic/next/next_engine.h"
 #endif
@@ -72,8 +74,11 @@ script_engine_t SelectScriptEngine(std::string_view override_engine, const sdk::
     return script_engine_t::legacy;
   }
   if (!script_engine_available(script_engine_t::next)) {
-    LOG(WARNING) << "The new BASIC engine is enabled in config.json, but this build doesn't "
-                    "include it (WWIV_WWIVBASIC_NEXT); using the legacy engine.";
+    static std::once_flag warned;
+    std::call_once(warned, [] {
+      LOG(WARNING) << "The new BASIC engine is enabled in config.json, but this build doesn't "
+                      "include it (WWIV_WWIVBASIC_NEXT); using the legacy engine.";
+    });
     return script_engine_t::legacy;
   }
   return script_engine_t::next;

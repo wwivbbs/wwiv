@@ -49,8 +49,8 @@ bool script_engine_available(script_engine_t e);
 
 // The engine to run scripts on: the bbs --basic_engine override if one is set
 // (it must already have been validated), otherwise the config setting. If the
-// config asks for an engine this build doesn't have, logs a warning and
-// returns legacy.
+// config asks for an engine this build doesn't have, logs a warning (once per
+// process) and returns legacy.
 script_engine_t SelectScriptEngine(std::string_view override_engine, const sdk::Config& config);
 
 // Runs WWIVbasic scripts. Each engine checks config.scripting_enabled() and
