@@ -95,7 +95,10 @@ to the list. Two things to know:
   they were integers).
 - Real numbers are saved with 32-bit precision, as before, so a REAL that is
   saved and loaded again may differ in its last digits from the 64-bit value
-  the script had.
+  the script had. Saving a REAL that a 32-bit float can't hold (larger than
+  about 3.4e38, infinite, or not a number) stops the script with an error;
+  my_basic's REALs could never hold such values.
+- The scope must be a string, as before (`wwiv.data.save(1, l)` is an error).
 
 ## Real numbers
 

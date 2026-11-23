@@ -28,6 +28,8 @@
 #include "sdk/config.h"
 #include "wwivbasic/interpreter.h"
 
+#include <cmath>
+#include <limits>
 #include <optional>
 #include <string>
 #include <vector>
@@ -91,10 +93,19 @@ next_script_data_t to_script_data(const Value& v) {
     d.type = next_script_data_type_t::INT;
     d.i = v.toBool() ? 1 : 0;
     return d;
-  case Value::Type::REAL:
+  case Value::Type::REAL: {
+    // Data files hold 32-bit floats, like my_basic's REALs. Larger values
+    // would be saved as infinity, and NaN or infinity can't be read back.
+    const auto r = v.toDouble();
+    if (!std::isfinite(r) || std::fabs(r) > std::numeric_limits<float>::max()) {
+      throw BasicError(fmt::format("SAVE: can't save {}: a REAL in a data file must be a finite "
+                                   "number no larger than {}",
+                                   v.toString(), std::numeric_limits<float>::max()));
+    }
     d.type = next_script_data_type_t::REAL;
-    d.r = static_cast<float>(v.toDouble());
+    d.r = static_cast<float>(r);
     return d;
+  }
   case Value::Type::STRING:
     d.type = next_script_data_type_t::STRING;
     d.s = v.toString();
@@ -111,16 +122,36 @@ next_script_data_t to_script_data(const Value& v) {
 
 enum class data_scope_t { global, user };
 
-// "USER" (any case) is the user's data; anything else is global.
-data_scope_t to_scope(const std::string& s) {
-  return iequals(s, "USER") ? data_scope_t::user : data_scope_t::global;
+// The scope argument: "USER" (any case) is the user's data, any other string
+// is global. Like the legacy engine, the scope must be a STRING.
+data_scope_t to_scope(const char* fn, const Args& args) {
+  if (args.empty()) {
+    return data_scope_t::global;
+  }
+  if (args[0].value_type() != Value::Type::STRING) {
+    throw BasicError(
+        fmt::format("{}: the scope must be a STRING, got {}", fn, args[0].a_type_name()));
+  }
+  return iequals(args[0].toString(), "USER") ? data_scope_t::user : data_scope_t::global;
 }
 
-std::filesystem::path DataFileName(const WwivBindings& b, data_scope_t scope) {
+std::filesystem::path DataFileName(const char* fn, const WwivBindings& b, data_scope_t scope) {
+  // The module name comes from the script's name. Script files can't have
+  // ".." in their names, but RunScript(module, text) takes any name, so keep
+  // data files inside datadir. (Names with a subdirectory are kept, as in the
+  // legacy engine.)
+  const std::filesystem::path module(b.module);
+  if (b.module.empty() || module.is_absolute() || module.has_root_path() ||
+      b.module.find("..") != std::string::npos) {
+    throw BasicError(fmt::format("{}: can't use data files for the module '{}'", fn, b.module));
+  }
   if (scope == data_scope_t::global) {
     return FilePath(b.config.datadir(), StrCat(b.module, ".script.json"));
   }
-  const auto user_num = b.ctx ? b.ctx->session_context().user_num() : 0;
+  if (!b.ctx) {
+    throw BasicError(fmt::format("{}: there is no current user for USER data", fn));
+  }
+  const auto user_num = b.ctx->session_context().user_num();
   return FilePath(b.config.datadir(), fmt::format("{}.user.{}.script.json", b.module, user_num));
 }
 
@@ -139,8 +170,7 @@ void RegisterWwivData(wwivbasic::Interpreter& interp, const WwivBindings& b) {
     if (args.size() > 2) {
       throw BasicError(fmt::format("SAVE: expected 0 to 2 argument(s), got {}", args.size()));
     }
-    const auto scope =
-        args.empty() ? data_scope_t::global : to_scope(wwivbasic::from_value<std::string>(args[0]));
+    const auto scope = to_scope("SAVE", args);
     if (args.size() < 2) {
       return Value();
     }
@@ -152,7 +182,7 @@ void RegisterWwivData(wwivbasic::Interpreter& interp, const WwivBindings& b) {
     for (const auto& v : args[1].list("SAVE")->items) {
       data.emplace_back(to_script_data(v));
     }
-    JsonFile json(DataFileName(b, scope), "data", data);
+    JsonFile json(DataFileName("SAVE", b, scope), "data", data);
     if (!json.Save()) {
       b.out.outstr("|#6Error saving data.\r\n");
     }
@@ -164,8 +194,7 @@ void RegisterWwivData(wwivbasic::Interpreter& interp, const WwivBindings& b) {
     if (args.size() > 2) {
       throw BasicError(fmt::format("LOAD: expected 0 to 2 argument(s), got {}", args.size()));
     }
-    const auto scope =
-        args.empty() ? data_scope_t::global : to_scope(wwivbasic::from_value<std::string>(args[0]));
+    const auto scope = to_scope("LOAD", args);
     if (args.size() < 2) {
       return Value();
     }
@@ -173,7 +202,7 @@ void RegisterWwivData(wwivbasic::Interpreter& interp, const WwivBindings& b) {
       throw BasicError("LOAD: Only loading a LIST is currently supported. (not DICT)");
     }
     std::vector<next_script_data_t> data;
-    JsonFile json(DataFileName(b, scope), "data", data);
+    JsonFile json(DataFileName("LOAD", b, scope), "data", data);
     if (!json.Load()) {
       return Value();
     }

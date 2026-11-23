@@ -18,6 +18,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "bbs/basic/next/next_engine.h"
 #include "bbs/basic/script_engine.h"
 #include "bbs/bbs.h"
 #include "bbs/bbs_helper.h"
@@ -266,4 +267,78 @@ TEST_F(WwivDataTest, BothEngines_LoadNotAList_StopsTheScript) {
     EXPECT_THAT(out, HasSubstr("Only loading a LIST is currently supported"));
     EXPECT_THAT(out, testing::Not(HasSubstr("after")));
   }
+}
+
+TEST_F(WwivDataTest, BothEngines_ScopeMustBeAString) {
+  for (const auto e : kEngines) {
+    SCOPED_TRACE(to_string(e));
+    RemoveDataFiles();
+    bool ok{true};
+    Run(e, "wwiv.data.save(1, list(1))\nprint \"after\"\n", &ok);
+    EXPECT_FALSE(ok);
+    EXPECT_FALSE(File::Exists(DataFile("datatest.script.json")));
+  }
+}
+
+// The checks below are the new engine's own: my_basic couldn't hold such
+// REALs, and the legacy engine doesn't check module names or the context.
+
+// A REAL bigger than a 32-bit float can hold (about 3.4e38): 1/3 times
+// 10^40, about 3.3e39.
+static const char kHugeReal[] = R"(x = 1 / 3
+for i = 1 to 40
+  x = x * 10
+next
+)";
+
+TEST_F(WwivDataTest, Next_SaveRealTooLargeForAFloat_IsAnError) {
+  bool ok{true};
+  const auto out = Run(script_engine_t::next,
+                       StrCat(kHugeReal, "wwiv.data.save(\"GLOBAL\", list(1, x))\n"), &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, HasSubstr("SAVE: can't save"));
+  EXPECT_FALSE(File::Exists(DataFile("datatest.script.json")));
+}
+
+TEST_F(WwivDataTest, Next_SaveInfinity_IsAnError) {
+  bool ok{true};
+  const auto out =
+      Run(script_engine_t::next,
+          StrCat(kHugeReal, "for i = 1 to 300\n  x = x * 10\nnext\n",
+                 "wwiv.data.save(\"GLOBAL\", list(x))\n"),
+          &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, HasSubstr("SAVE: can't save"));
+  EXPECT_FALSE(File::Exists(DataFile("datatest.script.json")));
+}
+
+TEST_F(WwivDataTest, Next_SaveLargestFloat_IsFine) {
+  bool ok{};
+  // 3.4e38 is just under the largest float.
+  Run(script_engine_t::next,
+      "x = 34 / 10\nfor i = 1 to 38\n  x = x * 10\nnext\nwwiv.data.save(\"GLOBAL\", list(x))\n",
+      &ok);
+  EXPECT_TRUE(ok);
+  EXPECT_TRUE(File::Exists(DataFile("datatest.script.json")));
+}
+
+TEST_F(WwivDataTest, Next_ModuleOutsideDataDir_IsAnError) {
+  NextEngine engine(bin, bout, helper.config(), &helper.context());
+  EXPECT_FALSE(engine.RunScript("../escape", "wwiv.data.save(\"GLOBAL\", list(1))\n"));
+  EXPECT_THAT(helper.io()->captured(), HasSubstr("can't use data files for the module"));
+  const auto outside = FilePath(helper.config().datadir(), "../escape.script.json");
+  EXPECT_FALSE(File::Exists(outside));
+}
+
+TEST_F(WwivDataTest, Next_UserScopeWithoutContext_IsAnError) {
+  NextEngine engine(bin, bout, helper.config(), nullptr);
+  EXPECT_FALSE(engine.RunScript("datatest", "wwiv.data.save(\"USER\", list(1))\n"));
+  EXPECT_THAT(helper.io()->captured(), HasSubstr("no current user"));
+  EXPECT_FALSE(File::Exists(DataFile("datatest.user.0.script.json")));
+}
+
+TEST_F(WwivDataTest, Next_GlobalScopeWithoutContext_Works) {
+  NextEngine engine(bin, bout, helper.config(), nullptr);
+  EXPECT_TRUE(engine.RunScript("datatest", "wwiv.data.save(\"GLOBAL\", list(1))\n"));
+  EXPECT_TRUE(File::Exists(DataFile("datatest.script.json")));
 }
