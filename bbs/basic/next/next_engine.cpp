@@ -121,8 +121,13 @@ bool NextEngine::RunText(const std::string& name, const std::string& module,
   RegisterWwiv(interp, bindings);
   RegisterWwivIo(interp, bindings);
   RegisterWwivData(interp, bindings);
-  // TODO(M4): wwiv.io.file and wwiv.os when the sysop enables them
-  // (config_.script_package_file_enabled(), script_package_os_enabled()).
+  // As in the legacy engine, these exist only when the sysop enables them.
+  if (config_.script_package_file_enabled()) {
+    RegisterWwivIoFile(interp, bindings);
+  }
+  if (config_.script_package_os_enabled()) {
+    RegisterWwivOs(interp, bindings);
+  }
   RegisterWwivTime(interp, bindings);
 
   // The full path, so that IMPORT "file.bas" is found next to the script.

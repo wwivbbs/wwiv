@@ -180,7 +180,9 @@ if (WWIV_WWIVBASIC_NEXT)
     basic/next/next_engine.cpp
     basic/next/wwiv.cpp
     basic/next/wwiv_data.cpp
+    basic/next/wwiv_file.cpp
     basic/next/wwiv_io.cpp
+    basic/next/wwiv_os.cpp
     basic/next/wwiv_time.cpp
   )
   target_link_libraries(bbs_lib wwivbasic_interpreter)
@@ -240,6 +242,7 @@ if (WWIV_BUILD_TESTS)
         basic/next/next_engine_test.cpp
         basic/next/wwiv_bindings_test.cpp
         basic/next/wwiv_data_test.cpp
+        basic/next/wwiv_file_os_test.cpp
       )
     endif()
     add_executable(bbs_tests ${test_sources})

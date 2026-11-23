@@ -100,6 +100,21 @@ to the list. Two things to know:
   my_basic's REALs could never hold such values.
 - The scope must be a string, as before (`wwiv.data.save(1, l)` is an error).
 
+`wwiv.io.file` (when the sysop enables it):
+
+- New: `WRITE(file, text...)` writes each argument as is, and
+  `WRITELINE(file, text...)` writes each followed by a newline, to a file
+  opened with mode `"W"`. Before, `"W"` could only empty a file. Writing to a
+  file opened for reading is an error.
+- `OPEN_OPTIONS("MENUS")` now opens files in the current menu set's
+  directory, and only for reading (`"W"` is an error). my_basic accepted
+  `MENUS` but opened the file in gfiles anyway.
+- `OPEN_OPTIONS` and `OPEN` return objects (printed as `file_options` and
+  `file`); passing something else where one is expected is an error that
+  names the function. The same goes for `wwiv.os.exec_options` and `EXEC`.
+- As before, only the file name part of the name is used, a file that can't be
+  read reads as empty, and files stay open until the script ends.
+
 ## Real numbers
 
 Real numbers work as in my_basic: `7 / 2` is `3.5`, `6 / 2` is the integer
