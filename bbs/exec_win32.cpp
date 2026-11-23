@@ -37,6 +37,7 @@
 #include "core/textfile.h"
 #include "fmt/format.h"
 #include <algorithm>
+#include <chrono>
 #include <atomic>
 #include <sstream>
 #include <string>
@@ -571,6 +572,11 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
     } else if (flags & EFLAG_LISTEN_SOCK) {
       uint16_t port = 0;
       exec_socket = std::make_unique<wwiv::bbs::ExecSocket>(port);
+      if (flags & EFLAG_WWIVFOSS) {
+        wwiv::bbs::wwivfoss_options_t opts{};
+        opts.heartbeat = std::chrono::seconds(std::max(0, a()->wwivfoss_heartbeat_seconds()));
+        exec_socket->enable_wwivfoss(opts);
+      }
       // Add %Z into the commandline.
       if (exec_socket->listening()) {
         cmdline.add('Z', exec_socket->z());

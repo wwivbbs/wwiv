@@ -20,6 +20,7 @@
 #define INCLUDED_BBS_EXEC_SOCKET_H
 
 #include <atomic>
+#include <chrono>
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -42,6 +43,18 @@ typedef void* EXEC_SOCKET_HANDLE;
 typedef pid_t EXEC_SOCKET_HANDLE;
 #endif
 
+/** Options for doors run under WWIVFOSS -E (in-band line control). */
+struct wwivfoss_options_t {
+  // Interval between FF 03 heartbeats sent to the door; 0 disables them.
+  std::chrono::seconds heartbeat{10};
+  // How long a door that lowered DTR has to exit before it's killed. The
+  // caller returns to the BBS either way.
+  std::chrono::milliseconds door_hangup_grace{3000};
+  // How long the door has to exit after the caller hangs up (and WWIV sends
+  // DTR low) before it's killed.
+  std::chrono::milliseconds caller_hangup_grace{10000};
+};
+
 class ExecSocket final {
 public:
   ExecSocket(const std::filesystem::path& dir)
@@ -60,10 +73,19 @@ public:
   /** Handles pumping data between socket and remote IO */
   pump_socket_result_t pump_socket(EXEC_SOCKET_HANDLE hProcess, SOCKET sock, wwiv::common::RemoteIO& io);
 
+  /**
+   * Use WWIVFOSS in-band line control (WWIVFOSS -E) on the door socket:
+   * FF bytes are escaped, line state from the door is decoded, the door is
+   * told when the caller hangs up, and heartbeats are sent.
+   */
+  void enable_wwivfoss(const wwivfoss_options_t& options);
+
   bool stop_pump();
   static bool process_still_active(EXEC_SOCKET_HANDLE h);
 
 private:
+  pump_socket_result_t pump_socket_wwivfoss(EXEC_SOCKET_HANDLE hProcess, SOCKET sock,
+                                            wwiv::common::RemoteIO& io);
   ExecSocket(const std::filesystem::path& dir, uint16_t port, exec_socket_type_t type);
   const std::filesystem::path dir_;
   exec_socket_type_t type_;
@@ -72,6 +94,7 @@ private:
   SOCKET client_socket_{INVALID_SOCKET};
   int port_{0};
   std::atomic<bool> stop_;
+  std::optional<wwivfoss_options_t> wwivfoss_;
 };
 
 }

@@ -18,12 +18,15 @@
 /**************************************************************************/
 #include "bbs/exec_socket.h"
 
+#include "bbs/wwivfoss_inband.h"
+
 #include "core/file.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+#include <cerrno>
 #include <chrono>
 #include <string>
 
@@ -137,6 +140,9 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, uint16_t port, exec_soc
 }
 
 ExecSocket::~ExecSocket() {
+  if (client_socket_ != INVALID_SOCKET && client_socket_ > 0) {
+    closesocket(client_socket_);
+  }
   if (server_socket_ != -1) {
     closesocket(server_socket_);
   }
@@ -206,6 +212,9 @@ bool ExecSocket::process_still_active(EXEC_SOCKET_HANDLE h) {
 }
 
 pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, SOCKET sock, wwiv::common::RemoteIO& io) {
+  if (wwivfoss_) {
+    return pump_socket_wwivfoss(hProcess, sock, io);
+  }
   static constexpr int check_process_every = 10;
   char buf[1024];
   int count = 0;
@@ -233,6 +242,145 @@ pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, SOCKET
     }
 
     if (++count >= check_process_every) {
+      count = 0;
+      if (!process_still_active(hProcess)) {
+        return pump_socket_result_t::process_exit;
+      }
+    }
+    wwiv::os::sleep_for(std::chrono::milliseconds(100));
+  }
+  return pump_socket_result_t::process_exit;
+}
+
+void ExecSocket::enable_wwivfoss(const wwivfoss_options_t& options) { wwivfoss_ = options; }
+
+static bool would_block() {
+#ifdef _WIN32
+  return WSAGetLastError() == WSAEWOULDBLOCK;
+#else
+  return errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR;
+#endif
+}
+
+// Sends all of data on the non-blocking socket sock, waiting briefly if the
+// socket's buffer is full. Unlike the plain pump, a short write here would
+// corrupt the in-band framing.
+static bool send_all(SOCKET sock, const std::string& data) {
+#ifdef MSG_NOSIGNAL
+  constexpr int send_flags = MSG_NOSIGNAL;
+#else
+  constexpr int send_flags = 0;
+#endif
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+  const char* p = data.data();
+  auto remaining = data.size();
+  while (remaining > 0) {
+    const auto n = send(sock, p, static_cast<int>(remaining), send_flags);
+    if (n > 0) {
+      p += n;
+      remaining -= static_cast<size_t>(n);
+      continue;
+    }
+    if (n < 0 && would_block() && std::chrono::steady_clock::now() < deadline) {
+      wwiv::os::sleep_for(std::chrono::milliseconds(10));
+      continue;
+    }
+    return false;
+  }
+  return true;
+}
+
+// Waits up to timeout for the process to exit, reading and discarding
+// anything the door sends meanwhile so it never blocks writing to us.
+static bool wait_for_exit(EXEC_SOCKET_HANDLE h, SOCKET sock, std::chrono::milliseconds timeout) {
+  const auto deadline = std::chrono::steady_clock::now() + timeout;
+  char buf[1024];
+  for (;;) {
+    if (!ExecSocket::process_still_active(h)) {
+      return true;
+    }
+    if (std::chrono::steady_clock::now() >= deadline) {
+      return false;
+    }
+    while (recv(sock, buf, sizeof(buf), 0) > 0) {
+    }
+    wwiv::os::sleep_for(std::chrono::milliseconds(50));
+  }
+}
+
+pump_socket_result_t ExecSocket::pump_socket_wwivfoss(EXEC_SOCKET_HANDLE hProcess, SOCKET sock,
+                                                      wwiv::common::RemoteIO& io) {
+  using clock = std::chrono::steady_clock;
+  static constexpr int check_process_every = 10;
+  const auto& opts = wwivfoss_.value();
+
+  // Always raise DTR first: after a hangup WWIVFOSS keeps the UART in
+  // loopback until DTR comes back up, and a resident copy can't otherwise
+  // tell a new connection has started.
+  if (!send_all(sock, wwivfoss_line_state(WWIVFOSS_LINE_UP))) {
+    VLOG(1) << "Exiting pump_socket: unable to send initial line state.";
+    return pump_socket_result_t::socket_error;
+  }
+  auto last_heartbeat = clock::now();
+
+  WWIVFossDecoder decoder;
+  // Set while the door has DTR low: when it's due to exit.
+  std::optional<clock::time_point> door_hangup_deadline;
+  char buf[1024];
+  int count = 0;
+  while (!stop_.load()) {
+    if (auto num_read = recv(sock, buf, sizeof(buf), 0); num_read > 0) {
+      if (const auto data = decoder.decode(buf, static_cast<size_t>(num_read)); !data.empty()) {
+        io.write(data.data(), static_cast<int>(data.size()));
+      }
+      if (!decoder.dtr() && !door_hangup_deadline) {
+        VLOG(1) << "Door lowered DTR; returning caller to the BBS.";
+        door_hangup_deadline = clock::now() + opts.door_hangup_grace;
+      } else if (decoder.dtr() && door_hangup_deadline) {
+        VLOG(1) << "Door raised DTR again.";
+        door_hangup_deadline.reset();
+      }
+    } else if (num_read == 0) {
+      VLOG(1) << "Exiting pump_socket: door closed the socket.";
+      return wait_for_exit(hProcess, sock, opts.door_hangup_grace)
+                 ? pump_socket_result_t::process_exit
+                 : pump_socket_result_t::socket_error;
+    }
+
+    if (!io.connected()) {
+      VLOG(1) << "Exiting pump_socket: Caller Hung up; lowering DTR to the door.";
+      send_all(sock, wwivfoss_line_state(WWIVFOSS_LINE_RTS));
+      return wait_for_exit(hProcess, sock, opts.caller_hangup_grace)
+                 ? pump_socket_result_t::process_exit
+                 : pump_socket_result_t::socket_error;
+    }
+
+    if (!door_hangup_deadline && io.incoming()) {
+      if (auto num_read = io.read(buf, sizeof(buf)); num_read > 0) {
+        if (!send_all(sock, wwivfoss_escape(buf, num_read))) {
+          VLOG(1) << "Exiting pump_socket; Write to socket failed";
+          return pump_socket_result_t::socket_error;
+        }
+      }
+    }
+
+    if (opts.heartbeat.count() > 0 && clock::now() - last_heartbeat >= opts.heartbeat) {
+      if (!send_all(sock, wwivfoss_line_state(WWIVFOSS_LINE_UP))) {
+        VLOG(1) << "Exiting pump_socket; heartbeat failed";
+        return pump_socket_result_t::socket_error;
+      }
+      last_heartbeat = clock::now();
+    }
+
+    if (door_hangup_deadline) {
+      if (!process_still_active(hProcess)) {
+        return pump_socket_result_t::process_exit;
+      }
+      if (clock::now() >= door_hangup_deadline.value()) {
+        LOG(INFO) << "Door lowered DTR but did not exit; terminating it.";
+        return pump_socket_result_t::socket_error;
+      }
+    } else if (++count >= check_process_every) {
       count = 0;
       if (!process_still_active(hProcess)) {
         return pump_socket_result_t::process_exit;

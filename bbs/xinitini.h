@@ -95,6 +95,9 @@ constexpr const char* INI_STR_INTERNALZMODEM = "INTERNALZMODEM";
 constexpr const char* INI_STR_INTERNAL_FSED = "INTERNAL_FSED";
 constexpr const char* INI_STR_EXEC_LOG_SYNCFOSS = "EXEC_LOG_SYNCFOSS";
 constexpr const char* INI_STR_EXEC_CHILD_WAIT_TIME =   "EXEC_CHILD_WAIT_TIME";
+// Seconds between heartbeats sent to SOCK_WWIVFOSS doors (0 disables). Must
+// match the door's WWIVFOSS -H<n> option.
+constexpr const char* INI_STR_WWIVFOSS_HEARTBEAT = "WWIVFOSS_HEARTBEAT";
 constexpr const char* INI_STR_NEW_SCAN_AT_LOGIN  = "NEW_SCAN_AT_LOGIN";
 
 #endif  // INCLUDED_BBS_XINITINI_H

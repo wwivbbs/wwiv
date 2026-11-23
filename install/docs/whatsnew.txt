@@ -22,6 +22,13 @@ What's New in WWIV 5.10.0 (2026)
 ! Linux: the SSH server now offers aes128-ctr/aes256-ctr, so current
   OpenSSH clients connect without enabling legacy CBC ciphers (-c aes128-cbc).
   Windows still uses cryptlib's prebuilt DLL, which only offers CBC.
++ New chain exec mode "WWIVFOSS (Socket Port)" for DOS doors run under
+  WWIVFOSS -E (https://github.com/wwivbbs/wwivfoss), e.g. in QEMU. Like
+  "Listen Socket Port" (%Z is the port), but carrier and DTR travel in-band,
+  so the door sees the caller hang up, and a door that lowers DTR returns
+  the caller to the BBS. WWIV also sends heartbeats every
+  WWIVFOSS_HEARTBEAT seconds (wwiv.ini, default 10); run the door with
+  WWIVFOSS -E -H10 to match.
 
 What's New in WWIV 5.9.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
