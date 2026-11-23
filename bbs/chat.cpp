@@ -614,8 +614,7 @@ void load_actions(IniFile* pIniFile) {
     ch_action act;
     memset(&act, 0, sizeof(ch_action));
     for (int ca = 0; ca <= 5; ca++) {
-      char rstr[10];
-      sprintf(rstr, "%d%c", cn, 65 + ca);
+      const auto rstr = fmt::format("{}{}", cn, static_cast<char>('A' + ca));
       std::string s = pIniFile->value<std::string>(rstr);
       const char* ini_value = s.c_str();
       switch (ca) {

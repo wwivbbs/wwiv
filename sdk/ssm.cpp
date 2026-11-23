@@ -112,7 +112,7 @@ bool SSM::delete_local_to_user(uint32_t user_number) {
     return false;
   }
 
-  const int num_recs = file.number_of_records();
+  const auto num_recs = static_cast<int>(file.number_of_records());
   for (int i = 0; i < num_recs; i++) {
     shortmsgrec sm{};
     if (!file.Read(i, &sm)) {

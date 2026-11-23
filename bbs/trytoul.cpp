@@ -302,7 +302,7 @@ static int try_to_ul_wh(const std::string& orig_file_name) {
     }
     file.Open(File::modeBinary | File::modeReadOnly);
   }
-  f.set_numbytes(file.length());
+  f.set_numbytes(static_cast<int>(file.length()));
   file.Close();
   a()->user()->increment_uploaded();
 

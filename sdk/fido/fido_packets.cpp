@@ -48,9 +48,9 @@ static std::string ReadRestOfFile(File& f, int max_size) {
   std::string s;
 
   const auto to_read = std::min<decltype(current)>(max_size, size - current);
-  s.resize(to_read + 1);
+  s.resize(static_cast<std::size_t>(to_read) + 1);
   const auto num_read = f.Read(&s[0], to_read);
-  s.resize(num_read);
+  s.resize(static_cast<std::size_t>(num_read));
   return s;
 }
 
@@ -62,7 +62,7 @@ static std::string ReadFixedLengthField(File& f, int len) {
   std::string s;
   s.resize(len + 1);
   const auto num_read = f.Read(&s[0], len);
-  s.resize(num_read);
+  s.resize(static_cast<std::size_t>(num_read));
   while (!s.empty() && s.back() == '\0') {
     // Remove trailing null characters.
     s.pop_back();

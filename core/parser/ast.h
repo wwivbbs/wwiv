@@ -95,6 +95,8 @@ protected:
   Factor(FactorType t, int v, std::string s);
 
 public:
+  // Keep Expression::ToString(bool) and ToString(bool, int) visible.
+  using Expression::ToString;
   [[nodiscard]] std::string ToString() const override { return ToString(0); };
 
   [[nodiscard]] virtual std::string ToString(int indent) const;

@@ -9,3 +9,5 @@
 add_library(my_basic STATIC my_basic/core/my_basic.c)
 # Code includes it as "deps/my_basic/core/my_basic.h", so expose the source root.
 target_include_directories(my_basic PUBLIC "${PROJECT_SOURCE_DIR}")
+# Third-party code: don't bury WWIV's own warnings under its warnings.
+target_compile_options(my_basic PRIVATE $<IF:$<C_COMPILER_ID:MSVC>,/w,-w>)

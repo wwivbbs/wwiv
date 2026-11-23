@@ -120,7 +120,7 @@ std::string FakeConnection::receive(int, duration<double> d) {
   }
 
   std::lock_guard<std::mutex> lock(mu_);
-  auto on_exit = finally([=] { receive_queue_.pop(); });
+  auto on_exit = finally([this] { receive_queue_.pop(); });
   const FakeBinkpPacket& front = receive_queue_.front();
   return front.data();
 }

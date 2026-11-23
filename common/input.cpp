@@ -522,6 +522,9 @@ void Input::input1(char* out_text, int max_length, InputMode lc, bool crend, boo
             chCurrent = to_lower_case(chCurrent);
           }
         } break;
+        case InputMode::DATE:
+        case InputMode::PHONE:
+          break;
         }
         if (curpos < max_length && chCurrent) {
           out_text[curpos++] = chCurrent;

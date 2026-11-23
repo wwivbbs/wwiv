@@ -73,7 +73,9 @@ public:
 
   // Override to add all commands.
   virtual bool AddSubCommands() = 0;
-  bool add(std::shared_ptr<UtilCommand> cmd);
+  // Adds a subcommand. UtilCommand subcommands also get the standard args,
+  // the shared config, and their own subcommands.
+  bool add(std::shared_ptr<core::CommandLineCommand> cmd) override;
 
   [[nodiscard]] Configuration* config() const;
   bool set_config(const std::shared_ptr<Configuration>& config);

@@ -34,6 +34,7 @@
 #include "bbs/prot/crctab.h"
 #include "bbs/prot/zmodem.h"
 
+#include <cinttypes>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -335,7 +336,7 @@ int sendFilename(ZModem* info) {
   auto i = wwiv::strings::ssize(info->rfilename);
   memcpy(ptr, info->rfilename, i + 1);
   ptr += i + 1;
-  sprintf(reinterpret_cast<char*>(ptr), "%d %lo %o 0 %d %d 0", info->len, info->date, info->mode,
+  sprintf(reinterpret_cast<char*>(ptr), "%d %" PRIo32 " %o 0 %d %d 0", info->len, info->date, info->mode,
           info->filesRem, info->bytesRem);
   ptr += strlen(reinterpret_cast<char*>(ptr));
   *ptr++ = '\0';
@@ -996,7 +997,7 @@ int YSendFilename(ZModem* info) {
   int i = wwiv::strings::ssize(info->rfilename);
   memcpy(ptr, info->rfilename, i + 1);
   ptr += i + 1;
-  sprintf(reinterpret_cast<char*>(ptr), "%d %lo %o 0", info->len, info->date, info->mode);
+  sprintf(reinterpret_cast<char*>(ptr), "%d %" PRIo32 " %o 0", info->len, info->date, info->mode);
   ptr += strlen(reinterpret_cast<char*>(ptr));
   *ptr++ = '\0';
   /* pad out to 128 bytes or 1024 bytes */

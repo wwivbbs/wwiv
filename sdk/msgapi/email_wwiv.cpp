@@ -267,7 +267,7 @@ bool WWIVEmail::add_email(const mailrec& m) {
     return false;
   }
   auto recno = 0;
-  if (const int max_size = mail_file_.number_of_records(); max_size > 0) {
+  if (const auto max_size = static_cast<int>(mail_file_.number_of_records()); max_size > 0) {
     mailrec temprec{};
     recno = max_size - 1;
     mail_file_.Read(recno, &temprec);

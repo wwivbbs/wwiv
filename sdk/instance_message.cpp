@@ -61,7 +61,7 @@ namespace wwiv::sdk {
 
 static std::optional<File> create_file(const std::filesystem::path& path, const std::string& fn_pattern) {
   for (auto i = 0; i < 1000; i++) {
-    File file(FilePath(path, fmt::format(fn_pattern, i)));
+    File file(FilePath(path, fmt::format(fmt::runtime(fn_pattern), i)));
     if (file.Open(File::modeText | File::modeReadWrite | File::modeCreateFile | File::modeExclusive, File::shareDenyReadWrite)) {
       return file;
     }

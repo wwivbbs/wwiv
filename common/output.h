@@ -213,7 +213,7 @@ public:
   template <typename... Args> int print(const char* format_str, Args&&... args) {
     // Process arguments
     try {
-      return outstr(fmt::format(format_str, args...));
+      return outstr(fmt::format(fmt::runtime(format_str), args...));
     } catch (const fmt::format_error& e) {
       LOG(ERROR) << "caught fmt::format_error" << e.what();
       LOG(ERROR) << "fmt::format_error original string: '" << format_str << "'";

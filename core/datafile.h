@@ -67,7 +67,7 @@ public:
       num_to_read = max_records;
     }
     if (stl::ssize(records) < num_to_read) {
-      records.resize(num_to_read);
+      records.resize(static_cast<std::size_t>(num_to_read));
     }
     return Read(&records[0], num_to_read);
   }

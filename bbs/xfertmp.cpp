@@ -57,7 +57,7 @@ void move_file_t() {
     bout.pausescr();
   }
   // TODO(rushfan): rewrite using iterators.
-  for (auto pos = a()->batch().ssize() - 1; pos >= 0; pos--) {
+  for (auto pos = static_cast<int>(a()->batch().ssize()) - 1; pos >= 0; pos--) {
     bool ok;
     auto cur_batch_fn = aligns(a()->batch().entry[pos].aligned_filename());
     dliscan1(a()->batch().entry[pos].dir());

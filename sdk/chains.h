@@ -99,8 +99,8 @@ public:
 
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
   [[nodiscard]] const std::vector<chain_t>& chains() const { return chains_; }
-  [[nodiscard]] const chain_t& at(size_type num) const { return wwiv::stl::at(chains_, num); }
-  [[nodiscard]] chain_t& at(size_type num) { return wwiv::stl::at(chains_, num); }
+  [[nodiscard]] const chain_t& at(size_type num) const { return wwiv::stl::at(chains_, static_cast<std::size_t>(num)); }
+  [[nodiscard]] chain_t& at(size_type num) { return wwiv::stl::at(chains_, static_cast<std::size_t>(num)); }
   [[nodiscard]] size_type size() const { return stl::size_int(chains_); }
 
   bool insert(size_type n, chain_t r);

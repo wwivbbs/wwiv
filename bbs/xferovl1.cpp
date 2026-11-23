@@ -391,7 +391,7 @@ void tag_it() {
           bout.print("|#6The file {} is not there.\r\n", FileName(f.u.filename).unaligned_filename());
           bad = true;
         } else {
-          fs = fp.length();
+          fs = static_cast<long>(fp.length());
           fp.Close();
         }
       }
