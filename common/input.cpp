@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstring>
 #include <optional>
 #include <set>
 #include <string>
@@ -204,9 +205,11 @@ std::string Input::Input1(const std::string& orig_text, int max_length, bool ins
                           InputMode mode, bool auto_mpl) {
   max_length = std::max(0, max_length);
   if (!okansi(user())) {
-    std::vector<char> line(static_cast<size_t>(max_length) + 1, '\0');
+    // input1 writes up to max_length chars plus a terminating null.
+    std::string line(static_cast<size_t>(max_length) + 1, '\0');
     input1(line.data(), max_length, mode, true, false);
-    return line.data();
+    line.resize(std::strlen(line.c_str()));
+    return line;
   }
   const auto saved_topdata = localIO()->topdata();
   if (localIO()->topdata() != LocalIO::topdata_t::none) {
@@ -671,9 +674,11 @@ std::string Input::input_text(const std::string& orig_text, bool mpl, int max_le
   if (mpl) {
     return Input1(orig_text, max_length, true, InputMode::MIXED, mpl);
   }
-  std::vector<char> line(static_cast<size_t>(std::max(0, max_length)) + 1, '\0');
+  // input1 writes up to max_length chars plus a terminating null.
+  std::string line(static_cast<size_t>(std::max(0, max_length)) + 1, '\0');
   input1(line.data(), max_length, InputMode::MIXED, true, false);
-  return line.data();
+  line.resize(std::strlen(line.c_str()));
+  return line;
 }
 
 std::string Input::input_text(int max_length) {
