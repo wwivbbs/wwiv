@@ -57,6 +57,9 @@ struct WwivBindings {
 void RegisterWwiv(wwivbasic::Interpreter& interp, const WwivBindings& b);
 void RegisterWwivIo(wwivbasic::Interpreter& interp, const WwivBindings& b);
 void RegisterWwivData(wwivbasic::Interpreter& interp, const WwivBindings& b);
+// Registered only when the sysop enables them (see NextEngine).
+void RegisterWwivIoFile(wwivbasic::Interpreter& interp, const WwivBindings& b);
+void RegisterWwivOs(wwivbasic::Interpreter& interp, const WwivBindings& b);
 void RegisterWwivTime(wwivbasic::Interpreter& interp, const WwivBindings& b);
 
 } // namespace wwiv::bbs::basic

@@ -100,6 +100,31 @@ to the list. Two things to know:
   my_basic's REALs could never hold such values.
 - The scope must be a string, as before (`wwiv.data.save(1, l)` is an error).
 
+`wwiv.io.file` (when the sysop enables it):
+
+- New: `WRITE(file, text...)` writes each argument as is, and
+  `WRITELINE(file, text...)` writes each followed by a newline, to a file
+  opened with mode `"W"`. Before, `"W"` could only empty a file. Each call is
+  written to disk at once; a failed write is an error. Reading a file opened
+  for writing, or writing one opened for reading, is an error.
+- New: `CLOSE(file)` closes a file, so the script can open it again, for
+  example to read back what it wrote. Using a closed file is an error.
+- Opening a file the script already has open, when either handle writes, is
+  an error (`CLOSE` it first). my_basic waited forever on Unix.
+- `READLINES` reads from the start of the file each time; my_basic read
+  nothing after an earlier `READLINES` or `READINTOSTRING`.
+- `OPEN_OPTIONS("MENUS")` now opens files in the current menu set's `gfiles`
+  directory (where the BBS keeps menu text), and only for reading (`"W"` is
+  an error). my_basic accepted `MENUS` but opened the file in the BBS's
+  gfiles anyway.
+- Names Windows treats as devices (`CON`, `NUL`, `COM1`, ...) or that contain
+  `:` can't be opened.
+- `OPEN_OPTIONS` and `OPEN` return objects (printed as `file_options` and
+  `file`); passing something else where one is expected is an error that
+  names the function. The same goes for `wwiv.os.exec_options` and `EXEC`.
+- As before, only the file name part of the name is used, a file that can't be
+  read reads as empty, and files not closed stay open until the script ends.
+
 ## Real numbers
 
 Real numbers work as in my_basic: `7 / 2` is `3.5`, `6 / 2` is the integer
