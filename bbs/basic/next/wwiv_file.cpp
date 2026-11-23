@@ -194,9 +194,11 @@ void RegisterWwivIoFile(wwivbasic::Interpreter& interp, const WwivBindings& b) {
       throw BasicError(fmt::format("OPEN: expected options from wwiv.io.file.open_options, got {}",
                                    options.a_type_name()));
     }
+    // Check the name as given for ':': on Windows, path("a:b").filename() is
+    // "b" ("a:" is a drive), and "b:c" could name an NTFS stream.
     const auto filename = std::filesystem::path(name).filename();
-    if (filename.empty() || filename == "." || filename == ".." ||
-        filename.string().find(':') != std::string::npos || is_device_name(filename)) {
+    if (name.find(':') != std::string::npos || filename.empty() || filename == "." ||
+        filename == ".." || is_device_name(filename)) {
       throw BasicError(fmt::format("OPEN: '{}' is not a file name", name));
     }
     const auto writable = iequals(mode, "W");

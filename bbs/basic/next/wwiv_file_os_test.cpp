@@ -394,7 +394,7 @@ wwiv.io.file.write(h, "x")
 }
 
 TEST_F(WwivFileOsTest, Next_DeviceNamesAreNotFileNames) {
-  for (const auto* name : {"NUL", "con.txt", "Com1", "LPT9.log", "PRN", "aux", "a:b"}) {
+  for (const auto* name : {"NUL", "con.txt", "Com1", "LPT9.log", "PRN", "aux", "a:b", "c:x.txt", "x.txt:s"}) {
     SCOPED_TRACE(name);
     bool ok{true};
     const auto out = Run(script_engine_t::next, fmt::format(R"(
