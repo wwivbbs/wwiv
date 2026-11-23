@@ -612,17 +612,15 @@ static void HandleMessageDownload(int msgnum) {
     }
     const auto f = FilePath(a()->sess().dirs().temp_directory(), filename);
     File::Remove(f);
-    {
-      // Close (and flush) the file before sending it, otherwise the
-      // transfer protocol reads an empty or partial file.
-      TextFile tf(f, "wt");
-      tf.Write(b);
-      tf.Close();
-    }
+    TextFile tf(f, "wt");
+    tf.Write(b);
+    // Close (and flush) the file before sending it, otherwise the
+    // transfer protocol reads an empty or partial file.
+    tf.Close();
 
     bool bFileAbortStatus;
     bool bStatus;
-    send_file(f, &bStatus, &bFileAbortStatus, filename, -1, ssize(b));
+    send_file(f, &bStatus, &bFileAbortStatus, filename, -1, b.length());
     bout.nl();
     bout.print("|#1Message download... |#2{}\r\n", bStatus ? "successful" : "unsuccessful");
     if (bStatus) {
