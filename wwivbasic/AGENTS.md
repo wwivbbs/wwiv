@@ -74,6 +74,17 @@ _build/linux-debug/wwivbasic/basicrun wwivbasic/tests/golden/loops.bas
 
 Before you finish a change, build it and make sure `ctest` passes.
 
+## Things that have bitten us
+
+- **Windows CI is 32-bit (x86).** WWIV's PR build uses `windows-x86-debug`; wwivbasic was only
+  tested on x64 before it moved into WWIV. Watch for `size_t`/`int64_t` assumptions and type
+  clashes (for example the `ssize_t` workaround in `internal/antlr.h`).
+- **Line endings.** Some WWIV files use CRLF, including the top-level `CMakeLists.txt` and
+  `core/command_line.h`. Keep each file's existing line endings; a whole-file line-ending change
+  makes the diff unreadable.
+- **Header order.** Include ANTLR only through `internal/antlr.h` (fmt first because of `EOF`,
+  and the `ssize_t` rename on MSVC).
+
 ## Code style
 
 - C++23 (GCC 14 or newer, or a current MSVC), like the rest of WWIV. Our code builds with
