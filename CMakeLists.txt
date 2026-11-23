@@ -21,6 +21,7 @@ set(_wwiv_required_submodule_files
   "vcpkg/scripts/buildsystems/vcpkg.cmake"
   "deps/my_basic/core/my_basic.c"
   "deps/pdcurses/CMakeLists.txt"
+  "deps/cryptlib/makefile"
 )
 foreach(_f IN LISTS _wwiv_required_submodule_files)
   if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_f}")
@@ -109,7 +110,7 @@ endif (WWIV_BUILD_TESTS)
 
 # Cryptlib
 if (WWIV_SSH_CRYPTLIB AND NOT OS2)
-add_subdirectory(deps/cl345)
+  include(Cryptlib)
 endif()
 
 

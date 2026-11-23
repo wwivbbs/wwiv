@@ -1,2 +1,0 @@
-# The SHA-2 code relies on bits being shifted off the end of a word
-src:crypt/sha2.c

@@ -173,9 +173,8 @@ target_include_directories(bbs_lib PRIVATE ${CPP_HTTPLIB_INCLUDE_DIRS})
 
 if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
   message(STATUS "WWIV_SSH_CRYPTLIB is ON")
-  include_directories(../deps/cl345)
   target_sources(bbs_lib PRIVATE ssh.cpp)
-  target_link_libraries(bbs_lib CL345_LIB)
+  target_link_libraries(bbs_lib cryptlib)
   target_compile_definitions(bbs_lib PRIVATE WWIV_HAS_SSH_CRYPTLIB)
 endif()
 
@@ -242,5 +241,21 @@ if (WWIV_BUILD_TESTS)
 
   target_link_libraries(bbs_tests core bbs_lib core_fixtures common_fixtures GTest::gtest)
   gtest_discover_tests(bbs_tests)
+
+  # End-to-end SSH test: OpenSSH client -> bbs -XS (cryptlib SSH server).
+  # Windows uses cryptlib's prebuilt DLL and has no ssh in this setup.
+  if (WWIV_SSH_CRYPTLIB AND NOT WIN32 AND NOT OS2)
+    find_package(Python3 COMPONENTS Interpreter)
+    if (Python3_Interpreter_FOUND)
+      add_test(NAME ssh_logon_test
+        COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/ssh_logon_test.py"
+          --bbs "$<TARGET_FILE:bbs>"
+          --wwivconfig "$<TARGET_FILE:wwivconfig>"
+          --source "${PROJECT_SOURCE_DIR}")
+      # 77: no ssh client on this machine.
+      set_tests_properties(ssh_logon_test PROPERTIES
+        SKIP_RETURN_CODE 77 TIMEOUT 180 LABELS integration)
+    endif()
+  endif()
 
 endif() # WWIV_BUILD_TESTS

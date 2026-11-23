@@ -32,12 +32,17 @@ submodules are present.
 * Only built on Windows and OS/2. Linux uses the system ncurses.
 
 ### Cryptlib
-* dir: `cl345` (checked in, not a submodule)
-* url: https://github.com/cryptlib/cryptlib
-* license: see `cl345/COPYING`
+* dir: `cryptlib` (submodule, pinned to a release tag, currently v3.4.9.6)
+* fork: https://github.com/wwivbbs/cryptlib
+* upstream: https://github.com/cryptlib/cryptlib
+* license: see `cryptlib/COPYING`
 * Provides SSH support when `WWIV_SSH_CRYPTLIB` is on. On Windows the
-  prebuilt `cl32.lib`/`cl32.dll` are used; elsewhere it is built with its
-  own makefile.
+  prebuilt `cl32.lib`/`cl32.dll` that ship with cryptlib are used; elsewhere
+  it is built with its own makefile. The CMake setup is in
+  `cmake/Cryptlib.cmake`, outside the submodule.
+* To update: fetch the new release tag into the fork (sync it with
+  upstream on GitHub), then `git -C deps/cryptlib checkout <tag>` and commit
+  the new submodule pointer.
 
 ## How to add a new dependency
 
