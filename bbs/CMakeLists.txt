@@ -243,9 +243,15 @@ if (WWIV_BUILD_TESTS)
         basic/next/wwiv_bindings_test.cpp
         basic/next/wwiv_data_test.cpp
         basic/next/wwiv_file_os_test.cpp
+        basic/next/side_by_side_test.cpp
       )
     endif()
     add_executable(bbs_tests ${test_sources})
+    if (WWIV_WWIVBASIC_NEXT)
+      # side_by_side_test.cpp runs the scripts WWIV ships on both engines.
+      set_source_files_properties(basic/next/side_by_side_test.cpp PROPERTIES
+        COMPILE_DEFINITIONS "WWIV_SCRIPTS_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}/install/scripts\"")
+    endif()
 
     if (WWIV_SSH_CRYPTLIB AND NOT OS2)
       # Copies cl32.dll next to bbs_tests.exe on Windows, so the tests

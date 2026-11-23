@@ -78,8 +78,8 @@ std::optional<std::string> ReadScriptFile(common::Output& out, const std::filesy
 } // namespace
 
 NextEngine::NextEngine(common::Input& in, common::Output& out, const sdk::Config& config,
-                       common::Context* ctx)
-    : in_(in), out_(out), config_(config), ctx_(ctx) {}
+                       common::Context* ctx, setup_fn on_setup)
+    : in_(in), out_(out), config_(config), ctx_(ctx), on_setup_(std::move(on_setup)) {}
 
 NextEngine::~NextEngine() = default;
 
@@ -129,6 +129,9 @@ bool NextEngine::RunText(const std::string& name, const std::string& module,
     RegisterWwivOs(interp, bindings);
   }
   RegisterWwivTime(interp, bindings);
+  if (on_setup_) {
+    on_setup_(interp);
+  }
 
   // The full path, so that IMPORT "file.bas" is found next to the script.
   const auto path = FilePath(config_.scriptdir(), name);
