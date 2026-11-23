@@ -199,7 +199,7 @@ TEST_F(WwivDataTest, BothEngines_UserScope_FileNamedForTheUser) {
     bool ok{};
     // The scope is case-insensitive.
     Run(e, "wwiv.data.save(\"user\", list(\"mine\"))\n", &ok);
-    ASSERT_TRUE(ok);
+    EXPECT_TRUE(ok);
     EXPECT_TRUE(File::Exists(DataFile("datatest.user.12.script.json")));
     EXPECT_FALSE(File::Exists(DataFile("datatest.script.json")));
     EXPECT_EQ("mine\r\n", Run(e, R"(l = list()
@@ -217,7 +217,7 @@ TEST_F(WwivDataTest, BothEngines_OtherScopesAreGlobal) {
     RemoveDataFiles();
     bool ok{};
     Run(e, "wwiv.data.save(\"whatever\", list(1))\n", &ok);
-    ASSERT_TRUE(ok);
+    EXPECT_TRUE(ok);
     EXPECT_TRUE(File::Exists(DataFile("datatest.script.json")));
   }
 }
@@ -228,7 +228,7 @@ TEST_F(WwivDataTest, BothEngines_ModuleNameIsLowerCase) {
     RemoveDataFiles();
     const auto engine =
         CreateScriptEngine(e, bin, bout, helper.config(), &helper.context());
-    ASSERT_TRUE(engine->RunScript("MixedCase", "wwiv.data.save(\"GLOBAL\", list(1))\n"));
+    EXPECT_TRUE(engine->RunScript("MixedCase", "wwiv.data.save(\"GLOBAL\", list(1))\n"));
     EXPECT_TRUE(File::Exists(DataFile("mixedcase.script.json")));
   }
 }
@@ -245,7 +245,7 @@ TEST_F(WwivDataTest, BothEngines_ScriptFileModuleName) {
     }
     const auto engine =
         CreateScriptEngine(e, bin, bout, helper.config(), &helper.context());
-    ASSERT_TRUE(engine->RunScript("Hello.bas"));
+    EXPECT_TRUE(engine->RunScript("Hello.bas"));
     EXPECT_TRUE(File::Exists(DataFile("hello.script.json")));
   }
 }

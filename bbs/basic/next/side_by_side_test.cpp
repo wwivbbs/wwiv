@@ -21,8 +21,12 @@
 #include "bbs/basic/script_engine.h"
 #include "bbs/bbs.h"
 #include "bbs/bbs_helper.h"
+#include "bbs/application.h"
+#include "common/common_events.h"
+#include "common/context.h"
 #include "common/input.h"
 #include "common/output.h"
+#include "core/eventbus.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -37,8 +41,40 @@
 #include <vector>
 
 using namespace wwiv::bbs::basic;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::strings;
+
+namespace {
+
+// While set, the test is running a script with typed-ahead keys. If the
+// script reads more keys than were typed, the caller "hangs up" instead of
+// the test waiting forever for real input.
+SessionContext* sessions_to_hang_up[2]{};
+
+void HangUpWhenKeysRunOut(SessionContext& a, SessionContext& b) {
+  [[maybe_unused]] static const auto registered = [] {
+    // Input sends GiveupTimeslices only while it waits for a key that hasn't
+    // been typed: here, that means the typed-ahead keys have run out.
+    bus().add_handler<GiveupTimeslices>([] {
+      if (!sessions_to_hang_up[0]) {
+        return;
+      }
+      for (auto* s : sessions_to_hang_up) {
+        s->hangup(true);
+      }
+      // Type one more key, so getkey returns it: with nothing to read after a
+      // hangup, getkey reaches DLOG(FATAL) and aborts (issue #1758).
+      std::strcpy(&bin.charbuffer[1], "\r");
+      bin.charbufferpointer_ = 1;
+    });
+    return true;
+  }();
+  sessions_to_hang_up[0] = &a;
+  sessions_to_hang_up[1] = &b;
+}
+
+} // namespace
 
 // The scripts WWIV ships (install/scripts), run on both engines. The output
 // must match, apart from the documented PRINT layout (wwivbasic/PORTING.md:
@@ -51,8 +87,11 @@ protected:
     // Input is typed ahead; without ANSI the line editor echoes plain text.
     helper.user()->set_flag(wwiv::sdk::User::flag_ansi, false);
     // The scripts, byte for byte, from install/scripts (see bbs/CMakeLists.txt).
-    WriteScript("hello.bas", k_hello_bas, sizeof(k_hello_bas));
-    WriteScript("oneliners.bas", k_oneliners_bas, sizeof(k_oneliners_bas));
+    ASSERT_NO_FATAL_FAILURE(WriteScript("hello.bas", k_hello_bas, sizeof(k_hello_bas)));
+    ASSERT_NO_FATAL_FAILURE(
+        WriteScript("oneliners.bas", k_oneliners_bas, sizeof(k_oneliners_bas)));
+    // The script engine checks the context's session; Input checks the BBS's.
+    HangUpWhenKeysRunOut(helper.context().session_context(), a()->sess());
   }
 
   void WriteScript(const std::string& name, const unsigned char* bytes, size_t size) {
@@ -60,10 +99,12 @@ protected:
     std::filesystem::create_directories(dir);
     std::ofstream f(FilePath(dir, name), std::ios::binary);
     f.write(reinterpret_cast<const char*>(bytes), static_cast<std::streamsize>(size));
-    ASSERT_TRUE(f.good()) << name;
+    f.close();
+    ASSERT_FALSE(f.fail()) << "unable to write " << name;
   }
 
   void TearDown() override {
+    sessions_to_hang_up[0] = sessions_to_hang_up[1] = nullptr;
     bin.charbufferpointer_ = 0;
     bin.charbuffer[0] = '\0';
     bin.charbuffer[1] = '\0';
@@ -162,8 +203,8 @@ TEST_F(SideBySideTest, OneLiners_EnginesShareTheirData) {
     const auto out = Run(e, "oneliners.bas");
     const auto first = out.find("from legacy");
     const auto second = out.find("from next");
-    ASSERT_NE(std::string::npos, first) << out;
-    ASSERT_NE(std::string::npos, second) << out;
+    EXPECT_NE(std::string::npos, first) << out;
+    EXPECT_NE(std::string::npos, second) << out;
     EXPECT_LT(first, second);
   }
 }
