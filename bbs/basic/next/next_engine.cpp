@@ -18,6 +18,7 @@
 #include "bbs/basic/next/next_engine.h"
 
 #include "bbs/basic/next/bbs_console.h"
+#include "bbs/basic/next/wwiv_bindings.h"
 
 #include "common/context.h"
 #include "common/output.h"
@@ -114,7 +115,12 @@ bool NextEngine::RunText(const std::string& name, const std::string& text) {
   interp.set_stop_check(hung_up);
   // As with the legacy engine, scripts can only import files in scriptdir.
   interp.set_import_root(config_.scriptdir());
-  // TODO(M4): register the wwiv.* modules.
+  const WwivBindings bindings{in_, out_, console, config_, ctx_};
+  RegisterWwiv(interp, bindings);
+  RegisterWwivIo(interp, bindings);
+  // TODO(M4): wwiv.data, and wwiv.io.file and wwiv.os when the sysop enables
+  // them (config_.script_package_file_enabled(), script_package_os_enabled()).
+  RegisterWwivTime(interp, bindings);
 
   // The full path, so that IMPORT "file.bas" is found next to the script.
   const auto path = FilePath(config_.scriptdir(), name);

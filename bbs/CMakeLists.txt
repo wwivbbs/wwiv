@@ -178,6 +178,9 @@ if (WWIV_WWIVBASIC_NEXT)
   target_sources(bbs_lib PRIVATE
     basic/next/bbs_console.cpp
     basic/next/next_engine.cpp
+    basic/next/wwiv.cpp
+    basic/next/wwiv_io.cpp
+    basic/next/wwiv_time.cpp
   )
   target_link_libraries(bbs_lib wwivbasic_interpreter)
   target_compile_definitions(bbs_lib PUBLIC WWIV_WWIVBASIC_NEXT)
@@ -232,7 +235,10 @@ if (WWIV_BUILD_TESTS)
       basic/util_test.cpp
     )
     if (WWIV_WWIVBASIC_NEXT)
-      list(APPEND test_sources basic/next/next_engine_test.cpp)
+      list(APPEND test_sources
+        basic/next/next_engine_test.cpp
+        basic/next/wwiv_bindings_test.cpp
+      )
     endif()
     add_executable(bbs_tests ${test_sources})
 
