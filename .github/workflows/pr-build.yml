@@ -52,6 +52,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
 
       # vcpkg.json pins builtin-baseline to an older vcpkg commit than the
       # submodule's, and checkout clones submodules shallow. vcpkg only needs
@@ -119,8 +120,10 @@ jobs:
       - name: List cached vcpkg packages
         id: vcpkg-before
         shell: bash
+        env:
+          VCPKG_CACHE_DIR: ${{ steps.vcpkg-cache.outputs.dir }}
         run: |
-          cd '${{ steps.vcpkg-cache.outputs.dir }}'
+          cd "${VCPKG_CACHE_DIR}"
           echo "count=$(find . -type f | wc -l)" >> "$GITHUB_OUTPUT"
           echo "hash=$(find . -type f | sort | sha256sum | cut -c1-64)" >> "$GITHUB_OUTPUT"
 
@@ -148,14 +151,19 @@ jobs:
           && steps.vcpkg-before.outcome == 'success'
           && steps.configure.outcome == 'success'
         shell: bash
+        env:
+          PRESET: ${{ matrix.preset }}
+          VCPKG_CACHE_DIR: ${{ steps.vcpkg-cache.outputs.dir }}
+          BEFORE_COUNT: ${{ steps.vcpkg-before.outputs.count }}
+          BEFORE_HASH: ${{ steps.vcpkg-before.outputs.hash }}
         run: |
-          status='_build/${{ matrix.preset }}/vcpkg_installed/vcpkg/status'
+          status="_build/${PRESET}/vcpkg_installed/vcpkg/status"
           used=$(sed -n 's/^Abi: *\([0-9a-f]*\).*/\1/p' "${status}" | sort -u)
           if [ -z "${used}" ]; then
             echo "::error::No package ABI hashes in ${status}; not touching the cache"
             exit 1
           fi
-          cd '${{ steps.vcpkg-cache.outputs.dir }}'
+          cd "${VCPKG_CACHE_DIR}"
           pruned=0
           while IFS= read -r f; do
             abi=$(basename "${f}" .zip)
@@ -167,8 +175,8 @@ jobs:
           find . -type d -empty -delete
           count=$(find . -type f | wc -l)
           hash=$(find . -type f | sort | sha256sum | cut -c1-64)
-          echo "Cached vcpkg packages: ${{ steps.vcpkg-before.outputs.count }} before, ${pruned} unused pruned, ${count} after"
-          if [ "${hash}" != "${{ steps.vcpkg-before.outputs.hash }}" ]; then
+          echo "Cached vcpkg packages: ${BEFORE_COUNT} before, ${pruned} unused pruned, ${count} after"
+          if [ "${hash}" != "${BEFORE_HASH}" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 

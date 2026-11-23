@@ -15,6 +15,9 @@ on:
     branches: 
       - main
 
+# Jobs get only the permissions they need (see each job).
+permissions: {}
+
 env:
     CMAKE_BIN: cmake
     CTEST_BIN: ctest
@@ -32,6 +35,9 @@ jobs:
     name: Create Build Number
     if: github.repository_owner == 'wwivbbs'
     runs-on: ubuntu-latest
+    permissions:
+      # build-tag-number stores the counter in a ref; the build tag is created here too.
+      contents: write
     outputs:
       build_number: ${{ steps.buildnumber.outputs.build_number }}
       wwiv_release: ${{ env.WWIV_RELEASE }}
@@ -43,26 +49,30 @@ jobs:
         with:
           token: ${{secrets.github_token}}  
           
-      - name: Check out repository code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          submodules: recursive
-          
       - name: Generate Tag Name
         id: generate_tag
         shell: bash
+        env:
+          BUILD_NUMBER: ${{ steps.buildnumber.outputs.build_number }}
         run: |
-          echo "wwiv_tag=${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
-          echo "WWIV_TAG=${{ env.WWIV_RELEASE_LABEL }}_${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_ENV
+          echo "wwiv_tag=${WWIV_RELEASE_LABEL}_${BUILD_NUMBER}" >> "$GITHUB_OUTPUT"
 
-      - name: Tag the latet commit repository with tag ${{ env.WWIV_TAG }}
-        id: tag
+      # Create the annotated build tag with the API, so this job needs no
+      # checkout (and no git credentials on disk).
+      - name: Tag the commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WWIV_TAG: ${{ steps.generate_tag.outputs.wwiv_tag }}
         run: |
-          echo "WWIV_TAG: ${{ env.WWIV_TAG }}"
-          git config --global user.email "gh-action@wwivbbs.org"
-          git config --global user.name "GitHub Action"
-          git tag -f -a "${{ env.WWIV_TAG }}" -m "${{ env.WWIV_TAG }} SHA: " ${{ github.sha }}
-          git push origin ${{ env.WWIV_TAG }}
+          echo "WWIV_TAG: ${WWIV_TAG}"
+          tag_sha=$(gh api "repos/${GITHUB_REPOSITORY}/git/tags" \
+            -f tag="${WWIV_TAG}" -f message="${WWIV_TAG} SHA: ${GITHUB_SHA}" \
+            -f object="${GITHUB_SHA}" -f type=commit \
+            -f "tagger[name]=GitHub Action" -f "tagger[email]=gh-action@wwivbbs.org" \
+            --jq .sha)
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f ref="refs/tags/${WWIV_TAG}" -f sha="${tag_sha}" > /dev/null
 
   wwiv-release:
     name: Build and Publish
@@ -86,6 +96,8 @@ jobs:
               archive_suffix: zip
         fail-fast: false
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     env:
       BUILD_NUMBER: ${{needs.wwiv-build-number.outputs.build_number}}
       WWIV_TAG: ${{needs.wwiv-build-number.outputs.wwiv_tag}}
@@ -116,6 +128,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
           
       # vcpkg.json pins builtin-baseline to an older vcpkg commit than the
       # submodule's, and checkout clones submodules shallow. vcpkg only needs
@@ -159,7 +172,9 @@ jobs:
 
       - name: Build (Windows)
         if: ${{ matrix.os == 'windows-2022' }}
-        shell: cmd
+        # build.cmd checks errors itself (it is also the Jenkins script), so
+        # cmd's lack of fail-on-error doesn't matter here.
+        shell: cmd # zizmor: ignore[misfeature]
         run: builds\jenkins\wwiv\build.cmd
         env:
           WWIV_ARCH: x86
@@ -185,7 +200,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           
       - name: Look for output file
-        run: ls ${{ env.WWIV_RELEASE_ARCHIVE_FILE }}
+        shell: bash
+        run: ls "${WWIV_RELEASE_ARCHIVE_FILE}"
   
       - name: Upload archive
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
