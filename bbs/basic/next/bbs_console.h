@@ -20,6 +20,7 @@
 
 #include "wwivbasic/console.h"
 
+#include <functional>
 #include <string>
 #include <string_view>
 
@@ -32,13 +33,17 @@ namespace wwiv::bbs::basic {
 
 // The wwivbasic Console for scripts run by the BBS: output goes to bout
 // (so pipe and heart color codes work, as they do for my_basic's PRINT) and
-// input comes from bin.
+// input comes from bin. Once the caller has hung up, input is at its end:
+// read_line and read_key return "".
 class BbsConsole final : public wwivbasic::Console {
 public:
-  // Line length used by read_line when the script gives no limit.
-  static constexpr int kDefaultMaxLineLength = 80;
+  // The longest line the BBS line editor (Input::input_text) accepts; it is
+  // also what read_line(0), "no limit", reads.
+  static constexpr int kMaxLineLength = 78;
 
-  BbsConsole(common::Input& in, common::Output& out) : in_(in), out_(out) {}
+  // hung_up says whether the caller has hung up; empty means never.
+  BbsConsole(common::Input& in, common::Output& out, std::function<bool()> hung_up = {})
+      : in_(in), out_(out), hung_up_(std::move(hung_up)) {}
 
   void write(std::string_view text) override;
   void newline() override;
@@ -47,8 +52,11 @@ public:
   void clear_screen() override;
 
 private:
+  [[nodiscard]] bool hung_up() const { return hung_up_ && hung_up_(); }
+
   common::Input& in_;
   common::Output& out_;
+  std::function<bool()> hung_up_;
 };
 
 } // namespace wwiv::bbs::basic

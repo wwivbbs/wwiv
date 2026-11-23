@@ -41,6 +41,8 @@ private:
   // Runs text as the script scriptdir/name. Errors are shown with paths
   // relative to scriptdir.
   bool RunText(const std::string& name, const std::string& text);
+  // Shows one line of an error message in color 6, without interpreting it.
+  void ShowError(const std::string& line);
 
   common::Input& in_;
   common::Output& out_;

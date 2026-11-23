@@ -125,6 +125,62 @@ TEST_F(NextEngineTest, ScriptFile_InvalidName) {
   EXPECT_THAT(helper.io()->captured(), HasSubstr("Invalid script name"));
 }
 
+TEST_F(NextEngineTest, ScriptFile_InvalidName_DoesNotRevealMissingFiles) {
+  // ".." is rejected before looking for the file, so a file that doesn't
+  // exist gets the same message as one that does.
+  NextEngine engine(bin, bout, helper.config(), &helper.context());
+  ASSERT_FALSE(engine.RunScript("../nothere.bas"));
+  const auto captured = helper.io()->captured();
+  EXPECT_THAT(captured, HasSubstr("Invalid script name"));
+  EXPECT_THAT(captured, Not(HasSubstr("Unable to locate")));
+}
+
+TEST_F(NextEngineTest, Import_OutsideScriptDir) {
+  ASSERT_FALSE(Run("import \"../secret.bas\"\nprint 1"));
+  const auto captured = helper.io()->captured();
+  EXPECT_THAT(captured, HasSubstr("Can't import '../secret.bas'"));
+  EXPECT_THAT(captured, Not(HasSubstr("1\r\n")));
+}
+
+TEST_F(NextEngineTest, Import_ErrorInImportedFile_EveryLineRelative) {
+  CreateScript("broken.bas", "print (\"unclosed\"\n");
+  ASSERT_FALSE(Run("import \"broken.bas\""));
+  const auto captured = helper.io()->captured();
+  EXPECT_THAT(captured, HasSubstr("Unable to import 'broken.bas'"));
+  EXPECT_THAT(captured, HasSubstr("broken.bas:1:"));
+  EXPECT_THAT(captured, Not(HasSubstr(helper.config().scriptdir().string())));
+  // Every line ends with CR LF, so it doesn't stair-step on a terminal.
+  for (size_t i = captured.find('\n'); i != std::string::npos; i = captured.find('\n', i + 1)) {
+    ASSERT_GT(i, 0u);
+    EXPECT_EQ('\r', captured[i - 1]) << captured;
+  }
+}
+
+TEST_F(NextEngineTest, Error_PipeCodesShownAsText) {
+  // The file doesn't exist, so the error repeats the name, pipe code and all.
+  ASSERT_FALSE(Run("import \"|#3x.bas\""));
+  EXPECT_THAT(helper.io()->captured(), HasSubstr("'|#3x.bas'"));
+}
+
+TEST_F(NextEngineTest, HungUp_ScriptDoesNotRun) {
+  helper.context().session_context().hangup(true);
+  ASSERT_FALSE(Run("print \"Hello\""));
+  EXPECT_EQ("", helper.io()->captured());
+}
+
+TEST_F(NextEngineTest, HungUp_LoopStops) {
+  helper.context().session_context().hangup(true);
+  ASSERT_FALSE(Run("while 1\nwend"));
+  EXPECT_EQ("", helper.io()->captured());
+}
+
+TEST_F(NextEngineTest, Console_HungUp_InputIsAtItsEnd) {
+  BbsConsole console(bin, bout, [] { return true; });
+  EXPECT_EQ("", console.read_key());
+  EXPECT_EQ("", console.read_line(10));
+  EXPECT_EQ("", console.read_line(0));
+}
+
 TEST_F(NextEngineTest, Import_FromScriptDir) {
   CreateScript("lib.bas", "def greet(n)\n  return \"Hi \" + n\nenddef\n");
   ASSERT_TRUE(Run("import \"lib.bas\"\nprint greet(\"Bob\")"));

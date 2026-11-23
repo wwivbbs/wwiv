@@ -26,6 +26,8 @@ template <class F> static auto guard_native(const std::string& what, F&& f) {
     return f();
   } catch (const BasicError&) {
     throw;
+  } catch (const StopScript&) {
+    throw;
   } catch (const std::exception& e) {
     throw BasicError(fmt::format("{}: {}", what, e.what()));
   } catch (...) {
@@ -324,6 +326,14 @@ void ExecutionVisitor::import_file(const std::string& name) {
   // Like WWIV's scripts directory, paths are relative to the importing script.
   const auto base = std::filesystem::path(filename_).parent_path();
   const auto path = (base / name).lexically_normal();
+  if (ec_.import_root) {
+    // Rejects "../x.bas", absolute paths and other drives.
+    const auto rel = path.lexically_relative(*ec_.import_root);
+    if (rel.empty() || *rel.begin() == "..") {
+      throw BasicError(fmt::format(
+          "Can't import '{}': it is outside the directory scripts can import from", name));
+    }
+  }
   // Each file is only loaded once, which also stops import cycles. The entry
   // script is registered by run_file/run_source, so a cycle back to it stops
   // here too.
@@ -383,6 +393,7 @@ std::any ExecutionVisitor::visitStatements(BasicParser::StatementsContext* conte
 }
 
 std::any ExecutionVisitor::visitStatement(BasicParser::StatementContext* context) {
+  ec_.check_stop();
   try {
     return visitChildren(context);
   } catch (BasicError& e) {
@@ -560,6 +571,8 @@ std::any ExecutionVisitor::visitIfStatement(BasicParser::IfStatementContext* con
 }
 
 bool ExecutionVisitor::run_loop_body(BasicParser::StatementsContext* body) {
+  // Checked on every iteration, so even a loop with an empty body can stop.
+  ec_.check_stop();
   visit(body);
   if (flow_ == Flow::EXIT_LOOP) {
     flow_ = Flow::NORMAL;

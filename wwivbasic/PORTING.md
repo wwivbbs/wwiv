@@ -11,7 +11,9 @@ form, and why.
 - `'` comments, `IF/ELSEIF/ELSE/ENDIF`, `FOR/NEXT`, `WHILE/WEND`, `DEF/ENDDEF`
 - `PRINT a, b` and `PRINT a; b` (see "PRINT output" for how the output is laid out)
 - `import "@wwiv.io"`, and calling `outstr()` etc. without the module prefix
-- `import "file.bas"`, relative to the importing script
+- `import "file.bas"`, relative to the importing script. In the BBS, as before, only
+  files in the scripts directory can be imported: `"../x.bas"` or an absolute path
+  elsewhere is an error.
 - Lists: `list()`, `push`, `get`, `remove`, `len` and the other my_basic list functions,
   `FOR x IN l`, and `iterator`/`move_next`/`get`. Indices start at 0, and printing a list
   prints `LIST`.

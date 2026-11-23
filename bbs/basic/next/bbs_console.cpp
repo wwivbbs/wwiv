@@ -20,6 +20,8 @@
 #include "common/input.h"
 #include "common/output.h"
 
+#include <algorithm>
+
 namespace wwiv::bbs::basic {
 
 void BbsConsole::write(std::string_view text) { out_.outstr(std::string(text)); }
@@ -27,10 +29,26 @@ void BbsConsole::write(std::string_view text) { out_.outstr(std::string(text)); 
 void BbsConsole::newline() { out_.nl(); }
 
 std::string BbsConsole::read_line(int max_length) {
-  return in_.input_text("", max_length > 0 ? max_length : kDefaultMaxLineLength);
+  if (hung_up()) {
+    return {};
+  }
+  const auto len = max_length > 0 ? std::min(max_length, kMaxLineLength) : kMaxLineLength;
+  auto line = in_.input_text("", len);
+  // Input returns at once after a hangup, with whatever was typed so far.
+  return hung_up() ? std::string{} : line;
 }
 
-std::string BbsConsole::read_key() { return std::string(1, in_.getkey()); }
+std::string BbsConsole::read_key() {
+  if (hung_up()) {
+    return {};
+  }
+  // getkey returns 0 once the caller has hung up.
+  const auto ch = in_.getkey();
+  if (ch == '\0' || hung_up()) {
+    return {};
+  }
+  return std::string(1, ch);
+}
 
 void BbsConsole::clear_screen() { out_.cls(); }
 
