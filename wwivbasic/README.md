@@ -1,18 +1,22 @@
 # wwivbasic
 
-A BASIC interpreter for [WWIV](https://github.com/wwiv/wwiv) scripts, written in C++23 on top of
+A BASIC interpreter for WWIV scripts, written in C++23 on top of
 an ANTLR 4 grammar. It is intended to replace the my_basic interpreter that WWIV uses today.
 Most existing WWIVbasic scripts should run unchanged.
 
 ## Status
 
-Work in progress. See [docs/PLAN.md](docs/PLAN.md) for the milestones.
+Experimental, and only built with `-DWWIV_WWIVBASIC_NEXT=ON`. See [docs/PLAN.md](docs/PLAN.md)
+for the milestones.
 
-- Done: build and test baseline (M0), parsing the existing WWIV scripts (M1), and lists,
-  imports and stub `wwiv.*` modules so those scripts run (M2).
-- Next: an embedding API with object values and member access (M3), then running inside
-  WWIV behind a build option with the `wwiv.*` modules as bindings (M4), then SDK bindings such
-  as messages and users (M5).
+- Done: build and test baseline (M0), parsing the existing WWIV scripts (M1), lists, imports
+  and stub `wwiv.*` modules so those scripts run (M2), and the embedding API with object values
+  and member access (M3).
+- Next: running inside the BBS with the `wwiv.*` modules as bindings (M4), then SDK bindings
+  such as messages and users (M5).
+
+wwivbasic was developed in its own repository (github.com/wwiv/wwivbasic, now archived) and
+moved here at the start of M4.
 
 Where wwivbasic intentionally differs from my_basic, [PORTING.md](PORTING.md) describes the change.
 
@@ -38,20 +42,16 @@ print "count: ", count
 
 ## Building
 
-You need:
-
-- CMake 3.21 or newer, and Ninja
-- A C++23 compiler: GCC 14 or newer, or a current Visual Studio
-- Java 11 or newer, only if you change the grammar (see below)
-- vcpkg (see below)
+wwivbasic builds as part of WWIV when `WWIV_WWIVBASIC_NEXT` is on. That also adds the
+`wwivbasic` feature in WWIV's `vcpkg.json`, which installs the ANTLR runtime. From the top of
+the WWIV tree:
 
 ```sh
-cmake --preset linux-debug
+cmake --preset linux-debug -DWWIV_WWIVBASIC_NEXT=ON
 cmake --build --preset linux-debug
 ```
 
-On Windows, run these in an x64 Native Tools prompt and use the `windows-x64-debug` preset.
-Build output goes to `_build/<preset>/`.
+Java 11 or newer is needed only if you change the grammar (see below).
 
 ### The generated parser
 
@@ -60,50 +60,34 @@ The C++ lexer and parser are generated from `BasicLexer.g4` and `BasicParser.g4`
 Java. If Java is installed, editing a grammar file regenerates them on the next build; commit
 the regenerated files with the grammar change. Without Java, the checked-in files are used, and
 configuring fails if the grammar no longer matches them (`generated/grammar.sha256` records
-which grammar they came from). CI fails if the checked-in files are out of date.
-
-### vcpkg
-
-The libraries this project needs (ANTLR runtime, fmt, gtest and so on) come from
-[vcpkg](https://vcpkg.io). They're installed automatically on the first configure, at the
-versions pinned by `builtin-baseline` in `vcpkg.json`.
-
-CMake looks for vcpkg in this order:
-
-1. `-DCMAKE_TOOLCHAIN_FILE=...` on the command line
-2. The `VCPKG_ROOT` environment variable: the directory of a vcpkg checkout, the one that contains
-   `scripts/buildsystems/vcpkg.cmake`
-3. `../wwiv/vcpkg`: the vcpkg submodule of a WWIV checkout next to this one
-
-If you have WWIV checked out next to wwivbasic, you don't need to set anything. Otherwise point
-`VCPKG_ROOT` at any vcpkg checkout, for example `export VCPKG_ROOT=$HOME/src/wwiv/vcpkg` or
-`set VCPKG_ROOT=W:\wwiv\vcpkg`. A fresh vcpkg clone needs `bootstrap-vcpkg.sh` (or `.bat`) run
-once.
+which grammar they came from). CI builds with `-DWWIVBASIC_GENERATE_PARSER=OFF`, so it fails if the checked-in files are out of
+date.
 
 ## Testing
 
 ```sh
-ctest --preset linux-debug                  # all tests
-ctest --preset linux-debug -R golden        # golden scripts only
+ctest --preset linux-debug                          # all of WWIV's tests
+ctest --preset linux-debug -R wwivbasic.golden      # wwivbasic's golden scripts
+_build/linux-debug/wwivbasic/wwivbasic_tests        # wwivbasic's unit tests
 ```
 
 There are two kinds of test:
 
-- **Unit tests** (gtest) in `src/*_test.cpp`. `src/interpreter_test.cpp` runs small scripts and
-  checks their output and errors.
+- **Unit tests** (gtest) in `*_test.cpp`, next to the code. `interpreter_test.cpp` runs small
+  scripts and checks their output and errors.
 - **Golden tests** in `tests/golden/`. Each `NAME.bas` is run and its output compared with
   `NAME.expected`. If the expected file starts with `#exit N`, the script must exit with code N.
   If there is a `NAME.input`, it is fed to the script as input (one line per `GETS`, `YN` and so
   on). `wwiv_hello.bas` and `wwiv_oneliners.bas` are unchanged copies of the scripts WWIV ships.
-  To add one, drop in both files and re-run `cmake --preset ...`.
+  To add one, drop in both files and configure again.
 
 ## Running scripts
 
 ```sh
-_build/linux-debug/basicrun script.bas
-_build/linux-debug/basicrun --check script.bas            # parse only
-_build/linux-debug/basicrun --trace script.bas            # log execution to stderr
-_build/linux-debug/basicrun --show_parsetree script.bas
+_build/linux-debug/wwivbasic/basicrun script.bas
+_build/linux-debug/wwivbasic/basicrun --check script.bas            # parse only
+_build/linux-debug/wwivbasic/basicrun --trace script.bas            # log execution to stderr
+_build/linux-debug/wwivbasic/basicrun --show_parsetree script.bas
 ```
 
 Script output goes to stdout. Errors go to stderr as `file:line: error: message`, and the exit
@@ -115,7 +99,7 @@ line at a time, screen actions such as `CLS` print a marker like `[cls]`, and `w
 saved lists in memory only:
 
 ```sh
-printf 'Y\n3\nHello\nN\nN\n' | _build/linux-debug/basicrun tests/golden/wwiv_oneliners.bas
+printf 'Y\n3\nHello\nN\nN\n' | _build/linux-debug/wwivbasic/basicrun wwivbasic/tests/golden/wwiv_oneliners.bas
 ```
 
 ## Tools for working on the grammar
@@ -124,7 +108,7 @@ printf 'Y\n3\nHello\nN\nN\n' | _build/linux-debug/basicrun tests/golden/wwiv_one
 script. It's the quickest way to check precedence or see which rule matched:
 
 ```sh
-$ _build/linux-debug/basicrun --show_parsetree t.bas      # t.bas: a = 1 + 2 * 3
+$ _build/linux-debug/wwivbasic/basicrun --show_parsetree t.bas      # t.bas: a = 1 + 2 * 3
 (main
     (statement
         (assignmentStatement
@@ -142,7 +126,7 @@ $ _build/linux-debug/basicrun --show_parsetree t.bas      # t.bas: a = 1 + 2 * 3
 stderr:
 
 ```sh
-$ _build/linux-debug/basicrun --trace t.bas
+$ _build/linux-debug/wwivbasic/basicrun --trace t.bas
 TRACE: ASSIGN a = '7'
 ```
 
@@ -170,15 +154,12 @@ viewer needs a desktop and a full Java runtime; the `-headless` packages can't s
 
 ## Embedding
 
-Programs such as WWIV use wwivbasic through the headers in `include/wwivbasic/`
-and the `wwivbasic_interpreter` library. Add it with `add_subdirectory` after the
-embedder's `core` target (WWIV's `core/` library, with `core/...` headers on the
-include path); wwivbasic then uses that `core` and builds only the library, not
-`basicrun` or the tests (turn those on with `WWIVBASIC_BUILD_TOOLS` and
-`WWIVBASIC_BUILD_TESTS`). Its dependencies (antlr4, fmt) come from the
-embedder's vcpkg manifest. Targets that link `wwivbasic_interpreter` build as
-C++23. A host provides a `Console` (where
-`PRINT` writes and input comes from) and adds modules of native functions:
+The BBS (and `basicrun`) use wwivbasic through the public headers at the top of
+`wwivbasic/` (`interpreter.h`, `module.h`, `object.h`, `value.h`, `console.h`,
+`stdio_console.h`) and the `wwivbasic_interpreter` library. Nothing outside
+`wwivbasic/` should include `wwivbasic/internal/` or the ANTLR headers. A host
+provides a `Console` (where `PRINT` writes and input comes from) and adds
+modules of native functions:
 
 ```cpp
 #include "wwivbasic/interpreter.h"
@@ -204,7 +185,7 @@ arguments are converted and their count is checked.
 ### Objects
 
 A module can describe a C++ class so scripts can use its objects' properties
-and methods (`include/wwivbasic/object.h`):
+and methods (`wwivbasic/object.h`):
 
 ```cpp
 struct Header { int number; std::string subject; std::string summary(int width) const; };
@@ -234,11 +215,12 @@ Objects are shared by reference, like lists, and print as their class name.
 | `BasicLexer.g4`, `BasicParser.g4` | The grammar |
 | `generated/` | The lexer and parser ANTLR generates from the grammar (don't edit) |
 | `cmake/` | Build helpers: regenerating the parser |
-| `include/wwivbasic/` | The public embedding API |
-| `src/` | The interpreter, the `basicrun` CLI and the unit tests |
-| `src/stdlib/` | Built-in functions |
+| `*.h` | The public embedding API |
+| `internal/` | The interpreter's internals |
+| `stdlib/` | Built-in functions |
+| `testing/` | A fake `Console` for tests |
+| `basicrun/` | The `basicrun` CLI and its stand-in `wwiv.*` modules |
 | `tests/golden/` | Golden test scripts |
-| `core/` | A copy of WWIV's `core/` library |
 | `docs/PLAN.md` | Plan and milestones |
 | `PORTING.md` | Porting guide from my_basic |
 | `AGENTS.md` | Notes for coding agents |

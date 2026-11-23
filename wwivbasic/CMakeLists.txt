@@ -1,62 +1,13 @@
-cmake_minimum_required(VERSION 3.20)
+# CMake for wwivbasic, the ANTLR-based BASIC interpreter (WWIV_WWIVBASIC_NEXT).
+#
+# Targets:
+#   wwivbasic_interpreter  the interpreter library; embedders use the headers
+#                          in this directory (wwivbasic/interpreter.h, ...)
+#   basicrun               runs one .bas file from the command line
+#   wwivbasic_tests        unit tests, plus golden tests run through basicrun
+#                          (with WWIV_BUILD_TESTS)
 
-# wwivbasic builds on its own, or inside another project (WWIV) with
-# add_subdirectory. On its own it builds basicrun and the tests, finds vcpkg
-# itself and uses the copy of WWIV's core/ library in core/. Inside another
-# project it builds only the interpreter library (wwivbasic_interpreter) and
-# uses that project's vcpkg and its `core` target, which must be added (and
-# "core/..." headers be on the include path) before this directory.
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  set(WWIVBASIC_STANDALONE ON)
-else()
-  set(WWIVBASIC_STANDALONE OFF)
-endif()
-
-# Dependencies come from vcpkg (see vcpkg.json, which pins the versions with
-# builtin-baseline). When building on its own, vcpkg is found from, in order:
-#   1. -DCMAKE_TOOLCHAIN_FILE=...
-#   2. the VCPKG_ROOT environment variable
-#   3. the vcpkg submodule of a WWIV checkout next to this one (../wwiv/vcpkg)
-if(WWIVBASIC_STANDALONE AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-  if(DEFINED ENV{VCPKG_ROOT})
-    set(WWIVBASIC_VCPKG_ROOT "$ENV{VCPKG_ROOT}")
-  elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../wwiv/vcpkg/scripts/buildsystems/vcpkg.cmake")
-    get_filename_component(WWIVBASIC_VCPKG_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../wwiv/vcpkg" ABSOLUTE)
-  else()
-    message(FATAL_ERROR
-      "vcpkg not found. Set VCPKG_ROOT to a vcpkg checkout (for example the vcpkg "
-      "submodule of WWIV), or check out WWIV next to this directory as ../wwiv.")
-  endif()
-  message(STATUS "Using vcpkg from ${WWIVBASIC_VCPKG_ROOT}")
-  set(CMAKE_TOOLCHAIN_FILE "${WWIVBASIC_VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-    CACHE FILEPATH "Vcpkg toolchain file")
-endif()
-
-project(wwivbasic LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-option(WWIVBASIC_BUILD_TOOLS "Build basicrun" ${WWIVBASIC_STANDALONE})
-option(WWIVBASIC_BUILD_TESTS "Build the unit and golden tests (needs basicrun)"
-       ${WWIVBASIC_STANDALONE})
-if(WWIVBASIC_BUILD_TESTS AND NOT WWIVBASIC_BUILD_TOOLS)
-  message(FATAL_ERROR "WWIVBASIC_BUILD_TESTS needs WWIVBASIC_BUILD_TOOLS (the golden tests run basicrun)")
-endif()
-
-find_package(antlr4-runtime REQUIRED)
-find_package(fmt CONFIG REQUIRED)
-
-add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
-
-# WWIV's core/ library: the embedder's when there is one, otherwise our copy.
-if(TARGET core)
-  message(STATUS "wwivbasic: using the existing core target")
-else()
-  include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-  add_subdirectory(core)
-endif()
+find_package(antlr4-runtime CONFIG REQUIRED)
 
 # The lexer and parser are generated from BasicLexer.g4 and BasicParser.g4 by
 # the ANTLR tool and checked in under generated/, so building doesn't need
@@ -78,7 +29,7 @@ set(WWIVBASIC_GENERATED_FILES
     "${WWIVBASIC_GENERATED_DIR}/BasicParserVisitor.h"
     "${WWIVBASIC_GENERATED_DIR}/grammar.sha256")
 
-option(WWIVBASIC_GENERATE_PARSER "Regenerate the parser when the grammar changes (needs Java)" ON)
+option(WWIVBASIC_GENERATE_PARSER "Regenerate the wwivbasic parser when the grammar changes (needs Java)" ON)
 if(WWIVBASIC_GENERATE_PARSER)
   find_package(Java 11 COMPONENTS Runtime)
 endif()
@@ -111,9 +62,9 @@ if(Java_FOUND)
     VERBATIM)
 elseif(NOT WWIVBASIC_GRAMMAR_HASH STREQUAL WWIVBASIC_CHECKED_IN_HASH)
   message(FATAL_ERROR
-    "BasicLexer.g4 or BasicParser.g4 changed since the parser in generated/ was "
-    "generated, and Java (11 or newer) wasn't found to regenerate it. Install Java, "
-    "or restore the grammar files.")
+    "wwivbasic/BasicLexer.g4 or BasicParser.g4 changed since the parser in "
+    "wwivbasic/generated/ was generated, and Java (11 or newer) wasn't found to "
+    "regenerate it. Install Java, or restore the grammar files.")
 else()
   message(STATUS "wwivbasic: using the checked-in parser in generated/")
 endif()
@@ -122,91 +73,74 @@ endif()
 # antlr4_static elsewhere.
 if(TARGET antlr4_shared)
   set(WWIVBASIC_ANTLR_LIB antlr4_shared)
+  set(WWIVBASIC_ANTLR_DEFINITIONS "")
 else()
   set(WWIVBASIC_ANTLR_LIB antlr4_static)
-  add_definitions(-DANTLR4CPP_STATIC)
-endif()
-
-# Compiler warnings for our own code (src/). Warnings don't fail the build.
-# The generated ANTLR sources and the vendored core/ library are left alone.
-if(MSVC)
-  set(WWIVBASIC_WARNINGS /W4)
-  set(WWIVBASIC_NO_WARNINGS /W0)
-else()
-  set(WWIVBASIC_WARNINGS -Wall -Wextra)
-  set(WWIVBASIC_NO_WARNINGS -w)
+  set(WWIVBASIC_ANTLR_DEFINITIONS ANTLR4CPP_STATIC)
 endif()
 
 # The generated lexer and parser, in their own target so they build without
-# our warning flags. Their headers are SYSTEM includes so their warnings don't
-# show up in our code either.
+# warnings. Their headers are SYSTEM includes so their warnings don't show up
+# in our code either.
 add_library(wwivbasic_parser OBJECT ${WWIVBASIC_GENERATED_SOURCES})
 target_include_directories(wwivbasic_parser SYSTEM PUBLIC ${ANTLR4_INCLUDE_DIR}
                            "${WWIVBASIC_GENERATED_DIR}")
+target_compile_definitions(wwivbasic_parser PUBLIC ${WWIVBASIC_ANTLR_DEFINITIONS})
 target_link_libraries(wwivbasic_parser PUBLIC ${WWIVBASIC_ANTLR_LIB})
-target_compile_options(wwivbasic_parser PRIVATE ${WWIVBASIC_NO_WARNINGS})
-
-add_library(wwivbasic_interpreter
-            "src/context.cpp"
-            "src/executor.cpp"
-            "src/function_def_visitor.cpp"
-            "src/interpreter.cpp"
-            "src/stdio_console.cpp"
-            "src/utils.cpp"
-            "src/value.cpp"
-            "src/stdlib/collections.cpp"
-            "src/stdlib/common.cpp"
-            "src/stdlib/numbers.cpp"
-            "src/stdlib/strings.cpp"
-)
-# Public headers (the embedding API) are in include/wwivbasic/.
-target_include_directories(wwivbasic_interpreter PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(wwivbasic_interpreter wwivbasic_parser fmt::fmt core)
-target_compile_definitions(wwivbasic_interpreter PUBLIC _CRT_SECURE_NO_WARNINGS)
-# The public headers need C++20 or newer; this makes targets that link the
-# interpreter build with C++23 even if the embedder defaults to an older
-# standard (WWIV uses C++17).
-target_compile_features(wwivbasic_interpreter PUBLIC cxx_std_23)
-target_compile_options(wwivbasic_interpreter PRIVATE ${WWIVBASIC_WARNINGS})
-
-if(WWIVBASIC_BUILD_TOOLS)
-  add_executable(basicrun
-                 "src/basicrun.cpp"
-                 "src/wwiv_stub.cpp")
-  target_link_libraries(basicrun wwivbasic_interpreter)
-  target_compile_options(basicrun PRIVATE ${WWIVBASIC_WARNINGS})
+if(MSVC)
+  target_compile_options(wwivbasic_parser PRIVATE /W0)
+else()
+  target_compile_options(wwivbasic_parser PRIVATE -w)
 endif()
 
-if(WWIVBASIC_BUILD_TESTS)
-  enable_testing()
-  find_package(GTest CONFIG REQUIRED)
+add_library(wwivbasic_interpreter
+            "interpreter.cpp"
+            "stdio_console.cpp"
+            "value.cpp"
+            "internal/context.cpp"
+            "internal/executor.cpp"
+            "internal/function_def_visitor.cpp"
+            "internal/utils.cpp"
+            "stdlib/collections.cpp"
+            "stdlib/common.cpp"
+            "stdlib/numbers.cpp"
+            "stdlib/strings.cpp"
+)
+target_link_libraries(wwivbasic_interpreter PRIVATE wwivbasic_parser PUBLIC core fmt::fmt)
+target_compile_definitions(wwivbasic_interpreter PRIVATE _CRT_SECURE_NO_WARNINGS)
+set_max_warnings(wwivbasic_interpreter)
 
+add_executable(basicrun
+               "basicrun/basicrun.cpp"
+               "basicrun/wwiv_stub.cpp")
+target_link_libraries(basicrun wwivbasic_interpreter)
+set_max_warnings(basicrun)
+
+if(WWIV_BUILD_TESTS)
   add_executable(wwivbasic_tests
-                 "src/utils_test.cpp"
-                 "src/stdlib/strings_test.cpp"
-                 "src/interpreter_test.cpp"
-                 "src/embedding_test.cpp"
-                 "src/value_test.cpp"
+                 "embedding_test.cpp"
+                 "interpreter_test.cpp"
+                 "value_test.cpp"
+                 "internal/utils_test.cpp"
+                 "stdlib/strings_test.cpp"
   )
-
-  target_link_libraries(wwivbasic_tests PRIVATE GTest::gtest_main wwivbasic_interpreter)
-  target_compile_options(wwivbasic_tests PRIVATE ${WWIVBASIC_WARNINGS})
-
-  # Unit tests
-  include(GoogleTest)
+  # The interpreter tests use internals, which need the ANTLR headers.
+  target_link_libraries(wwivbasic_tests PRIVATE GTest::gtest_main wwivbasic_interpreter
+                        wwivbasic_parser)
+  set_max_warnings(wwivbasic_tests)
   gtest_discover_tests(wwivbasic_tests)
 
   # Golden tests: each tests/golden/NAME.bas is run with basicrun and its stdout
   # compared with NAME.expected; NAME.input, if present, is its stdin. See
-  # tests/run_golden.cmake.
-  # Golden tests without a NAME.input file get this empty file as stdin.
+  # tests/run_golden.cmake. Golden tests without a NAME.input file get this
+  # empty file as stdin.
   set(WWIVBASIC_EMPTY_INPUT "${CMAKE_CURRENT_BINARY_DIR}/golden_empty.input")
   file(WRITE "${WWIVBASIC_EMPTY_INPUT}" "")
   file(GLOB WWIVBASIC_GOLDEN_SCRIPTS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tests/golden/*.bas")
   foreach(script ${WWIVBASIC_GOLDEN_SCRIPTS})
     get_filename_component(name "${script}" NAME_WE)
     get_filename_component(dir "${script}" DIRECTORY)
-    add_test(NAME golden.${name}
+    add_test(NAME wwivbasic.golden.${name}
              COMMAND ${CMAKE_COMMAND}
                      -DBASICRUN=$<TARGET_FILE:basicrun>
                      -DSCRIPT=${script}
@@ -216,8 +150,9 @@ if(WWIVBASIC_BUILD_TESTS)
   endforeach()
 
   # basicrun accepts relative script paths that start with "./".
-  add_test(NAME basicrun.dot_relative_path
+  add_test(NAME wwivbasic.basicrun.dot_relative_path
            COMMAND basicrun ./for.bas
            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/golden)
-  set_tests_properties(basicrun.dot_relative_path PROPERTIES PASS_REGULAR_EXPRESSION "^1\n2\n")
+  set_tests_properties(wwivbasic.basicrun.dot_relative_path PROPERTIES
+                       PASS_REGULAR_EXPRESSION "^1\n2\n")
 endif()

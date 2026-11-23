@@ -10,6 +10,12 @@
     "gtest"
   ],
   "features": {
+    "wwivbasic": {
+      "description": "ANTLR runtime for wwivbasic, the new BASIC interpreter (WWIV_WWIVBASIC_NEXT).",
+      "dependencies": [
+        "antlr4"
+      ]
+    },
     "spellcheck": {
       "description": "Hunspell for FSED spell check (WWIV_HUNSPELL). Turned on automatically for Windows builds, see WWIV_HUNSPELL_VCPKG in CMakeLists.txt.",
       "dependencies": [

@@ -33,7 +33,7 @@ RunBasicScript(name)                       (WWIV)
         └─ NextEngine   → wwivbasic + bindings in WWIV        [WWIV_WWIVBASIC_NEXT]
 ```
 
-- **wwivbasic** (this repo) is the language: parser, interpreter, standard
+- **wwivbasic** (`wwivbasic/`) is the language: parser, interpreter, standard
   library, and a stable embedding API (public headers for `Context`, `Module`,
   `Value` and the binding helpers). It has no dependency on WWIV's `sdk/` or
   `bbs/`.
@@ -53,10 +53,14 @@ RunBasicScript(name)                       (WWIV)
   `bbs --basic_engine=legacy|next` for testing), so sysops can try it and fall
   back without rebuilding, and scripts can be run on both and their output
   compared.
-- **Repo layout.** wwivbasic stays a separate repo, pulled into WWIV as a
-  submodule under `deps/` (like `my_basic` and `pdcurses`), while it's
-  experimental. Inside WWIV's build it uses WWIV's `core/` instead of its own
-  copy. Once it's no longer experimental it moves into the WWIV repo (M6).
+- **Repo layout.** wwivbasic lives in the WWIV repo under `wwivbasic/`, a
+  library next to `core/` and `sdk/` that depends only on `core/`, the ANTLR
+  runtime and fmt. Its public headers are at the top of `wwivbasic/`
+  (`#include "wwivbasic/interpreter.h"`), and its internals in
+  `wwivbasic/internal/`. The engine switch and the `wwiv.*` bindings live in
+  `bbs/basic/` (the new ones in `bbs/basic/next/`). It was developed in its
+  own repo (github.com/wwiv/wwivbasic) through M3 and moved in at the start
+  of M4, since from M4 on most changes touch both the interpreter and WWIV.
 
 ## Compatibility policy
 
@@ -113,7 +117,8 @@ binding shows `obj.property`, `obj.method()` and `FOR x IN obj.items()`
 working.
 
 - [x] Public headers for the embedding API (`Interpreter`, `Module`, `Value`,
-      native functions, errors) in `include/wwivbasic/`; internals stay in `src/`
+      native functions, errors) at the top of `wwivbasic/`; internals in
+      `wwivbasic/internal/`
 - [x] `Console` interface; `PRINT` and the console go through it; a fake for
       tests and a stdin/stdout one for `basicrun`
 - [x] Object values: a `Value` that wraps a C++ object, shared by reference
@@ -136,8 +141,12 @@ Done when, with `WWIV_WWIVBASIC_NEXT=ON`, WWIV runs `hello.bas` and
 `oneliners.bas` on either engine (chosen at runtime) with the same output, and
 WWIV's existing `bbs/basic` tests pass against the new engine.
 
-- [ ] wwivbasic as a submodule under `deps/`; CMake option
-      `WWIV_WWIVBASIC_NEXT` (default OFF)
+- [x] Move wwivbasic into the WWIV repo under `wwivbasic/` (with its
+      history); CMake option `WWIV_WWIVBASIC_NEXT` (default OFF), which also
+      enables the `wwivbasic` vcpkg feature (antlr4); build against WWIV's
+      `core/`, dropping the vendored copy
+- [x] `core`: `CommandLine::set_dot_args_positional()`, so `basicrun ./x.bas`
+      works without changing how other programs treat `.N` arguments
 - [ ] `ScriptEngine` interface in WWIV; today's `Basic` becomes the legacy
       engine; `RunBasicScript` picks the engine from a `wwiv.json` setting and
       `bbs --basic_engine=legacy|next`
@@ -148,7 +157,8 @@ WWIV's existing `bbs/basic` tests pass against the new engine.
 - [ ] Port WWIV's `bbs/basic/basic_test.cpp` cases to run against the new
       engine
 - [ ] Side-by-side check: run scripts on both engines and diff the output
-- [ ] WWIV CI builds one configuration with the option on
+- [x] WWIV CI builds with the option on (both jobs), and fails if the
+      checked-in parser doesn't match the grammar
 
 ### M5: SDK bindings (WWIV)
 
@@ -167,7 +177,6 @@ headers and read messages.
 
 Done when wwivbasic is WWIV's only BASIC engine.
 
-- [ ] Move wwivbasic into the WWIV repo
 - [ ] Debugger with the same `/debug/v1` HTTP API
 - [ ] Make the new engine the default; publish the porting guide
 - [ ] Remove `deps/my_basic`, the legacy engine and the CMake option
@@ -182,8 +191,9 @@ Done when wwivbasic is WWIV's only BASIC engine.
   SDK)
 - Engine selection: decided, a CMake option to build the new engine plus a
   runtime setting to choose it
-- Repo layout: decided, a submodule under `deps/` while experimental, moving
-  into the WWIV repo in M6; bindings live in WWIV throughout
+- Repo layout: decided, moved into the WWIV repo under `wwivbasic/` at the
+  start of M4 (was going to be a submodule until M6); bindings live in
+  `bbs/basic/`
 - Dicts: not implemented. Do any scripts use `dict()`? The SDK may need dicts
   or records — M3/M5
 - `wwiv.io.file.open(..., "W")` truncates the file but there is no write
@@ -193,9 +203,4 @@ Done when wwivbasic is WWIV's only BASIC engine.
   if it's needed day to day
 - Generated parser: decided, checked in under `generated/`; builds with Java
   regenerate it when the grammar changes, builds without Java use it as is
-- WWIV builds as C++17; wwivbasic needs C++23 and makes targets that link it
-  build as C++23. Either the `bbs` target (or a small library holding the
-  bindings) builds as C++23, or WWIV moves to C++23 — M4
-- WWIV's `core/parser/lexer.cpp` has a `fmt::format` call with a missing
-  argument, which C++20 and later reject at compile time. Our copy has the
-  fix; upstream it — M4
+- C++ standard: resolved, WWIV builds as C++23

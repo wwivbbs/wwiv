@@ -127,9 +127,12 @@ jobs:
           echo "count=$(find . -type f | wc -l)" >> "$GITHUB_OUTPUT"
           echo "hash=$(find . -type f | sort | sha256sum | cut -c1-64)" >> "$GITHUB_OUTPUT"
 
+      # Also builds wwivbasic (the new BASIC interpreter) and its tests. With
+      # WWIVBASIC_GENERATE_PARSER=OFF, configure fails if wwivbasic's grammar
+      # changed without the regenerated parser being committed.
       - name: Configure
         id: configure
-        run: cmake --preset ${{ matrix.preset }}
+        run: cmake --preset ${{ matrix.preset }} -DWWIV_WWIVBASIC_NEXT=ON -DWWIVBASIC_GENERATE_PARSER=OFF
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
