@@ -66,6 +66,27 @@ block. Variables that were never assigned still read as empty, as before, but
 a dotted name such as `player.name` whose first part is neither a module nor a
 variable is an error (`Unknown variable or module 'player'`).
 
+## wwiv.* functions
+
+The `wwiv`, `wwiv.io` and `wwiv.time` functions keep their names, arguments,
+return values and side effects (`wwiv.module_name()` still prints `wwiv`).
+Small differences in how arguments are checked:
+
+- A number passed where text is expected is converted to text, as `PRINT`
+  would show it (`wwiv.io.outstr(42)` writes `42`). my_basic stopped the script
+  with an error.
+- Too many arguments (such as `wwiv.io.nl(1, 2)`), a missing required one
+  (`wwiv.command()`, `wwiv.time.format(t)`) or one of the wrong type
+  (`wwiv.io.outstr(list())`) stop the script with an error that names the
+  function, such as `OUTSTR: expected a STRING, got a LIST`.
+- `wwiv.io.gets()` with no length, or a length that isn't positive, reads
+  nothing and returns `""`; my_basic returned no value at all.
+- `wwiv.io.gets(n)` reads at most 254 characters; my_basic overflowed a
+  buffer for a longer `n` when the caller didn't use ANSI. (With ANSI, both
+  stop at 78, the width of the line editor.)
+- Once the caller has hung up, `wwiv.io.getkey()` and `wwiv.io.gets()` return
+  `""` and the script stops at the next statement.
+
 ## Real numbers
 
 Real numbers work as in my_basic: `7 / 2` is `3.5`, `6 / 2` is the integer

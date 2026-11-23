@@ -24,10 +24,8 @@
 
 namespace wwiv::bbs::basic {
 
-// Runs scripts on wwivbasic, with a BbsConsole over bout/bin. Built only with
-// WWIV_WWIVBASIC_NEXT.
-//
-// TODO(M4): the wwiv.* modules (see wwivbasic/docs/PLAN.md).
+// Runs scripts on wwivbasic, with a BbsConsole over bout/bin and the wwiv.*
+// modules (wwiv_bindings.h). Built only with WWIV_WWIVBASIC_NEXT.
 class NextEngine final : public ScriptEngine {
 public:
   NextEngine(common::Input& in, common::Output& out, const sdk::Config& config,
