@@ -25,7 +25,9 @@
 #include <mutex>
 
 #ifdef WWIV_WWIVBASIC_NEXT
+#include "bbs/basic/next/bbs_message_base.h"
 #include "bbs/basic/next/next_engine.h"
+#include "bbs/bbs.h"
 #endif
 
 namespace wwiv::bbs::basic {
@@ -112,7 +114,11 @@ std::unique_ptr<ScriptEngine> CreateScriptEngine(script_engine_t e, common::Inpu
     return std::make_unique<LegacyEngine>(in, out, config, ctx);
   case script_engine_t::next:
 #ifdef WWIV_WWIVBASIC_NEXT
-    return std::make_unique<NextEngine>(in, out, config, ctx);
+  {
+    auto engine = std::make_unique<NextEngine>(in, out, config, ctx);
+    engine->set_message_base(std::make_unique<BbsMessageBase>(*a()));
+    return engine;
+  }
 #else
     LOG(ERROR) << "The new BASIC engine isn't included in this build (WWIV_WWIVBASIC_NEXT).";
     return nullptr;

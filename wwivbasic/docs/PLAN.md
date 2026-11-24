@@ -176,12 +176,19 @@ WWIV's existing `bbs/basic` tests pass against the new engine.
 Done when a message viewer written in WWIVbasic can list areas, list message
 headers and read messages.
 
-- [ ] `wwiv.msg`: message areas, headers and text (read-only first)
+- [x] `wwiv.msg`: message areas, headers and text (read-only first;
+      `bbs/basic/next/wwiv_msg.cpp`, documented in [BINDINGS.md](BINDINGS.md)).
+      It reads through a `MessageBase` interface (`BbsMessageBase` in the
+      BBS, a fake in tests)
 - [ ] `wwiv.user`: the current user, and user lookups
 - [ ] `wwiv.files`: file areas and file records
 - [ ] Permissions: access follows the user's own rights; write access is
-      separate from read access; each package can be enabled by the sysop
-- [ ] Reference documentation for the bindings
+      separate from read access; each package can be enabled by the sysop.
+      Done for reading messages: the user's subs (`usub`), co-sysop rights
+      for unvalidated and deleted posts, and the anonymous post rules, as in
+      the BBS's reader; on unless the sysop turns it off
+      (`script_flag_disable_msg`)
+- [ ] Reference documentation for the bindings ([BINDINGS.md](BINDINGS.md): `wwiv.msg` so far)
 - [ ] A sample message viewer script
 
 ### M6: Graduate

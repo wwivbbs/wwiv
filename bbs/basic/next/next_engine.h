@@ -21,6 +21,7 @@
 #include "bbs/basic/script_engine.h"
 
 #include <functional>
+#include <memory>
 #include <string>
 
 namespace wwivbasic {
@@ -31,6 +32,8 @@ namespace wwiv::bbs::basic {
 
 // Runs scripts on wwivbasic, with a BbsConsole over bout/bin and the wwiv.*
 // modules (wwiv_bindings.h). Built only with WWIV_WWIVBASIC_NEXT.
+class MessageBase;
+
 class NextEngine final : public ScriptEngine {
 public:
   // Called with each script's interpreter after the wwiv.* modules are added
@@ -44,6 +47,9 @@ public:
   bool RunScript(const std::string& script_name) override;
   bool RunScript(const std::string& module, const std::string& text) override;
 
+  // What wwiv.msg reads. Without one, scripts have no wwiv.msg module.
+  void set_message_base(std::unique_ptr<MessageBase> msgs);
+
 private:
   // Runs text as the script scriptdir/name, with the module name module
   // (lower case). Errors are shown with paths relative to scriptdir.
@@ -56,6 +62,7 @@ private:
   const sdk::Config& config_;
   common::Context* ctx_;
   setup_fn on_setup_;
+  std::unique_ptr<MessageBase> msgs_;
 };
 
 } // namespace wwiv::bbs::basic

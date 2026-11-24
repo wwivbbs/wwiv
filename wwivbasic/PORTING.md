@@ -137,6 +137,13 @@ to the list. Two things to know:
 - As before, only the file name part of the name is used, a file that can't be
   read reads as empty, and files not closed stay open until the script ends.
 
+## New modules
+
+The new engine adds modules the legacy engine doesn't have, documented in
+[docs/BINDINGS.md](docs/BINDINGS.md):
+
+- `wwiv.msg`: read the message areas the caller can read.
+
 ## Real numbers
 
 Real numbers work as in my_basic: `7 / 2` is `3.5`, `6 / 2` is the integer

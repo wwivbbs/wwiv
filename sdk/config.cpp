@@ -253,6 +253,14 @@ void Config::script_package_os_enabled(bool b) noexcept {
   set_script_flag(config_.script_flags, script_flag_enable_os, b);
 }
 
+bool Config::script_package_msg_enabled() const noexcept {
+  return !(config_.script_flags & script_flag_disable_msg);
+}
+
+void Config::script_package_msg_enabled(bool b) noexcept {
+  set_script_flag(config_.script_flags, script_flag_disable_msg, !b);
+}
+
 bool Config::script_engine_next() const noexcept {
   return config_.script_flags & script_flag_engine_next;
 }

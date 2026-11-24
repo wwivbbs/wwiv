@@ -37,6 +37,8 @@ class Interpreter;
 
 namespace wwiv::bbs::basic {
 
+class MessageBase;
+
 // What the wwiv.* modules for the new engine use. Everything here must outlive
 // the interpreter the modules are added to.
 struct WwivBindings {
@@ -50,6 +52,8 @@ struct WwivBindings {
   // the name given to ScriptEngine::RunScript(module, text). wwiv.data names
   // its files after it, as the legacy engine does.
   std::string module;
+  // What wwiv.msg reads, or nullptr for no wwiv.msg module.
+  MessageBase* msgs{nullptr};
 };
 
 // The wwiv.* modules, with the same functions, arguments, return values and
@@ -61,6 +65,9 @@ void RegisterWwivData(wwivbasic::Interpreter& interp, const WwivBindings& b);
 void RegisterWwivIoFile(wwivbasic::Interpreter& interp, const WwivBindings& b);
 void RegisterWwivOs(wwivbasic::Interpreter& interp, const WwivBindings& b);
 void RegisterWwivTime(wwivbasic::Interpreter& interp, const WwivBindings& b);
+// New in the new engine: read-only message areas. Registered when b.msgs is
+// set and the sysop hasn't turned it off.
+void RegisterWwivMsg(wwivbasic::Interpreter& interp, const WwivBindings& b);
 
 } // namespace wwiv::bbs::basic
 
