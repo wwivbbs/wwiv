@@ -37,13 +37,13 @@ wwivbasic depends only on WWIV's `core/`, the ANTLR runtime and fmt. It must not
 
 ## Build
 
-wwivbasic is built only with `-DWWIV_WWIVBASIC_NEXT=ON`, which also turns on the `wwivbasic`
-feature in WWIV's `vcpkg.json` (the antlr4 runtime). When updating vcpkg's `builtin-baseline`,
+wwivbasic is built when `WWIV_WWIVBASIC_NEXT` is on (the default, except on OS/2), which also
+turns on the `wwivbasic` feature in WWIV's `vcpkg.json` (the antlr4 runtime). When updating vcpkg's `builtin-baseline`,
 keep `antlr/antlr-*-complete.jar` at the same version as the antlr4 runtime. From the top of
 the WWIV tree:
 
 ```sh
-cmake --preset linux-debug -DWWIV_WWIVBASIC_NEXT=ON
+cmake --preset linux-debug
 cmake --build --preset linux-debug
 ```
 
