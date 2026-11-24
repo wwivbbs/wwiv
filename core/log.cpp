@@ -62,7 +62,17 @@ public:
     if (message.empty()) {
       return true;
     }
+    // Opening the log file can itself log (e.g. TextFile logs a VLOG when
+    // fopen fails, such as when the log directory does not exist). Guard
+    // against re-entering this appender, which would otherwise recurse
+    // until the stack overflows.
+    thread_local bool in_append = false;
+    if (in_append) {
+      return false;
+    }
+    in_append = true;
     TextFile out(filename_, "a");
+    in_append = false;
     if (!out.IsOpen()) {
       // We don't want to crash if we can't log, but what
       // should we do instead?
