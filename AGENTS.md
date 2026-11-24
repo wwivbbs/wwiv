@@ -18,10 +18,10 @@ _build/linux-debug/sdk/sdk_tests --gtest_filter='NamesTest.*'   # run a gtest bi
 
 Windows uses `windows-x86-debug` / `windows-x86-release` from an *x86* Native Tools prompt (x64 causes link errors). Don't run `cmake` builds concurrently across multiple subagents—it saturates the VM CPU.
 
-- Test binaries (`_build/<preset>/<dir>/`): `core_tests`, `sdk_tests`, `common_tests`, `bbs_tests`, `fsed_tests`, `net_core_tests`, `binkp_tests`, `networkf_tests`, `wwivconfig_tests`, `wwivd_tests`, plus `wwivbasic_tests` (requires `WWIV_WWIVBASIC_NEXT=ON`).
+- Test binaries (`_build/<preset>/<dir>/`): `core_tests`, `sdk_tests`, `common_tests`, `bbs_tests`, `fsed_tests`, `net_core_tests`, `binkp_tests`, `networkf_tests`, `wwivconfig_tests`, `wwivd_tests`, plus `wwivbasic_tests` (when `WWIV_WWIVBASIC_NEXT` is on).
 - Unit tests sit next to code as `*_test.cpp` and must be added to that directory's `CMakeLists.txt`. When running `core_tests` or `sdk_tests` directly, pass `--wwiv_testdata=<repo>/<dir>/testdata` (ctest passes it; without it, testdata tests skip).
-- Key CMake options: `WWIV_SSH_CRYPTLIB=OFF` (skip cryptlib/SSH), `WWIV_WWIVBASIC_NEXT=ON` (build experimental `wwivbasic/` and `bbs/basic/next/`), `WWIV_INSTALL=ON` + `WWIV_ZIP_INSTALL_FILES=ON` (packaging and `data.zip`/`inifiles.zip` for wwivconfig; on in `*-release` presets).
-- CI (`.github/workflows/pr-build.yml`) builds and tests `linux-debug` and `windows-x86-debug` with `-DWWIV_WWIVBASIC_NEXT=ON -DWWIVBASIC_GENERATE_PARSER=OFF`. Windows is 32-bit x86—watch `size_t`/`int64_t` assumptions.
+- Key CMake options: `WWIV_SSH_CRYPTLIB=OFF` (skip cryptlib/SSH), `WWIV_WWIVBASIC_NEXT` (build `wwivbasic/` and `bbs/basic/next/`; on by default except on OS/2—turn it off to skip the ANTLR runtime), `WWIV_INSTALL=ON` + `WWIV_ZIP_INSTALL_FILES=ON` (packaging and `data.zip`/`inifiles.zip` for wwivconfig; on in `*-release` presets).
+- CI (`.github/workflows/pr-build.yml`) builds and tests `linux-debug` and `windows-x86-debug` with `-DWWIVBASIC_GENERATE_PARSER=OFF`. Windows is 32-bit x86—watch `size_t`/`int64_t` assumptions.
 - Style & gotchas: `.clang-format` (LLVM, 2-space indent, 100 cols, left-aligned pointers); most targets use `-Wall -Wextra` / `/W4` (`set_max_warnings`). Include `"core/wwiv_windows.h"` instead of `<windows.h>`. Preserve each file's existing line endings—some files (e.g. `CMakeLists.txt`, `core/command_line.h`) use CRLF.
 
 ## Architecture
