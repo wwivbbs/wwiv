@@ -19,9 +19,9 @@
 #ifndef INCLUDED_BBS_WWIVFOSS_INBAND_H
 #define INCLUDED_BBS_WWIVFOSS_INBAND_H
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
-#include <vector>
 
 namespace wwiv::bbs {
 
@@ -51,14 +51,19 @@ std::string wwivfoss_line_state(uint8_t state);
 /**
  * Decodes the byte stream from the door. Keeps state between calls, so an
  * FF split across two reads is handled.
+ *
+ * Also tracks, in stream order, whether the door has hung up: lowered DTR
+ * after it started talking (sent data or raised DTR). A DTR low before
+ * that is a stale one from an emulator still booting and is ignored. This
+ * has to be decided byte by byte, since one read can hold both a stale
+ * FF 01 and the banner that follows it, or the last of the output and the
+ * FF 01 after it.
  */
 class WWIVFossDecoder final {
 public:
   /** Returns the data bytes in data, consuming any line state messages. */
   std::string decode(const char* data, size_t len);
 
-  /** Line states decoded since the last call, oldest first. */
-  std::vector<uint8_t> take_line_states();
 
   /** The door's most recent line state. */
   [[nodiscard]] uint8_t line_state() const noexcept { return line_state_; }
@@ -66,10 +71,19 @@ public:
   /** true unless the door has lowered DTR (e.g. FOSSIL function 06h). */
   [[nodiscard]] bool dtr() const noexcept { return (line_state_ & WWIVFOSS_LINE_DTR) != 0; }
 
+  /**
+   * true once the door has lowered DTR after it started talking. Stays true
+   * even if DTR comes back up: doors pulse DTR to hang up, then wait for a
+   * carrier loss that never comes.
+   */
+  [[nodiscard]] bool hung_up() const noexcept { return hung_up_; }
+
 private:
   bool escape_{false};
   uint8_t line_state_{WWIVFOSS_LINE_UP};
-  std::vector<uint8_t> line_states_;
+  // The door has sent data or raised DTR; until then a DTR low is stale.
+  bool door_started_{false};
+  bool hung_up_{false};
 };
 
 } // namespace wwiv::bbs

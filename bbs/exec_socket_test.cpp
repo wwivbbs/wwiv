@@ -138,21 +138,27 @@ PumpRun run_door(ExecSocket& es, FakeCallerIO& io,
   PumpRun r{};
   const auto sock = es.accept();
   EXPECT_TRUE(sock.has_value());
-  const auto start = steady_clock::now();
-  r.result = es.pump_socket(pid, sock.value(), io);
-  r.elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
+  if (sock.has_value()) {
+    const auto start = steady_clock::now();
+    r.result = es.pump_socket(pid, sock.value(), io);
+    r.elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
+  } else {
+    r.result = pump_socket_result_t::socket_error;
+  }
   if (r.result != pump_socket_result_t::process_exit) {
     kill(pid, SIGKILL);
   }
-  int status = 0;
-  if (waitpid(pid, &status, 0) == pid) {
-    r.wait_status = status;
-  }
+  // Read before reaping, so a door returning more than a pipe buffer's
+  // worth can't block on the write.
   char buf[1024];
   for (ssize_t n; (n = ::read(fds[0], buf, sizeof(buf))) > 0;) {
     r.door_received.append(buf, n);
   }
   ::close(fds[0]);
+  int status = 0;
+  if (waitpid(pid, &status, 0) == pid) {
+    r.wait_status = status;
+  }
   return r;
 }
 
@@ -287,6 +293,53 @@ TEST(ExecSocketWWIVFossTest, DoorLowersDtr_IgnoredBeforeDoorSpeaks) {
 
   EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
   EXPECT_EQ("\xFF\x03k"s, r.door_received);
+}
+
+TEST(ExecSocketWWIVFossTest, DoorLowersDtr_StaleDropCoalescedWithBanner) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.enable_wwivfoss(fast_options());
+  FakeCallerIO io;
+  io.typed = "k";
+  io.typed_at = steady_clock::now() + milliseconds(800);
+
+  // A stale drop, the raise and the banner in one write, so they arrive in
+  // one recv. The door must outlive door_hangup_grace and get the key.
+  const auto r = run_door(es, io, [](int sock) {
+    const auto out = "\xFF\x01\xFF\x03Welcome!"s;
+    send(sock, out.data(), out.size(), 0);
+    return read_until(sock, [](const auto& s) { return contains(s, "k"); }, milliseconds(3000));
+  });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+  EXPECT_EQ("\xFF\x03k"s, r.door_received);
+  EXPECT_EQ("Welcome!", io.output);
+}
+
+TEST(ExecSocketWWIVFossTest, DoorLowersDtr_NoHeartbeatDuringGrace) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  auto opts = fast_options();
+  opts.heartbeat = seconds(1);
+  opts.door_hangup_grace = milliseconds(3000);
+  es.enable_wwivfoss(opts);
+  FakeCallerIO io;
+
+  // Hangs up, then stays around (without exiting) long enough for several
+  // heartbeats, recording everything it gets after the drop.
+  const auto r = run_door(es, io, [](int sock) {
+    const auto out = "bye\xFF\x01"s;
+    send(sock, out.data(), out.size(), 0);
+    // Drain whatever was already sent before the drop was seen.
+    usleep(150000);
+    char buf[256];
+    while (recv(sock, buf, sizeof(buf), MSG_DONTWAIT) > 0) {
+    }
+    return read_until(sock, [](const auto&) { return false; }, milliseconds(1800));
+  });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+  EXPECT_EQ("", r.door_received);
 }
 
 TEST(ExecSocketWWIVFossTest, DoorClosesSocket_GetsLongerGrace) {

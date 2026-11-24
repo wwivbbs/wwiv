@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "gtest/gtest.h"
+#include "core/test/file_helper.h"
 
 #include "sdk/chains.h"
 #include "sdk/vardec.h"
@@ -41,6 +42,22 @@ TEST(ChainsTest, ExecFlags_WWIVFoss) {
   EXPECT_TRUE(flags & EFLAG_LISTEN_SOCK);
   EXPECT_TRUE(flags & EFLAG_WWIVFOSS);
   EXPECT_FALSE(Chains::to_exec_flags(chain_exec_mode_t::sock_port) & EFLAG_WWIVFOSS);
+}
+
+TEST(ChainsTest, ExecMode_WWIVFoss_JsonRoundTrip) {
+  wwiv::core::test::FileHelper helper;
+  {
+    Chains c(helper.TempDir());
+    chain_t ch{};
+    ch.filename = "door.sh";
+    ch.exec_mode = chain_exec_mode_t::sock_wwivfoss;
+    ASSERT_TRUE(c.insert(0, ch));
+    ASSERT_TRUE(c.Save());
+  }
+  Chains c(helper.TempDir());
+  ASSERT_TRUE(c.Load());
+  ASSERT_EQ(1, c.size());
+  EXPECT_EQ(chain_exec_mode_t::sock_wwivfoss, c.at(0).exec_mode);
 }
 
 TEST(ChainsTest, ExecDir_Operator) {
