@@ -45,5 +45,6 @@ See `todo-claude.md` and `todo-c-isms.md`. When touching `bbs/`:
 
 - Pass `Context&` (and an output/input interface) to new/refactored functions instead of calling `a()`, `bout`, or `bin`—incrementally, file by file.
 - Don't extend `bbs/` copies of `sdk/` data-layer code (`message_file.cpp`/`subacc.cpp` vs `sdk/msgapi/type2_text`; `readmail.cpp`/`email.cpp`/`attach.cpp`/`multmail.cpp` vs `sdk/msgapi/email_wwiv`). Migrate callers onto `sdk/msgapi`, and keep raw `Read(&rec, sizeof rec)` of `vardec.h` structs inside `sdk/`.
+- When changing how `sdk/msgapi` (or the BBS's reader) reads message text, keep `bbs/msgapi_legacy_compare_test.cpp` passing, and if you have a real BBS, run `_build/<preset>/bbs/msgcompare <bbsdir>`. It reads every post with both the BBS's reader and `sdk/msgapi` and reports where they differ. It works on a copy, so `<bbsdir>` is never modified.
 - Add characterization tests before refactoring a `bbs/` module.
 - Replace C-isms (`strcpy`/`sprintf` into fixed buffers, `calloc`/`BbsAllocA`, raw `new`) with `std::string`, `fmt::format`, and RAII containers as you go.

@@ -200,6 +200,12 @@ endif()
 
 add_executable(bbs bbs_main.cpp)
 target_link_libraries(bbs bbs_lib fmt::fmt-header-only)
+
+# Developer tool: compares how the BBS's reader and sdk/msgapi read every post
+# in a BBS's message areas (see msgcompare_main.cpp). Not installed.
+add_executable(msgcompare msgcompare_main.cpp)
+target_link_libraries(msgcompare bbs_lib fmt::fmt-header-only)
+set_max_warnings(msgcompare)
 if (WWIV_SSH_CRYPTLIB AND NOT OS2)
   # Copies cl32.dll next to bbs.exe on Windows.
   wwiv_copy_runtime_dlls(bbs)
@@ -222,6 +228,7 @@ if (WWIV_BUILD_TESTS)
       input_test.cpp
       make_abs_test.cpp
       message_file_test.cpp
+      msgapi_legacy_compare_test.cpp
       msgbase1_test.cpp
       netsup_test.cpp
       pause_test.cpp
