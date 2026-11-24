@@ -49,25 +49,25 @@ std::string WWIVFossDecoder::decode(const char* data, size_t len) {
       if (ch == WWIVFOSS_INBAND_ESCAPE) {
         escape_ = true;
       } else {
+        door_started_ = true;
         out.push_back(static_cast<char>(ch));
       }
       continue;
     }
     escape_ = false;
     if (ch == WWIVFOSS_INBAND_ESCAPE) {
+      door_started_ = true;
       out.push_back(static_cast<char>(ch));
-    } else {
-      line_state_ = ch;
-      line_states_.push_back(ch);
+      continue;
+    }
+    line_state_ = ch;
+    if (ch & WWIVFOSS_LINE_DTR) {
+      door_started_ = true;
+    } else if (door_started_) {
+      hung_up_ = true;
     }
   }
   return out;
-}
-
-std::vector<uint8_t> WWIVFossDecoder::take_line_states() {
-  std::vector<uint8_t> states;
-  states.swap(line_states_);
-  return states;
 }
 
 } // namespace wwiv::bbs
