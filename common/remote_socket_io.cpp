@@ -200,13 +200,16 @@ unsigned int RemoteSocketIO::read(char* buffer, unsigned int count) {
   auto* temp = buffer;
 
   std::lock_guard<std::mutex> lock(mu_);
-  while (!queue_.empty() && num_read <= count) {
+  // Never writes past buffer[count - 1]; NUL terminates only if there's room.
+  while (!queue_.empty() && num_read < count) {
     const auto ch = queue_.front();
     queue_.pop_front();
     *temp++ = ch;
     num_read++;
   }
-  *temp = '\0';
+  if (num_read < count) {
+    *temp = '\0';
+  }
   return num_read;
 }
 

@@ -20,7 +20,6 @@
 
 #include "bbs/wwivfoss_inband.h"
 #include <string>
-#include <vector>
 
 using namespace wwiv::bbs;
 using namespace std::string_literals;
@@ -66,12 +65,52 @@ TEST(WWIVFossInbandTest, Decode_DtrDropAndRaise) {
   EXPECT_TRUE(d.dtr());
 }
 
-TEST(WWIVFossInbandTest, Decode_LineStatesInOrder) {
+TEST(WWIVFossInbandTest, Decode_LastLineStateWins) {
   WWIVFossDecoder d;
   EXPECT_EQ("ab", decode(d, "a\xFF\x01\xFF\x07" "b"s));
-  EXPECT_EQ((std::vector<uint8_t>{0x01, 0x07}), d.take_line_states());
-  EXPECT_TRUE(d.take_line_states().empty());
+  EXPECT_EQ(0x07, d.line_state());
   EXPECT_TRUE(d.dtr());
+}
+
+TEST(WWIVFossInbandTest, HungUp_AfterData) {
+  WWIVFossDecoder d;
+  EXPECT_EQ("bye", decode(d, "bye\xFF\x01"s));
+  EXPECT_TRUE(d.hung_up());
+}
+
+TEST(WWIVFossInbandTest, HungUp_StaleDropBeforeData_Ignored) {
+  WWIVFossDecoder d;
+  EXPECT_EQ("Welcome!", decode(d, "\xFF\x01\xFF\x03" "Welcome!"s));
+  EXPECT_FALSE(d.hung_up());
+  EXPECT_TRUE(d.dtr());
+}
+
+TEST(WWIVFossInbandTest, HungUp_StaleDropThenBanner_Ignored) {
+  WWIVFossDecoder d;
+  EXPECT_EQ("Welcome!", decode(d, "\xFF\x01" "Welcome!"s));
+  EXPECT_FALSE(d.hung_up());
+}
+
+TEST(WWIVFossInbandTest, HungUp_AfterDtrRaise) {
+  WWIVFossDecoder d;
+  EXPECT_EQ("", decode(d, "\xFF\x03\xFF\x01"s));
+  EXPECT_TRUE(d.hung_up());
+}
+
+TEST(WWIVFossInbandTest, HungUp_PulseStaysHungUp) {
+  WWIVFossDecoder d;
+  EXPECT_EQ("x", decode(d, "x\xFF\x01"s));
+  EXPECT_EQ("", decode(d, "\xFF\x03"s));
+  EXPECT_TRUE(d.dtr());
+  EXPECT_TRUE(d.hung_up());
+}
+
+TEST(WWIVFossInbandTest, HungUp_DropSplitAcrossReads) {
+  WWIVFossDecoder d;
+  EXPECT_EQ("x", decode(d, "x\xFF"s));
+  EXPECT_FALSE(d.hung_up());
+  EXPECT_EQ("", decode(d, "\x01"s));
+  EXPECT_TRUE(d.hung_up());
 }
 
 TEST(WWIVFossInbandTest, Decode_LineStateZero) {

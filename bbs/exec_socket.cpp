@@ -140,7 +140,7 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, uint16_t port, exec_soc
 }
 
 ExecSocket::~ExecSocket() {
-  if (client_socket_ != INVALID_SOCKET && client_socket_ > 0) {
+  if (client_socket_ != INVALID_SOCKET) {
     closesocket(client_socket_);
   }
   if (server_socket_ != -1) {
@@ -275,9 +275,11 @@ static int send_some(SOCKET sock, const std::string& data) {
 
 // Waits up to timeout for the process to exit. Meanwhile keeps sending
 // to_door and throws away whatever the door sends, so it can't get stuck
-// writing to us.
+// writing to us. The drain is capped per pass so a door that never stops
+// writing can't keep us from sending to_door or checking the deadline.
 static bool wait_for_exit(EXEC_SOCKET_HANDLE h, SOCKET sock, std::string& to_door,
                           std::chrono::milliseconds timeout) {
+  static constexpr int max_reads = 16;
   const auto deadline = std::chrono::steady_clock::now() + timeout;
   char buf[1024];
   for (;;) {
@@ -287,16 +289,21 @@ static bool wait_for_exit(EXEC_SOCKET_HANDLE h, SOCKET sock, std::string& to_doo
     if (std::chrono::steady_clock::now() >= deadline) {
       return false;
     }
-    while (recv(sock, buf, sizeof(buf), 0) > 0) {
-    }
+    bool busy = false;
     if (!to_door.empty()) {
       if (const auto n = send_some(sock, to_door); n > 0) {
         to_door.erase(0, static_cast<size_t>(n));
+        busy = true;
       } else if (n < 0) {
         to_door.clear();
       }
     }
-    wwiv::os::sleep_for(std::chrono::milliseconds(50));
+    for (int i = 0; i < max_reads && recv(sock, buf, sizeof(buf), 0) > 0; i++) {
+      busy = true;
+    }
+    if (!busy) {
+      wwiv::os::sleep_for(std::chrono::milliseconds(50));
+    }
   }
 }
 
@@ -316,10 +323,8 @@ pump_socket_result_t ExecSocket::pump_socket_wwivfoss(EXEC_SOCKET_HANDLE hProces
   auto last_sent = clock::now();
   auto last_process_check = clock::now();
 
+  // Also decides, in stream order, when a DTR drop is a hangup.
   WWIVFossDecoder decoder;
-  // DTR low only counts once the door has sent something, so a stale FF 01
-  // can't kill it while the emulator is still booting.
-  bool door_spoke = false;
   // Once the door has dropped DTR: when it's due to exit.
   std::optional<clock::time_point> door_hangup_deadline;
   char buf[1024];
@@ -344,20 +349,11 @@ pump_socket_result_t ExecSocket::pump_socket_wwivfoss(EXEC_SOCKET_HANDLE hProces
       }
       busy = true;
       if (const auto data = decoder.decode(buf, static_cast<size_t>(num_read)); !data.empty()) {
-        door_spoke = true;
-        io.write(data.data(), static_cast<int>(data.size()));
+        io.write(data.data(), static_cast<unsigned int>(data.size()));
       }
-      for (const auto state : decoder.take_line_states()) {
-        // A drop is final even if DTR comes back up: doors pulse DTR to hang
-        // up, then wait for a carrier loss that never comes.
-        if (state & WWIVFOSS_LINE_DTR) {
-          door_spoke = true;
-        } else if (!door_spoke) {
-          VLOG(1) << "Ignoring DTR low from a door that hasn't sent anything yet.";
-        } else if (!door_hangup_deadline) {
-          VLOG(1) << "Door lowered DTR; returning caller to the BBS.";
-          door_hangup_deadline = clock::now() + opts.door_hangup_grace;
-        }
+      if (decoder.hung_up() && !door_hangup_deadline) {
+        VLOG(1) << "Door lowered DTR; returning caller to the BBS.";
+        door_hangup_deadline = clock::now() + opts.door_hangup_grace;
       }
     }
 
@@ -369,7 +365,10 @@ pump_socket_result_t ExecSocket::pump_socket_wwivfoss(EXEC_SOCKET_HANDLE hProces
                  : pump_socket_result_t::socket_error;
     }
 
-    for (int i = 0; i < max_reads && to_door.size() < max_queued && io.incoming(); i++) {
+    // Once the door has hung up nothing more is queued, so keep draining.
+    for (int i = 0;
+         i < max_reads && (door_hangup_deadline || to_door.size() < max_queued) && io.incoming();
+         i++) {
       const auto num_read = io.read(buf, sizeof(buf));
       if (num_read == 0) {
         break;
@@ -383,7 +382,8 @@ pump_socket_result_t ExecSocket::pump_socket_wwivfoss(EXEC_SOCKET_HANDLE hProces
     }
 
     // Any bytes reset WWIVFOSS's -H timer, so only send FF 03 when idle.
-    if (opts.heartbeat.count() > 0 && to_door.empty() &&
+    // Not after the door has hung up: FF 03 would tell it a caller is back.
+    if (opts.heartbeat.count() > 0 && !door_hangup_deadline && to_door.empty() &&
         clock::now() - last_sent >= opts.heartbeat) {
       to_door = wwivfoss_line_state(WWIVFOSS_LINE_UP);
     }
