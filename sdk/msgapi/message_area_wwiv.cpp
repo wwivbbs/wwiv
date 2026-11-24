@@ -241,14 +241,15 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
         if (!text_line.empty() && text_line.back() == '\r') {
           text_line.pop_back();
         }
-        body.push_back(text_line);
         if (at_end) {
+          // A control-Z at the start of a line ends the text without
+          // adding a line.
+          if (!text_line.empty()) {
+            body.push_back(text_line);
+          }
           break;
         }
-      }
-      // The text's last line ending leaves an empty line after it.
-      if (!body.empty() && body.back().empty()) {
-        body.pop_back();
+        body.push_back(text_line);
       }
       for (const auto& text_line : body) {
         r.text += text_line;

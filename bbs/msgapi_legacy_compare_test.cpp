@@ -40,22 +40,10 @@ using namespace wwiv::strings;
 
 namespace {
 
-// The lines the BBS's reader shows: split_wwiv_message in read_message.cpp,
-// with ^D0 lines hidden (controlcodes off) and no wrapping.
+// The lines the BBS's reader shows (split_wwiv_message_lines, as
+// split_wwiv_message calls it), with ^D0 lines hidden and no wrapping.
 std::vector<std::string> shown_lines(const std::string& text) {
-  WWIVParsedMessageText pmt(text);
-  parsed_message_lines_style_t style{};
-  style.ctrl_lines = control_lines_t::control_lines;
-  style.add_wrapping_marker = false;
-  style.line_length = std::numeric_limits<int>::max();
-  std::vector<std::string> out;
-  for (const auto& line : pmt.to_lines(style)) {
-    if (!line.empty() && line.front() == '\x04' && line.size() > 1 && line[1] == '0') {
-      continue;
-    }
-    out.push_back(line);
-  }
-  return out;
+  return split_wwiv_message_lines(text, false, 0, std::numeric_limits<int>::max());
 }
 
 std::string show(const std::vector<std::string>& lines) {
@@ -157,6 +145,10 @@ TEST_F(LegacyCompareTest, Same) {
         std::make_pair("cz_middle", "Hello\r\n\x1a" "junk\r\n"),
         std::make_pair("no_final_newline", "Hello\r\nWorld\x1a"),
         std::make_pair("no_cz", "Hello\r\nWorld\r\n"),
+        std::make_pair("no_cz_trailing_blank", "Hello\r\n\r\n"),
+        std::make_pair("empty_body", ""),
+        std::make_pair("lf_only", "line 1\nline 2\n\nline 4\n"),
+        std::make_pair("mixed_endings", "one\r\ntwo\nthree\rfour\r\n"),
         std::make_pair("cr_only", "Hello\rWorld\r\x1a"),
         std::make_pair("soft_wrap", "This line was\x01\r\nwrapped\r\n\x1a"),
         std::make_pair("pipe_colors", "|#1Hello |09World\r\n\x1a"),
@@ -178,6 +170,21 @@ TEST_F(LegacyCompareTest, Same) {
            (legacy.front().starts_with("RE:") || legacy.front().starts_with("BY:"))) {
       legacy.erase(legacy.begin());
     }
+    EXPECT_EQ(show(legacy), show(sdk));
+  }
+}
+
+// Malformed posts: the from and date lines are where the reader starts, so
+// these are whole raw texts.
+TEST_F(LegacyCompareTest, SameForMalformedPosts) {
+  const std::vector<std::pair<const char*, const char*>> cases{
+      std::make_pair("empty_from_no_body", "\r\nSun Aug 21 11:38:43 2016\r\n"),
+      std::make_pair("nothing_after_date", "rushfan #1\r\nSun Aug 21 11:38:43 2016"),
+      std::make_pair("only_from", "rushfan #1\r\n")};
+  for (const auto& [name, raw] : cases) {
+    SCOPED_TRACE(name);
+    const auto legacy = Legacy(raw);
+    const auto sdk = Sdk(raw);
     EXPECT_EQ(show(legacy), show(sdk));
   }
 }

@@ -21,6 +21,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <vector>
 #include "sdk/subxtr.h"
 
 struct messagerec;
@@ -63,6 +64,18 @@ struct Type2MessageData {
 std::optional<Type2MessageData> read_type2_message(messagerec* msg, uint8_t an, bool readit,
                                                    const std::string& file_name, int from_sys_num,
                                                    int from_user);
+
+// The part of read_type2_message that needs no session: splits the raw text
+// of a type-2 message into data's from_user_name, date, message_text (the
+// text after the date line), raw_message_text and to_user_name.
+void parse_type2_message_text(const std::string& raw, Type2MessageData& data);
+
+// The lines the message reader shows for message_text, before colors are
+// interpreted: lines are wrapped at line_length, and control lines (^D) are
+// hidden unless controlcodes (^D0 lines) or optional_lines allows them.
+std::vector<std::string> split_wwiv_message_lines(const std::string& message_text,
+                                                  bool controlcodes, int optional_lines,
+                                                  int line_length);
 
 
 enum class ReadMessageOption {

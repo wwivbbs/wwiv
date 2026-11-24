@@ -32,12 +32,26 @@ using namespace wwiv::strings;
 
 constexpr char CZ = 26;
 
-std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
+std::vector<std::string> split_wwiv_style_message_text(const std::string& s, bool lf_ends_line) {
   auto temp(s);
   const auto cz_pos = temp.find(CZ);
   if (cz_pos != std::string::npos) {
     // We stop the message at control-Z if it exists.
     temp = temp.substr(0, cz_pos);
+  }
+  if (lf_ends_line) {
+    // A \n that doesn't follow a \r ends a line too (text with Unix line
+    // endings); the \n of \r\n is removed below.
+    std::string fixed;
+    fixed.reserve(temp.size());
+    for (size_t i = 0; i < temp.size(); i++) {
+      if (temp[i] == '\n' && (i == 0 || temp[i - 1] != '\r')) {
+        fixed.push_back('\r');
+      } else {
+        fixed.push_back(temp[i]);
+      }
+    }
+    temp = std::move(fixed);
   }
   // Instead of splitting on \r\n, we remove the \n and then
   // split on just \r.  This also is great that it handles
@@ -275,12 +289,16 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
 WWIVParsedMessageText::WWIVParsedMessageText(const std::string& text)
     : ParsedMessageText("\004"
                         "0",
-                        text, split_wwiv_style_message_text, "\r\n") {}
+                        text,
+                        [](const std::string& s) { return split_wwiv_style_message_text(s, true); },
+                        "\r\n") {}
   
 WWIVParsedMessageText::~WWIVParsedMessageText() = default;
 
 FTNParsedMessageText::FTNParsedMessageText(const std::string& text)
-    : ParsedMessageText("\001", text, split_wwiv_style_message_text, "\r") {}
+    : ParsedMessageText("\001", text,
+                        [](const std::string& s) { return split_wwiv_style_message_text(s, false); },
+                        "\r") {}
 
 FTNParsedMessageText::~FTNParsedMessageText() = default;
 

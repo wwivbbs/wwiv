@@ -319,3 +319,21 @@ didn't accumulate to anything.)";
 
 
 }
+// In WWIV text a "\n" that doesn't follow a "\r" (Unix line endings) ends a
+// line; the "\n" of "\r\n" doesn't add one.
+TEST(WWIVParsedMessageTest, ToLines_LoneLineFeedEndsLine) {
+  const WWIVParsedMessageText p("one\r\ntwo\nthree\rfour\n\nsix\r\n");
+  parsed_message_lines_style_t style{};
+  style.ctrl_lines = control_lines_t::control_lines;
+  style.add_wrapping_marker = false;
+  EXPECT_THAT(p.to_lines(style), ElementsAre("one", "two", "three", "four", "", "six"));
+}
+
+// FTN text ignores linefeeds (FTS-0001), so they don't end lines.
+TEST(FTNParsedMessageTest, ToLines_LineFeedsIgnored) {
+  const FTNParsedMessageText p("one\ntwo\rthree\r");
+  parsed_message_lines_style_t style{};
+  style.ctrl_lines = control_lines_t::control_lines;
+  style.add_wrapping_marker = false;
+  EXPECT_THAT(p.to_lines(style), ElementsAre("onetwo", "three"));
+}
