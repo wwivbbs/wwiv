@@ -66,9 +66,7 @@ static bool okansi(const wwiv::sdk::User& user) {
 }
 
 void Output::SetLocalIO(LocalIO* local_io) {
-  // We would use user().screen_width() but I don't think we
-  // have a live user when we create this.
-  screen_ = std::make_unique<LocalIOScreen>(local_io, 80);
+  screen_ = std::make_unique<LocalIOScreen>(local_io);
   AnsiCallbacks cb;
   cb.move_ = [&](int /* x */, int /* y */) { ansi_movement_occurred_ = true; };
   ansi_ = std::make_unique<Ansi>(screen_.get(), cb, static_cast<uint8_t>(0x07));
@@ -205,7 +203,7 @@ void Output::nl(int num_lines) {
     outstr("\r\n");
     core::bus().invoke(ProcessInstanceMessages{});
   }
-  x_ = 1;
+  x_ = 0;
 }
 
 void Output::bs() {

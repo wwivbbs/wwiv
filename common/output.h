@@ -24,6 +24,7 @@
 #include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
 #include "sdk/wwivcolors.h"
+#include <functional>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -296,9 +297,19 @@ public:
   void rputs(const std::string& text);
 
   /**
-   * Redraws the line to the screen.
+   * Redraws the line to the screen, on a new line if the cursor isn't at the
+   * start of one. While a line redrawer is set, it draws the line instead.
    */
   bool RestoreCurrentLine(const SavedLine& line);
+
+  /**
+   * Sets what RestoreCurrentLine (and so Ctrl-R, Ctrl-U, instance messages,
+   * ...) calls to draw the current line. For input fields that move the
+   * cursor and redraw parts of the line: what was output on the line is then
+   * not what's on screen, so it can't be replayed. An empty function clears
+   * it.
+   */
+  void set_line_redrawer(std::function<void()> fn) { line_redrawer_ = std::move(fn); }
 
   /**
    * Saves the current line and returns it.
@@ -322,7 +333,16 @@ public:
   /** Returns the current x position according to a best guess */
   int wherex() const;
 
-  /** Redraws the current line */
+  /**
+   * Columns available on the screen the caller is using: the user's screen
+   * width, and on a local session no wider than the local console.
+   */
+  [[nodiscard]] int screen_width() const;
+
+  /**
+   * Redraws the current line: on a new row, or in place while a line
+   * redrawer is set.
+   */
   void RedrawCurrentLine();
 
   // ANSI helpers.
@@ -427,6 +447,7 @@ private:
 
   std::string outchr_buffer_;
   std::vector<std::pair<char, uint8_t>> current_line_;
+  std::function<void()> line_redrawer_;
   int x_{0};
   // Means we need to reset the color before displaying our
   // next newline character.

@@ -19,6 +19,7 @@
 #ifndef INCLUDED_COMMON_INPUT_H
 #define INCLUDED_COMMON_INPUT_H
 
+#include "common/input_line_editor.h"
 #include "common/iobase.h"
 #include "common/context.h"
 #include "common/remote_io.h"
@@ -37,7 +38,6 @@ extern wwiv::common::Input bin;
 namespace wwiv::common {
 
 // Text editing modes for input routines
-enum class InputMode { UPPER, MIXED, PROPER, FILENAME, FULL_PATH_NAME, CMDLINE, DATE, PHONE };
 
 template <typename T> struct input_result_t {
   T num{0};
@@ -255,9 +255,6 @@ public:
   char charbuffer[255]{};
 
 private:
-  // Used by input_xxx
-  void Input1(char* out_text, const std::string& orig_text, int max_length, bool insert,
-              InputMode mode, bool auto_mpl);
   // Used by input_xxx
   std::string Input1(const std::string& orig_text, int max_length, bool bInsert, InputMode mode, bool auto_mpl);
   // used by input_xxx

@@ -21,6 +21,7 @@
 #include "common/common_events.h"
 #include "common/output.h"
 #include "core/eventbus.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"
@@ -29,8 +30,11 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstring>
+#include <optional>
 #include <set>
 #include <string>
+#include <vector>
 
 using namespace wwiv::common;
 using namespace wwiv::core;
@@ -54,6 +58,12 @@ static unsigned char last_input_char;
 
 // TODO(rushfan): Make this a WWIV ini setting.
 static const uint8_t input_background_char = 32; // Was '\xB1';
+
+// WWIV color (as in |#n) for the arrows Input1 shows at the edges of the
+// field when text has scrolled off. Unset: bright white on the field's
+// background color.
+// TODO(rushfan): Make this a theme color.
+static std::optional<int> input_scroll_arrow_color;
 
 static bool okansi(const wwiv::sdk::User& user) { return user.ansi(); }
 
@@ -181,274 +191,166 @@ char Input::ynq() {
   return ch;
 }
 
-//==================================================================
-// Function: Input1
-//
-// Purpose:  Input a line of text of specified length using a ansi
-//           formatted input line
-//
-// Parameters:  *out_text   = variable to save the input to
-//              *orig_text     = line to edit.  appears in edit box
-//              max_length      = max characters allowed
-//              insert     = insert mode false = off, true = on
-//              mode      = formatting mode.
-//
-// Returns: length of string
-//==================================================================
-void Input::Input1(char* out_text, const std::string& orig_text, int max_length, bool insert,
-                   InputMode mode, bool auto_mpl) {
-  char szTemp[255];
-  static const auto dash = '-';
-  static const auto slash = '/';
-
+/**
+ * Inputs a line of text using an ANSI input field, editing orig_text.
+ *
+ * The field is one screen row: max_length, or the room left on the row if
+ * that's less. Longer text scrolls horizontally, and an arrow at either edge
+ * of the field shows there is more text that way. orig_text may be longer
+ * than max_length; it can be edited but not made longer.
+ *
+ * Callers without ANSI get the plain line input (input1), which ignores
+ * orig_text.
+ */
+std::string Input::Input1(const std::string& orig_text, int max_length, bool insert,
+                          InputMode mode, bool auto_mpl) {
+  max_length = std::max(0, max_length);
   if (!okansi(user())) {
-    input1(szTemp, max_length, mode, true, false);
-    strcpy(out_text, szTemp);
-    return;
+    // input1 writes up to max_length chars plus a terminating null.
+    std::string line(static_cast<size_t>(max_length) + 1, '\0');
+    input1(line.data(), max_length, mode, true, false);
+    line.resize(std::strlen(line.c_str()));
+    return line;
   }
   const auto saved_topdata = localIO()->topdata();
   if (localIO()->topdata() != LocalIO::topdata_t::none) {
     localIO()->topdata(LocalIO::topdata_t::none);
     bus().invoke<UpdateTopScreenEvent>();
   }
-  if (mode == InputMode::DATE || mode == InputMode::PHONE) {
-    insert = false;
-  }
   const auto saved_topline = localIO()->GetTopLine();
   localIO()->SetTopLine(0);
-  auto pos = 0;
-  auto nLength = 0;
-  szTemp[0] = '\0';
 
-  max_length = std::min<int>(max_length, 78);
+  // Stay on this row: wrapping would break the cursor positioning below.
+  // Fall back to a minimum width if the prompt left almost no room.
+  static constexpr int min_field_width = 10;
+  const auto room = bout.screen_width() - 1 - bout.wherex();
+  const auto width = std::max(1, std::min(max_length, std::max(min_field_width, room)));
+  InputLineEditor ed(orig_text, max_length, width, mode, insert);
+  // The prompt before the field, to redraw the line with.
+  const auto prompt = bout.SaveCurrentLine();
 
-  bout.SavePosition();
   if (auto_mpl) {
     bout.ansic(4);
-    for (auto i = 0; i < max_length; i++) {
-      bout.outchr(input_background_char);
+  }
+  const auto field_attr = bout.curatr();
+  const auto arrow_attr = input_scroll_arrow_color
+                              ? user().color(input_scroll_arrow_color.value())
+                              : static_cast<uint8_t>((field_attr & 0xF0) | 0x0F);
+
+  // What's on screen in each cell of the field, so only changed cells are
+  // redrawn. Without auto_mpl the caller drew the field, so start from empty.
+  using Cell = InputLineEditor::Cell;
+  using CellKind = InputLineEditor::CellKind;
+  const Cell unknown{CellKind::text, '\0'};
+  std::vector<Cell> drawn(width, auto_mpl ? unknown : Cell{});
+
+  bout.SavePosition();
+  auto redraw = [&] {
+    auto first = -1;
+    auto last = -1;
+    for (auto i = 0; i < width; i++) {
+      if (ed.cell(i) != drawn[i]) {
+        if (first < 0) {
+          first = i;
+        }
+        last = i;
+      }
+    }
+    if (first >= 0) {
+      bout.RestorePosition();
+      bout.SavePosition();
+      bout.Right(first);
+      for (auto i = first; i <= last; i++) {
+        const auto c = ed.cell(i);
+        const auto arrow = c.kind == CellKind::more_left || c.kind == CellKind::more_right;
+        const auto attr = arrow ? arrow_attr : field_attr;
+        if (bout.curatr() != attr) {
+          bout.setc(attr);
+        }
+        bout.outchr(c.kind == CellKind::empty ? static_cast<char>(input_background_char) : c.ch);
+        drawn[i] = c;
+      }
+      if (bout.curatr() != field_attr) {
+        bout.setc(field_attr);
+      }
     }
     bout.RestorePosition();
     bout.SavePosition();
-  }
-  if (!orig_text.empty()) {
-    to_char_array(szTemp, orig_text);
-    bout.outstr(szTemp);
-    bout.RestorePosition();
+    bout.Right(ed.cursor_cell());
+  };
+
+  // Ctrl-R (in place), Ctrl-U, instance messages and the like (on a new row)
+  // redraw the current line. Replaying what was output on this line would show
+  // every partial redraw of the field end to end, so draw the prompt and the
+  // whole field again instead, and anchor the field on the new row.
+  bout.set_line_redrawer([&] {
+    for (const auto& [ch, attr] : prompt.line) {
+      bout.setc(attr);
+      bout.outchr(ch);
+    }
+    bout.setc(field_attr);
     bout.SavePosition();
-    pos = nLength = strings::ssize(szTemp);
-  }
+    std::fill(drawn.begin(), drawn.end(), unknown);
+    redraw();
+  });
+  ScopeExit clear_line_redrawer([] { bout.set_line_redrawer({}); });
 
   auto done = false;
   do {
-    bout.RestorePosition();
-    bout.SavePosition();
-    bout.Right(pos);
-
+    redraw();
     auto c = bin.bgetch_event(wwiv::common::Input::numlock_status_t::NUMBERS);
     last_input_char = static_cast<char>(c & 0xff);
     switch (c) {
     case CX:  // Control-X
     case ESC: // ESC
-      if (nLength) {
-        bout.RestorePosition();
-        bout.SavePosition();
-        bout.Right(nLength);
-        while (nLength--) {
-          bout.RestorePosition();
-          bout.SavePosition();
-          bout.Right(nLength);
-          bout.outchr(input_background_char);
-        }
-        nLength = pos = szTemp[0] = 0;
-      }
+      ed.clear();
       break;
     case COMMAND_LEFT: // Left Arrow
     case CS:
-      if ((mode != InputMode::DATE) && (mode != InputMode::PHONE)) {
-        if (pos) {
-          pos--;
-        }
-      }
+      ed.left();
       break;
     case COMMAND_RIGHT: // Right Arrow
     case CD:
-      if (mode != InputMode::DATE && mode != InputMode::PHONE) {
-        if (pos != nLength && pos != max_length) {
-          pos++;
-        }
-      }
+      ed.right();
       break;
     case CA:
     case COMMAND_HOME: // Home
     case CW:
-      pos = 0;
+      ed.home();
       break;
     case CE:
     case COMMAND_END: // End
     case CP:
-      pos = nLength;
+      ed.end();
       break;
     case COMMAND_INSERT: // Insert
-      if (mode == InputMode::UPPER) {
-        insert = !insert;
-      }
+      ed.toggle_insert();
       break;
     case COMMAND_DELETE: // Delete
     case CG:
-      if (pos == nLength || mode == InputMode::DATE || mode == InputMode::PHONE) {
-        break;
-      }
-      for (auto i = pos; i < nLength; i++) {
-        szTemp[i] = szTemp[i + 1];
-      }
-      nLength--;
-      for (auto i = pos; i < nLength; i++) {
-        bout.outchr(szTemp[i]);
-      }
-      bout.outchr(input_background_char);
+      ed.del();
       break;
-    // Backspace (0x08)
     case BACKSPACE:
-      if (pos) {
-        if (pos != nLength) {
-          if (mode != InputMode::DATE && mode != InputMode::PHONE) {
-            for (int i = pos - 1; i < nLength; i++) {
-              szTemp[i] = szTemp[i + 1];
-            }
-            pos--;
-            nLength--;
-            bout.RestorePosition();
-            bout.SavePosition();
-            bout.Right(pos);
-            for (int i = pos; i < nLength; i++) {
-              bout.outchr(szTemp[i]);
-            }
-            bout.outchr(input_background_char);
-          }
-        } else {
-          bout.RestorePosition();
-          bout.SavePosition();
-          bout.Right(pos - 1);
-          bout.outchr(input_background_char);
-          pos = --nLength;
-          // ReSharper disable once CppRedundantParentheses
-          if ((mode == InputMode::DATE && (pos == 2 || pos == 5)) ||
-              (mode == InputMode::PHONE && (pos == 3 || pos == 7))) {
-            bout.RestorePosition();
-            bout.SavePosition();
-            bout.Right(pos - 1);
-            bout.outchr(input_background_char);
-            pos = --nLength;
-          }
-        }
-      }
+      ed.backspace();
       break;
-      // Enter
     case RETURN:
       done = true;
       break;
-    // All others < 256
     default:
-      if (c < 255 && c > 31 &&
-          ((insert && nLength < max_length) || (!insert && pos < max_length))) {
-        if (mode != InputMode::MIXED && mode != InputMode::FILENAME && mode != InputMode::CMDLINE &&
-            mode != InputMode::FULL_PATH_NAME) {
-          c = upcase(static_cast<unsigned char>(c));
-        }
-        if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME ||
-            mode == InputMode::CMDLINE) {
-          // This was causing issues (see https://github.com/wwivbbs/wwiv/issues/1515)
-          // N.B. I'm not sure what issues removing this will cause, but people on @nix
-          // will need to be more careful about the case of files they enter.
-          // We're early enough in 5.8 cycle that hopefully we'll shake out any problems
-          // caused by this before we finalize it.
-          
-          //if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
-          //  // Force lowercase filenames but not command lines.
-          //  c = to_lower_case<unsigned char>(static_cast<unsigned char>(c));
-          //}
-          if (mode == InputMode::FILENAME && strchr("/\\<>|*?\";:", c)) {
-            c = 0;
-          } else if (mode == InputMode::FILENAME && strchr("<>|*?\";", c)) {
-            c = 0;
-          }
-        }
-        if (mode == InputMode::PROPER && pos) {
-          const auto cc = static_cast<unsigned char>(c);
-          const auto found = valid_letters.find(cc) != std::string::npos;
-          // if it's a valid char and the previous char was a space
-          if (found && szTemp[pos - 1] != 32) {
-            c = locase(cc);
-          }
-        }
-        if (mode == InputMode::DATE && (pos == 2 || pos == 5)) {
-          bout.outchr(slash);
-          for (auto i = nLength++; i >= pos; i--) {
-            szTemp[i + 1] = szTemp[i];
-          }
-          szTemp[pos++] = slash;
-          bout.RestorePosition();
-          bout.SavePosition();
-          bout.Right(pos);
-          bout.outstr(&szTemp[pos]);
-        }
-        if (mode == InputMode::PHONE && (pos == 3 || pos == 7)) {
-          bout.outchr(dash);
-          for (auto i = nLength++; i >= pos; i--) {
-            szTemp[i + 1] = szTemp[i];
-          }
-          szTemp[pos++] = dash;
-          bout.RestorePosition();
-          bout.SavePosition();
-          bout.Right(pos);
-          bout.outstr(&szTemp[pos]);
-        }
-        // ReSharper disable once CppRedundantParentheses
-        if ((mode == InputMode::DATE && c != slash) || (mode == InputMode::PHONE && c != dash) ||
-        // ReSharper disable once CppRedundantParentheses
-            (mode != InputMode::DATE && mode != InputMode::PHONE && c != 0)) {
-          if (!insert || pos == nLength) {
-            bout.outchr(static_cast<char>(c));
-            szTemp[pos++] = static_cast<char>(c);
-            if (pos > nLength) {
-              nLength++;
-            }
-          } else {
-            bout.outchr(static_cast<char>(c));
-            for (auto i = nLength++; i >= pos; i--) {
-              szTemp[i + 1] = szTemp[i];
-            }
-            szTemp[pos++] = static_cast<char>(c);
-            bout.RestorePosition();
-            bout.SavePosition();
-            bout.Right(pos);
-            bout.outstr(&szTemp[pos]);
-          }
-        }
+      if (c > 31 && c < 255) {
+        ed.type(static_cast<unsigned char>(c));
       }
       break;
     }
-    szTemp[nLength] = '\0';
     bus().invoke<CheckForHangupEvent>();
   } while (!done && !sess().hangup());
-  if (nLength) {
-    strcpy(out_text, szTemp);
-  } else {
-    out_text[0] = '\0';
-  }
 
   localIO()->topdata(saved_topdata);
   localIO()->SetTopLine(saved_topline);
 
   bout.ansic(0);
   bout.nl();
-}
-
-std::string Input::Input1(const std::string& orig_text, int max_length, bool bInsert, InputMode mode, bool auto_mpl) {
-  const auto line = std::make_unique<char[]>(max_length + 1);
-  Input1(line.get(), orig_text, max_length, bInsert, mode, auto_mpl);
-  return line.get();
+  return ed.text();
 }
 
 /**
@@ -791,12 +693,11 @@ std::string Input::input_text(const std::string& orig_text, bool mpl, int max_le
   if (mpl) {
     return Input1(orig_text, max_length, true, InputMode::MIXED, mpl);
   }
-  if (max_length > 255) {
-    return "";
-  }
-  char s[255];
-  input1(s, max_length, InputMode::MIXED, true, false);
-  return s;
+  // input1 writes up to max_length chars plus a terminating null.
+  std::string line(static_cast<size_t>(std::max(0, max_length)) + 1, '\0');
+  input1(line.data(), max_length, InputMode::MIXED, true, false);
+  line.resize(std::strlen(line.c_str()));
+  return line;
 }
 
 std::string Input::input_text(int max_length) {

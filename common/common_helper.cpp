@@ -106,6 +106,14 @@ TestIO::TestIO() {
   remote_io_ = new TestRemoteIO(&this->rcaptured_);
 }
 
+void TestIO::push_local_keys(const std::string& keys) {
+  static_cast<TestLocalIO*>(local_io_)->keys += keys;
+}
+
+void TestIO::push_remote_keys(const std::string& keys) {
+  static_cast<TestRemoteIO*>(remote_io_)->keys += keys;
+}
+
 std::string TestIO::captured() {
   auto captured(captured_);
   captured_.clear();

@@ -129,6 +129,12 @@ int Win32ConsoleIO::WhereX() const noexcept {
   return cursor_pos_.X;
 }
 
+int Win32ConsoleIO::GetScreenWidth() const noexcept {
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  GetConsoleScreenBufferInfo(out_, &csbi);
+  return csbi.dwSize.X;
+}
+
 /* This function returns the Y cursor position, as the line number from
  * the top of the logical window.  The offset due to the protected top
  * of the screen display is taken into account.  A WhereY() of zero means

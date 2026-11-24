@@ -83,6 +83,10 @@ public:
   void Clear() { captured_.clear(); rcaptured_.clear(); }
   std::string captured();
   std::string rcaptured();
+  /** Queues keys to be read from the local keyboard. */
+  void push_local_keys(const std::string& keys);
+  /** Queues keys to be read from the remote caller. */
+  void push_remote_keys(const std::string& keys);
   [[nodiscard]] wwiv::local::io::LocalIO* local_io() const { return local_io_; }
   [[nodiscard]] wwiv::common::RemoteIO* remote_io() const { return remote_io_; }
 
@@ -112,8 +116,15 @@ public:
   void set_protect(int) override {}
   void savescreen() override {}
   void restorescreen() override {}
-  bool KeyPressed() override { return false; }
-  [[nodiscard]] unsigned char GetChar() override { return static_cast<unsigned char>(getchar()); }
+  bool KeyPressed() override { return !keys.empty(); }
+  [[nodiscard]] unsigned char GetChar() override {
+    if (keys.empty()) {
+      return static_cast<unsigned char>(getchar());
+    }
+    const auto ch = static_cast<unsigned char>(keys.front());
+    keys.erase(0, 1);
+    return ch;
+  }
   void MakeLocalWindow(int, int, int, int) override {}
   void SetCursor(int) override {}
   void ClrEol() override {}
@@ -124,6 +135,8 @@ public:
   void UpdateNativeTitleBar(const std::string&, int) override {}
 
   std::string* captured_;
+  // Keys GetChar returns, in order.
+  std::string keys;
 };
 
 class TestRemoteIO final : public wwiv::common::RemoteIO {
@@ -133,15 +146,25 @@ public:
 
   bool open() override { return true; }
   void close(bool) override {}
-  unsigned char getW() override { return 0; }
+  unsigned char getW() override {
+    if (keys.empty()) {
+      return 0;
+    }
+    const auto ch = static_cast<unsigned char>(keys.front());
+    keys.erase(0, 1);
+    return ch;
+  }
   bool disconnect() override { return true; }
   void purgeIn() override {}
   unsigned int put(unsigned char ch) override;
   unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
   unsigned int read(char *, unsigned int) override { return 0; }
   bool connected() override { return true; }
-  bool incoming() override { return false; }
+  bool incoming() override { return !keys.empty(); }
   [[nodiscard]] unsigned int GetHandle() const override { return 0; }
+
+  // Keys getW returns, in order, as if sent by the caller.
+  std::string keys;
 
 private:
   std::string* captured_;

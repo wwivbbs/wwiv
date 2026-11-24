@@ -371,11 +371,11 @@ static int exec_cmdline_sync(wwiv::bbs::CommandLine& cmdline, int flags, int nSy
 
   const auto current_directory = File::current_directory().string();
 
-  // Need a non-const string for the commandline
-  char szTempWorkingCommandline[MAX_PATH + 1];
-  to_char_array(szTempWorkingCommandline, working_cmdline);
+  // CreateProcess may modify the command line in place, so give it a copy
+  // (working_cmdline is still logged below if it fails).
+  auto writable_cmdline = working_cmdline;
   const auto bRetCP =
-      CreateProcess(nullptr, szTempWorkingCommandline, nullptr, nullptr, TRUE, dwCreationFlags,
+      CreateProcess(nullptr, writable_cmdline.data(), nullptr, nullptr, TRUE, dwCreationFlags,
                     nullptr, // a()->xenviron not using nullptr causes things to not work.
                     current_directory.c_str(), &si, &pi);
 
@@ -607,11 +607,11 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
 
   const auto current_directory = File::current_directory().string();
 
-  // Need a non-const string for the commandline
-  char szTempWorkingCommandline[MAX_PATH+1];
-  to_char_array(szTempWorkingCommandline, working_cmdline);
+  // CreateProcess may modify the command line in place, so give it a copy
+  // (working_cmdline is still logged below if it fails).
+  auto writable_cmdline = working_cmdline;
   DWORD dwCreationFlags = 0;
-  if (!CreateProcess(nullptr, szTempWorkingCommandline, nullptr, nullptr, TRUE, dwCreationFlags,
+  if (!CreateProcess(nullptr, writable_cmdline.data(), nullptr, nullptr, TRUE, dwCreationFlags,
                      nullptr, // a()->xenviron not using nullptr causes things to not work.
                      current_directory.c_str(), &si, &pi)) {
     const auto error_code = ::GetLastError();

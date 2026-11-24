@@ -61,6 +61,8 @@ public:
 
   virtual void GotoXY(int x, int y) = 0;
   [[nodiscard]] virtual int WhereX() const noexcept = 0;
+  // Columns on the local screen.
+  [[nodiscard]] virtual int GetScreenWidth() const noexcept { return 80; }
   [[nodiscard]] virtual int WhereY() const noexcept = 0;
   virtual void Lf() = 0;
   virtual void Cr() = 0;
