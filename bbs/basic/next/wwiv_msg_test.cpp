@@ -21,6 +21,7 @@
 #include "bbs/basic/next/bbs_message_base.h"
 #include "bbs/basic/message_base.h"
 #include "bbs/basic/next/next_engine.h"
+#include "bbs/basic/next/type_ahead_test_util.h"
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bbs_helper.h"
@@ -32,8 +33,11 @@
 #include "sdk/config.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/subxtr.h"
+#include "sdk/user.h"
 #include "sdk/vardec.h"
+#include "install_scripts.h"
 
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -54,8 +58,13 @@ class FakeMessageBase final : public MessageBase {
 public:
   FakeMessageBase(Subs& subs, MessageApi& api) : subs_(subs), api_(api) {}
 
-  [[nodiscard]] std::vector<UserSub> user_subs() const override { return user_subs_; }
-  [[nodiscard]] std::optional<int> current_user_sub() const override { return current_; }
+  [[nodiscard]] std::vector<UserSub> user_subs() const override {
+    if (on_user_subs) {
+      on_user_subs();
+    }
+    return user_subs_;
+  }
+  [[nodiscard]] std::optional<UserSub> current_user_sub() const override { return current_; }
   [[nodiscard]] const Subs& subs() const override { return subs_; }
   [[nodiscard]] std::unique_ptr<MessageArea> open(int subnum) override {
     const auto& sub = subs_.sub(subnum);
@@ -68,7 +77,9 @@ public:
   [[nodiscard]] bool can_read_anonymous(int) const override { return read_anonymous_; }
 
   std::vector<UserSub> user_subs_;
-  std::optional<int> current_;
+  std::optional<UserSub> current_;
+  // Called by user_subs() (wwiv.msg.areas()), so a test can act mid-script.
+  std::function<void()> on_user_subs;
   bool cosysop_{false};
   bool read_anonymous_{false};
 
@@ -199,7 +210,7 @@ TEST_F(WwivMsgTest, Area_NotTheUsers) {
 }
 
 TEST_F(WwivMsgTest, CurrentArea) {
-  msgs->current_ = 1;
+  msgs->current_ = MessageBase::UserSub{1, "S"};
   EXPECT_EQ("Sysop\r\n", Run("print wwiv.msg.current_area().name\n"));
 }
 
@@ -481,9 +492,28 @@ TEST_F(BbsMessageBaseTest, UserSubs) {
   EXPECT_EQ("1", subs[0].key);
   EXPECT_EQ(7, subs[1].subnum);
   EXPECT_EQ("G", subs[1].key);
-  EXPECT_EQ(std::optional<int>(1), m.current_user_sub());
+  ASSERT_TRUE(m.current_user_sub());
+  EXPECT_EQ(7, m.current_user_sub()->subnum);
+  EXPECT_EQ("G", m.current_user_sub()->key);
 
   a()->usub.clear();
+  EXPECT_EQ(std::nullopt, m.current_user_sub());
+}
+
+// The current sub is a position in usub, which user_subs() filters: an entry
+// that isn't a sub before it mustn't shift it.
+TEST_F(BbsMessageBaseTest, CurrentUserSub_AfterASubThatDoesntExist) {
+  for (auto i = 0; i < 8; i++) {
+    AddSub(fmt::format("sub{}", i), 2, false);
+  }
+  a()->usub = {usersubrec{"1", 99}, usersubrec{"G", 7}};
+  BbsMessageBase m(*a());
+  a()->set_current_user_sub_num(1);
+  ASSERT_TRUE(m.current_user_sub());
+  EXPECT_EQ(7, m.current_user_sub()->subnum);
+  EXPECT_EQ("G", m.current_user_sub()->key);
+  // The current entry isn't a sub.
+  a()->set_current_user_sub_num(0);
   EXPECT_EQ(std::nullopt, m.current_user_sub());
 }
 
@@ -554,6 +584,21 @@ next
 )bas"));
 }
 
+// An area opens its sub once, but still sees posts made after that.
+TEST_F(WwivMsgTest, Area_SeesNewPosts) {
+  Post(0, "a #1", "One", "1\r\n");
+  msgs->on_user_subs = [this] {
+    if (Post(0, "a #1", "Two", "2\r\n") > 2) {
+      FAIL() << "posted more than once";
+    }
+  };
+  // AREA calls user_subs() too, so Two is posted when the area is chosen.
+  EXPECT_EQ("2/2/Two\r\n", Run(R"(
+a = wwiv.msg.area("1")
+print a.count; "/"; len(a.headers()); "/"; a.message(2).title
+)"));
+}
+
 TEST_F(WwivMsgTest, Message_KeepsBlankLinesAndIndentation) {
   Post(0, "a #1", "Art", "Para one\r\n\r\n  /\\_/\\\r\n\r\nPara two\r\n");
   EXPECT_EQ("[Para one]\r\n[]\r\n[  /\\_/\\]\r\n[]\r\n[Para two]\r\n", Run(R"(
@@ -561,4 +606,111 @@ for line in wwiv.msg.area("1").message(1).lines()
   print "["; line; "]"
 next
 )"));
+}
+
+// install/scripts/msgview.bas, the sample message viewer, run with keys
+// typed ahead.
+class MsgViewTest : public WwivMsgTest {
+protected:
+  void SetUp() override {
+    WwivMsgTest::SetUp();
+    // Without ANSI the line editor echoes plain text.
+    helper.user()->set_flag(User::flag_ansi, false);
+    type_ahead::HangUpWhenKeysRunOut(helper.context().session_context(),
+                                                    a()->sess());
+  }
+
+  void TearDown() override { type_ahead::StopTypingAhead(); }
+
+  // Runs the viewer with keys typed ahead. The keys must end it (Q at the
+  // area list): running out of keys hangs up, which fails the test.
+  std::string RunViewer(const std::string& keys) {
+    type_ahead::TypeAhead(keys);
+    const std::string script(reinterpret_cast<const char*>(k_msgview_bas), sizeof(k_msgview_bas));
+    bool ok{false};
+    auto out = Run(script, &ok);
+    EXPECT_TRUE(ok) << out;
+    return out;
+  }
+};
+
+TEST_F(MsgViewTest, ListsAreas) {
+  Post(0, "a #1", "One", "1\r\n");
+  const auto out = RunViewer("Q\r");
+  EXPECT_THAT(out, HasSubstr("Message Areas"));
+  EXPECT_THAT(out, HasSubstr("General"));
+  EXPECT_THAT(out, HasSubstr("1 msgs"));
+  EXPECT_THAT(out, HasSubstr("Sysop"));
+  EXPECT_THAT(out, HasSubstr("0 msgs"));
+  // Not one of the user's areas.
+  EXPECT_THAT(out, Not(HasSubstr("Secret")));
+}
+
+TEST_F(MsgViewTest, ReadsMessages) {
+  Post(0, "rushfan #1", "Hello", "Hi there\r\n");
+  Post(0, "sysop #2", "Re: Hello", "Hi back\r\n");
+  // Area 1, message 1, next, then quit the message, the area and the viewer.
+  const auto out = RunViewer("1\r1\rNQQ\rQ\r");
+  EXPECT_THAT(out, HasSubstr("Title : Hello"));
+  EXPECT_THAT(out, HasSubstr("From  : rushfan #1"));
+  EXPECT_THAT(out, HasSubstr("Hi there"));
+  EXPECT_THAT(out, HasSubstr("Title : Re: Hello"));
+  EXPECT_THAT(out, HasSubstr("Hi back"));
+  EXPECT_LT(out.find("Hi there"), out.find("Hi back"));
+}
+
+TEST_F(MsgViewTest, AreaKeyIsCaseInsensitive) {
+  Post(1, "a #1", "For the sysop", "x\r\n");
+  const auto out = RunViewer("s\rQ\rQ\r");
+  EXPECT_THAT(out, HasSubstr("For the sysop"));
+}
+
+TEST_F(MsgViewTest, PagesHeaders) {
+  for (auto i = 1; i <= 17; i++) {
+    Post(0, "a #1", fmt::format("Post {}", i), "x\r\n");
+  }
+  const auto out = RunViewer("1\rN\rQ\rQ\r");
+  // The first page stops at 15; the next page has the rest.
+  const auto next_page = out.find("Message #", out.find("Post 15"));
+  ASSERT_NE(std::string::npos, next_page);
+  EXPECT_EQ(std::string::npos, out.substr(0, next_page).find("Post 16"));
+  EXPECT_THAT(out.substr(next_page), HasSubstr("Post 16"));
+  EXPECT_THAT(out.substr(next_page), HasSubstr("Post 17"));
+}
+
+TEST_F(MsgViewTest, SkipsWhatTheUserCantRead) {
+  Post(0, "a #1", "Visible", "x\r\n");
+  Post(0, "a #1", "Hidden", "secret\r\n", status_unvalidated);
+  // Message 2 isn't listed, so asking for it says so instead of failing.
+  const auto out = RunViewer("1\r2\r\rQ\rQ\r");
+  EXPECT_THAT(out, HasSubstr("Visible"));
+  EXPECT_THAT(out, Not(HasSubstr("Hidden")));
+  EXPECT_THAT(out, Not(HasSubstr("secret")));
+  EXPECT_THAT(out, HasSubstr("There is no message 2 to read."));
+}
+
+// The viewer prints what other users wrote with MCI off.
+TEST_F(MsgViewTest, PostsCantRunMci) {
+  helper.user()->set_name("READERNAME");
+  Post(0, "a #1", "Title |@N", "Text |@N here\r\n");
+  const auto out = RunViewer("1\r1\rQQ\rQ\r");
+  EXPECT_THAT(out, HasSubstr("Text  here"));
+  EXPECT_THAT(out, Not(HasSubstr("READERNAME")));
+}
+
+TEST_F(MsgViewTest, CountsOnlyReadableMessages) {
+  Post(0, "a #1", "Hidden", "x\r\n", status_unvalidated);
+  Post(0, "a #1", "Visible", "y\r\n");
+  const auto out = RunViewer("1\r2\rQQ\rQ\r");
+  EXPECT_THAT(out, HasSubstr("Msg   : 1 of 1 in General (#2)"));
+}
+
+TEST_F(MsgViewTest, EmptyArea) {
+  const auto out = RunViewer("S\r\rQ\r");
+  EXPECT_THAT(out, HasSubstr("There are no messages in Sysop."));
+}
+
+TEST_F(MsgViewTest, UnknownArea) {
+  const auto out = RunViewer("ZZ\r\rQ\r");
+  EXPECT_THAT(out, HasSubstr("There is no area ZZ."));
 }

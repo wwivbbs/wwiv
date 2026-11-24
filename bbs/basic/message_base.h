@@ -48,8 +48,8 @@ public:
   // The areas the user can read, in the order the BBS lists them (the
   // current conference's subs that pass their read ACS).
   [[nodiscard]] virtual std::vector<UserSub> user_subs() const = 0;
-  // The index into user_subs() of the area the user is in, if any.
-  [[nodiscard]] virtual std::optional<int> current_user_sub() const = 0;
+  // The area the user is in (one of user_subs()), if any.
+  [[nodiscard]] virtual std::optional<UserSub> current_user_sub() const = 0;
   [[nodiscard]] virtual const sdk::Subs& subs() const = 0;
   // Opens a sub's messages, or returns nullptr if it can't be opened.
   [[nodiscard]] virtual std::unique_ptr<sdk::msgapi::MessageArea> open(int subnum) = 0;

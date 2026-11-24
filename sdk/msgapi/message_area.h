@@ -83,7 +83,7 @@ public:
   [[nodiscard]] virtual std::unique_ptr<MessageAreaHeader> ReadMessageAreaHeader() = 0;
   virtual void WriteMessageAreaHeader(const MessageAreaHeader& header) = 0;
   [[nodiscard]] virtual int FindUserMessages(const std::string& user_name) = 0;
-  [[nodiscard]] virtual int number_of_messages() = 0;
+  [[nodiscard]] virtual int number_of_messages() const = 0;
 
   // message specific
   [[nodiscard]] virtual std::optional<Message> ReadMessage(int message_number) = 0;

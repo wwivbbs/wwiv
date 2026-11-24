@@ -189,7 +189,8 @@ headers and read messages.
       the BBS's reader; on unless the sysop turns it off
       (`script_flag_disable_msg`)
 - [ ] Reference documentation for the bindings ([BINDINGS.md](BINDINGS.md): `wwiv.msg` so far)
-- [ ] A sample message viewer script
+- [x] A sample message viewer script (`install/scripts/msgview.bas`; run in
+      `bbs_tests` by `MsgViewTest`)
 
 ### M6: Graduate
 

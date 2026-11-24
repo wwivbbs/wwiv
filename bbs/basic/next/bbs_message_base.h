@@ -32,7 +32,7 @@ public:
   explicit BbsMessageBase(Application& app) : app_(app) {}
 
   [[nodiscard]] std::vector<UserSub> user_subs() const override;
-  [[nodiscard]] std::optional<int> current_user_sub() const override;
+  [[nodiscard]] std::optional<UserSub> current_user_sub() const override;
   [[nodiscard]] const sdk::Subs& subs() const override;
   [[nodiscard]] std::unique_ptr<sdk::msgapi::MessageArea> open(int subnum) override;
   [[nodiscard]] bool is_cosysop(int subnum) const override;

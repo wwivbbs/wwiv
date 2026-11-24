@@ -45,6 +45,10 @@ for line in m.lines()
 next
 ```
 
+WWIV ships a complete message viewer written with it,
+`install/scripts/msgview.bas` (in `scripts/` on a BBS): it lists the areas,
+pages through an area's headers, and reads messages one after another.
+
 ### Functions
 
 | Function | Returns |
@@ -86,5 +90,21 @@ A `message` also has:
 | `TEXT` | The text, each line followed by `\r\n`, without WWIV's control lines (`^D0...`) |
 | `LINES()` | The text as a LIST of lines |
 
-The text keeps its pipe and heart color codes, so `wwiv.io.outstr` shows it
-in color.
+The text keeps its pipe and heart color codes. Print text other users wrote
+(titles, names and message text) with `wwiv.io.outstr_nomci` or
+`wwiv.io.pl_nomci`: they show the colors but, like the BBS's own reader, don't
+run MCI codes (`|{...}` expressions and `|@` macros), so a post can't make the
+reader's screen show the reader's own details.
+
+## wwiv.io additions
+
+The new engine adds these to `wwiv.io`; the other functions are as in the
+legacy engine.
+
+| Function | |
+| --- | --- |
+| `OUTSTR_NOMCI(text...)` | As `OUTSTR`, but with MCI codes shown as written instead of run. Colors still show. |
+| `PL_NOMCI(text...)` | As `PL`, with MCI codes shown as written. |
+
+`OUTSTR`, `PL` and `PRINT` still run MCI codes, as scripts usually want for
+their own text.

@@ -142,7 +142,7 @@ int WWIVMessageArea::FindUserMessages(const std::string&) {
   return 0;
 }
 
-int WWIVMessageArea::number_of_messages() {
+int WWIVMessageArea::number_of_messages() const {
   DataFile<postrec> sub(sub_filename_);
   if (!sub) {
     // TODO: throw exception

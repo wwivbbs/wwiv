@@ -1109,8 +1109,12 @@ int Application::Run(int argc, char* argv[]) {
   if (!run_basic.empty()) {
     const auto eff_user = std::max<int>(this_usernum_from_commandline, 1);
     ReadCurrentUser(eff_user);
-    reset_effective_sl();
     sess().user_num(eff_user);
+    // As at logon: the user's qscan pointers, then the conferences and subs
+    // they can use (usub), which scripts such as wwiv.msg's read.
+    read_qscn(eff_user, sess().qsc, false);
+    reset_effective_sl();
+    changedsl();
     if (!wwiv::bbs::basic::RunBasicScript(run_basic)) {
       LOG(ERROR) << "Error running WWIVbasic script: '" << run_basic;
       return errorlevel_;

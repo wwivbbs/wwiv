@@ -98,6 +98,9 @@ Small differences in how arguments are checked:
   stop at 78, the width of the line editor.)
 - Once the caller has hung up, `wwiv.io.getkey()` and `wwiv.io.gets()` return
   `""` and the script stops at the next statement.
+- New: `wwiv.io.outstr_nomci` and `wwiv.io.pl_nomci` print with MCI codes
+  shown as written instead of run, for text other users wrote (see
+  [docs/BINDINGS.md](docs/BINDINGS.md)).
 
 `wwiv.data` reads and writes the same files as before, in the same format, so
 data saved by a script on one engine loads on the other. `LOAD` still appends

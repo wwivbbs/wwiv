@@ -111,6 +111,8 @@ Networking / FTN
 WWIVbasic
 * Errors are logged to the log file and shown to the caller.
 * Fixed typo that broke the oneliners.bas script.
++ New sample script msgview.bas, a message viewer written with the new
+  BASIC engine's wwiv.msg module (read-only message areas).
 
 Build and Platform
 + Release builds now come from GitHub Actions (Windows, Ubuntu,

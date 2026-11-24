@@ -43,12 +43,18 @@ std::vector<MessageBase::UserSub> BbsMessageBase::user_subs() const {
   return out;
 }
 
-std::optional<int> BbsMessageBase::current_user_sub() const {
+std::optional<MessageBase::UserSub> BbsMessageBase::current_user_sub() const {
+  // current_user_sub_num() is a position in usub, which user_subs() filters,
+  // so look the entry up here rather than in user_subs().
   const int n = app_.current_user_sub_num();
   if (n < 0 || n >= stl::size_int(app_.usub)) {
     return std::nullopt;
   }
-  return n;
+  const auto& u = app_.usub[n];
+  if (u.subnum < 0 || u.subnum >= app_.subs().size()) {
+    return std::nullopt;
+  }
+  return UserSub{u.subnum, u.keys};
 }
 
 const sdk::Subs& BbsMessageBase::subs() const { return app_.subs(); }

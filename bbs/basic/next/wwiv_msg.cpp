@@ -31,6 +31,7 @@
 
 #include <functional>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -49,12 +50,30 @@ struct ScriptArea {
   MessageBase* msgs;
   int subnum;
   std::string key;
+  // The sub's messages, opened on first use and shared by the copies of this
+  // area. The message area reads its files on each call, so it sees new
+  // posts.
+  mutable std::shared_ptr<sdk::msgapi::MessageArea> opened{};
 
-  [[nodiscard]] const sdk::subboard_t& sub() const { return msgs->subs().sub(subnum); }
+  [[nodiscard]] const sdk::subboard_t& sub() const {
+    // The sub list can change while a script holds an area.
+    if (subnum < 0 || subnum >= msgs->subs().size()) {
+      throw BasicError(fmt::format("message area '{}' no longer exists", key));
+    }
+    return msgs->subs().sub(subnum);
+  }
+
+  // The sub's messages, or nullptr if they can't be opened.
+  [[nodiscard]] sdk::msgapi::MessageArea* area() const {
+    if (!opened) {
+      opened = msgs->open(subnum);
+    }
+    return opened.get();
+  }
 
   [[nodiscard]] int count() const {
-    const auto area = msgs->open(subnum);
-    return area ? area->number_of_messages() : 0;
+    const auto* a = area();
+    return a ? a->number_of_messages() : 0;
   }
 };
 
@@ -129,7 +148,7 @@ std::vector<std::string> text_lines(const std::string& text) {
 // caller hung up); the interpreter then stops the script.
 std::vector<ScriptHeader> read_headers(const ScriptArea& a, const std::function<bool()>& stopped) {
   std::vector<ScriptHeader> out;
-  const auto area = a.msgs->open(a.subnum);
+  auto* area = a.area();
   if (!area) {
     return out;
   }
@@ -148,7 +167,7 @@ std::vector<ScriptHeader> read_headers(const ScriptArea& a, const std::function<
 
 ScriptMessage read_message(const ScriptArea& a, int number) {
   const auto& name = a.sub().name;
-  const auto area = a.msgs->open(a.subnum);
+  auto* area = a.area();
   // An area that can't be opened has no messages, as COUNT says.
   const auto count = area ? area->number_of_messages() : 0;
   if (!area || number < 1 || number > count) {
@@ -247,12 +266,11 @@ void RegisterWwivMsg(wwivbasic::Interpreter& interp, const WwivBindings& b) {
 
   // CURRENT_AREA() is the area the user is in.
   m.native_function("CURRENT_AREA", [msgs, make_area]() {
-    const auto subs = msgs->user_subs();
-    const auto n = msgs->current_user_sub();
-    if (!n || *n < 0 || *n >= static_cast<int>(subs.size())) {
+    const auto u = msgs->current_user_sub();
+    if (!u) {
       throw BasicError("CURRENT_AREA: the user isn't in a message area");
     }
-    return make_area(subs[*n]);
+    return make_area(*u);
   });
 }
 
