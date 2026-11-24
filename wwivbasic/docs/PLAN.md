@@ -46,7 +46,7 @@ RunBasicScript(name)                       (WWIV)
   they wrap (for example `bbs/basic/next/`), and are tested with WWIV's test
   helpers. Adding a binding never requires changing the interpreter.
 - **Building and choosing the engine.** A CMake option (`WWIV_WWIVBASIC_NEXT`,
-  off at first) decides whether the new engine is built at all, so WWIV builds
+  off at first, on by default since M4 except on OS/2) decides whether the new engine is built at all, so WWIV builds
   without the ANTLR runtime until it's ready (the generated parser is checked
   in, so Java is never needed). In builds that have both, a runtime
   setting chooses the engine (the `script_flag_engine_next` bit in
@@ -167,6 +167,9 @@ WWIV's existing `bbs/basic` tests pass against the new engine.
       engines read each other's `wwiv.data` files)
 - [x] WWIV CI builds with the option on (both jobs), and fails if the
       checked-in parser doesn't match the grammar
+- [x] Build the new engine by default (`WWIV_WWIVBASIC_NEXT` defaults to ON,
+      except on OS/2); scripts still run on the legacy engine unless
+      `config.json` or `--basic_engine` picks the new one
 
 ### M5: SDK bindings (WWIV)
 

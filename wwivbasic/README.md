@@ -6,14 +6,15 @@ Most existing WWIVbasic scripts should run unchanged.
 
 ## Status
 
-Experimental, and only built with `-DWWIV_WWIVBASIC_NEXT=ON`. See [docs/PLAN.md](docs/PLAN.md)
-for the milestones.
+Built with WWIV by default (`WWIV_WWIVBASIC_NEXT`, off on OS/2), but WWIV still runs scripts
+on my_basic unless the sysop turns on "Use New Engine" in wwivconfig's scripting settings (or
+`bbs --basic_engine=next`). See [docs/PLAN.md](docs/PLAN.md) for the milestones.
 
 - Done: build and test baseline (M0), parsing the existing WWIV scripts (M1), lists, imports
   and stub `wwiv.*` modules so those scripts run (M2), and the embedding API with object values
   and member access (M3).
-- Next: running inside the BBS with the `wwiv.*` modules as bindings (M4), then SDK bindings
-  such as messages and users (M5).
+  Running inside the BBS with the `wwiv.*` modules as bindings (M4).
+- Next: SDK bindings such as messages and users (M5).
 
 wwivbasic was developed in its own repository (github.com/wwiv/wwivbasic, now archived) and
 moved here at the start of M4.
@@ -42,12 +43,13 @@ print "count: ", count
 
 ## Building
 
-wwivbasic builds as part of WWIV when `WWIV_WWIVBASIC_NEXT` is on. That also adds the
+wwivbasic builds as part of WWIV when `WWIV_WWIVBASIC_NEXT` is on (the default except on
+OS/2; pass `-DWWIV_WWIVBASIC_NEXT=OFF` to skip it). That also adds the
 `wwivbasic` feature in WWIV's `vcpkg.json`, which installs the ANTLR runtime. From the top of
 the WWIV tree:
 
 ```sh
-cmake --preset linux-debug -DWWIV_WWIVBASIC_NEXT=ON
+cmake --preset linux-debug
 cmake --build --preset linux-debug
 ```
 
