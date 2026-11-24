@@ -43,7 +43,7 @@ namespace wwiv::sdk {
 
 chain_exec_mode_t& operator++(chain_exec_mode_t& t) {
   using T = std::underlying_type<chain_exec_mode_t>::type;
-  t = (t == chain_exec_mode_t::sock_unix ? chain_exec_mode_t::none
+  t = (t == chain_exec_mode_t::sock_wwivfoss ? chain_exec_mode_t::none
                                      : static_cast<chain_exec_mode_t>(static_cast<T>(t) + 1));
   return t;
 }
@@ -51,7 +51,7 @@ chain_exec_mode_t& operator++(chain_exec_mode_t& t) {
 chain_exec_mode_t operator++(chain_exec_mode_t& t, int) {
   using T = std::underlying_type<chain_exec_mode_t>::type;
   const auto old = t;
-  t = (t == chain_exec_mode_t::sock_unix ? chain_exec_mode_t::none
+  t = (t == chain_exec_mode_t::sock_wwivfoss ? chain_exec_mode_t::none
                                      : static_cast<chain_exec_mode_t>(static_cast<T>(t) + 1));
   return old;
 }
@@ -283,6 +283,8 @@ uint32_t Chains::to_exec_flags(chain_exec_mode_t m) {
     return EFLAG_LISTEN_SOCK;
   case chain_exec_mode_t::sock_unix:
     return EFLAG_UNIX_SOCK;
+  case chain_exec_mode_t::sock_wwivfoss:
+    return EFLAG_LISTEN_SOCK | EFLAG_WWIVFOSS;
   case chain_exec_mode_t::dos:
     return EFLAG_COMIO;
   case chain_exec_mode_t::none:

@@ -87,6 +87,7 @@ add_library(
   xfertmp.cpp
   xinit.cpp
   wfc.cpp
+  wwivfoss_inband.cpp
   basic/basic.cpp
   basic/debug_model.cpp
   basic/debug_state.cpp
@@ -231,6 +232,7 @@ if (WWIV_BUILD_TESTS)
       trashcan_test.cpp
       utility_test.cpp
       wutil_test.cpp
+      wwivfoss_inband_test.cpp
       xfer_test.cpp
       xferovl_test.cpp
       basic/basic_test.cpp
@@ -245,6 +247,10 @@ if (WWIV_BUILD_TESTS)
         basic/next/wwiv_file_os_test.cpp
         basic/next/side_by_side_test.cpp
       )
+    endif()
+    if (UNIX)
+      # Forks a child to play the door.
+      list(APPEND test_sources exec_socket_test.cpp)
     endif()
     add_executable(bbs_tests ${test_sources})
     if (WWIV_WWIVBASIC_NEXT)

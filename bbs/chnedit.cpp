@@ -160,7 +160,8 @@ static std::string chain_exec_mode_to_string(const chain_exec_mode_t& t) {
                                  "|#3STDIO",
                                  "|#5NetFoss",
                                  "|#7Listen Socket Port",
-                                 "|#7Listen UNIX Socket"};
+                                 "|#7Listen UNIX Socket",
+                                 "|#7WWIVFOSS (Socket Port)"};
 #endif
   try {
     return names.at(static_cast<size_t>(t));
@@ -256,8 +257,9 @@ static void modify_chain(ssize_t chain_num) {
       if (c.exec_mode == chain_exec_mode_t::netfoss) {
         c.exec_mode++;
       }
-      if (c.exec_mode == chain_exec_mode_t::sock_port ||
-          c.exec_mode == chain_exec_mode_t::sock_unix) {
+      while (c.exec_mode == chain_exec_mode_t::sock_port ||
+             c.exec_mode == chain_exec_mode_t::sock_unix ||
+             c.exec_mode == chain_exec_mode_t::sock_wwivfoss) {
         c.exec_mode++;
       }
 #elif defined(__unix__)

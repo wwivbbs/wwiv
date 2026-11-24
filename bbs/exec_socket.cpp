@@ -18,12 +18,15 @@
 /**************************************************************************/
 #include "bbs/exec_socket.h"
 
+#include "bbs/wwivfoss_inband.h"
+
 #include "core/file.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+#include <cerrno>
 #include <chrono>
 #include <string>
 
@@ -137,6 +140,9 @@ ExecSocket::ExecSocket(const std::filesystem::path& dir, uint16_t port, exec_soc
 }
 
 ExecSocket::~ExecSocket() {
+  if (client_socket_ != INVALID_SOCKET && client_socket_ > 0) {
+    closesocket(client_socket_);
+  }
   if (server_socket_ != -1) {
     closesocket(server_socket_);
   }
@@ -185,27 +191,26 @@ bool ExecSocket::process_still_active(EXEC_SOCKET_HANDLE h) {
   }
   return true;
 #elif defined(__unix__)
-  int status_code = 0;
-  pid_t wp = waitpid(h, &status_code, WNOHANG);
-  if (wp == -1 || wp > 0) {
-    // -1 means error and >0 is the pid
-    VLOG(2) << "waitpid returned: " << wp << "; errno: " << errno;
-    if (WIFEXITED(status_code)) {
-      VLOG(1) << "child exited with code: " << WEXITSTATUS(status_code);
-      return false;
-    }
-    if (WIFSIGNALED(status_code)) {
-      VLOG(1) << "child caught signal: " << WTERMSIG(status_code);
-    } else {
-      LOG(INFO) << "Raw status_code: " << status_code;
-    }
-    LOG(INFO) << "core dump? : " << WCOREDUMP(status_code);
+  // WNOWAIT leaves the child to be reaped by the caller, so it still gets
+  // the door's real exit status.
+  siginfo_t info{};
+  if (waitid(P_PID, static_cast<id_t>(h), &info, WEXITED | WNOHANG | WNOWAIT) == -1) {
+    // ECHILD: already reaped (or not our child), so it isn't running.
+    VLOG(2) << "waitid failed; errno: " << errno;
+    return errno == EINTR;
   }
-  return true;
+  if (info.si_pid == 0) {
+    return true;
+  }
+  VLOG(1) << "child exited; code: " << info.si_code << "; status: " << info.si_status;
+  return false;
 #endif
 }
 
 pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, SOCKET sock, wwiv::common::RemoteIO& io) {
+  if (wwivfoss_) {
+    return pump_socket_wwivfoss(hProcess, sock, io);
+  }
   static constexpr int check_process_every = 10;
   char buf[1024];
   int count = 0;
@@ -239,6 +244,175 @@ pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, SOCKET
       }
     }
     wwiv::os::sleep_for(std::chrono::milliseconds(100));
+  }
+  return pump_socket_result_t::process_exit;
+}
+
+void ExecSocket::enable_wwivfoss(const wwivfoss_options_t& options) { wwivfoss_ = options; }
+
+static bool would_block() {
+#ifdef _WIN32
+  return WSAGetLastError() == WSAEWOULDBLOCK;
+#else
+  return errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR;
+#endif
+}
+
+// One non-blocking send of as much of data as the socket will take. Returns
+// bytes sent (0 if the socket is full), or -1 on error.
+static int send_some(SOCKET sock, const std::string& data) {
+#ifdef MSG_NOSIGNAL
+  constexpr int send_flags = MSG_NOSIGNAL;
+#else
+  constexpr int send_flags = 0;
+#endif
+  const auto n = send(sock, data.data(), static_cast<int>(data.size()), send_flags);
+  if (n >= 0) {
+    return static_cast<int>(n);
+  }
+  return would_block() ? 0 : -1;
+}
+
+// Waits up to timeout for the process to exit. Meanwhile keeps sending
+// to_door and throws away whatever the door sends, so it can't get stuck
+// writing to us.
+static bool wait_for_exit(EXEC_SOCKET_HANDLE h, SOCKET sock, std::string& to_door,
+                          std::chrono::milliseconds timeout) {
+  const auto deadline = std::chrono::steady_clock::now() + timeout;
+  char buf[1024];
+  for (;;) {
+    if (!ExecSocket::process_still_active(h)) {
+      return true;
+    }
+    if (std::chrono::steady_clock::now() >= deadline) {
+      return false;
+    }
+    while (recv(sock, buf, sizeof(buf), 0) > 0) {
+    }
+    if (!to_door.empty()) {
+      if (const auto n = send_some(sock, to_door); n > 0) {
+        to_door.erase(0, static_cast<size_t>(n));
+      } else if (n < 0) {
+        to_door.clear();
+      }
+    }
+    wwiv::os::sleep_for(std::chrono::milliseconds(50));
+  }
+}
+
+pump_socket_result_t ExecSocket::pump_socket_wwivfoss(EXEC_SOCKET_HANDLE hProcess, SOCKET sock,
+                                                      wwiv::common::RemoteIO& io) {
+  using clock = std::chrono::steady_clock;
+  // Reads per side per pass, and how much we'll queue for the door before
+  // we stop reading from the caller.
+  static constexpr int max_reads = 16;
+  static constexpr size_t max_queued = 16 * 1024;
+  const auto& opts = wwivfoss_.value();
+
+  // Raise DTR first: after a hangup WWIVFOSS keeps the UART in loopback
+  // until DTR comes back up, and a resident copy can't otherwise tell a new
+  // connection has started.
+  auto to_door = wwivfoss_line_state(WWIVFOSS_LINE_UP);
+  auto last_sent = clock::now();
+  auto last_process_check = clock::now();
+
+  WWIVFossDecoder decoder;
+  // DTR low only counts once the door has sent something, so a stale FF 01
+  // can't kill it while the emulator is still booting.
+  bool door_spoke = false;
+  // Once the door has dropped DTR: when it's due to exit.
+  std::optional<clock::time_point> door_hangup_deadline;
+  char buf[1024];
+
+  auto door_gone = [&](const char* why) {
+    VLOG(1) << "Exiting pump_socket: door socket " << why;
+    return wait_for_exit(hProcess, sock, to_door, opts.socket_closed_grace)
+               ? pump_socket_result_t::process_exit
+               : pump_socket_result_t::socket_error;
+  };
+
+  while (!stop_.load()) {
+    bool busy = false;
+
+    for (int i = 0; i < max_reads; i++) {
+      const auto num_read = recv(sock, buf, sizeof(buf), 0);
+      if (num_read < 0 && would_block()) {
+        break;
+      }
+      if (num_read <= 0) {
+        return door_gone(num_read == 0 ? "closed." : "failed.");
+      }
+      busy = true;
+      if (const auto data = decoder.decode(buf, static_cast<size_t>(num_read)); !data.empty()) {
+        door_spoke = true;
+        io.write(data.data(), static_cast<int>(data.size()));
+      }
+      for (const auto state : decoder.take_line_states()) {
+        // A drop is final even if DTR comes back up: doors pulse DTR to hang
+        // up, then wait for a carrier loss that never comes.
+        if (state & WWIVFOSS_LINE_DTR) {
+          door_spoke = true;
+        } else if (!door_spoke) {
+          VLOG(1) << "Ignoring DTR low from a door that hasn't sent anything yet.";
+        } else if (!door_hangup_deadline) {
+          VLOG(1) << "Door lowered DTR; returning caller to the BBS.";
+          door_hangup_deadline = clock::now() + opts.door_hangup_grace;
+        }
+      }
+    }
+
+    if (!io.connected()) {
+      VLOG(1) << "Exiting pump_socket: Caller Hung up; lowering DTR to the door.";
+      to_door += wwivfoss_line_state(WWIVFOSS_LINE_RTS);
+      return wait_for_exit(hProcess, sock, to_door, opts.caller_hangup_grace)
+                 ? pump_socket_result_t::process_exit
+                 : pump_socket_result_t::socket_error;
+    }
+
+    for (int i = 0; i < max_reads && to_door.size() < max_queued && io.incoming(); i++) {
+      const auto num_read = io.read(buf, sizeof(buf));
+      if (num_read == 0) {
+        break;
+      }
+      busy = true;
+      // Keys typed while the door has DTR low are dropped so they don't run
+      // as BBS commands once the caller is back.
+      if (!door_hangup_deadline) {
+        to_door += wwivfoss_escape(buf, num_read);
+      }
+    }
+
+    // Any bytes reset WWIVFOSS's -H timer, so only send FF 03 when idle.
+    if (opts.heartbeat.count() > 0 && to_door.empty() &&
+        clock::now() - last_sent >= opts.heartbeat) {
+      to_door = wwivfoss_line_state(WWIVFOSS_LINE_UP);
+    }
+
+    if (!to_door.empty()) {
+      const auto n = send_some(sock, to_door);
+      if (n < 0) {
+        return door_gone("write failed.");
+      }
+      if (n > 0) {
+        to_door.erase(0, static_cast<size_t>(n));
+        last_sent = clock::now();
+        busy = true;
+      }
+    }
+
+    if (door_hangup_deadline || clock::now() - last_process_check >= std::chrono::seconds(1)) {
+      last_process_check = clock::now();
+      if (!process_still_active(hProcess)) {
+        return pump_socket_result_t::process_exit;
+      }
+    }
+    if (door_hangup_deadline && clock::now() >= door_hangup_deadline.value()) {
+      LOG(INFO) << "Door lowered DTR but did not exit; terminating it.";
+      return pump_socket_result_t::socket_error;
+    }
+    if (!busy) {
+      wwiv::os::sleep_for(std::chrono::milliseconds(to_door.empty() ? 100 : 10));
+    }
   }
   return pump_socket_result_t::process_exit;
 }
