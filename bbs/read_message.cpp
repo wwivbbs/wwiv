@@ -309,6 +309,55 @@ static void UpdateHeaderInformation(int8_t anon_type, bool readit, const std::st
   }
 }
 
+void parse_type2_message_text(const std::string& raw, Type2MessageData& data) {
+  // Make a copy of the raw message text.
+  data.message_text = raw;
+  data.raw_message_text = data.message_text;
+
+  // TODO(rushfan): Use get_control_line from networking code here.
+
+  size_t ptr;
+  for (ptr = 0; ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr <= 200;
+       ptr++) {
+    data.from_user_name.push_back(data.message_text[ptr]);
+  }
+  if (ptr < data.message_text.size() && data.message_text[++ptr] == SOFTRETURN) {
+    ++ptr;
+  }
+  for (const auto start = ptr;
+       ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr - start <= 60;
+       ptr++) {
+    data.date.push_back(data.message_text[ptr]);
+  }
+  // The text starts after the line endings that follow the date. (This used
+  // to stop one character short, leaving a stray "\n" as the text of a post
+  // with no body, and to keep the whole raw text, from and date lines
+  // included, when nothing followed the date line.)
+  while (ptr < data.message_text.size() &&
+         (data.message_text[ptr] == '\r' || data.message_text[ptr] == '\n')) {
+    ptr++;
+  }
+  data.message_text = data.message_text.substr(std::min(ptr, data.message_text.size()));
+
+  auto lines = SplitString(data.message_text, "\r");
+  for (auto line : lines) {
+    StringTrim(&line);
+    if (line.empty()) {
+      continue;
+    }
+    if (starts_with(line, "\004" "0FidoAddr: ") && line.size() > 12) {
+      if (auto cl = line.substr(12); !cl.empty()) {
+        data.to_user_name = cl;
+        break;
+      }
+    }
+  }
+
+  if (!data.message_text.empty() && data.message_text.back() == CZ) {
+    data.message_text.pop_back();
+  }
+}
+
 std::optional<Type2MessageData> read_type2_message(messagerec* msg, uint8_t an, bool readit,
                                                    const std::string& file_name, int from_sys_num,
                                                    int from_user) {
@@ -337,56 +386,7 @@ std::optional<Type2MessageData> read_type2_message(messagerec* msg, uint8_t an, 
   if (!o) {
     return std::nullopt;
   }
-  // Make a copy of the raw message text.
-  data.message_text = o.value();
-  data.raw_message_text = data.message_text;
-
-  // TODO(rushfan): Use get_control_line from networking code here.
-
-  size_t ptr;
-  for (ptr = 0; ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr <= 200;
-       ptr++) {
-    data.from_user_name.push_back(data.message_text[ptr]);
-  }
-  if (ptr < data.message_text.size() && data.message_text[++ptr] == SOFTRETURN) {
-    ++ptr;
-  }
-  for (const auto start = ptr;
-       ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr - start <= 60;
-       ptr++) {
-    data.date.push_back(data.message_text[ptr]);
-  }
-  if (ptr + 1 < data.message_text.size()) {
-    // skip trailing \r\n
-    while (ptr + 1 < data.message_text.size() &&
-           (data.message_text[ptr] == '\r' || data.message_text[ptr] == '\n')) {
-      ptr++;
-    }
-    try {
-      data.message_text = data.message_text.substr(ptr);
-    } catch (const std::out_of_range& e) {
-      LOG(ERROR) << "Error getting message_text: " << e.what();
-    }
-    // ptr = 0;
-  }
-
-  auto lines = SplitString(data.message_text, "\r");
-  for (auto line : lines) {
-    StringTrim(&line);
-    if (line.empty()) {
-      continue;
-    }
-    if (starts_with(line, "\004" "0FidoAddr: ") && line.size() > 12) {
-      if (auto cl = line.substr(12); !cl.empty()) {
-        data.to_user_name = cl;
-        break;
-      }
-    }
-  }
-
-  if (!data.message_text.empty() && data.message_text.back() == CZ) {
-    data.message_text.pop_back();
-  }
+  parse_type2_message_text(o.value(), data);
 
   UpdateHeaderInformation(an, readit, data.from_user_name, &data.from_user_name, &data.date);
   if (an == 0) {
@@ -583,18 +583,17 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg, bool a
   return FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
 }
 
-static std::vector<std::string> split_wwiv_message(const std::string& message_text,
-                                                   bool controlcodes) {
-  const auto& user = *a()->user();
+std::vector<std::string> split_wwiv_message_lines(const std::string& message_text,
+                                                  bool controlcodes, int optional_lines,
+                                                  int line_length) {
   WWIVParsedMessageText pmt(message_text);
   parsed_message_lines_style_t style{};
   style.ctrl_lines = control_lines_t::control_lines;
   style.add_wrapping_marker = false;
-  style.line_length = user.screen_width() - 1;
+  style.line_length = line_length;
   const auto orig_lines = pmt.to_lines(style);
 
   // Now handle control chars, and optional lines.
-  const auto optional_lines = user.optional_val();
   std::vector<std::string> lines;
   for (auto& line : orig_lines) {
     if (line.empty()) {
@@ -614,6 +613,14 @@ static std::vector<std::string> split_wwiv_message(const std::string& message_te
     // Not CD.
     lines.emplace_back(line);
   }
+  return lines;
+}
+
+static std::vector<std::string> split_wwiv_message(const std::string& message_text,
+                                                   bool controlcodes) {
+  const auto& user = *a()->user();
+  const auto lines = split_wwiv_message_lines(message_text, controlcodes, user.optional_val(),
+                                              user.screen_width() - 1);
 
   // Render it to the frame buffer to interpret heart codes, ansi, etc.
   FrameBuffer b(user.screen_width());
