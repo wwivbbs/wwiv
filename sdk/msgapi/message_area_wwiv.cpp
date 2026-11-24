@@ -205,9 +205,9 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
     return {r};
   }
 
-  // Like the BBS's reader (read_type2_message), skip the blank lines that
-  // follow the date line.
-  while (it != std::end(lines) && StringTrim(*it).empty()) {
+  // Like the BBS's reader (read_type2_message), skip the line endings that
+  // follow the date line. A line of spaces or tabs is text, not a line ending.
+  while (it != std::end(lines) && it->find_first_not_of('\r') == std::string::npos) {
     ++it;
   }
   for (; it != std::end(lines); ++it) {
@@ -224,7 +224,6 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
       // reader shows it: blank lines, leading and trailing spaces
       // (paragraphs, quotes, ASCII art) stay; only the line endings and
       // anything after the control-Z that ends the text go.
-      std::vector<std::string> body;
       for (; it != std::end(lines); ++it) {
         auto text_line = *it;
         // The text ends at a control-Z.
@@ -241,19 +240,15 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
         if (!text_line.empty() && text_line.back() == '\r') {
           text_line.pop_back();
         }
+        // A control-Z at the start of a line ends the text without adding a
+        // line.
+        if (!at_end || !text_line.empty()) {
+          r.text += text_line;
+          r.text += "\r\n";
+        }
         if (at_end) {
-          // A control-Z at the start of a line ends the text without
-          // adding a line.
-          if (!text_line.empty()) {
-            body.push_back(text_line);
-          }
           break;
         }
-        body.push_back(text_line);
-      }
-      for (const auto& text_line : body) {
-        r.text += text_line;
-        r.text += "\r\n";
       }
       break;
     }

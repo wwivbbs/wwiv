@@ -15,9 +15,10 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "bbs/basic/next/message_base.h"
+#include "bbs/basic/message_base.h"
 #include "bbs/basic/next/wwiv_bindings.h"
 
+#include "common/context.h"
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "sdk/msgapi/message.h"
@@ -28,6 +29,7 @@
 #include "wwivbasic/interpreter.h"
 #include "wwivbasic/object.h"
 
+#include <functional>
 #include <limits>
 #include <optional>
 #include <string>
@@ -123,7 +125,9 @@ std::vector<std::string> text_lines(const std::string& text) {
   return sdk::msgapi::WWIVParsedMessageText(text).to_lines(style);
 }
 
-std::vector<ScriptHeader> read_headers(const ScriptArea& a) {
+// Stops early, with the headers read so far, once stopped() is true (the
+// caller hung up); the interpreter then stops the script.
+std::vector<ScriptHeader> read_headers(const ScriptArea& a, const std::function<bool()>& stopped) {
   std::vector<ScriptHeader> out;
   const auto area = a.msgs->open(a.subnum);
   if (!area) {
@@ -132,7 +136,7 @@ std::vector<ScriptHeader> read_headers(const ScriptArea& a) {
   const auto cosysop = a.msgs->is_cosysop(a.subnum);
   const auto read_anonymous = a.msgs->can_read_anonymous(a.subnum);
   const auto count = area->number_of_messages();
-  for (auto i = 1; i <= count; i++) {
+  for (auto i = 1; i <= count && !stopped(); i++) {
     const auto h = area->ReadMessageHeader(i);
     if (!h || !can_see(h.value(), cosysop)) {
       continue;
@@ -145,11 +149,9 @@ std::vector<ScriptHeader> read_headers(const ScriptArea& a) {
 ScriptMessage read_message(const ScriptArea& a, int number) {
   const auto& name = a.sub().name;
   const auto area = a.msgs->open(a.subnum);
-  if (!area) {
-    throw BasicError(fmt::format("MESSAGE: unable to open the message area '{}'", name));
-  }
-  const auto count = area->number_of_messages();
-  if (number < 1 || number > count) {
+  // An area that can't be opened has no messages, as COUNT says.
+  const auto count = area ? area->number_of_messages() : 0;
+  if (!area || number < 1 || number > count) {
     throw BasicError(
         fmt::format("MESSAGE: there is no message {} in '{}' (it has {})", number, name, count));
   }
@@ -184,6 +186,10 @@ void RegisterWwivMsg(wwivbasic::Interpreter& interp, const WwivBindings& b) {
     return;
   }
   auto* msgs = b.msgs;
+  // True once the caller hangs up.
+  std::function<bool()> hung_up = [ctx = b.ctx]() {
+    return ctx && ctx->session_context().hangup();
+  };
   auto& m = interp.add_module("wwiv.msg");
   auto& header_class = m.class_<ScriptHeader>("message_header");
   auto& message_class = m.class_<ScriptMessage>("message");
@@ -202,9 +208,9 @@ void RegisterWwivMsg(wwivbasic::Interpreter& interp, const WwivBindings& b) {
       .property("count", [](const ScriptArea& a) { return a.count(); })
       // HEADERS() lists the headers of the messages the user can read.
       .method("headers",
-              [&header_class](const ScriptArea& a) {
+              [&header_class, hung_up](const ScriptArea& a) {
                 std::vector<Value> items;
-                for (auto& h : read_headers(a)) {
+                for (auto& h : read_headers(a, hung_up)) {
                   items.push_back(header_class.wrap(std::move(h)));
                 }
                 return Value::make_list(std::move(items));

@@ -21,6 +21,7 @@
 #include "bbs/bbs.h"
 #include "bbs/interpret.h"
 #include "bbs/utility.h"
+#include "common/context.h"
 #include "common/datetime.h"
 #include "common/input.h"
 #include "common/output.h"
@@ -279,18 +280,28 @@ bool cs() {
  *
  * @return true if current user has limited co-sysop access (or better)
  */
-bool lcs() {
-  if (cs()) {
+bool lcs() { return lcs(a()->context(), a()->current_user_sub().subnum); }
+
+bool lcs(Context& ctx, int subnum) {
+  const auto sl = ctx.session_context().effective_sl();
+  if (sl == 255) {
     return true;
   }
-
-  if (a()->config()->sl(a()->sess().effective_sl()).ability & ability_limited_cosysop) {
-    if (*a()->sess().qsc == 999) {
-      return true;
-    }
-    return (*a()->sess().qsc == static_cast<uint32_t>(a()->current_user_sub().subnum)) ? true : false;
+  const auto ability = ctx.config().sl(sl).ability;
+  if (ability & ability_cosysop) {
+    return true;
+  }
+  if (ability & ability_limited_cosysop) {
+    // A limited co-sysop's sub is the first qscan entry; 999 means all subs.
+    const auto* qsc = ctx.session_context().qsc;
+    return qsc && (*qsc == 999 || (subnum >= 0 && *qsc == static_cast<uint32_t>(subnum)));
   }
   return false;
+}
+
+bool can_read_anonymous_posts(Context& ctx, int subnum) {
+  return lcs(ctx, subnum) ||
+         (ctx.config().sl(ctx.session_context().effective_sl()).ability & ability_read_post_anony);
 }
 
 

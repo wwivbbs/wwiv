@@ -1239,6 +1239,13 @@ void Application::init_status_and_instances_for_test() {
   instances_ = std::make_unique<Instances>(*config());
 }
 
+void Application::init_message_areas_for_test() {
+  read_networks();
+  // With no subs file there are no subs, which is fine for a test.
+  read_subs();
+  create_message_api();
+}
+
 /** Returns the WWIV Names.LST Config Object. */
 Names* Application::names() const { return names_.get(); }
 

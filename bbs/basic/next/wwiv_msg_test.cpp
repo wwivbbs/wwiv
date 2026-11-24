@@ -19,7 +19,7 @@
 #include "gmock/gmock.h"
 
 #include "bbs/basic/next/bbs_message_base.h"
-#include "bbs/basic/next/message_base.h"
+#include "bbs/basic/message_base.h"
 #include "bbs/basic/next/next_engine.h"
 #include "bbs/application.h"
 #include "bbs/bbs.h"
@@ -28,6 +28,7 @@
 #include "common/output.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "fmt/format.h"
 #include "sdk/config.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/subxtr.h"
@@ -268,6 +269,48 @@ TEST_F(WwivMsgTest, Message_OutOfRange) {
   EXPECT_THAT(out, HasSubstr("MESSAGE: there is no message 2 in 'General' (it has 1)"));
 }
 
+TEST_F(WwivMsgTest, Message_Zero) {
+  Post(0, "a #1", "One", "1\r\n");
+  bool ok{true};
+  const auto out = Run("m = wwiv.msg.area(\"1\").message(0)\n", &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, HasSubstr("MESSAGE: there is no message 0 in 'General' (it has 1)"));
+}
+
+TEST_F(WwivMsgTest, Message_Negative) {
+  Post(0, "a #1", "One", "1\r\n");
+  bool ok{true};
+  const auto out = Run("m = wwiv.msg.area(\"1\").message(-1)\n", &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, HasSubstr("MESSAGE: there is no message -1 in 'General' (it has 1)"));
+}
+
+// A sub whose message files haven't been made yet has no messages.
+TEST_F(WwivMsgTest, Message_AreaNotCreated) {
+  subboard_t sub{};
+  sub.name = "New";
+  sub.filename = "new";
+  sub.storage_type = 2;
+  ASSERT_TRUE(subs->add(sub));
+  msgs->user_subs_.push_back({3, "N"});
+  bool ok{true};
+  const auto out = Run(R"(
+a = wwiv.msg.area("N")
+print a.count; "/"; len(a.headers())
+m = a.message(1)
+)", &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, HasSubstr("0/0\r\n"));
+  EXPECT_THAT(out, HasSubstr("MESSAGE: there is no message 1 in 'New' (it has 0)"));
+}
+
+// Without a MessageBase there's no wwiv.msg module.
+TEST_F(WwivMsgTest, NoMessageBase) {
+  NextEngine engine(bin, bout, helper.config(), &helper.context());
+  EXPECT_FALSE(engine.RunScript("msgtest", "print wwiv.msg.module_name()\nprint \"after\"\n"));
+  EXPECT_THAT(helper.io()->captured(), Not(HasSubstr("after")));
+}
+
 TEST_F(WwivMsgTest, Message_Unvalidated) {
   Post(0, "a #1", "Unvalidated", "secret\r\n", status_unvalidated);
   bool ok{true};
@@ -307,6 +350,55 @@ print m.from; "/"; m.date
 )"));
 }
 
+TEST_F(WwivMsgTest, Anonymous_DearAbby_Readable) {
+  Post(0, "rushfan #1", "Help", "text\r\n");
+  SetAnony(0, 1, anony_sender_da);
+  msgs->read_anonymous_ = true;
+  // The sender is shown, but the BBS hides the date of these from everyone.
+  EXPECT_EQ("rushfan #1/TRUE/0\r\n", Run(R"(
+m = wwiv.msg.area("1").message(1)
+print m.from; "/"; m.anonymous; "/"; m.date
+)"));
+}
+
+TEST_F(WwivMsgTest, Anonymous_ProblemedPerson) {
+  Post(0, "rushfan #1", "Help", "text\r\n");
+  SetAnony(0, 1, anony_sender_pp);
+  EXPECT_EQ("Problemed Person/TRUE/0\r\n", Run(R"(
+m = wwiv.msg.area("1").message(1)
+print m.from; "/"; m.anonymous; "/"; m.date
+)"));
+}
+
+TEST_F(WwivMsgTest, Anonymous_ProblemedPerson_Readable) {
+  Post(0, "rushfan #1", "Help", "text\r\n");
+  SetAnony(0, 1, anony_sender_pp);
+  msgs->read_anonymous_ = true;
+  EXPECT_EQ("rushfan #1/TRUE/0\r\n", Run(R"(
+m = wwiv.msg.area("1").message(1)
+print m.from; "/"; m.anonymous; "/"; m.date
+)"));
+}
+
+TEST_F(WwivMsgTest, Message_Deleted) {
+  Post(0, "a #1", "Deleted", "gone\r\n", status_delete);
+  bool ok{true};
+  const auto out = Run("m = wwiv.msg.area(\"1\").message(1)\nprint m.text\n", &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, HasSubstr("MESSAGE: message 1 in 'General' can't be read"));
+  EXPECT_THAT(out, Not(HasSubstr("gone")));
+}
+
+TEST_F(WwivMsgTest, Message_CoSysopReadsUnvalidatedAndDeleted) {
+  Post(0, "a #1", "Unvalidated", "two\r\n", status_unvalidated);
+  Post(0, "a #1", "Deleted", "three\r\n", status_delete);
+  msgs->cosysop_ = true;
+  EXPECT_EQ("two\r\nthree\r\n", Run(R"(
+print wwiv.msg.area("1").message(1).text;
+print wwiv.msg.area("1").message(2).text;
+)"));
+}
+
 // BbsMessageBase's rights follow lcs() and read_post.
 class BbsMessageBaseTest : public ::testing::Test {
 protected:
@@ -322,15 +414,64 @@ protected:
     helper.config().sl(80, sl);
     qsc = 3;
     helper.sess().qsc = &qsc;
+    ASSERT_TRUE(helper.files().Mkdir("msgs"));
+    a()->init_message_areas_for_test();
   }
 
   void TearDown() override { helper.sess().qsc = nullptr; }
+
+  // Adds a sub to the BBS's subs, making its message files if create.
+  int AddSub(const std::string& filename, int storage_type, bool create) {
+    subboard_t sub{};
+    sub.name = filename;
+    sub.filename = filename;
+    sub.storage_type = static_cast<uint8_t>(storage_type);
+    const auto n = a()->subs().size();
+    EXPECT_TRUE(a()->subs().add(sub));
+    if (create) {
+      EXPECT_TRUE(a()->msgapi(2)->Create(sub, n));
+    }
+    return n;
+  }
 
   BbsHelper helper{};
   uint32_t qsc{0};
 };
 
+TEST_F(BbsMessageBaseTest, Open) {
+  const auto type2 = AddSub("type2", 2, true);
+  const auto type0 = AddSub("type0", 0, true);
+  const auto missing = AddSub("missing", 2, false);
+  const auto type1 = AddSub("type1", 1, false);
+
+  BbsMessageBase m(*a());
+  const auto area = m.open(type2);
+  ASSERT_NE(nullptr, area);
+  EXPECT_EQ(0, area->number_of_messages());
+  EXPECT_NE(nullptr, m.open(type0));
+  // No message files yet.
+  EXPECT_EQ(nullptr, m.open(missing));
+  // No API for this storage type.
+  EXPECT_EQ(nullptr, m.open(type1));
+  // Not a sub.
+  EXPECT_EQ(nullptr, m.open(-1));
+  EXPECT_EQ(nullptr, m.open(a()->subs().size()));
+}
+
+TEST_F(BbsMessageBaseTest, UserSubs_SkipsSubsThatDontExist) {
+  AddSub("one", 2, false);
+  a()->usub = {usersubrec{"1", 0}, usersubrec{"2", 5}, usersubrec{"3", -1}};
+  BbsMessageBase m(*a());
+  const auto subs = m.user_subs();
+  ASSERT_EQ(1u, subs.size());
+  EXPECT_EQ(0, subs[0].subnum);
+  EXPECT_EQ("1", subs[0].key);
+}
+
 TEST_F(BbsMessageBaseTest, UserSubs) {
+  for (auto i = 0; i < 8; i++) {
+    AddSub(fmt::format("sub{}", i), 2, false);
+  }
   a()->usub = {usersubrec{"1", 4}, usersubrec{"G", 7}};
   a()->set_current_user_sub_num(1);
   BbsMessageBase m(*a());
@@ -364,6 +505,18 @@ TEST_F(BbsMessageBaseTest, Rights) {
   EXPECT_FALSE(m.can_read_anonymous(4));
   qsc = 999;
   EXPECT_TRUE(m.is_cosysop(4));
+
+  // No qscan pointers yet: a limited co-sysop of nothing.
+  helper.sess().qsc = nullptr;
+  EXPECT_FALSE(m.is_cosysop(3));
+  EXPECT_FALSE(m.can_read_anonymous(3));
+  helper.sess().qsc = &qsc;
+
+  // Not a sub (as when the user has no subs), even with qsc's first entry
+  // all ones.
+  qsc = 0xffffffff;
+  EXPECT_FALSE(m.is_cosysop(-1));
+  qsc = 3;
 
   helper.sess().effective_sl(80);
   EXPECT_TRUE(m.is_cosysop(4));

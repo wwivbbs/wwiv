@@ -21,9 +21,10 @@
 // text the reader would show differs.
 //
 // The BBS's readfile opens message files read-write (and can extend them),
-// so BBSDIR is never read in place: config.json, the data directory's files
-// and the subs' message files are copied into a work directory first, and
-// only the copy is read.
+// so BBSDIR is never read in place: config.json, the sub list and the subs'
+// header and message files are copied into a work directory (readable only
+// by the user running it) first, only the copy is read, and the copy is
+// removed afterwards.
 //
 //   msgcompare [--sub=FILENAME] [--examples=N] [--work_dir=DIR] [--keep_work_dir] BBSDIR
 
@@ -39,6 +40,7 @@
 #include "fmt/format.h"
 #include "local_io/null_local_io.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
@@ -78,8 +80,9 @@ void usage() {
                "\n"
                "Reads every post in BBSDIR's message areas with both the BBS's reader and\n"
                "sdk/msgapi, and reports where the text the reader shows differs.\n"
-               "BBSDIR is copied to the work directory (a new temp directory unless\n"
-               "--work_dir names one, which must not exist) and only the copy is read.\n";
+               "The sub list and the subs' files are copied to the work directory (a new\n"
+               "temp directory unless --work_dir names one, which must not exist), only the\n"
+               "copy is read, and the work directory is removed unless --keep_work_dir.\n";
 }
 
 std::optional<Options> parse_args(int argc, char* argv[]) {
@@ -278,28 +281,40 @@ int run(const Options& o) {
     return 2;
   }
 
-  // The work directory: a copy of what the readers need.
-  fs::path work = o.work_dir;
-  if (work.empty()) {
-    std::random_device rd;
-    work = fs::temp_directory_path() / fmt::format("msgcompare-{:08x}{:08x}", rd(), rd());
-  }
-  work = fs::absolute(work);
-  if (fs::exists(work)) {
-    std::cerr << "The work directory " << work << " already exists.\n";
-    return 2;
-  }
-  if (is_under(work, bbsdir) || is_under(bbsdir, work)) {
+  // The work directory: a copy of only what the readers need (no user files).
+  // It's readable only by us and removed however run() ends.
+  // Checked before anything is created, so nothing is ever made inside BBSDIR.
+  const auto outside_bbsdir = [&](const fs::path& p) {
+    return !is_under(p, bbsdir) && !is_under(bbsdir, p);
+  };
+  fs::path work = o.work_dir.empty() ? fs::path{} : fs::absolute(o.work_dir);
+  if (!work.empty() && !outside_bbsdir(work)) {
     std::cerr << "The work directory must be outside " << bbsdir << ".\n";
     return 2;
   }
-  fs::create_directories(work.parent_path());
-  // create_directory fails if another process made it after the check above.
-  if (!fs::create_directory(work)) {
+  if (work.empty()) {
+    const auto tmp = fs::temp_directory_path();
+    if (!outside_bbsdir(tmp / "msgcompare")) {
+      std::cerr << "BBSDIR holds the temp directory; use --work_dir.\n";
+      return 2;
+    }
+    std::random_device rd;
+    for (int tries = 0; tries < 10 && work.empty(); tries++) {
+      const auto p = tmp / fmt::format("msgcompare-{:08x}", rd());
+      if (fs::create_directory(p)) {
+        work = p;
+      }
+    }
+    if (work.empty()) {
+      std::cerr << "Unable to create a work directory in " << tmp << ".\n";
+      return 2;
+    }
+  } else if (!fs::create_directories(work)) {
     std::cerr << "The work directory " << work << " already exists.\n";
     return 2;
   }
   const WorkDirCleanup cleanup(work, o.keep_work_dir);
+  fs::permissions(work, fs::perms::owner_all, fs::perm_options::replace);
   fs::create_directories(work / "data");
   fs::create_directories(work / "msgs");
   for (const auto* d : {"gfiles", "menus", "dloads", "scripts"}) {
@@ -330,21 +345,30 @@ int run(const Options& o) {
     }
   }
 
-  std::cerr << "Copying " << src_data << " and " << src_msgs << " to " << work << "\n";
-  copy_files(src_data, config.datadir(), [](const std::string&) { return true; });
+  std::cerr << "Copying the subs from " << src_data << " and " << src_msgs << " to " << work
+            << "\n";
+  // The sub list (subs.json, or subs.dat and subs.xtr on an older BBS)...
+  copy_files(src_data, config.datadir(), [](const std::string& name) {
+    return iequals(name, SUBS_JSON) || iequals(name, SUBS_DAT) || iequals(name, SUBS_XTR);
+  });
   {
     Subs subs(config.datadir(), {});
     if (!subs.Load()) {
       std::cerr << "Unable to load the subs.\n";
       return 2;
     }
-    copy_files(src_msgs, config.msgsdir(), [&](const std::string& name) {
-      if (!ends_with(ToStringLowerCase(name), ".dat")) {
+    // ...then each sub's headers (data/NAME.sub) and text (msgs/NAME.dat).
+    const auto wanted = [&](const std::string& name, const std::string& ext) {
+      if (!ends_with(ToStringLowerCase(name), ext)) {
         return false;
       }
-      const auto base = name.substr(0, name.size() - 4);
+      const auto base = name.substr(0, name.size() - ext.size());
       return o.sub.empty() ? subs.exists(base) : iequals(base, o.sub);
-    });
+    };
+    copy_files(src_data, config.datadir(),
+               [&](const std::string& name) { return wanted(name, ".sub"); });
+    copy_files(src_msgs, config.msgsdir(),
+               [&](const std::string& name) { return wanted(name, ".dat"); });
   }
   // Nothing below should touch BBSDIR; make relative paths land in the copy.
   fs::current_path(work);

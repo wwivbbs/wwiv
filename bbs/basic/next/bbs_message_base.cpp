@@ -18,23 +18,27 @@
 #include "bbs/basic/next/bbs_message_base.h"
 
 #include "bbs/application.h"
-#include "common/context.h"
+#include "bbs/bbsutl.h"
 #include "core/log.h"
 #include "core/stl.h"
-#include "sdk/config.h"
 #include "sdk/msgapi/message_api.h"
 #include "sdk/subxtr.h"
-#include "sdk/vardec.h"
 
 #include <exception>
+#include <utility>
 
 namespace wwiv::bbs::basic {
 
 std::vector<MessageBase::UserSub> BbsMessageBase::user_subs() const {
   std::vector<UserSub> out;
   out.reserve(app_.usub.size());
+  const auto num_subs = app_.subs().size();
   for (const auto& u : app_.usub) {
-    out.push_back(UserSub{u.subnum, u.keys});
+    // usub should only hold real subs; skip any that aren't, so every area a
+    // script sees has a sub.
+    if (u.subnum >= 0 && u.subnum < num_subs) {
+      out.push_back(UserSub{u.subnum, u.keys});
+    }
   }
   return out;
 }
@@ -50,8 +54,18 @@ std::optional<int> BbsMessageBase::current_user_sub() const {
 const sdk::Subs& BbsMessageBase::subs() const { return app_.subs(); }
 
 std::unique_ptr<sdk::msgapi::MessageArea> BbsMessageBase::open(int subnum) {
+  // The non-const Subs::sub() doesn't check its index.
+  const auto& subs = std::as_const(app_).subs();
+  if (subnum < 0 || subnum >= subs.size()) {
+    return nullptr;
+  }
+  const auto& sub = subs.sub(subnum);
+  // As Application::msgapi(): type 0 is read as type 2, the only type there is
+  // an API for. (Asking it for another type is fatal in a debug build.)
+  if (sub.storage_type != 0 && sub.storage_type != 2) {
+    return nullptr;
+  }
   try {
-    const auto& sub = app_.subs().sub(subnum);
     auto* api = app_.msgapi(sub.storage_type);
     if (!api || !api->Exist(sub)) {
       return nullptr;
@@ -63,28 +77,10 @@ std::unique_ptr<sdk::msgapi::MessageArea> BbsMessageBase::open(int subnum) {
   }
 }
 
-// As lcs() in bbsutl.cpp, but for the given sub rather than the current one.
-bool BbsMessageBase::is_cosysop(int subnum) const {
-  const auto sl = app_.sess().effective_sl();
-  if (sl == 255) {
-    return true;
-  }
-  const auto ability = app_.config()->sl(sl).ability;
-  if (ability & ability_cosysop) {
-    return true;
-  }
-  if (ability & ability_limited_cosysop) {
-    // A limited co-sysop's sub is the first qscan entry; 999 means all subs.
-    const auto* qsc = app_.sess().qsc;
-    return qsc && (*qsc == 999 || *qsc == static_cast<uint32_t>(subnum));
-  }
-  return false;
-}
+bool BbsMessageBase::is_cosysop(int subnum) const { return lcs(app_.context(), subnum); }
 
-// As read_post in read_message.cpp.
 bool BbsMessageBase::can_read_anonymous(int subnum) const {
-  return is_cosysop(subnum) ||
-         (app_.config()->sl(app_.sess().effective_sl()).ability & ability_read_post_anony);
+  return can_read_anonymous_posts(app_.context(), subnum);
 }
 
 } // namespace wwiv::bbs::basic

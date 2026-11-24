@@ -21,6 +21,10 @@
 #include "common/input.h"
 #include <string>
 
+namespace wwiv::common {
+class Context;
+}
+
 bool inli(std::string* outBuffer, std::string* rollover, std::string::size_type maxlen, bool add_crlf = true,
   bool bAllowPrevious = false, bool two_color_chatmode = false, bool clear_previous_line = false);
 bool inli(char *buffer, char *rollover, std::string::size_type maxlen, bool add_crlf = true,
@@ -28,6 +32,12 @@ bool inli(char *buffer, char *rollover, std::string::size_type maxlen, bool add_
 bool so();
 bool cs();
 bool lcs();
+// Is the user a limited co-sysop (or better) of sub subnum (an index into
+// the subs)? lcs() asks this for the current sub.
+bool lcs(wwiv::common::Context& ctx, int subnum);
+// May the user see who wrote the anonymous posts in sub subnum (as the
+// message reader does)?
+bool can_read_anonymous_posts(wwiv::common::Context& ctx, int subnum);
 bool sysop2();
 int  check_ansi();
 std::string YesNoString(bool bYesNo);

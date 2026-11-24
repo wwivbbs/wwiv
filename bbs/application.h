@@ -283,6 +283,8 @@ public:
    * list from config(), which startup normally does.
    */
   void init_status_and_instances_for_test();
+  // Loads the networks and subs and makes the message APIs, as Init does.
+  void init_message_areas_for_test();
 
   /** Returns the WWIV Names.LST Config Object. */
   [[nodiscard]] wwiv::sdk::Names* names() const;

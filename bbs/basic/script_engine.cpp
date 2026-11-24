@@ -25,9 +25,7 @@
 #include <mutex>
 
 #ifdef WWIV_WWIVBASIC_NEXT
-#include "bbs/basic/next/bbs_message_base.h"
 #include "bbs/basic/next/next_engine.h"
-#include "bbs/bbs.h"
 #endif
 
 namespace wwiv::bbs::basic {
@@ -106,9 +104,10 @@ private:
 
 } // namespace
 
-std::unique_ptr<ScriptEngine> CreateScriptEngine(script_engine_t e, common::Input& in,
-                                                 common::Output& out, const sdk::Config& config,
-                                                 common::Context* ctx) {
+std::unique_ptr<ScriptEngine>
+CreateScriptEngine(script_engine_t e, common::Input& in, common::Output& out,
+                   const sdk::Config& config, common::Context* ctx,
+                   [[maybe_unused]] std::unique_ptr<MessageBase> msgs) {
   switch (e) {
   case script_engine_t::legacy:
     return std::make_unique<LegacyEngine>(in, out, config, ctx);
@@ -116,7 +115,7 @@ std::unique_ptr<ScriptEngine> CreateScriptEngine(script_engine_t e, common::Inpu
 #ifdef WWIV_WWIVBASIC_NEXT
   {
     auto engine = std::make_unique<NextEngine>(in, out, config, ctx);
-    engine->set_message_base(std::make_unique<BbsMessageBase>(*a()));
+    engine->set_message_base(std::move(msgs));
     return engine;
   }
 #else

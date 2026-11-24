@@ -18,7 +18,7 @@
 #ifndef INCLUDED_BBS_BASIC_NEXT_BBS_MESSAGE_BASE_H
 #define INCLUDED_BBS_BASIC_NEXT_BBS_MESSAGE_BASE_H
 
-#include "bbs/basic/next/message_base.h"
+#include "bbs/basic/message_base.h"
 
 class Application;
 

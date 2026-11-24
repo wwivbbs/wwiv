@@ -18,7 +18,7 @@
 #include "bbs/basic/next/next_engine.h"
 
 #include "bbs/basic/next/bbs_console.h"
-#include "bbs/basic/next/message_base.h"
+#include "bbs/basic/message_base.h"
 #include "bbs/basic/next/wwiv_bindings.h"
 
 #include "common/context.h"
