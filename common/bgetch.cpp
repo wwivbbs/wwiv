@@ -28,6 +28,7 @@
 #include "local_io/local_io.h"
 #include "sdk/ansi/ansi.h"
 
+#include <algorithm>
 #include <chrono>
 #include <string>
 
@@ -72,6 +73,14 @@ void Output::dump() {
   if (sess().ok_modem_stuff()) {
     remoteIO()->purgeIn();
   }
+}
+
+int Output::screen_width() const {
+  const auto width = user().screen_width();
+  if (sess().incom() || !localIO()) {
+    return width;
+  }
+  return std::max(1, std::min(width, localIO()->GetScreenWidth()));
 }
 
 int Output::wherex() const {

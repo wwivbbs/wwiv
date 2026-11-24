@@ -21,6 +21,7 @@
 #include "local_io/curatr_provider.h"
 #include "local_io/local_io.h"
 #include "sdk/ansi/vscreen.h"
+#include <algorithm>
 #include <cstdint>
 #include <memory>
 
@@ -30,7 +31,9 @@ namespace ansi {
 
 class LocalIOScreen : public VScreen {
 public:
-  explicit LocalIOScreen(local::io::LocalIO* io, int cols);
+  // cols fixes the width (for example 80 for ANSI art); 0 uses the local
+  // screen's real width, which can be wider than 80 and can change.
+  explicit LocalIOScreen(local::io::LocalIO* io, int cols = 0);
   virtual ~LocalIOScreen() = default;
 
   /** Writes c using a, handles \r and \n */
@@ -60,8 +63,8 @@ public:
    * Does not handle movement chars like \r or \n
    */
   bool put(int pos, char c, uint8_t a) override {
-    const auto x = pos % cols_;
-    const auto y = pos / cols_;
+    const auto x = pos % cols();
+    const auto y = pos / cols();
     io_->PutsXYA(x, y, a, std::string(1, c));
     return true;
   }
@@ -73,7 +76,9 @@ public:
 
   void curatr(uint8_t a) override { curatr_provider_->curatr(a); }
 
-  [[nodiscard]] int cols() const noexcept override { return cols_; }
+  [[nodiscard]] int cols() const noexcept override {
+    return std::max(1, cols_ ? cols_ : io_->GetScreenWidth());
+  }
   [[nodiscard]] int pos() const noexcept override { return (y() * cols()) + x(); }
   [[nodiscard]] uint8_t curatr() const noexcept override { return curatr_provider_->curatr(); }
   [[nodiscard]] int x() const noexcept override { return io_->WhereX(); }

@@ -85,6 +85,7 @@ void CursesLocalIO::SetColor(int original_color) {
 void CursesLocalIO::GotoXY(int x, int y) { window_->GotoXY(x, y); }
 
 int CursesLocalIO::WhereX() const noexcept { return window_->GetcurX(); }
+int CursesLocalIO::GetScreenWidth() const noexcept { return window_->GetMaxX(); }
 
 int CursesLocalIO::WhereY() const noexcept { return window_->GetcurY(); }
 

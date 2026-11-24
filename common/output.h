@@ -322,6 +322,12 @@ public:
   /** Returns the current x position according to a best guess */
   int wherex() const;
 
+  /**
+   * Columns available on the screen the caller is using: the user's screen
+   * width, and on a local session no wider than the local console.
+   */
+  [[nodiscard]] int screen_width() const;
+
   /** Redraws the current line */
   void RedrawCurrentLine();
 

@@ -130,6 +130,43 @@ TEST_F(InputTest, EditInMiddleOfScrolledText) {
   EXPECT_EQ(expected, cmdline(1, orig, keys, 160));
 }
 
+TEST_F(InputTest, WideUser_NarrowLocalConsole_Scrolls) {
+  // Local session: the 80 column local console limits the field.
+  helper.user()->screen_width(150);
+  std::string typed;
+  for (auto i = 0; i < 120; i++) {
+    typed.push_back(static_cast<char>('a' + i % 26));
+  }
+  EXPECT_EQ(typed, cmdline(1, "", typed + "\r", 160));
+  const auto row = row0();
+  EXPECT_LE(row.size(), 79u) << row;
+  EXPECT_EQ('\xAE', row[1]) << row;
+  EXPECT_NE(std::string::npos, row.find(typed.substr(typed.size() - 20))) << row;
+}
+
+TEST_F(InputTest, WideRemoteTerminal_UsesFullWidth) {
+  // Remote session: the caller's 150 column terminal sets the width.
+  helper.sess().incom(true);
+  helper.user()->screen_width(150);
+  std::string typed;
+  for (auto i = 0; i < 120; i++) {
+    typed.push_back(static_cast<char>('a' + i % 26));
+  }
+  EXPECT_EQ(typed, cmdline(1, "", typed + "\r", 160));
+  FrameBuffer fb{150};
+  Ansi ansi(&fb, {}, 0x07);
+  for (const auto c : screen_) {
+    if (c == '\r' || c == '\n') {
+      break;
+    }
+    ansi.write(c);
+  }
+  fb.close();
+  const auto row = fb.row_as_text(0);
+  EXPECT_EQ(">" + typed, row.substr(0, 121)) << row;
+  EXPECT_EQ(std::string::npos, row.find('\xAE')) << row;
+}
+
 TEST_F(InputTest, FieldFitsRemainingRoomOnRow) {
   const std::string typed(70, 'q');
   EXPECT_EQ(typed, cmdline(40, "", typed + "\r", 160));

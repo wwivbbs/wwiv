@@ -38,6 +38,7 @@ public:
 
   void GotoXY(int x, int y) override;
   [[nodiscard]] int WhereX() const noexcept override;
+  [[nodiscard]] int GetScreenWidth() const noexcept override;
   [[nodiscard]] int WhereY() const noexcept override;
   void Lf() override;
   void Cr() override;

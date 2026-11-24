@@ -222,7 +222,7 @@ std::string Input::Input1(const std::string& orig_text, int max_length, bool ins
   // Stay on this row: wrapping would break the cursor positioning below.
   // Fall back to a minimum width if the prompt left almost no room.
   static constexpr int min_field_width = 10;
-  const auto room = static_cast<int>(user().screen_width()) - 1 - bout.wherex();
+  const auto room = bout.screen_width() - 1 - bout.wherex();
   const auto width = std::max(1, std::min(max_length, std::max(min_field_width, room)));
   InputLineEditor ed(orig_text, max_length, width, mode, insert);
 
