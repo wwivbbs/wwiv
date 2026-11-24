@@ -21,6 +21,7 @@
 #include "common/common_events.h"
 #include "common/output.h"
 #include "core/eventbus.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"
@@ -225,6 +226,8 @@ std::string Input::Input1(const std::string& orig_text, int max_length, bool ins
   const auto room = bout.screen_width() - 1 - bout.wherex();
   const auto width = std::max(1, std::min(max_length, std::max(min_field_width, room)));
   InputLineEditor ed(orig_text, max_length, width, mode, insert);
+  // The prompt before the field, to redraw the line with.
+  const auto prompt = bout.SaveCurrentLine();
 
   if (auto_mpl) {
     bout.ansic(4);
@@ -275,6 +278,22 @@ std::string Input::Input1(const std::string& orig_text, int max_length, bool ins
     bout.SavePosition();
     bout.Right(ed.cursor_cell());
   };
+
+  // Ctrl-R (in place), Ctrl-U, instance messages and the like (on a new row)
+  // redraw the current line. Replaying what was output on this line would show
+  // every partial redraw of the field end to end, so draw the prompt and the
+  // whole field again instead, and anchor the field on the new row.
+  bout.set_line_redrawer([&] {
+    for (const auto& [ch, attr] : prompt.line) {
+      bout.setc(attr);
+      bout.outchr(ch);
+    }
+    bout.setc(field_attr);
+    bout.SavePosition();
+    std::fill(drawn.begin(), drawn.end(), unknown);
+    redraw();
+  });
+  ScopeExit clear_line_redrawer([] { bout.set_line_redrawer({}); });
 
   auto done = false;
   do {

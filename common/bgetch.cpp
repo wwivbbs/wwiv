@@ -47,6 +47,14 @@ static void lastchar_pressed() { time_lastchar_pressed = steady_clock::now(); }
 static bool so(const SessionContext& sess) { return (sess.effective_sl() == 255); }
 
 void Output::RedrawCurrentLine() {
+  if (line_redrawer_) {
+    // Redraw in place: an input field is on this row. (SyncTERM sends Ctrl-R
+    // after Ctrl-E, so this happens on every Ctrl-E in Input1.)
+    outchr('\r');
+    line_redrawer_();
+    flush();
+    return;
+  }
   const auto line = SaveCurrentLine();
   nl();
   RestoreCurrentLine(line);
@@ -56,6 +64,11 @@ void Output::RedrawCurrentLine() {
 bool Output::RestoreCurrentLine(const SavedLine& line) {
   if (wherex()) {
     nl();
+  }
+  if (line_redrawer_) {
+    line_redrawer_();
+    flush();
+    return true;
   }
   for (const auto& c : line.line) {
     setc(c.second);

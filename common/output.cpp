@@ -203,7 +203,7 @@ void Output::nl(int num_lines) {
     outstr("\r\n");
     core::bus().invoke(ProcessInstanceMessages{});
   }
-  x_ = 1;
+  x_ = 0;
 }
 
 void Output::bs() {

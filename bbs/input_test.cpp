@@ -175,3 +175,72 @@ TEST_F(InputTest, FieldFitsRemainingRoomOnRow) {
   EXPECT_LE(row.size(), 79u) << row;
   EXPECT_EQ('\xAE', row[40]) << row;
 }
+
+TEST_F(InputTest, CtrlR_RedrawsPromptAndFieldInPlace) {
+  std::string orig;
+  for (auto i = 0; i < 12; i++) {
+    orig += "this is a test ";
+  }
+  // Ctrl-W (home), Ctrl-R (redraw line), Ctrl-E (end), Ctrl-R, Ctrl-W.
+  // SyncTERM sends Ctrl-R after every Ctrl-E.
+  EXPECT_EQ(orig, cmdline(1, orig, "\x17\x12\x05\x12\x17\r", 160));
+  const auto out = screen_;
+  // Nothing goes to a new row until RETURN.
+  EXPECT_EQ(out.find('\n'), out.rfind('\n')) << out;
+  EXPECT_EQ(">" + orig.substr(0, 77) + "\xAF", row0());
+}
+
+TEST_F(InputTest, LineRestoredOnNewRow_RedrawsPromptAndField) {
+  // As after Ctrl-U or an instance message: text on new rows, then the line.
+  std::string orig;
+  for (auto i = 0; i < 12; i++) {
+    orig += "this is a test ";
+  }
+  bout.outstr("\r");
+  helper.io()->rcaptured();
+  bout.outstr(">");
+  helper.io()->push_local_keys(std::string("\x15\r"));
+  EXPECT_EQ(orig, bin.input_cmdline(orig, 160));
+  bout.flush();
+  FrameBuffer fb{80};
+  Ansi ansi(&fb, {}, 0x07);
+  for (const auto c : helper.io()->rcaptured()) {
+    ansi.write(c);
+  }
+  fb.close();
+  const auto end_row = ">\xAE" + orig.substr(orig.size() - 76) + " ";
+  EXPECT_EQ(end_row, fb.row_as_text(0));
+  // The last row before RETURN's newline is the redrawn line.
+  auto last = -1;
+  for (auto r = 0; r < fb.rows(); r++) {
+    if (fb.row_as_text(r) == end_row) {
+      last = r;
+    }
+  }
+  EXPECT_GT(last, 0);
+}
+
+TEST_F(InputTest, Remote_CtrlW_CtrlE_StayOnRow) {
+  helper.sess().incom(true);
+  std::string orig;
+  for (auto i = 0; i < 12; i++) {
+    orig += "this is a test ";
+  }
+  bout.outstr("\r");
+  helper.io()->rcaptured();
+  bout.outstr(">");
+  helper.io()->push_remote_keys("\x17\x05\x17\r");
+  EXPECT_EQ(orig, bin.input_cmdline(orig, 160));
+  bout.flush();
+  const auto out = helper.io()->rcaptured();
+  // Nothing goes to a new row until RETURN.
+  EXPECT_EQ(out.find('\n'), out.rfind('\n')) << out;
+  FrameBuffer fb{80};
+  Ansi ansi(&fb, {}, 0x07);
+  for (const auto c : out) {
+    ansi.write(c);
+  }
+  fb.close();
+  EXPECT_EQ(">" + orig.substr(0, 77) + "\xAF", fb.row_as_text(0));
+}
+
