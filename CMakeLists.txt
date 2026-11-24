@@ -57,11 +57,19 @@ if(WWIV_HUNSPELL AND WWIV_HUNSPELL_VCPKG AND NOT "spellcheck" IN_LIST VCPKG_MANI
   list(APPEND VCPKG_MANIFEST_FEATURES "spellcheck")
 endif()
 
-# wwivbasic, the new BASIC interpreter (wwivbasic/), is experimental and off by
-# default. Turning it on adds the "wwivbasic" feature in vcpkg.json (the ANTLR
+# wwivbasic, the new BASIC interpreter (wwivbasic/), is built by default
+# (except on OS/2). Building it doesn't change which engine runs scripts: that
+# is the script_flags setting in config.json, which defaults to the legacy
+# (my_basic) engine. It adds the "wwivbasic" feature in vcpkg.json (the ANTLR
 # runtime), so like the spellcheck feature above it has to be decided before
 # project().
-option(WWIV_WWIVBASIC_NEXT "Build wwivbasic, the new (experimental) BASIC interpreter" OFF)
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "OS2")
+  set(_wwiv_wwivbasic_next_default OFF)
+else()
+  set(_wwiv_wwivbasic_next_default ON)
+endif()
+option(WWIV_WWIVBASIC_NEXT "Build wwivbasic, the new BASIC interpreter"
+  ${_wwiv_wwivbasic_next_default})
 if(WWIV_WWIVBASIC_NEXT AND NOT "wwivbasic" IN_LIST VCPKG_MANIFEST_FEATURES)
   list(APPEND VCPKG_MANIFEST_FEATURES "wwivbasic")
 endif()
