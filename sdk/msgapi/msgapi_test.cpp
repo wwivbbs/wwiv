@@ -173,8 +173,9 @@ TEST_F(MsgApiTest, Resynch_MessageNumber) {
   EXPECT_EQ(1, msgnum);
 }
 
-// Blank lines and leading spaces are part of the text (paragraphs, quotes,
-// ASCII art); trailing blank lines and spaces aren't.
+// The text is kept as the BBS's reader shows it: blank lines and spaces are
+// part of it (paragraphs, quotes, ASCII art). bbs/msgapi_legacy_compare_test
+// checks this against the reader itself.
 TEST_F(MsgApiTest, ReadMessage_KeepsBlankLinesAndIndentation) {
   subboard_t sub{};
   sub.filename = "a1";
@@ -188,7 +189,7 @@ TEST_F(MsgApiTest, ReadMessage_KeepsBlankLinesAndIndentation) {
   auto a2(api->Open(sub, -1));
   const auto m = a2->ReadMessage(1);
   ASSERT_TRUE(m);
-  EXPECT_EQ("Para one\r\n\r\n   indented\r\n\r\n\r\nPara two\r\n", m->text().string());
+  EXPECT_EQ("Para one\r\n\r\n   indented  \r\n\r\n\r\nPara two\r\n\r\n\r\n", m->text().string());
   // The RE: and BY: lines that AddMessage added are still parsed out.
   EXPECT_EQ("To", m->header().to());
   EXPECT_EQ("Title", m->header().in_reply_to());
