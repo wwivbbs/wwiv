@@ -215,24 +215,37 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
     } else if (starts_with(line, "BY:")) {
       r.to = StringTrim(line.substr(3));
     } else {
-      // No more special lines, the rest is just text.
+      // No more special lines, the rest is just text. Keep blank lines and
+      // leading spaces (paragraphs, quotes, ASCII art), as the BBS's reader
+      // does; only the line endings and trailing blank lines are dropped.
+      std::vector<std::string> body;
       for (; it != std::end(lines); ++it) {
         auto text_line = *it;
-        // Terminate the string with a control-Z.
+        // The text ends at a control-Z.
         const auto cz_pos = text_line.find(CZ);
-        if (cz_pos != std::string::npos) {
-          text_line = text_line.substr(0, cz_pos);
+        const auto at_end = cz_pos != std::string::npos;
+        if (at_end) {
+          text_line.resize(cz_pos);
         }
         // Trim all remaining nulls.
         const auto null_pos = text_line.find(static_cast<char>(0));
         if (null_pos != std::string::npos) {
           text_line.resize(null_pos);
         }
-        StringTrim(&text_line);
-        if (!text_line.empty()) {
-          r.text += text_line;
-          r.text += "\r\n";
+        while (!text_line.empty() && (text_line.back() == '\r' || text_line.back() == ' ')) {
+          text_line.pop_back();
         }
+        body.push_back(text_line);
+        if (at_end) {
+          break;
+        }
+      }
+      while (!body.empty() && body.back().empty()) {
+        body.pop_back();
+      }
+      for (const auto& text_line : body) {
+        r.text += text_line;
+        r.text += "\r\n";
       }
       break;
     }

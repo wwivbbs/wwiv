@@ -172,3 +172,40 @@ TEST_F(MsgApiTest, Resynch_MessageNumber) {
   a2->ResyncMessage(msgnum);
   EXPECT_EQ(1, msgnum);
 }
+
+// Blank lines and leading spaces are part of the text (paragraphs, quotes,
+// ASCII art); trailing blank lines and spaces aren't.
+TEST_F(MsgApiTest, ReadMessage_KeepsBlankLinesAndIndentation) {
+  subboard_t sub{};
+  sub.filename = "a1";
+  ASSERT_TRUE(api->Create(sub, -1));
+  {
+    auto area(api->Open(sub, -1));
+    auto msg(CreateMessage(*area, 1, "From", "Title",
+                           "Para one\r\n\r\n   indented  \r\n\r\n\r\nPara two\r\n\r\n\r\n"));
+    EXPECT_TRUE(area->AddMessage(msg, {}));
+  }
+  auto a2(api->Open(sub, -1));
+  const auto m = a2->ReadMessage(1);
+  ASSERT_TRUE(m);
+  EXPECT_EQ("Para one\r\n\r\n   indented\r\n\r\n\r\nPara two\r\n", m->text().string());
+  // The RE: and BY: lines that AddMessage added are still parsed out.
+  EXPECT_EQ("To", m->header().to());
+  EXPECT_EQ("Title", m->header().in_reply_to());
+}
+
+// Nothing after the control-Z that ends the text is read.
+TEST_F(MsgApiTest, ReadMessage_StopsAtControlZ) {
+  subboard_t sub{};
+  sub.filename = "a1";
+  ASSERT_TRUE(api->Create(sub, -1));
+  {
+    auto area(api->Open(sub, -1));
+    auto msg(CreateMessage(*area, 1, "From", "Title", "Line1\r\nLine2\x1a\r\nJunk\r\n"));
+    EXPECT_TRUE(area->AddMessage(msg, {}));
+  }
+  auto a2(api->Open(sub, -1));
+  const auto m = a2->ReadMessage(1);
+  ASSERT_TRUE(m);
+  EXPECT_EQ("Line1\r\nLine2\r\n", m->text().string());
+}
