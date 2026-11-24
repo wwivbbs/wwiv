@@ -37,6 +37,7 @@
 #include "core/textfile.h"
 #include "fmt/format.h"
 #include <algorithm>
+#include <chrono>
 #include <atomic>
 #include <sstream>
 #include <string>
@@ -590,6 +591,12 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
       bout.remoteIO()->close(true);
       need_reopen_remoteio = true;
     }
+  }
+  if (exec_socket && (flags & EFLAG_WWIVFOSS)) {
+    // Works with either a TCP (LISTEN_SOCK) or UNIX socket.
+    wwiv::bbs::wwivfoss_options_t opts{};
+    opts.heartbeat = std::chrono::seconds(std::max(0, a()->wwivfoss_heartbeat_seconds()));
+    exec_socket->enable_wwivfoss(opts);
   }
   VLOG(1) << "exec_cmdline: working_commandline: " << working_cmdline;
 

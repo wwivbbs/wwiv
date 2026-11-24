@@ -29,7 +29,20 @@
 
 namespace wwiv::sdk {
 
-enum class chain_exec_mode_t : uint8_t { none = 0, dos, fossil, stdio, netfoss, sock_port, sock_unix };
+// Saved by name in chains.json; keep the lists in chains_cereal.h in sync.
+// The legacy chains.dat has no bits for the socket modes.
+enum class chain_exec_mode_t : uint8_t {
+  none = 0,
+  dos,
+  fossil,
+  stdio,
+  netfoss,
+  sock_port,
+  sock_unix,
+  // Listening TCP socket (like sock_port) speaking WWIVFOSS's in-band line
+  // control framing (WWIVFOSS -E) with heartbeats (WWIVFOSS -H<n>).
+  sock_wwivfoss
+};
 enum class chain_exec_dir_t : uint8_t { bbs = 0, temp };
 
 chain_exec_mode_t& operator++(chain_exec_mode_t&);

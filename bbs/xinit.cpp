@@ -144,6 +144,9 @@ static uint32_t str2spawnopt(const std::string& s) {
   if (ts.find("UNIX_SOCK") != std::string::npos) {
     return_val |= EFLAG_UNIX_SOCK;
   }
+  if (ts.find("WWIVFOSS") != std::string::npos) {
+    return_val |= EFLAG_WWIVFOSS;
+  }
   return return_val;
 }
 
@@ -284,6 +287,7 @@ void Application::ReadINIFile(IniFile& ini) {
   newscan_at_login_ = ini.value<bool>(INI_STR_NEW_SCAN_AT_LOGIN, true);
   exec_log_syncfoss_ = ini.value<bool>(INI_STR_EXEC_LOG_SYNCFOSS, false);
   exec_child_process_wait_time_ = ini.value<int>(INI_STR_EXEC_CHILD_WAIT_TIME, 500);
+  wwivfoss_heartbeat_seconds_ = ini.value<int>(INI_STR_WWIVFOSS_HEARTBEAT, 10);
   beginday_node_number_ = ini.value<int>(INI_STR_BEGINDAYNODENUMBER, 1);
 
   // pull out sysinfo_flags

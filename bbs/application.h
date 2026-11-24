@@ -249,6 +249,9 @@ public:
 
   [[nodiscard]] bool IsExecLogSyncFoss() const { return exec_log_syncfoss_; }
 
+  /** Seconds between heartbeats sent to SOCK_WWIVFOSS doors; 0 disables them. */
+  [[nodiscard]] int wwivfoss_heartbeat_seconds() const { return wwivfoss_heartbeat_seconds_; }
+
   [[nodiscard]] int net_num() const { return network_num_; }
   void set_net_num(int n) { network_num_ = n; }
 
@@ -359,6 +362,7 @@ public:
 
   int beginday_node_number_{1};
   int exec_child_process_wait_time_{500};
+  int wwivfoss_heartbeat_seconds_{10};
   int network_num_{0};
   int subchg{0};
 
