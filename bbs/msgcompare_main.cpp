@@ -43,14 +43,17 @@
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 
-#include <cstdlib>
+#include <algorithm>
 #include <filesystem>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <map>
 #include <optional>
+#include <random>
 #include <string>
 #include <system_error>
+#include <utility>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -111,14 +114,37 @@ fs::path config_dir(const fs::path& root, const std::string& d) {
   return p.is_absolute() ? p : root / p;
 }
 
+// True if p is dir or inside it. Compares whole path elements, so "/a/bc"
+// isn't under "/a/b".
 bool is_under(const fs::path& p, const fs::path& dir) {
-  const auto cp = fs::weakly_canonical(p).lexically_normal().string();
-  auto cd = fs::weakly_canonical(dir).lexically_normal().string();
-  if (!cd.ends_with(fs::path::preferred_separator)) {
-    cd.push_back(fs::path::preferred_separator);
-  }
-  return (cp + static_cast<char>(fs::path::preferred_separator)).starts_with(cd);
+  const auto cp = fs::weakly_canonical(p).lexically_normal();
+  const auto cd = fs::weakly_canonical(dir).lexically_normal();
+  const auto [d, _] = std::mismatch(cd.begin(), cd.end(), cp.begin(), cp.end());
+  // A trailing separator leaves an empty last element in dir.
+  return d == cd.end() || (d->empty() && std::next(d) == cd.end());
 }
+
+// Removes the work directory when run() returns or throws, unless it's kept.
+class WorkDirCleanup {
+public:
+  WorkDirCleanup(fs::path dir, bool keep) : dir_(std::move(dir)), keep_(keep) {}
+  WorkDirCleanup(const WorkDirCleanup&) = delete;
+  WorkDirCleanup& operator=(const WorkDirCleanup&) = delete;
+  ~WorkDirCleanup() {
+    if (keep_) {
+      std::cerr << "Kept the work directory " << dir_ << "\n";
+      return;
+    }
+    std::error_code ec;
+    // Leave the directory first; Windows can't remove the current directory.
+    fs::current_path(fs::temp_directory_path(ec), ec);
+    fs::remove_all(dir_, ec);
+  }
+
+private:
+  fs::path dir_;
+  bool keep_;
+};
 
 // Copies the regular files directly in `from` (not subdirectories) that
 // `want` accepts into `to`.
@@ -255,7 +281,8 @@ int run(const Options& o) {
   // The work directory: a copy of what the readers need.
   fs::path work = o.work_dir;
   if (work.empty()) {
-    work = fs::temp_directory_path() / fmt::format("msgcompare-{}", std::rand());
+    std::random_device rd;
+    work = fs::temp_directory_path() / fmt::format("msgcompare-{:08x}{:08x}", rd(), rd());
   }
   work = fs::absolute(work);
   if (fs::exists(work)) {
@@ -266,6 +293,13 @@ int run(const Options& o) {
     std::cerr << "The work directory must be outside " << bbsdir << ".\n";
     return 2;
   }
+  fs::create_directories(work.parent_path());
+  // create_directory fails if another process made it after the check above.
+  if (!fs::create_directory(work)) {
+    std::cerr << "The work directory " << work << " already exists.\n";
+    return 2;
+  }
+  const WorkDirCleanup cleanup(work, o.keep_work_dir);
   fs::create_directories(work / "data");
   fs::create_directories(work / "msgs");
   for (const auto* d : {"gfiles", "menus", "dloads", "scripts"}) {
@@ -418,13 +452,6 @@ int run(const Options& o) {
     }
   }
 
-  if (o.keep_work_dir) {
-    std::cerr << "Kept the work directory " << work << "\n";
-  } else {
-    fs::current_path(fs::temp_directory_path());
-    std::error_code ec;
-    fs::remove_all(work, ec);
-  }
   return report.counts.empty() ? 0 : 1;
 }
 

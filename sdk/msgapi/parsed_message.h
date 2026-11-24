@@ -109,7 +109,7 @@ public:
 
 /**
  * Splits message text into lines: "\r\n" and "\r" end a line, and with
- * lf_ends_line, so does a "\n" that doesn't follow a "\r" (WWIV messages; FTN
+ * lf_ends_line, so does a "\n" that isn't next to a "\r" (WWIV messages; FTN
  * messages ignore linefeeds, as FTS-0001 says). Lines ending in ^A (soft
  * wraps) are joined with the next line, and the text ends at a control-Z.
  */

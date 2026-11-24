@@ -40,12 +40,13 @@ std::vector<std::string> split_wwiv_style_message_text(const std::string& s, boo
     temp = temp.substr(0, cz_pos);
   }
   if (lf_ends_line) {
-    // A \n that doesn't follow a \r ends a line too (text with Unix line
-    // endings); the \n of \r\n is removed below.
+    // A \n that isn't next to a \r ends a line too (text with Unix line
+    // endings); the \n of \r\n (or \n\r) is removed below.
     std::string fixed;
     fixed.reserve(temp.size());
     for (size_t i = 0; i < temp.size(); i++) {
-      if (temp[i] == '\n' && (i == 0 || temp[i - 1] != '\r')) {
+      if (temp[i] == '\n' && (i == 0 || temp[i - 1] != '\r') &&
+          (i + 1 == temp.size() || temp[i + 1] != '\r')) {
         fixed.push_back('\r');
       } else {
         fixed.push_back(temp[i]);
