@@ -78,6 +78,6 @@ if (WWIV_BUILD_TESTS)
 
   include(GoogleTest)
   target_link_libraries(fsed_tests fsed core_fixtures core common sdk GTest::gtest)
-  gtest_discover_tests(fsed_tests EXTRA_ARGS "--wwiv_testdata=${CMAKE_CURRENT_SOURCE_DIR}/testdata")
+  gtest_discover_tests(fsed_tests)
   
 endif()
