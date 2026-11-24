@@ -205,6 +205,11 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
     return {r};
   }
 
+  // Like the BBS's reader (read_type2_message), skip the blank lines that
+  // follow the date line.
+  while (it != std::end(lines) && StringTrim(*it).empty()) {
+    ++it;
+  }
   for (; it != std::end(lines); ++it) {
     auto line = StringTrim(*it);
     if (!line.empty() && line.front() == CD) {
@@ -215,9 +220,10 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
     } else if (starts_with(line, "BY:")) {
       r.to = StringTrim(line.substr(3));
     } else {
-      // No more special lines, the rest is just text. Keep blank lines and
-      // leading spaces (paragraphs, quotes, ASCII art), as the BBS's reader
-      // does; only the line endings and trailing blank lines are dropped.
+      // No more special lines, the rest is just text. Keep it as the BBS's
+      // reader shows it: blank lines, leading and trailing spaces
+      // (paragraphs, quotes, ASCII art) stay; only the line endings and
+      // anything after the control-Z that ends the text go.
       std::vector<std::string> body;
       for (; it != std::end(lines); ++it) {
         auto text_line = *it;
@@ -232,7 +238,7 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
         if (null_pos != std::string::npos) {
           text_line.resize(null_pos);
         }
-        while (!text_line.empty() && (text_line.back() == '\r' || text_line.back() == ' ')) {
+        if (!text_line.empty() && text_line.back() == '\r') {
           text_line.pop_back();
         }
         body.push_back(text_line);
@@ -240,7 +246,8 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
           break;
         }
       }
-      while (!body.empty() && body.back().empty()) {
+      // The text's last line ending leaves an empty line after it.
+      if (!body.empty() && body.back().empty()) {
         body.pop_back();
       }
       for (const auto& text_line : body) {

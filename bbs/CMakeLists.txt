@@ -224,6 +224,7 @@ if (WWIV_BUILD_TESTS)
       input_test.cpp
       make_abs_test.cpp
       message_file_test.cpp
+      msgapi_legacy_compare_test.cpp
       msgbase1_test.cpp
       netsup_test.cpp
       pause_test.cpp
