@@ -281,6 +281,9 @@ constexpr uint16_t script_flag_enable_file    = 0x0002;
 constexpr uint16_t script_flag_enable_os      = 0x0004;
 // Run scripts on wwivbasic (the "next" engine) instead of my_basic.
 constexpr uint16_t script_flag_engine_next   = 0x0008;
+// Turns off wwiv.msg (read-only message areas) on the new engine. It's on by
+// default, since it only shows what the user could read in the BBS.
+constexpr uint16_t script_flag_disable_msg   = 0x0010;
 
 // STATIC SYSTEM INFORMATION
 struct configrec {
