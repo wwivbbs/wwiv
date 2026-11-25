@@ -180,6 +180,8 @@ headers and read messages.
       `bbs/basic/next/wwiv_msg.cpp`, documented in [BINDINGS.md](BINDINGS.md)).
       It reads through a `MessageBase` interface (`BbsMessageBase` in the
       BBS, a fake in tests)
+- [ ] `wwiv.msg` writing: post, and change or delete posts, with the BBS's
+      rules for who may (BINDINGS.md says it's read-only for now)
 - [ ] `wwiv.user`: the current user, and user lookups
 - [ ] `wwiv.files`: file areas and file records
 - [ ] Permissions: access follows the user's own rights; write access is

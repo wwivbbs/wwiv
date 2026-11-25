@@ -105,9 +105,21 @@ def ShowHeaders(a, headers, first)
 enddef
 
 ' Shows message headers[i] of area a.
+' Shows message headers[i] of area a. Returns FALSE, showing nothing, if the
+' post was deleted after the list was read.
 def ShowMessage(a, headers, i)
   h = get(headers, i)
-  m = a.message(h.number)
+  ' Message numbers shift when earlier posts are deleted; FIND says where
+  ' this post is now (0 if it's gone).
+  n = a.find(h)
+  If n = 0 Then
+    return False
+  EndIf
+  m = a.message(n)
+  If m.id <> h.id Then
+    ' Deleted just now.
+    return False
+  EndIf
   cls()
   ' Counted as in the list, which leaves out messages you can't read.
   pl("|#9Msg   : |#2" + STR(i + 1) + " of " + STR(len(headers)) + " in " + a.name + " (#" + STR(m.number) + ")")
@@ -120,12 +132,19 @@ def ShowMessage(a, headers, i)
     ' The text keeps its color codes, which still show with MCI off.
     pl_nomci("|#0" + line)
   next
+  return True
 enddef
 
-' Reads messages from headers[i]; returns the index of the last one read.
+' Reads messages from headers[i]; returns the index of the last one read, or
+' -1 if one was deleted (the list is then out of date).
 def ReadFrom(a, headers, i)
   While True
-    ShowMessage(a, headers, i)
+    If Not ShowMessage(a, headers, i) Then
+      nl()
+      pl("|#6That message has been deleted.")
+      pause()
+      return -1
+    EndIf
     nl()
     c = KeyCommand("[N]ext, [P]revious, [Q]uit: ")
     If c = "Q" Then
@@ -173,6 +192,14 @@ def ReadArea(a)
         pause()
       Else
         i = ReadFrom(a, headers, i)
+        If i < 0 Then
+          ' Read the list again, and start from its first page.
+          headers = a.headers()
+          If len(headers) = 0 Then
+            return
+          EndIf
+          i = 0
+        EndIf
         ' Go back to the page with the last message read.
         While i >= first + PageSize()
           first = first + PageSize()

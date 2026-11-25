@@ -29,6 +29,7 @@
 #include "wwivbasic/interpreter.h"
 #include "wwivbasic/object.h"
 
+#include <algorithm>
 #include <functional>
 #include <limits>
 #include <memory>
@@ -81,6 +82,9 @@ struct ScriptArea {
 // posts are applied.
 struct ScriptHeader {
   int number{0};
+  // The post's serial number in its sub (its qscan value). Unlike the
+  // number, it doesn't change when earlier posts are deleted.
+  uint32_t id{0};
   std::string title;
   std::string from;
   std::string to;
@@ -102,6 +106,7 @@ ScriptHeader to_script_header(int number, const sdk::msgapi::MessageHeader& h,
                               bool read_anonymous) {
   ScriptHeader s;
   s.number = number;
+  s.id = h.data().qscan;
   s.title = h.title();
   s.from = h.from();
   s.to = h.to();
@@ -185,6 +190,32 @@ ScriptMessage read_message(const ScriptArea& a, int number) {
   return out;
 }
 
+// The number the post with serial id now has in area a, or 0 if it's gone
+// or the user can't read it. number is where it was: deleting a post moves
+// the later ones down, and serials increase with position, so it's there or
+// before.
+int find_message(const ScriptArea& a, uint32_t id, int number) {
+  auto* area = a.area();
+  if (!area || number < 1) {
+    return 0;
+  }
+  const auto cosysop = a.msgs->is_cosysop(a.subnum);
+  for (auto i = std::min(number, area->number_of_messages()); i >= 1; i--) {
+    const auto h = area->ReadMessageHeader(i);
+    if (!h) {
+      continue;
+    }
+    const auto serial = h->data().qscan;
+    if (serial == id) {
+      return can_see(h.value(), cosysop) ? i : 0;
+    }
+    if (serial < id) {
+      return 0;
+    }
+  }
+  return 0;
+}
+
 // Adds the header properties to the binding for T (ScriptHeader or
 // ScriptMessage).
 template <class T> void add_header_properties(wwivbasic::ClassBinding<T>& c) {
@@ -192,6 +223,7 @@ template <class T> void add_header_properties(wwivbasic::ClassBinding<T>& c) {
       .property("title", [](const T& h) { return h.title; })
       .property("from", [](const T& h) { return h.from; })
       .property("to", [](const T& h) { return h.to; })
+      .property("id", [](const T& h) { return Value::number(static_cast<double>(h.id)); })
       .property("date", [](const T& h) { return h.date; })
       .property("anonymous", [](const T& h) { return h.anonymous; });
 }
@@ -237,6 +269,19 @@ void RegisterWwivMsg(wwivbasic::Interpreter& interp, const WwivBindings& b) {
       // MESSAGE(n) reads message n (from 1 to COUNT).
       .method("message", [&message_class](const ScriptArea& a, int number) {
         return message_class.wrap(read_message(a, number));
+      })
+      // FIND(h) is the number the message h (a header or message from this
+      // area) has now, or 0 if it's gone or can't be read. Numbers shift when
+      // earlier posts are deleted; use it before MESSAGE to read the post h
+      // was rather than whatever now has its number.
+      .method("find", [&header_class, &message_class](const ScriptArea& a, Value v) {
+        if (const auto h = header_class.unwrap(v)) {
+          return find_message(a, h->id, h->number);
+        }
+        if (const auto msg = message_class.unwrap(v)) {
+          return find_message(a, msg->id, msg->number);
+        }
+        throw BasicError("FIND: expected a message_header or message");
       });
 
   auto make_area = [msgs, &area_class](const MessageBase::UserSub& u) {

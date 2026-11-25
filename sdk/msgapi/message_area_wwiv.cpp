@@ -142,13 +142,8 @@ int WWIVMessageArea::FindUserMessages(const std::string&) {
   return 0;
 }
 
-int WWIVMessageArea::number_of_messages() const {
-  DataFile<postrec> sub(sub_filename_);
-  if (!sub) {
-    // TODO: throw exception
-    return 0;
-  }
-
+// The number of messages in the open sub file.
+static int CountMessages(DataFile<postrec>& sub) {
   const auto file_num_records = static_cast<int>(sub.number_of_records());
   const auto wwiv_header = ReadHeader(sub);
   if (!wwiv_header->initialized()) {
@@ -162,6 +157,15 @@ int WWIVMessageArea::number_of_messages() const {
     return std::min(msgs, file_num_records);
   }
   return msgs;
+}
+
+int WWIVMessageArea::number_of_messages() const {
+  DataFile<postrec> sub(sub_filename_);
+  if (!sub) {
+    // TODO: throw exception
+    return 0;
+  }
+  return CountMessages(sub);
 }
 
 std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const postrec& header,
@@ -257,18 +261,17 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
 }
 
 std::optional<Message> WWIVMessageArea::ReadMessage(int message_number) {
-  const auto num_messages = number_of_messages();
   if (message_number < 1) {
     return std::nullopt;
   }
-  if (message_number > num_messages) {
-    message_number = num_messages;
-  }
-
+  // One open of the sub file for both the count and the header.
   DataFile<postrec> sub(sub_filename_);
   if (!sub) {
     // TODO: throw exception
     return std::nullopt;
+  }
+  if (const auto num_messages = CountMessages(sub); message_number > num_messages) {
+    message_number = num_messages;
   }
   postrec header{};
   sub.Read(message_number, &header);

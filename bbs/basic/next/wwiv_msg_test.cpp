@@ -73,13 +73,21 @@ public:
     }
     return api_.Open(sub, subnum);
   }
-  [[nodiscard]] bool is_cosysop(int) const override { return cosysop_; }
+  [[nodiscard]] bool is_cosysop(int) const override {
+    // HEADERS and FIND check this before reading, so a test can change the
+    // sub between them.
+    if (on_rights_check) {
+      on_rights_check();
+    }
+    return cosysop_;
+  }
   [[nodiscard]] bool can_read_anonymous(int) const override { return read_anonymous_; }
 
   std::vector<UserSub> user_subs_;
   std::optional<UserSub> current_;
   // Called by user_subs() (wwiv.msg.areas()), so a test can act mid-script.
   std::function<void()> on_user_subs;
+  std::function<void()> on_rights_check;
   bool cosysop_{false};
   bool read_anonymous_{false};
 
@@ -138,19 +146,41 @@ protected:
     MessageAreaOptions o{};
     o.add_re_and_by_line = false;
     EXPECT_TRUE(area->AddMessage(msg, o));
-    return area->number_of_messages();
+    const auto n = area->number_of_messages();
+    // The BBS gives each post the next serial (qscan) from status.dat; the
+    // test BBS has none, so every post would get 1.
+    UpdatePost(subnum, n, [this](postrec& p) { p.qscan = next_qscan_++; });
+    return n;
+  }
+
+  // Deletes post n of sub 0 after HEADERS() has read the sub and before the
+  // next FIND() looks in it, as if someone deleted it while the user read
+  // the list. HEADERS and FIND each check the user's rights (is_cosysop)
+  // once before reading the sub, so the delete happens on the second check.
+  void DeletePostBeforeFind(int n) {
+    int checks = 0;
+    msgs->on_rights_check = [this, n, checks]() mutable {
+      if (++checks == 2) {
+        EXPECT_TRUE(api->Open(subs->sub(0), 0)->DeleteMessage(n));
+      }
+    };
+  }
+
+  // Changes post number in sub subnum in the sub file.
+  void UpdatePost(int subnum, int number, const std::function<void(postrec&)>& f) {
+    const auto path = FilePath(helper.config().datadir(), subs->sub(subnum).filename + ".sub");
+    DataFile<postrec> file(path, File::modeBinary | File::modeReadWrite);
+    ASSERT_TRUE(file);
+    postrec p{};
+    ASSERT_TRUE(file.Read(number, &p));
+    f(p);
+    ASSERT_TRUE(file.Write(number, &p));
   }
 
   // AddMessage doesn't keep a post's anonymous flags, so set them in the sub
   // file afterwards.
   void SetAnony(int subnum, int number, uint8_t anony) {
-    const auto path = FilePath(helper.config().datadir(), subs->sub(subnum).filename + ".sub");
-    DataFile<postrec> f(path, File::modeBinary | File::modeReadWrite);
-    ASSERT_TRUE(f);
-    postrec p{};
-    ASSERT_TRUE(f.Read(number, &p));
-    p.anony = anony;
-    ASSERT_TRUE(f.Write(number, &p));
+    UpdatePost(subnum, number, [anony](postrec& p) { p.anony = anony; });
   }
 
   std::string Run(const std::string& text, bool* ok = nullptr) {
@@ -164,6 +194,7 @@ protected:
   }
 
   static constexpr daten_t kDaten = 1700000000;
+  uint32_t next_qscan_{1000};
   BbsHelper helper{};
   std::unique_ptr<WWIVMessageApi> api;
   std::unique_ptr<Subs> subs;
@@ -584,6 +615,56 @@ next
 )bas"));
 }
 
+TEST_F(WwivMsgTest, Ids_AreDistinct) {
+  Post(0, "a #1", "One", "1\r\n");
+  Post(0, "a #1", "Two", "2\r\n");
+  EXPECT_EQ("FALSE\r\nTRUE\r\n", Run(R"(
+h = wwiv.msg.area("1").headers()
+print get(h, 0).id = get(h, 1).id
+print wwiv.msg.area("1").message(2).id = get(h, 1).id
+)"));
+}
+
+// After an earlier post is deleted, FIND gives a post's new number.
+TEST_F(WwivMsgTest, Find_AfterAnEarlierPostIsDeleted) {
+  Post(0, "a #1", "One", "1\r\n");
+  Post(0, "a #1", "Two", "2\r\n");
+  Post(0, "a #1", "Three", "3\r\n");
+  DeletePostBeforeFind(1);
+  EXPECT_EQ("2/Three/0\r\n", Run(R"(
+a = wwiv.msg.area("1")
+h = a.headers()
+n = a.find(get(h, 2))
+print n; "/"; a.message(n).title; "/"; a.find(get(h, 0))
+)"));
+}
+
+TEST_F(WwivMsgTest, Find_PostDeleted) {
+  Post(0, "a #1", "One", "1\r\n");
+  Post(0, "a #1", "Two", "2\r\n");
+  DeletePostBeforeFind(2);
+  EXPECT_EQ("0\r\n", Run(R"(
+a = wwiv.msg.area("1")
+h = a.headers()
+print a.find(get(h, 1))
+)"));
+}
+
+TEST_F(WwivMsgTest, Find_TakesAMessageToo) {
+  Post(0, "a #1", "One", "1\r\n");
+  EXPECT_EQ("1\r\n", Run(R"(
+a = wwiv.msg.area("1")
+print a.find(a.message(1))
+)"));
+}
+
+TEST_F(WwivMsgTest, Find_NotAHeader) {
+  bool ok{true};
+  const auto out = Run("print wwiv.msg.area(\"1\").find(1)\n", &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, HasSubstr("FIND: expected a message_header or message"));
+}
+
 // An area opens its sub once, but still sees posts made after that.
 TEST_F(WwivMsgTest, Area_SeesNewPosts) {
   Post(0, "a #1", "One", "1\r\n");
@@ -703,6 +784,30 @@ TEST_F(MsgViewTest, CountsOnlyReadableMessages) {
   Post(0, "a #1", "Visible", "y\r\n");
   const auto out = RunViewer("1\r2\rQQ\rQ\r");
   EXPECT_THAT(out, HasSubstr("Msg   : 1 of 1 in General (#2)"));
+}
+
+// A post deleted after the list was read moves the later ones down; the
+// viewer still shows the post that was picked.
+TEST_F(MsgViewTest, EarlierPostDeletedWhileReading) {
+  Post(0, "a #1", "One", "1\r\n");
+  Post(0, "a #1", "Two", "2\r\n");
+  Post(0, "a #1", "Three", "3\r\n");
+  DeletePostBeforeFind(1);
+  const auto out = RunViewer("1\r3\rQQ\rQ\r");
+  EXPECT_THAT(out, HasSubstr("Title : Three"));
+  EXPECT_THAT(out, HasSubstr("(#2)"));
+}
+
+TEST_F(MsgViewTest, PostDeletedWhileReading) {
+  Post(0, "a #1", "One", "1\r\n");
+  Post(0, "a #1", "Two", "2\r\n");
+  DeletePostBeforeFind(2);
+  // Area 1, message 2 (gone), a key for the pause, then quit.
+  const auto out = RunViewer("1\r2\r\rQ\rQ\r");
+  EXPECT_THAT(out, HasSubstr("That message has been deleted."));
+  EXPECT_THAT(out, Not(HasSubstr("Title : Two")));
+  // The list is read again.
+  EXPECT_THAT(out, HasSubstr("General (1 messages)"));
 }
 
 TEST_F(MsgViewTest, EmptyArea) {

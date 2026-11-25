@@ -301,7 +301,9 @@ int run(const Options& o) {
     std::random_device rd;
     for (int tries = 0; tries < 10 && work.empty(); tries++) {
       const auto p = tmp / fmt::format("msgcompare-{:08x}", rd());
-      if (fs::create_directory(p)) {
+      // The error_code form, so an unwritable temp directory gets the message
+      // below rather than an exception.
+      if (std::error_code ec; fs::create_directory(p, ec)) {
         work = p;
       }
     }
@@ -309,8 +311,13 @@ int run(const Options& o) {
       std::cerr << "Unable to create a work directory in " << tmp << ".\n";
       return 2;
     }
-  } else if (!fs::create_directories(work)) {
-    std::cerr << "The work directory " << work << " already exists.\n";
+  } else if (std::error_code ec; !fs::create_directories(work, ec)) {
+    if (ec) {
+      std::cerr << "Unable to create the work directory " << work << ": " << ec.message()
+                << "\n";
+    } else {
+      std::cerr << "The work directory " << work << " already exists.\n";
+    }
     return 2;
   }
   const WorkDirCleanup cleanup(work, o.keep_work_dir);

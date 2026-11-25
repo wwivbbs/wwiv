@@ -8,7 +8,9 @@ The bindings live in WWIV, in `bbs/basic/next/`.
 
 ## wwiv.msg
 
-Read-only access to the message areas (subs) the caller can read. It shows a
+Read-only access to the message areas (subs) the caller can read. Writing
+(posting, and changing or deleting posts) is planned; see M5 in
+[PLAN.md](PLAN.md). It shows a
 script only what the caller could read in the BBS's own reader:
 
 - The areas are the caller's subs in the current conference, in the order the
@@ -65,18 +67,38 @@ pages through an area's headers, and reads messages one after another.
 | `KEY` | The key that chooses the area, as in `AREA(key)` |
 | `NAME` | The sub's name |
 | `DESCRIPTION` | The sub's long description |
-| `COUNT` | How many messages the area has, including ones the caller can't read |
+| `COUNT` | How many messages the area has, including ones the caller can't read: the number the BBS's own sub list shows. `LEN(HEADERS())` is how many the caller can read. |
 | `HEADERS()` | A LIST of the headers of the messages the caller can read, oldest first |
 | `MESSAGE(n)` | Message `n`, from 1 to `COUNT`; an error if it doesn't exist or the caller can't read it |
+| `FIND(h)` | The number the message `h` (a header or message from this area) has now, or 0 if it has been deleted or the caller can't read it |
 
 Each call reads the message base again, so `COUNT` and `HEADERS()` see new
 posts.
+
+Message numbers are positions in the area, as in the BBS: when a post is
+deleted, the ones after it move down by one. A script that keeps a list of
+headers while the caller reads should find each message again with `FIND`
+before reading it, and can check that the message's `ID` is the header's:
+
+```basic
+n = a.find(h)
+If n = 0 Then
+  print "That message has been deleted."
+Else
+  m = a.message(n)
+  ' m.id = h.id unless it was deleted between FIND and MESSAGE.
+EndIf
+```
+
+Opening an area whose message text file (`msgs/NAME.dat`) doesn't exist yet
+creates it empty, as the BBS does; nothing else is written.
 
 ### Headers (`message_header`) and messages (`message`)
 
 | Member | |
 | --- | --- |
-| `NUMBER` | The message number in its area, from 1 |
+| `NUMBER` | The message number in its area, from 1, when it was read |
+| `ID` | The post's serial number (its qscan value), which doesn't change when other posts are deleted |
 | `TITLE` | The title (subject) |
 | `FROM` | Who wrote it, such as `rushfan #1`, after the anonymous rules above |
 | `TO` | Who it is to (`All` if no one) |
