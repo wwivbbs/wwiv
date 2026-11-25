@@ -969,8 +969,7 @@ ReadMessageResult read_post(int& msgnum, bool* next, int* val) {
   *next = false;
 
   auto p = *get_post(msgnum);
-  const auto read_it =
-      (lcs() || (a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_post_anony)) ? true : false;
+  const auto read_it = can_read_anonymous_posts(a()->context(), a()->current_user_sub().subnum);
   const auto& cs = a()->current_sub();
   auto o =
       read_type2_message(&p.msg, p.anony & 0x0f, read_it, cs.filename, p.ownersys, p.owneruser);

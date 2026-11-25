@@ -98,6 +98,9 @@ Small differences in how arguments are checked:
   stop at 78, the width of the line editor.)
 - Once the caller has hung up, `wwiv.io.getkey()` and `wwiv.io.gets()` return
   `""` and the script stops at the next statement.
+- New: `wwiv.io.outstr_nomci` and `wwiv.io.pl_nomci` print with MCI codes
+  shown as written instead of run, for text other users wrote (see
+  [docs/BINDINGS.md](docs/BINDINGS.md)).
 
 `wwiv.data` reads and writes the same files as before, in the same format, so
 data saved by a script on one engine loads on the other. `LOAD` still appends
@@ -136,6 +139,13 @@ to the list. Two things to know:
   names the function. The same goes for `wwiv.os.exec_options` and `EXEC`.
 - As before, only the file name part of the name is used, a file that can't be
   read reads as empty, and files not closed stay open until the script ends.
+
+## New modules
+
+The new engine adds modules the legacy engine doesn't have, documented in
+[docs/BINDINGS.md](docs/BINDINGS.md):
+
+- `wwiv.msg`: read the message areas the caller can read.
 
 ## Real numbers
 

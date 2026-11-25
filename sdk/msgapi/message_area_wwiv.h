@@ -75,7 +75,7 @@ public:
   // Note: This is not implemented on wwiv.
   void WriteMessageAreaHeader(const MessageAreaHeader& header) override;
   int FindUserMessages(const std::string& user_name) override;
-  int number_of_messages() override;
+  [[nodiscard]] int number_of_messages() const override;
 
   // message specific.
   std::optional<Message> ReadMessage(int message_number) override;

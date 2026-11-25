@@ -22,59 +22,27 @@
 #include "bbs/bbs.h"
 #include "bbs/bbs_helper.h"
 #include "bbs/application.h"
-#include "common/common_events.h"
 #include "common/context.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "core/eventbus.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/version.h"
 #include "sdk/config.h"
-#include "side_by_side_scripts.h"
+#include "bbs/basic/next/type_ahead_test_util.h"
+#include "install_scripts.h"
 
-#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
 
 using namespace wwiv::bbs::basic;
+using namespace wwiv::bbs::basic::type_ahead;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::strings;
-
-namespace {
-
-// While set, the test is running a script with typed-ahead keys. If the
-// script reads more keys than were typed, the caller "hangs up" instead of
-// the test waiting forever for real input.
-SessionContext* sessions_to_hang_up[2]{};
-
-void HangUpWhenKeysRunOut(SessionContext& a, SessionContext& b) {
-  [[maybe_unused]] static const auto registered = [] {
-    // Input sends GiveupTimeslices only while it waits for a key that hasn't
-    // been typed: here, that means the typed-ahead keys have run out.
-    bus().add_handler<GiveupTimeslices>([] {
-      if (!sessions_to_hang_up[0]) {
-        return;
-      }
-      for (auto* s : sessions_to_hang_up) {
-        s->hangup(true);
-      }
-      // Type one more key, so getkey returns it: with nothing to read after a
-      // hangup, getkey reaches DLOG(FATAL) and aborts (issue #1758).
-      std::strcpy(&bin.charbuffer[1], "\r");
-      bin.charbufferpointer_ = 1;
-    });
-    return true;
-  }();
-  sessions_to_hang_up[0] = &a;
-  sessions_to_hang_up[1] = &b;
-}
-
-} // namespace
 
 // The scripts WWIV ships (install/scripts), run on both engines. The output
 // must match, apart from the documented PRINT layout (wwivbasic/PORTING.md:
@@ -103,19 +71,7 @@ protected:
     ASSERT_FALSE(f.fail()) << "unable to write " << name;
   }
 
-  void TearDown() override {
-    sessions_to_hang_up[0] = sessions_to_hang_up[1] = nullptr;
-    bin.charbufferpointer_ = 0;
-    bin.charbuffer[0] = '\0';
-    bin.charbuffer[1] = '\0';
-  }
-
-  // Types keys ahead, as if the caller had typed them.
-  static void TypeAhead(const std::string& keys) {
-    ASSERT_LT(keys.size(), sizeof(bin.charbuffer) - 1);
-    std::strcpy(&bin.charbuffer[1], keys.c_str());
-    bin.charbufferpointer_ = 1;
-  }
+  void TearDown() override { StopTypingAhead(); }
 
   void RemoveDataFiles() {
     // Collect first: removing entries while iterating is unspecified.

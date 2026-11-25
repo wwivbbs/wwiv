@@ -177,6 +177,29 @@ TEST_F(WwivBindingsTest, WWIV_IO_Outstr_Colors) {
   EXPECT_EQ("Hello", helper.io()->captured());
 }
 
+// |@N is the caller's name, an MCI macro.
+TEST_F(WwivBindingsTest, WWIV_IO_Outstr_RunsMci) {
+  helper.user()->set_name("Rushfan");
+  ASSERT_TRUE(Run("wwiv.io.outstr(\"a|@Nb\")"));
+  EXPECT_EQ("aRushfanb", helper.io()->captured());
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_OutstrNoMci) {
+  helper.user()->set_name("Rushfan");
+  // MCI is off only for OUTSTR_NOMCI; colors still work.
+  ASSERT_TRUE(Run("wwiv.io.outstr_nomci(\"|#3a|@Nb\", \"|{user.name}\")\n"
+                  "wwiv.io.outstr(\"|@N\")"));
+  EXPECT_EQ("ab|{user.name}Rushfan", helper.io()->captured());
+  EXPECT_TRUE(bout.mci_enabled());
+}
+
+TEST_F(WwivBindingsTest, WWIV_IO_PLNoMci) {
+  helper.user()->set_name("Rushfan");
+  ASSERT_TRUE(Run("wwiv.io.pl_nomci(\"a|@N\", \"b\")\nwwiv.io.pl(\"|@N\")"));
+  EXPECT_EQ("a\r\nb\r\nRushfan\r\n", helper.io()->captured());
+  EXPECT_TRUE(bout.mci_enabled());
+}
+
 TEST_F(WwivBindingsTest, WWIV_IO_Puts) {
   ASSERT_TRUE(Run("wwiv.io.puts(\"Hello World\")"));
   EXPECT_EQ("Hello World", helper.io()->captured());

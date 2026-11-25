@@ -19,6 +19,7 @@
 
 #include "common/input.h"
 #include "common/output.h"
+#include "core/scope_exit.h"
 #include "wwivbasic/console.h"
 #include "wwivbasic/interpreter.h"
 
@@ -60,6 +61,28 @@ void RegisterWwivIo(wwivbasic::Interpreter& interp, const WwivBindings& b) {
 
   // PL writes each argument followed by a newline.
   m.native_functionl("PL", [b](const Args& args) {
+    for (const auto& a : args) {
+      b.out.outstr(wwivbasic::from_value<std::string>(a));
+      b.out.nl();
+    }
+    return Value();
+  });
+
+  // New in the new engine: OUTSTR and PL with MCI off, for text other users
+  // wrote (such as posts), as the BBS's message reader shows it. Colors still
+  // show, but |{...} expressions and |@ macros aren't run against the caller's
+  // session.
+  m.native_functionl("OUTSTR_NOMCI", [b](const Args& args) {
+    const auto mci = b.out.mci_enabled();
+    const auto restore = core::finally([&b, mci] { b.out.set_mci_enabled(mci); });
+    b.out.disable_mci();
+    outstr_each(b.out, args);
+    return Value();
+  });
+  m.native_functionl("PL_NOMCI", [b](const Args& args) {
+    const auto mci = b.out.mci_enabled();
+    const auto restore = core::finally([&b, mci] { b.out.set_mci_enabled(mci); });
+    b.out.disable_mci();
     for (const auto& a : args) {
       b.out.outstr(wwivbasic::from_value<std::string>(a));
       b.out.nl();

@@ -142,13 +142,8 @@ int WWIVMessageArea::FindUserMessages(const std::string&) {
   return 0;
 }
 
-int WWIVMessageArea::number_of_messages() {
-  DataFile<postrec> sub(sub_filename_);
-  if (!sub) {
-    // TODO: throw exception
-    return 0;
-  }
-
+// The number of messages in the open sub file.
+static int CountMessages(DataFile<postrec>& sub) {
   const auto file_num_records = static_cast<int>(sub.number_of_records());
   const auto wwiv_header = ReadHeader(sub);
   if (!wwiv_header->initialized()) {
@@ -162,6 +157,15 @@ int WWIVMessageArea::number_of_messages() {
     return std::min(msgs, file_num_records);
   }
   return msgs;
+}
+
+int WWIVMessageArea::number_of_messages() const {
+  DataFile<postrec> sub(sub_filename_);
+  if (!sub) {
+    // TODO: throw exception
+    return 0;
+  }
+  return CountMessages(sub);
 }
 
 std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const postrec& header,
@@ -205,9 +209,9 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
     return {r};
   }
 
-  // Like the BBS's reader (read_type2_message), skip the blank lines that
-  // follow the date line.
-  while (it != std::end(lines) && StringTrim(*it).empty()) {
+  // Like the BBS's reader (read_type2_message), skip the line endings that
+  // follow the date line. A line of spaces or tabs is text, not a line ending.
+  while (it != std::end(lines) && it->find_first_not_of('\r') == std::string::npos) {
     ++it;
   }
   for (; it != std::end(lines); ++it) {
@@ -224,7 +228,6 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
       // reader shows it: blank lines, leading and trailing spaces
       // (paragraphs, quotes, ASCII art) stay; only the line endings and
       // anything after the control-Z that ends the text go.
-      std::vector<std::string> body;
       for (; it != std::end(lines); ++it) {
         auto text_line = *it;
         // The text ends at a control-Z.
@@ -241,19 +244,15 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
         if (!text_line.empty() && text_line.back() == '\r') {
           text_line.pop_back();
         }
+        // A control-Z at the start of a line ends the text without adding a
+        // line.
+        if (!at_end || !text_line.empty()) {
+          r.text += text_line;
+          r.text += "\r\n";
+        }
         if (at_end) {
-          // A control-Z at the start of a line ends the text without
-          // adding a line.
-          if (!text_line.empty()) {
-            body.push_back(text_line);
-          }
           break;
         }
-        body.push_back(text_line);
-      }
-      for (const auto& text_line : body) {
-        r.text += text_line;
-        r.text += "\r\n";
       }
       break;
     }
@@ -262,18 +261,17 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
 }
 
 std::optional<Message> WWIVMessageArea::ReadMessage(int message_number) {
-  const auto num_messages = number_of_messages();
   if (message_number < 1) {
     return std::nullopt;
   }
-  if (message_number > num_messages) {
-    message_number = num_messages;
-  }
-
+  // One open of the sub file for both the count and the header.
   DataFile<postrec> sub(sub_filename_);
   if (!sub) {
     // TODO: throw exception
     return std::nullopt;
+  }
+  if (const auto num_messages = CountMessages(sub); message_number > num_messages) {
+    message_number = num_messages;
   }
   postrec header{};
   sub.Read(message_number, &header);

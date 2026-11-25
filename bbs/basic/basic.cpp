@@ -21,6 +21,9 @@
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/basic/script_engine.h"
+#ifdef WWIV_WWIVBASIC_NEXT
+#include "bbs/basic/next/bbs_message_base.h"
+#endif
 #include "bbs/basic/util.h"
 #include "bbs/basic/wwiv.h"
 #include "bbs/basic/wwiv_data.h"
@@ -294,7 +297,14 @@ bool Basic::RunScript(const std::string& script_name) {
 
 bool RunBasicScript(const std::string& script_name) {
   const auto engine_type = SelectScriptEngine(a()->sess().basic_engine(), *a()->config());
-  const auto engine = CreateScriptEngine(engine_type, bin, bout, *a()->config(), &a()->context());
+  std::unique_ptr<MessageBase> msgs;
+#ifdef WWIV_WWIVBASIC_NEXT
+  if (engine_type == script_engine_t::next) {
+    msgs = std::make_unique<BbsMessageBase>(*a());
+  }
+#endif
+  const auto engine = CreateScriptEngine(engine_type, bin, bout, *a()->config(), &a()->context(),
+                                         std::move(msgs));
   if (!engine) {
     return false;
   }

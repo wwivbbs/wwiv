@@ -216,7 +216,8 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     } break;
     }
   } else {
-    if (lcs() || (a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_post_anony) || post->anony == 0) {
+    if (post->anony == 0 ||
+        can_read_anonymous_posts(a()->context(), a()->current_user_sub().subnum)) {
       email("", post->owneruser, post->ownersys, false, 0);
     } else {
       email("", post->owneruser, post->ownersys, false, post->anony);
