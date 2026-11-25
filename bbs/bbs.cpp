@@ -26,6 +26,7 @@
 #include "core/strings.h"
 #include "local_io/stdio_local_io.h"
 #include "sdk/config.h"
+#include <csignal>
 #include <exception>
 #include <iostream>
 
@@ -55,6 +56,12 @@ using wwiv::core::LoggerConfig;
 using wwiv::sdk::LogDirFromConfig;
 
 int bbsmain(int argc, char *argv[]) {
+#if defined(__unix__) && defined(SIGCHLD)
+  // wwivd ignores SIGCHLD and we'd inherit that. Ignored, the kernel reaps
+  // exited doors itself, so waitpid can't get their exit status and a door's
+  // pid could be reused while we still mean to signal it.
+  signal(SIGCHLD, SIG_DFL);
+#endif
   LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
 

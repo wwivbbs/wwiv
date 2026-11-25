@@ -187,3 +187,34 @@ TEST_F(ExecExternalSocketDoorTest, DoorExitsOnSigterm_LeftoverProcessFinishes) {
   EXPECT_TRUE(WaitFor([&done] { return File::Exists(done); }));
 }
 
+// The process group of the program that ran, as written to out by
+// `ps -o pgid=`.
+static pid_t ReadPgid(const std::filesystem::path& out) {
+  pid_t pgid = 0;
+  std::ifstream(out) >> pgid;
+  return pgid;
+}
+
+// A socket door that bbs pumps gets its own process group, so it can be
+// stopped along with whatever it started.
+TEST_F(ExecExternalSocketDoorTest, DoorGetsItsOwnProcessGroup) {
+  const auto out = temp("pgid");
+  [[maybe_unused]] const auto status = RunDoor(fmt::format("ps -o pgid= -p $$ > {}", out.string()));
+
+  const auto pgid = ReadPgid(out);
+  ASSERT_GT(pgid, 0);
+  EXPECT_NE(getpgrp(), pgid);
+}
+
+// In a local session there's no socket to pump, so the door is just a
+// child: it stays in bbs's process group and keeps the terminal (in a
+// background group it would be stopped on reading it, and never return).
+TEST_F(ExecExternalSocketDoorTest, LocalSession_DoorStaysInBbsProcessGroup) {
+  helper.sess().ok_modem_stuff(false);
+  const auto out = temp("pgid");
+  wwiv::bbs::CommandLine cl(fmt::format("ps -o pgid= -p $$ > {}", out.string()));
+  [[maybe_unused]] const auto status =
+      ExecuteExternalProgram(cl, EFLAG_NOHUP | EFLAG_LISTEN_SOCK);
+
+  EXPECT_EQ(getpgrp(), ReadPgid(out));
+}
