@@ -592,11 +592,17 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
       need_reopen_remoteio = true;
     }
   }
-  if (exec_socket && (flags & EFLAG_WWIVFOSS)) {
-    // Works with either a TCP (LISTEN_SOCK) or UNIX socket.
-    wwiv::bbs::wwivfoss_options_t opts{};
-    opts.heartbeat = std::chrono::seconds(std::max(0, a()->wwivfoss_heartbeat_seconds()));
-    exec_socket->enable_wwivfoss(opts);
+  if (exec_socket) {
+    const auto exit_grace = std::chrono::seconds(std::max(0, a()->door_exit_grace_seconds()));
+    exec_socket->set_exit_grace(exit_grace);
+    if (flags & EFLAG_WWIVFOSS) {
+      // Works with either a TCP (LISTEN_SOCK) or UNIX socket.
+      wwiv::bbs::wwivfoss_options_t opts{};
+      opts.heartbeat = std::chrono::seconds(std::max(0, a()->wwivfoss_heartbeat_seconds()));
+      opts.caller_hangup_grace = exit_grace;
+      opts.socket_closed_grace = exit_grace;
+      exec_socket->enable_wwivfoss(opts);
+    }
   }
   VLOG(1) << "exec_cmdline: working_commandline: " << working_cmdline;
 

@@ -207,6 +207,27 @@ bool ExecSocket::process_still_active(EXEC_SOCKET_HANDLE h) {
 #endif
 }
 
+static bool wait_for_exit(EXEC_SOCKET_HANDLE h, SOCKET sock, std::string& to_door,
+                          std::chrono::milliseconds timeout);
+static bool would_block();
+
+// So a send to a door that's gone returns an error instead of raising SIGPIPE.
+#ifdef MSG_NOSIGNAL
+static constexpr int send_flags = MSG_NOSIGNAL;
+#else
+static constexpr int send_flags = 0;
+#endif
+
+// Closes the door's side of the connection both ways, so the door sees the
+// caller go (DOSBox-X drops DCD; a native door reads EOF).
+static void shutdown_door_socket(SOCKET sock) {
+#ifdef _WIN32
+  shutdown(sock, SD_BOTH);
+#else
+  shutdown(sock, SHUT_RDWR);
+#endif
+}
+
 pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, SOCKET sock, wwiv::common::RemoteIO& io) {
   if (wwivfoss_) {
     return pump_socket_wwivfoss(hProcess, sock, io);
@@ -214,25 +235,36 @@ pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, SOCKET
   static constexpr int check_process_every = 10;
   char buf[1024];
   int count = 0;
+  // Gives the door its grace period to exit; it may still be saving its
+  // data. Keys the caller typed meanwhile are dropped, so they don't run as
+  // BBS commands once we're back.
+  auto wait_for_door = [&]() {
+    std::string nothing;
+    const auto exited = wait_for_exit(hProcess, sock, nothing, exit_grace_);
+    io.purgeIn();
+    return exited ? pump_socket_result_t::process_exit : pump_socket_result_t::socket_error;
+  };
   while (!stop_.load()) {
     if (auto num_read = recv(sock, buf, sizeof(buf), 0); num_read > 0) {
       io.write(buf, num_read);
-    } else if (num_read == 0) {
-      VLOG(1) << "Exiting pump_socket: recv.";
-      return pump_socket_result_t::socket_error;
+    } else if (num_read == 0 || !would_block()) {
+      // Closed, or failed (the door reset its connection): either way the
+      // door is on its way out.
+      VLOG(1) << "Exiting pump_socket: door closed its socket.";
+      return wait_for_door();
     }
 
     if (!io.connected()) {
-      VLOG(1) << "Exiting pump_socket: Caller Hung up.";
-      return pump_socket_result_t::socket_error;
+      VLOG(1) << "Exiting pump_socket: Caller Hung up; closing the door's socket.";
+      shutdown_door_socket(sock);
+      return wait_for_door();
     }
 
     if (io.incoming()) {
       if (auto num_read = io.read(buf, sizeof(buf)); num_read > 0) {
-        if (send(sock, buf, num_read, 0) == 0) {
-          // TODO(rushfan): handle nonblocking error?
-          VLOG(1) << "Exiting pump_socket; Write to socket failed";
-          return pump_socket_result_t::socket_error;
+        if (send(sock, buf, num_read, send_flags) < 0 && !would_block()) {
+          VLOG(1) << "Exiting pump_socket: write to the door's socket failed.";
+          return wait_for_door();
         }
       }
     }
@@ -261,11 +293,6 @@ static bool would_block() {
 // One non-blocking send of as much of data as the socket will take. Returns
 // bytes sent (0 if the socket is full), or -1 on error.
 static int send_some(SOCKET sock, const std::string& data) {
-#ifdef MSG_NOSIGNAL
-  constexpr int send_flags = MSG_NOSIGNAL;
-#else
-  constexpr int send_flags = 0;
-#endif
   const auto n = send(sock, data.data(), static_cast<int>(data.size()), send_flags);
   if (n >= 0) {
     return static_cast<int>(n);

@@ -51,8 +51,11 @@
 #include "sdk/vardec.h"
 
 #include <algorithm>
+#include <cerrno>
 #include <chrono>
+#include <csignal>
 #include <optional>
+#include <string_view>
 #include <tuple>
 
 static const char SHELL[] = "/bin/bash";
@@ -257,12 +260,54 @@ static void drain_pending_input(int fd) {
   }
 }
 
+// Signals a socket door's process group, or just the door if the group
+// couldn't be made. ESRCH means the whole group is gone, so there's nothing
+// left to signal; falling back to the pid then could hit a reused one.
+static void signal_door(pid_t pid, int sig) {
+  if (kill(-pid, sig) == -1 && errno != ESRCH) {
+    kill(pid, sig);
+  }
+}
+
+// Stops a socket door that didn't exit within its grace period: SIGTERM to
+// its process group (a launcher script and the emulator it started), then
+// SIGKILL to the group if the door itself still hasn't exited. Once the
+// door's own process is gone the rest of the group is left alone, since a
+// launcher may leave a process behind on purpose to finish up (qemudoor.sh
+// copies the door's files back).
+static void terminate_door(pid_t pid, std::string_view reason) {
+  static constexpr auto term_grace = std::chrono::seconds(3);
+  LOG(INFO) << reason << "; sending SIGTERM to pid " << pid << " and its process group";
+  signal_door(pid, SIGTERM);
+  const auto deadline = std::chrono::steady_clock::now() + term_grace;
+  for (;;) {
+    // Not reaped yet (bbs resets SIGCHLD to SIG_DFL), so the group id can't
+    // be reused before the SIGKILL. Checked once more after the last sleep,
+    // so a door that exits right at the deadline doesn't get its leftovers
+    // killed.
+    if (!wwiv::bbs::ExecSocket::process_still_active(pid)) {
+      return;
+    }
+    if (std::chrono::steady_clock::now() >= deadline) {
+      break;
+    }
+    wwiv::os::sleep_for(std::chrono::milliseconds(50));
+  }
+  LOG(INFO) << "Door ignored SIGTERM; sending SIGKILL to pid " << pid << " and its process group";
+  signal_door(pid, SIGKILL);
+}
+
 /**
  * returns a tuple of (pid, pty).
  * if pid == -1, fork failed.
  * if pty == -1, there is no pty
  */
-static std::tuple<pid_t, int> UnixSpawn(const wwiv::bbs::CommandLine& cmdline, int flags, int sock) {
+// own_group puts the child in its own process group. Only for socket doors
+// that bbs pumps and may have to stop: anything else stays in bbs's group,
+// so in a local session it keeps the terminal (a background group would be
+// stopped by SIGTTIN/SIGTTOU and never return).
+static std::tuple<pid_t, int> UnixSpawn(const wwiv::bbs::CommandLine& cmdline, int flags, int sock,
+                                        bool own_group) {
   if (cmdline.empty()) {
     std::make_tuple(-1, -1);
   }
@@ -296,12 +341,19 @@ static std::tuple<pid_t, int> UnixSpawn(const wwiv::bbs::CommandLine& cmdline, i
   }
   if (pid == 0) {
     // In the child
+    if (own_group) {
+      setpgid(0, 0);
+    }
     const char* argv[4] = {SHELL, "-c", cmd.c_str(), 0};
     execv(SHELL, const_cast<char** const>(argv));
     exit(127);
   }
 
-  // In the parent now.
+  // In the parent now. Also set the group here, so it's in place before we
+  // could signal it, whichever runs first.
+  if (own_group) {
+    setpgid(pid, pid);
+  }
   VLOG(1) << "In parent, pid " << pid << "; errno: " << errno;
   return std::make_tuple(pid, pty_fd);
 }
@@ -345,11 +397,17 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
       bout.remoteIO()->close(true);
     }
   }
-  if (exec_socket && (flags & EFLAG_WWIVFOSS)) {
-    // Works with either a TCP (LISTEN_SOCK) or UNIX socket.
-    wwiv::bbs::wwivfoss_options_t opts{};
-    opts.heartbeat = std::chrono::seconds(std::max(0, a()->wwivfoss_heartbeat_seconds()));
-    exec_socket->enable_wwivfoss(opts);
+  if (exec_socket) {
+    const auto exit_grace = std::chrono::seconds(std::max(0, a()->door_exit_grace_seconds()));
+    exec_socket->set_exit_grace(exit_grace);
+    if (flags & EFLAG_WWIVFOSS) {
+      // Works with either a TCP (LISTEN_SOCK) or UNIX socket.
+      wwiv::bbs::wwivfoss_options_t opts{};
+      opts.heartbeat = std::chrono::seconds(std::max(0, a()->wwivfoss_heartbeat_seconds()));
+      opts.caller_hangup_grace = exit_grace;
+      opts.socket_closed_grace = exit_grace;
+      exec_socket->enable_wwivfoss(opts);
+    }
   }
 
   const auto sock = bout.remoteIO()->GetDoorHandle();
@@ -358,7 +416,11 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
     bout.remoteIO()->purgeIn();
     drain_pending_input(static_cast<int>(sock));
   }
-  auto [pid, pty] = UnixSpawn(cmdline, flags, sock);
+  // Socket doors get their own process group, so a door that won't exit can
+  // be stopped with whatever it started (a launcher script and its
+  // emulator). forkpty (STDIO) already makes a new session.
+  const bool own_group = exec_socket != nullptr && !(flags & EFLAG_STDIO);
+  auto [pid, pty] = UnixSpawn(cmdline, flags, sock, own_group);
   if (pid == -1) {
     return 1;
   }
@@ -375,14 +437,10 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
       DCHECK(bout.remoteIO());
       if (exec_socket->pump_socket(pid, sock.value(), *bout.remoteIO()) !=
           pump_socket_result_t::process_exit) {
-        // sockets closed but process still running.
-        VLOG(1) << "Forcefully terminating pid: " << pid;
-        kill(pid, SIGKILL);
+        terminate_door(pid, "Door did not exit within its grace period");
       }
     } else {
-      // sockets closed but process still running.
-      VLOG(1) << "Accept never happend; Forcefully terminating pid: " << pid;
-      kill(pid, SIGKILL);
+      terminate_door(pid, "Door never connected to its socket");
     }
   }
 

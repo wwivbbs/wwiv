@@ -47,7 +47,11 @@ public:
   void close(bool) override {}
   unsigned char getW() override { return 0; }
   bool disconnect() override { return true; }
-  void purgeIn() override {}
+  void purgeIn() override {
+    incoming();
+    input.clear();
+    purged = true;
+  }
   unsigned int put(unsigned char ch) override {
     output.push_back(static_cast<char>(ch));
     return 1;
@@ -78,6 +82,7 @@ public:
   // Added to input at typed_at.
   std::string typed;
   std::optional<steady_clock::time_point> typed_at;
+  bool purged{false};
 };
 
 // Reads from sock until want returns true for what was received, or it
@@ -445,3 +450,107 @@ TEST(ExecSocketWWIVFossTest, BulkBothWays_DoorNotReading) {
   EXPECT_EQ(size, io.output.size());
   EXPECT_LT(r.elapsed.count(), 10000);
 }
+
+// Without WWIVFOSS (Listen Socket Port, Unix socket): #1735.
+
+// Reads until the BBS closes the connection.
+static std::string read_to_eof(int sock) {
+  char buf[256];
+  while (recv(sock, buf, sizeof(buf), 0) > 0) {
+  }
+  return "eof";
+}
+
+TEST(ExecSocketTest, CallerHangup_DoorSeesSocketCloseAndExits) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.set_exit_grace(milliseconds(3000));
+  FakeCallerIO io;
+  io.hangup_at = steady_clock::now() + milliseconds(300);
+
+  const auto r = run_door(es, io, [](int sock) { return read_to_eof(sock); });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+  EXPECT_EQ("eof", r.door_received);
+  // Exited on its own, well within the grace period.
+  EXPECT_LT(r.elapsed.count(), 2000);
+}
+
+TEST(ExecSocketTest, CallerHangup_DoorIgnoresIt_GivesUpAfterGrace) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.set_exit_grace(milliseconds(1000));
+  FakeCallerIO io;
+  io.hangup_at = steady_clock::now() + milliseconds(100);
+
+  const auto r = run_door(es, io, [](int) {
+    usleep(5000000);
+    return std::string();
+  });
+
+  EXPECT_EQ(pump_socket_result_t::socket_error, r.result);
+  EXPECT_GE(r.elapsed.count(), 900);
+  EXPECT_LT(r.elapsed.count(), 4000);
+}
+
+TEST(ExecSocketTest, DoorClosesSocket_GetsGrace) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.set_exit_grace(milliseconds(3000));
+  FakeCallerIO io;
+
+  // Closes the socket, then keeps working (e.g. writing score files).
+  const auto r = run_door(es, io, [](int sock) {
+    ::close(sock);
+    usleep(700000);
+    return std::string();
+  });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+}
+
+// Keys the caller types while the door finishes up aren't left queued to
+// run as BBS commands.
+TEST(ExecSocketTest, DoorClosesSocket_CallerKeysDropped) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.set_exit_grace(milliseconds(3000));
+  FakeCallerIO io;
+  io.typed = "xyz";
+  io.typed_at = steady_clock::now() + milliseconds(300);
+
+  const auto r = run_door(es, io, [](int sock) {
+    usleep(100000);
+    ::close(sock);
+    usleep(600000);
+    return std::string();
+  });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+  EXPECT_TRUE(io.purged);
+  EXPECT_TRUE(io.input.empty());
+}
+
+// A door that resets its connection (RST, not FIN) is treated like one that
+// closed it and gets its grace period. On Linux a later recv returns 0
+// anyway; on Windows recv keeps failing with WSAECONNRESET, which only the
+// read error check catches.
+TEST(ExecSocketTest, DoorSocketReset_GetsGrace) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.set_exit_grace(milliseconds(3000));
+  FakeCallerIO io;
+
+  const auto r = run_door(es, io, [](int sock) {
+    usleep(200000);
+    linger lg{1, 0};
+    setsockopt(sock, SOL_SOCKET, SO_LINGER, &lg, sizeof(lg));
+    ::close(sock);
+    usleep(500000);
+    return std::string();
+  });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+  EXPECT_LT(r.elapsed.count(), 2500);
+}
+
