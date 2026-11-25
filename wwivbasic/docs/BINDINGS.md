@@ -149,12 +149,12 @@ script stops at its next statement.
 | `PRT(n, text...)` | Writes `text` in color `n`, then goes back to color 0 |
 | `PLA(text)` | Writes a line the caller can abort (Space or ^C); returns `TRUE` if they did |
 | `ONEK(keys)` | Waits for the caller to press one of `keys` (case doesn't matter) and returns it in upper case. It doesn't echo the key or start a new line. Once the caller hangs up it returns the first of `keys`, so put the one that quits first. |
-| `READKEY()` | Waits for a key and returns it; for a special key, its name: `UP`, `DOWN`, `LEFT`, `RIGHT`, `HOME`, `END`, `PGUP`, `PGDN`, `INS`, `DEL`, `F1` to `F10`. A result longer than one character is a special key; Enter is `CHR(13)`. `GETKEY` is unchanged. |
+| `READKEY()` | Waits for a key and returns it; for a special key, its name: `UP`, `DOWN`, `LEFT`, `RIGHT`, `HOME`, `END`, `PGUP`, `PGDN`, `INS`, `DEL`, `F1` to `F10`. A result longer than one character is a special key; Enter is `CHR(13)`. Digits come back as digits. Keys the BBS handles itself, such as Ctrl+T, are skipped. `GETKEY` is unchanged. |
 | `SCREEN_COLUMNS()`, `SCREEN_ROWS()` | The size of the caller's screen |
 | `STRIP_COLORS(s)` | `s` without its pipe and heart color codes |
 | `LEN_COLORS(s)` | How wide `s` shows on the screen |
-| `PAD_COLORS(s, n)` | `s` padded with spaces to show `n` wide |
-| `PAUSING(on)` | Turns the "More?" prompt on (`TRUE`) or off (`FALSE`), and returns whether it was on. The user's own setting comes back when the script ends. |
+| `PAD_COLORS(s, n)` | `s` padded with spaces to show `n` wide (`n` at most 65535) |
+| `PAUSING(on)` | Turns the "More?" prompt on (`TRUE`) or off (`FALSE`), and returns whether it was on. The user's own setting comes back when the script ends. The caller can still switch it with Ctrl+Y. |
 | `NSL()` | Seconds left in this call |
 
 ```basic

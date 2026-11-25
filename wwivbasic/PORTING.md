@@ -160,6 +160,10 @@ character code), `TRIM(s)`, `LTRIM(s)`, `RTRIM(s)` and `INSTR(s, find[,
 start])`. `INSTR` counts positions from 0, as `MID`, `LEFT` and `RIGHT` do
 here, and returns -1 when `find` isn't in `s` (VB counts from 1 and returns 0).
 
+A script that already has its own function with one of these names (say a
+`DEF TRIM(s)`) keeps working: a script's `DEF` replaces a built-in function of
+the same name. Two `DEF`s with the same name are still an error.
+
 ## Real numbers
 
 Real numbers work as in my_basic: `7 / 2` is `3.5`, `6 / 2` is the integer

@@ -257,6 +257,13 @@ TEST_F(InterpreterTest, DuplicateFunctionIsAnError) {
   EXPECT_EQ("test.bas:3: error: function 'f' is already defined", errors.front());
 }
 
+// A script written before a built-in was added keeps its own function.
+TEST_F(InterpreterTest, DefReplacesBuiltIn) {
+  run("def trim(s)\nreturn \"mine\"\nenddef\nprint trim(\" x \"); \"/\"; ucase(\"a\")\n");
+  EXPECT_TRUE(errors.empty()) << errors.front();
+  EXPECT_EQ("mine/A\n", output);
+}
+
 // Lists (M2)
 
 TEST_F(InterpreterTest, ListBasics) {

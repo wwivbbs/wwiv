@@ -40,18 +40,22 @@ using namespace wwiv::strings;
 
 namespace wwiv::common {
 
-TempDisablePause::TempDisablePause(Output& out)
-    : Transaction([&out] {
-    if (out.sess().disable_pause()) {
-      out.sess().disable_pause(false);
-      out.user().set_flag(User::pauseOnPage);
-    }
-  }, nullptr) {
-  if (out.user().pause()) {
-    out.sess().disable_pause(true);
-    out.user().clear_flag(User::pauseOnPage);
+// Turns pausing off if it's on, and returns what turns it back on: nothing
+// if it was already off, so that pausing someone else turned off (a script's
+// PAUSING(FALSE), or an outer TempDisablePause) stays off.
+static std::function<void()> DisablePause(Output& out) {
+  if (!out.user().pause()) {
+    return nullptr;
   }
+  out.sess().disable_pause(true);
+  out.user().clear_flag(User::pauseOnPage);
+  return [&out] {
+    out.sess().disable_pause(false);
+    out.user().set_flag(User::pauseOnPage);
+  };
 }
+
+TempDisablePause::TempDisablePause(Output& out) : Transaction(DisablePause(out), nullptr) {}
 
 char Output::GetKeyForPause() {
   char ch = 0;

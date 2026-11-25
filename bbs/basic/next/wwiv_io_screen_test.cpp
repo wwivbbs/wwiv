@@ -177,6 +177,13 @@ print a; "/"; b; "/"; c; "/"; d; "/"; e; "/"; f
 )"));
 }
 
+// Keys the BBS handles itself (Ctrl+T shows the time left) and broken escape
+// sequences are skipped; they don't look like a hang-up.
+TEST_F(WwivIoScreenTest, ReadKey_SkipsHandledKeys) {
+  SendKeys("\x14\x1b[1111111111111111a");
+  EXPECT_EQ("a\r\n", Run("print wwiv.io.readkey()\n"));
+}
+
 // Digits and "." come back as typed, not as the number pad's arrow keys
 // (8 = up and so on), so a script can read a menu choice like "1".
 TEST_F(WwivIoScreenTest, ReadKey_Digits) {
@@ -206,8 +213,16 @@ TEST_F(WwivIoScreenTest, ScreenSize) {
 TEST_F(WwivIoScreenTest, Colors) {
   EXPECT_EQ("[Hi there]/8/[Hi    ]\r\n", Run(R"(
 s = "|#3Hi |15there"
-print "["; wwiv.io.strip_colors(s); "]/"; wwiv.io.len_colors(s); "/["; wwiv.io.pad_colors("|#1Hi", 6); "]"
+print "["; wwiv.io.strip_colors(s); "]/"; wwiv.io.len_colors(s); "/[";
+print wwiv.io.pad_colors("|#1Hi", 6); "]"
 )"));
+}
+
+TEST_F(WwivIoScreenTest, PadColors_Limit) {
+  bool ok{true};
+  const auto out = Run("x = wwiv.io.pad_colors(\"\", 2000000000)\n", &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, HasSubstr("PAD_COLORS: 2000000000 is more than 65535 characters"));
 }
 
 // PAUSING turns the user's pausing off for the script, and the user's
@@ -228,11 +243,17 @@ print a; "/"; b; "/"; wwiv.io.pausing(TRUE)
   EXPECT_FALSE(helper.sess().disable_pause());
 }
 
-// A user who doesn't pause keeps not pausing.
-TEST_F(WwivIoScreenTest, Pausing_UserDoesntPause) {
+// PAUSING(TRUE) turns pausing on for a user who doesn't pause, and their
+// setting comes back when the script ends.
+TEST_F(WwivIoScreenTest, Pausing_TurnsOn) {
   helper.user()->clear_flag(User::pauseOnPage);
-  EXPECT_EQ("FALSE\r\n", Run("print wwiv.io.pausing(TRUE)\n"));
+  helper.sess().disable_pause(true);
+  EXPECT_EQ("FALSE/TRUE\r\n", Run(R"(
+a = wwiv.io.pausing(TRUE)
+print a; "/"; wwiv.io.pausing(TRUE)
+)"));
   EXPECT_FALSE(helper.user()->pause());
+  EXPECT_TRUE(helper.sess().disable_pause());
 }
 
 TEST_F(WwivIoScreenTest, Nsl) {

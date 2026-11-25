@@ -41,3 +41,29 @@ TEST_F(PauseTest, Smoke) {
   }
   EXPECT_TRUE(helper.user()->pause());
 }
+
+// An inner TempDisablePause leaves pausing as the outer one set it.
+TEST_F(PauseTest, Nested) {
+  helper.user()->set_flag(User::pauseOnPage);
+  {
+    TempDisablePause outer(bout);
+    {
+      TempDisablePause inner(bout);
+      EXPECT_FALSE(helper.user()->pause());
+    }
+    EXPECT_FALSE(helper.user()->pause());
+    EXPECT_TRUE(helper.sess().disable_pause());
+  }
+  EXPECT_TRUE(helper.user()->pause());
+  EXPECT_FALSE(helper.sess().disable_pause());
+}
+
+// Pausing turned off some other way (by a script, or the "pause off" option
+// of a printfile) stays off when a TempDisablePause ends.
+TEST_F(PauseTest, AlreadyOff) {
+  helper.user()->clear_flag(User::pauseOnPage);
+  helper.sess().disable_pause(true);
+  { TempDisablePause disable_pause(bout); }
+  EXPECT_FALSE(helper.user()->pause());
+  EXPECT_TRUE(helper.sess().disable_pause());
+}

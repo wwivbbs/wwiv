@@ -76,16 +76,18 @@ std::string key_name(int key) {
   }
 }
 
-// Turns the "More?" prompt off and on for a script, the way TempDisablePause
-// does: by clearing the user's pause flag. It puts the flag back when the
-// script ends (when the interpreter, which holds this, is destroyed), so a
-// script can't leave the user's setting changed.
+// Turns the "More?" prompt on and off for a script, the way a printfile's
+// "pause on/off" option or |{set pause ...} does: by setting the user's pause
+// flag and the session's disable_pause. It puts both back when the script
+// ends (when the interpreter, which holds this, is destroyed), so a script
+// can't leave the user's setting changed.
 class ScriptPause {
 public:
   explicit ScriptPause(common::Context* ctx) : ctx_(ctx) {}
   ~ScriptPause() {
-    if (disabled_) {
-      set(true);
+    if (ctx_ && saved_) {
+      ctx_->u().set_flag(sdk::User::pauseOnPage, saved_user_pause_);
+      ctx_->session_context().disable_pause(saved_disable_pause_);
     }
   }
   ScriptPause(const ScriptPause&) = delete;
@@ -98,23 +100,23 @@ public:
     }
     auto& sess = ctx_->session_context();
     auto& u = ctx_->u();
-    const auto was_on = u.pause();
-    if (!on && was_on) {
-      sess.disable_pause(true);
-      u.clear_flag(sdk::User::pauseOnPage);
-      disabled_ = true;
-    } else if (on && disabled_) {
-      sess.disable_pause(false);
-      u.set_flag(sdk::User::pauseOnPage);
-      disabled_ = false;
+    if (!saved_) {
+      saved_ = true;
+      saved_user_pause_ = u.pause();
+      saved_disable_pause_ = sess.disable_pause();
     }
+    const auto was_on = u.pause();
+    u.set_flag(sdk::User::pauseOnPage, on);
+    sess.disable_pause(!on);
     return was_on;
   }
 
 private:
   common::Context* ctx_;
-  // Whether this turned the user's pausing off.
-  bool disabled_{false};
+  // Whether the settings below were saved (on the first PAUSING call).
+  bool saved_{false};
+  bool saved_user_pause_{false};
+  bool saved_disable_pause_{false};
 };
 
 } // namespace
@@ -288,13 +290,18 @@ void RegisterWwivIo(wwivbasic::Interpreter& interp, const WwivBindings& b) {
   // READKEY() waits for a key. It returns the character, or for a special key
   // its name: UP, DOWN, LEFT, RIGHT, HOME, END, PGUP, PGDN, INS, DEL, F1 to
   // F10 (so a result longer than one character is a special key). Enter is
-  // CHR(13). Keys it has no name for are skipped. Once the caller hangs up it
-  // returns "".
+  // CHR(13). Keys it has no name for, or that the BBS handles itself (Ctrl+T
+  // for time left, say), are skipped. Once the caller hangs up it returns "".
   m.native_function("READKEY", [b]() {
     while (true) {
       const auto key = b.in.bgetch_event(common::Input::numlock_status_t::NUMBERS);
       if (key == 0) {
-        return std::string{};
+        // bgetch_event also returns 0 for keys it handled and for broken
+        // escape sequences, so check that the caller really hung up.
+        if (b.in.sess().hangup()) {
+          return std::string{};
+        }
+        continue;
       }
       if (key < 256) {
         return std::string(1, static_cast<char>(key));
@@ -306,7 +313,8 @@ void RegisterWwivIo(wwivbasic::Interpreter& interp, const WwivBindings& b) {
   });
 
   // SCREEN_COLUMNS() and SCREEN_ROWS() are the size of the caller's screen.
-  m.native_function("SCREEN_COLUMNS", [ctx = b.ctx]() { return ctx ? ctx->u().screen_width() : 80; });
+  m.native_function("SCREEN_COLUMNS",
+                    [ctx = b.ctx]() { return ctx ? ctx->u().screen_width() : 80; });
   m.native_function("SCREEN_ROWS", [ctx = b.ctx]() {
     return ctx ? ctx->session_context().num_screen_lines() : 25;
   });
@@ -316,16 +324,24 @@ void RegisterWwivIo(wwivbasic::Interpreter& interp, const WwivBindings& b) {
   // to show n wide.
   m.native_function("STRIP_COLORS", [](std::string s) { return std::string(::stripcolors(s)); });
   m.native_function("LEN_COLORS", [](std::string s) { return strings::size_without_colors(s); });
+  // n is at most 65535, as for SPACE and STRING.
   m.native_function("PAD_COLORS", [](std::string s, int n) {
+    static constexpr int kMaxPad = 65535;
+    if (n > kMaxPad) {
+      throw BasicError(fmt::format("PAD_COLORS: {} is more than {} characters", n, kMaxPad));
+    }
     return strings::pad_to_ignore_colors(s, n);
   });
 
   // PAUSING(on) turns the "More?" prompt on or off, and returns whether it
-  // was on. The user's own setting is put back when the script ends.
+  // was on. The user's own setting is put back when the script ends. (The
+  // caller can still turn it back on or off with Ctrl+Y.)
   auto pause = std::make_shared<ScriptPause>(b.ctx);
   m.native_function("PAUSING", [pause](bool on) { return pause->set(on); });
 
   // NSL() is the number of seconds left in this call (4.24's nsl).
+  // TODO: nsl() reads a(): the time added to this call (extratimecall) is
+  // only on Application. Use the Context once that moves to SessionContext.
   m.native_function("NSL", []() { return static_cast<int>(nsl()); });
 }
 
