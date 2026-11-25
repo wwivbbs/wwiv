@@ -130,3 +130,63 @@ legacy engine.
 
 `OUTSTR`, `PL` and `PRINT` still run MCI codes, as scripts usually want for
 their own text.
+
+## wwiv.user
+
+The caller's own details, and the public details of other users. Like
+`wwiv.msg`, it's read-only, on by default, and the sysop can turn it off with
+"Enable Package USER" in wwivconfig's scripting settings (the
+`script_flag_disable_user` bit, `0x0020`, in `config.json`'s
+`script_flags`).
+
+```basic
+import "@wwiv.user"
+
+u = current()
+print "Hello, "; u.name; " (SL "; u.sl; ")"
+If u.cosysop Then
+  print "You can see the co-sysop options."
+EndIf
+
+n = find("sysop")
+If n > 0 Then
+  print "The sysop last called on "; wwiv.time.format(user(n).last_on, "%m/%d/%y")
+EndIf
+```
+
+### Functions
+
+| Function | Returns |
+| --- | --- |
+| `CURRENT()` | The caller (a `user`), read when it's called |
+| `FIND(name)` | The number of the user named `name` (case doesn't matter), or 0 if there's none |
+| `USER(n)` | The public details of user `n` (a `user_info`); an error if there's no such user, or it's deleted or inactive |
+| `MODULE_NAME()` | `"wwiv.user"` |
+
+### The caller (`user`)
+
+The names match the BBS's `user.*` expressions (in menus and `|{...}` codes)
+where there is one.
+
+| Member | |
+| --- | --- |
+| `NUMBER` | The user number |
+| `NAME` | The name as stored, such as `RUSHFAN` (as `user.name` and `\|@N`) |
+| `REAL_NAME` | The real name, or `""` if none |
+| `SL`, `DSL` | The security level and download security level, as stored (a temporary SL from the sysop doesn't change them) |
+| `AR`, `DAR` | The ARs and DARs as letters, such as `"AC"` |
+| `SYSOP` | `TRUE` if the SL is 255 |
+| `COSYSOP` | `TRUE` for the sysop, or if the caller's current SL (the stored one, before the BBS sets it) has the co-sysop ability |
+| `LOGONS` | How many times the user has logged on |
+| `POSTS`, `UPLOADS`, `DOWNLOADS` | How many messages posted, and files uploaded and downloaded |
+| `LAST_ON` | When the user last logged on, as a time_t; for the caller, the start of this call |
+
+### Other users (`user_info`)
+
+Only what any caller may see of another user, whoever is asking:
+
+| Member | |
+| --- | --- |
+| `NUMBER` | The user number |
+| `NAME` | The name as stored, such as `SYSOP` |
+| `LAST_ON` | When the user last logged on, as a time_t |

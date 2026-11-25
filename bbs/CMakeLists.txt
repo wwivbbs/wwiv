@@ -179,12 +179,14 @@ if (WWIV_WWIVBASIC_NEXT)
   target_sources(bbs_lib PRIVATE
     basic/next/bbs_console.cpp
     basic/next/bbs_message_base.cpp
+    basic/next/bbs_user_base.cpp
     basic/next/next_engine.cpp
     basic/next/wwiv.cpp
     basic/next/wwiv_data.cpp
     basic/next/wwiv_file.cpp
     basic/next/wwiv_io.cpp
     basic/next/wwiv_msg.cpp
+    basic/next/wwiv_user.cpp
     basic/next/wwiv_os.cpp
     basic/next/wwiv_time.cpp
   )
@@ -255,6 +257,7 @@ if (WWIV_BUILD_TESTS)
         basic/next/wwiv_data_test.cpp
         basic/next/wwiv_file_os_test.cpp
         basic/next/wwiv_msg_test.cpp
+        basic/next/wwiv_user_test.cpp
         basic/next/side_by_side_test.cpp
         basic/next/type_ahead_test_util.cpp
       )
