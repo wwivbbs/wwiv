@@ -22,6 +22,8 @@
 #include "core/file.h"
 #include "gtest/gtest.h"
 
+#include <fstream>
+#include <iterator>
 #include <string>
 
 using namespace wwiv::core;
@@ -91,3 +93,40 @@ TEST_F(DropFileTest, PCBoardSys_OpenBps) {
   a()->modem_speed_ = 115200;
   EXPECT_EQ("11520", field(CreatePCBoardSys().openbps));
 }
+
+static std::string ReadBinary(const std::filesystem::path& path) {
+  std::ifstream in(path, std::ios::binary);
+  return {std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
+}
+
+static bool HasBareLF(const std::string& s) {
+  for (size_t i = 0; i < s.size(); i++) {
+    if (s[i] == '\n' && (i == 0 || s[i - 1] != '\r')) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// DOS doors read these, so every line ends in CR LF on every platform.
+TEST_F(DropFileTest, DosDropFiles_UseCRLF) {
+  [[maybe_unused]] auto _ = create_chain_file();
+  for (const auto t : {drop_file_t::CHAIN_TXT, drop_file_t::DORINFO_DEF,
+                       drop_file_t::CALLINFO_BBS, drop_file_t::DOOR_SYS}) {
+    const auto path = create_dropfile_filename(t);
+    const auto contents = ReadBinary(path);
+    EXPECT_FALSE(contents.empty()) << path;
+    EXPECT_NE(std::string::npos, contents.find("\r\n")) << path;
+    EXPECT_FALSE(HasBareLF(contents)) << path;
+  }
+}
+
+#ifndef _WIN32
+// DOOR32.SYS is for 32-bit doors, so it uses the platform's line endings.
+TEST_F(DropFileTest, Door32Sys_UsesPlatformLineEndings) {
+  [[maybe_unused]] auto _ = create_chain_file();
+  const auto contents = ReadBinary(create_dropfile_filename(drop_file_t::DOOR32_SYS));
+  EXPECT_FALSE(contents.empty());
+  EXPECT_EQ(std::string::npos, contents.find('\r'));
+}
+#endif

@@ -45,7 +45,8 @@ typedef std::basic_ostream<char>&(ENDL_TYPE2)(std::basic_ostream<char>&);
     r | Read
     w | Write, Truncate if exists
     a | Append/Write.
-    d | DOS Text mode (always use \r\n, even on *nix)
+    d | DOS Text mode: every \n is written as \r\n, even on *nix
+      | (Write, WriteChar, WriteLine and operator<<)
     t | Text Mode (default)
     b | Binary Mode
     + | Read and Write

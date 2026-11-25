@@ -22,6 +22,8 @@
 #include "core/textfile.h"
 #include "gtest/gtest.h"
 #include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <memory>
 #include <string>
 
@@ -107,6 +109,55 @@ TEST_F(TextFileTest, Write) {
   const auto actual = helper_.ReadFile(filename);
   EXPECT_EQ("Hello", actual);
 }
+
+// Reads without text mode translation, so \r\n stays visible on Windows.
+static std::string ReadBinary(const std::filesystem::path& path) {
+  std::ifstream in(path, std::ios::binary);
+  return {std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
+}
+
+TEST_F(TextFileTest, Write_DosMode) {
+  const auto path = FilePath(helper_.TempDir(), this->test_name());
+  {
+    TextFile file(path, "wd");
+    EXPECT_EQ(8, file.Write("a\nbc\n\nd\n"));
+    file.Write("no newline");
+  }
+  EXPECT_EQ("a\r\nbc\r\n\r\nd\r\nno newline", ReadBinary(path));
+}
+
+TEST_F(TextFileTest, WriteChar_DosMode) {
+  const auto path = FilePath(helper_.TempDir(), this->test_name());
+  {
+    TextFile file(path, "wd");
+    file.WriteChar('a');
+    file.WriteChar('\n');
+  }
+  EXPECT_EQ("a\r\n", ReadBinary(path));
+}
+
+TEST_F(TextFileTest, Mixed_DosMode) {
+  const auto path = FilePath(helper_.TempDir(), this->test_name());
+  {
+    TextFile file(path, "wd");
+    file.WriteLine("one");
+    file.Write("two\nthree\n");
+    file << "four" << std::endl;
+  }
+  EXPECT_EQ("one\r\ntwo\r\nthree\r\nfour\r\n", ReadBinary(path));
+}
+
+#ifndef _WIN32
+TEST_F(TextFileTest, Write_TextMode_KeepsLF) {
+  const auto path = FilePath(helper_.TempDir(), this->test_name());
+  {
+    TextFile file(path, "wt");
+    file.Write("a\nb\n");
+    file.WriteChar('\n');
+  }
+  EXPECT_EQ("a\nb\n\n", ReadBinary(path));
+}
+#endif
 
 TEST_F(TextFileTest, Insertion_Basic) {
   std::string filename;

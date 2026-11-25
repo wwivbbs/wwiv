@@ -139,12 +139,32 @@ bool TextFile::Close() noexcept {
 // ReSharper disable once CppMemberFunctionMayBeConst
 ssize_t TextFile::WriteChar(char ch) noexcept {
   DCHECK(file_);
+#if !defined(_WIN32) && !defined(__OS2__)
+  // DOS mode: \n becomes \r\n, as text mode does on Windows and OS/2.
+  if (dos_mode_ && ch == '\n' && fputc('\r', file_) == EOF) {
+    return EOF;
+  }
+#endif
   return fputc(ch, file_);
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 ssize_t TextFile::Write(const std::string& text) noexcept {
   DCHECK(file_);
+#if !defined(_WIN32) && !defined(__OS2__)
+  // DOS mode: each \n becomes \r\n, as text mode does on Windows and OS/2.
+  if (dos_mode_ && text.find('\n') != std::string::npos) {
+    std::string dos;
+    dos.reserve(text.size() + text.size() / 8);
+    for (const auto ch : text) {
+      if (ch == '\n') {
+        dos.push_back('\r');
+      }
+      dos.push_back(ch);
+    }
+    return static_cast<ssize_t>((fputs(dos.c_str(), file_) >= 0) ? text.size() : 0);
+  }
+#endif
   return static_cast<ssize_t>((fputs(text.c_str(), file_) >= 0) ? text.size() : 0);
 }
 
