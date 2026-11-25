@@ -25,8 +25,15 @@
 #include "gtest/gtest.h"
 #include "sdk/vardec.h"
 
+#include <chrono>
+#include <csignal>
 #include <filesystem>
+#include <fstream>
+#include <functional>
+#include <string>
 #include <sys/socket.h>
+#include <sys/wait.h>
+#include <thread>
 #include <unistd.h>
 
 using namespace wwiv::core;
@@ -98,3 +105,85 @@ TEST_F(ExecExternalTest, ProgramReadingConnectionGetsNoPendingInput) {
   close(sv[0]);
   close(sv[1]);
 }
+
+// #1735: socket doors (Listen Socket Port) when the caller hangs up.
+class ExecExternalSocketDoorTest : public ExecExternalTest {
+protected:
+  void SetUp() override {
+    ExecExternalTest::SetUp();
+    a()->set_door_exit_grace_seconds(1);
+    // The caller has already hung up when the door starts.
+    remote()->is_connected = false;
+  }
+
+  [[nodiscard]] std::filesystem::path temp(const std::string& name) {
+    return FilePath(helper.files().DirName("temp"), name);
+  }
+
+  // Runs script under bash as a socket door connected to %Z. Returns the
+  // exit status and sets elapsed_.
+  int RunDoor(const std::string& script) {
+    wwiv::bbs::CommandLine cl(
+        fmt::format("bash -c 'exec 3<>/dev/tcp/127.0.0.1/%Z; {}'", script));
+    const auto start = std::chrono::steady_clock::now();
+    const auto status = ExecuteExternalProgram(cl, EFLAG_NOHUP | EFLAG_LISTEN_SOCK);
+    elapsed_ = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now() - start);
+    return status;
+  }
+
+  std::chrono::milliseconds elapsed_{};
+};
+
+// Waits up to timeout for done() to return true.
+static bool WaitFor(const std::function<bool()>& done,
+                    std::chrono::milliseconds timeout = std::chrono::milliseconds(5000)) {
+  const auto deadline = std::chrono::steady_clock::now() + timeout;
+  while (!done()) {
+    if (std::chrono::steady_clock::now() >= deadline) {
+      return false;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
+  return true;
+}
+
+// The door sees its socket close, finishes up and exits; it isn't signalled.
+TEST_F(ExecExternalSocketDoorTest, DoorExitsOnItsOwn) {
+  const auto out = temp("out");
+  const auto status = RunDoor(fmt::format("cat <&3 >/dev/null; echo saved > {}; exit 7",
+                                          out.string()));
+
+  ASSERT_TRUE(WIFEXITED(status)) << status;
+  EXPECT_EQ(7, WEXITSTATUS(status));
+  EXPECT_TRUE(File::Exists(out));
+  EXPECT_LT(elapsed_.count(), 1000);
+}
+
+// A door that ignores the hangup is stopped after the grace period, along
+// with what it started (here a background sleep standing in for an
+// emulator under a launcher script).
+TEST_F(ExecExternalSocketDoorTest, DoorIgnoresHangup_ProcessGroupStopped) {
+  const auto kid_pid = temp("kid.pid");
+  const auto status =
+      RunDoor(fmt::format("sleep 30 & echo $! > {}; wait", kid_pid.string()));
+
+  EXPECT_TRUE(WIFSIGNALED(status)) << status;
+  EXPECT_GE(elapsed_.count(), 900);
+  pid_t kid = 0;
+  std::ifstream(kid_pid) >> kid;
+  ASSERT_GT(kid, 0);
+  EXPECT_TRUE(WaitFor([kid] { return kill(kid, 0) == -1 && errno == ESRCH; }))
+      << "the door's child " << kid << " is still running";
+}
+
+// Once the door itself exits on SIGTERM, a process it left behind on
+// purpose (like qemudoor.sh's copy-back) is not SIGKILLed.
+TEST_F(ExecExternalSocketDoorTest, DoorExitsOnSigterm_LeftoverProcessFinishes) {
+  const auto done = temp("done");
+  [[maybe_unused]] const auto status = RunDoor(fmt::format(
+      "(trap \"\" TERM; sleep 2; touch {}) & sleep 30", done.string()));
+
+  EXPECT_TRUE(WaitFor([&done] { return File::Exists(done); }));
+}
+

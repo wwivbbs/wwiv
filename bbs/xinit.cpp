@@ -288,6 +288,7 @@ void Application::ReadINIFile(IniFile& ini) {
   exec_log_syncfoss_ = ini.value<bool>(INI_STR_EXEC_LOG_SYNCFOSS, false);
   exec_child_process_wait_time_ = ini.value<int>(INI_STR_EXEC_CHILD_WAIT_TIME, 500);
   wwivfoss_heartbeat_seconds_ = ini.value<int>(INI_STR_WWIVFOSS_HEARTBEAT, 10);
+  door_exit_grace_seconds_ = ini.value<int>(INI_STR_DOOR_EXIT_GRACE, 10);
   beginday_node_number_ = ini.value<int>(INI_STR_BEGINDAYNODENUMBER, 1);
 
   // pull out sysinfo_flags

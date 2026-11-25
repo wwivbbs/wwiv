@@ -98,6 +98,9 @@ constexpr const char* INI_STR_EXEC_CHILD_WAIT_TIME =   "EXEC_CHILD_WAIT_TIME";
 // Seconds between heartbeats sent to SOCK_WWIVFOSS doors (0 disables). Must
 // be <= the door's WWIVFOSS -H<n> option (WWIVFOSS hangs up after 3 missed).
 constexpr const char* INI_STR_WWIVFOSS_HEARTBEAT = "WWIVFOSS_HEARTBEAT";
+// Seconds a socket door has to exit after the caller hangs up or the door
+// closes its socket, before it's terminated.
+constexpr const char* INI_STR_DOOR_EXIT_GRACE = "DOOR_EXIT_GRACE";
 constexpr const char* INI_STR_NEW_SCAN_AT_LOGIN  = "NEW_SCAN_AT_LOGIN";
 
 #endif  // INCLUDED_BBS_XINITINI_H

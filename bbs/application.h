@@ -252,6 +252,13 @@ public:
   /** Seconds between heartbeats sent to SOCK_WWIVFOSS doors; 0 disables them. */
   [[nodiscard]] int wwivfoss_heartbeat_seconds() const { return wwivfoss_heartbeat_seconds_; }
 
+  /**
+   * Seconds a socket door has to exit after the caller hangs up or the door
+   * closes its socket, before it's terminated.
+   */
+  [[nodiscard]] int door_exit_grace_seconds() const { return door_exit_grace_seconds_; }
+  void set_door_exit_grace_seconds(int n) { door_exit_grace_seconds_ = n; }
+
   [[nodiscard]] int net_num() const { return network_num_; }
   void set_net_num(int n) { network_num_ = n; }
 
@@ -365,6 +372,7 @@ public:
   int beginday_node_number_{1};
   int exec_child_process_wait_time_{500};
   int wwivfoss_heartbeat_seconds_{10};
+  int door_exit_grace_seconds_{10};
   int network_num_{0};
   int subchg{0};
 

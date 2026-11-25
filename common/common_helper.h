@@ -159,7 +159,7 @@ public:
   unsigned int put(unsigned char ch) override;
   unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
   unsigned int read(char *, unsigned int) override { return 0; }
-  bool connected() override { return true; }
+  bool connected() override { return is_connected; }
   bool incoming() override { return !keys.empty(); }
   [[nodiscard]] unsigned int GetHandle() const override { return handle; }
 
@@ -167,6 +167,8 @@ public:
   std::string keys;
   // What GetHandle (and so GetDoorHandle) returns.
   unsigned int handle{0};
+  // What connected returns; false is a caller who hung up.
+  bool is_connected{true};
 
 private:
   std::string* captured_;

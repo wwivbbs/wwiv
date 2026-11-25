@@ -207,6 +207,19 @@ bool ExecSocket::process_still_active(EXEC_SOCKET_HANDLE h) {
 #endif
 }
 
+static bool wait_for_exit(EXEC_SOCKET_HANDLE h, SOCKET sock, std::string& to_door,
+                          std::chrono::milliseconds timeout);
+
+// Closes the door's side of the connection both ways, so the door sees the
+// caller go (DOSBox-X drops DCD; a native door reads EOF).
+static void shutdown_door_socket(SOCKET sock) {
+#ifdef _WIN32
+  shutdown(sock, SD_BOTH);
+#else
+  shutdown(sock, SHUT_RDWR);
+#endif
+}
+
 pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, SOCKET sock, wwiv::common::RemoteIO& io) {
   if (wwivfoss_) {
     return pump_socket_wwivfoss(hProcess, sock, io);
@@ -218,13 +231,21 @@ pump_socket_result_t ExecSocket::pump_socket(EXEC_SOCKET_HANDLE hProcess, SOCKET
     if (auto num_read = recv(sock, buf, sizeof(buf), 0); num_read > 0) {
       io.write(buf, num_read);
     } else if (num_read == 0) {
-      VLOG(1) << "Exiting pump_socket: recv.";
-      return pump_socket_result_t::socket_error;
+      // The door is on its way out; it may still be saving its data.
+      VLOG(1) << "Exiting pump_socket: door closed its socket.";
+      std::string nothing;
+      return wait_for_exit(hProcess, sock, nothing, exit_grace_)
+                 ? pump_socket_result_t::process_exit
+                 : pump_socket_result_t::socket_error;
     }
 
     if (!io.connected()) {
-      VLOG(1) << "Exiting pump_socket: Caller Hung up.";
-      return pump_socket_result_t::socket_error;
+      VLOG(1) << "Exiting pump_socket: Caller Hung up; closing the door's socket.";
+      shutdown_door_socket(sock);
+      std::string nothing;
+      return wait_for_exit(hProcess, sock, nothing, exit_grace_)
+                 ? pump_socket_result_t::process_exit
+                 : pump_socket_result_t::socket_error;
     }
 
     if (io.incoming()) {

@@ -29,6 +29,13 @@ What's New in WWIV 5.10.0 (2026)
   the caller to the BBS. WWIV also sends heartbeats every
   WWIVFOSS_HEARTBEAT seconds (wwiv.ini, default 10); run the door with
   WWIVFOSS -E -H10 (the -H value must be at least WWIVFOSS_HEARTBEAT).
+! Socket doors (Listen Socket Port, Unix socket, WWIVFOSS) are no longer
+  killed the moment the caller hangs up. WWIV closes the door's socket (or,
+  for WWIVFOSS, lowers DTR) and gives the door DOOR_EXIT_GRACE seconds
+  (wwiv.ini, default 10) to save and exit, and also when the door closes
+  its socket. On Linux a door that's still running then gets SIGTERM,
+  sent to its whole process group so an emulator started by a launcher
+  script is stopped too, and SIGKILL if it hasn't exited 3 seconds later.
 
 What's New in WWIV 5.9.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

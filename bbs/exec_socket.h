@@ -83,6 +83,13 @@ public:
    */
   void enable_wwivfoss(const wwivfoss_options_t& options);
 
+  /**
+   * Without WWIVFOSS: how long the door has to exit after the caller hangs
+   * up (its socket is shut down, so it sees the connection close) or after
+   * it closes its socket, before pump_socket returns socket_error.
+   */
+  void set_exit_grace(std::chrono::milliseconds grace) { exit_grace_ = grace; }
+
   bool stop_pump();
   static bool process_still_active(EXEC_SOCKET_HANDLE h);
 
@@ -98,6 +105,7 @@ private:
   int port_{0};
   std::atomic<bool> stop_;
   std::optional<wwivfoss_options_t> wwivfoss_;
+  std::chrono::milliseconds exit_grace_{10000};
 };
 
 }

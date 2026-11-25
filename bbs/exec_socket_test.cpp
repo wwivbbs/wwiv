@@ -445,3 +445,61 @@ TEST(ExecSocketWWIVFossTest, BulkBothWays_DoorNotReading) {
   EXPECT_EQ(size, io.output.size());
   EXPECT_LT(r.elapsed.count(), 10000);
 }
+
+// Without WWIVFOSS (Listen Socket Port, Unix socket): #1735.
+
+// Reads until the BBS closes the connection.
+std::string read_to_eof(int sock) {
+  char buf[256];
+  while (recv(sock, buf, sizeof(buf), 0) > 0) {
+  }
+  return "eof";
+}
+
+TEST(ExecSocketTest, CallerHangup_DoorSeesSocketCloseAndExits) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.set_exit_grace(milliseconds(3000));
+  FakeCallerIO io;
+  io.hangup_at = steady_clock::now() + milliseconds(300);
+
+  const auto r = run_door(es, io, [](int sock) { return read_to_eof(sock); });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+  EXPECT_EQ("eof", r.door_received);
+  // Exited on its own, well within the grace period.
+  EXPECT_LT(r.elapsed.count(), 2000);
+}
+
+TEST(ExecSocketTest, CallerHangup_DoorIgnoresIt_GivesUpAfterGrace) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.set_exit_grace(milliseconds(1000));
+  FakeCallerIO io;
+  io.hangup_at = steady_clock::now() + milliseconds(100);
+
+  const auto r = run_door(es, io, [](int) {
+    usleep(5000000);
+    return std::string();
+  });
+
+  EXPECT_EQ(pump_socket_result_t::socket_error, r.result);
+  EXPECT_GE(r.elapsed.count(), 900);
+  EXPECT_LT(r.elapsed.count(), 4000);
+}
+
+TEST(ExecSocketTest, DoorClosesSocket_GetsGrace) {
+  ExecSocket es(0);
+  ASSERT_TRUE(es.listening());
+  es.set_exit_grace(milliseconds(3000));
+  FakeCallerIO io;
+
+  // Closes the socket, then keeps working (e.g. writing score files).
+  const auto r = run_door(es, io, [](int sock) {
+    ::close(sock);
+    usleep(700000);
+    return std::string();
+  });
+
+  EXPECT_EQ(pump_socket_result_t::process_exit, r.result);
+}
