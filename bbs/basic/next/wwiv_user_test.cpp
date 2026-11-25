@@ -27,6 +27,7 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/user.h"
@@ -143,7 +144,7 @@ TEST_F(WwivUserTest, Current) {
   u.messages_posted(7);
   u.uploaded(3);
   u.downloaded(5);
-  EXPECT_EQ("1/Rushfan/Rob/200/100/AC/B/FALSE/FALSE\r\n42/7/3/5/1700000000\r\n", Run(R"(
+  EXPECT_EQ("1/RUSHFAN/Rob/200/100/AC/B/FALSE/FALSE\r\n42/7/3/5/1700000000\r\n", Run(R"(
 u = wwiv.user.current()
 print u.number; "/"; u.name; "/"; u.real_name; "/"; u.sl; "/"; u.dsl; "/"; u.ar; "/"; u.dar; "/"; u.sysop; "/"; u.cosysop
 print u.logons; "/"; u.posts; "/"; u.uploads; "/"; u.downloads; "/"; u.last_on
@@ -177,7 +178,7 @@ print wwiv.user.find("SYSOP"); "/"; wwiv.user.find("sysop"); "/"; wwiv.user.find
 }
 
 TEST_F(WwivUserTest, User) {
-  EXPECT_EQ("2/Sysop/1699999940\r\n", Run(R"(
+  EXPECT_EQ("2/SYSOP/1699999940\r\n", Run(R"(
 u = wwiv.user.user(2)
 print u.number; "/"; u.name; "/"; u.last_on
 )"));
@@ -227,6 +228,11 @@ protected:
     a()->users()->set_user_writes_allowed(true);
     AddUser(2, "SYSOP");
     AddUser(3, "GONE");
+    AddUser(4, "AWAY");
+    auto away = a()->users()->readuser(4);
+    ASSERT_TRUE(away);
+    away->set_inact(User::userInactive);
+    ASSERT_TRUE(a()->users()->writeuser(away, 4));
     auto u = a()->users()->readuser(3);
     ASSERT_TRUE(u);
     u->set_inact(User::userDeleted);
@@ -250,6 +256,7 @@ TEST_F(BbsUserBaseTest, Read) {
   ASSERT_TRUE(u);
   EXPECT_EQ("SYSOP", u->name());
   EXPECT_EQ(std::nullopt, users.read(3)) << "deleted";
+  EXPECT_EQ(std::nullopt, users.read(4)) << "inactive";
   EXPECT_EQ(std::nullopt, users.read(0));
   EXPECT_EQ(std::nullopt, users.read(99));
 }
@@ -285,4 +292,11 @@ TEST_F(BbsUserBaseTest, CoSysop) {
   helper.sess().effective_sl(50);
   helper.user()->sl(255);
   EXPECT_TRUE(users.is_cosysop());
+
+  // Before the session's SL is set, the stored SL counts, as in user.cosysop.
+  helper.sess().effective_sl(0);
+  helper.user()->sl(80);
+  EXPECT_TRUE(users.is_cosysop());
+  helper.user()->sl(50);
+  EXPECT_FALSE(users.is_cosysop());
 }

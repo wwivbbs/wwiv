@@ -160,7 +160,7 @@ EndIf
 | --- | --- |
 | `CURRENT()` | The caller (a `user`), read when it's called |
 | `FIND(name)` | The number of the user named `name` (case doesn't matter), or 0 if there's none |
-| `USER(n)` | The public details of user `n` (a `user_info`); an error if there's no such user or it's deleted |
+| `USER(n)` | The public details of user `n` (a `user_info`); an error if there's no such user, or it's deleted or inactive |
 | `MODULE_NAME()` | `"wwiv.user"` |
 
 ### The caller (`user`)
@@ -171,12 +171,12 @@ where there is one.
 | Member | |
 | --- | --- |
 | `NUMBER` | The user number |
-| `NAME` | The name as the BBS shows it to others, such as `Rushfan` |
+| `NAME` | The name as stored, such as `RUSHFAN` (as `user.name` and `\|@N`) |
 | `REAL_NAME` | The real name, or `""` if none |
 | `SL`, `DSL` | The security level and download security level, as stored (a temporary SL from the sysop doesn't change them) |
 | `AR`, `DAR` | The ARs and DARs as letters, such as `"AC"` |
 | `SYSOP` | `TRUE` if the SL is 255 |
-| `COSYSOP` | `TRUE` for the sysop, or if the caller's current SL has the co-sysop ability |
+| `COSYSOP` | `TRUE` for the sysop, or if the caller's current SL (the stored one, before the BBS sets it) has the co-sysop ability |
 | `LOGONS` | How many times the user has logged on |
 | `POSTS`, `UPLOADS`, `DOWNLOADS` | How many messages posted, and files uploaded and downloaded |
 | `LAST_ON` | When the user last logged on, as a time_t; for the caller, the start of this call |
@@ -188,5 +188,5 @@ Only what any caller may see of another user, whoever is asking:
 | Member | |
 | --- | --- |
 | `NUMBER` | The user number |
-| `NAME` | The name as the BBS shows it |
+| `NAME` | The name as stored, such as `SYSOP` |
 | `LAST_ON` | When the user last logged on, as a time_t |

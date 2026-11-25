@@ -18,7 +18,6 @@
 #include "bbs/basic/user_base.h"
 #include "bbs/basic/next/wwiv_bindings.h"
 
-#include "core/strings.h"
 #include "fmt/format.h"
 #include "sdk/arword.h"
 #include "sdk/user.h"
@@ -27,7 +26,6 @@
 
 #include <string>
 
-using namespace wwiv::strings;
 
 namespace wwiv::bbs::basic {
 
@@ -61,15 +59,11 @@ struct ScriptUserInfo {
   daten_t last_on{0};
 };
 
-// A user's name as the BBS shows it to other users ("Rushfan", as in
-// "Rushfan #1").
-std::string display_name(const sdk::User& u) { return properize(u.name()); }
-
 ScriptUser to_script_user(const UserBase& users) {
   const auto& u = users.current();
   ScriptUser s;
   s.number = users.current_number();
-  s.name = display_name(u);
+  s.name = u.name();
   s.real_name = u.real_name_or_empty();
   s.sl = u.sl();
   s.dsl = u.dsl();
@@ -129,13 +123,13 @@ void RegisterWwivUser(wwivbasic::Interpreter& interp, const WwivBindings& b) {
   m.native_function("FIND", [users](std::string name) { return users->find(name); });
 
   // USER(n) is the public details of user n; an error if there's no such
-  // user (or it's deleted).
+  // user, or it's deleted or inactive.
   m.native_function("USER", [users, &info_class](int number) {
     const auto u = users->read(number);
     if (!u) {
       throw BasicError(fmt::format("USER: there is no user {}", number));
     }
-    return info_class.wrap(ScriptUserInfo{number, display_name(*u), u->last_daten()});
+    return info_class.wrap(ScriptUserInfo{number, u->name(), u->last_daten()});
   });
 }
 

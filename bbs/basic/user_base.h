@@ -39,7 +39,8 @@ public:
   // Is the caller a co-sysop, as the BBS's user.cosysop expression says: SL
   // 255, or an effective SL with the co-sysop ability?
   [[nodiscard]] virtual bool is_cosysop() const = 0;
-  // User user_number, or nothing if there's no such user or it's deleted.
+  // User user_number, or nothing if there's no such user or it's deleted or
+  // inactive.
   [[nodiscard]] virtual std::optional<sdk::User> read(int user_number) const = 0;
   // The number of the user named name (case doesn't matter), or 0.
   [[nodiscard]] virtual int find(const std::string& name) const = 0;

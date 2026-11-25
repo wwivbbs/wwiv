@@ -30,20 +30,27 @@ const sdk::User& BbsUserBase::current() const { return *app_.user(); }
 
 int BbsUserBase::current_number() const { return app_.sess().user_num(); }
 
-// As the user.cosysop expression (common/value/uservalueprovider.cpp).
+// As the user.cosysop expression (common/value/uservalueprovider.cpp),
+// including its use of the stored SL before the session's SL is set.
 bool BbsUserBase::is_cosysop() const {
-  if (app_.user()->sl() == 255) {
+  const auto& u = *app_.user();
+  if (u.sl() == 255) {
     return true;
   }
-  return (app_.config()->sl(app_.sess().effective_sl()).ability & ability_cosysop) != 0;
+  const auto effective_sl = app_.sess().effective_sl();
+  const auto sl = effective_sl != 0 ? effective_sl : u.sl();
+  return (app_.config()->sl(sl).ability & ability_cosysop) != 0;
 }
 
+// Deleted and inactive users aren't shown, as names.lst (rebuilt from active
+// users) doesn't list them. Record 0 isn't a user; readuser already returns
+// nothing past the end.
 std::optional<sdk::User> BbsUserBase::read(int user_number) const {
   const auto* users = app_.users();
-  if (!users || user_number < 1 || user_number > users->num_user_records()) {
+  if (!users || user_number < 1) {
     return std::nullopt;
   }
-  return users->readuser(user_number, sdk::UserManager::mask::non_deleted);
+  return users->readuser(user_number, sdk::UserManager::mask::active);
 }
 
 int BbsUserBase::find(const std::string& name) const {
