@@ -275,8 +275,15 @@ void StringTrimEnd(char* str) {
   strcpy(str, s.c_str());
 }
 
+// toupper and tolower take an unsigned char's value (or EOF): a char above
+// 0x7F (CP437 text) is negative, which is undefined behaviour, and trips an
+// assertion in MSVC's debug CRT.
+static char toupper_char(char c) {
+  return static_cast<char>(toupper(static_cast<unsigned char>(c)));
+}
+
 void StringUpperCase(std::string* s) {
-  std::transform(std::begin(*s), std::end(*s), std::begin(*s), to_upper_case<char>);
+  std::transform(std::begin(*s), std::end(*s), std::begin(*s), toupper_char);
 }
 
 std::string ToStringUpperCase(const std::string& orig) {
@@ -285,8 +292,8 @@ std::string ToStringUpperCase(const std::string& orig) {
   return s;
 }
 
-static char tolower_char(int c) {
-  return static_cast<char>(tolower(c));
+static char tolower_char(char c) {
+  return static_cast<char>(tolower(static_cast<unsigned char>(c)));
 }
 
 void StringLowerCase(std::string* s) {

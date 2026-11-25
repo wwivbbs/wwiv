@@ -18,7 +18,11 @@ FunctionDefVisitor::visitProcedureDefinition(BasicParser::ProcedureDefinitionCon
     }
   }
   const auto name = context->procedureName()->getText();
-  if (ec_.module->has_fn(name)) {
+  // A script's DEF replaces a built-in function of the same name (so a script
+  // that has its own TRIM keeps working when TRIM is added), but two DEFs
+  // can't share a name.
+  if (const auto it = ec_.module->functions.find(name);
+      it != ec_.module->functions.end() && it->second.type == BasicFunction::Type::BASIC) {
     ec_.errors.push_back(fmt::format("{}:{}: error: function '{}' is already defined", filename_,
                                      context->getStart()->getLine(), name));
   }

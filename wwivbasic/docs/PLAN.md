@@ -196,6 +196,36 @@ headers and read messages.
 - [x] A sample message viewer script (`install/scripts/msgview.bas`; run in
       `bbs_tests` by `MsgViewTest`)
 
+### M5b: Full-screen UI
+
+Done when a script can draw a full-screen, lightbar-style UI like the BBS's
+own full-screen message reader: `msgview.bas` gets a full-screen mode.
+
+Names follow WWIV's own where WWIV has one (4.24's documented helpers and
+today's C++: `okansi`, `ansic`, `prt`, `pla`, `onek`, `nsl`), with `GOTOXY`
+for `goxy`; otherwise QBasic/VB names for strings and Synchronet's for the
+terminal. All of it is new-engine only.
+
+- [x] Stdlib strings: `UCASE`, `LCASE`, `SPACE`, `STRING`, `TRIM`, `LTRIM`,
+      `RTRIM`, `INSTR` (positions count from 0, as in `MID`; -1 if not found)
+- [x] `wwiv.io` primitives: `OKANSI`, `GOTOXY`, `CLREOL`, `ANSIC`, `PRT`,
+      `PLA`, `ONEK`, `READKEY` (special keys as names: `"UP"`, `"PGDN"`,
+      `"F1"`...), `SCREEN_COLUMNS`, `SCREEN_ROWS`, `STRIP_COLORS`,
+      `LEN_COLORS`, `PAD_COLORS`, `PAUSING` (the name may change), `NSL`.
+      Screen functions do nothing without ANSI; input returns `""` once the
+      caller hangs up
+- [ ] wwivbasic: `Interpreter::call(name, args)`, so native code can call a
+      script's `DEF` function while the script runs (needed for callbacks)
+- [ ] `wwiv.screen` (always on): `FULLSCREEN(header_lines)`, a layout over
+      `common::FullScreenView` that turns pausing off while it's open, and
+      `LIGHTBAR(items, top, height)`, a scrolling list in C++ that redraws
+      only the lines that change. `RUN(["fn"])` handles the movement keys and
+      returns the first other key; with a callback, `fn(key, selected)` is
+      called for each such key and returning `TRUE` keeps the list running
+      (an experiment)
+- [ ] Full-screen `msgview.bas`: a lightbar title list and a scrolling
+      reader, keeping the line UI when `OKANSI()` is false
+
 ### M6: Graduate
 
 Done when wwivbasic is WWIV's only BASIC engine.

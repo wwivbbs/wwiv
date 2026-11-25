@@ -121,6 +121,10 @@ WWIVbasic
 + New sample script msgview.bas, a message viewer written with the new
   BASIC engine's wwiv.msg module (message areas: read-only for now,
   with posting planned).
++ The new BASIC engine has the QBasic/VB string functions (UCASE, LCASE,
+  SPACE, STRING, TRIM, LTRIM, RTRIM, INSTR) and wwiv.io functions for
+  full-screen UIs (OKANSI, GOTOXY, CLREOL, ANSIC, PRT, PLA, ONEK, READKEY,
+  SCREEN_COLUMNS, SCREEN_ROWS, PAUSING, NSL and the color helpers).
 + New wwiv.user module for the new BASIC engine: the caller's name, SL,
   ARs and stats, and looking up other users by name or number.
 

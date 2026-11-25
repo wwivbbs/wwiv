@@ -72,6 +72,14 @@ Context::Context(Console& console) : console(console) {
   root->native_function("RIGHT", stdlib::right);
   root->native_functionl("MID", stdlib::mid);
   root->native_function("STR", [](Value v) { return v.toString(); });
+  root->native_function("UCASE", stdlib::ucase);
+  root->native_function("LCASE", stdlib::lcase);
+  root->native_function("SPACE", stdlib::space);
+  root->native_function("STRING", stdlib::string_of);
+  root->native_function("TRIM", stdlib::trim);
+  root->native_function("LTRIM", stdlib::ltrim);
+  root->native_function("RTRIM", stdlib::rtrim);
+  root->native_functionl("INSTR", stdlib::instr);
 
   // collections
   stdlib::register_collections(*root);

@@ -1,4 +1,5 @@
 #include "wwivbasic/stdlib/strings.h"
+#include "core/strings.h"
 #include "fmt/format.h"
 
 #include <algorithm>
@@ -58,4 +59,74 @@ Value mid(std::vector<Value> args) {
   return Value(s.substr(static_cast<size_t>(start), static_cast<size_t>(len)));
 }
 
+// The QBasic/VB string functions (without the $). Case changes and trimming
+// are ASCII only, like the BBS's own (core/strings).
+
+std::string ucase(std::string s) { return wwiv::strings::ToStringUpperCase(s); }
+
+std::string lcase(std::string s) { return wwiv::strings::ToStringLowerCase(s); }
+
+// Strings SPACE and STRING make are at most this long, so a script can't use
+// up memory by mistake.
+static constexpr int kMaxRepeat = 65535;
+
+static std::string repeat(const char* fn, int n, char c) {
+  if (n <= 0) {
+    return {};
+  }
+  if (n > kMaxRepeat) {
+    throw BasicError(fmt::format("{}: {} is more than {} characters", fn, n, kMaxRepeat));
+  }
+  return std::string(static_cast<size_t>(n), c);
+}
+
+std::string space(int n) { return repeat("SPACE", n, ' '); }
+
+// STRING(n, c): c is a string (its first character is used) or a character
+// code from 0 to 255.
+std::string string_of(int n, Value c) {
+  char ch{};
+  if (c.is_number()) {
+    const auto code = c.toInt();
+    if (code < 0 || code > 255) {
+      throw BasicError(fmt::format("STRING: character code {} isn't from 0 to 255", code));
+    }
+    ch = static_cast<char>(code);
+  } else {
+    const auto s = c.toString();
+    if (s.empty()) {
+      throw BasicError("STRING: the character is an empty string");
+    }
+    ch = s.front();
+  }
+  return repeat("STRING", n, ch);
+}
+
+std::string trim(std::string s) { return wwiv::strings::StringTrim(s); }
+
+std::string ltrim(std::string s) {
+  wwiv::strings::StringTrimBegin(&s);
+  return s;
+}
+
+std::string rtrim(std::string s) { return wwiv::strings::StringTrimEnd(s); }
+
+// INSTR(s, find[, start]) is where find first appears in s at or after start,
+// counting from 0 as MID does, or -1 if it doesn't.
+Value instr(std::vector<Value> args) {
+  if (args.size() < 2 || args.size() > 3) {
+    throw BasicError(fmt::format("INSTR: expected 2 or 3 arguments, got {}", args.size()));
+  }
+  const auto s = args.at(0).toString();
+  const auto find = args.at(1).toString();
+  const auto start = args.size() == 3 ? args.at(2).toInt() : 0;
+  if (start < 0) {
+    throw BasicError(fmt::format("INSTR: start must be 0 or more, got {}", start));
+  }
+  if (static_cast<size_t>(start) > s.size()) {
+    return Value(-1);
+  }
+  const auto pos = s.find(find, static_cast<size_t>(start));
+  return Value(pos == std::string::npos ? -1 : static_cast<int>(pos));
+}
 }

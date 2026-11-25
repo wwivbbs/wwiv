@@ -369,6 +369,14 @@ TEST(StringsTest, StringLowerCase) {
   EXPECT_EQ("ab", a);
 }
 
+// Bytes above 0x7F (CP437 text) are left alone, not passed to toupper as
+// negative values.
+TEST(StringsTest, StringUpperLowerCase_HighBytes) {
+  const std::string high = "a\x80\x8e\xe9\xffZ";
+  EXPECT_EQ("A\x80\x8e\xe9\xffZ", ToStringUpperCase(high));
+  EXPECT_EQ("a\x80\x8e\xe9\xffz", ToStringLowerCase(high));
+}
+
 TEST(StringsTest, IEQuals_charstar) {
   EXPECT_TRUE(iequals("foo", "foo"));
   EXPECT_FALSE(iequals("foo", "fo"));

@@ -131,6 +131,54 @@ legacy engine.
 `OUTSTR`, `PL` and `PRINT` still run MCI codes, as scripts usually want for
 their own text.
 
+### For full-screen UIs
+
+These are the pieces a full-screen, lightbar-style UI is built from. Their
+names are WWIV's own where WWIV has one (4.24's `okansi`, `ansic`, `prt`,
+`pla`, `onek` and `nsl`; `goxy` as `GOTOXY`), otherwise Synchronet's. Without
+ANSI the screen functions do nothing, so check `OKANSI()` and use a plain UI
+instead. Once the caller hangs up, the input functions stop waiting and the
+script stops at its next statement.
+
+| Function | |
+| --- | --- |
+| `OKANSI()` | `TRUE` if the caller has ANSI on |
+| `GOTOXY(x, y)` | Moves the cursor to column `x`, row `y`, counting from 1 |
+| `CLREOL()` | Clears from the cursor to the end of the line |
+| `ANSIC(n)` | Selects color `n` (0 to 9) of the caller's colors, as `\|#n` does |
+| `PRT(n, text...)` | Writes `text` in color `n`, then goes back to color 0 |
+| `PLA(text)` | Writes a line the caller can abort (Space or ^C); returns `TRUE` if they did |
+| `ONEK(keys)` | Waits for the caller to press one of `keys` (case doesn't matter) and returns it in upper case. It doesn't echo the key or start a new line. Once the caller hangs up it returns the first of `keys`, so put the one that quits first. |
+| `READKEY()` | Waits for a key and returns it; for a special key, its name: `UP`, `DOWN`, `LEFT`, `RIGHT`, `HOME`, `END`, `PGUP`, `PGDN`, `INS`, `DEL`, `F1` to `F10`. A result longer than one character is a special key; Enter is `CHR(13)`. Digits come back as digits. Keys the BBS handles itself, such as Ctrl+T, are skipped. `GETKEY` is unchanged. |
+| `SCREEN_COLUMNS()`, `SCREEN_ROWS()` | The size of the caller's screen |
+| `STRIP_COLORS(s)` | `s` without its pipe and heart color codes |
+| `LEN_COLORS(s)` | How wide `s` shows on the screen |
+| `PAD_COLORS(s, n)` | `s` padded with spaces to show `n` wide (`n` at most 65535) |
+| `PAUSING(on)` | Turns the "More?" prompt on (`TRUE`) or off (`FALSE`), and returns whether it was on. The user's own setting comes back when the script ends. The caller can still switch it with Ctrl+Y. |
+| `NSL()` | Seconds left in this call |
+
+```basic
+import "@wwiv.io"
+
+If Not okansi() Then
+  pl("This needs ANSI.")
+  End
+EndIf
+x = pausing(FALSE)
+cls()
+gotoxy(1, 1)
+prt(5, pad_colors("|#1Messages", screen_columns()))
+gotoxy(1, screen_rows())
+outstr("|#9Press Q to quit: ")
+k = ""
+While k <> "Q" And k <> "q"
+  k = readkey()
+  gotoxy(1, 3)
+  clreol()
+  outstr("You pressed: ", k)
+Wend
+```
+
 ## wwiv.user
 
 The caller's own details, and the public details of other users. Like
