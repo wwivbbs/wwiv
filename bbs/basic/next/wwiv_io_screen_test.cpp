@@ -15,12 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
+#include "bbs/application.h"
 #include "bbs/basic/next/next_engine.h"
 #include "bbs/basic/next/type_ahead_test_util.h"
-#include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bbs_helper.h"
 #include "common/context.h"
@@ -256,9 +256,7 @@ print a; "/"; wwiv.io.pausing(TRUE)
   EXPECT_TRUE(helper.sess().disable_pause());
 }
 
-TEST_F(WwivIoScreenTest, Nsl) {
-  EXPECT_EQ("TRUE\r\n", Run("print wwiv.io.nsl() >= 0\n"));
-}
+TEST_F(WwivIoScreenTest, Nsl) { EXPECT_EQ("TRUE\r\n", Run("print wwiv.io.nsl() >= 0\n")); }
 
 // The example under "For full-screen UIs" in wwivbasic/docs/BINDINGS.md.
 TEST_F(WwivIoScreenTest, DocExample) {

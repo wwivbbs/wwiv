@@ -63,7 +63,9 @@ TEST_F(PauseTest, Nested) {
 TEST_F(PauseTest, AlreadyOff) {
   helper.user()->clear_flag(User::pauseOnPage);
   helper.sess().disable_pause(true);
-  { TempDisablePause disable_pause(bout); }
+  {
+    TempDisablePause disable_pause(bout);
+  }
   EXPECT_FALSE(helper.user()->pause());
   EXPECT_TRUE(helper.sess().disable_pause());
 }

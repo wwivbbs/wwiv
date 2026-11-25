@@ -129,5 +129,4 @@ Value instr(std::vector<Value> args) {
   const auto pos = s.find(find, static_cast<size_t>(start));
   return Value(pos == std::string::npos ? -1 : static_cast<int>(pos));
 }
-
 }

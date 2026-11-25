@@ -21,5 +21,4 @@ std::string ltrim(std::string s);
 std::string rtrim(std::string s);
 Value instr(std::vector<Value> args);
 
-
 } // namespace wwivbasic::stdlib
