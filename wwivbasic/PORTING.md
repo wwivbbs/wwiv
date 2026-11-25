@@ -101,6 +101,10 @@ Small differences in how arguments are checked:
 - New: `wwiv.io.outstr_nomci` and `wwiv.io.pl_nomci` print with MCI codes
   shown as written instead of run, for text other users wrote (see
   [docs/BINDINGS.md](docs/BINDINGS.md)).
+- New, for full-screen UIs: `wwiv.io.okansi`, `gotoxy`, `clreol`, `ansic`,
+  `prt`, `pla`, `onek`, `readkey`, `screen_columns`, `screen_rows`,
+  `strip_colors`, `len_colors`, `pad_colors`, `pausing` and `nsl` (see
+  [docs/BINDINGS.md](docs/BINDINGS.md)).
 
 `wwiv.data` reads and writes the same files as before, in the same format, so
 data saved by a script on one engine loads on the other. `LOAD` still appends
@@ -147,6 +151,14 @@ The new engine adds modules the legacy engine doesn't have, documented in
 
 - `wwiv.msg`: read the message areas the caller can read.
 - `wwiv.user`: the caller's details, and other users' names.
+
+## New string functions
+
+The new engine adds the QBasic/VB string functions (without the `$`):
+`UCASE(s)`, `LCASE(s)`, `SPACE(n)`, `STRING(n, c)` (`c` a character or a
+character code), `TRIM(s)`, `LTRIM(s)`, `RTRIM(s)` and `INSTR(s, find[,
+start])`. `INSTR` counts positions from 0, as `MID`, `LEFT` and `RIGHT` do
+here, and returns -1 when `find` isn't in `s` (VB counts from 1 and returns 0).
 
 ## Real numbers
 

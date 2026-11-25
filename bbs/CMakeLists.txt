@@ -258,6 +258,7 @@ if (WWIV_BUILD_TESTS)
         basic/next/wwiv_file_os_test.cpp
         basic/next/wwiv_msg_test.cpp
         basic/next/wwiv_user_test.cpp
+        basic/next/wwiv_io_screen_test.cpp
         basic/next/side_by_side_test.cpp
         basic/next/type_ahead_test_util.cpp
       )

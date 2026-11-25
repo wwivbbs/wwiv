@@ -17,12 +17,19 @@
 /**************************************************************************/
 #include "bbs/basic/next/wwiv_bindings.h"
 
+#include "bbs/utility.h"
+#include "common/context.h"
 #include "common/input.h"
 #include "common/output.h"
 #include "core/scope_exit.h"
+#include "core/strings.h"
+#include "fmt/format.h"
+#include "local_io/keycodes.h"
+#include "sdk/user.h"
 #include "wwivbasic/console.h"
 #include "wwivbasic/interpreter.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -40,6 +47,75 @@ void outstr_each(common::Output& out, const Args& args) {
     out.outstr(wwivbasic::from_value<std::string>(a));
   }
 }
+
+// The name READKEY returns for a special key, or "" for one it doesn't name.
+std::string key_name(int key) {
+  using namespace wwiv::local::io;
+  switch (key) {
+  case COMMAND_UP: return "UP";
+  case COMMAND_DOWN: return "DOWN";
+  case COMMAND_LEFT: return "LEFT";
+  case COMMAND_RIGHT: return "RIGHT";
+  case COMMAND_HOME: return "HOME";
+  case COMMAND_END: return "END";
+  case COMMAND_PAGEUP: return "PGUP";
+  case COMMAND_PAGEDN: return "PGDN";
+  case COMMAND_INSERT: return "INS";
+  case COMMAND_DELETE: return "DEL";
+  case COMMAND_F1: return "F1";
+  case COMMAND_F2: return "F2";
+  case COMMAND_F3: return "F3";
+  case COMMAND_F4: return "F4";
+  case COMMAND_F5: return "F5";
+  case COMMAND_F6: return "F6";
+  case COMMAND_F7: return "F7";
+  case COMMAND_F8: return "F8";
+  case COMMAND_F9: return "F9";
+  case COMMAND_F10: return "F10";
+  default: return {};
+  }
+}
+
+// Turns the "More?" prompt off and on for a script, the way TempDisablePause
+// does: by clearing the user's pause flag. It puts the flag back when the
+// script ends (when the interpreter, which holds this, is destroyed), so a
+// script can't leave the user's setting changed.
+class ScriptPause {
+public:
+  explicit ScriptPause(common::Context* ctx) : ctx_(ctx) {}
+  ~ScriptPause() {
+    if (disabled_) {
+      set(true);
+    }
+  }
+  ScriptPause(const ScriptPause&) = delete;
+  ScriptPause& operator=(const ScriptPause&) = delete;
+
+  // Returns whether pausing was on.
+  bool set(bool on) {
+    if (!ctx_) {
+      return false;
+    }
+    auto& sess = ctx_->session_context();
+    auto& u = ctx_->u();
+    const auto was_on = u.pause();
+    if (!on && was_on) {
+      sess.disable_pause(true);
+      u.clear_flag(sdk::User::pauseOnPage);
+      disabled_ = true;
+    } else if (on && disabled_) {
+      sess.disable_pause(false);
+      u.set_flag(sdk::User::pauseOnPage);
+      disabled_ = false;
+    }
+    return was_on;
+  }
+
+private:
+  common::Context* ctx_;
+  // Whether this turned the user's pausing off.
+  bool disabled_{false};
+};
 
 } // namespace
 
@@ -137,6 +213,120 @@ void RegisterWwivIo(wwivbasic::Interpreter& interp, const WwivBindings& b) {
   });
 
   m.native_function("PAUSE", [b]() { b.out.pausescr(); });
+
+  // New in the new engine: for full-screen UIs. The names are WWIV's own
+  // where WWIV has one (4.24's okansi, ansic, prt, pla, onek, nsl; goxy as
+  // GOTOXY), otherwise Synchronet's. Screen functions do nothing without ANSI.
+
+  // OKANSI() is TRUE if the caller has ANSI on.
+  m.native_function("OKANSI", [ctx = b.ctx]() { return ctx && ctx->u().ansi(); });
+
+  // GOTOXY(x, y) moves the cursor to column x, row y, counting from 1.
+  m.native_function("GOTOXY", [b](int x, int y) {
+    if (x < 1 || y < 1) {
+      throw BasicError(fmt::format("GOTOXY: x and y start at 1, got {}, {}", x, y));
+    }
+    b.out.goxy(x, y);
+  });
+
+  // CLREOL() clears from the cursor to the end of the line.
+  m.native_function("CLREOL", [b]() { b.out.clreol(); });
+
+  // ANSIC(n) selects color n (0 to 9) of the caller's colors, as |#n does.
+  auto check_color = [](const char* fn, int n) {
+    if (n < 0 || n > 9) {
+      throw BasicError(fmt::format("{}: color must be from 0 to 9, got {}", fn, n));
+    }
+  };
+  m.native_function("ANSIC", [b, check_color](int n) {
+    check_color("ANSIC", n);
+    b.out.ansic(n);
+  });
+
+  // PRT(n, text...) writes text in color n, then goes back to color 0.
+  m.native_functionl("PRT", [b, check_color](const Args& args) {
+    if (args.empty()) {
+      throw BasicError("PRT: expected a color and text");
+    }
+    const auto n = wwivbasic::from_value<int>(args[0]);
+    check_color("PRT", n);
+    b.out.ansic(n);
+    outstr_each(b.out, Args(args.begin() + 1, args.end()));
+    b.out.ansic(0);
+    return Value();
+  });
+
+  // PLA(text) writes a line the caller can abort (with space or ^C);
+  // returns TRUE if they did.
+  m.native_function("PLA", [b](std::string text) {
+    bool abort{false};
+    b.out.bpla(text, &abort);
+    return abort;
+  });
+
+  // ONEK(keys) waits for the caller to press one of keys (case doesn't
+  // matter) and returns it in upper case. Once the caller hangs up it returns
+  // the first of keys, so put the one that quits first. It doesn't echo the
+  // key or start a new line.
+  m.native_function("ONEK", [b](std::string keys) {
+    keys = strings::ToStringUpperCase(keys);
+    if (keys.empty()) {
+      throw BasicError("ONEK: expected at least one key");
+    }
+    while (true) {
+      const auto k = strings::ToStringUpperCase(b.console.read_key());
+      if (k.empty()) {
+        // Hung up.
+        return std::string(1, keys.front());
+      }
+      if (keys.find(k.front()) != std::string::npos) {
+        return k;
+      }
+    }
+  });
+
+  // READKEY() waits for a key. It returns the character, or for a special key
+  // its name: UP, DOWN, LEFT, RIGHT, HOME, END, PGUP, PGDN, INS, DEL, F1 to
+  // F10 (so a result longer than one character is a special key). Enter is
+  // CHR(13). Keys it has no name for are skipped. Once the caller hangs up it
+  // returns "".
+  m.native_function("READKEY", [b]() {
+    while (true) {
+      const auto key = b.in.bgetch_event(common::Input::numlock_status_t::NUMBERS);
+      if (key == 0) {
+        return std::string{};
+      }
+      if (key < 256) {
+        return std::string(1, static_cast<char>(key));
+      }
+      if (auto name = key_name(key); !name.empty()) {
+        return name;
+      }
+    }
+  });
+
+  // SCREEN_COLUMNS() and SCREEN_ROWS() are the size of the caller's screen.
+  m.native_function("SCREEN_COLUMNS", [ctx = b.ctx]() { return ctx ? ctx->u().screen_width() : 80; });
+  m.native_function("SCREEN_ROWS", [ctx = b.ctx]() {
+    return ctx ? ctx->session_context().num_screen_lines() : 25;
+  });
+
+  // The pipe and heart color codes in text: STRIP_COLORS(s) removes them,
+  // LEN_COLORS(s) is how wide s shows, and PAD_COLORS(s, n) pads s with spaces
+  // to show n wide.
+  m.native_function("STRIP_COLORS", [](std::string s) { return std::string(::stripcolors(s)); });
+  m.native_function("LEN_COLORS", [](std::string s) { return strings::size_without_colors(s); });
+  m.native_function("PAD_COLORS", [](std::string s, int n) {
+    return strings::pad_to_ignore_colors(s, n);
+  });
+
+  // PAUSING(on) turns the "More?" prompt on or off, and returns whether it
+  // was on. The user's own setting is put back when the script ends.
+  auto pause = std::make_shared<ScriptPause>(b.ctx);
+  m.native_function("PAUSING", [pause](bool on) { return pause->set(on); });
+
+  // NSL() is the number of seconds left in this call (4.24's nsl).
+  m.native_function("NSL", []() { return static_cast<int>(nsl()); });
 }
 
 } // namespace wwiv::bbs::basic
