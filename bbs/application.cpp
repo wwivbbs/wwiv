@@ -1109,8 +1109,12 @@ int Application::Run(int argc, char* argv[]) {
   if (!run_basic.empty()) {
     const auto eff_user = std::max<int>(this_usernum_from_commandline, 1);
     ReadCurrentUser(eff_user);
-    reset_effective_sl();
     sess().user_num(eff_user);
+    // As at logon: the user's qscan pointers, then the conferences and subs
+    // they can use (usub), which scripts such as wwiv.msg's read.
+    read_qscn(eff_user, sess().qsc, false);
+    reset_effective_sl();
+    changedsl();
     if (!wwiv::bbs::basic::RunBasicScript(run_basic)) {
       LOG(ERROR) << "Error running WWIVbasic script: '" << run_basic;
       return errorlevel_;
@@ -1238,6 +1242,18 @@ void Application::init_status_and_instances_for_test() {
   statusMgr = std::make_unique<StatusMgr>(config()->datadir());
   instances_ = std::make_unique<Instances>(*config());
   nets_ = std::make_unique<Networks>(*config());
+}
+
+void Application::init_message_areas_for_test() {
+  read_networks();
+  // With no subs file there are no subs, which is fine for a test.
+  read_subs();
+  create_message_api();
+}
+
+void Application::init_users_for_test() {
+  user_manager_ = std::make_unique<UserManager>(*config_);
+  read_names();
 }
 
 /** Returns the WWIV Names.LST Config Object. */

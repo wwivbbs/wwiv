@@ -158,7 +158,10 @@ TEST_F(LegacyCompareTest, Same) {
         std::make_pair("ansi", "\x1b[1;31mRed\x1b[0m\r\n\x1a"),
         std::make_pair("only_cz", "\x1a"),
         std::make_pair("blank_lines_only", "\r\n\r\n\x1a"),
-        std::make_pair("quote", " RF> quoted\r\n RF> more\r\n\r\nReply\r\n\x1a")};
+        std::make_pair("quote", " RF> quoted\r\n RF> more\r\n\r\nReply\r\n\x1a"),
+        std::make_pair("spaces_line_after_date", "   \r\nHello\r\n\x1a"),
+        std::make_pair("tab_line_then_re", "\r\n\t\r\nRE: Subject\r\nHello\r\n\x1a"),
+        std::make_pair("bare_crs_after_date", "\r\r\nHello\r\n\x1a")};
   for (const auto& [name, body] : cases) {
     SCOPED_TRACE(name);
     const auto raw = StrCat("rushfan #1\r\nMon Nov 23 2026\r\n", body);

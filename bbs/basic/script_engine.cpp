@@ -104,15 +104,22 @@ private:
 
 } // namespace
 
-std::unique_ptr<ScriptEngine> CreateScriptEngine(script_engine_t e, common::Input& in,
-                                                 common::Output& out, const sdk::Config& config,
-                                                 common::Context* ctx) {
+std::unique_ptr<ScriptEngine>
+CreateScriptEngine(script_engine_t e, common::Input& in, common::Output& out,
+                   const sdk::Config& config, common::Context* ctx,
+                   [[maybe_unused]] std::unique_ptr<MessageBase> msgs,
+                   [[maybe_unused]] std::unique_ptr<UserBase> users) {
   switch (e) {
   case script_engine_t::legacy:
     return std::make_unique<LegacyEngine>(in, out, config, ctx);
   case script_engine_t::next:
 #ifdef WWIV_WWIVBASIC_NEXT
-    return std::make_unique<NextEngine>(in, out, config, ctx);
+  {
+    auto engine = std::make_unique<NextEngine>(in, out, config, ctx);
+    engine->set_message_base(std::move(msgs));
+    engine->set_user_base(std::move(users));
+    return engine;
+  }
 #else
     LOG(ERROR) << "The new BASIC engine isn't included in this build (WWIV_WWIVBASIC_NEXT).";
     return nullptr;

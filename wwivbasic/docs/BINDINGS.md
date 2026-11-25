@@ -1,0 +1,192 @@
+# WWIV bindings for scripts
+
+The modules WWIV gives scripts on the new engine, beyond the `wwiv`, `wwiv.io`,
+`wwiv.io.file`, `wwiv.data`, `wwiv.os` and `wwiv.time` modules that the legacy
+engine also has (see [PORTING.md](../PORTING.md) for how those differ).
+
+The bindings live in WWIV, in `bbs/basic/next/`.
+
+## wwiv.msg
+
+Read-only access to the message areas (subs) the caller can read. Writing
+(posting, and changing or deleting posts) is planned; see M5 in
+[PLAN.md](PLAN.md). It shows a
+script only what the caller could read in the BBS's own reader:
+
+- The areas are the caller's subs in the current conference, in the order the
+  BBS lists them (`usub`): subs whose read ACS the caller doesn't pass aren't
+  there.
+- Unvalidated and deleted posts are left out unless the caller is a co-sysop
+  of the sub (`lcs()`).
+- For anonymous posts, `FROM` is `>UNKNOWN<` (or `Abby` / `Problemed Person`
+  for "Dear Abby" posts) unless the caller may read anonymous posts (a
+  co-sysop, or an SL with "read anonymous posts"). `ANONYMOUS` is `TRUE`
+  either way. As in the BBS, the date of a "Dear Abby" post is hidden from
+  everyone (`DATE` is 0).
+
+The module is on by default; the sysop can turn it off with "Enable Package
+MSG" in wwivconfig's scripting settings (the `script_flag_disable_msg` bit,
+`0x0010`, in `config.json`'s `script_flags`).
+
+```basic
+import "@wwiv.msg"
+
+for a in areas()
+  print a.key; ") "; a.name; " ("; a.count; " messages)"
+next
+
+a = area("1")
+for h in a.headers()
+  print h.number; " "; h.title; " - "; h.from
+next
+
+m = a.message(1)
+print m.title
+for line in m.lines()
+  print line
+next
+```
+
+WWIV ships a complete message viewer written with it,
+`install/scripts/msgview.bas` (in `scripts/` on a BBS): it lists the areas,
+pages through an area's headers, and reads messages one after another.
+
+### Functions
+
+| Function | Returns |
+| --- | --- |
+| `AREAS()` | A LIST of the areas the caller can read, as the BBS lists them |
+| `AREA(key)` | The area the caller chooses with `key` at the sub prompt (`"1"`, or a sub's own key); an error if there is none |
+| `CURRENT_AREA()` | The area the caller is in; an error if there is none |
+| `MODULE_NAME()` | `"wwiv.msg"` |
+
+### Areas (`message_area`)
+
+| Member | |
+| --- | --- |
+| `KEY` | The key that chooses the area, as in `AREA(key)` |
+| `NAME` | The sub's name |
+| `DESCRIPTION` | The sub's long description |
+| `COUNT` | How many messages the area has, including ones the caller can't read: the number the BBS's own sub list shows. `LEN(HEADERS())` is how many the caller can read. |
+| `HEADERS()` | A LIST of the headers of the messages the caller can read, oldest first |
+| `MESSAGE(n)` | Message `n`, from 1 to `COUNT`; an error if it doesn't exist or the caller can't read it |
+| `FIND(h)` | The number the message `h` (a header or message from this area) has now, or 0 if it has been deleted or the caller can't read it |
+
+Each call reads the message base again, so `COUNT` and `HEADERS()` see new
+posts.
+
+Message numbers are positions in the area, as in the BBS: when a post is
+deleted, the ones after it move down by one. A script that keeps a list of
+headers while the caller reads should find each message again with `FIND`
+before reading it, and can check that the message's `ID` is the header's:
+
+```basic
+n = a.find(h)
+If n = 0 Then
+  print "That message has been deleted."
+Else
+  m = a.message(n)
+  ' m.id = h.id unless it was deleted between FIND and MESSAGE.
+EndIf
+```
+
+Opening an area whose message text file (`msgs/NAME.dat`) doesn't exist yet
+creates it empty, as the BBS does; nothing else is written.
+
+### Headers (`message_header`) and messages (`message`)
+
+| Member | |
+| --- | --- |
+| `NUMBER` | The message number in its area, from 1, when it was read |
+| `ID` | The post's serial number (its qscan value), which doesn't change when other posts are deleted |
+| `TITLE` | The title (subject) |
+| `FROM` | Who wrote it, such as `rushfan #1`, after the anonymous rules above |
+| `TO` | Who it is to (`All` if no one) |
+| `DATE` | When it was posted, as a time_t (`wwiv.time.format` formats it), or 0 if hidden |
+| `ANONYMOUS` | `TRUE` if it was posted anonymously |
+
+A `message` also has:
+
+| Member | |
+| --- | --- |
+| `TEXT` | The text, each line followed by `\r\n`, without WWIV's control lines (`^D0...`) |
+| `LINES()` | The text as a LIST of lines |
+
+The text keeps its pipe and heart color codes. Print text other users wrote
+(titles, names and message text) with `wwiv.io.outstr_nomci` or
+`wwiv.io.pl_nomci`: they show the colors but, like the BBS's own reader, don't
+run MCI codes (`|{...}` expressions and `|@` macros), so a post can't make the
+reader's screen show the reader's own details.
+
+## wwiv.io additions
+
+The new engine adds these to `wwiv.io`; the other functions are as in the
+legacy engine.
+
+| Function | |
+| --- | --- |
+| `OUTSTR_NOMCI(text...)` | As `OUTSTR`, but with MCI codes shown as written instead of run. Colors still show. |
+| `PL_NOMCI(text...)` | As `PL`, with MCI codes shown as written. |
+
+`OUTSTR`, `PL` and `PRINT` still run MCI codes, as scripts usually want for
+their own text.
+
+## wwiv.user
+
+The caller's own details, and the public details of other users. Like
+`wwiv.msg`, it's read-only, on by default, and the sysop can turn it off with
+"Enable Package USER" in wwivconfig's scripting settings (the
+`script_flag_disable_user` bit, `0x0020`, in `config.json`'s
+`script_flags`).
+
+```basic
+import "@wwiv.user"
+
+u = current()
+print "Hello, "; u.name; " (SL "; u.sl; ")"
+If u.cosysop Then
+  print "You can see the co-sysop options."
+EndIf
+
+n = find("sysop")
+If n > 0 Then
+  print "The sysop last called on "; wwiv.time.format(user(n).last_on, "%m/%d/%y")
+EndIf
+```
+
+### Functions
+
+| Function | Returns |
+| --- | --- |
+| `CURRENT()` | The caller (a `user`), read when it's called |
+| `FIND(name)` | The number of the user named `name` (case doesn't matter), or 0 if there's none |
+| `USER(n)` | The public details of user `n` (a `user_info`); an error if there's no such user, or it's deleted or inactive |
+| `MODULE_NAME()` | `"wwiv.user"` |
+
+### The caller (`user`)
+
+The names match the BBS's `user.*` expressions (in menus and `|{...}` codes)
+where there is one.
+
+| Member | |
+| --- | --- |
+| `NUMBER` | The user number |
+| `NAME` | The name as stored, such as `RUSHFAN` (as `user.name` and `\|@N`) |
+| `REAL_NAME` | The real name, or `""` if none |
+| `SL`, `DSL` | The security level and download security level, as stored (a temporary SL from the sysop doesn't change them) |
+| `AR`, `DAR` | The ARs and DARs as letters, such as `"AC"` |
+| `SYSOP` | `TRUE` if the SL is 255 |
+| `COSYSOP` | `TRUE` for the sysop, or if the caller's current SL (the stored one, before the BBS sets it) has the co-sysop ability |
+| `LOGONS` | How many times the user has logged on |
+| `POSTS`, `UPLOADS`, `DOWNLOADS` | How many messages posted, and files uploaded and downloaded |
+| `LAST_ON` | When the user last logged on, as a time_t; for the caller, the start of this call |
+
+### Other users (`user_info`)
+
+Only what any caller may see of another user, whoever is asking:
+
+| Member | |
+| --- | --- |
+| `NUMBER` | The user number |
+| `NAME` | The name as stored, such as `SYSOP` |
+| `LAST_ON` | When the user last logged on, as a time_t |

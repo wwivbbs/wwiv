@@ -14,13 +14,12 @@
 # Things to add to fix.
 
 * Check for no conferences
-* Check for subs or dirs not part of any conference
+* Check for subs not part of any conference (dirs done in wwivutil fix)
 * sub storage type != 2
 
 # CONFIG.JSON
 
 * make sure wwivconfig can edit wwivd and networks for legacy 4.24 and 4.30 format
-* Save off config.dat when saving config.json from wwivconfig if it already exists.
 
 # WWIVconfig
 
@@ -40,9 +39,6 @@ jq ".number" jenkins.json
 ## Networking Cleanup
 ***
 * Figure out why new networking stack doesn't work for mark. 
-* Use fixup_user_entered_email in email address fixing up.
-  also create one to fixup ftn address (add @32765)
-  and use this consistently (i.e. in '1' from msgscan)
 
 ## FTN
 ***
@@ -59,8 +55,6 @@ jq ".number" jenkins.json
 
 ## Container work
 ***
-* Add WWIV_CONFIG_DIR to point to where the config.json file lives
-  (default to config.dat's data)
 * Create default directory structure for in containers
 * move all binaries to bin, see what breaks
 
@@ -74,8 +68,8 @@ jq ".number" jenkins.json
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
 * stop using strncpy, strcpy.
-* Create a SDK QScan class to wrap interacting with the WWIV qscan
-  variables and also load/save user.qsc
+* Finish SDK QScan class (sdk/qscan.h UserQScan is experimental) and
+  move BBS qscan handling onto it.
 * Move to LibSSH on all platforms
 * Run various asan/tsan's regularly with gcc via CMake
 * start using clock more.
@@ -95,7 +89,7 @@ jq ".number" jenkins.json
 
 ## core::File Improvements
 ***
-* File::lock doesn't seem to be finished
+* File::lock is unfinished on non-Windows platforms
 
 
 ## Linux Work

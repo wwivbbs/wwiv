@@ -28,6 +28,7 @@
 #undef TTYDEFCHARS
 
 #include <fcntl.h>
+#include <poll.h>
 #include <unistd.h>
 
 #if defined(__APPLE__)
@@ -238,6 +239,24 @@ static int wait_for_exit(pid_t pid) {
   return -1;
 }
 
+// Reads and drops input waiting on fd without blocking. With the comm
+// paused, the door (or pump_stdio) reads the caller's connection directly,
+// so input the purge in ExecuteExternalProgram couldn't see (still in the
+// kernel buffer, or read in as the comm thread stopped) would reach it.
+static void drain_pending_input(int fd) {
+  char buf[512];
+  // Bounded, so a caller who never stops sending can't hold up the door.
+  for (int i = 0; i < 64; i++) {
+    pollfd p{fd, POLLIN, 0};
+    if (poll(&p, 1, 0) <= 0 || !(p.revents & POLLIN)) {
+      return;
+    }
+    if (read(fd, buf, sizeof(buf)) <= 0) {
+      return;
+    }
+  }
+}
+
 /**
  * returns a tuple of (pid, pty).
  * if pid == -1, fork failed.
@@ -334,6 +353,11 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
   }
 
   const auto sock = bout.remoteIO()->GetDoorHandle();
+  if (need_reopen_io) {
+    // The comm thread is stopped; drop anything it left behind.
+    bout.remoteIO()->purgeIn();
+    drain_pending_input(static_cast<int>(sock));
+  }
   auto [pid, pty] = UnixSpawn(cmdline, flags, sock);
   if (pid == -1) {
     return 1;

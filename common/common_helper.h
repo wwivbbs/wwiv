@@ -155,16 +155,18 @@ public:
     return ch;
   }
   bool disconnect() override { return true; }
-  void purgeIn() override {}
+  void purgeIn() override { keys.clear(); }
   unsigned int put(unsigned char ch) override;
   unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
   unsigned int read(char *, unsigned int) override { return 0; }
   bool connected() override { return true; }
   bool incoming() override { return !keys.empty(); }
-  [[nodiscard]] unsigned int GetHandle() const override { return 0; }
+  [[nodiscard]] unsigned int GetHandle() const override { return handle; }
 
   // Keys getW returns, in order, as if sent by the caller.
   std::string keys;
+  // What GetHandle (and so GetDoorHandle) returns.
+  unsigned int handle{0};
 
 private:
   std::string* captured_;

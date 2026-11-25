@@ -88,6 +88,14 @@ static int ExecuteExternalProgramNoScript(wwiv::bbs::CommandLine& commandLine, u
 }
 
 int ExecuteExternalProgram(wwiv::bbs::CommandLine& cmdline, uint32_t flags) {
+  // Drop input the caller typed before the program starts, such as the rest
+  // of the line ending after a chain number (CR LF or CR NUL from telnet).
+  // Doors and scripts would read it as their first input, often while
+  // probing the terminal. Programs that read the connection directly also
+  // get it drained in exec_cmdline. Keys typed once the program is starting
+  // still reach it.
+  bout.dump();
+
   auto command_line = cmdline.cmdline();
   if (command_line.front() != '@') {
     return ExecuteExternalProgramNoScript(cmdline, flags);
