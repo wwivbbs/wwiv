@@ -72,6 +72,23 @@ public:
   // text, for debugging. nullopt if it wasn't loaded or failed to parse.
   std::optional<std::string> parse_tree(const std::filesystem::path& path) const;
 
+  // Calls a function of the running script by name (a DEF, or a built-in or
+  // native function), as a call in the script would, and returns its result.
+  // A native function uses it to call back into the script while it runs,
+  // such as a lightbar calling a script function for each key:
+  //
+  //   m.native_function("EACH", [&interp](std::string fn) {
+  //     for (int i = 1; i <= 3; i++) interp.call(fn, {Value(i)});
+  //     return Value();
+  //   });
+  //
+  // Errors in the function are BasicErrors reported at their line in the
+  // script, and the stop check runs as usual. If the function runs END, call
+  // throws (a type that isn't a std::exception) to end the native function
+  // and then the script; native code must let it through, not catch (...).
+  // Throws BasicError if no script is running.
+  Value call(const std::string& name, const std::vector<Value>& args);
+
   // When on, logs function calls and assignments to stderr.
   void set_trace(bool trace);
 

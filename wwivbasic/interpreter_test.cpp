@@ -579,3 +579,138 @@ TEST_F(InterpreterTest, NextMustMatchFor) {
   ASSERT_EQ(1u, errors.size());
   EXPECT_EQ("test.bas:1: error: NEXT j does not match FOR i", errors.front());
 }
+
+// Interpreter::call: native functions calling back into the script.
+
+namespace {
+
+class InterpreterCallTest : public InterpreterTest {
+protected:
+  void SetUp() override {
+    // APPLY(fn, args...) returns fn(args...).
+    interp.globals().native_functionl("APPLY", [this](std::vector<Value> args) {
+      const auto fn = args.at(0).toString();
+      args.erase(args.begin());
+      return interp.call(fn, args);
+    });
+    // EACH(fn, n) calls fn(1), fn(2)... up to fn(n), like a lightbar calling
+    // a script function for each key, until fn returns FALSE. Returns how
+    // many calls it made.
+    interp.globals().native_function("EACH", [this](std::string fn, int n) {
+      for (int i = 1; i <= n; i++) {
+        ++calls;
+        if (!interp.call(fn, {Value(i)}).toBool()) {
+          break;
+        }
+      }
+      return calls;
+    });
+  }
+
+  int calls{0};
+};
+
+} // namespace
+
+TEST_F(InterpreterCallTest, ReturnsValue) {
+  EXPECT_EQ("42\n", run("def double(x)\nreturn x * 2\nenddef\nprint apply(\"double\", 21)\n"));
+  EXPECT_TRUE(errors.empty());
+}
+
+// The function runs as a call in the script would: it sees and changes
+// globals, and calls other functions, built-in ones too.
+TEST_F(InterpreterCallTest, CallsOtherFunctionsAndChangesGlobals) {
+  const std::string script = R"(
+total = 0
+def square(x)
+  return x * x
+enddef
+def add(i)
+  total = total + square(i)
+  return TRUE
+enddef
+print each("add", 3); " "; total; " "; apply("ucase", "x")
+)";
+  EXPECT_EQ("3 14 X\n", run(script));
+  EXPECT_TRUE(errors.empty()) << errors.front();
+}
+
+TEST_F(InterpreterCallTest, StopsWhenCallbackReturnsFalse) {
+  EXPECT_EQ("2\n", run("def f(i)\nreturn i < 2\nenddef\nprint each(\"f\", 10)\n"));
+}
+
+// An error in the function is reported at its line.
+TEST_F(InterpreterCallTest, ErrorInCallback) {
+  run("def f(i)\nx = nosuch(i)\nreturn TRUE\nenddef\nprint each(\"f\", 3)\nprint \"after\"\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:2: error: Unknown function 'nosuch'", errors.front());
+  EXPECT_EQ(1, calls);
+  EXPECT_EQ("", output);
+}
+
+// END in the function ends the native function that called it, then the
+// script, without an error.
+TEST_F(InterpreterCallTest, EndInCallback) {
+  const std::string script = R"(
+def f(i)
+  print i
+  if i = 2 then
+    end
+  endif
+  return TRUE
+enddef
+x = each("f", 5)
+print "after"
+)";
+  EXPECT_EQ("1\n2\n", run(script));
+  EXPECT_TRUE(errors.empty()) << errors.front();
+  EXPECT_EQ(2, calls);
+}
+
+TEST_F(InterpreterCallTest, UnknownFunction) {
+  run("print apply(\"nosuch\", 1)\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:1: error: Unknown function 'nosuch'", errors.front());
+}
+
+TEST_F(InterpreterCallTest, WrongArgumentCount) {
+  run("def f(a, b)\nreturn a\nenddef\nprint apply(\"f\", 1)\n");
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ("test.bas:4: error: f: expected 2 argument(s), got 1", errors.front());
+}
+
+TEST_F(InterpreterCallTest, NoScriptRunning) {
+  EXPECT_THROW(interp.call("f", {}), BasicError);
+  run("def f()\nreturn 1\nenddef\n");
+  EXPECT_TRUE(errors.empty());
+  EXPECT_THROW(interp.call("f", {}), BasicError);
+}
+
+// Recursion through native code counts toward the call depth limit, so it
+// ends with an error instead of running out of stack.
+TEST_F(InterpreterCallTest, Recursion) {
+  const std::string script = R"(
+def f(n)
+  if n = 0 then
+    return 0
+  endif
+  return apply("f", n - 1) + 1
+enddef
+print f(500)
+print f(5000)
+)";
+  EXPECT_EQ("500\n", run(script));
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_NE(std::string::npos, errors.front().find("too many nested calls")) << errors.front();
+}
+
+// The stop check (WWIV's hang-up check) runs in the function's statements.
+TEST_F(InterpreterCallTest, StopCheck) {
+  int statements{0};
+  interp.set_stop_check([&statements] { return ++statements > 20; });
+  const auto result =
+      interp.run_source("test.bas", "def f(i)\nreturn TRUE\nenddef\nx = each(\"f\", 1000)\n");
+  EXPECT_TRUE(result.stopped);
+  EXPECT_TRUE(result.errors.empty());
+  EXPECT_LT(calls, 1000);
+}

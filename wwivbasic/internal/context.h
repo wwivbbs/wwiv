@@ -63,6 +63,13 @@ public:
 // not a std::exception, so generic handlers don't turn it into an error.
 struct StopScript {};
 
+// Thrown by Interpreter::call when the script function it called ran END, so
+// the native function that called it stops too. Like StopScript, it passes
+// through statements and native-function guards; the run then ends normally.
+struct EndScript {};
+
+class ExecutionVisitor;
+
 // A resolved function along with the module that owns it.
 struct ResolvedFunction {
   Module* module{nullptr};
@@ -103,6 +110,10 @@ public:
 
   // When true, the interpreter logs execution details to stderr.
   bool trace{false};
+
+  // The visitor running the script, while it runs (the innermost one while
+  // an imported file's top-level code runs); for Interpreter::call.
+  ExecutionVisitor* executor{nullptr};
 
   // Set by Interpreter::set_stop_check; see check_stop.
   std::function<bool()> stop_check;

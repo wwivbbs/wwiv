@@ -210,6 +210,40 @@ member names are case-insensitive. `wrap()` turns a C++ object (or a
 `std::shared_ptr` to one) into a script value, and `unwrap()` turns it back.
 Objects are shared by reference, like lists, and print as their class name.
 
+### Calling back into the script
+
+While a script runs, a native function can call one of the script's functions
+by name with `Interpreter::call`. This is how a function such as a lightbar
+lets the script handle a key:
+
+```cpp
+// EACH(fn, n) calls the script's fn(1) to fn(n) until it returns FALSE.
+io.native_function("EACH", [&interp](std::string fn, int n) {
+  for (int i = 1; i <= n; i++) {
+    if (!interp.call(fn, {wwivbasic::Value(i)}).toBool()) {
+      break;
+    }
+  }
+  return wwivbasic::Value();
+});
+```
+
+```basic
+def show(i)
+  print i
+  return i < 3
+enddef
+my.io.each("show", 10)
+```
+
+The name is looked up as a call in the script would be (a `DEF`, or a built-in
+or native function), and the call counts toward the script's call-depth limit.
+An error in the function is reported at its line in the script, and the stop
+check runs in it as usual. If the function runs `END`, `call` throws to end the
+native function and then the script, so native code must let exceptions it
+doesn't know pass through (no `catch (...)`). Calling it when no script is
+running throws `BasicError`.
+
 ## Layout
 
 | Path | Contents |

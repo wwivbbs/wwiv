@@ -28,6 +28,8 @@ template <class F> static auto guard_native(const std::string& what, F&& f) {
     throw;
   } catch (const StopScript&) {
     throw;
+  } catch (const EndScript&) {
+    throw;
   } catch (const std::exception& e) {
     throw BasicError(fmt::format("{}: {}", what, e.what()));
   } catch (...) {
@@ -376,6 +378,7 @@ void ExecutionVisitor::import_file(const std::string& name) {
 
   ExecutionVisitor v(ec_, path.string());
   v.call_depth_ = call_depth_;
+  RunningExecutor running(ec_, &v);
   v.visit(tree.value());
   if (v.ended()) {
     flow_ = Flow::END;

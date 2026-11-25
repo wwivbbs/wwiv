@@ -214,7 +214,7 @@ terminal. All of it is new-engine only.
       `LEN_COLORS`, `PAD_COLORS`, `PAUSING` (the name may change), `NSL`.
       Screen functions do nothing without ANSI; input returns `""` once the
       caller hangs up
-- [ ] wwivbasic: `Interpreter::call(name, args)`, so native code can call a
+- [x] wwivbasic: `Interpreter::call(name, args)`, so native code can call a
       script's `DEF` function while the script runs (needed for callbacks)
 - [ ] `wwiv.screen` (always on): `FULLSCREEN(header_lines)`, a layout over
       `common::FullScreenView` that turns pausing off while it's open, and

@@ -7,6 +7,22 @@
 
 namespace wwivbasic {
 
+// Makes v the context's running executor (Context::executor) until this is
+// destroyed, then puts back the one before.
+class RunningExecutor {
+public:
+  RunningExecutor(Context& ec, ExecutionVisitor* v) : ec_(ec), saved_(ec.executor) {
+    ec.executor = v;
+  }
+  ~RunningExecutor() { ec_.executor = saved_; }
+  RunningExecutor(const RunningExecutor&) = delete;
+  RunningExecutor& operator=(const RunningExecutor&) = delete;
+
+private:
+  Context& ec_;
+  ExecutionVisitor* saved_;
+};
+
 // Executes a parse tree. Expression visitors return a std::any holding a
 // Value; statement visitors return an empty std::any.
 class ExecutionVisitor : public BasicParserBaseVisitor {
