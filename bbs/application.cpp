@@ -1250,6 +1250,11 @@ void Application::init_message_areas_for_test() {
   create_message_api();
 }
 
+void Application::init_users_for_test() {
+  user_manager_ = std::make_unique<UserManager>(*config_);
+  read_names();
+}
+
 /** Returns the WWIV Names.LST Config Object. */
 Names* Application::names() const { return names_.get(); }
 

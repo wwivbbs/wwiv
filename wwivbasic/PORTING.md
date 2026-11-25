@@ -146,6 +146,7 @@ The new engine adds modules the legacy engine doesn't have, documented in
 [docs/BINDINGS.md](docs/BINDINGS.md):
 
 - `wwiv.msg`: read the message areas the caller can read.
+- `wwiv.user`: the caller's details, and other users' names.
 
 ## Real numbers
 

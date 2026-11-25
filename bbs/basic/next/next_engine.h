@@ -33,6 +33,7 @@ namespace wwiv::bbs::basic {
 // Runs scripts on wwivbasic, with a BbsConsole over bout/bin and the wwiv.*
 // modules (wwiv_bindings.h). Built only with WWIV_WWIVBASIC_NEXT.
 class MessageBase;
+class UserBase;
 
 class NextEngine final : public ScriptEngine {
 public:
@@ -49,6 +50,8 @@ public:
 
   // What wwiv.msg reads. Without one, scripts have no wwiv.msg module.
   void set_message_base(std::unique_ptr<MessageBase> msgs);
+  // What wwiv.user reads. Without one, scripts have no wwiv.user module.
+  void set_user_base(std::unique_ptr<UserBase> users);
 
 private:
   // Runs text as the script scriptdir/name, with the module name module
@@ -63,6 +66,7 @@ private:
   common::Context* ctx_;
   setup_fn on_setup_;
   std::unique_ptr<MessageBase> msgs_;
+  std::unique_ptr<UserBase> users_;
 };
 
 } // namespace wwiv::bbs::basic

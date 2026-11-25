@@ -284,6 +284,9 @@ constexpr uint16_t script_flag_engine_next   = 0x0008;
 // Turns off wwiv.msg (read-only message areas) on the new engine. It's on by
 // default, since it only shows what the user could read in the BBS.
 constexpr uint16_t script_flag_disable_msg   = 0x0010;
+// Turns off wwiv.user (the caller, and other users' public details) on the
+// new engine. On by default, like wwiv.msg.
+constexpr uint16_t script_flag_disable_user  = 0x0020;
 
 // STATIC SYSTEM INFORMATION
 struct configrec {

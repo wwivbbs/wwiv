@@ -182,7 +182,9 @@ headers and read messages.
       BBS, a fake in tests)
 - [ ] `wwiv.msg` writing: post, and change or delete posts, with the BBS's
       rules for who may (BINDINGS.md says it's read-only for now)
-- [ ] `wwiv.user`: the current user, and user lookups
+- [x] `wwiv.user`: the current user, and user lookups (read-only;
+      `bbs/basic/next/wwiv_user.cpp`, documented in [BINDINGS.md](BINDINGS.md)).
+      Other users show only their name, number and last logon
 - [ ] `wwiv.files`: file areas and file records
 - [ ] Permissions: access follows the user's own rights; write access is
       separate from read access; each package can be enabled by the sysop.

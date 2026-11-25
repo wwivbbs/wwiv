@@ -19,6 +19,7 @@
 
 #include "bbs/basic/next/bbs_console.h"
 #include "bbs/basic/message_base.h"
+#include "bbs/basic/user_base.h"
 #include "bbs/basic/next/wwiv_bindings.h"
 
 #include "common/context.h"
@@ -87,6 +88,8 @@ NextEngine::~NextEngine() = default;
 
 void NextEngine::set_message_base(std::unique_ptr<MessageBase> msgs) { msgs_ = std::move(msgs); }
 
+void NextEngine::set_user_base(std::unique_ptr<UserBase> users) { users_ = std::move(users); }
+
 bool NextEngine::RunScript(const std::string& script_name) {
   const auto text = ReadScriptFile(out_, config_.scriptdir(), script_name);
   if (!text) {
@@ -121,7 +124,7 @@ bool NextEngine::RunText(const std::string& name, const std::string& module,
   interp.set_stop_check(hung_up);
   // As with the legacy engine, scripts can only import files in scriptdir.
   interp.set_import_root(config_.scriptdir());
-  const WwivBindings bindings{in_, out_, console, config_, ctx_, module, msgs_.get()};
+  const WwivBindings bindings{in_, out_, console, config_, ctx_, module, msgs_.get(), users_.get()};
   RegisterWwiv(interp, bindings);
   RegisterWwivIo(interp, bindings);
   RegisterWwivData(interp, bindings);
@@ -137,6 +140,10 @@ bool NextEngine::RunText(const std::string& name, const std::string& module,
   // sysop turns it off.
   if (config_.script_package_msg_enabled()) {
     RegisterWwivMsg(interp, bindings);
+  }
+  // Like wwiv.msg, it shows only what the user could see in the BBS.
+  if (config_.script_package_user_enabled()) {
+    RegisterWwivUser(interp, bindings);
   }
   if (on_setup_) {
     on_setup_(interp);
