@@ -55,7 +55,8 @@ public:
   [[nodiscard]] bool is_cosysop() const override { return cosysop_; }
   [[nodiscard]] std::optional<User> read(int user_number) const override {
     const auto it = users_.find(user_number);
-    if (it == users_.end() || it->second.deleted()) {
+    // As BbsUserBase: deleted and inactive users aren't there.
+    if (it == users_.end() || it->second.deleted() || it->second.inactive()) {
       return std::nullopt;
     }
     return it->second;
@@ -258,6 +259,9 @@ TEST_F(BbsUserBaseTest, Read) {
   EXPECT_EQ(std::nullopt, users.read(3)) << "deleted";
   EXPECT_EQ(std::nullopt, users.read(4)) << "inactive";
   EXPECT_EQ(std::nullopt, users.read(0));
+  // readuser doesn't check for these; a negative number would seek before
+  // the start of user.lst.
+  EXPECT_EQ(std::nullopt, users.read(-1));
   EXPECT_EQ(std::nullopt, users.read(99));
 }
 
