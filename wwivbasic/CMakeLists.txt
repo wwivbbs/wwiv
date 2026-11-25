@@ -79,6 +79,12 @@ else()
   set(WWIVBASIC_ANTLR_DEFINITIONS ANTLR4CPP_STATIC)
 endif()
 
+# On Windows, vcpkg copies antlr4-runtime.dll next to the programs in the build
+# directory, but the release zip needs it too, or bbs.exe won't start (#1777).
+if(WIN32 AND WWIV_INSTALL AND TARGET antlr4_shared)
+  install(FILES "$<TARGET_FILE:antlr4_shared>" DESTINATION .)
+endif()
+
 # The generated lexer and parser, in their own target so they build without
 # warnings. Their headers are SYSTEM includes so their warnings don't show up
 # in our code either.
@@ -106,7 +112,7 @@ add_library(wwivbasic_interpreter
             "stdlib/numbers.cpp"
             "stdlib/strings.cpp"
 )
-target_link_libraries(wwivbasic_interpreter PRIVATE wwivbasic_parser PUBLIC core fmt::fmt)
+target_link_libraries(wwivbasic_interpreter PRIVATE wwivbasic_parser PUBLIC core fmt::fmt-header-only)
 target_compile_definitions(wwivbasic_interpreter PRIVATE _CRT_SECURE_NO_WARNINGS)
 set_max_warnings(wwivbasic_interpreter)
 
