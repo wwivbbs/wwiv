@@ -155,7 +155,7 @@ public:
     return ch;
   }
   bool disconnect() override { return true; }
-  void purgeIn() override {}
+  void purgeIn() override { keys.clear(); }
   unsigned int put(unsigned char ch) override;
   unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
   unsigned int read(char *, unsigned int) override { return 0; }

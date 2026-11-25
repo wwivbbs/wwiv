@@ -67,6 +67,12 @@ static int ExecuteExternalProgramNoScript(wwiv::bbs::CommandLine& commandLine, u
     }
   }
 
+  // Drop input the caller typed before the program starts, such as the rest
+  // of the line ending after a chain number (CR LF or CR NUL from telnet).
+  // Doors would read it as their first input, often while probing the
+  // terminal. Keys typed once the program is starting still reach it.
+  bout.dump();
+
   // Some LocalIO implementations (Curses) needs to disable itself before
   // we fork some other process.
   bout.localIO()->DisableLocalIO();

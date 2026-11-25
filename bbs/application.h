@@ -279,8 +279,8 @@ public:
   [[nodiscard]] wwiv::sdk::Config* config() const;
   void set_config_for_test(const wwiv::sdk::Config& config);
   /**
-   * Creates the status manager (with no change callback) and the instances
-   * list from config(), which startup normally does.
+   * Creates the status manager (with no change callback), the instances
+   * list and the networks list from config(), which startup normally does.
    */
   void init_status_and_instances_for_test();
   // Loads the networks and subs and makes the message APIs, as Init does.
