@@ -261,7 +261,7 @@ if (WWIV_BUILD_TESTS)
     endif()
     if (UNIX)
       # Forks a child to play the door.
-      list(APPEND test_sources exec_socket_test.cpp)
+      list(APPEND test_sources exec_socket_test.cpp execexternal_test.cpp)
     endif()
     add_executable(bbs_tests ${test_sources})
     if (WWIV_WWIVBASIC_NEXT)
