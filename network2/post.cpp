@@ -67,6 +67,25 @@ static bool find_sub(const Subs& subs, int network_number, const std::string& ne
   return false;
 }
 
+// As net38's network2 does: on a WWIVnet sub that needs network validation, a
+// post we would send on to other systems (we host the sub, or gate it to
+// another network) waits for the sysop to validate it.  The BBS sends it out
+// then (send_net_post), skipping the system it came from.
+static bool needs_network_validation(const Context& context, const subboard_t& sub) {
+  if (!(sub.anony & anony_val_net) || context.net.type != network_type_t::wwivnet) {
+    return false;
+  }
+  if (sub.nets.size() > 1) {
+    return true;
+  }
+  for (const auto& n : sub.nets) {
+    if (n.net_num == context.network_number && n.host == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Creates a single element vector of the echotag's info from the backbone list
 static std::vector<backbone_t> single_echo_backbone_list(std::vector<backbone_t> backbone,
                                                          std::string echotag) {
@@ -185,8 +204,17 @@ bool handle_inbound_post(Context& context, NetPacket& p) {
   msg.header().set_from(ppt.sender());
   msg.header().set_daten(p.nh.daten);
 
-  // Set the network number this came in on.
+  // Set the network number this came in on.  The BBS reads net_number only
+  // when the post is flagged as a network post, which (as net38 does) is only
+  // when there's more than one network to tell apart.
   msg.header().set_net_number(context.network_number);
+  if (context.networks().size() > 1) {
+    msg.header().set_net_network_post(true);
+  }
+  if (needs_network_validation(context, sub)) {
+    // send_post_to_subscribers holds it back; the sysop validates it.
+    msg.header().set_pending_network(true);
+  }
   msg.set_text(ppt.text());
 
   MessageAreaOptions options{};
@@ -241,6 +269,13 @@ bool send_post_to_subscribers(Context& context, NetPacket& template_packet,
     return write_deadnet_packet(context.net.dir, p);
   }
   VLOG(1) << "DEBUG: Found sub: " << sub.name;
+
+  if (needs_network_validation(context, sub)) {
+    const auto msg = fmt::format("Holding post on sub: '{}' for network validation", sub.name);
+    context.netdat().add_message(NetDat::netdat_msgtype_t::normal, msg);
+    LOG(INFO) << "    + " << msg;
+    return true;
+  }
 
   return send_post_to_subscribers(context.networks(), context.network_number, original_subtype, sub,
                                   template_packet, subscribers_to_skip,

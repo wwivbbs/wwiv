@@ -705,8 +705,10 @@ bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net
       VLOG(2) << "!hosting and !gating on: " << current_net.name;
       continue;
     }
-    if (are_we_gating) {
-      // update fromsys
+    if (are_we_gating && template_packet.nh.fromsys != 0) {
+      // Gating another system's post: it comes from us on this network.
+      // A post from this BBS (fromsys 0) keeps its user number, as the
+      // BBS's send_net_post does; fromsys is set just below.
       h.fromsys = current_net.sysnum;
       h.fromuser = 0;
     }

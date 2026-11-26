@@ -79,6 +79,9 @@ public:
   void set_pending_network(bool b);
   [[nodiscard]] bool source_verified() const;
   [[nodiscard]] bool net_network_post() const;
+  // Marks this as a post received from a network, so net_number() is the
+  // network it came in on.
+  void set_net_network_post(bool b);
 
   [[nodiscard]] const postrec& data() const { return header_; }
 

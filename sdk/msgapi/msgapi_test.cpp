@@ -21,9 +21,14 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/sdk_helper.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include "sdk/vardec.h"
+#include <filesystem>
 #include <memory>
 #include <string>
 
@@ -209,4 +214,176 @@ TEST_F(MsgApiTest, ReadMessage_StopsAtControlZ) {
   const auto m = a2->ReadMessage(1);
   ASSERT_TRUE(m);
   EXPECT_EQ("Line1\r\nLine2\r\n", m->text().string());
+}
+
+// AddMessage on subs carried on a network.
+class MsgApiNetTest : public testing::Test {
+public:
+  void SetUp() override {
+    // The SSM about posts waiting for validation goes to user #1.
+    UserManager um(helper.config());
+    User u{};
+    User::CreateNewUserRecord(&u, 50, 20, 0, 0.1234f, {7, 11, 14, 13, 31, 10, 12, 9, 5, 3},
+                              {7, 15, 15, 15, 112, 15, 15, 7, 7, 7});
+    u.set_name("SYSOP");
+    ASSERT_TRUE(um.writeuser(&u, 1));
+  }
+
+  // A sub on one network where we're a subscriber, so a post sent out on it
+  // becomes one packet to the host.
+  std::unique_ptr<MessageArea> CreateArea(net::network_type_t net_type, uint8_t anony) {
+    net_ = helper.CreateTestNetwork(net_type);
+    MessageApiOptions options;
+    options.overflow_strategy = OverflowStrategy::delete_none;
+    api_ = std::make_unique<WWIVMessageApi>(options, helper.config(),
+                                            std::vector<net::Network>{net_},
+                                            new NullLastReadImpl());
+    sub_.filename = "a1";
+    sub_.name = "Net Sub";
+    sub_.anony = anony;
+    subboard_network_data_t sn{};
+    sn.stype = "TEST";
+    sn.net_num = 0;
+    sn.host = 2;
+    sub_.nets.push_back(sn);
+    EXPECT_TRUE(api_->Create(sub_, -1));
+    return api_->Open(sub_, -1);
+  }
+
+  static Message NewPost(MessageArea& area, const std::string& title, const std::string& to) {
+    auto msg = area.CreateMessage();
+    static uint32_t daten = 915192000;
+    auto& h = msg.header();
+    h.set_from_system(0);
+    h.set_from_usernum(1);
+    h.set_from("SYSOP #1");
+    h.set_title(title);
+    h.set_to(to);
+    h.set_daten(daten++);
+    msg.set_text("Hello\r\n");
+    return msg;
+  }
+
+  // Packets written to the network's directory.
+  [[nodiscard]] int packets_sent() const {
+    int count = 0;
+    for (const auto& e : std::filesystem::directory_iterator(net_.dir)) {
+      if (e.path().filename().string().starts_with("p1-")) {
+        ++count;
+      }
+    }
+    return count;
+  }
+
+  [[nodiscard]] int ssms_sent() const {
+    const auto path = FilePath(helper.datadir(), SMW_DAT);
+    if (!File::Exists(path)) {
+      return 0;
+    }
+    return static_cast<int>(File(path).length() / sizeof(shortmsgrec));
+  }
+
+  [[nodiscard]] bool pending(MessageArea& area, int num) const {
+    const auto h = area.ReadMessageHeader(num);
+    return h && h->pending_network();
+  }
+
+  SdkHelper helper;
+  net::Network net_;
+  subboard_t sub_{};
+  std::unique_ptr<MessageApi> api_;
+};
+
+TEST_F(MsgApiNetTest, Send) {
+  auto area = CreateArea(net::network_type_t::wwivnet, 0);
+  MessageAreaOptions o{};
+  o.send_post_to_network = true;
+  auto m = NewPost(*area, "Title", "");
+  ASSERT_TRUE(area->AddMessage(m, o));
+  EXPECT_FALSE(pending(*area, 1));
+  EXPECT_EQ(1, packets_sent());
+  EXPECT_EQ(0, ssms_sent());
+}
+
+TEST_F(MsgApiNetTest, NotSentUnlessAsked) {
+  auto area = CreateArea(net::network_type_t::wwivnet, 0);
+  auto m = NewPost(*area, "Title", "");
+  ASSERT_TRUE(area->AddMessage(m, {}));
+  EXPECT_FALSE(pending(*area, 1));
+  EXPECT_EQ(0, packets_sent());
+}
+
+// Posts from here on a sub that needs network validation wait for the sysop,
+// who is told once, not once for every post.
+TEST_F(MsgApiNetTest, ValNet_HeldPending_OneSsm) {
+  auto area = CreateArea(net::network_type_t::wwivnet, anony_val_net);
+  MessageAreaOptions o{};
+  o.send_post_to_network = true;
+  auto m1 = NewPost(*area, "One", "");
+  ASSERT_TRUE(area->AddMessage(m1, o));
+  auto m2 = NewPost(*area, "Two", "");
+  ASSERT_TRUE(area->AddMessage(m2, o));
+  EXPECT_TRUE(pending(*area, 1));
+  EXPECT_TRUE(pending(*area, 2));
+  EXPECT_EQ(0, packets_sent());
+  EXPECT_EQ(1, ssms_sent());
+}
+
+// As the BBS does for a co-sysop's post.
+TEST_F(MsgApiNetTest, ValNet_SkipValidation) {
+  auto area = CreateArea(net::network_type_t::wwivnet, anony_val_net);
+  MessageAreaOptions o{};
+  o.send_post_to_network = true;
+  o.skip_network_validation = true;
+  auto m = NewPost(*area, "Title", "");
+  ASSERT_TRUE(area->AddMessage(m, o));
+  EXPECT_FALSE(pending(*area, 1));
+  EXPECT_EQ(1, packets_sent());
+  EXPECT_EQ(0, ssms_sent());
+}
+
+// A post from a network (network2) keeps the pending flag its caller gave it,
+// and nothing is sent or SSMed.
+TEST_F(MsgApiNetTest, ValNet_FromNetwork) {
+  auto area = CreateArea(net::network_type_t::wwivnet, anony_val_net);
+  auto m1 = NewPost(*area, "Not held", "");
+  m1.header().set_from_system(2);
+  ASSERT_TRUE(area->AddMessage(m1, {}));
+  auto m2 = NewPost(*area, "Held", "");
+  m2.header().set_from_system(2);
+  m2.header().set_pending_network(true);
+  ASSERT_TRUE(area->AddMessage(m2, {}));
+  EXPECT_FALSE(pending(*area, 1));
+  EXPECT_TRUE(pending(*area, 2));
+  EXPECT_EQ(0, packets_sent());
+  EXPECT_EQ(0, ssms_sent());
+}
+
+// A caller that already marked the post pending isn't sent out.
+TEST_F(MsgApiNetTest, PendingFromCaller_NotSent) {
+  auto area = CreateArea(net::network_type_t::wwivnet, 0);
+  MessageAreaOptions o{};
+  o.send_post_to_network = true;
+  auto m = NewPost(*area, "Title", "");
+  m.header().set_pending_network(true);
+  ASSERT_TRUE(area->AddMessage(m, o));
+  EXPECT_TRUE(pending(*area, 1));
+  EXPECT_EQ(0, packets_sent());
+}
+
+// On an FTN sub the To: name goes in a ^D0FidoAddr line, except for All in
+// any case.
+TEST_F(MsgApiNetTest, Ftn_FidoAddr) {
+  auto area = CreateArea(net::network_type_t::ftn, 0);
+  auto m1 = NewPost(*area, "One", "Rushfan");
+  ASSERT_TRUE(area->AddMessage(m1, {}));
+  auto m2 = NewPost(*area, "Two", "all");
+  ASSERT_TRUE(area->AddMessage(m2, {}));
+
+  const auto r1 = area->ReadMessage(1);
+  ASSERT_TRUE(r1);
+  EXPECT_NE(std::string::npos, r1->text().string().find("\x04" "0FidoAddr: Rushfan\r\n"));
+  const auto r2 = area->ReadMessage(2);
+  ASSERT_TRUE(r2);
+  EXPECT_EQ(std::string::npos, r2->text().string().find("FidoAddr"));
 }
