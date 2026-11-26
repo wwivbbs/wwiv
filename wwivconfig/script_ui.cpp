@@ -32,6 +32,7 @@ void script_ui(Config& config) {
   auto enable_file = config.script_package_file_enabled();
   auto enable_os = config.script_package_os_enabled();
   auto enable_msg = config.script_package_msg_enabled();
+  auto enable_msg_write = config.script_package_msg_write_enabled();
   auto enable_user = config.script_package_user_enabled();
   auto engine_next = config.script_engine_next();
 
@@ -53,6 +54,10 @@ void script_ui(Config& config) {
             new BooleanEditItem(&enable_msg),
     "Enable package wwiv.msg (new engine only): read the message areas the user can read.", 1, y);
   ++y;
+  items.add(new Label("Enable MSG Writing:"), new BooleanEditItem(&enable_msg_write),
+            "Let wwiv.msg post and delete messages, with the user's own rights (new engine only).",
+            1, y);
+  ++y;
   items.add(new Label("Enable Package USER:"),
             new BooleanEditItem(&enable_user),
     "Enable package wwiv.user (new engine only): the caller, and other users' names.", 1, y);
@@ -69,6 +74,7 @@ void script_ui(Config& config) {
   config.script_package_os_enabled(enable_os);
   config.script_package_file_enabled(enable_file);
   config.script_package_msg_enabled(enable_msg);
+  config.script_package_msg_write_enabled(enable_msg_write);
   config.script_package_user_enabled(enable_user);
   config.script_engine_next(engine_next);
 }

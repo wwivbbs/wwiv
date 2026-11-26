@@ -261,6 +261,14 @@ void Config::script_package_msg_enabled(bool b) noexcept {
   set_script_flag(config_.script_flags, script_flag_disable_msg, !b);
 }
 
+bool Config::script_package_msg_write_enabled() const noexcept {
+  return config_.script_flags & script_flag_enable_msg_write;
+}
+
+void Config::script_package_msg_write_enabled(bool b) noexcept {
+  set_script_flag(config_.script_flags, script_flag_enable_msg_write, b);
+}
+
 bool Config::script_package_user_enabled() const noexcept {
   return !(config_.script_flags & script_flag_disable_user);
 }

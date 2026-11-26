@@ -19,8 +19,12 @@
 #include "bbs/basic/next/wwiv_bindings.h"
 
 #include "common/context.h"
+#include "core/datetime.h"
+#include "core/file.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "fmt/format.h"
+#include "sdk/config.h"
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_area.h"
 #include "sdk/msgapi/parsed_message.h"
@@ -216,6 +220,208 @@ int find_message(const ScriptArea& a, uint32_t id, int number) {
   return 0;
 }
 
+// How the user's posts in sub may be anonymous: one of 0, anony_enable_anony,
+// anony_enable_dear_abby, anony_force_anony or anony_real_name, worked out
+// as the BBS's post() does (bbs/msgbase1.cpp).
+uint8_t anonymous_setting(const sdk::subboard_t& sub, const MessageBase::Poster& p) {
+  uint8_t a = sub.anony & 0x0f;
+  if (a == 0 && p.sl_post_anony) {
+    a = anony_enable_anony;
+  }
+  if (a == anony_enable_anony && p.restrict_anony) {
+    a = 0;
+  }
+  if (!sub.nets.empty()) {
+    a &= anony_real_name;
+  }
+  return a;
+}
+
+// What wwiv.msg's writing needs besides the area.
+struct Writing {
+  const sdk::Config* config;
+  bool enabled;
+};
+
+// Why the user can't post in area a now, or "" if they can. The checks are
+// the BBS's post()'s.
+std::string post_error(const ScriptArea& a, const Writing& w) {
+  const auto& sub = a.sub();
+  if (!w.enabled) {
+    return "posting from scripts isn't turned on on this BBS";
+  }
+  const auto p = a.msgs->poster(a.subnum);
+  if (p.restrict_post) {
+    return "you aren't allowed to post";
+  }
+  if (p.posts_today >= p.max_posts_today) {
+    return "you've posted as many messages as you may today";
+  }
+  if (!a.msgs->can_post(a.subnum)) {
+    return fmt::format("you can't post in '{}'", sub.name);
+  }
+  if (!sub.nets.empty() && p.restrict_net) {
+    return fmt::format("you can't post in networked areas such as '{}'", sub.name);
+  }
+  if (core::File::freespace_for_path(w.config->msgsdir()) < 10) {
+    return "there isn't enough disk space left";
+  }
+  if (!a.area()) {
+    return fmt::format("'{}' can't be opened", sub.name);
+  }
+  return {};
+}
+
+// ^D starts WWIV's control lines (^D0PID: ...); ^Z ends message text.
+constexpr char kControlD = 0x04;
+constexpr char kControlZ = 0x1a;
+
+// A script's text as WWIV message text: lines ending in CR LF, without the
+// control characters that start WWIV's control lines (^D) or end the text
+// (^Z). text is a string, or a list of lines.
+std::string message_text(const Value& text) {
+  std::string s;
+  if (text.is_list()) {
+    for (const auto& line : text.list("POST")->items) {
+      s += line.toString();
+      s += "\n";
+    }
+  } else {
+    s = text.toString();
+  }
+  std::string out;
+  for (size_t i = 0; i < s.size(); i++) {
+    const auto c = s[i];
+    if (c == '\r') {
+      // CR LF or a lone CR ends a line, like LF.
+      if (i + 1 < s.size() && s[i + 1] == '\n') {
+        continue;
+      }
+      out += "\r\n";
+    } else if (c == '\n') {
+      out += "\r\n";
+    } else if (c != kControlD && c != kControlZ) {
+      out += c;
+    }
+  }
+  if (!out.empty() && !out.ends_with("\r\n")) {
+    out += "\r\n";
+  }
+  return out;
+}
+
+// POST(title, text[, to[, anonymous]]) in area a: posts as the BBS's post()
+// does, and returns the new message's number.
+int post_message(const ScriptArea& a, const Writing& w, const std::vector<Value>& args) {
+  if (args.size() < 2 || args.size() > 4) {
+    throw wwivbasic::ArgumentError(fmt::format("expected 2 to 4 arguments, got {}", args.size()));
+  }
+  const auto title = StringTrim(args.at(0).toString());
+  const auto to = args.size() > 2 ? StringTrim(args.at(2).toString()) : std::string();
+  const auto anonymous = args.size() > 3 && args.at(3).toBool();
+  const auto& sub = a.sub();
+  if (const auto e = post_error(a, w); !e.empty()) {
+    throw BasicError(fmt::format("message_area.post: {}", e));
+  }
+  if (title.empty()) {
+    throw BasicError("message_area.post: the title is empty");
+  }
+  // postrec's title holds 71 characters.
+  if (title.size() > 71) {
+    throw BasicError(
+        fmt::format("message_area.post: the title is {} characters; the most is 71", title.size()));
+  }
+  const auto text = message_text(args.at(1));
+  if (text.empty()) {
+    throw BasicError("message_area.post: the text is empty");
+  }
+
+  const auto p = a.msgs->poster(a.subnum);
+  auto from = p.name;
+  uint8_t anony = 0;
+  switch (anonymous_setting(sub, p)) {
+  case anony_enable_anony:
+    anony = anonymous ? anony_sender : 0;
+    break;
+  case anony_enable_dear_abby:
+    // TRUE posts as "Abby"; the BBS's editor also offers "Problemed Person".
+    anony = anonymous ? anony_sender_da : 0;
+    break;
+  case anony_force_anony:
+    anony = anony_sender;
+    break;
+  case anony_real_name:
+    from = p.real_name;
+    [[fallthrough]];
+  default:
+    if (anonymous) {
+      throw BasicError(
+          fmt::format("message_area.post: posts in '{}' can't be anonymous", sub.name));
+    }
+    break;
+  }
+
+  auto* area = a.area();
+  auto msg = area->CreateMessage();
+  auto& h = msg.header();
+  h.set_title(title);
+  h.set_from(from);
+  h.set_to(to);
+  h.set_from_usernum(static_cast<uint16_t>(p.user_num));
+  h.set_from_system(0);
+  h.set_daten(core::daten_t_now());
+  h.set_anony(anony);
+  if (p.restrict_validate) {
+    h.set_unvalidated(true);
+  }
+  // As inmsg: the program that wrote it, then the text.
+  msg.set_text(fmt::format("{}0PID: WWIV {}\r\n{}", kControlD, core::full_version(), text));
+  sdk::msgapi::MessageAreaOptions options;
+  // RE: and BY: lines only for a post to someone, as inmsg adds them.
+  options.add_re_and_by_line = !to.empty() && !iequals(to, "All");
+  // The SDK sends it on the sub's first network only (#1782).
+  options.send_post_to_network = !sub.nets.empty();
+  if (!area->AddMessage(msg, options)) {
+    throw BasicError(
+        fmt::format("message_area.post: the post couldn't be saved in '{}'", sub.name));
+  }
+  a.msgs->posted(a.subnum, title);
+  // Posts go at the end; a full area loses its oldest, not this one.
+  return area->number_of_messages();
+}
+
+// DELETE_MESSAGE(h) in area a: deletes the post h (a header or message from
+// a) if it's the user's own or the user is a co-sysop of the area. Returns
+// FALSE if it's already gone.
+bool delete_message(const ScriptArea& a, const Writing& w, uint32_t id, int number) {
+  const auto& sub = a.sub();
+  if (!w.enabled) {
+    throw BasicError(
+        "message_area.delete_message: deleting from scripts isn't turned on on this BBS");
+  }
+  const auto n = find_message(a, id, number);
+  if (n == 0) {
+    return false;
+  }
+  auto* area = a.area();
+  const auto h = area->ReadMessageHeader(n);
+  if (!h) {
+    return false;
+  }
+  const auto user_num = a.msgs->poster(a.subnum).user_num;
+  const auto own = h->from_system() == 0 && h->from_usernum() == user_num;
+  if (!own && !a.msgs->is_cosysop(a.subnum)) {
+    throw BasicError(fmt::format(
+        "message_area.delete_message: you can only delete your own posts in '{}'", sub.name));
+  }
+  if (!area->DeleteMessage(n)) {
+    throw BasicError(fmt::format(
+        "message_area.delete_message: message {} in '{}' couldn't be deleted", n, sub.name));
+  }
+  a.msgs->deleted(a.subnum, h->title(), h->from_usernum(), h->daten());
+  return true;
+}
+
 // Adds the header properties to the binding for T (ScriptHeader or
 // ScriptMessage).
 template <class T> void add_header_properties(wwivbasic::ClassBinding<T>& c) {
@@ -241,6 +447,7 @@ void RegisterWwivMsg(wwivbasic::Interpreter& interp, const WwivBindings& b) {
   std::function<bool()> hung_up = [ctx = b.ctx]() {
     return ctx && ctx->session_context().hangup();
   };
+  const Writing w{&b.config, b.config.script_package_msg_write_enabled()};
   auto& m = interp.add_module("wwiv.msg");
   auto& header_class = m.class_<ScriptHeader>("message_header");
   auto& message_class = m.class_<ScriptMessage>("message");
@@ -267,21 +474,57 @@ void RegisterWwivMsg(wwivbasic::Interpreter& interp, const WwivBindings& b) {
                 return Value::make_list(std::move(items));
               })
       // MESSAGE(n) reads message n (from 1 to COUNT).
-      .method("message", [&message_class](const ScriptArea& a, int number) {
-        return message_class.wrap(read_message(a, number));
-      })
+      .method("message",
+              [&message_class](const ScriptArea& a, int number) {
+                return message_class.wrap(read_message(a, number));
+              })
       // FIND(h) is the number the message h (a header or message from this
       // area) has now, or 0 if it's gone or can't be read. Numbers shift when
       // earlier posts are deleted; use it before MESSAGE to read the post h
       // was rather than whatever now has its number.
-      .method("find", [&header_class, &message_class](const ScriptArea& a, Value v) {
+      .method("find",
+              [&header_class, &message_class](const ScriptArea& a, Value v) {
+                if (const auto h = header_class.unwrap(v)) {
+                  return find_message(a, h->id, h->number);
+                }
+                if (const auto msg = message_class.unwrap(v)) {
+                  return find_message(a, msg->id, msg->number);
+                }
+                throw BasicError("FIND: expected a message_header or message");
+              })
+      // CAN_POST is TRUE if the user may post in the area now.
+      .property("can_post", [w](const ScriptArea& a) { return post_error(a, w).empty(); })
+      // ANONYMOUS is how the user's posts in the area may be anonymous: "no",
+      // "allowed" (POST's anonymous argument chooses) or "forced".
+      .property("anonymous",
+                [](const ScriptArea& a) -> std::string {
+                  switch (anonymous_setting(a.sub(), a.msgs->poster(a.subnum))) {
+                  case anony_enable_anony:
+                  case anony_enable_dear_abby:
+                    return "allowed";
+                  case anony_force_anony:
+                    return "forced";
+                  default:
+                    return "no";
+                  }
+                })
+      // POST(title, text[, to[, anonymous]]) posts text (a string, or a list
+      // of lines) and returns the new message's number.
+      .methodl("post",
+               [w](ScriptArea& a, const std::vector<Value>& args) {
+                 return Value(post_message(a, w, args));
+               })
+      // DELETE_MESSAGE(h) deletes the post h (a header or message from this
+      // area): the user's own, or any if they're a co-sysop of the area.
+      // FALSE if it was already gone.
+      .method("delete_message", [w, &header_class, &message_class](ScriptArea& a, Value v) {
         if (const auto h = header_class.unwrap(v)) {
-          return find_message(a, h->id, h->number);
+          return delete_message(a, w, h->id, h->number);
         }
         if (const auto msg = message_class.unwrap(v)) {
-          return find_message(a, msg->id, msg->number);
+          return delete_message(a, w, msg->id, msg->number);
         }
-        throw BasicError("FIND: expected a message_header or message");
+        throw BasicError("message_area.delete_message: expected a message_header or message");
       });
 
   auto make_area = [msgs, &area_class](const MessageBase::UserSub& u) {

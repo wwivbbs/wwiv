@@ -18,24 +18,27 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "bbs/basic/next/bbs_message_base.h"
+#include "bbs/application.h"
 #include "bbs/basic/message_base.h"
+#include "bbs/basic/next/bbs_message_base.h"
 #include "bbs/basic/next/next_engine.h"
 #include "bbs/basic/next/type_ahead_test_util.h"
-#include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bbs_helper.h"
 #include "common/input.h"
 #include "common/output.h"
 #include "core/datafile.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "fmt/format.h"
+#include "install_scripts.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/vardec.h"
-#include "install_scripts.h"
 
 #include <functional>
 #include <memory>
@@ -82,6 +85,14 @@ public:
     return cosysop_;
   }
   [[nodiscard]] bool can_read_anonymous(int) const override { return read_anonymous_; }
+  [[nodiscard]] Poster poster(int) const override { return poster_; }
+  [[nodiscard]] bool can_post(int) const override { return can_post_; }
+  void posted(int subnum, const std::string& title) override {
+    posted_.push_back(fmt::format("{}:{}", subnum, title));
+  }
+  void deleted(int subnum, const std::string& title, int owneruser, uint32_t) override {
+    deleted_.push_back(fmt::format("{}:{}:{}", subnum, title, owneruser));
+  }
 
   std::vector<UserSub> user_subs_;
   std::optional<UserSub> current_;
@@ -90,6 +101,13 @@ public:
   std::function<void()> on_rights_check;
   bool cosysop_{false};
   bool read_anonymous_{false};
+  // The user as posting sees them: user #1, who may post 10 a day.
+  Poster poster_{1, "TESTER #1", "Real Name", false, false, false, false, 0, 10, false};
+  bool can_post_{true};
+  // What posted() and deleted() were told: "subnum:title" and
+  // "subnum:title:owneruser".
+  std::vector<std::string> posted_;
+  std::vector<std::string> deleted_;
 
 private:
   Subs& subs_;
@@ -97,6 +115,32 @@ private:
 };
 
 } // namespace
+
+// Hands a test's FakeMessageBase to an engine, which owns what it's given,
+// so the fake outlives each script and a test can run several.
+class ForwardingMessageBase final : public MessageBase {
+public:
+  explicit ForwardingMessageBase(MessageBase& m) : m_(m) {}
+  [[nodiscard]] std::vector<UserSub> user_subs() const override { return m_.user_subs(); }
+  [[nodiscard]] std::optional<UserSub> current_user_sub() const override {
+    return m_.current_user_sub();
+  }
+  [[nodiscard]] const Subs& subs() const override { return m_.subs(); }
+  [[nodiscard]] std::unique_ptr<MessageArea> open(int subnum) override { return m_.open(subnum); }
+  [[nodiscard]] bool is_cosysop(int subnum) const override { return m_.is_cosysop(subnum); }
+  [[nodiscard]] bool can_read_anonymous(int subnum) const override {
+    return m_.can_read_anonymous(subnum);
+  }
+  [[nodiscard]] Poster poster(int subnum) const override { return m_.poster(subnum); }
+  [[nodiscard]] bool can_post(int subnum) const override { return m_.can_post(subnum); }
+  void posted(int subnum, const std::string& title) override { m_.posted(subnum, title); }
+  void deleted(int subnum, const std::string& title, int owneruser, uint32_t daten) override {
+    m_.deleted(subnum, title, owneruser, daten);
+  }
+
+private:
+  MessageBase& m_;
+};
 
 class WwivMsgTest : public ::testing::Test {
 protected:
@@ -185,7 +229,7 @@ protected:
 
   std::string Run(const std::string& text, bool* ok = nullptr) {
     NextEngine engine(bin, bout, helper.config(), &helper.context());
-    engine.set_message_base(std::move(msgs));
+    engine.set_message_base(std::make_unique<ForwardingMessageBase>(*msgs));
     const auto r = engine.RunScript("msgtest", text);
     if (ok) {
       *ok = r;
@@ -586,6 +630,83 @@ TEST_F(BbsMessageBaseTest, Rights) {
   EXPECT_TRUE(m.is_cosysop(4));
 }
 
+// The user as the BBS's post() sees them.
+TEST_F(BbsMessageBaseTest, Poster) {
+  const auto sub = AddSub("general", 2, true);
+  slrec sl{};
+  sl.posts = 7;
+  sl.ability = ability_post_anony;
+  helper.config().sl(40, sl);
+  helper.sess().effective_sl(40);
+  helper.user()->restriction(User::restrictPost | User::restrictNet);
+  helper.user()->posts_today(3);
+  helper.user()->real_name("Real Person");
+  helper.user()->set_name("POSTER");
+  helper.sess().user_num(1);
+
+  BbsMessageBase m(*a());
+  const auto p = m.poster(sub);
+  EXPECT_EQ(1, p.user_num);
+  // Without a names list, the user's own name and number.
+  EXPECT_EQ("Poster #1", p.name);
+  EXPECT_EQ("Real Person", p.real_name);
+  EXPECT_TRUE(p.restrict_post);
+  EXPECT_TRUE(p.restrict_net);
+  EXPECT_FALSE(p.restrict_anony);
+  EXPECT_FALSE(p.restrict_validate);
+  EXPECT_EQ(3, p.posts_today);
+  EXPECT_EQ(7, p.max_posts_today);
+  EXPECT_TRUE(p.sl_post_anony);
+}
+
+TEST_F(BbsMessageBaseTest, CanPost) {
+  const auto open = AddSub("open", 2, true);
+  const auto closed = AddSub("closed", 2, true);
+  a()->subs().sub(closed).post_acs = "user.sl >= 255";
+  helper.sess().effective_sl(50);
+  BbsMessageBase m(*a());
+  EXPECT_TRUE(m.can_post(open));
+  EXPECT_FALSE(m.can_post(closed));
+  EXPECT_FALSE(m.can_post(99));
+}
+
+// A post counts for the user and the system; deleting the user's own post
+// takes its credit back.
+TEST_F(BbsMessageBaseTest, PostedAndDeleted) {
+  const auto sub = AddSub("general", 2, true);
+  {
+    // The status manager updates status.dat; the test BBS has none.
+    DataFile<statusrec_t> status(FilePath(helper.config().datadir(), STATUS_DAT),
+                                 File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    ASSERT_TRUE(status);
+    statusrec_t s{};
+    ASSERT_TRUE(status.Write(0, &s));
+  }
+  a()->init_status_and_instances_for_test();
+  auto& u = *helper.user();
+  u.messages_posted(5);
+  u.posts_today(1);
+  u.firston("01/01/20");
+  const auto msgs_today = a()->status_manager()->get_status()->msgs_today();
+
+  BbsMessageBase m(*a());
+  m.posted(sub, "Hello");
+  EXPECT_EQ(6, u.messages_posted());
+  EXPECT_EQ(2, u.posts_today());
+  EXPECT_EQ(0, u.posts_net());
+  EXPECT_EQ(msgs_today + 1, a()->status_manager()->get_status()->msgs_today());
+
+  const auto now = wwiv::core::daten_t_now();
+  // Someone else's post: no change.
+  m.deleted(sub, "Theirs", helper.sess().user_num() + 1, now);
+  EXPECT_EQ(6, u.messages_posted());
+  m.deleted(sub, "Hello", helper.sess().user_num(), now);
+  EXPECT_EQ(5, u.messages_posted());
+  // A post from before this account was made (a reused user number).
+  m.deleted(sub, "Old", helper.sess().user_num(), 1);
+  EXPECT_EQ(5, u.messages_posted());
+}
+
 // The example in wwivbasic/docs/BINDINGS.md.
 TEST_F(WwivMsgTest, DocExample) {
   Post(0, "rushfan #1", "Hello", "Hi there\r\nBye\r\n");
@@ -948,4 +1069,211 @@ TEST_F(MsgViewFullScreenTest, EmptyArea) {
   // Down to Sysop, Enter, then quit.
   const auto out = RunViewer(std::string(kDown) + "\rq");
   EXPECT_THAT(out, HasSubstr("There are no messages in Sysop."));
+}
+
+// Posting and deleting (wwiv.msg writing).
+class WwivMsgWriteTest : public WwivMsgTest {
+protected:
+  void SetUp() override {
+    WwivMsgTest::SetUp();
+    helper.config().script_package_msg_write_enabled(true);
+    fake = msgs.get();
+  }
+
+  // The sub's post n, read straight from the message base.
+  std::optional<Message> Read(int subnum, int n) {
+    return api->Open(subs->sub(subnum), subnum)->ReadMessage(n);
+  }
+
+  // msgs, which the scripts use.
+  FakeMessageBase* fake{nullptr};
+};
+
+TEST_F(WwivMsgWriteTest, Post) {
+  const auto out = Run(R"(
+a = wwiv.msg.area("1")
+n = a.post("Hello", list("Line one", "", "Line three"))
+m = a.message(n)
+print n; " "; a.count; " "; m.title; " / "; m.from; " / "; m.anonymous
+for line in m.lines()
+  print "["; line; "]"
+next
+)");
+  EXPECT_EQ("1 1 Hello / TESTER #1 / FALSE\r\n[Line one]\r\n[]\r\n[Line three]\r\n", out);
+  EXPECT_THAT(fake->posted_, ElementsAre("0:Hello"));
+  const auto m = Read(0, 1);
+  ASSERT_TRUE(m);
+  EXPECT_EQ(1, m->header().from_usernum());
+  EXPECT_EQ(0, m->header().from_system());
+  EXPECT_FALSE(m->header().unvalidated());
+  // Signed with the program that wrote it, as the BBS's editor does.
+  EXPECT_THAT(m->text().string(), HasSubstr("\x04"
+                                            "0PID: WWIV "));
+}
+
+// Text can be a string; any line ending works, and ^D and ^Z are dropped so
+// a script can't add control lines or end the text early.
+TEST_F(WwivMsgWriteTest, Post_TextString) {
+  const auto out = Run(R"(
+a = wwiv.msg.area("1")
+n = a.post("Hi", "one" + CHR(10) + "two" + CHR(13) + "three" + CHR(13) + CHR(10) + CHR(4) + "0MSGID: x" + CHR(26) + "!")
+for line in a.message(n).lines()
+  print "["; line; "]"
+next
+)");
+  EXPECT_EQ("[one]\r\n[two]\r\n[three]\r\n[0MSGID: x!]\r\n", out);
+}
+
+TEST_F(WwivMsgWriteTest, Post_To) {
+  const auto out = Run(R"(
+a = wwiv.msg.area("1")
+n = a.post("Re: Hello", "Thanks", "Rushfan")
+print a.message(n).to
+)");
+  EXPECT_EQ("Rushfan\r\n", out);
+}
+
+TEST_F(WwivMsgWriteTest, Post_Unvalidated) {
+  fake->poster_.restrict_validate = true;
+  Run("n = wwiv.msg.area(\"1\").post(\"Hi\", \"x\")\n");
+  const auto m = Read(0, 1);
+  ASSERT_TRUE(m);
+  EXPECT_TRUE(m->header().unvalidated());
+}
+
+// The sysop turns writing on in wwivconfig; it's off by default.
+TEST_F(WwivMsgWriteTest, Disabled) {
+  helper.config().script_package_msg_write_enabled(false);
+  Post(0, "a #1", "Mine", "x\r\n");
+  EXPECT_EQ("FALSE\r\n", Run("print wwiv.msg.area(\"1\").can_post\n"));
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\", \"x\")\n"),
+              HasSubstr("message_area.post: posting from scripts isn't turned on on this BBS"));
+  EXPECT_THAT(Run("a = wwiv.msg.area(\"1\")\nx = a.delete_message(get(a.headers(), 0))\n"),
+              HasSubstr("deleting from scripts isn't turned on on this BBS"));
+}
+
+TEST_F(WwivMsgWriteTest, CantPost) {
+  auto expect_error = [this](const std::string& error) {
+    const auto out = Run(R"(
+a = wwiv.msg.area("1")
+print a.can_post
+n = a.post("Hi", "x")
+)");
+    EXPECT_THAT(out, HasSubstr("FALSE\r\n"));
+    EXPECT_THAT(out, HasSubstr("message_area.post: " + error));
+  };
+  fake->poster_.restrict_post = true;
+  expect_error("you aren't allowed to post");
+  fake->poster_.restrict_post = false;
+
+  fake->poster_.posts_today = 10;
+  expect_error("you've posted as many messages as you may today");
+  fake->poster_.posts_today = 0;
+
+  fake->can_post_ = false;
+  expect_error("you can't post in 'General'");
+  fake->can_post_ = true;
+
+  fake->poster_.restrict_net = true;
+  subs->sub(0).nets.push_back(subboard_network_data_t{});
+  expect_error("you can't post in networked areas such as 'General'");
+}
+
+TEST_F(WwivMsgWriteTest, Post_BadArguments) {
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"  \", \"x\")\n"),
+              HasSubstr("message_area.post: the title is empty"));
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(STRING(72, \"x\"), \"x\")\n"),
+              HasSubstr("message_area.post: the title is 72 characters; the most is 71"));
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\", \"\")\n"),
+              HasSubstr("message_area.post: the text is empty"));
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\")\n"),
+              HasSubstr("message_area.post: expected 2 to 4 arguments, got 1"));
+}
+
+// Anonymous posts follow the area's setting and the user's rights, as in
+// the BBS's post().
+TEST_F(WwivMsgWriteTest, Anonymous) {
+  const auto script = R"(
+a = wwiv.msg.area("1")
+print a.anonymous
+n = a.post("Hi", "x", "", TRUE)
+print a.message(n).anonymous; " "; a.message(n).from
+)";
+  // Not allowed.
+  EXPECT_THAT(Run(script),
+              HasSubstr("no\r\nmsgtest:4: error: message_area.post: posts in 'General' can't "
+                        "be anonymous"));
+
+  // The area allows it; the reader can't see who it was.
+  subs->sub(0).anony = anony_enable_anony;
+  EXPECT_EQ("allowed\r\nTRUE >UNKNOWN<\r\n", Run(script));
+
+  // The user may not post anonymously.
+  fake->poster_.restrict_anony = true;
+  EXPECT_THAT(Run(script), HasSubstr("can't be anonymous"));
+  fake->poster_.restrict_anony = false;
+
+  // The user's SL may post anonymously in areas that don't say otherwise.
+  subs->sub(0).anony = 0;
+  fake->poster_.sl_post_anony = true;
+  EXPECT_THAT(Run(script), HasSubstr("allowed\r\nTRUE"));
+  fake->poster_.sl_post_anony = false;
+
+  // Forced: anonymous even when the script doesn't ask.
+  subs->sub(0).anony = anony_force_anony;
+  EXPECT_EQ("forced\r\nTRUE >UNKNOWN<\r\n",
+            Run("a = wwiv.msg.area(\"1\")\nprint a.anonymous\nn = a.post(\"Hi\", \"x\")\n"
+                "print a.message(n).anonymous; \" \"; a.message(n).from\n"));
+
+  // Real names: signed with the user's real name.
+  subs->sub(0).anony = anony_real_name;
+  EXPECT_EQ("no\r\nReal Name\r\n",
+            Run("a = wwiv.msg.area(\"1\")\nprint a.anonymous\nn = a.post(\"Hi\", \"x\")\n"
+                "print a.message(n).from\n"));
+
+  // Dear Abby: TRUE posts as Abby.
+  subs->sub(0).anony = anony_enable_dear_abby;
+  EXPECT_THAT(Run(script), HasSubstr("allowed\r\nTRUE Abby"));
+
+  // Networked areas don't allow it.
+  subs->sub(0).anony = anony_enable_anony;
+  subs->sub(0).nets.push_back(subboard_network_data_t{});
+  EXPECT_EQ("no\r\n", Run("print wwiv.msg.area(\"1\").anonymous\n"));
+}
+
+TEST_F(WwivMsgWriteTest, DeleteOwnPost) {
+  Post(0, "TESTER #1", "Mine", "x\r\n");
+  Post(0, "TESTER #1", "Also mine", "y\r\n");
+  const auto out = Run(R"(
+a = wwiv.msg.area("1")
+h = get(a.headers(), 0)
+print a.delete_message(h); " "; a.count; " "; get(a.headers(), 0).title
+print a.delete_message(h)
+)");
+  EXPECT_EQ("TRUE 1 Also mine\r\nFALSE\r\n", out);
+  EXPECT_THAT(fake->deleted_, ElementsAre("0:Mine:1"));
+}
+
+TEST_F(WwivMsgWriteTest, DeleteSomeoneElsesPost) {
+  Post(0, "TESTER #1", "Theirs", "x\r\n");
+  fake->poster_.user_num = 2;
+  const auto script = "a = wwiv.msg.area(\"1\")\nprint a.delete_message(get(a.headers(), 0))\n";
+  EXPECT_THAT(
+      Run(script),
+      HasSubstr("message_area.delete_message: you can only delete your own posts in 'General'"));
+
+  // A co-sysop of the area can.
+  fake->cosysop_ = true;
+  EXPECT_EQ("TRUE\r\n", Run(script));
+}
+
+// The posting example in wwivbasic/docs/BINDINGS.md.
+TEST_F(WwivMsgWriteTest, DocExample) {
+  EXPECT_EQ("Posted message 1\r\n", Run(R"bas(
+a = wwiv.msg.area("1")
+If a.can_post Then
+  n = a.post("Hello", list("First line", "Second line"))
+  print "Posted message "; n
+EndIf
+)bas"));
 }
