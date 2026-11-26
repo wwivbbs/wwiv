@@ -142,6 +142,8 @@ bool BbsMessageBase::can_post(int subnum) const {
   return check_acs(subs.sub(subnum).post_acs);
 }
 
+// The BBS's post() also adds one to today's posts; for a script's post the
+// SDK's AddMessage has done that.
 void BbsMessageBase::posted(int subnum, const std::string& title) {
   auto& u = *app_.user();
   u.messages_posted(u.messages_posted() + 1);
@@ -150,10 +152,9 @@ void BbsMessageBase::posted(int subnum, const std::string& title) {
   if (!sub.nets.empty()) {
     u.posts_net(u.posts_net() + 1);
   }
-  app_.status_manager()->Run([](sdk::Status& s) {
-    s.increment_msgs_today();
-    s.IncrementNumLocalPosts();
-  });
+  // AddMessage already counted it in today's posts (msgposttoday), when it
+  // gave the post its qscan number.
+  app_.status_manager()->Run([](sdk::Status& s) { s.IncrementNumLocalPosts(); });
   sysoplog(fmt::format("+ '{}' posted on {} (from a script)", title, sub.name));
 }
 

@@ -310,6 +310,23 @@ std::string message_text(const Value& text) {
   return out;
 }
 
+// Checks a one-line field of a post (its title or who it's to): at most 71
+// characters (postrec's title holds 71), and no control characters, which
+// would let a script end the line and start a control line (^D0...) of its
+// own.
+void check_field(const std::string& what, const std::string& s) {
+  if (s.size() > 71) {
+    throw BasicError(
+        fmt::format("message_area.post: the {} is {} characters; the most is 71", what, s.size()));
+  }
+  for (const auto c : s) {
+    if (static_cast<unsigned char>(c) < 0x20 || c == 0x7f) {
+      throw BasicError(fmt::format("message_area.post: the {} has a control character (code {})",
+                                   what, static_cast<int>(static_cast<unsigned char>(c))));
+    }
+  }
+}
+
 // POST(title, text[, to[, anonymous]]) in area a: posts as the BBS's post()
 // does, and returns the new message's number.
 int post_message(const ScriptArea& a, const Writing& w, const std::vector<Value>& args) {
@@ -326,11 +343,8 @@ int post_message(const ScriptArea& a, const Writing& w, const std::vector<Value>
   if (title.empty()) {
     throw BasicError("message_area.post: the title is empty");
   }
-  // postrec's title holds 71 characters.
-  if (title.size() > 71) {
-    throw BasicError(
-        fmt::format("message_area.post: the title is {} characters; the most is 71", title.size()));
-  }
+  check_field("title", title);
+  check_field("name it's to", to);
   const auto text = message_text(args.at(1));
   if (text.empty()) {
     throw BasicError("message_area.post: the text is empty");

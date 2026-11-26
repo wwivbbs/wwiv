@@ -688,13 +688,16 @@ TEST_F(BbsMessageBaseTest, PostedAndDeleted) {
   u.posts_today(1);
   u.firston("01/01/20");
   const auto msgs_today = a()->status_manager()->get_status()->msgs_today();
+  const auto local_posts = a()->status_manager()->get_status()->localposts();
 
   BbsMessageBase m(*a());
   m.posted(sub, "Hello");
   EXPECT_EQ(6, u.messages_posted());
   EXPECT_EQ(2, u.posts_today());
   EXPECT_EQ(0, u.posts_net());
-  EXPECT_EQ(msgs_today + 1, a()->status_manager()->get_status()->msgs_today());
+  EXPECT_EQ(local_posts + 1, a()->status_manager()->get_status()->localposts());
+  // AddMessage counts the post in today's posts, not posted().
+  EXPECT_EQ(msgs_today, a()->status_manager()->get_status()->msgs_today());
 
   const auto now = wwiv::core::daten_t_now();
   // Someone else's post: no change.
@@ -1186,6 +1189,15 @@ TEST_F(WwivMsgWriteTest, Post_BadArguments) {
               HasSubstr("message_area.post: the title is 72 characters; the most is 71"));
   EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\", \"\")\n"),
               HasSubstr("message_area.post: the text is empty"));
+  // A CR, LF or control character could end the RE:/BY: line and start a
+  // control line of the script's own.
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\", \"x\", \"Bob\" + CHR(13) + CHR(10) + "
+                  "CHR(4) + \"0MSGID: 1\")\n"),
+              HasSubstr("message_area.post: the name it's to has a control character (code 13)"));
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\" + CHR(4), \"x\")\n"),
+              HasSubstr("message_area.post: the title has a control character (code 4)"));
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\", \"x\", STRING(72, \"b\"))\n"),
+              HasSubstr("message_area.post: the name it's to is 72 characters; the most is 71"));
   EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\")\n"),
               HasSubstr("message_area.post: expected 2 to 4 arguments, got 1"));
 }

@@ -99,7 +99,7 @@ creates it empty, as the BBS does.
 | --- | --- |
 | `CAN_POST` | `TRUE` if the caller may post in the area now |
 | `ANONYMOUS` | How the caller's posts here may be anonymous: `"no"`, `"allowed"` (`POST`'s `anonymous` chooses) or `"forced"` (always anonymous) |
-| `POST(title, text[, to[, anonymous]])` | Posts `text` (a string, or a LIST of lines) titled `title` (at most 71 characters), to `to` (`""` for everyone), and returns the new message's number |
+| `POST(title, text[, to[, anonymous]])` | Posts `text` (a string, or a LIST of lines) titled `title`, to `to` (`""` for everyone), and returns the new message's number. `title` and `to` are at most 71 characters, with no control characters (CR, LF, ^D...). |
 | `DELETE_MESSAGE(h)` | Deletes the post `h` (a header or message from this area); `FALSE` if it was already gone |
 
 Scripts can only post and delete when the sysop turns on "Enable MSG Writing"

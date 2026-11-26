@@ -82,8 +82,9 @@ public:
   [[nodiscard]] virtual Poster poster(int subnum) const = 0;
   // Does the user pass the sub's post ACS?
   [[nodiscard]] virtual bool can_post(int subnum) const = 0;
-  // Called once the user's post titled title is added to the sub: counts it
-  // for the user and the system, and logs it.
+  // Called once the user's post titled title is added to the sub (through
+  // sdk/msgapi, which counts it in today's posts): counts it for the user
+  // and in the system's local posts, and logs it.
   virtual void posted(int subnum, const std::string& title) = 0;
   // Called once a post is deleted from the sub. If it was the user's own
   // (owneruser, posted at daten), takes back its credit; logs it.
