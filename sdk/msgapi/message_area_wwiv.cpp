@@ -382,6 +382,25 @@ int WWIVMessageArea::DeleteExcess() {
   return result;
 }
 
+// The BBS only looks at the last 28 posts for one waiting on network
+// validation, so do the same.
+static constexpr int kPendingNetworkPostsToCheck = 28;
+
+bool WWIVMessageArea::HasPendingNetworkPost() const {
+  DataFile<postrec> sub(sub_filename_);
+  if (!sub) {
+    return false;
+  }
+  const auto num_messages = CountMessages(sub);
+  for (auto i = num_messages; i >= 1 && i > num_messages - kPendingNetworkPostsToCheck; i--) {
+    postrec p{};
+    if (sub.Read(i, &p) && (p.status & status_pending_net)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 static bool has_ftn_network(const std::vector<subboard_network_data_t>& sub_nets,
                             const std::vector<Network>& nets) {
   for (const auto& x : sub_nets) {
@@ -427,10 +446,10 @@ bool WWIVMessageArea::AddMessage(Message& message, const MessageAreaOptions& opt
     // still add these FTN kludges in all message types.
     const auto control_d_zero = fmt::sprintf("%c0", CD);
     auto to_name = message.header().to();
-    if (!to_name.empty() && to_name != "All" && has_ftn) {
-      // Only add this if we're sending this out to the network from the
-      // SDK, otherwise whomever is doing that should do so.
-      ss << control_d_zero << "FidoAddr: " << message.header().to() << crlf;    
+    if (!to_name.empty() && !iequals(to_name, "All") && has_ftn) {
+      // The "To:" name of the post on an FTN sub; networkf exports it as the
+      // FTN To: user.
+      ss << control_d_zero << "FidoAddr: " << to_name << crlf;
     }
     auto title = message.header().title();
     if (!title.empty() && title.front() != '"' && !has_ftn && options.add_re_and_by_line) {
@@ -447,26 +466,27 @@ bool WWIVMessageArea::AddMessage(Message& message, const MessageAreaOptions& opt
   // if (a()->user()->restrict_validate()) {
   //  p.status |= status_unvalidated;
   //}
-  // If we need network validation, then mark it as such.
-  // We force the issue here if it wasn't already done.
-  if (!sub_.nets.empty()) {
-    if (sub_.anony & anony_val_net && !header.pending_network()) {
+  // A new post from this BBS goes out on the sub's networks, or waits for the
+  // sysop to validate it if the sub needs that.  A post that came in from a
+  // network (send_post_to_network is false) keeps the status its caller gave
+  // it: network2 decides whether it is held for validation.
+  auto send_to_network = false;
+  if (!sub_.nets.empty() && options.send_post_to_network) {
+    const auto needs_validation =
+        (sub_.anony & anony_val_net) && !options.skip_network_validation;
+    if (needs_validation) {
       p.status |= status_pending_net;
-      UserManager um(wwiv_api_->config());
-      SSM ssm(wwiv_api_->config(), um);
-      ssm.send_local(1, StrCat("Unvalidated net posts on: ", sub_.name));
-    } else if (options.send_post_to_network) {
-      LOG(INFO) << "** Sending the newly added message out on all of the networks.";
-      auto net = *sub_.nets.begin();
-      // Create a base packet from the 1st network entry.
-      auto packet = create_packet_from_wwiv_message(message, net.stype, {});
-      // Send the packet to everyone who needs is.
-      send_post_to_subscribers(wwiv_api_->network(), net.net_num, net.stype, sub_, packet, {},
-                               subscribers_send_to_t::all_subscribers);
     } else {
-      VLOG(1) << "Not sending message to the network";
+      // valscan only looks on subs that need validation, so a post marked
+      // pending anywhere else would never be sent.
+      p.status &= ~status_pending_net;
+      send_to_network = true;
     }
   }
+  // As the BBS does: the sysop is told only about the first post waiting for
+  // network validation.  Look before this post is added, so it isn't counted.
+  const auto notify_sysop =
+      !sub_.nets.empty() && (p.status & status_pending_net) && !HasPendingNetworkPost();
 
   // Set the text to be in WWIV Message Base Format.
   // FROM<CRLF>DATE<CRLF>TEXT
@@ -488,11 +508,28 @@ bool WWIVMessageArea::AddMessage(Message& message, const MessageAreaOptions& opt
     return false;
   }
   p.msg = msg.value();
-  auto result = add_post(p);
-  if (result) {
-    DeleteExcess();
+  if (!add_post(p)) {
+    return false;
   }
-  return result;
+  DeleteExcess();
+
+  // Only once the post is saved: a post that couldn't be saved here isn't
+  // sent out, nor is the sysop told about it.
+  if (notify_sysop) {
+    UserManager um(wwiv_api_->config());
+    SSM ssm(wwiv_api_->config(), um);
+    ssm.send_local(1, StrCat("Unvalidated net posts on: ", sub_.name));
+  }
+  if (send_to_network) {
+    LOG(INFO) << "** Sending the newly added message out on all of the networks.";
+    const auto& net = sub_.nets.front();
+    // Create a base packet from the 1st network entry; send_post_to_subscribers
+    // sends it on every network the sub is carried on.
+    auto packet = create_packet_from_wwiv_message(message, net.stype, {});
+    send_post_to_subscribers(wwiv_api_->network(), net.net_num, net.stype, sub_, packet, {},
+                             subscribers_send_to_t::all_subscribers);
+  }
+  return true;
 }
 
 bool WWIVMessageArea::DeleteMessage(int message_number) {

@@ -102,6 +102,10 @@ bool MessageHeader::net_network_post() const {
   return (header_.status & status_post_new_net) != 0;
 }
 
+void MessageHeader::set_net_network_post(bool b) {
+  ToggleBit(header_.status, status_post_new_net, b);
+}
+
 uint32_t MessageHeader::last_read() const { return header_.qscan; }
 
 uint8_t MessageHeader::storage_type() const { return header_.msg.storage_type; }

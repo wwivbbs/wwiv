@@ -67,6 +67,25 @@ static bool find_sub(const Subs& subs, int network_number, const std::string& ne
   return false;
 }
 
+// As net38's network2 does: on a WWIVnet sub that needs network validation, a
+// post we would send on to other systems (we host the sub, or gate it to
+// another network) waits for the sysop to validate it.  The BBS sends it out
+// then (send_net_post), skipping the system it came from.
+static bool needs_network_validation(const Context& context, const subboard_t& sub) {
+  if (!(sub.anony & anony_val_net) || context.net.type != network_type_t::wwivnet) {
+    return false;
+  }
+  if (sub.nets.size() > 1) {
+    return true;
+  }
+  for (const auto& n : sub.nets) {
+    if (n.net_num == context.network_number && n.host == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Creates a single element vector of the echotag's info from the backbone list
 static std::vector<backbone_t> single_echo_backbone_list(std::vector<backbone_t> backbone,
                                                          std::string echotag) {
@@ -109,7 +128,7 @@ static bool attempt_auto_add(Context& context, const ParsedNetPacketText& ppt) {
 // subtype appears as the first part of the message text, followed by a NUL.Thus, the message
 // header info at the beginning of the message text is in the format
 // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
-bool handle_inbound_post(Context& context, NetPacket& p) {
+inbound_post_t handle_inbound_post(Context& context, NetPacket& p) {
 
   ScopeExit at_exit;
 
@@ -144,7 +163,8 @@ bool handle_inbound_post(Context& context, NetPacket& p) {
     LOG(INFO) << "      title: " << ppt.title() << "; writing to dead.net.";
     const auto msg = fmt::format("Unable to find message of subtype: '{}'; writing to dead.net", ppt.subtype());
     context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
-    return write_deadnet_packet(context.net.dir, p);
+    return write_deadnet_packet(context.net.dir, p) ? inbound_post_t::not_posted
+                                                    : inbound_post_t::error;
   }
 
   if (!context.api(sub.storage_type).Exist(sub)) {
@@ -155,7 +175,8 @@ bool handle_inbound_post(Context& context, NetPacket& p) {
       context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
       LOG(INFO) << "    ! ERROR: Failed to create subboard files for sub: '" << sub.filename
                 << "'; writing to dead.net.";
-      return write_deadnet_packet(context.net.dir, p);
+      return write_deadnet_packet(context.net.dir, p) ? inbound_post_t::not_posted
+                                                      : inbound_post_t::error;
     }
   }
 
@@ -165,15 +186,17 @@ bool handle_inbound_post(Context& context, NetPacket& p) {
     context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
     LOG(INFO) << "    ! ERROR Unable to open message area: '" << sub.filename
               << "'; writing to dead.net.";
-    return write_deadnet_packet(context.net.dir, p);
+    return write_deadnet_packet(context.net.dir, p) ? inbound_post_t::not_posted
+                                                    : inbound_post_t::error;
   }
 
   if (area->Exists(p.nh.daten, ppt.title(), p.nh.fromsys, p.nh.fromuser)) {
     const auto msg = fmt::format("Discarding Duplicate Message on sub: {}; daten: {}; title: {}", ppt.subtype(),  p.nh.daten, ppt.title());
     context.netdat().add_message(NetDat::netdat_msgtype_t::normal, msg);
     LOG(INFO) << msg;
-    // Returning true since we properly handled this by discarding it.
-    return true;
+    // Handled by discarding it, and it isn't sent on: whoever sent it to us
+    // the first time already did that.
+    return inbound_post_t::not_posted;
   }
 
   // TODO(rushfan): Should we let CreateMessage accept the packet directly
@@ -185,8 +208,18 @@ bool handle_inbound_post(Context& context, NetPacket& p) {
   msg.header().set_from(ppt.sender());
   msg.header().set_daten(p.nh.daten);
 
-  // Set the network number this came in on.
+  // Set the network number this came in on.  The BBS reads net_number only
+  // when the post is flagged as a network post, which (as net38 does) is only
+  // when there's more than one network to tell apart.
   msg.header().set_net_number(context.network_number);
+  if (context.networks().size() > 1) {
+    msg.header().set_net_network_post(true);
+  }
+  const auto held = needs_network_validation(context, sub);
+  if (held) {
+    // It isn't sent on; the sysop validates it and the BBS sends it.
+    msg.header().set_pending_network(true);
+  }
   msg.set_text(ppt.text());
 
   MessageAreaOptions options{};
@@ -197,13 +230,34 @@ bool handle_inbound_post(Context& context, NetPacket& p) {
     const auto errmsg = fmt::format("Failed to add message: '{}'; writing to dead.net", ppt.title());
     context.netdat().add_message(NetDat::netdat_msgtype_t::error, errmsg);
     LOG(ERROR) << "    ! ERROR " << errmsg;
-    return write_deadnet_packet(context.net.dir, p);
+    return write_deadnet_packet(context.net.dir, p) ? inbound_post_t::not_posted
+                                                    : inbound_post_t::error;
   }
   LOG(INFO) << "    + Posted  '" << ppt.title() << "' on sub: '" << ppt.subtype() << "'.";
     context.netdat().add_message(NetDat::netdat_msgtype_t::post, fmt::format("Posted  '{}' on sub: '{}'",
     ppt.title(), ppt.subtype()));
 
-  return true;
+  if (held) {
+    const auto hmsg = fmt::format("Holding post on sub: '{}' for network validation", sub.name);
+    context.netdat().add_message(NetDat::netdat_msgtype_t::normal, hmsg);
+    LOG(INFO) << "    + " << hmsg;
+    return inbound_post_t::held;
+  }
+  return inbound_post_t::posted;
+}
+
+bool handle_new_post(Context& context, NetPacket& p) {
+  switch (handle_inbound_post(context, p)) {
+  case inbound_post_t::error:
+    LOG(ERROR) << "Error on handle_inbound_post";
+    return false;
+  case inbound_post_t::posted:
+    return send_post_to_subscribers(context, p, {p.nh.fromsys});
+  case inbound_post_t::held:
+  case inbound_post_t::not_posted:
+    return true;
+  }
+  return false;
 }
 
 static std::string set_to_string(const std::set<uint16_t>& lines) {
