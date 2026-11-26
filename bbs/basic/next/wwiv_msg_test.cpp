@@ -1676,3 +1676,53 @@ TEST_F(WwivMsgNetTest, NoValNet_Sent) {
   EXPECT_FALSE(pending(1));
   EXPECT_EQ(1, packets_sent());
 }
+
+// A reply is a reply even when the post's title cleans down to nothing, so a
+// co-sysop's still waits.
+TEST_F(WwivMsgNetTest, ValNet_CoSysopReplyToUntitledPostHeld) {
+  Post(0, "rushfan #1", "\x01\x02", "Hi there\r\n");
+  fake->cosysop_ = true;
+  fake->edited_ = MessageBase::EditedPost{"Re:", "TESTER #1", "Hi back\r\n", 0};
+  EXPECT_EQ("2\r\n", Run("a = wwiv.msg.area(\"1\")\nprint a.reply(get(a.headers(), 0))\n"));
+  EXPECT_TRUE(pending(2));
+  EXPECT_EQ(0, packets_sent());
+}
+
+// REPLY and DELETE_MESSAGE take only posts from their own area.
+TEST_F(WwivMsgWriteTest, PostFromAnotherArea) {
+  Post(1, "rushfan #1", "Elsewhere", "x\r\n");
+  fake->cosysop_ = true;
+  const auto script = R"(
+h = get(wwiv.msg.area("S").headers(), 0)
+a = wwiv.msg.area("1")
+)";
+  EXPECT_THAT(Run(std::string(script) + "n = a.reply(h)\n"),
+              HasSubstr("message_area.reply: the post isn't from 'General'"));
+  EXPECT_THAT(Run(std::string(script) + "n = a.delete_message(h)\n"),
+              HasSubstr("message_area.delete_message: the post isn't from 'General'"));
+  EXPECT_TRUE(fake->edits_.empty());
+  EXPECT_EQ(1, api->Open(subs->sub(1), 1)->number_of_messages());
+}
+
+// The quote header names the author as the reply's To: line does.
+TEST_F(WwivMsgWriteTest, Reply_QuoteNameIsCleaned) {
+  Post(0, "rush\x01" "fan #1", "Hello", "Hi there\r\n");
+  fake->edited_ = MessageBase::EditedPost{"Re: Hello", "TESTER #1", "Hi back\r\n", 0};
+  EXPECT_EQ("2\r\n", Run("a = wwiv.msg.area(\"1\")\nprint a.reply(get(a.headers(), 0))\n"));
+  ASSERT_TRUE(fake->reply_.has_value());
+  EXPECT_EQ("rushfan #1", fake->reply_->name);
+}
+
+// A caller who may post stays in an area whose last post went while they
+// read it, as in the full-screen viewer.
+TEST_F(MsgViewTest, LastPostDeletedWhileReading_CanPost) {
+  helper.config().script_package_msg_write_enabled(true);
+  Post(0, "a #1", "Only", "1\r\n");
+  DeletePostBeforeFind(1);
+  // Area 1, message 1 (gone), a key for the pause, then quit the area and
+  // the viewer.
+  const auto out = RunViewer("1\r1\r\rQ\rQ\r");
+  EXPECT_THAT(out, HasSubstr("That message has been deleted."));
+  const auto after = out.substr(out.find("That message has been deleted."));
+  EXPECT_THAT(after, HasSubstr("[W]rite a post"));
+}

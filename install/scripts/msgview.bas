@@ -509,7 +509,8 @@ def ReadArea(a)
         ' shift; if it's gone, start from the first page.
         id = IdAt(headers, i)
         headers = a.headers()
-        If len(headers) = 0 Then
+        ' An area that's now empty is still one the caller can post in.
+        If len(headers) = 0 And Not a.can_post Then
           return
         EndIf
         i = FindId(headers, id)

@@ -101,8 +101,8 @@ creates it empty, as the BBS does.
 | `ANONYMOUS` | How the caller's posts here may be anonymous: `"no"`, `"allowed"` (`POST`'s `anonymous` chooses) or `"forced"` (always anonymous) |
 | `POST(title, text[, to[, anonymous]])` | Posts `text` (a string, or a LIST of lines) titled `title`, to `to` (`""` for everyone), and returns the new message's number. `title` and `to` are at most 71 characters, with no control characters (CR, LF, ^D...). |
 | `WRITE_POST([title[, to]])` | Lets the caller write a post in their own message editor (the full-screen editor or the line editor), as the BBS's post command does, and returns its number, or 0 if they abort. Without `title` the editor asks for one; where the caller may post anonymously, it asks about that too. |
-| `REPLY(h)` | Lets the caller write a reply to the post `h` (a header or message from this area) in their editor: to its author, with "Re: " and its title offered as the title. Returns the reply's number, or 0 if they abort. |
-| `DELETE_MESSAGE(h)` | Deletes the post `h` (a header or message from this area); `FALSE` if it was already gone |
+| `REPLY(h)` | Lets the caller write a reply to the post `h` (a header or message from this area) in their editor: to its author, with "Re: " and its title offered as the title. Returns the reply's number, or 0 if they abort. A post from another area is an error. |
+| `DELETE_MESSAGE(h)` | Deletes the post `h` (a header or message from this area); `FALSE` if it was already gone. A post from another area is an error. |
 
 Scripts can only post and delete when the sysop turns on "Enable MSG Writing"
 in wwivconfig's scripting settings (the `script_flag_enable_msg_write` bit,
