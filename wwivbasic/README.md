@@ -245,7 +245,8 @@ An error in the function is reported at its line in the script, and the stop
 check runs in it as usual. If the function runs `END`, `call` throws to end the
 native function and then the script, so native code must let exceptions it
 doesn't know pass through (no `catch (...)`). Calling it when no script is
-running throws `BasicError`.
+running throws `BasicError`. `Interpreter::has_function(name)` says whether
+`call` would find the function, for checking a name before it's needed.
 
 ## Layout
 

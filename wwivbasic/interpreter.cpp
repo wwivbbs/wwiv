@@ -121,6 +121,10 @@ Value Interpreter::call(const std::string& name, const std::vector<Value>& args)
   return result;
 }
 
+bool Interpreter::has_function(const std::string& name) const {
+  return ctx_->executor && ctx_->try_find_function(name).has_value();
+}
+
 std::optional<std::string> Interpreter::parse_tree(const std::filesystem::path& path) const {
   const auto tree = ctx_->parseTree(path);
   if (!tree) {

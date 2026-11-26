@@ -217,8 +217,8 @@ otherwise.
 | `color`, `selected_color` | Color codes for the items and the selected one (`"\|#0"` and `"\|17\|15"`, white on blue, unless set) |
 | `draw()` | Draws the whole list |
 | `set_items(items)` | Replaces the items, keeping the selection if it's still in the list |
-| `run()` | Draws the list, then lets the caller move through it with Up, Down, Page Up, Page Down, Home and End, and returns the first other key, as `wwiv.io.readkey()` returns it (Enter is `CHR(13)`). Returns `""` once the caller hangs up. |
-| `run(fn)` | Like `run()`, but for each other key calls the script function named `fn` as `fn(key, selected)`, and keeps going while it returns `TRUE`. It draws the list again after each call, since the function may have drawn over it, and returns the key `fn` returned `FALSE` for. |
+| `run()` | Draws the list, then lets the caller move through it with Up, Down, Page Up, Page Down, Home and End, and returns the first other key, as `wwiv.io.readkey()` returns it (Enter is `CHR(13)`). Returns `""` once the caller hangs up. While a `FULLSCREEN` is open, keys are read through it, so an idle caller gets its "are you there?" warning on the command line. |
+| `run(fn)` | Like `run()`, but for each other key calls the script function named `fn` as `fn(key, selected)`, and keeps going while it returns `TRUE`. A name that isn't a function is an error when `run` starts. It draws the list again after each call, since the function may have drawn over it, and returns the key `fn` returned `FALSE` for. |
 
 A screen also closes when the script no longer holds it: when the script
 ends, or when the variable holding it goes away, such as a local variable in

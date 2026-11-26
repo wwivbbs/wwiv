@@ -99,8 +99,8 @@ void FullScreenView::DrawTopBar() {
 void FullScreenView::DrawBottomBar(const std::string& text) {
   const auto y = screen_length_ - 1;
   bout_.goxy(1, y);
-  const auto saved_color = bout.curatr();
-  auto at_exit = finally([=] { bout.setc(saved_color); });
+  const auto saved_color = bout_.curatr();
+  auto at_exit = finally([this, saved_color] { bout_.setc(saved_color); });
 
   bout_.print("|#7{:c}{}{:c}", static_cast<unsigned char>(198),
               std::string(screen_width_ - 2, static_cast<unsigned char>(205)),
@@ -123,14 +123,14 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
 void FullScreenView::GotoContentAreaTop() { bout_.goxy(1, num_header_lines_ + 2); }
 
 int FullScreenView::bgetch() {
-  return bin.bgetch_event(Input::numlock_status_t::NUMBERS,
-                          [&](Input::bgetch_timeout_status_t status, int s) {
-                            if (status == Input::bgetch_timeout_status_t::WARNING) {
-                              PrintTimeoutWarning(s);
-                            } else if (status == Input::bgetch_timeout_status_t::CLEAR) {
-                              ClearCommandLine();
-                            }
-                          });
+  return bin_.bgetch_event(Input::numlock_status_t::NUMBERS,
+                           [&](Input::bgetch_timeout_status_t status, int s) {
+                             if (status == Input::bgetch_timeout_status_t::WARNING) {
+                               PrintTimeoutWarning(s);
+                             } else if (status == Input::bgetch_timeout_status_t::CLEAR) {
+                               ClearCommandLine();
+                             }
+                           });
 }
 
 } // namespace wwiv::common

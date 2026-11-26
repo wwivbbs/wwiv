@@ -697,6 +697,17 @@ TEST_F(InterpreterCallTest, WrongArgumentCount) {
   EXPECT_EQ("test.bas:4: error: f: expected 2 argument(s), got 1", errors.front());
 }
 
+TEST_F(InterpreterCallTest, HasFunction) {
+  interp.globals().native_function("HAS",
+                                   [this](std::string fn) { return interp.has_function(fn); });
+  EXPECT_FALSE(interp.has_function("f"));
+  EXPECT_EQ("TRUE TRUE FALSE\n", run("def f()\nreturn 1\nenddef\nprint has(\"f\"); \" \"; "
+                                     "has(\"ucase\"); \" \"; has(\"nosuch\")\n"));
+  EXPECT_TRUE(errors.empty()) << errors.front();
+  // Only while a script runs.
+  EXPECT_FALSE(interp.has_function("f"));
+}
+
 TEST_F(InterpreterCallTest, NoScriptRunning) {
   EXPECT_THROW(interp.call("f", {}), BasicError);
   run("def f()\nreturn 1\nenddef\n");

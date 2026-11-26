@@ -58,6 +58,13 @@ std::vector<std::string> to_strings(const Value& list, const char* fn) {
   return items;
 }
 
+class ScriptScreen;
+
+// Shared by FULLSCREEN and the lightbars: the screen that's open, if any.
+struct ScreenState {
+  ScriptScreen* open{nullptr};
+};
+
 // FULLSCREEN's screen: a common::FullScreenView, with pausing off while it's
 // open. CLOSE clears the screen and puts pausing back. When the script no
 // longer holds it (a DEF that opened it returns, or the script ends), pausing
@@ -67,14 +74,14 @@ std::vector<std::string> to_strings(const Value& list, const char* fn) {
 class ScriptScreen {
 public:
   ScriptScreen(common::Output& out, common::Input& in, int header_lines, int width, int height,
-               std::shared_ptr<bool> open)
-      : in_(in), out_(out), open_(std::move(open)), width_(width), height_(height) {
+               std::shared_ptr<ScreenState> state)
+      : in_(in), out_(out), state_(std::move(state)), width_(width), height_(height) {
     out_.cls();
     pause_ = std::make_unique<common::TempDisablePause>(out_);
     view_ = std::make_unique<common::FullScreenView>(out_, in_, header_lines, width, height);
     content_top_ = view_->lines_start();
     content_height_ = view_->message_height();
-    *open_ = true;
+    state_->open = this;
   }
   ~ScriptScreen() { close(false); }
   ScriptScreen(const ScriptScreen&) = delete;
@@ -88,7 +95,7 @@ public:
     }
     view_.reset();
     pause_.reset();
-    *open_ = false;
+    state_->open = nullptr;
     if (clear) {
       out_.cls();
       return;
@@ -110,13 +117,20 @@ public:
   [[nodiscard]] int height() const { return height_; }
   [[nodiscard]] int content_top() const { return content_top_; }
   [[nodiscard]] int content_height() const { return content_height_; }
+  [[nodiscard]] common::Input& in() const { return in_; }
 
-  common::Input& in_;
+  // Reads a key as READKEY does, showing the idle warning on the command
+  // line. fn names the method for the error if the screen is closed.
+  std::string read_key(const char* fn) const {
+    auto& v = view(fn);
+    return ReadScriptKey(in_, [&v] { return v.bgetch(); });
+  }
 
 private:
+  common::Input& in_;
   common::Output& out_;
-  // Shared with FULLSCREEN, so it opens one screen at a time.
-  std::shared_ptr<bool> open_;
+  // Shared with FULLSCREEN and the lightbars: this is the open screen.
+  std::shared_ptr<ScreenState> state_;
   std::unique_ptr<common::TempDisablePause> pause_;
   std::unique_ptr<common::FullScreenView> view_;
   int width_;
@@ -224,8 +238,9 @@ public:
   }
 
   // Whether RUN is running, so RUN can't run again from its own callback.
-  bool running{false};
-  common::Input& in_;
+  [[nodiscard]] bool running() const { return running_; }
+  void running(bool r) { running_ = r; }
+  [[nodiscard]] common::Input& in() const { return in_; }
 
 private:
   [[nodiscard]] int max_top() const { return std::max(0, count() - height_); }
@@ -264,7 +279,9 @@ private:
   // On the selected row, where a terminal's cursor is expected.
   void park_cursor() { out_.goxy(1, row_ + (items_.empty() ? 0 : selected_ - top_item_)); }
 
+  common::Input& in_;
   common::Output& out_;
+  bool running_{false};
   std::vector<std::string> items_;
   int row_;
   int height_;
@@ -309,23 +326,19 @@ void RegisterWwivScreen(wwivbasic::Interpreter& interp, const WwivBindings& b) {
       .method("clear_content", [](ScriptScreen& s) { s.view("clear_content").ClearMessageArea(); })
       // READKEY() is wwiv.io.READKEY that shows the "are you there?" warning
       // on the command line when the caller is idle.
-      .method("readkey",
-              [](ScriptScreen& s) {
-                auto& view = s.view("readkey");
-                return ReadScriptKey(s.in_, [&view] { return view.bgetch(); });
-              })
+      .method("readkey", [](ScriptScreen& s) { return s.read_key("readkey"); })
       // CLOSE() clears the screen and turns pausing back on.
       .method("close", [](ScriptScreen& s) { s.close(true); });
 
   // FULLSCREEN(header_lines) opens a full-screen layout: header_lines rows at
   // the top for the script, a bar, the content rows, a bar, and the command
   // line on the bottom row. One can be open at a time.
-  auto open = std::make_shared<bool>(false);
-  m.native_function("FULLSCREEN", [b, open, &screen_class](int header_lines) {
+  auto state = std::make_shared<ScreenState>();
+  m.native_function("FULLSCREEN", [b, state, &screen_class](int header_lines) {
     if (!has_ansi(b.ctx)) {
       throw BasicError("FULLSCREEN: needs ANSI; check wwiv.io.okansi() first");
     }
-    if (*open) {
+    if (state->open) {
       throw BasicError("FULLSCREEN: a screen is already open; close it first");
     }
     const auto width = screen_columns(b.ctx);
@@ -336,7 +349,7 @@ void RegisterWwivScreen(wwivbasic::Interpreter& interp, const WwivBindings& b) {
                       header_lines, height));
     }
     return screen_class.wrap(
-        std::make_shared<ScriptScreen>(b.out, b.in, header_lines, width, height, open));
+        std::make_shared<ScriptScreen>(b.out, b.in, header_lines, width, height, state));
   });
 
   auto& lightbar_class = m.class_<Lightbar>("lightbar");
@@ -359,26 +372,32 @@ void RegisterWwivScreen(wwivbasic::Interpreter& interp, const WwivBindings& b) {
       // the first other key. RUN("fn") instead calls fn(key, selected) for each other
       // key, and keeps going while it returns TRUE; it redraws the list after
       // each call, and returns the key fn returned FALSE for. Both return ""
-      // once the caller hangs up.
-      .methodl("run", [&interp](Lightbar& l, const std::vector<Value>& args) {
+      // once the caller hangs up. While a FULLSCREEN is open, keys are read
+      // through it, so an idle caller gets its warning on the command line.
+      .methodl("run", [&interp, state](Lightbar& l, const std::vector<Value>& args) {
         if (args.size() > 1) {
-          throw BasicError(
-              fmt::format("lightbar.run: expected 0 or 1 arguments, got {}", args.size()));
+          throw wwivbasic::ArgumentError(
+              fmt::format("expected 0 or 1 arguments, got {}", args.size()));
         }
         const auto fn = args.empty() ? std::string() : args.front().toString();
-        if (l.running) {
+        if (!fn.empty() && !interp.has_function(fn)) {
+          throw BasicError(fmt::format("lightbar.run: there is no function '{}'", fn));
+        }
+        if (l.running()) {
           throw BasicError("lightbar.run: this lightbar is already running (RUN was called "
                            "from its own callback)");
         }
-        l.running = true;
-        const auto done = core::finally([&l] { l.running = false; });
+        l.running(true);
+        const auto done = core::finally([&l] { l.running(false); });
         // The script may have cleared or drawn over the list since it was
         // last drawn.
         l.redraw_all();
         while (true) {
           l.update();
-          auto key = ReadScriptKey(
-              l.in_, [&l] { return l.in_.bgetch_event(common::Input::numlock_status_t::NUMBERS); });
+          // The callback may open or close a screen, so look each time.
+          auto key = state->open ? state->open->read_key("readkey") : ReadScriptKey(l.in(), [&l] {
+            return l.in().bgetch_event(common::Input::numlock_status_t::NUMBERS);
+          });
           if (key.empty()) {
             return Value(key);
           }

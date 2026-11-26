@@ -32,6 +32,7 @@
 #include "sdk/user.h"
 #include "wwivbasic/interpreter.h"
 
+#include <chrono>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -102,6 +103,8 @@ protected:
   void TearDown() override {
     type_ahead::StopTypingAhead();
     remote()->keys.clear();
+    bin.set_key_timeout(std::chrono::minutes(3));
+    bin.set_sysop_key_timeout(std::chrono::minutes(10));
   }
 
   TestRemoteIO* remote() { return static_cast<TestRemoteIO*>(helper.io()->remote_io()); }
@@ -482,6 +485,34 @@ print "after"
   EXPECT_THAT(out, Not(HasSubstr("[b]")));
   EXPECT_THAT(out, Not(HasSubstr("after")));
   EXPECT_THAT(out, Not(HasSubstr("error")));
+}
+
+// A misspelled callback is an error when RUN starts, not at the first key
+// that isn't a movement key. (No keys are sent: reading one would hang up.)
+TEST_F(WwivScreenTest, Lightbar_UnknownCallback) {
+  const auto out = Run("l = wwiv.screen.lightbar(list(\"a\"), 1, 1)\nk = l.run(\"Nosuch\")\n");
+  EXPECT_THAT(out, HasSubstr("lightbar.run: there is no function 'Nosuch'"));
+  EXPECT_FALSE(a()->sess().hangup());
+}
+
+// While a FULLSCREEN is open, RUN reads keys through it, so an idle caller
+// gets the screen's warning on the command line. With a one-minute timeout
+// the warning is due at once.
+TEST_F(WwivScreenTest, Lightbar_IdleWarningOnTheScreen) {
+  bin.set_key_timeout(std::chrono::minutes(1));
+  bin.set_sysop_key_timeout(std::chrono::minutes(1));
+  SendKeys("q");
+  auto out = Run(R"(
+s = wwiv.screen.fullscreen(1)
+l = wwiv.screen.lightbar(list("a"), s.content_top, 1)
+k = l.run()
+)");
+  EXPECT_THAT(out, HasSubstr("Press space if you are still there."));
+
+  // Without a screen there's no command line to show it on.
+  SendKeys("q");
+  out = Run("l = wwiv.screen.lightbar(list(\"a\"), 1, 1)\nk = l.run()\n");
+  EXPECT_THAT(out, Not(HasSubstr("Press space")));
 }
 
 TEST_F(WwivScreenTest, Lightbar_RunFromItsOwnCallback) {

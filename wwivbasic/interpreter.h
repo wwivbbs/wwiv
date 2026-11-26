@@ -89,6 +89,10 @@ public:
   // Throws BasicError if no script is running.
   Value call(const std::string& name, const std::vector<Value>& args);
 
+  // Whether call(name, ...) would find a function: a DEF of the running
+  // script, a built-in or a native function. False if no script is running.
+  bool has_function(const std::string& name) const;
+
   // When on, logs function calls and assignments to stderr.
   void set_trace(bool trace);
 
