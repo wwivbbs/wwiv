@@ -48,6 +48,25 @@ def FindArea(l, key)
   return -1
 enddef
 
+' The index in headers of the message with serial id, or -1. Unlike a
+' message's number, its id doesn't change when earlier posts are deleted.
+def FindId(headers, id)
+  for i = 0 to len(headers) - 1
+    If get(headers, i).id = id Then
+      return i
+    EndIf
+  next
+  return -1
+enddef
+
+' The id of headers[i], or -1 if there's no such header.
+def IdAt(headers, i)
+  If i < 0 Or i >= len(headers) Then
+    return -1
+  EndIf
+  return get(headers, i).id
+enddef
+
 ' The index in headers of message number n, or -1.
 def FindMessage(headers, n)
   for i = 0 to len(headers) - 1
@@ -260,7 +279,7 @@ def FullArea(a, headers)
     If k = "" Or k = "Q" Then
       s.close()
       return
-    ElseIf k = CHR(13) Or (k = "P" And a.can_post) Then
+    ElseIf (k = CHR(13) And len(headers) > 0) Or (k = "P" And a.can_post) Then
       s.close()
       i = bar.selected
       If k = "P" Then
@@ -270,22 +289,29 @@ def FullArea(a, headers)
         i = FullRead(a, headers, i)
         n = 0
       EndIf
+      ' The message to go back to, found again by its id below: a new post
+      ' can push the oldest out of a full area, and moves the rest down.
+      id = IdAt(headers, i)
       ' Read the list again: it may have new posts (or replies), or lost
       ' one that was deleted.
       headers = a.headers()
-      If len(headers) = 0 Then
+      If len(headers) = 0 And Not a.can_post Then
         return
       EndIf
       bar.set_items(HeaderLines(headers))
       title = a.name + "|#9 (" + STR(len(headers)) + " messages)"
       If n > 0 Then
         i = FindMessage(headers, n)
+      Else
+        i = FindId(headers, id)
       EndIf
       If i < 0 Then
         i = 0
       EndIf
       ' Back on the last message read, or the new post.
-      bar.selected = i
+      If len(headers) > 0 Then
+        bar.selected = i
+      EndIf
       s = OpenScreen(title, second, help)
     EndIf
   Wend
@@ -317,7 +343,8 @@ def FullAreas()
     ElseIf k = CHR(13) Then
       a = get(l, bar.selected)
       headers = a.headers()
-      If len(headers) = 0 Then
+      ' An empty area is still worth opening for a caller who may post.
+      If len(headers) = 0 And Not a.can_post Then
         s.command_line("|#6There are no messages in " + a.name + ".")
       Else
         s.close()
@@ -439,7 +466,8 @@ enddef
 
 def ReadArea(a)
   headers = a.headers()
-  If len(headers) = 0 Then
+  ' An empty area is still worth entering for a caller who may post.
+  If len(headers) = 0 And Not a.can_post Then
     nl()
     pl("|#6There are no messages in " + a.name + ".")
     pause()
@@ -476,12 +504,16 @@ def ReadArea(a)
         pause()
       Else
         i = ReadFrom(a, headers, i)
+        ' Read the list again: it may have replies, or lost a post that was
+        ' deleted. Find the last message read by its id, since numbers
+        ' shift; if it's gone, start from the first page.
+        id = IdAt(headers, i)
+        headers = a.headers()
+        If len(headers) = 0 Then
+          return
+        EndIf
+        i = FindId(headers, id)
         If i < 0 Then
-          ' Read the list again, and start from its first page.
-          headers = a.headers()
-          If len(headers) = 0 Then
-            return
-          EndIf
           i = 0
         EndIf
         ' Go back to the page with the last message read.

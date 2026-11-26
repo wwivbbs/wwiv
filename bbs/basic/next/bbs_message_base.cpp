@@ -22,8 +22,11 @@
 #include "bbs/bbsutl.h"
 #include "bbs/connect1.h"
 #include "bbs/inmsg.h"
+#include "bbs/msgbase1.h"
 #include "bbs/sysoplog.h"
+#include "bbs/utility.h"
 #include "common/message_editor_data.h"
+#include "common/quote.h"
 #include "core/datetime.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
@@ -31,8 +34,10 @@
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "sdk/config.h"
+#include "sdk/fido/fido_address.h"
 #include "sdk/msgapi/message_api.h"
 #include "sdk/names.h"
+#include "sdk/net/ftn_msgdupe.h"
 #include "sdk/net/networks.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
@@ -148,7 +153,8 @@ bool BbsMessageBase::can_post(int subnum) const {
 
 std::optional<MessageBase::EditedPost>
 BbsMessageBase::edit_post(int subnum, const std::string& title, const std::string& irt,
-                          const std::string& to, uint8_t anonymous) {
+                          const std::string& to, uint8_t anonymous,
+                          const std::optional<ReplyTo>& reply) {
   const auto& subs = std::as_const(app_).subs();
   if (subnum < 0 || subnum >= subs.size()) {
     return std::nullopt;
@@ -184,18 +190,39 @@ BbsMessageBase::edit_post(int subnum, const std::string& title, const std::strin
   data.sub_name = sub.name;
   data.to_name = to;
 
+  if (reply) {
+    // As the reader's reply (HandleMessageReply): the post's text for /Q,
+    // and auto-quoting for users who have it on. Both want the text as it's
+    // stored, starting with the author and date lines; inmsg clears the
+    // quotes when it's done.
+    auto raw = fmt::format("{}\r\n{}\r\n{}", reply->name, core::daten_to_wwivnet_time(reply->daten),
+                           reply->text);
+    grab_quotes(raw, reply->name, app_.context());
+    if (okfsed() && app_.user()->auto_quote()) {
+      auto_quote(raw, reply->name, common::quote_date_format_t::generic, reply->daten,
+                 app_.context());
+    }
+  }
+
   const auto start = core::DateTime::now().to_system_clock();
   if (!inmsg(data)) {
     return std::nullopt;
   }
-  if (app_.HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
-    // As post(): give back the time spent writing, up to a logon's worth.
-    auto spent = core::DateTime::now().to_system_clock() - start;
-    const auto most = std::chrono::minutes(app_.config()->sl(sess.effective_sl()).time_per_logon);
-    if (spent > most) {
-      spent = most;
+  const auto writing_time = std::chrono::duration_cast<std::chrono::seconds>(
+      core::DateTime::now().to_system_clock() - start);
+
+  // As post(): a reply on an FTN sub gets MSGID and REPLY lines, so other
+  // systems thread it under the post it replies to.
+  if (reply && app_.current_net().type == sdk::net::network_type_t::ftn) {
+    if (const auto msgid = sdk::FtnMessageDupe::GetMessageIDFromWWIVText(reply->text);
+        !msgid.empty()) {
+      const auto address = app_.current_net().fido.fido_address;
+      try {
+        add_ftn_msgid(*app_.config(), sdk::fido::FidoAddress(address), msgid, &data);
+      } catch (const sdk::fido::bad_fidonet_address& e) {
+        LOG(ERROR) << "Exception parsing address: " << address << "; reason: " << e.what();
+      }
     }
-    app_.user()->add_extratime(spent);
   }
 
   // The editor's text is "author CR LF date CR LF rest ^Z"; the SDK adds its
@@ -203,6 +230,7 @@ BbsMessageBase::edit_post(int subnum, const std::string& title, const std::strin
   EditedPost out;
   out.title = data.title;
   out.anony = data.anonymous_flag;
+  out.writing_time = writing_time;
   auto text = data.text;
   while (!text.empty() && text.back() == '\x1a') {
     text.pop_back();
@@ -219,7 +247,15 @@ BbsMessageBase::edit_post(int subnum, const std::string& title, const std::strin
 
 // The BBS's post() also adds one to today's posts; for a script's post the
 // SDK's AddMessage has done that.
-void BbsMessageBase::posted(int subnum, const std::string& title) {
+void BbsMessageBase::posted(int subnum, const std::string& title,
+                            std::chrono::seconds writing_time) {
+  if (writing_time.count() > 0 && app_.HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
+    // As post(): once the post is saved, give back the time spent writing
+    // it, up to a logon's worth.
+    const auto most =
+        std::chrono::minutes(app_.config()->sl(app_.sess().effective_sl()).time_per_logon);
+    app_.user()->add_extratime(std::min<std::chrono::seconds>(writing_time, most));
+  }
   auto& u = *app_.user();
   u.messages_posted(u.messages_posted() + 1);
   u.posts_today(u.posts_today() + 1);

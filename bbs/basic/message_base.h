@@ -18,6 +18,7 @@
 #ifndef INCLUDED_BBS_BASIC_MESSAGE_BASE_H
 #define INCLUDED_BBS_BASIC_MESSAGE_BASE_H
 
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -82,6 +83,17 @@ public:
   [[nodiscard]] virtual Poster poster(int subnum) const = 0;
   // Does the user pass the sub's post ACS?
   [[nodiscard]] virtual bool can_post(int subnum) const = 0;
+  // The post a reply is to, for quoting it and (on FTN subs) threading the
+  // reply under it.
+  struct ReplyTo {
+    // Its author, as the user sees them.
+    std::string name;
+    // Its text as sdk/msgapi reads it (control lines such as MSGID, then the
+    // text), and when it was posted.
+    std::string text;
+    uint32_t daten{0};
+  };
+
   // A post the user wrote in the BBS's message editor.
   struct EditedPost {
     std::string title;
@@ -92,21 +104,26 @@ public:
     std::string text;
     // anony_sender etc., as the user chose (or the sub forces).
     uint8_t anony{0};
+    // How long the user spent writing it.
+    std::chrono::seconds writing_time{0};
   };
   // Opens the user's message editor, as the BBS's post() does, to write a
   // post in the sub. title is used as given; if it's empty the editor asks,
   // offering "Re: " + irt if irt isn't empty. to is who it's to ("" for
   // everyone; on FTN subs the editor asks). anonymous is the user's
   // anonymous setting in the sub (0, anony_enable_anony...), which decides
-  // whether the editor asks. nullopt if the user aborts.
-  [[nodiscard]] virtual std::optional<EditedPost> edit_post(int subnum, const std::string& title,
-                                                            const std::string& irt,
-                                                            const std::string& to,
-                                                            uint8_t anonymous) = 0;
+  // whether the editor asks. reply, if set, is the post this replies to:
+  // its text can be quoted, and on FTN subs the reply gets its MSGID's
+  // REPLY line. nullopt if the user aborts.
+  [[nodiscard]] virtual std::optional<EditedPost>
+  edit_post(int subnum, const std::string& title, const std::string& irt, const std::string& to,
+            uint8_t anonymous, const std::optional<ReplyTo>& reply) = 0;
   // Called once the user's post titled title is added to the sub (through
   // sdk/msgapi, which counts it in today's posts): counts it for the user
-  // and in the system's local posts, and logs it.
-  virtual void posted(int subnum, const std::string& title) = 0;
+  // and in the system's local posts, and logs it. writing_time is how long
+  // the user spent in the editor (0 for a script's own text), given back
+  // if the sysop has the BBS do that.
+  virtual void posted(int subnum, const std::string& title, std::chrono::seconds writing_time) = 0;
   // Called once a post is deleted from the sub. If it was the user's own
   // (owneruser, posted at daten), takes back its credit; logs it.
   virtual void deleted(int subnum, const std::string& title, int owneruser, uint32_t daten) = 0;

@@ -101,7 +101,7 @@ creates it empty, as the BBS does.
 | `ANONYMOUS` | How the caller's posts here may be anonymous: `"no"`, `"allowed"` (`POST`'s `anonymous` chooses) or `"forced"` (always anonymous) |
 | `POST(title, text[, to[, anonymous]])` | Posts `text` (a string, or a LIST of lines) titled `title`, to `to` (`""` for everyone), and returns the new message's number. `title` and `to` are at most 71 characters, with no control characters (CR, LF, ^D...). |
 | `WRITE_POST([title[, to]])` | Lets the caller write a post in their own message editor (the full-screen editor or the line editor), as the BBS's post command does, and returns its number, or 0 if they abort. Without `title` the editor asks for one; where the caller may post anonymously, it asks about that too. |
-| `REPLY(h)` | Lets the caller write a reply to the post `h` (a header or message) in their editor: to its author, with "Re: " and its title offered as the title. Returns the reply's number, or 0 if they abort. |
+| `REPLY(h)` | Lets the caller write a reply to the post `h` (a header or message from this area) in their editor: to its author, with "Re: " and its title offered as the title. Returns the reply's number, or 0 if they abort. |
 | `DELETE_MESSAGE(h)` | Deletes the post `h` (a header or message from this area); `FALSE` if it was already gone |
 
 Scripts can only post and delete when the sysop turns on "Enable MSG Writing"
@@ -133,8 +133,11 @@ BBS:
   [#1782](https://github.com/wwivbbs/wwiv/issues/1782).)
 - `WRITE_POST` and `REPLY` open the editor the caller uses in the BBS. A
   script with a full-screen layout open should close it first, since the
-  editor has the whole screen. Quoting the post being replied to isn't
-  supported yet.
+  editor has the whole screen.
+- A reply works like one from the BBS's reader: the caller can quote the
+  post (`/Q`, or auto-quote if they have it on), and on FTN areas the reply
+  carries the post's MSGID so other systems thread it under the post. If
+  the post has been deleted, the caller can still reply, without quoting.
 - `DELETE_MESSAGE` deletes the caller's own posts, or any post if the caller
   is a co-sysop of the area. Deleting their own post takes back its credit.
 

@@ -34,6 +34,7 @@
 #include "wwivbasic/object.h"
 
 #include <algorithm>
+#include <chrono>
 #include <functional>
 #include <limits>
 #include <memory>
@@ -314,24 +315,41 @@ std::string message_text(const Value& text) {
 // characters (postrec's title holds 71), and no control characters, which
 // would let a script end the line and start a control line (^D0...) of its
 // own.
-void check_field(const std::string& what, const std::string& s) {
+// fn names the method, for the error.
+void check_field(const std::string& fn, const std::string& what, const std::string& s) {
   if (s.size() > 71) {
-    throw BasicError(
-        fmt::format("message_area.post: the {} is {} characters; the most is 71", what, s.size()));
+    throw BasicError(fmt::format("message_area.{}: the {} is {} characters; the most is 71", fn,
+                                 what, s.size()));
   }
   for (const auto c : s) {
     if (static_cast<unsigned char>(c) < 0x20 || c == 0x7f) {
-      throw BasicError(fmt::format("message_area.post: the {} has a control character (code {})",
+      throw BasicError(fmt::format("message_area.{}: the {} has a control character (code {})", fn,
                                    what, static_cast<int>(static_cast<unsigned char>(c))));
     }
   }
+}
+
+// s made fit to be a one-line field: control characters dropped, and cut to
+// 71 characters. For text that came from a post, which isn't the script's
+// mistake to report.
+std::string clean_field(const std::string& s) {
+  std::string out;
+  for (const auto c : s) {
+    if (static_cast<unsigned char>(c) >= 0x20 && c != 0x7f) {
+      out += c;
+    }
+  }
+  if (out.size() > 71) {
+    out.resize(71);
+  }
+  return StringTrim(out);
 }
 
 // Saves a post the user wrote in area a, as the BBS's post() does, and returns
 // its number. text follows the author and date lines, which the SDK adds.
 int save_post(const ScriptArea& a, const std::string& fn, const std::string& title,
               const std::string& from, const std::string& to, uint8_t anony,
-              const std::string& text, bool add_re_and_by_line) {
+              const std::string& text, bool add_re_and_by_line, std::chrono::seconds writing_time) {
   const auto& sub = a.sub();
   const auto p = a.msgs->poster(a.subnum);
   auto* area = a.area();
@@ -355,7 +373,7 @@ int save_post(const ScriptArea& a, const std::string& fn, const std::string& tit
   if (!area->AddMessage(msg, options)) {
     throw BasicError(fmt::format("{}: the post couldn't be saved in '{}'", fn, sub.name));
   }
-  a.msgs->posted(a.subnum, title);
+  a.msgs->posted(a.subnum, title, writing_time);
   // Posts go at the end; a full area loses its oldest, not this one.
   return area->number_of_messages();
 }
@@ -376,8 +394,8 @@ int post_message(const ScriptArea& a, const Writing& w, const std::vector<Value>
   if (title.empty()) {
     throw BasicError("message_area.post: the title is empty");
   }
-  check_field("title", title);
-  check_field("name it's to", to);
+  check_field("post", "title", title);
+  check_field("post", "name it's to", to);
   const auto text = message_text(args.at(1));
   if (text.empty()) {
     throw BasicError("message_area.post: the text is empty");
@@ -412,22 +430,25 @@ int post_message(const ScriptArea& a, const Writing& w, const std::vector<Value>
   // only for a post to someone, as inmsg adds them.
   return save_post(a, "message_area.post", title, from, to, anony,
                    fmt::format("{}0PID: WWIV {}\r\n{}", kControlD, core::full_version(), text),
-                   !to.empty() && !iequals(to, "All"));
+                   !to.empty() && !iequals(to, "All"), std::chrono::seconds(0));
 }
 
 // WRITE_POST([title[, to]]) and REPLY(h) in area a: the user writes the post
 // in the BBS's message editor, which asks for the title if it isn't given
 // (offering "Re: " + irt), and whether to post anonymously where the user
-// may choose. Returns the new message's number, or 0 if the user aborted.
+// may choose. reply is the post a reply is to. Returns the new message's
+// number, or 0 if the user aborted.
 int edit_and_post(const ScriptArea& a, const Writing& w, const std::string& fn,
-                  const std::string& title, const std::string& irt, const std::string& to) {
+                  const std::string& title, const std::string& irt, const std::string& to,
+                  const std::optional<MessageBase::ReplyTo>& reply) {
   if (const auto e = post_error(a, w); !e.empty()) {
     throw BasicError(fmt::format("message_area.{}: {}", fn, e));
   }
-  check_field("title", title);
-  check_field("name it's to", to);
+  check_field(fn, "title", title);
+  check_field(fn, "name it's to", to);
   const auto p = a.msgs->poster(a.subnum);
-  const auto edited = a.msgs->edit_post(a.subnum, title, irt, to, anonymous_setting(a.sub(), p));
+  const auto edited =
+      a.msgs->edit_post(a.subnum, title, irt, to, anonymous_setting(a.sub(), p), reply);
   if (!edited) {
     return 0;
   }
@@ -435,7 +456,26 @@ int edit_and_post(const ScriptArea& a, const Writing& w, const std::string& fn,
   // The editor's "to" is in those lines; giving it to the SDK too would add
   // a second FidoAddr line on FTN subs.
   return save_post(a, fmt::format("message_area.{}", fn), edited->title, edited->from, "",
-                   edited->anony, edited->text, false);
+                   edited->anony, edited->text, false, edited->writing_time);
+}
+
+// REPLY(h) in area a, where h is the post with serial id, number number,
+// title and author from (as the user sees them).
+int reply_to(const ScriptArea& a, const Writing& w, uint32_t id, int number,
+             const std::string& title, const std::string& from) {
+  // The author's name and the title came from a post, not the script, so
+  // make them fit rather than report them.
+  const auto to = clean_field(from);
+  const auto irt = clean_field(title);
+  // The post as it's stored now, for quoting it and threading the reply. If
+  // it's gone, the user can still reply, without those.
+  std::optional<MessageBase::ReplyTo> reply;
+  if (const auto n = find_message(a, id, number); n > 0) {
+    if (const auto m = a.area()->ReadMessage(n)) {
+      reply = MessageBase::ReplyTo{from, m->text().string(), m->header().daten()};
+    }
+  }
+  return edit_and_post(a, w, "reply", "", irt, to, reply);
 }
 
 // DELETE_MESSAGE(h) in area a: deletes the post h (a header or message from
@@ -575,25 +615,21 @@ void RegisterWwivMsg(wwivbasic::Interpreter& interp, const WwivBindings& b) {
                      args.empty() ? std::string() : StringTrim(args.at(0).toString());
                  const auto to =
                      args.size() > 1 ? StringTrim(args.at(1).toString()) : std::string();
-                 return Value(edit_and_post(a, w, "write_post", title, "", to));
+                 return Value(edit_and_post(a, w, "write_post", title, "", to, std::nullopt));
                })
       // REPLY(h) lets the user reply to the post h (a header or message from
-      // any area) in their message editor: to its author, with "Re: " and its
-      // title offered as the title. Returns the reply's number, or 0.
+      // this area) in their message editor: to its author, with "Re: " and
+      // its title offered as the title, and its text to quote. Returns the
+      // reply's number, or 0.
       .method("reply",
               [w, &header_class, &message_class](ScriptArea& a, Value v) {
-                std::string title;
-                std::string from;
                 if (const auto h = header_class.unwrap(v)) {
-                  title = h->title;
-                  from = h->from;
-                } else if (const auto msg = message_class.unwrap(v)) {
-                  title = msg->title;
-                  from = msg->from;
-                } else {
-                  throw BasicError("message_area.reply: expected a message_header or message");
+                  return reply_to(a, w, h->id, h->number, h->title, h->from);
                 }
-                return edit_and_post(a, w, "reply", "", title, from);
+                if (const auto msg = message_class.unwrap(v)) {
+                  return reply_to(a, w, msg->id, msg->number, msg->title, msg->from);
+                }
+                throw BasicError("message_area.reply: expected a message_header or message");
               })
       // DELETE_MESSAGE(h) deletes the post h (a header or message from this
       // area): the user's own, or any if they're a co-sysop of the area.
