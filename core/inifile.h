@@ -60,23 +60,11 @@ public:
   [[nodiscard]] std::string full_pathname() const noexcept;
   [[nodiscard]] std::filesystem::path path() const noexcept { return path_; }
 
-template <typename T>
-  [[nodiscard]] T GetFlags(const std::vector<ini_flags_type>& flag_definitions, T flags) {
-  for (const auto& [key, v] : flag_definitions) {
-    if (key.empty()) {
-      continue;
-    }
-    if (const auto val = value<std::string>(key); val.empty()) {
-      continue;
-    }
-    if (value<bool>(key)) {
-      flags |= v;
-    } else {
-      flags &= ~v;
-    }
-  }
-  return flags;
-}
+  // Defined below, after the value<std::string> and value<bool> specializations
+  // are declared; using them here first would implicitly instantiate the
+  // primary template (MSVC C2908).
+  template <typename T>
+  [[nodiscard]] T GetFlags(const std::vector<ini_flags_type>& flag_definitions, T flags) const;
 
 /**
  * Gets a std::vector of int from key. In the INI file the list should be
@@ -114,6 +102,24 @@ template <>
 [[nodiscard]] bool IniFile::value<bool>(const std::string& key, const bool& default_value) const;
 template <>
 [[nodiscard]] bool IniFile::value<bool>(const std::string& key) const;
+
+template <typename T>
+T IniFile::GetFlags(const std::vector<ini_flags_type>& flag_definitions, T flags) const {
+  for (const auto& [key, v] : flag_definitions) {
+    if (key.empty()) {
+      continue;
+    }
+    if (const auto val = value<std::string>(key); val.empty()) {
+      continue;
+    }
+    if (value<bool>(key)) {
+      flags |= v;
+    } else {
+      flags &= ~v;
+    }
+  }
+  return flags;
+}
 
 
 } // namespace
