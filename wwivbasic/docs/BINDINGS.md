@@ -179,6 +179,87 @@ While k <> "Q" And k <> "q"
 Wend
 ```
 
+## wwiv.screen
+
+Full-screen layouts and lightbar lists, built in C++ on what the BBS's own
+full-screen message reader uses. Both need ANSI: without it they stop the
+script with an error, so check `wwiv.io.okansi()` first and use a plain UI
+otherwise.
+
+### Functions
+
+| Function | |
+| --- | --- |
+| `FULLSCREEN(header_lines)` | Clears the screen and opens a full-screen layout (a `screen`): `header_lines` rows at the top for the script, a bar, the content rows, a bar, and the command line on the bottom row. Pausing is off while it's open. One can be open at a time. |
+| `LIGHTBAR(items, top, height)` | A scrolling list (a `lightbar`) of the strings in the list `items`, `height` rows from screen row `top` (1 is the top row), as wide as the screen less one column. Nothing is drawn until `DRAW` or `RUN`. |
+
+### Screens (`screen`)
+
+| Member | |
+| --- | --- |
+| `width`, `height` | The size of the screen |
+| `content_top`, `content_height` | The first row between the bars, and how many there are |
+| `top_bar()` | Draws the bar under the header lines |
+| `bottom_bar(text)` | Draws the bar over the command line, with `text` (if any) near its right end |
+| `command_line(text)` | Writes `text` on the bottom row, then puts the cursor at its start |
+| `clear_command_line()` | Clears the bottom row |
+| `clear_content()` | Clears the rows between the bars |
+| `readkey()` | `wwiv.io.readkey()`, showing the "are you there?" warning on the command line when the caller is idle |
+| `close()` | Clears the screen and turns pausing back on. After `close()` the screen's methods are errors. |
+
+### Lightbars (`lightbar`)
+
+| Member | |
+| --- | --- |
+| `count` | How many items there are |
+| `selected` | The selected item, counting from 0 (-1 if there are none). Set it to select an item; `DRAW` or `RUN` shows it. |
+| `top_item` | The item on the list's first row |
+| `color`, `selected_color` | Color codes for the items and the selected one (`"\|#0"` and `"\|17\|15"`, white on blue, unless set) |
+| `draw()` | Draws the whole list |
+| `set_items(items)` | Replaces the items, keeping the selection if it's still in the list |
+| `run()` | Draws the list, then lets the caller move through it with Up, Down, Page Up, Page Down, Home and End, and returns the first other key, as `wwiv.io.readkey()` returns it (Enter is `CHR(13)`). Returns `""` once the caller hangs up. While a `FULLSCREEN` is open, keys are read through it, so an idle caller gets its "are you there?" warning on the command line. |
+| `run(fn)` | Like `run()`, but for each other key calls the script function named `fn` as `fn(key, selected)`, and keeps going while it returns `TRUE`. A name that isn't a function is an error when `run` starts. It draws the list again after each call, since the function may have drawn over it, and returns the key `fn` returned `FALSE` for. |
+
+A screen also closes when the script no longer holds it: when the script
+ends, or when the variable holding it goes away, such as a local variable in
+the `DEF` that opened it once that `DEF` returns. Pausing comes back then too,
+but the screen isn't cleared; only the command line is, and the cursor goes to
+its start, so whatever comes next starts on the bottom row. Keep the screen in
+a global variable, or in a `Main()` that runs the whole UI, while it's in use.
+
+Moving within the list redraws only the rows that change. Items are written
+with MCI codes shown as written (they're often what other users wrote); the
+selected one is shown without its own colors, so the highlight shows. Items
+too wide for the list are cut.
+
+```basic
+import "@wwiv.io"
+import "@wwiv.screen"
+
+def OnKey(key, selected)
+  If key = CHR(13) Then
+    s.command_line("|#9You chose |#2" + get(items, selected))
+    return TRUE
+  EndIf
+  return key <> "Q" And key <> "q"
+enddef
+
+If Not okansi() Then
+  pl("This needs ANSI.")
+  End
+EndIf
+items = list("Apples", "Bananas", "Cherries", "Dates", "Elderberries")
+s = fullscreen(1)
+gotoxy(1, 1)
+outstr("|#5Fruit")
+s.top_bar()
+s.bottom_bar("")
+s.command_line("|#9Enter chooses, Q quits")
+l = lightbar(items, s.content_top, s.content_height)
+k = l.run("OnKey")
+s.close()
+```
+
 ## wwiv.user
 
 The caller's own details, and the public details of other users. Like

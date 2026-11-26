@@ -127,6 +127,7 @@ bool NextEngine::RunText(const std::string& name, const std::string& module,
   const WwivBindings bindings{in_, out_, console, config_, ctx_, module, msgs_.get(), users_.get()};
   RegisterWwiv(interp, bindings);
   RegisterWwivIo(interp, bindings);
+  RegisterWwivScreen(interp, bindings);
   RegisterWwivData(interp, bindings);
   // As in the legacy engine, these exist only when the sysop enables them.
   if (config_.script_package_file_enabled()) {

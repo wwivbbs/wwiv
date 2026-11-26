@@ -819,3 +819,133 @@ TEST_F(MsgViewTest, UnknownArea) {
   const auto out = RunViewer("ZZ\r\rQ\r");
   EXPECT_THAT(out, HasSubstr("There is no area ZZ."));
 }
+
+// msgview.bas full-screen, as callers with ANSI see it. Keys come from the
+// caller's terminal, where ANSI key sequences (ESC [ B is Down) come from.
+class MsgViewFullScreenTest : public WwivMsgTest {
+protected:
+  void SetUp() override {
+    WwivMsgTest::SetUp();
+    helper.user()->set_flag(User::flag_ansi, true);
+    helper.user()->screen_width(80);
+    helper.sess().num_screen_lines(25);
+    type_ahead::HangUpWhenKeysRunOut(helper.context().session_context(), a()->sess());
+  }
+
+  void TearDown() override {
+    type_ahead::StopTypingAhead();
+    remote()->keys.clear();
+  }
+
+  TestRemoteIO* remote() { return static_cast<TestRemoteIO*>(helper.io()->remote_io()); }
+
+  // Runs the viewer with keys from the caller. The keys must end it (Q at
+  // the area list): running out of keys hangs up, which fails the test.
+  std::string RunViewer(const std::string& keys) {
+    a()->sess().incom(true);
+    a()->sess().ok_modem_stuff(true);
+    remote()->keys = keys;
+    const std::string script(reinterpret_cast<const char*>(k_msgview_bas), sizeof(k_msgview_bas));
+    bool ok{false};
+    auto out = Run(script, &ok);
+    EXPECT_TRUE(ok) << out;
+    EXPECT_FALSE(a()->sess().hangup()) << "The keys ran out";
+    return out;
+  }
+
+  static constexpr char kDown[] = "\x1b[B";
+  static constexpr char kPageDown[] = "\x1b[6~";
+};
+
+TEST_F(MsgViewFullScreenTest, ListsAreas) {
+  Post(0, "a #1", "One", "1\r\n");
+  const auto out = RunViewer("q");
+  EXPECT_THAT(out, HasSubstr("Message Areas"));
+  EXPECT_THAT(out, HasSubstr("General"));
+  EXPECT_THAT(out, HasSubstr("1 msgs"));
+  EXPECT_THAT(out, HasSubstr("Sysop"));
+  EXPECT_THAT(out, Not(HasSubstr("Secret")));
+}
+
+TEST_F(MsgViewFullScreenTest, ReadsMessages) {
+  Post(0, "rushfan #1", "Hello", "Hi there\r\n");
+  Post(0, "sysop #2", "Re: Hello", "Hi back\r\n");
+  // General, the first message, next, then quit the message, the list and
+  // the viewer.
+  const auto out = RunViewer("\r\rnqqq");
+  EXPECT_THAT(out, HasSubstr("Title : Hello"));
+  EXPECT_THAT(out, HasSubstr("From  : rushfan #1"));
+  EXPECT_THAT(out, HasSubstr("Hi there"));
+  EXPECT_THAT(out, HasSubstr("Msg   : 2 of 2 in General"));
+  EXPECT_THAT(out, HasSubstr("Title : Re: Hello"));
+  EXPECT_LT(out.find("Hi there"), out.find("Hi back"));
+}
+
+// The list opens on the second message, after moving down to it.
+TEST_F(MsgViewFullScreenTest, ReadsTheSelectedMessage) {
+  Post(0, "a #1", "First", "one\r\n");
+  Post(0, "a #1", "Second", "two\r\n");
+  const auto out = RunViewer(std::string("\r") + kDown + "\rqqq");
+  EXPECT_THAT(out, HasSubstr("Title : Second"));
+  EXPECT_THAT(out, Not(HasSubstr("Title : First")));
+}
+
+// On a 25-row screen with 5 header lines, 17 rows of text show at a time.
+TEST_F(MsgViewFullScreenTest, ScrollsLongMessages) {
+  std::string text;
+  for (auto i = 1; i <= 30; i++) {
+    text += fmt::format("Line {}\r\n", i);
+  }
+  Post(0, "a #1", "Long", text);
+  const auto out = RunViewer(std::string("\r\r") + kPageDown + "qqq");
+  // Each page's text is drawn before the bar that says which lines show.
+  const auto first_page_end = out.find("1-17 of 30");
+  ASSERT_NE(std::string::npos, first_page_end) << out;
+  EXPECT_THAT(out.substr(0, first_page_end), HasSubstr("Line 17"));
+  EXPECT_THAT(out.substr(0, first_page_end), Not(HasSubstr("Line 18")));
+  EXPECT_THAT(out.substr(first_page_end), HasSubstr("Line 30"));
+  EXPECT_THAT(out.substr(first_page_end), HasSubstr("18-30 of 30"));
+}
+
+// Space pages, and at the end of a message goes on to the next.
+TEST_F(MsgViewFullScreenTest, SpaceAtTheEndReadsTheNext) {
+  Post(0, "a #1", "First", "one\r\n");
+  Post(0, "a #1", "Second", "two\r\n");
+  const auto out = RunViewer("\r\r qqq");
+  EXPECT_THAT(out, HasSubstr("Title : Second"));
+}
+
+// Lines wider than the screen are split rather than wrapping on their own.
+TEST_F(MsgViewFullScreenTest, SplitsWideLines) {
+  Post(0, "a #1", "Wide", std::string(79, 'x') + "END\r\n");
+  const auto out = RunViewer("\r\rqqq");
+  EXPECT_THAT(out, HasSubstr("1-2 of 2"));
+  EXPECT_THAT(out, HasSubstr("END"));
+}
+
+TEST_F(MsgViewFullScreenTest, PostsCantRunMci) {
+  helper.user()->set_name("READERNAME");
+  Post(0, "a #1", "Title |@N", "Text |@N here\r\n");
+  const auto out = RunViewer("\r\rqqq");
+  EXPECT_THAT(out, HasSubstr("Text  here"));
+  EXPECT_THAT(out, Not(HasSubstr("READERNAME")));
+}
+
+TEST_F(MsgViewFullScreenTest, PostDeletedWhileReading) {
+  Post(0, "a #1", "One", "1\r\n");
+  Post(0, "a #1", "Two", "2\r\n");
+  DeletePostBeforeFind(2);
+  // General, down to message 2 (gone), a key, then quit.
+  const auto out = RunViewer(std::string("\r") + kDown + "\r qq");
+  EXPECT_THAT(out, HasSubstr("That message has been deleted."));
+  EXPECT_THAT(out, Not(HasSubstr("Title : Two")));
+  // The list is read again.
+  EXPECT_THAT(out, HasSubstr("General (1 messages)"));
+}
+
+// An empty area says so on the command line, and stays on the area list.
+TEST_F(MsgViewFullScreenTest, EmptyArea) {
+  // Down to Sysop, Enter, then quit.
+  const auto out = RunViewer(std::string(kDown) + "\rq");
+  EXPECT_THAT(out, HasSubstr("There are no messages in Sysop."));
+}

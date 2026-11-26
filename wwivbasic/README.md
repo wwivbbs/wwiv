@@ -205,6 +205,9 @@ print h.number; ": "; h.subject; " "; h.summary(3)
 h.subject = "Re: Hello"
 ```
 
+A method whose arguments are optional or vary takes them as a vector with
+`methodl(name, f)`, where `f` takes `(T&, const std::vector<Value>&)`.
+
 Properties and methods can be data members, member functions or lambdas, and
 member names are case-insensitive. `wrap()` turns a C++ object (or a
 `std::shared_ptr` to one) into a script value, and `unwrap()` turns it back.
@@ -242,7 +245,8 @@ An error in the function is reported at its line in the script, and the stop
 check runs in it as usual. If the function runs `END`, `call` throws to end the
 native function and then the script, so native code must let exceptions it
 doesn't know pass through (no `catch (...)`). Calling it when no script is
-running throws `BasicError`.
+running throws `BasicError`. `Interpreter::has_function(name)` says whether
+`call` would find the function, for checking a name before it's needed.
 
 ## Layout
 

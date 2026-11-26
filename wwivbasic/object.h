@@ -184,6 +184,22 @@ public:
     }
   }
 
+  // A method that takes its arguments as a vector, with no argument count
+  // checking, like Module::native_functionl: for optional or variable
+  // arguments. `f` takes (T&, const std::vector<Value>&) and returns a Value.
+  // An ArgumentError it throws is reported with the class and method name.
+  template <class F> ClassBinding& methodl(const std::string& name, F f) {
+    info_->methods.insert_or_assign(
+        name, [name, cls = info_->name, f](void* p, const std::vector<Value>& params) mutable {
+          try {
+            return Value(f(*static_cast<T*>(p), params));
+          } catch (const ArgumentError& e) {
+            throw BasicError(fmt::format("{}.{}: {}", cls, name, e.what()));
+          }
+        });
+    return *this;
+  }
+
   // Makes a script value that refers to `object`. The object stays alive while
   // scripts hold it. A null pointer is a script error; to return "nothing",
   // return an empty Value() instead.

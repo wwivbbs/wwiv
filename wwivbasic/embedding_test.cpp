@@ -135,12 +135,28 @@ protected:
                   return header.wrap(std::shared_ptr<Header>(
                       area_, &area_->headers.at(static_cast<size_t>(i))));
                 })
-        .method("headers", [this, &header](Area&) {
-          std::vector<wwivbasic::Value> result;
-          for (auto& h : area_->headers) {
-            result.push_back(header.wrap(std::shared_ptr<Header>(area_, &h)));
+        .method("headers",
+                [this, &header](Area&) {
+                  std::vector<wwivbasic::Value> result;
+                  for (auto& h : area_->headers) {
+                    result.push_back(header.wrap(std::shared_ptr<Header>(area_, &h)));
+                  }
+                  return result;
+                })
+        // FIND(subject[, start]): the index of the first header from start
+        // with that subject, or -1.
+        .methodl("find", [](Area& a, const std::vector<wwivbasic::Value>& args) {
+          if (args.empty() || args.size() > 2) {
+            throw BasicError(fmt::format("expected 1 or 2 arguments, got {}", args.size()));
           }
-          return result;
+          const auto subject = from_value<std::string>(args.at(0));
+          const auto start = args.size() == 2 ? from_value<int>(args.at(1)) : 0;
+          for (auto i = start; i < static_cast<int>(a.headers.size()); i++) {
+            if (a.headers.at(static_cast<size_t>(i)).subject == subject) {
+              return wwivbasic::Value(i);
+            }
+          }
+          return wwivbasic::Value(-1);
         });
 
     msgs.native_function("OPEN_AREA", [this, &area](std::string name) {
@@ -195,6 +211,18 @@ print area.header(0).subject; " / "; msgs.subject_of(h); " / "; msgs.subject_of(
   ASSERT_TRUE(result.ok()) << result.errors.front();
   EXPECT_EQ("Re: Hello / Re: Hello / (not a header)\n", out.str());
   EXPECT_EQ("Re: Hello", area_->headers[0].subject);
+}
+
+// A methodl method takes optional arguments.
+TEST_F(ObjectTest, MethodWithOptionalArguments) {
+  const auto result = run(R"bas(
+a = msgs.open_area("general")
+print a.find("Hello"); " "; a.find("Hello", 1); " "; a.find("Welcome to the BBS", 1)
+print a.find(1, 2, 3)
+)bas");
+  EXPECT_EQ("0 -1 1\n", out.str());
+  ASSERT_EQ(1u, result.errors.size());
+  EXPECT_EQ("viewer.bas:4: error: expected 1 or 2 arguments, got 3", result.errors.front());
 }
 
 TEST_F(ObjectTest, ObjectsAreReferences) {

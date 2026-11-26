@@ -74,6 +74,8 @@ void RegisterWwivMsg(wwivbasic::Interpreter& interp, const WwivBindings& b);
 // New in the new engine: the caller, and other users' public details.
 // Registered when b.users is set and the sysop hasn't turned it off.
 void RegisterWwivUser(wwivbasic::Interpreter& interp, const WwivBindings& b);
+// New in the new engine: full-screen layouts and lightbar lists. Always on.
+void RegisterWwivScreen(wwivbasic::Interpreter& interp, const WwivBindings& b);
 
 } // namespace wwiv::bbs::basic
 
