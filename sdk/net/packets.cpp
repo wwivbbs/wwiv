@@ -739,6 +739,8 @@ bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net
         auto subscribers = ReadSubcriberFile(FilePath(current_net.dir, StrCat("n", subnet.stype, ".net")));
         // Remove the original sender from the set of systems that we will resend this to.
         subscribers.erase(template_packet.nh.fromsys);
+        // Nor to ourselves, if we're in our own subscriber list.
+        subscribers.erase(current_net.sysnum);
         for (const auto& skip : subscribers_to_skip) {
           // Skip the subscribers to skip too.
           subscribers.erase(skip);

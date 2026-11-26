@@ -24,6 +24,8 @@
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
+#include "sdk/net/packets.h"
+#include "sdk/net/subscribers.h"
 #include "sdk/sdk_helper.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
@@ -31,6 +33,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <vector>
 
 using namespace std;
 using namespace wwiv::core;
@@ -249,7 +252,8 @@ public:
 
   // A sub on one network where we're a subscriber, so a post sent out on it
   // becomes one packet to the host.
-  std::unique_ptr<MessageArea> CreateArea(net::network_type_t net_type, uint8_t anony) {
+  std::unique_ptr<MessageArea> CreateArea(net::network_type_t net_type, uint8_t anony,
+                                          uint16_t host = 2) {
     net_ = helper.CreateTestNetwork(net_type);
     MessageApiOptions options;
     options.overflow_strategy = OverflowStrategy::delete_none;
@@ -262,7 +266,7 @@ public:
     subboard_network_data_t sn{};
     sn.stype = "TEST";
     sn.net_num = 0;
-    sn.host = 2;
+    sn.host = host;
     sub_.nets.push_back(sn);
     EXPECT_TRUE(api_->Create(sub_, -1));
     return api_->Open(sub_, -1);
@@ -280,6 +284,28 @@ public:
     h.set_daten(daten++);
     msg.set_text("Hello\r\n");
     return msg;
+  }
+
+  // The packets written to the network's directory.
+  [[nodiscard]] std::vector<net::NetPacket> packets() const {
+    std::vector<net::NetPacket> result;
+    for (const auto& e : std::filesystem::directory_iterator(net_.dir)) {
+      if (!e.path().filename().string().starts_with("p1-")) {
+        continue;
+      }
+      File f(e.path());
+      if (!f.Open(File::modeReadOnly | File::modeBinary)) {
+        continue;
+      }
+      for (;;) {
+        auto [packet, response] = net::read_packet(f, false);
+        if (response != net::ReadNetPacketResponse::OK) {
+          break;
+        }
+        result.push_back(packet);
+      }
+    }
+    return result;
   }
 
   // Packets written to the network's directory.
@@ -361,7 +387,7 @@ TEST_F(MsgApiNetTest, ValNet_SkipValidation) {
 }
 
 // A post from a network (network2) keeps the pending flag its caller gave it,
-// and nothing is sent or SSMed.
+// and nothing is sent.  The sysop is told about the held one.
 TEST_F(MsgApiNetTest, ValNet_FromNetwork) {
   auto area = CreateArea(net::network_type_t::wwivnet, anony_val_net);
   auto m1 = NewPost(*area, "Not held", "");
@@ -374,19 +400,76 @@ TEST_F(MsgApiNetTest, ValNet_FromNetwork) {
   EXPECT_FALSE(pending(*area, 1));
   EXPECT_TRUE(pending(*area, 2));
   EXPECT_EQ(0, packets_sent());
+  EXPECT_EQ(1, ssms_sent());
+}
+
+// Only the first post from a network waiting for validation is SSMed.
+TEST_F(MsgApiNetTest, ValNet_FromNetwork_OneSsm) {
+  auto area = CreateArea(net::network_type_t::wwivnet, anony_val_net, 0);
+  for (const auto* title : {"One", "Two"}) {
+    auto m = NewPost(*area, title, "");
+    m.header().set_from_system(2);
+    m.header().set_pending_network(true);
+    ASSERT_TRUE(area->AddMessage(m, {}));
+  }
+  EXPECT_EQ(0, packets_sent());
+  EXPECT_EQ(1, ssms_sent());
+}
+
+// A post that couldn't be saved here isn't sent out.
+TEST_F(MsgApiNetTest, SaveFails_NotSent) {
+  auto area = CreateArea(net::network_type_t::wwivnet, 0);
+  // With no header record, the post can't be added to the sub.
+  const auto sub_fn = FilePath(helper.datadir(), "a1.sub");
+  ASSERT_TRUE(File::Exists(sub_fn));
+  std::filesystem::resize_file(sub_fn, 0);
+  MessageAreaOptions o{};
+  o.send_post_to_network = true;
+  auto m = NewPost(*area, "Title", "");
+  EXPECT_FALSE(area->AddMessage(m, o));
+  EXPECT_EQ(0, packets_sent());
+}
+
+// Nor is the sysop told about a held post that couldn't be saved.
+TEST_F(MsgApiNetTest, ValNet_SaveFails_NoSsm) {
+  auto area = CreateArea(net::network_type_t::wwivnet, anony_val_net);
+  const auto sub_fn = FilePath(helper.datadir(), "a1.sub");
+  ASSERT_TRUE(File::Exists(sub_fn));
+  std::filesystem::resize_file(sub_fn, 0);
+  MessageAreaOptions o{};
+  o.send_post_to_network = true;
+  auto m = NewPost(*area, "Title", "");
+  EXPECT_FALSE(area->AddMessage(m, o));
   EXPECT_EQ(0, ssms_sent());
 }
 
-// A caller that already marked the post pending isn't sent out.
-TEST_F(MsgApiNetTest, PendingFromCaller_NotSent) {
+// valscan only looks on subs that need validation, so a post marked pending
+// on any other sub is sent anyway, and not left pending.
+TEST_F(MsgApiNetTest, PendingFromCaller_NotValNet_Sent) {
   auto area = CreateArea(net::network_type_t::wwivnet, 0);
   MessageAreaOptions o{};
   o.send_post_to_network = true;
   auto m = NewPost(*area, "Title", "");
   m.header().set_pending_network(true);
   ASSERT_TRUE(area->AddMessage(m, o));
-  EXPECT_TRUE(pending(*area, 1));
-  EXPECT_EQ(0, packets_sent());
+  EXPECT_FALSE(pending(*area, 1));
+  EXPECT_EQ(1, packets_sent());
+  EXPECT_EQ(0, ssms_sent());
+}
+
+// On a sub we host, the post goes to every subscriber but us, even when we're
+// in our own subscriber list.
+TEST_F(MsgApiNetTest, Hosted_NotSentToSelf) {
+  auto area = CreateArea(net::network_type_t::wwivnet, 0, 0);
+  ASSERT_TRUE(WriteSubcriberFile(FilePath(net_.dir, "nTEST.net"), {net_.sysnum, 5, 6}));
+  MessageAreaOptions o{};
+  o.send_post_to_network = true;
+  auto m = NewPost(*area, "Title", "");
+  ASSERT_TRUE(area->AddMessage(m, o));
+  const auto sent = packets();
+  ASSERT_EQ(1u, sent.size());
+  EXPECT_EQ(net_.sysnum, sent.front().nh.fromsys);
+  EXPECT_EQ((std::vector<uint16_t>{5, 6}), sent.front().list);
 }
 
 // On an FTN sub the To: name goes in a ^D0FidoAddr line, except for All in

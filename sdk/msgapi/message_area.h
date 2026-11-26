@@ -64,11 +64,14 @@ struct MessageAreaOptions {
    * Is this a new post from this BBS that should go out on the sub's networks?
    *
    * On a sub that needs network validation (anony_val_net), the post is held
-   * as pending instead, and the sysop gets an SSM unless another post there
-   * was already pending.  The BBS sends it once it is validated.
+   * as pending instead.  The BBS sends it once it is validated.  On any other
+   * sub it is sent, and its pending flag is cleared.
    *
    * Leave this false for a post that came in from a network (network2).  Its
    * pending flag is then left as the caller set it.
+   *
+   * Either way, when a pending post is saved, the sysop gets an SSM unless
+   * another post there was already pending.
    */
   bool send_post_to_network{false};
 
