@@ -79,6 +79,7 @@ bool Pipe::Open() {
                           NULL);         // no template file
     if (h != INVALID_HANDLE_VALUE) {
       handle_ = h;
+      broken_.store(false);
       VLOG(3) << "Pipe::Open: sucess opened: " << pipe_name_;
       return true;
     }
@@ -107,12 +108,29 @@ bool Pipe::WaitForClient(std::chrono::duration<double> timeout) {
 }
 
 
+void Pipe::set_last_error(int e) noexcept {
+  last_error_ = e;
+  switch (e) {
+  case ERROR_BROKEN_PIPE:
+  case ERROR_NO_DATA:
+  case ERROR_PIPE_NOT_CONNECTED:
+  case ERROR_INVALID_HANDLE:
+    // The other end has closed the pipe (or this end has no live pipe).
+    // Don't close the handle here; another thread may be using it.
+    broken_.store(true);
+    break;
+  default:
+    break;
+  }
+}
+
 /** returns the number of bytes written on success */
 std::optional<int> Pipe::write(const char* data, int size) { 
   DWORD cbBytesWritten;
   if (WriteFile(handle_, data, size, &cbBytesWritten, NULL)) {
     return {cbBytesWritten};
   }
+  set_last_error(GetLastError());
   return std::nullopt; 
 }
 
@@ -122,15 +140,20 @@ std::optional<int> Pipe::read(char* data, int size) {
   if (ReadFile(handle_, data, size, &cbBytesRead, NULL)) {
     return { cbBytesRead };
   }
+  set_last_error(GetLastError());
   return std::nullopt;
 }
 
 std::optional<char> Pipe::peek() {
   char ch;
   DWORD num_read, num_avail, num_leftmsg;
-  if (PeekNamedPipe(handle_, &ch, 1, &num_read, &num_avail, &num_leftmsg) && num_read>0) {
-    return {ch};
+  if (PeekNamedPipe(handle_, &ch, 1, &num_read, &num_avail, &num_leftmsg)) {
+    if (num_read > 0) {
+      return {ch};
+    }
+    return std::nullopt;
   }
+  set_last_error(GetLastError());
   return std::nullopt;
 }
 

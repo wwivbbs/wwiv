@@ -84,6 +84,47 @@ int get_dns_cc(const std::string& address, const std::string& rbl_address);
 /** Sets the socket to blocking mode. */
 bool SetBlockingMode(SOCKET sock);
 
+/**
+ * Owns a socket and closes it exactly once.
+ *
+ * Move-only. Use release() when handing the socket to something else that
+ * will close it, and reset() to close it early (for example right after a
+ * child process has been spawned with its own copy).
+ */
+class SocketHandle final {
+public:
+  SocketHandle() noexcept = default;
+  explicit SocketHandle(SOCKET sock) noexcept : sock_(sock) {}
+  ~SocketHandle() { reset(); }
+
+  SocketHandle(const SocketHandle&) = delete;
+  SocketHandle& operator=(const SocketHandle&) = delete;
+  SocketHandle(SocketHandle&& o) noexcept : sock_(o.release()) {}
+  SocketHandle& operator=(SocketHandle&& o) noexcept {
+    if (this != &o) {
+      reset(o.release());
+    }
+    return *this;
+  }
+
+  [[nodiscard]] SOCKET get() const noexcept { return sock_; }
+  [[nodiscard]] bool valid() const noexcept { return sock_ != INVALID_SOCKET; }
+  explicit operator bool() const noexcept { return valid(); }
+
+  /** Gives up ownership without closing; returns the socket. */
+  [[nodiscard]] SOCKET release() noexcept {
+    const auto s = sock_;
+    sock_ = INVALID_SOCKET;
+    return s;
+  }
+
+  /** Closes the current socket (if any) and takes ownership of sock. */
+  void reset(SOCKET sock = INVALID_SOCKET) noexcept;
+
+private:
+  SOCKET sock_{INVALID_SOCKET};
+};
+
 /** 
  * Once a socket is accepted from the remote system.  Return
  * the socket and also the port that it was accepted from.

@@ -20,6 +20,12 @@
 
 #include "core/net.h"
 #include <string>
+#include <utility>
+
+#ifndef _WIN32
+#include <cerrno>
+#include <fcntl.h>
+#endif
 
 using namespace wwiv::core;
 
@@ -73,3 +79,78 @@ TEST_F(NetTest, Rfc1918_Malformed) {
   ASSERT_FALSE(is_rfc1918_private_address("1.2.3.4.5"));
   ASSERT_FALSE(is_rfc1918_private_address("Geddy Lee"));
 }
+
+#ifndef _WIN32
+
+namespace {
+bool fd_is_open(int fd) { return fcntl(fd, F_GETFD) != -1 || errno != EBADF; }
+
+std::pair<int, int> make_socketpair() {
+  int sv[2]{-1, -1};
+  EXPECT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv));
+  return {sv[0], sv[1]};
+}
+} // namespace
+
+TEST(SocketHandleTest, DefaultIsInvalid) {
+  const SocketHandle h;
+  EXPECT_FALSE(h);
+  EXPECT_EQ(INVALID_SOCKET, h.get());
+}
+
+TEST(SocketHandleTest, ClosesOnDestruction) {
+  auto [a, b] = make_socketpair();
+  {
+    const SocketHandle h(a);
+    EXPECT_TRUE(h);
+    EXPECT_TRUE(fd_is_open(a));
+  }
+  EXPECT_FALSE(fd_is_open(a));
+  close(b);
+}
+
+TEST(SocketHandleTest, Release_DoesNotClose) {
+  auto [a, b] = make_socketpair();
+  {
+    SocketHandle h(a);
+    EXPECT_EQ(a, h.release());
+    EXPECT_FALSE(h);
+  }
+  EXPECT_TRUE(fd_is_open(a));
+  close(a);
+  close(b);
+}
+
+TEST(SocketHandleTest, Move_TransfersOwnership) {
+  auto [a, b] = make_socketpair();
+  SocketHandle h1(a);
+  SocketHandle h2(std::move(h1));
+  EXPECT_FALSE(h1); // NOLINT(bugprone-use-after-move)
+  EXPECT_EQ(a, h2.get());
+  h1.reset(); // no-op, must not close a.
+  EXPECT_TRUE(fd_is_open(a));
+  h2.reset();
+  EXPECT_FALSE(fd_is_open(a));
+  close(b);
+}
+
+TEST(SocketHandleTest, MoveAssign_ClosesPrevious) {
+  auto [a, b] = make_socketpair();
+  SocketHandle ha(a);
+  SocketHandle hb(b);
+  ha = std::move(hb);
+  EXPECT_FALSE(fd_is_open(a));
+  EXPECT_TRUE(fd_is_open(b));
+  EXPECT_EQ(b, ha.get());
+}
+
+TEST_F(NetTest, CreateListenSocket_IsCloseOnExec) {
+  // Port 0 binds an ephemeral port.
+  const SocketHandle h(CreateListenSocket(0));
+  ASSERT_TRUE(h);
+  const auto flags = fcntl(h.get(), F_GETFD);
+  ASSERT_NE(-1, flags);
+  EXPECT_TRUE(flags & FD_CLOEXEC);
+}
+
+#endif // _WIN32

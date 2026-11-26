@@ -25,6 +25,7 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -49,6 +50,7 @@ public:
   };
 
   ConnectionHandler() = delete;
+  /** Takes ownership of the accepted client socket. */
   ConnectionHandler(ConnectionData d, wwiv::core::accepted_socket_t a);
 
   void HandleConnection();
@@ -57,9 +59,16 @@ public:
 private:
   MailerModeResult DoMailerMode();
   BlockedConnectionResult CheckForBlockedConnection();
-  wwiv::sdk::wwivd_matrix_entry_t DoMatrixLogon(const wwiv::sdk::wwivd_config_t& c);
+  /** Returns the BBS the caller picked, or nullopt if they quit or timed out. */
+  std::optional<wwiv::sdk::wwivd_matrix_entry_t> DoMatrixLogon(const wwiv::sdk::wwivd_config_t& c);
   ConnectionData data;
-  wwiv::core::accepted_socket_t r;
+  /**
+   * The caller's socket. This is the only owner: it is either moved into
+   * the child launch (which closes it once the child has its own copy), or
+   * closed when the handler is destroyed.
+   */
+  wwiv::core::SocketHandle sock_;
+  int port_{0};
 };
 
 void HandleConnection(std::unique_ptr<ConnectionHandler> h);

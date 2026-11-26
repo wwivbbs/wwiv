@@ -270,6 +270,12 @@ void RemotePipeIO::PipeLoop() {
       if (stop_.load()) {
         return;
       }
+      if (!data_pipe_.IsOpen()) {
+        // wwivd closed its end (the caller hung up). connected() now
+        // returns false, so the BBS will notice and hang up this node.
+        LOG(INFO) << "PipeLoop: data pipe closed by wwivd; exiting.";
+        return;
+      }
       if (!data_pipe_.peek()) {
         os::sleep_for(std::chrono::milliseconds(200));
         continue;

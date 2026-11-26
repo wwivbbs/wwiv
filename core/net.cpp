@@ -23,6 +23,7 @@
 #include "core/scope_exit.h"
 #include "core/socket_exceptions.h"
 #include "core/strings.h"
+#include "core/wwivport.h"
 
 #ifdef _WIN32
 
@@ -107,6 +108,14 @@ std::optional<std::string> GetRemotePeerHostname(SOCKET socket) {
   return std::string(host);
 }
 
+#if defined(__unix__)
+static void SetCloseOnExec(SOCKET sock) {
+  if (const auto flags = fcntl(sock, F_GETFD); flags != -1) {
+    fcntl(sock, F_SETFD, flags | FD_CLOEXEC);
+  }
+}
+#endif
+
 SOCKET CreateListenSocket(int port) {
   struct sockaddr_in my_addr{};
   memset(&my_addr, 0, sizeof(sockaddr_in));
@@ -131,6 +140,11 @@ SOCKET CreateListenSocket(int port) {
   my_addr.sin_port = htons(static_cast<decltype(my_addr.sin_port)>(port));
   memset(&(my_addr.sin_zero), 0, 8);
   my_addr.sin_addr.s_addr = INADDR_ANY;
+
+#if defined(__unix__)
+  // Listening sockets must never be inherited by the BBS or other children.
+  SetCloseOnExec(sock);
+#endif
 
   if (bind(sock, reinterpret_cast<sockaddr*>(&my_addr), sizeof(my_addr)) == -1) {
     const auto msg =
@@ -234,6 +248,37 @@ int get_dns_cc(const std::string& address, const std::string& rbl_address) {
   return 0;
 }
 
+void SocketHandle::reset(SOCKET sock) noexcept {
+  if (sock_ != INVALID_SOCKET && sock_ != sock) {
+    closesocket(sock_);
+  }
+  sock_ = sock;
+}
+
+/**
+ * Accepts a connection on listen_sock. On POSIX systems the new socket is
+ * close-on-exec so that it is not leaked into unrelated child processes;
+ * whoever hands it to a child must pass it explicitly.
+ */
+static SOCKET AcceptClient(SOCKET listen_sock) {
+  socklen_t addr_size = sizeof(sockaddr_in);
+  sockaddr_in saddr{};
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) ||  \
+    defined(__DragonFly__)
+  // Set close-on-exec atomically, so a child spawned by another thread
+  // between accept and fcntl can't inherit this socket.
+  return accept4(listen_sock, reinterpret_cast<sockaddr*>(&saddr), &addr_size, SOCK_CLOEXEC);
+#else
+  const auto s = accept(listen_sock, reinterpret_cast<sockaddr*>(&saddr), &addr_size);
+#if defined(__unix__)
+  if (s != INVALID_SOCKET) {
+    SetCloseOnExec(s);
+  }
+#endif
+  return s;
+#endif
+}
+
 bool SetBlockingMode(SOCKET sock) {
   if (sock == INVALID_SOCKET) {
     return false;
@@ -331,9 +376,12 @@ bool SocketSet::RunOnce() {
     VLOG(4) << "Checking Socket map for: " << e.first;
     if (FD_ISSET(e.first, &fds)) {
       VLOG(4) << "FD Set: " << e.first;
-      socklen_t addr_size = sizeof(sockaddr_in);
-      struct sockaddr_in saddr{};
-      const auto client_sock = accept(e.first, reinterpret_cast<sockaddr*>(&saddr), &addr_size);
+      const auto client_sock = AcceptClient(e.first);
+      if (client_sock == INVALID_SOCKET) {
+        LOG(ERROR) << "accept failed on port " << socket_port_map_.at(e.first)
+                   << "; errno: " << errno;
+        continue;
+      }
 
 #ifdef _WIN32
       auto newvalue = SO_SYNCHRONOUS_NONALERT;

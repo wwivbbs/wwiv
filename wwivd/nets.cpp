@@ -100,7 +100,7 @@ static void one_net_ftn_callout(const Config& config, const Network& net, const 
     const std::map<char, std::string> params = {{'N', address.as_string()},
                                            {'T', std::to_string(network_number)}};
     const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
-    if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
+    if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, SocketHandle{})) {
       LOG(ERROR) << "Error executing command: '" << cmd << "'";
     }
   }
@@ -131,7 +131,7 @@ static void one_net_wwivnet_callout(const Network& net, const wwivd_config_t& c,
     const std::map<char, std::string> params = {{'N', std::to_string(kv.first)},
                                            {'T', std::to_string(network_number)}};
     const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
-    if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
+    if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, SocketHandle{})) {
       LOG(ERROR) << "Error executing command: " << cmd;
     }
   }
@@ -187,7 +187,7 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
         LOG(INFO) << "Executing beginday event. (" << d << " != " << ld << ")";
         const std::map<char, std::string> params{};
         const auto cmd = CreateCommandLine(c.beginday_cmd, params);
-        if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
+        if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, SocketHandle{})) {
           LOG(ERROR) << "Error executing [BeginDay Event]: '" << cmd << "'";
         }
       }

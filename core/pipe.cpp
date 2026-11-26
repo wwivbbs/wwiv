@@ -35,6 +35,7 @@ Pipe::Pipe(int node_number) : Pipe(node_number, false) {}
 
 
 bool Pipe::Create() {
+  broken_.store(false);
   handle_ = create_pipe(pipe_name_);
   return handle_ != Pipe::PIPE_INVALID_HANDLE_VALUE;
 }
@@ -47,14 +48,15 @@ bool Pipe::Close() {
 
 
 Pipe::~Pipe() {
-  if (!IsOpen()) {
+  // Check the handle, not IsOpen(): a broken pipe still owns a handle.
+  if (handle_ == Pipe::PIPE_INVALID_HANDLE_VALUE) {
     return;
   }
   Close();
 }
 
 bool Pipe::IsOpen() const noexcept { 
-  return handle_ != Pipe::PIPE_INVALID_HANDLE_VALUE;
+  return handle_ != Pipe::PIPE_INVALID_HANDLE_VALUE && !broken_.load();
 }
 
 std::string Pipe::name() const noexcept { 

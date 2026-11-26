@@ -85,7 +85,7 @@ void SwitchToNonRootUser(const std::string&) {
 
 bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
-                        SOCKET sock) {
+                        SocketHandle sock) {
 
   LOG(INFO) << pid << "Invoking Command Line (Win32):" << cmd;
 
@@ -143,10 +143,8 @@ bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node
     LOG(ERROR) << "DosWaitChild failed: Error: " << rc;
   }
 
-  if (sock != INVALID_SOCKET) {
-    // We're done with this socket.
-    closesocket(sock);
-  }
+  // We're done with this socket.
+  sock.reset();
 
   if (node_number > 0) {
     LOG(INFO) << "Node #" << node_number << " exited with error code: " << code.codeResult;

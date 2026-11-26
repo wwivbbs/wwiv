@@ -21,7 +21,7 @@
 
 #include <string>
 #include <tuple>
-#include <core/net.h>
+#include "core/net.h"
 #include "sdk/config.h"
 
 namespace wwiv::sdk {
@@ -37,13 +37,15 @@ void signal_handler(int mysignal);
 void SwitchToNonRootUser(const std::string& wwiv_user);
 
 /**
- * Executes a command and waits. 
- * If sock is > -1 then we'll close the socket after executing the command 
- * since this is the child socket.
- * pid and node_number is just used for logging.
+ * Executes a command and waits for it to exit.
+ *
+ * Takes ownership of sock (which may be empty). When it is valid, it is the
+ * only socket the child inherits, and this process's copy is closed as soon
+ * as the child has been started, so the connection drops when the child
+ * closes it. pid and node_number are only used for logging.
  */
 bool ExecCommandAndWait(const wwiv::sdk::wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
-                        SOCKET sock);
+                        wwiv::core::SocketHandle sock);
 
 #endif
