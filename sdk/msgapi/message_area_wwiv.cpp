@@ -399,7 +399,6 @@ bool WWIVMessageArea::AddMessage(Message& message, const MessageAreaOptions& opt
 
   const auto& header = message.header();
   auto p = header.data();
-  p.anony = 0;
   p.msg = m;
   p.ownersys = header.from_system();
   p.owneruser = header.from_usernum();

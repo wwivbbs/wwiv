@@ -180,8 +180,14 @@ headers and read messages.
       `bbs/basic/next/wwiv_msg.cpp`, documented in [BINDINGS.md](BINDINGS.md)).
       It reads through a `MessageBase` interface (`BbsMessageBase` in the
       BBS, a fake in tests)
-- [ ] `wwiv.msg` writing: post, and change or delete posts, with the BBS's
-      rules for who may (BINDINGS.md says it's read-only for now)
+- [x] `wwiv.msg` writing: `POST` and `DELETE_MESSAGE`, with the BBS's
+      rules for who may, once the sysop turns on "Enable MSG Writing"
+      (`script_flag_enable_msg_write`, off by default). Network posts go out
+      through the SDK, on the sub's first network only until it sends to all
+      ([#1782](https://github.com/wwivbbs/wwiv/issues/1782)). The BBS has no
+      way for users to change a post, so neither do scripts
+- [ ] Posting with the BBS's message editor, so a script can let the caller
+      write a post (and `msgview.bas` can reply)
 - [x] `wwiv.user`: the current user, and user lookups (read-only;
       `bbs/basic/next/wwiv_user.cpp`, documented in [BINDINGS.md](BINDINGS.md)).
       Other users show only their name, number and last logon
@@ -191,7 +197,8 @@ headers and read messages.
       Done for reading messages: the user's subs (`usub`), co-sysop rights
       for unvalidated and deleted posts, and the anonymous post rules, as in
       the BBS's reader; on unless the sysop turns it off
-      (`script_flag_disable_msg`)
+      (`script_flag_disable_msg`). Done for writing messages: a separate
+      setting, off by default, and the BBS's posting rules
 - [ ] Reference documentation for the bindings ([BINDINGS.md](BINDINGS.md): `wwiv.msg` so far)
 - [x] A sample message viewer script (`install/scripts/msgview.bas`; run in
       `bbs_tests` by `MsgViewTest`)

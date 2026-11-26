@@ -107,6 +107,24 @@ TEST_F(MsgApiTest, ToName) {
   EXPECT_EQ("Dude", m1->header().to()) << "T:" << m1->text().string();
 }
 
+// AddMessage keeps the post's anonymous flags.
+TEST_F(MsgApiTest, AddMessage_KeepsAnonymous) {
+  subboard_t sub{};
+  sub.filename = "a1";
+  {
+    ASSERT_TRUE(api->Create(sub, -1));
+    auto area(api->Open(sub, -1));
+    auto msg(CreateMessage(*area, 1234, "From", "Title", "Line1\r\n"));
+    msg.header().set_anony(anony_sender);
+    EXPECT_TRUE(area->AddMessage(msg, {}));
+  }
+
+  auto a2(api->Open(sub, -1));
+  const auto h = a2->ReadMessageHeader(1);
+  ASSERT_TRUE(h);
+  EXPECT_EQ(anony_sender, h->anony());
+}
+
 TEST_F(MsgApiTest, Resynch) {
   subboard_t sub{};
   sub.filename = "a1";

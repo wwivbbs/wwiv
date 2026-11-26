@@ -401,6 +401,9 @@ public:
   /** Is WWIVBasic package wwiv.msg (read-only message areas) enabled; on by default */
   [[nodiscard]] bool script_package_msg_enabled() const noexcept;
   void script_package_msg_enabled(bool) noexcept;
+  /** May wwiv.msg post and delete messages; off by default */
+  [[nodiscard]] bool script_package_msg_write_enabled() const noexcept;
+  void script_package_msg_write_enabled(bool) noexcept;
   /** Is WWIVBasic package wwiv.user (the caller and public user details) enabled; on by default */
   [[nodiscard]] bool script_package_user_enabled() const noexcept;
   void script_package_user_enabled(bool) noexcept;
