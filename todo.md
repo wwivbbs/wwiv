@@ -104,6 +104,11 @@ jq ".number" jenkins.json
 * Use read_type2_message everywhere
 * make read_type2_message use the msgapi
 * use the msgapi more in WWIV code.
+* Move posting rules shared by bbs post() and wwivbasic's wwiv.msg
+  (bbs/basic/next/wwiv_msg.cpp) into sdk/msgapi: the anonymous rules, the
+  may-post checks (restrictions, daily limit, networked subs), and building
+  post text (PID line, RE:/BY:/FidoAddr with a case-insensitive "All",
+  sanitizing text and one-line fields). Maybe find-by-serial too.
 
 # File Areas
 ***
