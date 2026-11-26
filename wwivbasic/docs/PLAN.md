@@ -216,15 +216,18 @@ terminal. All of it is new-engine only.
       caller hangs up
 - [x] wwivbasic: `Interpreter::call(name, args)`, so native code can call a
       script's `DEF` function while the script runs (needed for callbacks)
-- [ ] `wwiv.screen` (always on): `FULLSCREEN(header_lines)`, a layout over
+- [x] `wwiv.screen` (always on): `FULLSCREEN(header_lines)`, a layout over
       `common::FullScreenView` that turns pausing off while it's open, and
       `LIGHTBAR(items, top, height)`, a scrolling list in C++ that redraws
       only the lines that change. `RUN(["fn"])` handles the movement keys and
       returns the first other key; with a callback, `fn(key, selected)` is
       called for each such key and returning `TRUE` keeps the list running
       (an experiment)
-- [ ] Full-screen `msgview.bas`: a lightbar title list and a scrolling
-      reader, keeping the line UI when `OKANSI()` is false
+- [x] Full-screen `msgview.bas`: a lightbar title list and a scrolling
+      reader, keeping the line UI when `OKANSI()` is false. It uses plain
+      `RUN()` in a loop: each list hands off to another screen (the area's
+      messages, the reader), which reads more naturally as a loop than as a
+      callback. `RUN("fn")` stays for lists whose keys act in place.
 
 ### M6: Graduate
 

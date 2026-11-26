@@ -205,6 +205,9 @@ print h.number; ": "; h.subject; " "; h.summary(3)
 h.subject = "Re: Hello"
 ```
 
+A method whose arguments are optional or vary takes them as a vector with
+`methodl(name, f)`, where `f` takes `(T&, const std::vector<Value>&)`.
+
 Properties and methods can be data members, member functions or lambdas, and
 member names are case-insensitive. `wrap()` turns a C++ object (or a
 `std::shared_ptr` to one) into a script value, and `unwrap()` turns it back.

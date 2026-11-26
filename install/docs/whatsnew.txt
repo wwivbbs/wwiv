@@ -120,13 +120,17 @@ WWIVbasic
 * Fixed typo that broke the oneliners.bas script.
 + New sample script msgview.bas, a message viewer written with the new
   BASIC engine's wwiv.msg module (message areas: read-only for now,
-  with posting planned).
+  with posting planned). With ANSI it's full-screen, with lightbar lists
+  and a scrolling reader.
 + The new BASIC engine has the QBasic/VB string functions (UCASE, LCASE,
   SPACE, STRING, TRIM, LTRIM, RTRIM, INSTR) and wwiv.io functions for
   full-screen UIs (OKANSI, GOTOXY, CLREOL, ANSIC, PRT, PLA, ONEK, READKEY,
   SCREEN_COLUMNS, SCREEN_ROWS, PAUSING, NSL and the color helpers).
 + New wwiv.user module for the new BASIC engine: the caller's name, SL,
   ARs and stats, and looking up other users by name or number.
++ New wwiv.screen module for the new BASIC engine: full-screen layouts
+  like the message reader's (FULLSCREEN), and lightbar lists (LIGHTBAR)
+  that can call a script function for each key.
 
 Build and Platform
 + Release builds now come from GitHub Actions (Windows, Ubuntu,

@@ -105,6 +105,8 @@ Small differences in how arguments are checked:
   `prt`, `pla`, `onek`, `readkey`, `screen_columns`, `screen_rows`,
   `strip_colors`, `len_colors`, `pad_colors`, `pausing` and `nsl` (see
   [docs/BINDINGS.md](docs/BINDINGS.md)).
+- New: the `wwiv.screen` module, with `fullscreen` (a full-screen layout)
+  and `lightbar` (a scrolling list) (see [docs/BINDINGS.md](docs/BINDINGS.md)).
 
 `wwiv.data` reads and writes the same files as before, in the same format, so
 data saved by a script on one engine loads on the other. `LOAD` still appends
