@@ -105,6 +105,9 @@ Small differences in how arguments are checked:
   `prt`, `pla`, `onek`, `readkey`, `screen_columns`, `screen_rows`,
   `strip_colors`, `len_colors`, `pad_colors`, `pausing` and `nsl` (see
   [docs/BINDINGS.md](docs/BINDINGS.md)).
+- New: `wwiv.msg` areas can post and delete posts (`POST`, `DELETE_MESSAGE`,
+  `CAN_POST`, `ANONYMOUS`) when the sysop turns on "Enable MSG Writing" (see
+  [docs/BINDINGS.md](docs/BINDINGS.md)).
 - New: the `wwiv.screen` module, with `fullscreen` (a full-screen layout)
   and `lightbar` (a scrolling list) (see [docs/BINDINGS.md](docs/BINDINGS.md)).
 

@@ -287,6 +287,10 @@ constexpr uint16_t script_flag_disable_msg   = 0x0010;
 // Turns off wwiv.user (the caller, and other users' public details) on the
 // new engine. On by default, like wwiv.msg.
 constexpr uint16_t script_flag_disable_user  = 0x0020;
+// Lets wwiv.msg post and delete messages (new engine only), with the user's
+// own rights. Off by default: a script can post without the user seeing what
+// it posts.
+constexpr uint16_t script_flag_enable_msg_write = 0x0040;
 
 // STATIC SYSTEM INFORMATION
 struct configrec {

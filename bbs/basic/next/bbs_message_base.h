@@ -37,6 +37,10 @@ public:
   [[nodiscard]] std::unique_ptr<sdk::msgapi::MessageArea> open(int subnum) override;
   [[nodiscard]] bool is_cosysop(int subnum) const override;
   [[nodiscard]] bool can_read_anonymous(int subnum) const override;
+  [[nodiscard]] Poster poster(int subnum) const override;
+  [[nodiscard]] bool can_post(int subnum) const override;
+  void posted(int subnum, const std::string& title) override;
+  void deleted(int subnum, const std::string& title, int owneruser, uint32_t daten) override;
 
 private:
   Application& app_;
