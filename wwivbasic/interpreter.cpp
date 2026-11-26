@@ -33,8 +33,11 @@ static RunResult run_loaded(Context& ctx, const std::filesystem::path& path,
   }
 
   ExecutionVisitor v(ctx, filename);
+  RunningExecutor running(ctx, &v);
   try {
     v.visit(tree.value());
+  } catch (const EndScript&) {
+    // END in a script function that native code called: the script is done.
   } catch (const StopScript&) {
     result.stopped = true;
   } catch (const BasicError& e) {
@@ -103,6 +106,19 @@ RunResult Interpreter::run_source(const std::string& filename, const std::string
   ctx_->imported_files.insert(Context::import_key(filename));
   ctx_->add_source(filename, text);
   return run_loaded(*ctx_, filename, options);
+}
+
+Value Interpreter::call(const std::string& name, const std::vector<Value>& args) {
+  auto* v = ctx_->executor;
+  if (!v) {
+    throw BasicError(
+        fmt::format("{}: can't call a script function when no script is running", name));
+  }
+  auto result = v->call(name, args);
+  if (v->ended()) {
+    throw EndScript{};
+  }
+  return result;
 }
 
 std::optional<std::string> Interpreter::parse_tree(const std::filesystem::path& path) const {
