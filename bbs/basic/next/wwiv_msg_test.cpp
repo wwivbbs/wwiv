@@ -35,6 +35,7 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
@@ -53,6 +54,7 @@ using namespace wwiv::sdk::msgapi;
 using testing::ElementsAre;
 using testing::HasSubstr;
 using testing::Not;
+using testing::StartsWith;
 
 namespace {
 
@@ -87,6 +89,12 @@ public:
   [[nodiscard]] bool can_read_anonymous(int) const override { return read_anonymous_; }
   [[nodiscard]] Poster poster(int) const override { return poster_; }
   [[nodiscard]] bool can_post(int) const override { return can_post_; }
+  [[nodiscard]] std::optional<EditedPost> edit_post(int subnum, const std::string& title,
+                                                    const std::string& irt, const std::string& to,
+                                                    uint8_t anonymous) override {
+    edits_.push_back(fmt::format("{}|{}|{}|{}|{}", subnum, title, irt, to, anonymous));
+    return edited_;
+  }
   void posted(int subnum, const std::string& title) override {
     posted_.push_back(fmt::format("{}:{}", subnum, title));
   }
@@ -104,6 +112,10 @@ public:
   // The user as posting sees them: user #1, who may post 10 a day.
   Poster poster_{1, "TESTER #1", "Real Name", false, false, false, false, 0, 10, false};
   bool can_post_{true};
+  // What edit_post() returns (nullopt: the user aborted), and what it was
+  // asked: "subnum|title|irt|to|anonymous".
+  std::optional<EditedPost> edited_;
+  std::vector<std::string> edits_;
   // What posted() and deleted() were told: "subnum:title" and
   // "subnum:title:owneruser".
   std::vector<std::string> posted_;
@@ -133,6 +145,11 @@ public:
   }
   [[nodiscard]] Poster poster(int subnum) const override { return m_.poster(subnum); }
   [[nodiscard]] bool can_post(int subnum) const override { return m_.can_post(subnum); }
+  [[nodiscard]] std::optional<EditedPost> edit_post(int subnum, const std::string& title,
+                                                    const std::string& irt, const std::string& to,
+                                                    uint8_t anonymous) override {
+    return m_.edit_post(subnum, title, irt, to, anonymous);
+  }
   void posted(int subnum, const std::string& title) override { m_.posted(subnum, title); }
   void deleted(int subnum, const std::string& title, int owneruser, uint32_t daten) override {
     m_.deleted(subnum, title, owneruser, daten);
@@ -708,6 +725,70 @@ TEST_F(BbsMessageBaseTest, PostedAndDeleted) {
   // A post from before this account was made (a reused user number).
   m.deleted(sub, "Old", helper.sess().user_num(), 1);
   EXPECT_EQ(5, u.messages_posted());
+}
+
+// edit_post runs the BBS's own editor (here the line editor, with keys typed
+// ahead), on the sub it's given, and hands back what follows its author and
+// date lines.
+// Sets up the user to write a post in the BBS's line editor, with keys
+// typed ahead.
+static void SetUpLineEditor(BbsHelper& helper) {
+  a()->init_users_for_test();
+  ASSERT_TRUE(a()->names()->Add("WRITER", 1));
+  helper.user()->set_name("WRITER");
+  helper.sess().user_num(1);
+  helper.user()->clear_flag(User::flag_ansi);
+  helper.user()->default_editor(0);
+  ASSERT_TRUE(helper.files().Mkdir("temp"));
+  helper.sess().dirs().temp_directory(helper.files().Dir("temp").string());
+}
+
+TEST_F(BbsMessageBaseTest, EditPost_LineEditor) {
+  const auto sub = AddSub("general", 2, true);
+  SetUpLineEditor(helper);
+  helper.sess().SetCurrentReadMessageArea(-1);
+  helper.sess().irt("Before");
+
+  type_ahead::TypeAhead("Hello\rLine one\rLine two\r/S\r");
+  BbsMessageBase m(*a());
+  const auto e = m.edit_post(sub, "", "", "", 0);
+  type_ahead::StopTypingAhead();
+
+  ASSERT_TRUE(e.has_value());
+  EXPECT_EQ("Hello", e->title);
+  EXPECT_EQ(0, e->anony);
+  EXPECT_THAT(e->text, HasSubstr("\x04"
+                                 "0PID: WWIV "));
+  EXPECT_THAT(e->text, HasSubstr("Line one\r\nLine two\r\n"));
+  // Not the author and date lines; the SDK adds those.
+  EXPECT_THAT(e->text, Not(HasSubstr("Writer")));
+  EXPECT_THAT(e->from, StartsWith("Writer #1"));
+  // The BBS's current sub and in-reply-to title are put back.
+  EXPECT_EQ(-1, helper.sess().GetCurrentReadMessageArea());
+  EXPECT_EQ("Before", helper.sess().irt());
+}
+
+// An empty title aborts, as in the BBS.
+TEST_F(BbsMessageBaseTest, EditPost_Aborted) {
+  const auto sub = AddSub("general", 2, true);
+  SetUpLineEditor(helper);
+  type_ahead::TypeAhead("\r");
+  BbsMessageBase m(*a());
+  EXPECT_FALSE(m.edit_post(sub, "", "", "", 0).has_value());
+  type_ahead::StopTypingAhead();
+}
+
+// Where the user may choose, the editor asks whether to post anonymously.
+TEST_F(BbsMessageBaseTest, EditPost_Anonymous) {
+  const auto sub = AddSub("general", 2, true);
+  SetUpLineEditor(helper);
+  type_ahead::TypeAhead("Line one\r/S\rY");
+  BbsMessageBase m(*a());
+  const auto e = m.edit_post(sub, "Given title", "", "", anony_enable_anony);
+  type_ahead::StopTypingAhead();
+  ASSERT_TRUE(e.has_value());
+  EXPECT_EQ("Given title", e->title);
+  EXPECT_EQ(anony_sender, e->anony);
 }
 
 // The example in wwivbasic/docs/BINDINGS.md.
@@ -1288,4 +1369,139 @@ If a.can_post Then
   print "Posted message "; n
 EndIf
 )bas"));
+}
+
+// WRITE_POST and REPLY: the user writes the post in the BBS's message editor
+// (the fake's edit_post here).
+TEST_F(WwivMsgWriteTest, WritePost) {
+  fake->edited_ = MessageBase::EditedPost{"Typed title", "TESTER #1",
+                                          "\x04"
+                                          "0PID: WWIV x\r\nHello there\r\n",
+                                          0};
+  const auto out = Run(R"(
+a = wwiv.msg.area("1")
+n = a.write_post()
+m = a.message(n)
+print n; " "; m.title; " / "; m.from
+for line in m.lines()
+  print "["; line; "]"
+next
+)");
+  EXPECT_EQ("1 Typed title / TESTER #1\r\n[Hello there]\r\n", out);
+  // No title, so the editor asks; no reply title; to everyone; not anonymous.
+  EXPECT_THAT(fake->edits_, ElementsAre("0||||0"));
+  EXPECT_THAT(fake->posted_, ElementsAre("0:Typed title"));
+}
+
+TEST_F(WwivMsgWriteTest, WritePost_TitleAndTo) {
+  fake->edited_ = MessageBase::EditedPost{"Given", "TESTER #1", "x\r\n", 0};
+  EXPECT_EQ("1\r\n", Run("print wwiv.msg.area(\"1\").write_post(\"Given\", \"Bob\")\n"));
+  EXPECT_THAT(fake->edits_, ElementsAre("0|Given||Bob|0"));
+}
+
+TEST_F(WwivMsgWriteTest, WritePost_Aborted) {
+  EXPECT_EQ("0 0\r\n", Run(R"(
+a = wwiv.msg.area("1")
+print a.write_post(); " "; a.count
+)"));
+  EXPECT_TRUE(fake->posted_.empty());
+}
+
+// The editor asks about anonymity where the user may choose, and the post
+// is saved as the user chose.
+TEST_F(WwivMsgWriteTest, WritePost_Anonymous) {
+  subs->sub(0).anony = anony_enable_anony;
+  fake->edited_ = MessageBase::EditedPost{"Secret", "TESTER #1", "x\r\n", anony_sender};
+  EXPECT_EQ("TRUE >UNKNOWN<\r\n", Run(R"(
+a = wwiv.msg.area("1")
+m = a.message(a.write_post())
+print m.anonymous; " "; m.from
+)"));
+  EXPECT_THAT(fake->edits_, ElementsAre(fmt::format("0||||{}", anony_enable_anony)));
+}
+
+// A reply is to the post's author, with its title offered.
+TEST_F(WwivMsgWriteTest, Reply) {
+  Post(0, "rushfan #1", "Hello", "Hi there\r\n");
+  fake->edited_ = MessageBase::EditedPost{"Re: Hello", "TESTER #1", "Hi back\r\n", 0};
+  EXPECT_EQ("2 Re: Hello\r\n", Run(R"(
+a = wwiv.msg.area("1")
+n = a.reply(get(a.headers(), 0))
+print n; " "; a.message(n).title
+)"));
+  EXPECT_THAT(fake->edits_, ElementsAre("0||Hello|rushfan #1|0"));
+}
+
+TEST_F(WwivMsgWriteTest, WritePost_Errors) {
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").write_post(\"a\", \"b\", \"c\")\n"),
+              HasSubstr("message_area.write_post: expected 0 to 2 arguments, got 3"));
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").reply(1)\n"),
+              HasSubstr("message_area.reply: expected a message_header or message"));
+  fake->can_post_ = false;
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").write_post()\n"),
+              HasSubstr("message_area.write_post: you can't post in 'General'"));
+  helper.config().script_package_msg_write_enabled(false);
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").write_post()\n"),
+              HasSubstr("message_area.write_post: posting from scripts isn't turned on"));
+  EXPECT_TRUE(fake->edits_.empty());
+}
+
+// msgview.bas posting and replying in the caller's editor (the fake's here).
+TEST_F(MsgViewTest, Reply) {
+  helper.config().script_package_msg_write_enabled(true);
+  Post(0, "rushfan #1", "Hello", "Hi there\r\n");
+  msgs->edited_ = MessageBase::EditedPost{"Re: Hello", "a #1", "Hi back\r\n", 0};
+  // Area 1, message 1, reply, quit the message, the area and the viewer.
+  const auto out = RunViewer("1\r1\rRQQ\rQ\r");
+  EXPECT_THAT(out, HasSubstr("[R]eply"));
+  EXPECT_THAT(msgs->edits_, ElementsAre("0||Hello|rushfan #1|0"));
+  EXPECT_THAT(msgs->posted_, ElementsAre("0:Re: Hello"));
+}
+
+TEST_F(MsgViewTest, WritePost) {
+  helper.config().script_package_msg_write_enabled(true);
+  Post(0, "rushfan #1", "Hello", "Hi there\r\n");
+  msgs->edited_ = MessageBase::EditedPost{"New post", "a #1", "Text\r\n", 0};
+  // Area 1, write a post, quit the area and the viewer.
+  const auto out = RunViewer("1\rW\rQ\rQ\r");
+  EXPECT_THAT(out, HasSubstr("[W]rite a post"));
+  EXPECT_THAT(msgs->posted_, ElementsAre("0:New post"));
+  // The list shows the new post.
+  EXPECT_THAT(out, HasSubstr("New post"));
+}
+
+// Without "Enable MSG Writing" the viewer only reads.
+TEST_F(MsgViewTest, NoPostingWithoutWriting) {
+  Post(0, "rushfan #1", "Hello", "Hi there\r\n");
+  // R isn't a command, so it goes on, which leaves the only message.
+  const auto out = RunViewer("1\r1\rRQ\rQ\r");
+  EXPECT_THAT(out, Not(HasSubstr("[R]eply")));
+  EXPECT_THAT(out, Not(HasSubstr("[W]rite")));
+  EXPECT_TRUE(msgs->edits_.empty());
+}
+
+TEST_F(MsgViewFullScreenTest, Reply) {
+  helper.config().script_package_msg_write_enabled(true);
+  Post(0, "rushfan #1", "Hello", "Hi there\r\n");
+  msgs->edited_ = MessageBase::EditedPost{"Re: Hello", "a #1", "Hi back\r\n", 0};
+  // General, the first message, reply, then quit the message, the list and
+  // the viewer.
+  const auto out = RunViewer("\r\rrqqq");
+  EXPECT_THAT(out, HasSubstr("Reply"));
+  EXPECT_THAT(msgs->edits_, ElementsAre("0||Hello|rushfan #1|0"));
+  EXPECT_THAT(msgs->posted_, ElementsAre("0:Re: Hello"));
+  // Back in the list, which has the reply.
+  EXPECT_THAT(out, HasSubstr("General (2 messages)"));
+}
+
+TEST_F(MsgViewFullScreenTest, WritePost) {
+  helper.config().script_package_msg_write_enabled(true);
+  Post(0, "rushfan #1", "Hello", "Hi there\r\n");
+  msgs->edited_ = MessageBase::EditedPost{"New post", "a #1", "Text\r\n", 0};
+  // General, post, then quit the list and the viewer.
+  const auto out = RunViewer("\rpqq");
+  EXPECT_THAT(out, HasSubstr("Post"));
+  EXPECT_THAT(msgs->posted_, ElementsAre("0:New post"));
+  EXPECT_THAT(out, HasSubstr("General (2 messages)"));
+  EXPECT_THAT(out, HasSubstr("New post"));
 }

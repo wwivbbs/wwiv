@@ -8,6 +8,10 @@
 ' With ANSI it's full-screen: lightbar lists of the areas and messages, and a
 ' reader that scrolls. Without ANSI it's line by line.
 '
+' Where the caller may post, it also writes posts and replies in the
+' caller's message editor. That needs "Enable MSG Writing" turned on in
+' wwivconfig's scripting settings; without it the viewer only reads.
+'
 ' Text other users wrote (titles, names, messages) is printed with
 ' outstr_nomci and pl_nomci, so a |{...} or |@ code in a post shows as
 ' written instead of being run against the reader's session. Lightbars show
@@ -140,6 +144,11 @@ enddef
 def FullRead(a, headers, i)
   s = fullscreen(5)
   w = s.width - 1
+  help = "|#9Up/Down/PgUp/PgDn scroll, |#2N|#9ext, |#2P|#9revious, "
+  If a.can_post Then
+    help = help + "|#2R|#9eply, "
+  EndIf
+  help = help + "|#2Q|#9uit"
   While True
     r = ReadMessage(a, headers, i)
     If len(r) = 0 Then
@@ -156,7 +165,7 @@ def FullRead(a, headers, i)
     WriteRow(4, "|#9To    : |#1" + Pad(m.to, w - 8))
     WriteRow(5, "|#9Date  : |#1" + DateOf(m))
     s.top_bar()
-    s.command_line("|#9Up/Down/PgUp/PgDn scroll, |#2N|#9ext, |#2P|#9revious, |#2Q|#9uit")
+    s.command_line(help)
     lines = Wrap(m.lines(), w)
     h = s.content_height
     top = 0
@@ -202,11 +211,18 @@ def FullRead(a, headers, i)
         action = "N"
       ElseIf k = "P" Or k = "LEFT" Then
         action = "P"
+      ElseIf k = "R" And a.can_post Then
+        action = "R"
       EndIf
     Wend
     If action = "Q" Then
       s.close()
       return i
+    ElseIf action = "R" Then
+      ' The editor has the whole screen; then show this message again.
+      s.close()
+      n = a.reply(m)
+      s = fullscreen(5)
     ElseIf action = "P" Then
       If i > 0 Then
         i = i - 1
@@ -232,7 +248,11 @@ enddef
 def FullArea(a, headers)
   title = a.name + "|#9 (" + STR(len(headers)) + " messages)"
   second = "Num   Title                          From                 Date"
-  help = "|#9Up/Down/PgUp/PgDn, |#2Enter|#9 reads, |#2Q|#9uit"
+  help = "|#9Up/Down/PgUp/PgDn, |#2Enter|#9 reads, "
+  If a.can_post Then
+    help = help + "|#2P|#9ost, "
+  EndIf
+  help = help + "|#2Q|#9uit"
   s = OpenScreen(title, second, help)
   bar = lightbar(HeaderLines(headers), s.content_top, s.content_height)
   While True
@@ -240,20 +260,31 @@ def FullArea(a, headers)
     If k = "" Or k = "Q" Then
       s.close()
       return
-    ElseIf k = CHR(13) Then
+    ElseIf k = CHR(13) Or (k = "P" And a.can_post) Then
       s.close()
-      i = FullRead(a, headers, bar.selected)
+      i = bar.selected
+      If k = "P" Then
+        ' The editor has the whole screen. Select the new post, if any.
+        n = a.write_post()
+      Else
+        i = FullRead(a, headers, i)
+        n = 0
+      EndIf
+      ' Read the list again: it may have new posts (or replies), or lost
+      ' one that was deleted.
+      headers = a.headers()
+      If len(headers) = 0 Then
+        return
+      EndIf
+      bar.set_items(HeaderLines(headers))
+      title = a.name + "|#9 (" + STR(len(headers)) + " messages)"
+      If n > 0 Then
+        i = FindMessage(headers, n)
+      EndIf
       If i < 0 Then
-        ' Read the list again, and start from its first message.
-        headers = a.headers()
-        If len(headers) = 0 Then
-          return
-        EndIf
-        bar.set_items(HeaderLines(headers))
-        title = a.name + "|#9 (" + STR(len(headers)) + " messages)"
         i = 0
       EndIf
-      ' Back on the last message read.
+      ' Back on the last message read, or the new post.
       bar.selected = i
       s = OpenScreen(title, second, help)
     EndIf
@@ -384,9 +415,16 @@ def ReadFrom(a, headers, i)
       return -1
     EndIf
     nl()
-    c = KeyCommand("[N]ext, [P]revious, [Q]uit: ")
+    If a.can_post Then
+      c = KeyCommand("[N]ext, [P]revious, [R]eply, [Q]uit: ")
+    Else
+      c = KeyCommand("[N]ext, [P]revious, [Q]uit: ")
+    EndIf
     If c = "Q" Then
       return i
+    ElseIf c = "R" And a.can_post Then
+      ' Then show this message again.
+      n = a.reply(get(headers, i))
     ElseIf c = "P" Then
       If i > 0 Then
         i = i - 1
@@ -411,9 +449,17 @@ def ReadArea(a)
   While True
     ShowHeaders(a, headers, first)
     nl()
-    c = Command("Message #, [N]ext page, [P]revious page, [Q]uit: ", 6)
+    If a.can_post Then
+      c = Command("Message #, [N]ext page, [P]revious page, [W]rite a post, [Q]uit: ", 6)
+    Else
+      c = Command("Message #, [N]ext page, [P]revious page, [Q]uit: ", 6)
+    EndIf
     If c = "Q" Or c = "" Then
       return
+    ElseIf c = "W" And a.can_post Then
+      If a.write_post() > 0 Then
+        headers = a.headers()
+      EndIf
     ElseIf c = "N" Then
       If first + PageSize() < len(headers) Then
         first = first + PageSize()
