@@ -15,8 +15,9 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 // Deep enough for any reasonable script, shallow enough not to overflow the
-// C++ stack on runaway recursion.
-static constexpr int kMaxCallDepth = 1000;
+// C++ stack on runaway recursion. Each script call takes several KB of C++
+// stack in a debug build, and the Windows main thread has only 1 MB.
+static constexpr int kMaxCallDepth = 100;
 
 // Runs native code (a native function, or an object's getter, setter or
 // method), turning C++ exceptions into script errors so a bug or a failed

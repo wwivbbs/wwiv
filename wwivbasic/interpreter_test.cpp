@@ -163,6 +163,24 @@ print fact(5)
   EXPECT_EQ("120\n", run(script));
 }
 
+// Runaway recursion ends with an error instead of running out of C++ stack
+// (1 MB on Windows).
+TEST_F(InterpreterTest, RunawayRecursion) {
+  const std::string script = R"(
+def f(n)
+  if n = 0 then
+    return 0
+  endif
+  return f(n - 1) + 1
+enddef
+print f(50)
+print f(100000)
+)";
+  EXPECT_EQ("50\n", run(script));
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_NE(std::string::npos, errors.front().find("too many nested calls")) << errors.front();
+}
+
 TEST_F(InterpreterTest, FunctionLocalsAreNotVisibleToCallees) {
   const std::string script = R"(
 def inner()
@@ -696,10 +714,10 @@ def f(n)
   endif
   return apply("f", n - 1) + 1
 enddef
-print f(500)
+print f(50)
 print f(5000)
 )";
-  EXPECT_EQ("500\n", run(script));
+  EXPECT_EQ("50\n", run(script));
   ASSERT_EQ(1u, errors.size());
   EXPECT_NE(std::string::npos, errors.front().find("too many nested calls")) << errors.front();
 }
