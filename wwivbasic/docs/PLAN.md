@@ -183,8 +183,8 @@ headers and read messages.
 - [x] `wwiv.msg` writing: `POST` and `DELETE_MESSAGE`, with the BBS's
       rules for who may, once the sysop turns on "Enable MSG Writing"
       (`script_flag_enable_msg_write`, off by default). Network posts go out
-      through the SDK, on the sub's first network only until it sends to all
-      ([#1782](https://github.com/wwivbbs/wwiv/issues/1782)). The BBS has no
+      through the SDK, on all of the sub's networks (some details still
+      differ from the BBS: [#1782](https://github.com/wwivbbs/wwiv/issues/1782)). The BBS has no
       way for users to change a post, so neither do scripts
 - [x] Posting with the BBS's message editor: `WRITE_POST` and `REPLY`, and
       `msgview.bas` posts and replies with them. Replies can quote the post

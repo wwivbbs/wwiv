@@ -127,10 +127,11 @@ BBS:
   `"allowed"`; asking for an anonymous post anywhere else is an error. In
   "Dear Abby" areas `TRUE` posts as "Abby". Where it's `"forced"` every post
   is anonymous.
-- In networked areas, the post goes out on the area's first network. (The
-  BBS's own posts go out on all of them; a script's will once the SDK sends
-  to all of an area's networks:
-  [#1782](https://github.com/wwivbbs/wwiv/issues/1782).)
+- In networked areas, the post goes out on all of the area's networks. In
+  an area that needs network validation, it waits for the sysop to validate
+  it, as the BBS's posts do: a co-sysop's new post goes out right away, but
+  their replies still wait. (Some details of how the BBS sends posts aren't
+  matched yet: [#1782](https://github.com/wwivbbs/wwiv/issues/1782).)
 - `WRITE_POST` and `REPLY` open the editor the caller uses in the BBS. A
   script with a full-screen layout open should close it first, since the
   editor has the whole screen.

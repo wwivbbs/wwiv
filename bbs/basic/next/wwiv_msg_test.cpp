@@ -41,6 +41,7 @@
 #include "sdk/user.h"
 #include "sdk/vardec.h"
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -179,8 +180,8 @@ protected:
 
     MessageApiOptions options;
     options.overflow_strategy = OverflowStrategy::delete_none;
-    api = std::make_unique<WWIVMessageApi>(options, helper.config(),
-                                           std::vector<net::Network>{}, new NullLastReadImpl());
+    api = std::make_unique<WWIVMessageApi>(options, helper.config(), networks_,
+                                           new NullLastReadImpl());
     subs = std::make_unique<Subs>(helper.config().datadir(), std::vector<net::Network>{});
     AddSub("General", "general", "General chat");
     AddSub("Sysop", "sysop", "For the sysop");
@@ -190,6 +191,9 @@ protected:
     msgs = std::make_unique<FakeMessageBase>(*subs, *api);
     msgs->user_subs_ = {{0, "1"}, {1, "S"}};
   }
+
+  // The networks the message base knows, set before SetUp.
+  std::vector<net::Network> networks_;
 
   void AddSub(const std::string& name, const std::string& filename, const std::string& desc) {
     subboard_t sub{};
@@ -1599,4 +1603,76 @@ TEST_F(MsgViewFullScreenTest, WritePost_EmptyArea) {
   EXPECT_THAT(out, Not(HasSubstr("There are no messages")));
   EXPECT_THAT(msgs->posted_, ElementsAre("1:First post"));
   EXPECT_THAT(out, HasSubstr("Sysop (1 messages)"));
+}
+
+// Posting in a sub on a WWIVnet network, where the message base sends posts
+// to the network directory.
+class WwivMsgNetTest : public WwivMsgWriteTest {
+protected:
+  void SetUp() override {
+    ASSERT_TRUE(helper.files().Mkdir("network"));
+    net_dir_ = helper.files().TempDir() / "network";
+    networks_.emplace_back(net::network_type_t::wwivnet, "TestNET", net_dir_, 1);
+    WwivMsgWriteTest::SetUp();
+    // We host the sub, so posts go to its (no) subscribers.
+    subboard_network_data_t sn{};
+    sn.stype = "GENERAL";
+    subs->sub(0).nets.push_back(sn);
+    subs->sub(0).anony = anony_val_net;
+  }
+
+  // Packets written to the network for sending.
+  [[nodiscard]] int packets_sent() const {
+    int count = 0;
+    for (const auto& e : std::filesystem::directory_iterator(net_dir_)) {
+      if (e.path().filename().string().starts_with("p1-")) {
+        ++count;
+      }
+    }
+    return count;
+  }
+
+  [[nodiscard]] bool pending(int n) {
+    const auto m = Read(0, n);
+    return m && m->header().pending_network();
+  }
+
+  std::filesystem::path net_dir_;
+};
+
+// In a sub that needs network validation, posts wait for the sysop, as in
+// the BBS's post().
+TEST_F(WwivMsgNetTest, ValNet_Held) {
+  EXPECT_EQ("1\r\n", Run("print wwiv.msg.area(\"1\").post(\"Hi\", \"x\")\n"));
+  EXPECT_TRUE(pending(1));
+  EXPECT_EQ(0, packets_sent());
+}
+
+// A co-sysop's new posts go out right away, from POST or the editor.
+TEST_F(WwivMsgNetTest, ValNet_CoSysopPostsAreSent) {
+  fake->cosysop_ = true;
+  EXPECT_EQ("1\r\n", Run("print wwiv.msg.area(\"1\").post(\"Hi\", \"x\")\n"));
+  fake->edited_ = MessageBase::EditedPost{"Typed", "TESTER #1", "x\r\n", 0};
+  EXPECT_EQ("2\r\n", Run("print wwiv.msg.area(\"1\").write_post()\n"));
+  EXPECT_FALSE(pending(1));
+  EXPECT_FALSE(pending(2));
+  EXPECT_EQ(2, packets_sent());
+}
+
+// But a co-sysop's reply still waits.
+TEST_F(WwivMsgNetTest, ValNet_CoSysopReplyHeld) {
+  Post(0, "rushfan #1", "Hello", "Hi there\r\n");
+  fake->cosysop_ = true;
+  fake->edited_ = MessageBase::EditedPost{"Re: Hello", "TESTER #1", "Hi back\r\n", 0};
+  EXPECT_EQ("2\r\n", Run("a = wwiv.msg.area(\"1\")\nprint a.reply(get(a.headers(), 0))\n"));
+  EXPECT_TRUE(pending(2));
+  EXPECT_EQ(0, packets_sent());
+}
+
+// Without network validation, every post goes out.
+TEST_F(WwivMsgNetTest, NoValNet_Sent) {
+  subs->sub(0).anony = 0;
+  EXPECT_EQ("1\r\n", Run("print wwiv.msg.area(\"1\").post(\"Hi\", \"x\")\n"));
+  EXPECT_FALSE(pending(1));
+  EXPECT_EQ(1, packets_sent());
 }

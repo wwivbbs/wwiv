@@ -347,9 +347,11 @@ std::string clean_field(const std::string& s) {
 
 // Saves a post the user wrote in area a, as the BBS's post() does, and returns
 // its number. text follows the author and date lines, which the SDK adds.
+// is_reply is whether it replies to a post.
 int save_post(const ScriptArea& a, const std::string& fn, const std::string& title,
               const std::string& from, const std::string& to, uint8_t anony,
-              const std::string& text, bool add_re_and_by_line, std::chrono::seconds writing_time) {
+              const std::string& text, bool add_re_and_by_line, std::chrono::seconds writing_time,
+              bool is_reply) {
   const auto& sub = a.sub();
   const auto p = a.msgs->poster(a.subnum);
   auto* area = a.area();
@@ -368,8 +370,11 @@ int save_post(const ScriptArea& a, const std::string& fn, const std::string& tit
   msg.set_text(text);
   sdk::msgapi::MessageAreaOptions options;
   options.add_re_and_by_line = add_re_and_by_line;
-  // The SDK sends it on the sub's first network only (#1782).
+  // The SDK sends it on every network the sub is carried on.
   options.send_post_to_network = !sub.nets.empty();
+  // On a sub that needs network validation, the BBS's post() sends a
+  // co-sysop's new post right away; their replies still wait.
+  options.skip_network_validation = !is_reply && a.msgs->is_cosysop(a.subnum);
   if (!area->AddMessage(msg, options)) {
     throw BasicError(fmt::format("{}: the post couldn't be saved in '{}'", fn, sub.name));
   }
@@ -430,14 +435,15 @@ int post_message(const ScriptArea& a, const Writing& w, const std::vector<Value>
   // only for a post to someone, as inmsg adds them.
   return save_post(a, "message_area.post", title, from, to, anony,
                    fmt::format("{}0PID: WWIV {}\r\n{}", kControlD, core::full_version(), text),
-                   !to.empty() && !iequals(to, "All"), std::chrono::seconds(0));
+                   !to.empty() && !iequals(to, "All"), std::chrono::seconds(0), false);
 }
 
 // WRITE_POST([title[, to]]) and REPLY(h) in area a: the user writes the post
 // in the BBS's message editor, which asks for the title if it isn't given
 // (offering "Re: " + irt), and whether to post anonymously where the user
-// may choose. reply is the post a reply is to. Returns the new message's
-// number, or 0 if the user aborted.
+// may choose. reply is the post a reply is to. As the BBS's post(), it's a
+// reply when irt (the title it replies to) isn't empty. Returns the new
+// message's number, or 0 if the user aborted.
 int edit_and_post(const ScriptArea& a, const Writing& w, const std::string& fn,
                   const std::string& title, const std::string& irt, const std::string& to,
                   const std::optional<MessageBase::ReplyTo>& reply) {
@@ -456,7 +462,7 @@ int edit_and_post(const ScriptArea& a, const Writing& w, const std::string& fn,
   // The editor's "to" is in those lines; giving it to the SDK too would add
   // a second FidoAddr line on FTN subs.
   return save_post(a, fmt::format("message_area.{}", fn), edited->title, edited->from, "",
-                   edited->anony, edited->text, false, edited->writing_time);
+                   edited->anony, edited->text, false, edited->writing_time, !irt.empty());
 }
 
 // REPLY(h) in area a, where h is the post with serial id, number number,
