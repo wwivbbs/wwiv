@@ -60,8 +60,27 @@ private:
 };
 
 struct MessageAreaOptions {
-  /** Should the post also be sent to the network automatically */
+  /**
+   * Is this a new post from this BBS that should go out on the sub's networks?
+   *
+   * On a sub that needs network validation (anony_val_net), the post is held
+   * as pending instead.  The BBS sends it once it is validated.  On any other
+   * sub it is sent, and its pending flag is cleared.
+   *
+   * Leave this false for a post that came in from a network (network2).  Its
+   * pending flag is then left as the caller set it.
+   *
+   * Either way, when a pending post is saved, the sysop gets an SSM unless
+   * another post there was already pending.
+   */
   bool send_post_to_network{false};
+
+  /**
+   * Send the post now even on a sub that needs network validation, as the BBS
+   * does for a co-sysop's new (non-reply) post.  Only used when
+   * send_post_to_network is true.
+   */
+  bool skip_network_validation{false};
 
   /**
    * Should a RE and BY line be added automatically.  Note tht this

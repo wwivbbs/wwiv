@@ -8,10 +8,10 @@ The bindings live in WWIV, in `bbs/basic/next/`.
 
 ## wwiv.msg
 
-Read-only access to the message areas (subs) the caller can read. Writing
-(posting, and changing or deleting posts) is planned; see M5 in
-[PLAN.md](PLAN.md). It shows a
-script only what the caller could read in the BBS's own reader:
+The message areas (subs) the caller can read: reading them, and, when the
+sysop allows it, posting and deleting posts (see "Posting and deleting"
+below). It shows a script only what the caller could read in the BBS's own
+reader:
 
 - The areas are the caller's subs in the current conference, in the order the
   BBS lists them (`usub`): subs whose read ACS the caller doesn't pass aren't
@@ -91,7 +91,60 @@ EndIf
 ```
 
 Opening an area whose message text file (`msgs/NAME.dat`) doesn't exist yet
-creates it empty, as the BBS does; nothing else is written.
+creates it empty, as the BBS does.
+
+### Posting and deleting
+
+| Member | |
+| --- | --- |
+| `CAN_POST` | `TRUE` if the caller may post in the area now |
+| `ANONYMOUS` | How the caller's posts here may be anonymous: `"no"`, `"allowed"` (`POST`'s `anonymous` chooses) or `"forced"` (always anonymous) |
+| `POST(title, text[, to[, anonymous]])` | Posts `text` (a string, or a LIST of lines) titled `title`, to `to` (`""` for everyone), and returns the new message's number. `title` and `to` are at most 71 characters, with no control characters (CR, LF, ^D...). |
+| `WRITE_POST([title[, to]])` | Lets the caller write a post in their own message editor (the full-screen editor or the line editor), as the BBS's post command does, and returns its number, or 0 if they abort. Without `title` the editor asks for one; where the caller may post anonymously, it asks about that too. |
+| `REPLY(h)` | Lets the caller write a reply to the post `h` (a header or message) in their editor: to its author, with "Re: " and its title offered as the title. Returns the reply's number, or 0 if they abort. |
+| `DELETE_MESSAGE(h)` | Deletes the post `h` (a header or message from this area); `FALSE` if it was already gone |
+
+Scripts can only post and delete when the sysop turns on "Enable MSG Writing"
+in wwivconfig's scripting settings (the `script_flag_enable_msg_write` bit,
+`0x0040`, in `config.json`'s `script_flags`). It's off by default: a script
+can post without the caller seeing what it posts. Until it's on, `CAN_POST`
+is `FALSE` and `POST`, `WRITE_POST`, `REPLY` and `DELETE_MESSAGE` are
+errors.
+
+With writing on, the BBS's own rules apply, as when the caller posts from the
+BBS:
+
+- `POST`, `WRITE_POST` and `REPLY` are errors, saying why, if the caller is
+  restricted from posting, has posted as many messages as their SL allows
+  today, doesn't pass the area's post ACS, or is restricted from networked
+  areas and the area is networked.
+- The post is signed as the caller's posts in the area are (their name and
+  number, or their real name in areas that use real names), counts toward
+  their posts and today's limit, and goes in the sysop log. A caller whose
+  posts need validating gets an unvalidated post. The area's oldest posts go
+  if it's full.
+- `anonymous` (`TRUE` or `FALSE`) is allowed where `ANONYMOUS` is
+  `"allowed"`; asking for an anonymous post anywhere else is an error. In
+  "Dear Abby" areas `TRUE` posts as "Abby". Where it's `"forced"` every post
+  is anonymous.
+- In networked areas, the post goes out on the area's first network. (The
+  BBS's own posts go out on all of them; a script's will once the SDK sends
+  to all of an area's networks:
+  [#1782](https://github.com/wwivbbs/wwiv/issues/1782).)
+- `WRITE_POST` and `REPLY` open the editor the caller uses in the BBS. A
+  script with a full-screen layout open should close it first, since the
+  editor has the whole screen. Quoting the post being replied to isn't
+  supported yet.
+- `DELETE_MESSAGE` deletes the caller's own posts, or any post if the caller
+  is a co-sysop of the area. Deleting their own post takes back its credit.
+
+```basic
+a = wwiv.msg.area("1")
+If a.can_post Then
+  n = a.post("Hello", list("First line", "Second line"))
+  print "Posted message "; n
+EndIf
+```
 
 ### Headers (`message_header`) and messages (`message`)
 

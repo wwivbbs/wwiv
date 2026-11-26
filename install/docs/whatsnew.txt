@@ -128,6 +128,11 @@ WWIVbasic
   SCREEN_COLUMNS, SCREEN_ROWS, PAUSING, NSL and the color helpers).
 + New wwiv.user module for the new BASIC engine: the caller's name, SL,
   ARs and stats, and looking up other users by name or number.
++ The new BASIC engine's wwiv.msg can post and delete posts, with the
+  caller's own rights, once the sysop turns on "Enable MSG Writing" in
+  wwivconfig's scripting settings (off by default). Scripts can also let
+  the caller write a post or reply in their own message editor, and
+  msgview.bas uses that to post and reply.
 + New wwiv.screen module for the new BASIC engine: full-screen layouts
   like the message reader's (FULLSCREEN), and lightbar lists (LIGHTBAR)
   that can call a script function for each key.

@@ -705,8 +705,10 @@ bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net
       VLOG(2) << "!hosting and !gating on: " << current_net.name;
       continue;
     }
-    if (are_we_gating) {
-      // update fromsys
+    if (are_we_gating && template_packet.nh.fromsys != 0) {
+      // Gating another system's post: it comes from us on this network.
+      // A post from this BBS (fromsys 0) keeps its user number, as the
+      // BBS's send_net_post does; fromsys is set just below.
       h.fromsys = current_net.sysnum;
       h.fromuser = 0;
     }
@@ -737,6 +739,8 @@ bool send_post_to_subscribers(const std::vector<Network>& nets, int original_net
         auto subscribers = ReadSubcriberFile(FilePath(current_net.dir, StrCat("n", subnet.stype, ".net")));
         // Remove the original sender from the set of systems that we will resend this to.
         subscribers.erase(template_packet.nh.fromsys);
+        // Nor to ourselves, if we're in our own subscriber list.
+        subscribers.erase(current_net.sysnum);
         for (const auto& skip : subscribers_to_skip) {
           // Skip the subscribers to skip too.
           subscribers.erase(skip);

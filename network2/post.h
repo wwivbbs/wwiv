@@ -27,11 +27,29 @@ namespace wwiv {
 namespace net {
 namespace network2 {
 
+/** What handle_inbound_post did with a post. */
+enum class inbound_post_t {
+  /** The post couldn't be handled. */
+  error,
+  /** The post was saved; send it on to the other subscribers. */
+  posted,
+  /** The post was saved, held for the sysop to validate before it goes on. */
+  held,
+  /** The post wasn't saved (a duplicate, or written to dead.net); don't send it on. */
+  not_posted,
+};
+
 /**
  * Handles receiving a NetPacket with a post and writing it to the
  * local database.
  */
-bool handle_inbound_post(Context& context, wwiv::sdk::net::NetPacket& packet);
+inbound_post_t handle_inbound_post(Context& context, wwiv::sdk::net::NetPacket& packet);
+/**
+ * Handles a main_type_new_post packet: saves it here, then sends it on to the
+ * other subscribers unless it wasn't saved or is held for validation.
+ */
+bool handle_new_post(Context& context, wwiv::sdk::net::NetPacket& packet);
+
 /**
  * Send a network post out to the other subscribers when you are the host off
  * a sub or gating a sub.

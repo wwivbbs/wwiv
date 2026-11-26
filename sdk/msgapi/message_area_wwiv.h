@@ -94,6 +94,8 @@ public:
 
 private:
   int DeleteExcess();
+  // Is one of the last few posts waiting for network validation?
+  [[nodiscard]] bool HasPendingNetworkPost() const;
   [[nodiscard]] bool add_post(const postrec& post);
   [[nodiscard]] std::optional<wwiv_parsed_text_fieds> ParseMessageText(const postrec& header, int message_number);
   [[nodiscard]] [[nodiscard]] bool HasSubChanged() const;

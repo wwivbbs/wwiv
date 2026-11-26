@@ -236,11 +236,7 @@ static bool handle_packet(Context& context, NetPacket& p) {
     return handle_email_byname(context, p);
   case main_type_new_post: {
     posts_changed = true;
-    if (!handle_inbound_post(context, p)) {
-      LOG(ERROR) << "Error on handle_inbound_post";
-      return false;
-    }
-    return send_post_to_subscribers(context, p, {p.nh.fromsys});
+    return handle_new_post(context, p);
   }
   case main_type_ssm: {
     return handle_ssm(context, p);
