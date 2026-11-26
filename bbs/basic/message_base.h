@@ -82,6 +82,27 @@ public:
   [[nodiscard]] virtual Poster poster(int subnum) const = 0;
   // Does the user pass the sub's post ACS?
   [[nodiscard]] virtual bool can_post(int subnum) const = 0;
+  // A post the user wrote in the BBS's message editor.
+  struct EditedPost {
+    std::string title;
+    // How the editor signed it (the user's name, or their real name).
+    std::string from;
+    // What follows the editor's author and date lines: its control lines
+    // (PID, FidoAddr), RE:/BY: lines and the user's text.
+    std::string text;
+    // anony_sender etc., as the user chose (or the sub forces).
+    uint8_t anony{0};
+  };
+  // Opens the user's message editor, as the BBS's post() does, to write a
+  // post in the sub. title is used as given; if it's empty the editor asks,
+  // offering "Re: " + irt if irt isn't empty. to is who it's to ("" for
+  // everyone; on FTN subs the editor asks). anonymous is the user's
+  // anonymous setting in the sub (0, anony_enable_anony...), which decides
+  // whether the editor asks. nullopt if the user aborts.
+  [[nodiscard]] virtual std::optional<EditedPost> edit_post(int subnum, const std::string& title,
+                                                            const std::string& irt,
+                                                            const std::string& to,
+                                                            uint8_t anonymous) = 0;
   // Called once the user's post titled title is added to the sub (through
   // sdk/msgapi, which counts it in today's posts): counts it for the user
   // and in the system's local posts, and logs it.

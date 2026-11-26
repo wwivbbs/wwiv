@@ -100,21 +100,24 @@ creates it empty, as the BBS does.
 | `CAN_POST` | `TRUE` if the caller may post in the area now |
 | `ANONYMOUS` | How the caller's posts here may be anonymous: `"no"`, `"allowed"` (`POST`'s `anonymous` chooses) or `"forced"` (always anonymous) |
 | `POST(title, text[, to[, anonymous]])` | Posts `text` (a string, or a LIST of lines) titled `title`, to `to` (`""` for everyone), and returns the new message's number. `title` and `to` are at most 71 characters, with no control characters (CR, LF, ^D...). |
+| `WRITE_POST([title[, to]])` | Lets the caller write a post in their own message editor (the full-screen editor or the line editor), as the BBS's post command does, and returns its number, or 0 if they abort. Without `title` the editor asks for one; where the caller may post anonymously, it asks about that too. |
+| `REPLY(h)` | Lets the caller write a reply to the post `h` (a header or message) in their editor: to its author, with "Re: " and its title offered as the title. Returns the reply's number, or 0 if they abort. |
 | `DELETE_MESSAGE(h)` | Deletes the post `h` (a header or message from this area); `FALSE` if it was already gone |
 
 Scripts can only post and delete when the sysop turns on "Enable MSG Writing"
 in wwivconfig's scripting settings (the `script_flag_enable_msg_write` bit,
 `0x0040`, in `config.json`'s `script_flags`). It's off by default: a script
 can post without the caller seeing what it posts. Until it's on, `CAN_POST`
-is `FALSE` and `POST` and `DELETE_MESSAGE` are errors.
+is `FALSE` and `POST`, `WRITE_POST`, `REPLY` and `DELETE_MESSAGE` are
+errors.
 
 With writing on, the BBS's own rules apply, as when the caller posts from the
 BBS:
 
-- `POST` is an error, saying why, if the caller is restricted from posting,
-  has posted as many messages as their SL allows today, doesn't pass the
-  area's post ACS, or is restricted from networked areas and the area is
-  networked.
+- `POST`, `WRITE_POST` and `REPLY` are errors, saying why, if the caller is
+  restricted from posting, has posted as many messages as their SL allows
+  today, doesn't pass the area's post ACS, or is restricted from networked
+  areas and the area is networked.
 - The post is signed as the caller's posts in the area are (their name and
   number, or their real name in areas that use real names), counts toward
   their posts and today's limit, and goes in the sysop log. A caller whose
@@ -128,6 +131,10 @@ BBS:
   BBS's own posts go out on all of them; a script's will once the SDK sends
   to all of an area's networks:
   [#1782](https://github.com/wwivbbs/wwiv/issues/1782).)
+- `WRITE_POST` and `REPLY` open the editor the caller uses in the BBS. A
+  script with a full-screen layout open should close it first, since the
+  editor has the whole screen. Quoting the post being replied to isn't
+  supported yet.
 - `DELETE_MESSAGE` deletes the caller's own posts, or any post if the caller
   is a co-sysop of the area. Deleting their own post takes back its credit.
 

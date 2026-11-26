@@ -20,9 +20,13 @@
 #include "bbs/acs.h"
 #include "bbs/application.h"
 #include "bbs/bbsutl.h"
+#include "bbs/connect1.h"
+#include "bbs/inmsg.h"
 #include "bbs/sysoplog.h"
+#include "common/message_editor_data.h"
 #include "core/datetime.h"
 #include "core/log.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
@@ -140,6 +144,77 @@ bool BbsMessageBase::can_post(int subnum) const {
     return false;
   }
   return check_acs(subs.sub(subnum).post_acs);
+}
+
+std::optional<MessageBase::EditedPost>
+BbsMessageBase::edit_post(int subnum, const std::string& title, const std::string& irt,
+                          const std::string& to, uint8_t anonymous) {
+  const auto& subs = std::as_const(app_).subs();
+  if (subnum < 0 || subnum >= subs.size()) {
+    return std::nullopt;
+  }
+  const auto& sub = subs.sub(subnum);
+  // The editor works on the BBS's current sub and network (current_sub(),
+  // current_net()), and offers sess().irt() as the title. Point them at this
+  // sub, as iscan1 does, and put them back afterwards.
+  auto& sess = app_.sess();
+  const auto saved_area = sess.GetCurrentReadMessageArea();
+  const auto saved_net = app_.net_num();
+  const auto saved_irt = sess.irt();
+  auto restore = core::finally([&] {
+    sess.SetCurrentReadMessageArea(saved_area);
+    app_.set_net_num(saved_net);
+    sess.irt(saved_irt);
+  });
+  sess.SetCurrentReadMessageArea(subnum);
+  set_net_num(sub.nets.empty() ? 0 : sub.nets.front().net_num);
+  // Without ANSI the editor takes a given title from irt (GetMessageTitle),
+  // so a given title goes there too.
+  sess.irt(title.empty() ? irt : title);
+
+  // As post() sets up the editor.
+  common::MessageEditorData data(app_.user()->name_and_number());
+  data.title = title;
+  data.need_title = true;
+  data.anonymous_flag = anonymous;
+  data.fsed_flags = common::FsedFlags::FSED;
+  data.msged_flags =
+      (sub.anony & anony_no_tag) ? common::MSGED_FLAG_NO_TAGLINE : common::MSGED_FLAG_NONE;
+  data.aux = sub.filename;
+  data.sub_name = sub.name;
+  data.to_name = to;
+
+  const auto start = core::DateTime::now().to_system_clock();
+  if (!inmsg(data)) {
+    return std::nullopt;
+  }
+  if (app_.HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
+    // As post(): give back the time spent writing, up to a logon's worth.
+    auto spent = core::DateTime::now().to_system_clock() - start;
+    const auto most = std::chrono::minutes(app_.config()->sl(sess.effective_sl()).time_per_logon);
+    if (spent > most) {
+      spent = most;
+    }
+    app_.user()->add_extratime(spent);
+  }
+
+  // The editor's text is "author CR LF date CR LF rest ^Z"; the SDK adds its
+  // own author and date lines.
+  EditedPost out;
+  out.title = data.title;
+  out.anony = data.anonymous_flag;
+  auto text = data.text;
+  while (!text.empty() && text.back() == '\x1a') {
+    text.pop_back();
+  }
+  const auto author_end = text.find("\r\n");
+  if (author_end == std::string::npos) {
+    return std::nullopt;
+  }
+  out.from = text.substr(0, author_end);
+  const auto date_end = text.find("\r\n", author_end + 2);
+  out.text = date_end == std::string::npos ? std::string() : text.substr(date_end + 2);
+  return out;
 }
 
 // The BBS's post() also adds one to today's posts; for a script's post the

@@ -186,8 +186,9 @@ headers and read messages.
       through the SDK, on the sub's first network only until it sends to all
       ([#1782](https://github.com/wwivbbs/wwiv/issues/1782)). The BBS has no
       way for users to change a post, so neither do scripts
-- [ ] Posting with the BBS's message editor, so a script can let the caller
-      write a post (and `msgview.bas` can reply)
+- [x] Posting with the BBS's message editor: `WRITE_POST` and `REPLY`, and
+      `msgview.bas` posts and replies with them. Quoting the post being
+      replied to isn't supported yet
 - [x] `wwiv.user`: the current user, and user lookups (read-only;
       `bbs/basic/next/wwiv_user.cpp`, documented in [BINDINGS.md](BINDINGS.md)).
       Other users show only their name, number and last logon

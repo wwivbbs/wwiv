@@ -327,6 +327,39 @@ void check_field(const std::string& what, const std::string& s) {
   }
 }
 
+// Saves a post the user wrote in area a, as the BBS's post() does, and returns
+// its number. text follows the author and date lines, which the SDK adds.
+int save_post(const ScriptArea& a, const std::string& fn, const std::string& title,
+              const std::string& from, const std::string& to, uint8_t anony,
+              const std::string& text, bool add_re_and_by_line) {
+  const auto& sub = a.sub();
+  const auto p = a.msgs->poster(a.subnum);
+  auto* area = a.area();
+  auto msg = area->CreateMessage();
+  auto& h = msg.header();
+  h.set_title(title);
+  h.set_from(from);
+  h.set_to(to);
+  h.set_from_usernum(static_cast<uint16_t>(p.user_num));
+  h.set_from_system(0);
+  h.set_daten(core::daten_t_now());
+  h.set_anony(anony);
+  if (p.restrict_validate) {
+    h.set_unvalidated(true);
+  }
+  msg.set_text(text);
+  sdk::msgapi::MessageAreaOptions options;
+  options.add_re_and_by_line = add_re_and_by_line;
+  // The SDK sends it on the sub's first network only (#1782).
+  options.send_post_to_network = !sub.nets.empty();
+  if (!area->AddMessage(msg, options)) {
+    throw BasicError(fmt::format("{}: the post couldn't be saved in '{}'", fn, sub.name));
+  }
+  a.msgs->posted(a.subnum, title);
+  // Posts go at the end; a full area loses its oldest, not this one.
+  return area->number_of_messages();
+}
+
 // POST(title, text[, to[, anonymous]]) in area a: posts as the BBS's post()
 // does, and returns the new message's number.
 int post_message(const ScriptArea& a, const Writing& w, const std::vector<Value>& args) {
@@ -375,33 +408,34 @@ int post_message(const ScriptArea& a, const Writing& w, const std::vector<Value>
     break;
   }
 
-  auto* area = a.area();
-  auto msg = area->CreateMessage();
-  auto& h = msg.header();
-  h.set_title(title);
-  h.set_from(from);
-  h.set_to(to);
-  h.set_from_usernum(static_cast<uint16_t>(p.user_num));
-  h.set_from_system(0);
-  h.set_daten(core::daten_t_now());
-  h.set_anony(anony);
-  if (p.restrict_validate) {
-    h.set_unvalidated(true);
+  // As inmsg: the program that wrote it, then the text. RE: and BY: lines
+  // only for a post to someone, as inmsg adds them.
+  return save_post(a, "message_area.post", title, from, to, anony,
+                   fmt::format("{}0PID: WWIV {}\r\n{}", kControlD, core::full_version(), text),
+                   !to.empty() && !iequals(to, "All"));
+}
+
+// WRITE_POST([title[, to]]) and REPLY(h) in area a: the user writes the post
+// in the BBS's message editor, which asks for the title if it isn't given
+// (offering "Re: " + irt), and whether to post anonymously where the user
+// may choose. Returns the new message's number, or 0 if the user aborted.
+int edit_and_post(const ScriptArea& a, const Writing& w, const std::string& fn,
+                  const std::string& title, const std::string& irt, const std::string& to) {
+  if (const auto e = post_error(a, w); !e.empty()) {
+    throw BasicError(fmt::format("message_area.{}: {}", fn, e));
   }
-  // As inmsg: the program that wrote it, then the text.
-  msg.set_text(fmt::format("{}0PID: WWIV {}\r\n{}", kControlD, core::full_version(), text));
-  sdk::msgapi::MessageAreaOptions options;
-  // RE: and BY: lines only for a post to someone, as inmsg adds them.
-  options.add_re_and_by_line = !to.empty() && !iequals(to, "All");
-  // The SDK sends it on the sub's first network only (#1782).
-  options.send_post_to_network = !sub.nets.empty();
-  if (!area->AddMessage(msg, options)) {
-    throw BasicError(
-        fmt::format("message_area.post: the post couldn't be saved in '{}'", sub.name));
+  check_field("title", title);
+  check_field("name it's to", to);
+  const auto p = a.msgs->poster(a.subnum);
+  const auto edited = a.msgs->edit_post(a.subnum, title, irt, to, anonymous_setting(a.sub(), p));
+  if (!edited) {
+    return 0;
   }
-  a.msgs->posted(a.subnum, title);
-  // Posts go at the end; a full area loses its oldest, not this one.
-  return area->number_of_messages();
+  // The editor's text already has the RE:/BY: (or FidoAddr) and PID lines.
+  // The editor's "to" is in those lines; giving it to the SDK too would add
+  // a second FidoAddr line on FTN subs.
+  return save_post(a, fmt::format("message_area.{}", fn), edited->title, edited->from, "",
+                   edited->anony, edited->text, false);
 }
 
 // DELETE_MESSAGE(h) in area a: deletes the post h (a header or message from
@@ -528,6 +562,39 @@ void RegisterWwivMsg(wwivbasic::Interpreter& interp, const WwivBindings& b) {
                [w](ScriptArea& a, const std::vector<Value>& args) {
                  return Value(post_message(a, w, args));
                })
+      // WRITE_POST([title[, to]]) lets the user write a post in their message
+      // editor, as the BBS's post command does, and returns its number, or 0
+      // if they aborted. Without a title the editor asks for one.
+      .methodl("write_post",
+               [w](ScriptArea& a, const std::vector<Value>& args) {
+                 if (args.size() > 2) {
+                   throw wwivbasic::ArgumentError(
+                       fmt::format("expected 0 to 2 arguments, got {}", args.size()));
+                 }
+                 const auto title =
+                     args.empty() ? std::string() : StringTrim(args.at(0).toString());
+                 const auto to =
+                     args.size() > 1 ? StringTrim(args.at(1).toString()) : std::string();
+                 return Value(edit_and_post(a, w, "write_post", title, "", to));
+               })
+      // REPLY(h) lets the user reply to the post h (a header or message from
+      // any area) in their message editor: to its author, with "Re: " and its
+      // title offered as the title. Returns the reply's number, or 0.
+      .method("reply",
+              [w, &header_class, &message_class](ScriptArea& a, Value v) {
+                std::string title;
+                std::string from;
+                if (const auto h = header_class.unwrap(v)) {
+                  title = h->title;
+                  from = h->from;
+                } else if (const auto msg = message_class.unwrap(v)) {
+                  title = msg->title;
+                  from = msg->from;
+                } else {
+                  throw BasicError("message_area.reply: expected a message_header or message");
+                }
+                return edit_and_post(a, w, "reply", "", title, from);
+              })
       // DELETE_MESSAGE(h) deletes the post h (a header or message from this
       // area): the user's own, or any if they're a co-sysop of the area.
       // FALSE if it was already gone.
