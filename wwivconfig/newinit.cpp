@@ -298,13 +298,13 @@ static void init_files(UIWindow* window, const std::string& bbsdir, bool unzip_f
   window->Puts(".\n");
 
   window->SetColor(SchemeId::PROMPT);
-  window->Puts("Copying String and Miscellaneous files.\n");
+  window->Puts("Copying String and Miscellaneous Files.\n");
   window->SetColor(SchemeId::NORMAL);
 
   window->Puts(".\n");
 
   window->SetColor(SchemeId::PROMPT);
-  window->Puts("Decompressing archives.  Please wait");
+  window->Puts("Decompressing archives.  Please wait...\n");
   window->SetColor(SchemeId::NORMAL);
 
   if (unzip_files) {
@@ -332,8 +332,8 @@ bool new_init(UIWindow* window, const std::string& bbsdir, bool unzip_files) {
       "temp/4", "batch",       "batch/1",      "batch/2",       "batch/3", "batch/4",
       "logs"};
   window->SetColor(SchemeId::PROMPT);
-  window->Puts("\n\nNow performing installation.  Please wait...\n\n");
-  window->Puts("Creating Directories\n");
+  window->Puts("\n\nPerforming initial installation.  Please wait...\n\n");
+  window->Puts("Creating Directories.\n");
   window->SetColor(SchemeId::NORMAL);
   for (const auto& dirname : dirnames) {
     window->SetColor(SchemeId::NORMAL);
