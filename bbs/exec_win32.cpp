@@ -617,6 +617,43 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
   // (working_cmdline is still logged below if it fails).
   auto writable_cmdline = working_cmdline;
   DWORD dwCreationFlags = 0;
+
+  // A socket door is often a launcher (e.g. WWIVFOSS's dosdoor.cmd) that runs
+  // the door in a child process (DOSBox-X). Run it in a job, so stopping the
+  // door stops all of it rather than only the launcher, as the Unix side does
+  // with a process group. Closing the job also ends anything left behind.
+  HANDLE job{nullptr};
+  if (exec_socket) {
+    job = CreateJobObject(nullptr, nullptr);
+    if (job) {
+      JOBOBJECT_EXTENDED_LIMIT_INFORMATION info{};
+      info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+      if (!SetInformationJobObject(job, JobObjectExtendedLimitInformation, &info, sizeof(info))) {
+        LOG(WARNING) << "SetInformationJobObject failed: " << GetLastError();
+        CloseHandle(job);
+        job = nullptr;
+      }
+    } else {
+      LOG(WARNING) << "CreateJobObject failed: " << GetLastError();
+    }
+    if (job) {
+      // Start suspended so the door can't start children before it's in the job.
+      dwCreationFlags |= CREATE_SUSPENDED;
+    }
+  }
+  auto close_job = finally([&job] {
+    if (job) {
+      CloseHandle(job);
+    }
+  });
+  // Stops the door: the whole job if there is one.
+  auto stop_door = [&job, &pi]() -> bool {
+    if (job) {
+      return TerminateJobObject(job, 127) != FALSE;
+    }
+    return TerminateProcess(pi.hProcess, 127) != FALSE;
+  };
+
   if (!CreateProcess(nullptr, writable_cmdline.data(), nullptr, nullptr, TRUE, dwCreationFlags,
                      nullptr, // a()->xenviron not using nullptr causes things to not work.
                      current_directory.c_str(), &si, &pi)) {
@@ -634,6 +671,15 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
     return -1;
   }
 
+  if (job) {
+    if (!AssignProcessToJobObject(job, pi.hProcess)) {
+      LOG(WARNING) << "AssignProcessToJobObject failed: " << GetLastError()
+                   << "; stopping the door will only stop " << working_cmdline;
+      CloseHandle(job);
+      job = nullptr;
+    }
+    ResumeThread(pi.hThread);
+  }
   CloseHandle(pi.hThread);
   bool terminated = false;
 
@@ -649,13 +695,13 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
         // sockets closed but process still running.
         VLOG(1) << "Sockets closed, process still running; Forcefully terminating pid: "
                 << pi.hProcess;
-        if (TerminateProcess(pi.hProcess, 127)) {
+        if (stop_door()) {
           terminated = true;
         }
       }
     } else {
       VLOG(1) << "Accept never happend; Forcefully terminating pid: " << pi.hProcess;
-      if (TerminateProcess(pi.hProcess, 127)) {
+      if (stop_door()) {
         terminated = true;
       }
     }

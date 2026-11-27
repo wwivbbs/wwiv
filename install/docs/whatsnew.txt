@@ -36,6 +36,8 @@ What's New in WWIV 5.10.0 (2026)
   its socket. On Linux a door that's still running then gets SIGTERM,
   sent to its whole process group so an emulator started by a launcher
   script is stopped too, and SIGKILL if it hasn't exited 3 seconds later.
+  On Windows the door runs in a job object, so stopping it also stops an
+  emulator its launcher started (e.g. DOSBox-X from WWIVFOSS's dosdoor.cmd).
 
 What's New in WWIV 5.9.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
