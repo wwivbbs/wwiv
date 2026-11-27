@@ -41,6 +41,7 @@
 #include "sdk/user.h"
 #include "sdk/vardec.h"
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -91,12 +92,15 @@ public:
   [[nodiscard]] bool can_post(int) const override { return can_post_; }
   [[nodiscard]] std::optional<EditedPost> edit_post(int subnum, const std::string& title,
                                                     const std::string& irt, const std::string& to,
-                                                    uint8_t anonymous) override {
+                                                    uint8_t anonymous,
+                                                    const std::optional<ReplyTo>& reply) override {
     edits_.push_back(fmt::format("{}|{}|{}|{}|{}", subnum, title, irt, to, anonymous));
+    reply_ = reply;
     return edited_;
   }
-  void posted(int subnum, const std::string& title) override {
+  void posted(int subnum, const std::string& title, std::chrono::seconds writing_time) override {
     posted_.push_back(fmt::format("{}:{}", subnum, title));
+    writing_times_.push_back(static_cast<int>(writing_time.count()));
   }
   void deleted(int subnum, const std::string& title, int owneruser, uint32_t) override {
     deleted_.push_back(fmt::format("{}:{}:{}", subnum, title, owneruser));
@@ -116,6 +120,10 @@ public:
   // asked: "subnum|title|irt|to|anonymous".
   std::optional<EditedPost> edited_;
   std::vector<std::string> edits_;
+  // The post the last edit_post replied to, if any.
+  std::optional<ReplyTo> reply_;
+  // posted()'s writing_time for each post, in seconds.
+  std::vector<int> writing_times_;
   // What posted() and deleted() were told: "subnum:title" and
   // "subnum:title:owneruser".
   std::vector<std::string> posted_;
@@ -147,10 +155,13 @@ public:
   [[nodiscard]] bool can_post(int subnum) const override { return m_.can_post(subnum); }
   [[nodiscard]] std::optional<EditedPost> edit_post(int subnum, const std::string& title,
                                                     const std::string& irt, const std::string& to,
-                                                    uint8_t anonymous) override {
-    return m_.edit_post(subnum, title, irt, to, anonymous);
+                                                    uint8_t anonymous,
+                                                    const std::optional<ReplyTo>& reply) override {
+    return m_.edit_post(subnum, title, irt, to, anonymous, reply);
   }
-  void posted(int subnum, const std::string& title) override { m_.posted(subnum, title); }
+  void posted(int subnum, const std::string& title, std::chrono::seconds writing_time) override {
+    m_.posted(subnum, title, writing_time);
+  }
   void deleted(int subnum, const std::string& title, int owneruser, uint32_t daten) override {
     m_.deleted(subnum, title, owneruser, daten);
   }
@@ -169,8 +180,8 @@ protected:
 
     MessageApiOptions options;
     options.overflow_strategy = OverflowStrategy::delete_none;
-    api = std::make_unique<WWIVMessageApi>(options, helper.config(),
-                                           std::vector<net::Network>{}, new NullLastReadImpl());
+    api = std::make_unique<WWIVMessageApi>(options, helper.config(), networks_,
+                                           new NullLastReadImpl());
     subs = std::make_unique<Subs>(helper.config().datadir(), std::vector<net::Network>{});
     AddSub("General", "general", "General chat");
     AddSub("Sysop", "sysop", "For the sysop");
@@ -180,6 +191,9 @@ protected:
     msgs = std::make_unique<FakeMessageBase>(*subs, *api);
     msgs->user_subs_ = {{0, "1"}, {1, "S"}};
   }
+
+  // The networks the message base knows, set before SetUp.
+  std::vector<net::Network> networks_;
 
   void AddSub(const std::string& name, const std::string& filename, const std::string& desc) {
     subboard_t sub{};
@@ -708,7 +722,7 @@ TEST_F(BbsMessageBaseTest, PostedAndDeleted) {
   const auto local_posts = a()->status_manager()->get_status()->localposts();
 
   BbsMessageBase m(*a());
-  m.posted(sub, "Hello");
+  m.posted(sub, "Hello", std::chrono::seconds(0));
   EXPECT_EQ(6, u.messages_posted());
   EXPECT_EQ(2, u.posts_today());
   EXPECT_EQ(0, u.posts_net());
@@ -727,9 +741,6 @@ TEST_F(BbsMessageBaseTest, PostedAndDeleted) {
   EXPECT_EQ(5, u.messages_posted());
 }
 
-// edit_post runs the BBS's own editor (here the line editor, with keys typed
-// ahead), on the sub it's given, and hands back what follows its author and
-// date lines.
 // Sets up the user to write a post in the BBS's line editor, with keys
 // typed ahead.
 static void SetUpLineEditor(BbsHelper& helper) {
@@ -743,6 +754,9 @@ static void SetUpLineEditor(BbsHelper& helper) {
   helper.sess().dirs().temp_directory(helper.files().Dir("temp").string());
 }
 
+// edit_post runs the BBS's own editor (here the line editor, with keys typed
+// ahead), on the sub it's given, and hands back what follows its author and
+// date lines.
 TEST_F(BbsMessageBaseTest, EditPost_LineEditor) {
   const auto sub = AddSub("general", 2, true);
   SetUpLineEditor(helper);
@@ -751,7 +765,7 @@ TEST_F(BbsMessageBaseTest, EditPost_LineEditor) {
 
   type_ahead::TypeAhead("Hello\rLine one\rLine two\r/S\r");
   BbsMessageBase m(*a());
-  const auto e = m.edit_post(sub, "", "", "", 0);
+  const auto e = m.edit_post(sub, "", "", "", 0, std::nullopt);
   type_ahead::StopTypingAhead();
 
   ASSERT_TRUE(e.has_value());
@@ -768,13 +782,31 @@ TEST_F(BbsMessageBaseTest, EditPost_LineEditor) {
   EXPECT_EQ("Before", helper.sess().irt());
 }
 
+// A reply can quote the post it replies to (/Q in the line editor), as in
+// the BBS's reader: /Q lists the post's lines to choose from. (Listing them
+// checks for an abort key, which takes the typed-ahead keys after /Q, so the
+// test stops there: the keys run out, which hangs up.)
+TEST_F(BbsMessageBaseTest, EditPost_ReplyQuotes) {
+  const auto sub = AddSub("general", 2, true);
+  SetUpLineEditor(helper);
+  type_ahead::HangUpWhenKeysRunOut(helper.context().session_context(), a()->sess());
+  type_ahead::TypeAhead("/Q\r");
+  BbsMessageBase m(*a());
+  const MessageBase::ReplyTo reply{"Original Author", "Quoted words\r\n", 1700000000};
+  const auto e = m.edit_post(sub, "Re: Hi", "", "Original Author", 0, reply);
+  type_ahead::StopTypingAhead();
+  EXPECT_THAT(helper.io()->captured(), HasSubstr("1 OA> Quoted words"));
+  // Hung up, so nothing was posted.
+  EXPECT_FALSE(e.has_value());
+}
+
 // An empty title aborts, as in the BBS.
 TEST_F(BbsMessageBaseTest, EditPost_Aborted) {
   const auto sub = AddSub("general", 2, true);
   SetUpLineEditor(helper);
   type_ahead::TypeAhead("\r");
   BbsMessageBase m(*a());
-  EXPECT_FALSE(m.edit_post(sub, "", "", "", 0).has_value());
+  EXPECT_FALSE(m.edit_post(sub, "", "", "", 0, std::nullopt).has_value());
   type_ahead::StopTypingAhead();
 }
 
@@ -784,7 +816,7 @@ TEST_F(BbsMessageBaseTest, EditPost_Anonymous) {
   SetUpLineEditor(helper);
   type_ahead::TypeAhead("Line one\r/S\rY");
   BbsMessageBase m(*a());
-  const auto e = m.edit_post(sub, "Given title", "", "", anony_enable_anony);
+  const auto e = m.edit_post(sub, "Given title", "", "", anony_enable_anony, std::nullopt);
   type_ahead::StopTypingAhead();
   ASSERT_TRUE(e.has_value());
   EXPECT_EQ("Given title", e->title);
@@ -1430,6 +1462,47 @@ n = a.reply(get(a.headers(), 0))
 print n; " "; a.message(n).title
 )"));
   EXPECT_THAT(fake->edits_, ElementsAre("0||Hello|rushfan #1|0"));
+  // The editor gets the post to quote and thread the reply under.
+  ASSERT_TRUE(fake->reply_.has_value());
+  EXPECT_EQ("rushfan #1", fake->reply_->name);
+  EXPECT_THAT(fake->reply_->text, HasSubstr("Hi there"));
+  EXPECT_EQ(kDaten, fake->reply_->daten);
+}
+
+// A post that's gone can still be replied to, without quoting it.
+TEST_F(WwivMsgWriteTest, Reply_ToADeletedPost) {
+  Post(0, "rushfan #1", "Hello", "Hi there\r\n");
+  fake->edited_ = MessageBase::EditedPost{"Re: Hello", "TESTER #1", "Hi back\r\n", 0};
+  DeletePostBeforeFind(1);
+  EXPECT_EQ("1\r\n", Run(R"(
+a = wwiv.msg.area("1")
+print a.reply(get(a.headers(), 0))
+)"));
+  EXPECT_THAT(fake->edits_, ElementsAre("0||Hello|rushfan #1|0"));
+  EXPECT_FALSE(fake->reply_.has_value());
+}
+
+// The author's name and title come from a post, not the script, so they're
+// made to fit rather than stopping the script.
+TEST_F(WwivMsgWriteTest, Reply_CleansTheAuthorsName) {
+  const auto long_name = std::string(80, 'n');
+  Post(0, long_name + "\x03", "Title\x01", "x\r\n");
+  fake->edited_ = MessageBase::EditedPost{"Re: Title", "TESTER #1", "y\r\n", 0};
+  EXPECT_EQ("TRUE\r\n", Run(R"(
+a = wwiv.msg.area("1")
+print a.reply(get(a.headers(), 0)) > 0
+)"));
+  ASSERT_EQ(1u, fake->edits_.size());
+  EXPECT_EQ(fmt::format("0||Title|{}|0", std::string(71, 'n')), fake->edits_.front());
+}
+
+// The time spent writing is passed on to posted(), which gives it back if
+// the BBS does that; a script's own text took none.
+TEST_F(WwivMsgWriteTest, WritingTime) {
+  fake->edited_ =
+      MessageBase::EditedPost{"Typed", "TESTER #1", "x\r\n", 0, std::chrono::seconds(42)};
+  Run("a = wwiv.msg.area(\"1\")\nn = a.write_post()\nn = a.post(\"Hi\", \"x\")\n");
+  EXPECT_THAT(fake->writing_times_, ElementsAre(42, 0));
 }
 
 TEST_F(WwivMsgWriteTest, WritePost_Errors) {
@@ -1437,6 +1510,9 @@ TEST_F(WwivMsgWriteTest, WritePost_Errors) {
               HasSubstr("message_area.write_post: expected 0 to 2 arguments, got 3"));
   EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").reply(1)\n"),
               HasSubstr("message_area.reply: expected a message_header or message"));
+  // Errors name the method.
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").write_post(\"Hi\" + CHR(4))\n"),
+              HasSubstr("message_area.write_post: the title has a control character (code 4)"));
   fake->can_post_ = false;
   EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").write_post()\n"),
               HasSubstr("message_area.write_post: you can't post in 'General'"));
@@ -1456,6 +1532,8 @@ TEST_F(MsgViewTest, Reply) {
   EXPECT_THAT(out, HasSubstr("[R]eply"));
   EXPECT_THAT(msgs->edits_, ElementsAre("0||Hello|rushfan #1|0"));
   EXPECT_THAT(msgs->posted_, ElementsAre("0:Re: Hello"));
+  // Back at the list, which has the reply.
+  EXPECT_THAT(out.substr(out.find("[R]eply")), HasSubstr("General (2 messages)"));
 }
 
 TEST_F(MsgViewTest, WritePost) {
@@ -1504,4 +1582,147 @@ TEST_F(MsgViewFullScreenTest, WritePost) {
   EXPECT_THAT(msgs->posted_, ElementsAre("0:New post"));
   EXPECT_THAT(out, HasSubstr("General (2 messages)"));
   EXPECT_THAT(out, HasSubstr("New post"));
+}
+
+// A caller who may post can write the first post in an empty area.
+TEST_F(MsgViewTest, WritePost_EmptyArea) {
+  helper.config().script_package_msg_write_enabled(true);
+  msgs->edited_ = MessageBase::EditedPost{"First post", "a #1", "Text\r\n", 0};
+  // Sysop (empty), write a post, quit the area and the viewer.
+  const auto out = RunViewer("S\rW\rQ\rQ\r");
+  EXPECT_THAT(out, Not(HasSubstr("There are no messages")));
+  EXPECT_THAT(msgs->posted_, ElementsAre("1:First post"));
+  EXPECT_THAT(out, HasSubstr("Sysop (1 messages)"));
+}
+
+TEST_F(MsgViewFullScreenTest, WritePost_EmptyArea) {
+  helper.config().script_package_msg_write_enabled(true);
+  msgs->edited_ = MessageBase::EditedPost{"First post", "a #1", "Text\r\n", 0};
+  // Down to Sysop (empty), Enter, post, then quit the list and the viewer.
+  const auto out = RunViewer(std::string(kDown) + "\rpqq");
+  EXPECT_THAT(out, Not(HasSubstr("There are no messages")));
+  EXPECT_THAT(msgs->posted_, ElementsAre("1:First post"));
+  EXPECT_THAT(out, HasSubstr("Sysop (1 messages)"));
+}
+
+// Posting in a sub on a WWIVnet network, where the message base sends posts
+// to the network directory.
+class WwivMsgNetTest : public WwivMsgWriteTest {
+protected:
+  void SetUp() override {
+    ASSERT_TRUE(helper.files().Mkdir("network"));
+    net_dir_ = helper.files().TempDir() / "network";
+    networks_.emplace_back(net::network_type_t::wwivnet, "TestNET", net_dir_, 1);
+    WwivMsgWriteTest::SetUp();
+    // We host the sub, so posts go to its (no) subscribers.
+    subboard_network_data_t sn{};
+    sn.stype = "GENERAL";
+    subs->sub(0).nets.push_back(sn);
+    subs->sub(0).anony = anony_val_net;
+  }
+
+  // Packets written to the network for sending.
+  [[nodiscard]] int packets_sent() const {
+    int count = 0;
+    for (const auto& e : std::filesystem::directory_iterator(net_dir_)) {
+      if (e.path().filename().string().starts_with("p1-")) {
+        ++count;
+      }
+    }
+    return count;
+  }
+
+  [[nodiscard]] bool pending(int n) {
+    const auto m = Read(0, n);
+    return m && m->header().pending_network();
+  }
+
+  std::filesystem::path net_dir_;
+};
+
+// In a sub that needs network validation, posts wait for the sysop, as in
+// the BBS's post().
+TEST_F(WwivMsgNetTest, ValNet_Held) {
+  EXPECT_EQ("1\r\n", Run("print wwiv.msg.area(\"1\").post(\"Hi\", \"x\")\n"));
+  EXPECT_TRUE(pending(1));
+  EXPECT_EQ(0, packets_sent());
+}
+
+// A co-sysop's new posts go out right away, from POST or the editor.
+TEST_F(WwivMsgNetTest, ValNet_CoSysopPostsAreSent) {
+  fake->cosysop_ = true;
+  EXPECT_EQ("1\r\n", Run("print wwiv.msg.area(\"1\").post(\"Hi\", \"x\")\n"));
+  fake->edited_ = MessageBase::EditedPost{"Typed", "TESTER #1", "x\r\n", 0};
+  EXPECT_EQ("2\r\n", Run("print wwiv.msg.area(\"1\").write_post()\n"));
+  EXPECT_FALSE(pending(1));
+  EXPECT_FALSE(pending(2));
+  EXPECT_EQ(2, packets_sent());
+}
+
+// But a co-sysop's reply still waits.
+TEST_F(WwivMsgNetTest, ValNet_CoSysopReplyHeld) {
+  Post(0, "rushfan #1", "Hello", "Hi there\r\n");
+  fake->cosysop_ = true;
+  fake->edited_ = MessageBase::EditedPost{"Re: Hello", "TESTER #1", "Hi back\r\n", 0};
+  EXPECT_EQ("2\r\n", Run("a = wwiv.msg.area(\"1\")\nprint a.reply(get(a.headers(), 0))\n"));
+  EXPECT_TRUE(pending(2));
+  EXPECT_EQ(0, packets_sent());
+}
+
+// Without network validation, every post goes out.
+TEST_F(WwivMsgNetTest, NoValNet_Sent) {
+  subs->sub(0).anony = 0;
+  EXPECT_EQ("1\r\n", Run("print wwiv.msg.area(\"1\").post(\"Hi\", \"x\")\n"));
+  EXPECT_FALSE(pending(1));
+  EXPECT_EQ(1, packets_sent());
+}
+
+// A reply is a reply even when the post's title cleans down to nothing, so a
+// co-sysop's still waits.
+TEST_F(WwivMsgNetTest, ValNet_CoSysopReplyToUntitledPostHeld) {
+  Post(0, "rushfan #1", "\x01\x02", "Hi there\r\n");
+  fake->cosysop_ = true;
+  fake->edited_ = MessageBase::EditedPost{"Re:", "TESTER #1", "Hi back\r\n", 0};
+  EXPECT_EQ("2\r\n", Run("a = wwiv.msg.area(\"1\")\nprint a.reply(get(a.headers(), 0))\n"));
+  EXPECT_TRUE(pending(2));
+  EXPECT_EQ(0, packets_sent());
+}
+
+// REPLY and DELETE_MESSAGE take only posts from their own area.
+TEST_F(WwivMsgWriteTest, PostFromAnotherArea) {
+  Post(1, "rushfan #1", "Elsewhere", "x\r\n");
+  fake->cosysop_ = true;
+  const auto script = R"(
+h = get(wwiv.msg.area("S").headers(), 0)
+a = wwiv.msg.area("1")
+)";
+  EXPECT_THAT(Run(std::string(script) + "n = a.reply(h)\n"),
+              HasSubstr("message_area.reply: the post isn't from 'General'"));
+  EXPECT_THAT(Run(std::string(script) + "n = a.delete_message(h)\n"),
+              HasSubstr("message_area.delete_message: the post isn't from 'General'"));
+  EXPECT_TRUE(fake->edits_.empty());
+  EXPECT_EQ(1, api->Open(subs->sub(1), 1)->number_of_messages());
+}
+
+// The quote header names the author as the reply's To: line does.
+TEST_F(WwivMsgWriteTest, Reply_QuoteNameIsCleaned) {
+  Post(0, "rush\x01" "fan #1", "Hello", "Hi there\r\n");
+  fake->edited_ = MessageBase::EditedPost{"Re: Hello", "TESTER #1", "Hi back\r\n", 0};
+  EXPECT_EQ("2\r\n", Run("a = wwiv.msg.area(\"1\")\nprint a.reply(get(a.headers(), 0))\n"));
+  ASSERT_TRUE(fake->reply_.has_value());
+  EXPECT_EQ("rushfan #1", fake->reply_->name);
+}
+
+// A caller who may post stays in an area whose last post went while they
+// read it, as in the full-screen viewer.
+TEST_F(MsgViewTest, LastPostDeletedWhileReading_CanPost) {
+  helper.config().script_package_msg_write_enabled(true);
+  Post(0, "a #1", "Only", "1\r\n");
+  DeletePostBeforeFind(1);
+  // Area 1, message 1 (gone), a key for the pause, then quit the area and
+  // the viewer.
+  const auto out = RunViewer("1\r1\r\rQ\rQ\r");
+  EXPECT_THAT(out, HasSubstr("That message has been deleted."));
+  const auto after = out.substr(out.find("That message has been deleted."));
+  EXPECT_THAT(after, HasSubstr("[W]rite a post"));
 }

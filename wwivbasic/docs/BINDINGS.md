@@ -101,8 +101,8 @@ creates it empty, as the BBS does.
 | `ANONYMOUS` | How the caller's posts here may be anonymous: `"no"`, `"allowed"` (`POST`'s `anonymous` chooses) or `"forced"` (always anonymous) |
 | `POST(title, text[, to[, anonymous]])` | Posts `text` (a string, or a LIST of lines) titled `title`, to `to` (`""` for everyone), and returns the new message's number. `title` and `to` are at most 71 characters, with no control characters (CR, LF, ^D...). |
 | `WRITE_POST([title[, to]])` | Lets the caller write a post in their own message editor (the full-screen editor or the line editor), as the BBS's post command does, and returns its number, or 0 if they abort. Without `title` the editor asks for one; where the caller may post anonymously, it asks about that too. |
-| `REPLY(h)` | Lets the caller write a reply to the post `h` (a header or message) in their editor: to its author, with "Re: " and its title offered as the title. Returns the reply's number, or 0 if they abort. |
-| `DELETE_MESSAGE(h)` | Deletes the post `h` (a header or message from this area); `FALSE` if it was already gone |
+| `REPLY(h)` | Lets the caller write a reply to the post `h` (a header or message from this area) in their editor: to its author, with "Re: " and its title offered as the title. Returns the reply's number, or 0 if they abort. A post from another area is an error. |
+| `DELETE_MESSAGE(h)` | Deletes the post `h` (a header or message from this area); `FALSE` if it was already gone. A post from another area is an error. |
 
 Scripts can only post and delete when the sysop turns on "Enable MSG Writing"
 in wwivconfig's scripting settings (the `script_flag_enable_msg_write` bit,
@@ -127,14 +127,18 @@ BBS:
   `"allowed"`; asking for an anonymous post anywhere else is an error. In
   "Dear Abby" areas `TRUE` posts as "Abby". Where it's `"forced"` every post
   is anonymous.
-- In networked areas, the post goes out on the area's first network. (The
-  BBS's own posts go out on all of them; a script's will once the SDK sends
-  to all of an area's networks:
-  [#1782](https://github.com/wwivbbs/wwiv/issues/1782).)
+- In networked areas, the post goes out on all of the area's networks. In
+  an area that needs network validation, it waits for the sysop to validate
+  it, as the BBS's posts do: a co-sysop's new post goes out right away, but
+  their replies still wait. (Some details of how the BBS sends posts aren't
+  matched yet: [#1782](https://github.com/wwivbbs/wwiv/issues/1782).)
 - `WRITE_POST` and `REPLY` open the editor the caller uses in the BBS. A
   script with a full-screen layout open should close it first, since the
-  editor has the whole screen. Quoting the post being replied to isn't
-  supported yet.
+  editor has the whole screen.
+- A reply works like one from the BBS's reader: the caller can quote the
+  post (`/Q`, or auto-quote if they have it on), and on FTN areas the reply
+  carries the post's MSGID so other systems thread it under the post. If
+  the post has been deleted, the caller can still reply, without quoting.
 - `DELETE_MESSAGE` deletes the caller's own posts, or any post if the caller
   is a co-sysop of the area. Deleting their own post takes back its credit.
 
