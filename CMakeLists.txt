@@ -19,7 +19,6 @@ endif()
 # confusing error later on.
 set(_wwiv_required_submodule_files
   "vcpkg/scripts/buildsystems/vcpkg.cmake"
-  "deps/my_basic/core/my_basic.c"
   "deps/pdcurses/CMakeLists.txt"
   "deps/cryptlib/makefile"
 )
@@ -57,20 +56,19 @@ if(WWIV_HUNSPELL AND WWIV_HUNSPELL_VCPKG AND NOT "spellcheck" IN_LIST VCPKG_MANI
   list(APPEND VCPKG_MANIFEST_FEATURES "spellcheck")
 endif()
 
-# wwivbasic, the new BASIC interpreter (wwivbasic/), is built by default
-# (except on OS/2). Building it doesn't change which engine runs scripts: that
-# is the script_flags setting in config.json, which defaults to the legacy
-# (my_basic) engine. It adds the "wwivbasic" feature in vcpkg.json (the ANTLR
-# runtime), so like the spellcheck feature above it has to be decided before
-# project().
+# wwivbasic (wwivbasic/), the BASIC interpreter that runs WWIVbasic scripts, is
+# built by default except on OS/2, which has no ANTLR runtime. Without it the
+# BBS can't run scripts. It adds the "wwivbasic" feature in vcpkg.json (the
+# ANTLR runtime), so like the spellcheck feature above it has to be decided
+# before project().
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "OS2")
-  set(_wwiv_wwivbasic_next_default OFF)
+  set(_wwiv_wwivbasic_default OFF)
 else()
-  set(_wwiv_wwivbasic_next_default ON)
+  set(_wwiv_wwivbasic_default ON)
 endif()
-option(WWIV_WWIVBASIC_NEXT "Build wwivbasic, the new BASIC interpreter"
-  ${_wwiv_wwivbasic_next_default})
-if(WWIV_WWIVBASIC_NEXT AND NOT "wwivbasic" IN_LIST VCPKG_MANIFEST_FEATURES)
+option(WWIV_WWIVBASIC "Build wwivbasic, the interpreter for WWIVbasic scripts"
+  ${_wwiv_wwivbasic_default})
+if(WWIV_WWIVBASIC AND NOT "wwivbasic" IN_LIST VCPKG_MANIFEST_FEATURES)
   list(APPEND VCPKG_MANIFEST_FEATURES "wwivbasic")
 endif()
 
@@ -128,9 +126,6 @@ if(WIN32 OR OS2)
   add_subdirectory(deps/pdcurses EXCLUDE_FROM_ALL)
 endif()
 
-# Targets for third-party code that has no CMakeLists.txt of its own (my_basic).
-add_subdirectory(deps)
-
 #if (NOT OS2)
 set(WWIV_BUILD_WWIVD ON)
 #endif()
@@ -161,7 +156,7 @@ endif()
 add_subdirectory(wwivfsed)
 add_subdirectory(wwivutil)
 
-if (WWIV_WWIVBASIC_NEXT)
+if (WWIV_WWIVBASIC)
   add_subdirectory(wwivbasic)
 endif()
 

@@ -1,4 +1,4 @@
-# CMake for wwivbasic, the ANTLR-based BASIC interpreter (WWIV_WWIVBASIC_NEXT).
+# CMake for wwivbasic, the ANTLR-based BASIC interpreter (WWIV_WWIVBASIC).
 #
 # Targets:
 #   wwivbasic_interpreter  the interpreter library; embedders use the headers

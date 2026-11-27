@@ -89,17 +89,6 @@ add_library(
   wfc.cpp
   wwivfoss_inband.cpp
   basic/basic.cpp
-  basic/debug_model.cpp
-  basic/debug_state.cpp
-  basic/debugger.cpp
-  basic/util.cpp
-  basic/wwiv.cpp
-  basic/wwiv_data.cpp
-  basic/wwiv_file.cpp
-  basic/wwiv_io.cpp
-  basic/wwiv_os.cpp
-  basic/wwiv_time.cpp
-  basic/script_engine.cpp
   menus/config_menus.cpp
   menus/mainmenu.cpp
   menus/menucommands.cpp
@@ -164,7 +153,6 @@ target_link_libraries(
   common
   core 
   fsed
-  my_basic
   sdk 
   nlohmann_json::nlohmann_json
 
@@ -173,9 +161,9 @@ target_link_libraries(
  find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
 target_include_directories(bbs_lib PRIVATE ${CPP_HTTPLIB_INCLUDE_DIRS})
 
-# The new BASIC engine (wwivbasic) and its wwiv.* bindings. Without
-# WWIV_WWIVBASIC_NEXT only the legacy (my_basic) engine is built.
-if (WWIV_WWIVBASIC_NEXT)
+# The script engine (wwivbasic) and its wwiv.* bindings. Without
+# WWIV_WWIVBASIC the BBS can't run scripts.
+if (WWIV_WWIVBASIC)
   target_sources(bbs_lib PRIVATE
     basic/next/bbs_console.cpp
     basic/next/bbs_file_base.cpp
@@ -197,7 +185,7 @@ if (WWIV_WWIVBASIC_NEXT)
     basic/next/wwiv_time.cpp
   )
   target_link_libraries(bbs_lib wwivbasic_interpreter)
-  target_compile_definitions(bbs_lib PUBLIC WWIV_WWIVBASIC_NEXT)
+  target_compile_definitions(bbs_lib PUBLIC WWIV_WWIVBASIC)
 endif()
 
 if (WWIV_SSH_CRYPTLIB AND NOT OS2) 
@@ -252,12 +240,10 @@ if (WWIV_BUILD_TESTS)
       wwivfoss_inband_test.cpp
       xfer_test.cpp
       xferovl_test.cpp
-      basic/basic_test.cpp
-      basic/script_engine_test.cpp
-      basic/util_test.cpp
     )
-    if (WWIV_WWIVBASIC_NEXT)
+    if (WWIV_WWIVBASIC)
       list(APPEND test_sources
+        basic/basic_test.cpp
         basic/next/debug_session_test.cpp
         basic/next/next_engine_test.cpp
         basic/next/wwiv_bindings_test.cpp
@@ -268,7 +254,7 @@ if (WWIV_BUILD_TESTS)
         basic/next/wwiv_user_test.cpp
         basic/next/wwiv_io_screen_test.cpp
         basic/next/wwiv_screen_test.cpp
-        basic/next/side_by_side_test.cpp
+        basic/next/shipped_scripts_test.cpp
         basic/next/type_ahead_test_util.cpp
       )
     endif()
@@ -277,10 +263,9 @@ if (WWIV_BUILD_TESTS)
       list(APPEND test_sources exec_socket_test.cpp execexternal_test.cpp)
     endif()
     add_executable(bbs_tests ${test_sources})
-    if (WWIV_WWIVBASIC_NEXT)
-      # side_by_side_test.cpp runs the scripts WWIV ships on both engines (and
-      # wwiv_msg_test.cpp runs msgview.bas, which needs the new one). They
-      # are built into bbs_tests as byte arrays (oneliners.bas isn't UTF-8), so
+    if (WWIV_WWIVBASIC)
+      # shipped_scripts_test.cpp runs the scripts WWIV ships (and
+      # wwiv_msg_test.cpp runs msgview.bas). They are built into bbs_tests as byte arrays (oneliners.bas isn't UTF-8), so
       # the test doesn't need the source tree when it runs.
       set(_scripts_dir "${PROJECT_SOURCE_DIR}/install/scripts")
       set(_scripts_h "${CMAKE_CURRENT_BINARY_DIR}/generated/install_scripts.h")

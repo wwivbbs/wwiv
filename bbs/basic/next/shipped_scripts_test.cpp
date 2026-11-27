@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "bbs/basic/script_engine.h"
+#include "bbs/basic/next/next_engine.h"
 #include "bbs/bbs.h"
 #include "bbs/bbs_helper.h"
 #include "bbs/application.h"
@@ -44,10 +44,8 @@ using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-// The scripts WWIV ships (install/scripts), run on both engines. The output
-// must match, apart from the documented PRINT layout (wwivbasic/PORTING.md:
-// my_basic put each PRINT item on its own line).
-class SideBySideTest : public ::testing::Test {
+// The scripts WWIV ships (install/scripts), run as the BBS runs them.
+class ShippedScriptsTest : public ::testing::Test {
 protected:
   void SetUp() override {
     helper.SetUp();
@@ -86,44 +84,26 @@ protected:
     }
   }
 
-  // Runs a script file on an engine and returns what it printed.
-  std::string Run(script_engine_t e, const std::string& script) {
+  // Runs a script file and returns what it printed.
+  std::string Run(const std::string& script) {
     helper.io()->Clear();
-    const auto engine = CreateScriptEngine(e, bin, bout, helper.config(), &helper.context());
-    EXPECT_TRUE(engine->RunScript(script)) << to_string(e) << ": " << script;
+    NextEngine engine(bin, bout, helper.config(), &helper.context());
+    EXPECT_TRUE(engine.RunScript(script)) << script;
     return helper.io()->captured();
-  }
-
-  // Output without line breaks, to compare text whatever the PRINT layout.
-  static std::string WithoutLineBreaks(std::string s) {
-    std::erase(s, '\r');
-    std::erase(s, '\n');
-    return s;
   }
 
   BbsHelper helper{};
 };
 
-TEST_F(SideBySideTest, Hello) {
+TEST_F(ShippedScriptsTest, Hello) {
   RemoveDataFiles();
-  const auto legacy = Run(script_engine_t::legacy, "hello.bas");
-  RemoveDataFiles();
-  const auto next = Run(script_engine_t::next, "hello.bas");
-
-  // The same text...
-  EXPECT_EQ(WithoutLineBreaks(legacy), WithoutLineBreaks(next));
-
-  // ...laid out by each engine's PRINT rules. Note "len: " and "4", and
-  // "l=", "LIST" and "[end]": my_basic printed each item on its own line.
+  const auto out = Run("hello.bas");
   const auto version = wwiv::core::short_version();
   const std::string tail = "PrintList: \r\nLIST\r\na\r\nb\r\nc\r\nd\r\n"
                            "PrintList: \r\nLIST\r\na\r\nb\r\nc\r\nd\r\n";
   EXPECT_EQ(StrCat("Hello World\r\nwwiv\r\nYou are running version: ", version,
-                   "\r\nlen: \r\n4\r\nl=\r\nLIST\r\n[end]\r\n", tail),
-            legacy);
-  EXPECT_EQ(StrCat("Hello World\r\nwwiv\r\nYou are running version: ", version,
                    "\r\nlen: 4\r\nl=LIST[end]\r\n", tail),
-            next);
+            out);
 }
 
 // Adds a oneliner: yes, color 3, the text, not anonymous; then no more.
@@ -131,36 +111,28 @@ static std::string AddOneLiner(const std::string& text) {
   return StrCat("Y3", text, "\rNN");
 }
 
-TEST_F(SideBySideTest, OneLiners) {
+TEST_F(ShippedScriptsTest, OneLiners) {
   RemoveDataFiles();
   TypeAhead(AddOneLiner("Hello world"));
-  const auto legacy = Run(script_engine_t::legacy, "oneliners.bas");
-  RemoveDataFiles();
-  TypeAhead(AddOneLiner("Hello world"));
-  const auto next = Run(script_engine_t::next, "oneliners.bas");
-
-  EXPECT_EQ(legacy, next);
-  EXPECT_THAT(next, testing::HasSubstr("Enter Your One Liner:"));
-  EXPECT_THAT(next, testing::HasSubstr("Hello world"));
+  const auto out = Run("oneliners.bas");
+  EXPECT_THAT(out, testing::HasSubstr("Enter Your One Liner:"));
+  EXPECT_THAT(out, testing::HasSubstr("Hello world"));
 }
 
-TEST_F(SideBySideTest, OneLiners_EnginesShareTheirData) {
+TEST_F(ShippedScriptsTest, OneLiners_KeepsItsData) {
   RemoveDataFiles();
-  // Each engine adds a oneliner to the same wwiv.data file...
-  TypeAhead(AddOneLiner("from legacy"));
-  Run(script_engine_t::legacy, "oneliners.bas");
-  TypeAhead(AddOneLiner("from next"));
-  Run(script_engine_t::next, "oneliners.bas");
+  // Each run adds a oneliner to the same wwiv.data file...
+  TypeAhead(AddOneLiner("the first"));
+  Run("oneliners.bas");
+  TypeAhead(AddOneLiner("the second"));
+  Run("oneliners.bas");
 
-  // ...and both then list both, in order.
-  for (const auto e : {script_engine_t::legacy, script_engine_t::next}) {
-    SCOPED_TRACE(to_string(e));
-    TypeAhead("N");
-    const auto out = Run(e, "oneliners.bas");
-    const auto first = out.find("from legacy");
-    const auto second = out.find("from next");
-    EXPECT_NE(std::string::npos, first) << out;
-    EXPECT_NE(std::string::npos, second) << out;
-    EXPECT_LT(first, second);
-  }
+  // ...and the next lists both, in order.
+  TypeAhead("N");
+  const auto out = Run("oneliners.bas");
+  const auto first = out.find("the first");
+  const auto second = out.find("the second");
+  EXPECT_NE(std::string::npos, first) << out;
+  EXPECT_NE(std::string::npos, second) << out;
+  EXPECT_LT(first, second);
 }

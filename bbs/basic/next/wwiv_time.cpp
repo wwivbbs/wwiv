@@ -25,7 +25,7 @@
 
 namespace wwiv::bbs::basic {
 
-// The wwiv.time module (bbs/basic/wwiv_time.cpp).
+// The wwiv.time module.
 void RegisterWwivTime(wwivbasic::Interpreter& interp, const WwivBindings&) {
   auto& m = interp.add_module("wwiv.time");
 

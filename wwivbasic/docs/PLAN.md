@@ -27,11 +27,13 @@ lambdas, coroutines.
 ## Architecture
 
 ```
-RunBasicScript(name)                       (WWIV)
-   └─ ScriptEngine, picked at runtime
-        ├─ LegacyEngine → bbs/basic/Basic (my_basic)          [always built]
-        └─ NextEngine   → wwivbasic + bindings in WWIV        [WWIV_WWIVBASIC_NEXT]
+RunBasicScript(name)                       (WWIV, bbs/basic/basic.cpp)
+   └─ NextEngine → wwivbasic + bindings in WWIV (bbs/basic/next/)   [WWIV_WWIVBASIC]
+        └─ with bbs --debug: DebugSession + DebugServer (/debug/v1)
 ```
+
+Until M6 there was a second engine, `LegacyEngine` (my_basic), and a
+`ScriptEngine` interface to pick one at runtime.
 
 - **wwivbasic** (`wwivbasic/`) is the language: parser, interpreter, standard
   library, and a stable embedding API (public headers for `Context`, `Module`,
@@ -45,15 +47,14 @@ RunBasicScript(name)                       (WWIV)
   The `wwiv.*` modules and future SDK bindings live in WWIV next to the code
   they wrap (for example `bbs/basic/next/`), and are tested with WWIV's test
   helpers. Adding a binding never requires changing the interpreter.
-- **Building and choosing the engine.** A CMake option (`WWIV_WWIVBASIC_NEXT`,
-  off at first, on by default since M4 except on OS/2) decides whether the new engine is built at all, so WWIV builds
-  without the ANTLR runtime until it's ready (the generated parser is checked
-  in, so Java is never needed). In builds that have both, a runtime
-  setting chooses the engine (the `script_flag_engine_next` bit in
-  `config.json`'s `script_flags`, "Use New Engine" in wwivconfig's scripting
-  settings, plus `bbs --basic_engine=legacy|next` for testing), so sysops
-  can try it and fall back without rebuilding, and scripts can be run on both
-  and their output compared.
+- **Building.** A CMake option, `WWIV_WWIVBASIC` (on by default, except on
+  OS/2, which has no ANTLR runtime), decides whether wwivbasic is built. Without
+  it the BBS can't run scripts. The generated parser is checked in, so Java is
+  never needed. (From M4 to M6 the option was `WWIV_WWIVBASIC_NEXT`, and a
+  runtime setting chose between the engines: the `script_flag_engine_next` bit
+  in `config.json`, "Use New Engine" in wwivconfig, and
+  `bbs --basic_engine=legacy|next`. Those are gone; the bit is unused, and
+  `--basic_engine` is accepted and ignored.)
 - **Repo layout.** wwivbasic lives in the WWIV repo under `wwivbasic/`, a
   library next to `core/` and `sdk/` that depends only on `core/`, the ANTLR
   runtime and fmt. Its public headers are at the top of `wwivbasic/`
@@ -252,8 +253,14 @@ Done when wwivbasic is WWIV's only BASIC engine.
       `source()` in wwivbasic; `DebugSession` and `DebugServer` in
       `bbs/basic/next/`. Documented in [DEBUGGER.md](DEBUGGER.md), with how
       it differs from the legacy debugger
-- [ ] Make the new engine the default; publish the porting guide
-- [ ] Remove `deps/my_basic`, the legacy engine and the CMake option
+- [x] Make the new engine the default; publish the porting guide. Done by
+      removing the legacy engine: wwivbasic is the only engine.
+      [PORTING.md](../PORTING.md) is no longer a draft
+- [x] Remove `deps/my_basic`, the legacy engine and the engine switch
+      (`--basic_engine`, "Use New Engine"). The CMake option stays, renamed
+      `WWIV_WWIVBASIC`, for OS/2: builds without the ANTLR runtime have no
+      script engine. The tests that ran on both engines run on wwivbasic;
+      `wwiv.data`'s tests check its files against the bytes my_basic wrote
 
 ## Open decisions
 
@@ -263,7 +270,7 @@ Done when wwivbasic is WWIV's only BASIC engine.
   both it and `iterator`/`move_next`/`get` are supported
 - Floating-point numbers: decided, added in M3 (needed by `wwiv.data` and the
   SDK)
-- Engine selection: decided, a CMake option to build the new engine plus a
+- Engine selection (until M6): decided, a CMake option to build the new engine plus a
   runtime setting to choose it: a bit in `config.json`'s `script_flags`
   (default legacy), overridden by `bbs --basic_engine`. If `config.json` asks
   for the new engine in a build without it, WWIV logs a warning and uses

@@ -55,11 +55,11 @@ using namespace std::chrono_literals;
 // The debugger listens only on this machine: anyone who can reach it can
 // read the script's variables and stop it.
 constexpr char kDebuggerHost[] = "127.0.0.1";
-// How long a script waits for the debugger to attach, as the legacy engine.
+// How long a script waits for the debugger to attach, as in the legacy engine.
 constexpr auto kDebuggerAttachWait = 120s;
 
 // The module name for a script file: its name in lower case without ".bas",
-// as the legacy engine does.
+// as in the legacy engine.
 std::string ScriptBaseName(const std::string& script_name) {
   auto basename = ToStringLowerCase(script_name);
   if (ends_with(basename, ".bas")) {
@@ -69,8 +69,7 @@ std::string ScriptBaseName(const std::string& script_name) {
 }
 
 // Reads scriptdir/script_name, with the same checks and messages as the
-// legacy engine (Basic::RunScript and ReadBasicFile in basic.cpp), except
-// that ".." is rejected before the file is looked for.
+// legacy engine, except that ".." is rejected before the file is looked for.
 std::optional<std::string> ReadScriptFile(common::Output& out, const std::filesystem::path& dir,
                                           const std::string& script_name) {
   // Reject ".." before looking for the file, so the messages don't tell the
@@ -117,8 +116,8 @@ bool NextEngine::RunScript(const std::string& script_name) {
 }
 
 bool NextEngine::RunScript(const std::string& module, const std::string& text) {
-  // The legacy engine keeps this name as given (in upper case; wwiv.data
-  // lowers it again).
+  // The legacy engine kept this name as given (in upper case; wwiv.data
+  // lowered it again).
   return RunText(module, ToStringLowerCase(module), text);
 }
 

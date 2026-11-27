@@ -137,9 +137,6 @@ public:
   [[nodiscard]] bool debug_wwivbasic() const;
   [[nodiscard]] int debug_wwivbasic_port() const;
   void debug_wwivbasic_port(int d);
-  /** The BASIC engine chosen with bbs --basic_engine, or "" to use the config setting */
-  [[nodiscard]] const std::string& basic_engine() const noexcept { return basic_engine_; }
-  void basic_engine(const std::string& e) { basic_engine_ = e; }
 
   [[nodiscard]] bool incom() const noexcept { return incom_; }
   void incom(bool i) { incom_ = i; }
@@ -332,7 +329,6 @@ private:
   int system_bps_{0};
   std::unique_ptr<wwiv::sdk::menus::MenuSet56> current_menu_set_;
   int debug_wwivbasic_port_{0};
-  std::string basic_engine_;
 };
 
 class MapValueProvider : public sdk::value::ValueProvider {
