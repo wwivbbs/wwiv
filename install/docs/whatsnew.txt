@@ -38,6 +38,9 @@ What's New in WWIV 5.10.0 (2026)
   script is stopped too, and SIGKILL if it hasn't exited 3 seconds later.
   On Windows the door runs in a job object, so stopping it also stops an
   emulator its launcher started (e.g. DOSBox-X from WWIVFOSS's dosdoor.cmd).
+  When a socket door returns to the BBS, even after a normal exit, any
+  processes it left running are ended too. A door that needs a helper to
+  outlive it must start the helper with CREATE_BREAKAWAY_FROM_JOB.
 
 What's New in WWIV 5.9.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -621,13 +621,18 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
   // A socket door is often a launcher (e.g. WWIVFOSS's dosdoor.cmd) that runs
   // the door in a child process (DOSBox-X). Run it in a job, so stopping the
   // door stops all of it rather than only the launcher, as the Unix side does
-  // with a process group. Closing the job also ends anything left behind.
+  // with a process group. Closing the job also ends anything left behind,
+  // even after a normal exit. BREAKAWAY_OK lets a door that asks for it
+  // (CREATE_BREAKAWAY_FROM_JOB) start a process outside the job, so that
+  // process can outlive the door, and CreateProcess doesn't fail with
+  // access denied.
   HANDLE job{nullptr};
   if (exec_socket) {
     job = CreateJobObject(nullptr, nullptr);
     if (job) {
       JOBOBJECT_EXTENDED_LIMIT_INFORMATION info{};
-      info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+      info.BasicLimitInformation.LimitFlags =
+          JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_BREAKAWAY_OK;
       if (!SetInformationJobObject(job, JobObjectExtendedLimitInformation, &info, sizeof(info))) {
         LOG(WARNING) << "SetInformationJobObject failed: " << GetLastError();
         CloseHandle(job);
@@ -678,7 +683,22 @@ int exec_cmdline(wwiv::bbs::CommandLine& cmdline, int flags) {
       CloseHandle(job);
       job = nullptr;
     }
-    ResumeThread(pi.hThread);
+    if (ResumeThread(pi.hThread) == static_cast<DWORD>(-1)) {
+      // The door would stay suspended and never run, so don't wait on it.
+      const auto error_message = ErrorAsString(::GetLastError());
+      LOG(ERROR) << "ResumeThread failed: " << error_message;
+      sysoplog(fmt::format("!!! ResumeThread failed for command: [{}] with Error Message: {}",
+                           working_cmdline, error_message));
+      stop_door();
+      WaitForSingleObject(pi.hProcess, 5000);
+      CloseHandle(pi.hThread);
+      CloseHandle(pi.hProcess);
+      if (a()->sess().ok_modem_stuff() && a()->sess().using_modem() && need_reopen_remoteio) {
+        VLOG(1) << "Reopening comm (on ResumeThread error)";
+        bout.remoteIO()->open();
+      }
+      return -1;
+    }
   }
   CloseHandle(pi.hThread);
   bool terminated = false;
