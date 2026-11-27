@@ -18,6 +18,7 @@
 #ifndef INCLUDED_BBS_BASIC_SCRIPT_ENGINE_H
 #define INCLUDED_BBS_BASIC_SCRIPT_ENGINE_H
 
+#include "bbs/basic/file_base.h"
 #include "bbs/basic/message_base.h"
 #include "bbs/basic/user_base.h"
 
@@ -69,13 +70,15 @@ public:
 };
 
 // Creates an engine. Returns nullptr if the engine isn't in this build.
-// msgs and users are what the new engine's wwiv.msg and wwiv.user read (no
-// module without them); the legacy engine doesn't use them.
+// msgs, users and files are what the new engine's wwiv.msg, wwiv.user and
+// wwiv.files read (no module without them); the legacy engine doesn't use
+// them.
 std::unique_ptr<ScriptEngine> CreateScriptEngine(script_engine_t e, common::Input& in,
                                                  common::Output& out, const sdk::Config& config,
                                                  common::Context* ctx,
                                                  std::unique_ptr<MessageBase> msgs = nullptr,
-                                                 std::unique_ptr<UserBase> users = nullptr);
+                                                 std::unique_ptr<UserBase> users = nullptr,
+                                                 std::unique_ptr<FileBase> files = nullptr);
 
 } // namespace wwiv::bbs::basic
 

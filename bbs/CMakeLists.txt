@@ -178,6 +178,7 @@ target_include_directories(bbs_lib PRIVATE ${CPP_HTTPLIB_INCLUDE_DIRS})
 if (WWIV_WWIVBASIC_NEXT)
   target_sources(bbs_lib PRIVATE
     basic/next/bbs_console.cpp
+    basic/next/bbs_file_base.cpp
     basic/next/bbs_message_base.cpp
     basic/next/bbs_user_base.cpp
     basic/next/next_engine.cpp
@@ -185,6 +186,7 @@ if (WWIV_WWIVBASIC_NEXT)
     basic/next/wwiv.cpp
     basic/next/wwiv_data.cpp
     basic/next/wwiv_file.cpp
+    basic/next/wwiv_files.cpp
     basic/next/wwiv_io.cpp
     basic/next/wwiv_msg.cpp
     basic/next/wwiv_screen.cpp
@@ -258,6 +260,7 @@ if (WWIV_BUILD_TESTS)
         basic/next/wwiv_bindings_test.cpp
         basic/next/wwiv_data_test.cpp
         basic/next/wwiv_file_os_test.cpp
+        basic/next/wwiv_files_test.cpp
         basic/next/wwiv_msg_test.cpp
         basic/next/wwiv_user_test.cpp
         basic/next/wwiv_io_screen_test.cpp

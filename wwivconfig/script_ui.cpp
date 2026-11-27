@@ -34,6 +34,7 @@ void script_ui(Config& config) {
   auto enable_msg = config.script_package_msg_enabled();
   auto enable_msg_write = config.script_package_msg_write_enabled();
   auto enable_user = config.script_package_user_enabled();
+  auto enable_files = config.script_package_files_enabled();
   auto engine_next = config.script_engine_next();
 
   auto y = 1;
@@ -62,6 +63,10 @@ void script_ui(Config& config) {
             new BooleanEditItem(&enable_user),
     "Enable package wwiv.user (new engine only): the caller, and other users' names.", 1, y);
   ++y;
+  items.add(new Label("Enable Package FILES:"), new BooleanEditItem(&enable_files),
+            "Enable package wwiv.files (new engine only): list the file areas the user can list.",
+            1, y);
+  ++y;
   items.add(new Label("Use New Engine:"),
             new BooleanEditItem(&engine_next),
     "Run scripts on wwivbasic, the new engine (needs a BBS built with WWIV_WWIVBASIC_NEXT).", 1, y);
@@ -76,5 +81,6 @@ void script_ui(Config& config) {
   config.script_package_msg_enabled(enable_msg);
   config.script_package_msg_write_enabled(enable_msg_write);
   config.script_package_user_enabled(enable_user);
+  config.script_package_files_enabled(enable_files);
   config.script_engine_next(engine_next);
 }

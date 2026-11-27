@@ -1251,6 +1251,11 @@ void Application::init_message_areas_for_test() {
   create_message_api();
 }
 
+void Application::init_file_areas_for_test() {
+  read_dirs();
+  fileapi_ = std::make_unique<files::FileApi>(config_->datadir());
+}
+
 void Application::init_users_for_test() {
   user_manager_ = std::make_unique<UserManager>(*config_);
   read_names();

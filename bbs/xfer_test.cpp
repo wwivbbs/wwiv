@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "bbs/xfer.h"
 
+#include "bbs/bbs_helper.h"
+
 #include "gtest/gtest.h"
 #include <string>
 
@@ -37,4 +39,12 @@ TEST(XferTest, Okfn) {
   EXPECT_TRUE(!okfn("PRN"));
   EXPECT_TRUE(!okfn("KBD$"));
   EXPECT_TRUE(okfn("COM1A"));
+}
+
+// The BBS's file mask prompt ignores spaces around the mask.
+TEST(XferFileMaskTest, TrimsSpaces) {
+  BbsHelper helper;
+  helper.SetUp();
+  helper.io()->push_local_keys(" *.zip \r");
+  EXPECT_EQ(aligns("*.zip"), file_mask(""));
 }

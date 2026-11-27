@@ -22,6 +22,7 @@
 #include "bbs/bbs.h"
 #include "bbs/basic/script_engine.h"
 #ifdef WWIV_WWIVBASIC_NEXT
+#include "bbs/basic/next/bbs_file_base.h"
 #include "bbs/basic/next/bbs_message_base.h"
 #include "bbs/basic/next/bbs_user_base.h"
 #endif
@@ -300,14 +301,16 @@ bool RunBasicScript(const std::string& script_name) {
   const auto engine_type = SelectScriptEngine(a()->sess().basic_engine(), *a()->config());
   std::unique_ptr<MessageBase> msgs;
   std::unique_ptr<UserBase> users;
+  std::unique_ptr<FileBase> files;
 #ifdef WWIV_WWIVBASIC_NEXT
   if (engine_type == script_engine_t::next) {
     msgs = std::make_unique<BbsMessageBase>(*a());
     users = std::make_unique<BbsUserBase>(*a());
+    files = std::make_unique<BbsFileBase>(*a());
   }
 #endif
   const auto engine = CreateScriptEngine(engine_type, bin, bout, *a()->config(), &a()->context(),
-                                         std::move(msgs), std::move(users));
+                                         std::move(msgs), std::move(users), std::move(files));
   if (!engine) {
     return false;
   }

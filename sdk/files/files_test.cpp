@@ -376,6 +376,49 @@ TEST(FileAlignTest, Align_WildCard) {
   EXPECT_EQ("FILENAME.Z? ", align("filename.z?"));
 }
 
+// The name is cut to 8 characters and the extension (after the last '.') to
+// 3; a name with more than one '.' keeps the earlier ones in its name.
+TEST(FileAlignTest, Align_Truncates) {
+  EXPECT_EQ("AVERYLON.ZIP", align("averylongname.zip"));
+  EXPECT_EQ("X       .ZIP", align("x.zipfile"));
+  EXPECT_EQ("FILE.TAR.GZ ", align("file.tar.gz"));
+  EXPECT_EQ("FILE    .   ", align("file."));
+  EXPECT_EQ("X       .ZIP", align("x .zip"));
+}
+
+// Names starting with '.', or with a path or device character, align to a
+// blank name.
+TEST(FileAlignTest, Align_Invalid) {
+  EXPECT_EQ("        .   ", align(".hidden"));
+  EXPECT_EQ("        .   ", align("dir/file.zip"));
+  EXPECT_EQ("        .   ", align("dir\\file.zip"));
+  EXPECT_EQ("        .   ", align("c:file.zip"));
+  EXPECT_EQ("        .   ", align("a<b"));
+  EXPECT_EQ("        .   ", align("a>b"));
+  EXPECT_EQ("        .   ", align("a|b"));
+}
+
+// After a '*' every character is '?'; after a space in the name, every
+// character is a space until a '*'.
+TEST(FileAlignTest, Align_WildCardAndSpace) {
+  EXPECT_EQ("????????.???", align("*.*"));
+  EXPECT_EQ("A???????.Z  ", align("a* b.z"));
+  EXPECT_EQ("A  ?????.Z  ", align("a b*.z"));
+  EXPECT_EQ("A       .Z  ", align("a bc.z"));
+  EXPECT_EQ("A?C     .Z  ", align("a?c.z"));
+}
+
+// Names and extensions longer than the old 40-character buffers, which
+// align() used to overflow, are cut like any other.
+TEST(FileAlignTest, Align_Long) {
+  const std::string name(100, 'n');
+  const std::string ext(100, 'e');
+  EXPECT_EQ("NNNNNNNN.EEE", align(name + "." + ext));
+  EXPECT_EQ("NNNNNNNN.   ", align(name));
+  EXPECT_EQ("X       .EEE", align("x." + ext));
+  EXPECT_EQ("NNNNNNNN.ZIP", align(std::string(5000, 'n') + ".zip"));
+}
+
 TEST(FileAlignTest, UnAlign) {
   EXPECT_EQ(unalign("        .   "), "");
   EXPECT_EQ(unalign("X       .   "), "x");

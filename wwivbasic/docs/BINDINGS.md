@@ -1,10 +1,211 @@
 # WWIV bindings for scripts
 
-The modules WWIV gives scripts on the new engine, beyond the `wwiv`, `wwiv.io`,
-`wwiv.io.file`, `wwiv.data`, `wwiv.os` and `wwiv.time` modules that the legacy
-engine also has (see [PORTING.md](../PORTING.md) for how those differ).
+The modules WWIV gives scripts. The bindings live in WWIV: the new engine's
+in `bbs/basic/next/`, the legacy (my_basic) engine's in `bbs/basic/`. The
+first six modules are in both engines, with the same names and behaviour
+(see [PORTING.md](../PORTING.md) for the small differences); the rest are new
+in the new engine.
 
-The bindings live in WWIV, in `bbs/basic/next/`.
+Function and member names are case-insensitive, like the rest of the
+language. Import a module to call its functions without the module name
+(`import "@wwiv.io"`, then `pl("Hi")`), or call them with it
+(`wwiv.io.pl("Hi")`).
+
+## Modules
+
+| Module | | Engines | On? |
+| --- | --- | --- | --- |
+| [`wwiv`](#wwiv) | The BBS: version, menu commands, ACS checks | both | always |
+| [`wwiv.io`](#wwivio) | Output and input; full-screen primitives (new engine) | both | always |
+| [`wwiv.time`](#wwivtime) | Formatting times | both | always |
+| [`wwiv.data`](#wwivdata) | Saving and loading a list, for all users or per user | both | always |
+| [`wwiv.io.file`](#wwiviofile) | Reading files in gfiles, writing them (new engine) | both | "Enable Package FILE", off by default |
+| [`wwiv.os`](#wwivos) | Running external programs | both | "Enable Package OS", off by default |
+| [`wwiv.msg`](#wwivmsg) | The caller's message areas: reading, and posting | new | "Enable Package MSG", on by default; posting needs "Enable MSG Writing", off by default |
+| [`wwiv.files`](#wwivfiles) | The caller's file areas (read-only) | new | "Enable Package FILES", on by default |
+| [`wwiv.user`](#wwivuser) | The caller, and other users' names | new | "Enable Package USER", on by default |
+| [`wwiv.screen`](#wwivscreen) | Full-screen layouts and lightbar lists | new | always |
+
+The settings are in wwivconfig's scripting settings (`script_flags` in
+`config.json`). A module that's off isn't there: using it stops the script
+with an error.
+
+### Permissions
+
+The modules that reach the BBS's data show a script only what the caller
+could see or do in the BBS itself, with the caller's own rights:
+
+- `wwiv.msg` lists the caller's subs (their read ACS, in the current
+  conference), hides unvalidated and deleted posts from all but co-sysops,
+  and applies the anonymous post rules of the BBS's reader. Posting and
+  deleting are a separate setting, and follow the BBS's posting rules.
+- `wwiv.files` lists the caller's directories (their ACS, in the current
+  conference). It only reads: scripts can't upload, download, change or
+  delete files.
+- `wwiv.user` shows the caller's own details, and only the name, number and
+  last logon of other users.
+
+`wwiv.io.file` and `wwiv.os` reach the sysop's files and programs rather
+than the caller's data, so they're off until the sysop turns them on.
+
+## wwiv
+
+| Function | |
+| --- | --- |
+| `VERSION()` | WWIV's release version, such as `"5.9.0"` (`""` in a build without one) |
+| `MODULE_NAME()` | Prints `wwiv` and a newline, and returns `"wwiv"` |
+| `COMMAND(cmd[, data])` | Runs the menu command `cmd` (as in a menu item, such as `"Logoff"`) with `data` |
+| `EVAL(acs)` | 1 if the caller meets the ACS expression `acs` (such as `"user.sl >= 50"`), otherwise 0; 0 without `acs` |
+| `INTERPRET(s)` | The value of the macro named by the first character of `s`, as `\|@` codes show it (`INTERPRET("N")` is the caller's name) |
+
+## wwiv.io
+
+| Function | |
+| --- | --- |
+| `OUTSTR(text...)`, `PUTS(text...)` | Writes each argument, running pipe color codes and MCI codes. `PUTS` is the old name. |
+| `PL(text...)` | Writes each argument followed by a newline |
+| `NL([n])` | Writes `n` newlines (1 without `n`) |
+| `CLS()` | Clears the screen |
+| `PAUSE()` | Shows the "pause" prompt and waits for a key |
+| `PRINTFILE(name)` | Shows the text file `name` from gfiles, as the BBS shows its menus and other text files |
+| `GETS(n)` | Reads a line of at most `n` characters (254 at most) and returns it; `""` without `n` |
+| `GETKEY()` | Waits for a key and returns it, as a one-character string |
+| `YN(prompt...)` | Writes the prompt and asks Yes or No, defaulting to No; 1 for yes, 0 for no |
+| `NY(prompt...)` | As `YN`, defaulting to Yes |
+| `MODULE_NAME()` | `"wwiv.io"` |
+
+Once the caller hangs up, `GETKEY` and `GETS` return `""` and the script
+stops at its next statement.
+
+### New in the new engine
+
+| Function | |
+| --- | --- |
+| `OUTSTR_NOMCI(text...)` | As `OUTSTR`, but with MCI codes shown as written instead of run. Colors still show. |
+| `PL_NOMCI(text...)` | As `PL`, with MCI codes shown as written. |
+
+`OUTSTR`, `PL` and `PRINT` still run MCI codes, as scripts usually want for
+their own text.
+
+#### For full-screen UIs
+
+These are the pieces a full-screen, lightbar-style UI is built from. Their
+names are WWIV's own where WWIV has one (4.24's `okansi`, `ansic`, `prt`,
+`pla`, `onek` and `nsl`; `goxy` as `GOTOXY`), otherwise Synchronet's. Without
+ANSI the screen functions do nothing, so check `OKANSI()` and use a plain UI
+instead. Once the caller hangs up, the input functions stop waiting and the
+script stops at its next statement.
+
+| Function | |
+| --- | --- |
+| `OKANSI()` | `TRUE` if the caller has ANSI on |
+| `GOTOXY(x, y)` | Moves the cursor to column `x`, row `y`, counting from 1 |
+| `CLREOL()` | Clears from the cursor to the end of the line |
+| `ANSIC(n)` | Selects color `n` (0 to 9) of the caller's colors, as `\|#n` does |
+| `PRT(n, text...)` | Writes `text` in color `n`, then goes back to color 0 |
+| `PLA(text)` | Writes a line the caller can abort (Space or ^C); returns `TRUE` if they did |
+| `ONEK(keys)` | Waits for the caller to press one of `keys` (case doesn't matter) and returns it in upper case. It doesn't echo the key or start a new line. Once the caller hangs up it returns the first of `keys`, so put the one that quits first. |
+| `READKEY()` | Waits for a key and returns it; for a special key, its name: `UP`, `DOWN`, `LEFT`, `RIGHT`, `HOME`, `END`, `PGUP`, `PGDN`, `INS`, `DEL`, `F1` to `F10`. A result longer than one character is a special key; Enter is `CHR(13)`. Digits come back as digits. Keys the BBS handles itself, such as Ctrl+T, are skipped. `GETKEY` is unchanged. |
+| `SCREEN_COLUMNS()`, `SCREEN_ROWS()` | The size of the caller's screen |
+| `STRIP_COLORS(s)` | `s` without its pipe and heart color codes |
+| `LEN_COLORS(s)` | How wide `s` shows on the screen |
+| `PAD_COLORS(s, n)` | `s` padded with spaces to show `n` wide (`n` at most 65535) |
+| `PAUSING(on)` | Turns the "More?" prompt on (`TRUE`) or off (`FALSE`), and returns whether it was on. The user's own setting comes back when the script ends. The caller can still switch it with Ctrl+Y. |
+| `NSL()` | Seconds left in this call |
+
+```basic
+import "@wwiv.io"
+
+If Not okansi() Then
+  pl("This needs ANSI.")
+  End
+EndIf
+x = pausing(FALSE)
+cls()
+gotoxy(1, 1)
+prt(5, pad_colors("|#1Messages", screen_columns()))
+gotoxy(1, screen_rows())
+outstr("|#9Press Q to quit: ")
+k = ""
+While k <> "Q" And k <> "q"
+  k = readkey()
+  gotoxy(1, 3)
+  clreol()
+  outstr("You pressed: ", k)
+Wend
+```
+
+## wwiv.time
+
+| Function | |
+| --- | --- |
+| `FORMAT(t, format)` | The time `t` (a time_t, as `DATE` and `LAST_ON` are) formatted with a strftime format, such as `"%m/%d/%y %H:%M"` |
+| `MODULE_NAME()` | `"wwiv.time"` |
+
+## wwiv.data
+
+Saves a script's data between calls: a LIST of integers, reals, strings and
+booleans, either for all users or for the caller. The files are
+`data/NAME.script.json` and `data/NAME.user.N.script.json`, where `NAME` is
+the script's name without `.bas` and `N` the caller's user number; both
+engines read and write the same files.
+
+| Function | |
+| --- | --- |
+| `SAVE(scope, list)` | Replaces the scope's saved data with `list` |
+| `LOAD(scope, list)` | Appends the scope's saved data to `list` (nothing if none is saved) |
+| `MODULE_NAME()` | `"wwiv.data"` |
+
+`scope` is `"GLOBAL"` (for all users) or `"USER"` (for the caller); any
+other string is `"GLOBAL"`. Only lists can be saved. `TRUE` and `FALSE` are
+saved as 1 and 0, and reals with 32-bit precision, as my_basic did.
+
+```basic
+import "@wwiv.data"
+
+visits = list()
+load("USER", visits)
+If len(visits) = 0 Then
+  push(visits, 0)
+EndIf
+set(visits, 0, get(visits, 0) + 1)
+save("USER", visits)
+print "You've run this "; get(visits, 0); " times."
+```
+
+## wwiv.io.file
+
+Text files in the BBS's gfiles directory, or (for reading) the current menu
+set's. Off until the sysop turns on "Enable Package FILE" (the
+`script_flag_enable_file` bit, `0x0002`).
+
+| Function | |
+| --- | --- |
+| `OPEN_OPTIONS(location)` | Where `OPEN` opens files (a `file_options`): `"GFILES"`, or `"MENUS"` (the current menu set's gfiles, read-only) |
+| `OPEN(options, name, mode)` | Opens the file `name` (only its file name part is used) and returns a `file`. Mode `"W"` empties it and opens it for writing; any other mode opens it for reading. A file that can't be read reads as empty. |
+| `READINTOSTRING(file)` | The whole file as a string |
+| `READLINES(file, list)` | Appends the file's lines to `list` |
+| `LAST_MODIFIED(file)` | When the file was last written, as a time_t; 0 if it doesn't exist |
+| `WRITE(file, text...)` | Writes each argument to a file opened with `"W"` (new engine only) |
+| `WRITELINE(file, text...)` | Writes each argument followed by a newline (new engine only) |
+| `CLOSE(file)` | Closes the file, so the script can open it again (new engine only) |
+| `MODULE_NAME()` | `"wwiv.io.file"` |
+
+Names Windows treats as devices (`CON`, `NUL`, `COM1`...) or that contain `:`
+can't be opened, nor can a file the script already has open when either
+handle writes.
+
+## wwiv.os
+
+Runs external programs. Off until the sysop turns on "Enable Package OS"
+(the `script_flag_enable_os` bit, `0x0004`): a script that can use it can run
+any program as the BBS.
+
+| Function | |
+| --- | --- |
+| `EXEC_OPTIONS(type, dir, dropfile)` | How `EXEC` runs a program (an `exec_options`): `type` is `"DOOR32"`, `"STDIO"`, `"FOSSIL"` or `"NETFOSS"` (anything else is `DOOR32`); `dir` is `"BBS"` to run it in the BBS's directory, anything else the node's temp directory. `dropfile` isn't used yet. |
+| `EXEC(options, command)` | Runs the command line `command`; 1 if it exited with 0, otherwise 0 |
+| `MODULE_NAME()` | `"wwiv.os"` |
 
 ## wwiv.msg
 
@@ -175,66 +376,83 @@ The text keeps its pipe and heart color codes. Print text other users wrote
 run MCI codes (`|{...}` expressions and `|@` macros), so a post can't make the
 reader's screen show the reader's own details.
 
-## wwiv.io additions
+## wwiv.files
 
-The new engine adds these to `wwiv.io`; the other functions are as in the
-legacy engine.
+The file areas (directories) the caller can list, and the files in them, as
+the BBS's own file list shows them. It only reads: a script can't upload,
+download, change or delete files.
 
-| Function | |
-| --- | --- |
-| `OUTSTR_NOMCI(text...)` | As `OUTSTR`, but with MCI codes shown as written instead of run. Colors still show. |
-| `PL_NOMCI(text...)` | As `PL`, with MCI codes shown as written. |
+- The areas are the caller's directories in the current conference, in the
+  order the BBS lists them (`udir`): directories whose ACS the caller doesn't
+  pass aren't there.
+- The files are listed newest first, as the BBS lists them.
 
-`OUTSTR`, `PL` and `PRINT` still run MCI codes, as scripts usually want for
-their own text.
-
-### For full-screen UIs
-
-These are the pieces a full-screen, lightbar-style UI is built from. Their
-names are WWIV's own where WWIV has one (4.24's `okansi`, `ansic`, `prt`,
-`pla`, `onek` and `nsl`; `goxy` as `GOTOXY`), otherwise Synchronet's. Without
-ANSI the screen functions do nothing, so check `OKANSI()` and use a plain UI
-instead. Once the caller hangs up, the input functions stop waiting and the
-script stops at its next statement.
-
-| Function | |
-| --- | --- |
-| `OKANSI()` | `TRUE` if the caller has ANSI on |
-| `GOTOXY(x, y)` | Moves the cursor to column `x`, row `y`, counting from 1 |
-| `CLREOL()` | Clears from the cursor to the end of the line |
-| `ANSIC(n)` | Selects color `n` (0 to 9) of the caller's colors, as `\|#n` does |
-| `PRT(n, text...)` | Writes `text` in color `n`, then goes back to color 0 |
-| `PLA(text)` | Writes a line the caller can abort (Space or ^C); returns `TRUE` if they did |
-| `ONEK(keys)` | Waits for the caller to press one of `keys` (case doesn't matter) and returns it in upper case. It doesn't echo the key or start a new line. Once the caller hangs up it returns the first of `keys`, so put the one that quits first. |
-| `READKEY()` | Waits for a key and returns it; for a special key, its name: `UP`, `DOWN`, `LEFT`, `RIGHT`, `HOME`, `END`, `PGUP`, `PGDN`, `INS`, `DEL`, `F1` to `F10`. A result longer than one character is a special key; Enter is `CHR(13)`. Digits come back as digits. Keys the BBS handles itself, such as Ctrl+T, are skipped. `GETKEY` is unchanged. |
-| `SCREEN_COLUMNS()`, `SCREEN_ROWS()` | The size of the caller's screen |
-| `STRIP_COLORS(s)` | `s` without its pipe and heart color codes |
-| `LEN_COLORS(s)` | How wide `s` shows on the screen |
-| `PAD_COLORS(s, n)` | `s` padded with spaces to show `n` wide (`n` at most 65535) |
-| `PAUSING(on)` | Turns the "More?" prompt on (`TRUE`) or off (`FALSE`), and returns whether it was on. The user's own setting comes back when the script ends. The caller can still switch it with Ctrl+Y. |
-| `NSL()` | Seconds left in this call |
+The module is on by default; the sysop can turn it off with "Enable Package
+FILES" in wwivconfig's scripting settings (the `script_flag_disable_files`
+bit, `0x0080`, in `config.json`'s `script_flags`).
 
 ```basic
-import "@wwiv.io"
+import "@wwiv.files"
 
-If Not okansi() Then
-  pl("This needs ANSI.")
-  End
-EndIf
-x = pausing(FALSE)
-cls()
-gotoxy(1, 1)
-prt(5, pad_colors("|#1Messages", screen_columns()))
-gotoxy(1, screen_rows())
-outstr("|#9Press Q to quit: ")
-k = ""
-While k <> "Q" And k <> "q"
-  k = readkey()
-  gotoxy(1, 3)
-  clreol()
-  outstr("You pressed: ", k)
-Wend
+for a in areas()
+  print a.key; ") "; a.name; " ("; a.count; " files)"
+next
+
+a = area("1")
+for f in a.files("*.zip")
+  print f.name; " "; f.size; " "; f.description
+  for line in f.extended_description()
+    print "  "; line
+  next
+next
 ```
+
+### Functions
+
+| Function | Returns |
+| --- | --- |
+| `AREAS()` | A LIST of the areas the caller can list, as the BBS lists them |
+| `AREA(key)` | The area the caller chooses with `key` at the directory prompt (`"1"`, say); an error if there is none |
+| `CURRENT_AREA()` | The area the caller is in; an error if there is none |
+| `MODULE_NAME()` | `"wwiv.files"` |
+
+### Areas (`file_area`)
+
+| Member | |
+| --- | --- |
+| `KEY` | The key that chooses the area, as in `AREA(key)` |
+| `NAME` | The directory's name |
+| `COUNT` | How many files the area has |
+| `FILES([mask])` | A LIST of the area's files, newest first, or of those matching `mask`: a file name with `*` and `?` wildcards, at most 12 characters, as at the BBS's file mask prompt (`"*.zip"`; `"foo"` is `"foo.*"`; `""` is every file) |
+| `FILE(n)` | File `n`, from 1 to `COUNT`; an error if there is none |
+| `FIND(name)` | The number of the file named `name` (case doesn't matter) in the area now, or 0 if it has none. `name` may be a `file`, from this area or another. |
+
+Each call sees the area's file list as it is now, so new uploads show (the
+list is kept between calls and read again only once it changes, so going
+through an area file by file with `FILE(n)` is cheap). A file's
+number is its place in the list, newest first: when a file is uploaded, the
+others move down by one. Find a file again with `FIND` before using its
+number.
+
+An area that has no file list yet has no files; listing it doesn't create
+one.
+
+### Files (`file`)
+
+| Member | |
+| --- | --- |
+| `NUMBER` | Its number in its area, from 1, when it was read |
+| `NAME` | The file name, such as `foo.zip` (WWIV keeps 8.3 names) |
+| `DESCRIPTION` | The one-line description |
+| `UPLOADED_BY` | Who uploaded it, such as `RUSHFAN #1` |
+| `DATE` | When it was uploaded, as a time_t (`wwiv.time.format` formats it) |
+| `SIZE` | Its size in bytes |
+| `DOWNLOADS` | How many times it has been downloaded |
+| `AVAILABLE` | `TRUE` if the file is in the directory (the BBS's list shows its size as `N/A` when it isn't), or the area is on a CD-ROM, whose files the BBS doesn't check |
+| `EXTENDED_DESCRIPTION()` | The extended description as a LIST of lines, empty if it has none |
+
+Descriptions keep their pipe color codes. Like message text, print them with
+`wwiv.io.outstr_nomci` or `wwiv.io.pl_nomci`, since other users wrote them.
 
 ## wwiv.screen
 

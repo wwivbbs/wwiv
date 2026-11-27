@@ -282,7 +282,9 @@ std::string file_mask(const std::string& prompt) {
     bout.nl();
     bout.outstr(prompt);
   }
-  auto s = bin.input(12);
+  // Leading or trailing spaces would be aligned into the mask, which then
+  // matches nothing.
+  auto s = StringTrim(bin.input(12));
   if (s.empty()) {
     s = "*.*";
   }

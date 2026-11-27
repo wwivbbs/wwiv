@@ -37,6 +37,7 @@ class Interpreter;
 
 namespace wwiv::bbs::basic {
 
+class FileBase;
 class MessageBase;
 class UserBase;
 
@@ -57,6 +58,8 @@ struct WwivBindings {
   MessageBase* msgs{nullptr};
   // What wwiv.user reads, or nullptr for no wwiv.user module.
   UserBase* users{nullptr};
+  // What wwiv.files reads, or nullptr for no wwiv.files module.
+  FileBase* files{nullptr};
 };
 
 // The wwiv.* modules, with the same functions, arguments, return values and
@@ -74,6 +77,9 @@ void RegisterWwivMsg(wwivbasic::Interpreter& interp, const WwivBindings& b);
 // New in the new engine: the caller, and other users' public details.
 // Registered when b.users is set and the sysop hasn't turned it off.
 void RegisterWwivUser(wwivbasic::Interpreter& interp, const WwivBindings& b);
+// New in the new engine: read-only file areas. Registered when b.files is
+// set and the sysop hasn't turned it off.
+void RegisterWwivFiles(wwivbasic::Interpreter& interp, const WwivBindings& b);
 // New in the new engine: full-screen layouts and lightbar lists. Always on.
 void RegisterWwivScreen(wwivbasic::Interpreter& interp, const WwivBindings& b);
 

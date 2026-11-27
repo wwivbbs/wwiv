@@ -277,6 +277,14 @@ void Config::script_package_user_enabled(bool b) noexcept {
   set_script_flag(config_.script_flags, script_flag_disable_user, !b);
 }
 
+bool Config::script_package_files_enabled() const noexcept {
+  return !(config_.script_flags & script_flag_disable_files);
+}
+
+void Config::script_package_files_enabled(bool b) noexcept {
+  set_script_flag(config_.script_flags, script_flag_disable_files, !b);
+}
+
 bool Config::script_engine_next() const noexcept {
   return config_.script_flags & script_flag_engine_next;
 }

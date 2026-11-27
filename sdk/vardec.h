@@ -291,6 +291,9 @@ constexpr uint16_t script_flag_disable_user  = 0x0020;
 // own rights. Off by default: a script can post without the user seeing what
 // it posts.
 constexpr uint16_t script_flag_enable_msg_write = 0x0040;
+// Turns off wwiv.files (read-only file areas) on the new engine. On by
+// default, like wwiv.msg: it only shows what the user could list in the BBS.
+constexpr uint16_t script_flag_disable_files = 0x0080;
 
 // STATIC SYSTEM INFORMATION
 struct configrec {

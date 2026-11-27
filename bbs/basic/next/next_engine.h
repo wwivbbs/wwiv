@@ -32,6 +32,7 @@ namespace wwiv::bbs::basic {
 
 // Runs scripts on wwivbasic, with a BbsConsole over bout/bin and the wwiv.*
 // modules (wwiv_bindings.h). Built only with WWIV_WWIVBASIC_NEXT.
+class FileBase;
 class MessageBase;
 class UserBase;
 
@@ -52,6 +53,8 @@ public:
   void set_message_base(std::unique_ptr<MessageBase> msgs);
   // What wwiv.user reads. Without one, scripts have no wwiv.user module.
   void set_user_base(std::unique_ptr<UserBase> users);
+  // What wwiv.files reads. Without one, scripts have no wwiv.files module.
+  void set_file_base(std::unique_ptr<FileBase> files);
 
 private:
   // Runs text as the script scriptdir/name, with the module name module
@@ -67,6 +70,7 @@ private:
   setup_fn on_setup_;
   std::unique_ptr<MessageBase> msgs_;
   std::unique_ptr<UserBase> users_;
+  std::unique_ptr<FileBase> files_;
 };
 
 } // namespace wwiv::bbs::basic
