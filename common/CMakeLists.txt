@@ -57,6 +57,7 @@ if (WWIV_BUILD_TESTS)
 
   set(common_test_sources
     "acs_test.cpp"
+    "datetime_test.cpp"
     "input_line_editor_test.cpp"
     "input_range_test.cpp"
     "common_test_main.cpp"
