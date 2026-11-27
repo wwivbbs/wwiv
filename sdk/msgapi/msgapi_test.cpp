@@ -521,6 +521,24 @@ TEST_F(MsgApiNetTest, TwoNetworks_SentOnBoth) {
   EXPECT_EQ(a_packets.front().text().substr(2), b_packets.front().text().substr(2));
 }
 
+// AddMessage doesn't check a post's length: one longer than the BBS's
+// network limit is sent whole, where the BBS's send_net_post would cut it
+// short. See #1802.
+TEST_F(MsgApiNetTest, LongerThanNetworkLimit_SentWhole) {
+  auto area = CreateArea(net::network_type_t::wwivnet, 0);
+  MessageAreaOptions o{};
+  o.send_post_to_network = true;
+  auto m = NewPost(*area, "Title", "");
+  const std::string body(net::kMaxNetworkPostLength, 'x');
+  m.set_text(body);
+  ASSERT_TRUE(area->AddMessage(m, o));
+
+  const auto sent = packets();
+  ASSERT_EQ(1u, sent.size());
+  EXPECT_GT(sent.front().nh.length, net::kMaxNetworkPostLength);
+  EXPECT_TRUE(sent.front().text().ends_with(body));
+}
+
 // On an FTN sub the To: name goes in a ^D0FidoAddr line, except for All in
 // any case.
 TEST_F(MsgApiNetTest, Ftn_FidoAddr) {

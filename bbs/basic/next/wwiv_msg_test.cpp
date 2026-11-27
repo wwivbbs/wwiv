@@ -52,6 +52,7 @@ using namespace wwiv::bbs::basic;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
+using testing::AllOf;
 using testing::ElementsAre;
 using testing::HasSubstr;
 using testing::Not;
@@ -1658,9 +1659,8 @@ TEST_F(WwivMsgNetTest, ValNet_Held) {
 TEST_F(WwivMsgNetTest, TooLongForTheNetwork) {
   fake->cosysop_ = true;
   EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\", STRING(32800, \"x\"))\n"),
-              HasSubstr("message_area.post: the post is "));
-  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\", STRING(32800, \"x\"))\n"),
-              HasSubstr(" bytes, too long to send on the network; the most is 32755"));
+              AllOf(HasSubstr("message_area.post: the post is "),
+                    HasSubstr(" bytes, too long to send on the network; the most is 32755")));
   EXPECT_FALSE(Read(0, 1));
   EXPECT_EQ(0, packets_sent());
   // A long post that fits is sent.
