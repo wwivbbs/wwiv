@@ -104,7 +104,7 @@ void SwitchToNonRootUser(const std::string&) {
 
 bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
-                        SocketHandle sock) {
+                        SocketHandle sock, const std::filesystem::path& working_dir) {
 
   LOG(INFO) << pid << "Invoking Command Line (Win32):" << cmd;
 
@@ -161,7 +161,10 @@ bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node
   // Only inherit handles when there is a socket to hand over.
   const BOOL inherit_handles = sock ? TRUE : FALSE;
 
-  const auto current_dir = File::current_directory().string();
+  // Only the child changes directory: wwivd's own directory is shared by
+  // every thread.
+  const auto current_dir =
+      working_dir.empty() ? File::current_directory().string() : working_dir.string();
   const auto ok = CreateProcess(
     nullptr, 
     cmdstr.data(),

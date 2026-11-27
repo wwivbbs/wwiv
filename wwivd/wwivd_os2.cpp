@@ -33,6 +33,7 @@
 
 #include <atomic>
 #include <iostream>
+#include <mutex>
 #include <csignal>
 #include <string>
 #include <process.h>
@@ -85,7 +86,7 @@ void SwitchToNonRootUser(const std::string&) {
 
 bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
-                        SocketHandle sock) {
+                        SocketHandle sock, const std::filesystem::path& working_dir) {
 
   LOG(INFO) << pid << "Invoking Command Line (Win32):" << cmd;
 
@@ -130,7 +131,22 @@ bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node
   data.SessionType = SSF_TYPE_WINDOWABLEVIO;
 
   ULONG ulSid = 0, ulPid = 0;
-  APIRET arc = DosStartSession(&data, &ulSid, &ulPid);
+  APIRET arc;
+  {
+    // DosStartSession has no directory argument: the child starts in
+    // ours. Other threads launch children too, so change it only while
+    // holding this lock, and put it back before letting go.
+    static std::mutex chdir_mu;
+    std::lock_guard lock(chdir_mu);
+    const auto saved_dir = File::current_directory();
+    if (!working_dir.empty()) {
+      File::set_current_directory(working_dir);
+    }
+    arc = DosStartSession(&data, &ulSid, &ulPid);
+    if (!working_dir.empty()) {
+      File::set_current_directory(saved_dir);
+    }
+  }
   LOG(INFO) << "DosStartSession ret: " << arc << "; child pid: " << ulPid;
   int child_pid = ulPid;
 

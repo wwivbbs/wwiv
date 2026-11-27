@@ -25,8 +25,9 @@ Done and tested on Linux. The Windows parts (`wwivd_win.cpp`, `core/pipe_win32.c
 ## Phase 2: thread lifetime and shutdown
 
 - [ ] Client threads and the callout thread are detached and hold pointers or references to locals in `Main` (`config`, `c`, `nodes`, `data`, `clock`). SIGTERM leads to use after free. Move to `std::jthread` + `std::stop_token` with a session registry that shutdown can stop and join, and remove the `need_to_exit` and `need_to_reload_config` globals.
-- [ ] `File::set_current_directory` is called per connection (`launch_cmd`, `HandleConnection`) and races across threads. Pass the working directory to `posix_spawn` (`addchdir_np`) and `CreateProcess` instead.
+- [x] `File::set_current_directory` is called per connection (`launch_cmd`, `HandleConnection`) and races across threads. Pass the working directory to `posix_spawn` (`addchdir_np`) and `CreateProcess` instead. (OS/2's `DosStartSession` has no directory argument, so it changes directory under a lock.)
 - [ ] SIGHUP reloads only the callout thread's config copy. Either reload the connection config too or document the limitation.
+- [ ] Shutdown hangs up on callers who are online: `shutdown()` each session's socket so the BBS logs them off, then kill any child still running. Warning callers first is #1790.
 
 ## Phase 3: data races and process handling
 

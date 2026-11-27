@@ -19,6 +19,7 @@
 #include "wwivd/wwivd.h"
 
 #include <atomic>
+#include <cstring>
 #include <iostream>
 #include <map>
 #include <string>
@@ -158,17 +159,44 @@ void SwitchToNonRootUser(const std::string& wwiv_user) {
   }
 }
 
+#if defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 29))
+#define WWIVD_HAVE_SPAWN_ADDCHDIR
+#else
+// Quotes s for sh, as one word.
+static std::string shell_quote(const std::string& s) {
+  std::string out{"'"};
+  for (const auto c : s) {
+    if (c == '\'') {
+      out.append("'\\''");
+    } else {
+      out.push_back(c);
+    }
+  }
+  out.push_back('\'');
+  return out;
+}
+#endif
+
 bool ExecCommandAndWait(const wwivd_config_t& /*wc*/, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
-                        SocketHandle sock) {
-  std::string sh{"sh"};
-  std::string dc{"-c"};
-  std::string cmdstr{cmd};
-  char* argv[] = {sh.data(), dc.data(), cmdstr.data(), nullptr};
-
+                        SocketHandle sock, const std::filesystem::path& working_dir) {
   posix_spawn_file_actions_t actions;
   posix_spawn_file_actions_init(&actions);
   auto destroy_actions = finally([&actions] { posix_spawn_file_actions_destroy(&actions); });
+
+  std::string sh{"sh"};
+  std::string dc{"-c"};
+  std::string cmdstr{cmd};
+  if (!working_dir.empty()) {
+    // Only the child changes directory: wwivd's own directory is shared by
+    // every thread.
+#ifdef WWIVD_HAVE_SPAWN_ADDCHDIR
+    posix_spawn_file_actions_addchdir_np(&actions, working_dir.c_str());
+#else
+    cmdstr = StrCat("cd ", shell_quote(working_dir.string()), " && ", cmd);
+#endif
+  }
+  char* argv[] = {sh.data(), dc.data(), cmdstr.data(), nullptr};
   if (sock) {
     // Client sockets are close-on-exec so that a child never inherits
     // another caller's connection. Pass just this one through.
@@ -193,8 +221,9 @@ bool ExecCommandAndWait(const wwivd_config_t& /*wc*/, wwiv::wwivd::NodeManager& 
   sock.reset();
   VLOG(2) << "after posix_spawn; ret: " << ret;
   if (ret != 0) {
-    // fork failed.
-    LOG(ERROR) << pid << "Error forking WWIV.";
+    // fork failed, or the child couldn't change to working_dir.
+    LOG(ERROR) << pid << "Error starting '" << cmd << "' in '" << working_dir.string()
+               << "': " << strerror(ret);
     return false;
   }
   bbs_pid = child_pid;

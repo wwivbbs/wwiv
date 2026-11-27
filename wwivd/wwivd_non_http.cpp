@@ -311,8 +311,7 @@ static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
     return telnet_to(raw_cmd.substr(8), node_number, sock.get());
   }
   const auto cmd = CreateCommandLine(raw_cmd, params);
-  File::set_current_directory(working_dir);
-  return ExecCommandAndWait(wc, *nodes, cmd, wwiv_pid, node_number, std::move(sock));
+  return ExecCommandAndWait(wc, *nodes, cmd, wwiv_pid, node_number, std::move(sock), working_dir);
 }
 
 /** Launches bbs on node_number for the caller on sock, taking ownership of sock. */
@@ -666,10 +665,8 @@ void ConnectionHandler::HandleConnection() {
     // Telnet or SSH connection.  Find open node number and launch the child.
     auto node = -1;
     if (nodemgr->AcquireNode(node, result.remote_peer)) {
-      auto current_dir = File::current_directory();
       launch_node(*data.config, *data.c, *bbs, nodemgr, node, std::move(sock_), connection_type,
                   result.remote_peer);
-      File::set_current_directory(current_dir);
       VLOG(1) << "Exiting HandleConnection (launch_node)";
     } else {
       LOG(INFO) << "Sending BUSY. No available node to handle connection.";
