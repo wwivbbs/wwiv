@@ -59,20 +59,19 @@ daten_t date_to_daten(const std::string& datet) {
   auto t = time_t_now();
   struct tm tm_now {};
   local_tm(t, tm_now);
-  auto* pTm = &tm_now;
-  pTm->tm_mon = to_number<int>(datet) - 1;
-  pTm->tm_mday = atoi(datet.c_str() + 3);
+  tm_now.tm_mon = to_number<int>(datet) - 1;
+  tm_now.tm_mday = atoi(datet.c_str() + 3);
   // N.B. tm_year is years since 1900
-  pTm->tm_year = atoi(datet.c_str() + 6); // fixed for 1930-2029
+  tm_now.tm_year = atoi(datet.c_str() + 6); // fixed for 1930-2029
   if (datet[6] < '3') {
-    pTm->tm_year += 100;
+    tm_now.tm_year += 100;
   }
-  pTm->tm_hour = 0;
-  pTm->tm_min = 0;
-  pTm->tm_sec = 0;
-  pTm->tm_isdst = 0; // Since this is used for arbitrary compare of date strings, this is ok.
+  tm_now.tm_hour = 0;
+  tm_now.tm_min = 0;
+  tm_now.tm_sec = 0;
+  tm_now.tm_isdst = 0; // Since this is used for arbitrary compare of date strings, this is ok.
 
-  return time_t_to_daten(mktime(pTm));
+  return time_t_to_daten(mktime(&tm_now));
 }
 
 std::string daten_to_wwivnet_time(daten_t t) {

@@ -98,6 +98,8 @@ private:
   std::map<std::string, std::set<time_t>> sessions_;
   std::map<std::string, auto_blocked_entry_t> auto_blocked_;
   Clock& clock_;
+  // Lock order: mu_, then BadIp's lock (escalate_block_locked calls
+  // bip_->Block). BadIp must never call back into AutoBlocker.
   mutable std::mutex mu_;
 };
 
