@@ -129,6 +129,11 @@ Networking / FTN
 * Fixed "Too old FTN message" when maxage was 0. (#1602)
 * Dupe database entries are added after the age check. (#1603)
 * Fixed crash with the nodelist on Linux Mint 22.
+* Fixed posting on a sub carried on more than one network: the BBS
+  crashed (or, in release builds, threw an error) after sending the post
+  to the first network, so the others never got it. Gated posts are now
+  written to the network's directory, and keep the line break after a
+  local poster's name.
 * Fixed a couple of other FTN issues.
 
 WWIVbasic
