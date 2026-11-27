@@ -24,10 +24,11 @@ Done and tested on Linux. The Windows parts (`wwivd_win.cpp`, `core/pipe_win32.c
 
 ## Phase 2: thread lifetime and shutdown
 
-- [ ] Client threads and the callout thread are detached and hold pointers or references to locals in `Main` (`config`, `c`, `nodes`, `data`, `clock`). SIGTERM leads to use after free. Move to `std::jthread` + `std::stop_token` with a session registry that shutdown can stop and join, and remove the `need_to_exit` and `need_to_reload_config` globals.
+- [x] Client threads and the callout thread are detached and hold pointers or references to locals in `Main` (`config`, `c`, `nodes`, `data`, `clock`). SIGTERM leads to use after free. Move to `std::jthread` + `std::stop_token` with a session registry that shutdown can stop and join, and remove the `need_to_exit` and `need_to_reload_config` globals. (`wwivd/sessions.h`; the signal flags now live behind `wwivd/signals.h`.)
 - [x] `File::set_current_directory` is called per connection (`launch_cmd`, `HandleConnection`) and races across threads. Pass the working directory to `posix_spawn` (`addchdir_np`) and `CreateProcess` instead. (OS/2's `DosStartSession` has no directory argument, so it changes directory under a lock.)
-- [ ] SIGHUP reloads only the callout thread's config copy. Either reload the connection config too or document the limitation.
-- [ ] Shutdown hangs up on callers who are online: `shutdown()` each session's socket so the BBS logs them off, then kill any child still running. Warning callers first is #1790.
+- [x] SIGHUP reloads only the callout thread's config copy. Either reload the connection config too or document the limitation. (Documented in `whatsnew.txt` and logged on HUP.)
+- [x] Shutdown hangs up on callers who are online. Sockets wwivd still reads (matrix/mailer prompt, `@telnet:` proxy, pipe mode) are shut down. Each child gets SIGHUP to its process group, and the BBS (`bbs/hangup_signal.h`) shuts its socket down and logs the caller off as usual. Any child still running after 10 seconds gets SIGKILL. Warning callers first is #1790.
+  - [ ] Windows, socket mode: there's no signal to ask the BBS to hang up, so the node is ended with `TerminateProcess` after the grace period, without a clean logoff. Pipe mode is clean, since wwivd owns the socket there.
 
 ## Phase 3: data races and process handling
 
@@ -35,10 +36,10 @@ Done and tested on Linux. The Windows parts (`wwivd_win.cpp`, `core/pipe_win32.c
 - [ ] `BlockingHandler` iterates `AutoBlocker::auto_blocked()` without holding `mu_`. Return a snapshot copy under the lock.
 - [ ] `Color()` keeps its state in a `static` that every connection thread shares.
 - [ ] Unix:
-  - `signal(SIGCHLD, SIG_IGN)` auto-reaps children, so `waitpid` returns `ECHILD` and the logged exit code is always 0.
-  - `bbs_pid` is a non-atomic global overwritten by every spawn, so SIGINT goes to the last process started.
-  - The signal handler uses `std::cerr`.
-  - `sigaction(SIGKILL)` always fails, and every failure message says "SIGINT".
+  - [x] `signal(SIGCHLD, SIG_IGN)` auto-reaps children, so `waitpid` returns `ECHILD` and the logged exit code is always 0.
+  - [x] `bbs_pid` is a non-atomic global overwritten by every spawn, so SIGINT goes to the last process started. (Removed: SIGINT now shuts wwivd down like SIGTERM.)
+  - [x] The signal handler uses `std::cerr`.
+  - [x] `sigaction(SIGKILL)` always fails, and every failure message says "SIGINT".
 - [ ] `SwitchToNonRootUser`: treat a failed `setuid`/`setgid` as fatal when running as root, and call `initgroups`.
 - [ ] Beginday re-runs every 5 seconds forever if the command fails to update `status.dat`.
 - [ ] Verify both `SetBlockingMode` helpers:

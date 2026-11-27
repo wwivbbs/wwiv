@@ -38,6 +38,7 @@ add_library(
   finduser.cpp
   gfiles.cpp
   gfileedit.cpp
+  hangup_signal.cpp
   hop.cpp
   inetmsg.cpp
   inmsg.cpp
@@ -233,6 +234,7 @@ if (WWIV_BUILD_TESTS)
       dropfile_test.cpp
       dsz_test.cpp
       email_test.cpp
+      hangup_signal_test.cpp
       input_test.cpp
       make_abs_test.cpp
       message_file_test.cpp

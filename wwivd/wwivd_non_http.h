@@ -22,6 +22,7 @@
 #include "sdk/wwivd_config.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
+#include "wwivd/sessions.h"
 #include <filesystem>
 #include <map>
 #include <memory>
@@ -65,14 +66,12 @@ private:
   /**
    * The caller's socket. This is the only owner: it is either moved into
    * the child launch (which closes it once the child has its own copy), or
-   * closed when the handler is destroyed.
+   * closed when the handler is destroyed. While wwivd reads and writes it,
+   * shutdown can hang it up.
    */
-  wwiv::core::SocketHandle sock_;
+  WatchedSocket sock_;
   int port_{0};
 };
-
-void HandleConnection(std::unique_ptr<ConnectionHandler> h);
-void HandleBinkPConnection(std::unique_ptr<ConnectionHandler> h);
 
 } // namespace
 

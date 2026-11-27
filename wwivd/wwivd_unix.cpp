@@ -46,81 +46,67 @@
 #include "sdk/vardec.h"
 #include "sdk/filenames.h"
 #include "wwivd/node_manager.h"
+#include "wwivd/sessions.h"
+#include "wwivd/signals.h"
 
-using std::cerr;
-using std::clog;
-using std::cout;
-using std::endl;
-using std::map;
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-// From wwivd.cpp
-
-pid_t bbs_pid = 0;
 extern char **environ;
-
-namespace wwiv::wwivd {
-
-extern std::atomic<bool> need_to_exit;
-extern std::atomic<bool> need_to_reload_config;
-
-} // namespace wwiv::wwivd
 
 using namespace wwiv::wwivd;
 
 void signal_handler(int mysignal) {
-  cerr << "Received signal: " << mysignal << endl;
+  // Only async-signal-safe calls in here: the main loop logs the request.
   switch (mysignal) {
-  case SIGHUP: {
-    cerr << "Received SIGHUP" << endl;
-    need_to_reload_config.store(true);
+  case SIGHUP:
+    request_reload();
+    break;
+  case SIGINT:
+  case SIGTERM:
+    if (request_exit()) {
+      // Asked twice: stop waiting for the callers to be hung up.
+      signal(mysignal, SIG_DFL);
+      raise(mysignal);
+    }
+    break;
+  default:
     break;
   }
-  case SIGINT: {
-    cerr << endl;
-    if (bbs_pid != 0) {
-      cerr << "Sending SIGINT to BBS after receiving " << mysignal << "..." << endl;
-      kill(bbs_pid, mysignal); // send SIGHUP to process group
-    }
-  } break;
-  // Graceful exit
-  case SIGTERM: {
-    cerr << "Received SIGTERM" << endl;
-    need_to_exit.store(true);
-  } break;
-  // Not graceful exit
-  case SIGKILL: {
-    cerr << "Received SIGKILL" << endl;
-    need_to_exit.store(true);
-  } break;
-  }
-
 }
 
 void BeforeStartServer() {
   struct sigaction sa {};
   sigfillset(&sa.sa_mask);
   sa.sa_handler = signal_handler;
-  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
-    LOG(ERROR) << "Unable to install signal handler for SIGINT";
+  for (const auto sig : {SIGHUP, SIGINT, SIGTERM}) {
+    if (sigaction(sig, &sa, nullptr) == -1) {
+      LOG(ERROR) << "Unable to install signal handler for " << strsignal(sig);
+    }
   }
-  if (sigaction(SIGINT, &sa, nullptr) == -1) {
-    LOG(ERROR) << "Unable to install signal handler for SIGINT";
-  }
-  if (sigaction(SIGTERM, &sa, nullptr) == -1) {
-    LOG(ERROR) << "Unable to install signal handler for SIGINT";
-  }
-  if (sigaction(SIGKILL, &sa, nullptr) == -1) {
-    LOG(ERROR) << "Unable to install signal handler for SIGINT";
-  }
-  // Ignore SIGCHLD
-  signal(SIGCHLD, SIG_IGN);
+  // SIGCHLD keeps its default, so an exited child stays a zombie until
+  // ExecCommandAndWait reaps it: its pid (and process group) can't be
+  // reused while shutdown might still signal it, and its exit code is
+  // logged.
   // Let the socket library handle EPIPE
   signal(SIGPIPE, SIG_IGN);
+}
+
+void wwiv::wwivd::HangupChild(child_process_t child) {
+  // ESRCH means the whole group is gone; don't fall back to the pid, which
+  // could be reused by then.
+  if (kill(-child, SIGHUP) == -1 && errno != ESRCH) {
+    kill(child, SIGHUP);
+  }
+}
+
+void wwiv::wwivd::KillChild(child_process_t child) {
+  if (kill(-child, SIGKILL) == -1 && errno != ESRCH) {
+    kill(child, SIGKILL);
+  }
 }
 
 static uid_t GetWWIVUserId(const string& username) {
@@ -179,7 +165,16 @@ static std::string shell_quote(const std::string& s) {
 
 bool ExecCommandAndWait(const wwivd_config_t& /*wc*/, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
-                        SocketHandle sock, const std::filesystem::path& working_dir) {
+                        SocketHandle sock, const std::filesystem::path& working_dir,
+                        Sessions* sessions) {
+  // Its own process group, so a hangup reaches the BBS even when sh
+  // doesn't exec it, and whatever it starts.
+  posix_spawnattr_t attr;
+  posix_spawnattr_init(&attr);
+  auto destroy_attr = finally([&attr] { posix_spawnattr_destroy(&attr); });
+  posix_spawnattr_setflags(&attr, POSIX_SPAWN_SETPGROUP);
+  posix_spawnattr_setpgroup(&attr, 0);
+
   posix_spawn_file_actions_t actions;
   posix_spawn_file_actions_init(&actions);
   auto destroy_actions = finally([&actions] { posix_spawn_file_actions_destroy(&actions); });
@@ -215,7 +210,7 @@ bool ExecCommandAndWait(const wwivd_config_t& /*wc*/, wwiv::wwivd::NodeManager& 
 
   VLOG(2) << pid << "Invoking Command Line (posix_spawn):" << cmd;
   pid_t child_pid = 0;
-  const auto ret = posix_spawn(&child_pid, "/bin/sh", &actions, nullptr, argv, environ);
+  const auto ret = posix_spawn(&child_pid, "/bin/sh", &actions, &attr, argv, environ);
   // The child has its own copy now (or failed to start); close ours so the
   // connection drops as soon as the child closes it.
   sock.reset();
@@ -226,14 +221,41 @@ bool ExecCommandAndWait(const wwivd_config_t& /*wc*/, wwiv::wwivd::NodeManager& 
                << "': " << strerror(ret);
     return false;
   }
-  bbs_pid = child_pid;
-  node_manager.set_pid(node_number, bbs_pid);
-  int status = 0;
+  node_manager.set_pid(node_number, child_pid);
+  if (sessions) {
+    sessions->add_child(child_pid);
+  }
   VLOG(2) << pid << "before waitpid";
-  while (waitpid(child_pid, &status, 0) == -1) {
-    if (errno != EINTR) {
-      break;
+  // Wait without reaping, so the pid can't be reused until the child is no
+  // longer registered for shutdown to signal.
+  siginfo_t info{};
+  while (waitid(P_PID, static_cast<id_t>(child_pid), &info, WEXITED | WNOWAIT) == -1 &&
+         errno == EINTR) {
+  }
+  int status = 0;
+  const auto reap = [&] {
+    while (waitpid(child_pid, &status, 0) == -1) {
+      if (errno != EINTR) {
+        break;
+      }
     }
+  };
+  if (sessions && sessions->stopping()) {
+    // The hangup reaches the shell too, which can exit at once while the
+    // BBS it started is still logging the caller off. Wait for the rest of
+    // the group; shutdown kills it after the grace period. Once the shell
+    // is reaped, the group id still can't be reused while the group has
+    // members.
+    reap();
+    while (kill(-child_pid, 0) == 0 || errno == EPERM) {
+      sleep_for(std::chrono::milliseconds(50));
+    }
+    sessions->remove_child(child_pid);
+  } else {
+    if (sessions) {
+      sessions->remove_child(child_pid);
+    }
+    reap();
   }
   VLOG(2) << pid << "after waitpid";
 

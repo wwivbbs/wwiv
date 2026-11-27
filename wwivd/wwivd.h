@@ -31,6 +31,7 @@ class wwivd_config_t;
 
 namespace wwiv::wwivd {
 class NodeManager;
+class Sessions;
 }
 
 void BeforeStartServer();
@@ -48,10 +49,15 @@ void SwitchToNonRootUser(const std::string& wwiv_user);
  * The child starts in working_dir, or in wwivd's own directory (the BBS
  * root) when it is empty. wwivd's current directory is never changed, since
  * other threads are launching children at the same time.
+ *
+ * When sessions is given, the child is registered with it while it runs,
+ * so that shutdown can hang it up. On Unix the child gets its own process
+ * group, so that reaches whatever it starts too.
  */
 bool ExecCommandAndWait(const wwiv::sdk::wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
                         wwiv::core::SocketHandle sock,
-                        const std::filesystem::path& working_dir = {});
+                        const std::filesystem::path& working_dir = {},
+                        wwiv::wwivd::Sessions* sessions = nullptr);
 
 #endif

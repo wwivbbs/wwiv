@@ -37,6 +37,7 @@
 #include "bbs/subedit.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
+#include "bbs/hangup_signal.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/tag.h"
@@ -193,6 +194,7 @@ Application::Application(LocalIO* localIO)
 
 Application::~Application() {
   if (comm_ && sess().ok_modem_stuff()) {
+    wwiv::bbs::StopHangupOnSignal();
     comm_->close(false);
     comm_.reset(nullptr);
   }
@@ -299,6 +301,11 @@ void Application::CreateComm(unsigned int nHandle, unsigned int /* parent_pid*/,
   }
   bout.SetComm(comm_.get());
   bin.SetComm(comm_.get());
+  if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
+    // So wwivd's shutdown (SIGHUP) or systemd's (SIGTERM) logs the caller
+    // off instead of killing the BBS.
+    wwiv::bbs::HangupOnSignal(static_cast<int>(nHandle));
+  }
 }
 
 void Application::SetCommForTest(RemoteIO* remote_io) {
@@ -1469,6 +1476,8 @@ void Application::Hangup(hangup_type_t t) {
     return;
   }
   sess().hangup(true);
+  // Before the socket is closed and its number can be reused.
+  wwiv::bbs::StopHangupOnSignal();
   // Force close the socket to stop it from waiting for the caller.
   // TODO - See if this should happen somewhere else.
   comm_->close(false);
