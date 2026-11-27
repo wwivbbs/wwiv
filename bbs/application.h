@@ -294,6 +294,8 @@ public:
   void init_message_areas_for_test();
   // Makes the user manager and loads names.lst, as Init does.
   void init_users_for_test();
+  // Reads the dirs (none without a dirs file) and creates the file API.
+  void init_file_areas_for_test();
 
   /** Returns the WWIV Names.LST Config Object. */
   [[nodiscard]] wwiv::sdk::Names* names() const;

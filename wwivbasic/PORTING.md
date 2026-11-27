@@ -154,8 +154,11 @@ to the list. Two things to know:
 The new engine adds modules the legacy engine doesn't have, documented in
 [docs/BINDINGS.md](docs/BINDINGS.md):
 
-- `wwiv.msg`: read the message areas the caller can read.
+- `wwiv.msg`: read the message areas the caller can read, and post in them
+  when the sysop allows it.
+- `wwiv.files`: list the file areas the caller can list, and their files.
 - `wwiv.user`: the caller's details, and other users' names.
+- `wwiv.screen`: full-screen layouts and lightbar lists.
 
 ## New string functions
 

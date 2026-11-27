@@ -192,15 +192,22 @@ headers and read messages.
 - [x] `wwiv.user`: the current user, and user lookups (read-only;
       `bbs/basic/next/wwiv_user.cpp`, documented in [BINDINGS.md](BINDINGS.md)).
       Other users show only their name, number and last logon
-- [ ] `wwiv.files`: file areas and file records
-- [ ] Permissions: access follows the user's own rights; write access is
+- [x] `wwiv.files`: file areas and file records (read-only;
+      `bbs/basic/next/wwiv_files.cpp`). It reads through a `FileBase`
+      interface (`BbsFileBase` in the BBS). Uploading and downloading stay
+      in the BBS
+- [x] Permissions: access follows the user's own rights; write access is
       separate from read access; each package can be enabled by the sysop.
-      Done for reading messages: the user's subs (`usub`), co-sysop rights
-      for unvalidated and deleted posts, and the anonymous post rules, as in
+      Reading messages: the user's subs (`usub`), co-sysop rights for
+      unvalidated and deleted posts, and the anonymous post rules, as in
       the BBS's reader; on unless the sysop turns it off
-      (`script_flag_disable_msg`). Done for writing messages: a separate
-      setting, off by default, and the BBS's posting rules
-- [ ] Reference documentation for the bindings ([BINDINGS.md](BINDINGS.md): `wwiv.msg` so far)
+      (`script_flag_disable_msg`). Writing messages: a separate setting, off
+      by default, and the BBS's posting rules. Files: the user's directories
+      (`udir`), read-only, on unless the sysop turns it off
+      (`script_flag_disable_files`). Users: the caller, and only other
+      users' public details (`script_flag_disable_user`)
+- [x] Reference documentation for the bindings ([BINDINGS.md](BINDINGS.md):
+      every module, with an overview of what each needs turned on)
 - [x] A sample message viewer script (`install/scripts/msgview.bas`; run in
       `bbs_tests` by `MsgViewTest`)
 

@@ -67,6 +67,7 @@ TEST_F(ScriptEngineTest, ConfigFlag) {
   EXPECT_FALSE(config.script_package_os_enabled());
   EXPECT_TRUE(config.script_package_msg_enabled());
   EXPECT_TRUE(config.script_package_user_enabled());
+  EXPECT_TRUE(config.script_package_files_enabled());
   config.script_engine_next(false);
   EXPECT_FALSE(config.script_engine_next());
 }
