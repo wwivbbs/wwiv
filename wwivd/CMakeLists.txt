@@ -36,6 +36,9 @@ if (WWIV_BUILD_TESTS)
   set(test_sources
     wwivd_non_http_test.cpp
   )
+  if (UNIX)
+    list(APPEND test_sources wwivd_unix_test.cpp)
+  endif()
   list(APPEND test_sources wwivd_test_main.cpp)
 
   add_executable(wwivd_tests ${test_sources})

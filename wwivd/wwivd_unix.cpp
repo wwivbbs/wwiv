@@ -29,6 +29,7 @@
 #include <string>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include "core/file.h"
@@ -159,22 +160,37 @@ void SwitchToNonRootUser(const std::string& wwiv_user) {
 
 bool ExecCommandAndWait(const wwivd_config_t& /*wc*/, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
-                        SOCKET sock) {
-  char sh[21];
-  char dc[21];
-  char cmdstr[4000];
-  to_char_array(sh, "sh");
-  to_char_array(dc, "-c");
-  to_char_array(cmdstr, cmd);
-  char* argv[] = { sh, dc, cmdstr, NULL };
+                        SocketHandle sock) {
+  std::string sh{"sh"};
+  std::string dc{"-c"};
+  std::string cmdstr{cmd};
+  char* argv[] = {sh.data(), dc.data(), cmdstr.data(), nullptr};
+
+  posix_spawn_file_actions_t actions;
+  posix_spawn_file_actions_init(&actions);
+  auto destroy_actions = finally([&actions] { posix_spawn_file_actions_destroy(&actions); });
+  if (sock) {
+    // Client sockets are close-on-exec so that a child never inherits
+    // another caller's connection. Pass just this one through.
+#if defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 29))
+    // dup2 onto the same fd clears FD_CLOEXEC in the child only
+    // (POSIX.1-2024; glibc >= 2.29).
+    posix_spawn_file_actions_adddup2(&actions, sock.get(), sock.get());
+#else
+    // Older C libraries: clear it here. The socket is still exposed to a
+    // child spawned by another thread in this short window.
+    if (const auto flags = fcntl(sock.get(), F_GETFD); flags != -1) {
+      fcntl(sock.get(), F_SETFD, flags & ~FD_CLOEXEC);
+    }
+#endif
+  }
 
   VLOG(2) << pid << "Invoking Command Line (posix_spawn):" << cmd;
   pid_t child_pid = 0;
-  int ret = posix_spawn(&child_pid, "/bin/sh", NULL, NULL, argv, environ);
-  if (sock != SOCKET_ERROR) {
-    // close the socket since we've forked.
-    closesocket(sock);
-  }
+  const auto ret = posix_spawn(&child_pid, "/bin/sh", &actions, nullptr, argv, environ);
+  // The child has its own copy now (or failed to start); close ours so the
+  // connection drops as soon as the child closes it.
+  sock.reset();
   VLOG(2) << "after posix_spawn; ret: " << ret;
   if (ret != 0) {
     // fork failed.

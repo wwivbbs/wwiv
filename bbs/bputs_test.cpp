@@ -59,18 +59,18 @@ TEST_F(BPutsTest, SinglePipe) {
 
 TEST_F(BPutsTest, SinglePipe_WithEndLine) {
   const std::string kPlainHelloWorld = "Hello World\r\n";
-  const std::string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
-  // TODO(rushfan): Our wonky linux handling adds the \r before all \n, however
-  // this causes deltas here. The output is OK, but just has an extra \r
-  const std::string kAnsiHelloWorldUnix = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\r\n";
+  // A CR is sent before every LF (so bare-LF text doesn't stair-step), which
+  // leaves an extra, harmless \r here.
+  const std::string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\r\n";
   const std::string s = "|#1Hello World\r\n";
   Puts(s);
   EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
-#ifdef _WIN32
   EXPECT_EQ(kAnsiHelloWorld, helper.io()->rcaptured());
-#else
-  EXPECT_EQ(kAnsiHelloWorldUnix, helper.io()->rcaptured());
-#endif
+}
+
+TEST_F(BPutsTest, BareLF_SendsCRLF) {
+  Puts("|#1Hello\nWorld");
+  EXPECT_EQ("\x1B[0;36;40;1mHello\x1B[0;37;40m\r\nWorld", helper.io()->rcaptured());
 }
 
 TEST_F(BPutsTest, RepeatedPipe) {
@@ -84,16 +84,11 @@ TEST_F(BPutsTest, RepeatedPipe) {
 
 TEST_F(BPutsTest, RepeatedPipe_WithEndLine) {
   const std::string kPlainHelloWorld = "Hello World\r\n";
-  const std::string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
-  const std::string kAnsiHelloWorldUnix = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\r\n";
+  const std::string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\r\n";
   const std::string s = "|#1Hello |#1World\r\n";
   Puts(s);
   EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
-#ifdef _WIN32
   EXPECT_EQ(kAnsiHelloWorld, helper.io()->rcaptured());
-#else
-  EXPECT_EQ(kAnsiHelloWorldUnix, helper.io()->rcaptured());
-#endif
 }
 
 TEST_F(BPutsTest, IfPipe_Yes) {

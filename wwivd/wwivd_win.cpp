@@ -21,6 +21,7 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
+#include "core/scope_exit.h"
 #include "core/socket_connection.h"
 #include "core/strings.h"
 #include "sdk/wwivd_config.h"
@@ -29,6 +30,7 @@
 #include <iostream>
 #include <csignal>
 #include <string>
+#include <vector>
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -75,7 +77,11 @@ static BOOL WINAPI WWIVDConsoleHandlerRoutine(_In_ DWORD dwCtrlType) {
     "CTRL_C_EVENT", "CTRL_BREAK_EVENT", "CTRL_CLOSE_EVENT", "???", "???", "CTRL_LOGOFF_EVENT", "CTRL_SHUTDOWN_EVENT"
   };
   std::cerr << "WWIVDConsoleHandlerRoutine: " << consoleHandlerNames[dwCtrlType] << std::endl;
-  need_to_exit.store(true);
+  if (need_to_exit.exchange(true)) {
+    // Already asked to exit once and still running: let the default
+    // handler end the process.
+    return FALSE;
+  }
   return TRUE;
 }
 
@@ -98,49 +104,85 @@ void SwitchToNonRootUser(const std::string&) {
 
 bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
-                        SOCKET sock) {
+                        SocketHandle sock) {
 
   LOG(INFO) << pid << "Invoking Command Line (Win32):" << cmd;
 
-  STARTUPINFO si{};
-  si.cb = sizeof(STARTUPINFO);
+  STARTUPINFOEX si{};
+  si.StartupInfo.cb = sizeof(STARTUPINFO);
 
   if (wc.launch_minimized) {
     // dwFlags says to look at wShowWindow, and wShowWindow
     // says to minimize
-    si.dwFlags = STARTF_USESHOWWINDOW;
-    si.wShowWindow = SW_MINIMIZE;
+    si.StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
+    si.StartupInfo.wShowWindow = SW_MINIMIZE;
+  }
+
+  // With bInheritHandles=TRUE alone, the child would inherit every
+  // inheritable handle in wwivd: every other caller's socket and the
+  // listening sockets. Then a caller's connection can't close while any
+  // other node is running. Restrict inheritance to this caller's socket.
+  std::vector<char> attr_buf;
+  LPPROC_THREAD_ATTRIBUTE_LIST attrs{nullptr};
+  HANDLE inherit_list[1]{};
+  auto delete_attrs = finally([&attrs] {
+    if (attrs) {
+      DeleteProcThreadAttributeList(attrs);
+    }
+  });
+  if (sock) {
+    SIZE_T size{0};
+    InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
+    attr_buf.resize(size);
+    auto* list = reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(attr_buf.data());
+    if (InitializeProcThreadAttributeList(list, 1, 0, &size)) {
+      attrs = list;
+      inherit_list[0] = reinterpret_cast<HANDLE>(sock.get());
+      if (UpdateProcThreadAttribute(attrs, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST, inherit_list,
+                                    sizeof(inherit_list), nullptr, nullptr)) {
+        si.lpAttributeList = attrs;
+      } else {
+        LOG(WARNING) << "UpdateProcThreadAttribute failed: " << GetLastError()
+                     << "; child will inherit all inheritable handles.";
+      }
+    } else {
+      LOG(WARNING) << "InitializeProcThreadAttributeList failed: " << GetLastError();
+    }
   }
 
   PROCESS_INFORMATION pi{};
-  char cmdstr[4000];
-  to_char_array(cmdstr, cmd);
+  std::string cmdstr{cmd};
 
-  const DWORD creation_flags = CREATE_NEW_CONSOLE;
+  DWORD creation_flags = CREATE_NEW_CONSOLE;
+  if (si.lpAttributeList) {
+    si.StartupInfo.cb = sizeof(STARTUPINFOEX);
+    creation_flags |= EXTENDED_STARTUPINFO_PRESENT;
+  }
+  // Only inherit handles when there is a socket to hand over.
+  const BOOL inherit_handles = sock ? TRUE : FALSE;
 
   const auto current_dir = File::current_directory().string();
   const auto ok = CreateProcess(
     nullptr, 
-    cmdstr,
+    cmdstr.data(),
     nullptr,
     nullptr,
-    TRUE,
+    inherit_handles,
     creation_flags,
     nullptr,
     current_dir.c_str(),
-    &si,
+    &si.StartupInfo,
     &pi);
+  // Read this before closesocket can overwrite it.
+  const auto create_error = ok ? 0 : GetLastError();
+
+  // We're done with this socket; the child has its own reference to it.
+  sock.reset();
 
   if (!ok) {
     // CreateProcess failed.
-    LOG(ERROR) << "Error invoking CreateProcess.";
+    LOG(ERROR) << "Error invoking CreateProcess: " << create_error;
     return false;
-  }
-
-  if (sock != INVALID_SOCKET) {
-    // We're done with this socket and the child has another reference count
-    // to it.
-    closesocket(sock);
   }
 
   node_manager.set_pid(node_number, pi.dwProcessId);

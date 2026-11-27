@@ -19,6 +19,7 @@
 #ifndef INCLUDED_CORE_PIPE_H
 #define INCLUDED_CORE_PIPE_H
 
+#include <atomic>
 #include <chrono>
 #include <optional>
 #include <string>
@@ -67,6 +68,13 @@ public:
   /** Returns the optional character that will be returned next */
   std::optional<char> peek();
 
+  /**
+   * True while the pipe has a handle and the other end has not gone away.
+   * Once read, write or peek sees that the other end closed the pipe this
+   * returns false, but the handle is only released by Close() or the
+   * destructor, so another thread never uses a handle that was closed
+   * (and possibly reused) under it.
+   */
   [[nodiscard]] bool IsOpen() const noexcept;
 
   /** Close the pipe */
@@ -80,7 +88,11 @@ public:
 private:
   std::string pipe_name_;
 
+  /** Records last_error and marks the pipe broken if the other end has gone away. */
+  void set_last_error(int e) noexcept;
+
   PIPE_HANDLE handle_{PIPE_INVALID_HANDLE_VALUE};
+  std::atomic<bool> broken_{false};
   int last_error_{0};
   bool server_{false};
 };

@@ -578,10 +578,49 @@ int Win32ConsoleIO::GetDefaultScreenBottom() const noexcept {
   return csbi.srWindow.Bottom - csbi.srWindow.Top;
 }
 
+/**
+ * True if _getwch() would return something for this key-down event: either a
+ * character, or a 0/0xE0 prefix for an extended key (function and cursor
+ * keys, Ctrl+2). Key-downs that produce nothing (Win, Apps, CapsLock,
+ * NumLock, media keys, ...) are skipped by _getwch(), which keeps waiting for
+ * a real key. If KeyPressed() counted them, GetChar() would block in
+ * _getwch() and remote input wouldn't be read until a key is pressed
+ * locally. (Switching focus away from a VM console can inject such events.)
+ */
+static bool IsKeyGetwchReturns(const KEY_EVENT_RECORD& k) {
+  if (k.uChar.UnicodeChar != 0) {
+    return true;
+  }
+  const auto vk = k.wVirtualKeyCode;
+  if (vk >= VK_F1 && vk <= VK_F12) {
+    return true;
+  }
+  switch (vk) {
+  case VK_PRIOR:
+  case VK_NEXT:
+  case VK_END:
+  case VK_HOME:
+  case VK_LEFT:
+  case VK_UP:
+  case VK_RIGHT:
+  case VK_DOWN:
+  case VK_INSERT:
+  case VK_DELETE:
+  case VK_CLEAR:
+  case '2': // Ctrl+2 is NUL
+    return true;
+  default:
+    break;
+  }
+  if (vk >= VK_NUMPAD0 && vk <= VK_DIVIDE) {
+    return true;
+  }
+  return false;
+}
+
 bool HasKeyBeenPressed(HANDLE in) {
   DWORD num_events; // NumPending
-  GetNumberOfConsoleInputEvents(in, &num_events);
-  if (num_events == 0) {
+  if (!GetNumberOfConsoleInputEvents(in, &num_events) || num_events == 0) {
     return false;
   }
 
@@ -597,18 +636,9 @@ bool HasKeyBeenPressed(HANDLE in) {
       if (!input[i].Event.KeyEvent.bKeyDown) {
         continue;
       }
-      if (input[i].Event.KeyEvent.wVirtualKeyCode == VK_SHIFT ||
-          input[i].Event.KeyEvent.wVirtualKeyCode == VK_CONTROL ||
-          input[i].Event.KeyEvent.wVirtualKeyCode == VK_MENU) {
+      if (!IsKeyGetwchReturns(input[i].Event.KeyEvent)) {
         continue;
       }
-      if (input[i].Event.KeyEvent.dwControlKeyState & LEFT_ALT_PRESSED ||
-          input[i].Event.KeyEvent.dwControlKeyState & RIGHT_ALT_PRESSED) {
-        // VLOG(3) << "ALT KEY uchar=" << input[i].Event.KeyEvent.uChar.AsciiChar << "} ";
-      }
-      // VLOG(3) << "{KeyCode=" << input[i].Event.KeyEvent.wVirtualKeyCode << "; ScanCode="
-      //          << input[i].Event.KeyEvent.wVirtualScanCode << ", char="
-      //          << input[i].Event.KeyEvent.uChar.AsciiChar << "} ";
       return true;
     }
   }

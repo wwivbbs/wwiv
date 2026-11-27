@@ -20,6 +20,7 @@
 #define INCLUDED_CORE_NET_H
 
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <map>
 #include <optional>
@@ -84,6 +85,47 @@ int get_dns_cc(const std::string& address, const std::string& rbl_address);
 /** Sets the socket to blocking mode. */
 bool SetBlockingMode(SOCKET sock);
 
+/**
+ * Owns a socket and closes it exactly once.
+ *
+ * Move-only. Use release() when handing the socket to something else that
+ * will close it, and reset() to close it early (for example right after a
+ * child process has been spawned with its own copy).
+ */
+class SocketHandle final {
+public:
+  SocketHandle() noexcept = default;
+  explicit SocketHandle(SOCKET sock) noexcept : sock_(sock) {}
+  ~SocketHandle() { reset(); }
+
+  SocketHandle(const SocketHandle&) = delete;
+  SocketHandle& operator=(const SocketHandle&) = delete;
+  SocketHandle(SocketHandle&& o) noexcept : sock_(o.release()) {}
+  SocketHandle& operator=(SocketHandle&& o) noexcept {
+    if (this != &o) {
+      reset(o.release());
+    }
+    return *this;
+  }
+
+  [[nodiscard]] SOCKET get() const noexcept { return sock_; }
+  [[nodiscard]] bool valid() const noexcept { return sock_ != INVALID_SOCKET; }
+  explicit operator bool() const noexcept { return valid(); }
+
+  /** Gives up ownership without closing; returns the socket. */
+  [[nodiscard]] SOCKET release() noexcept {
+    const auto s = sock_;
+    sock_ = INVALID_SOCKET;
+    return s;
+  }
+
+  /** Closes the current socket (if any) and takes ownership of sock. */
+  void reset(SOCKET sock = INVALID_SOCKET) noexcept;
+
+private:
+  SOCKET sock_{INVALID_SOCKET};
+};
+
 /** 
  * Once a socket is accepted from the remote system.  Return
  * the socket and also the port that it was accepted from.
@@ -100,6 +142,12 @@ class SocketSet final {
 public:
   SocketSet();
   explicit SocketSet(int timeout_seconds);
+  /**
+   * timeout is how long each select waits, so also how long Run takes to
+   * notice exit_signal. Zero waits forever (exit_signal is then only seen
+   * after a connection).
+   */
+  explicit SocketSet(std::chrono::milliseconds timeout);
   ~SocketSet();
 
   typedef std::function<void(accepted_socket_t)> socketset_accept_fn;
@@ -124,7 +172,7 @@ private:
 
   std::map<SOCKET, int> socket_port_map_;
   std::map<SOCKET, socketset_accept_fn> socket_fn_map_;
-  const int timeout_seconds_;
+  const std::chrono::milliseconds timeout_;
 };
 
 } // namespace
