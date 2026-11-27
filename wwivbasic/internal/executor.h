@@ -81,6 +81,9 @@ private:
   enum class Flow { NORMAL, EXIT_LOOP, RETURN, END };
 
   Value eval(BasicParser::ExprContext* e);
+  // Records the statement's line in the current frame and runs the
+  // statement hook (Interpreter::set_statement_hook).
+  void before_statement(antlr4::ParserRuleContext* context);
   // Runs a loop body; returns false if the loop must stop (EXIT/RETURN/END).
   bool run_loop_body(BasicParser::StatementsContext* body);
   // A dotted name split into the variable it starts with and the members

@@ -35,7 +35,6 @@ void script_ui(Config& config) {
   auto enable_msg_write = config.script_package_msg_write_enabled();
   auto enable_user = config.script_package_user_enabled();
   auto enable_files = config.script_package_files_enabled();
-  auto engine_next = config.script_engine_next();
 
   auto y = 1;
   EditItems items{};
@@ -53,23 +52,19 @@ void script_ui(Config& config) {
   ++y;
   items.add(new Label("Enable Package MSG:"),
             new BooleanEditItem(&enable_msg),
-    "Enable package wwiv.msg (new engine only): read the message areas the user can read.", 1, y);
+    "Enable package wwiv.msg: read the message areas the user can read.", 1, y);
   ++y;
   items.add(new Label("Enable MSG Writing:"), new BooleanEditItem(&enable_msg_write),
-            "Let wwiv.msg post and delete messages, with the user's own rights (new engine only).",
+            "Let wwiv.msg post and delete messages, with the user's own rights.",
             1, y);
   ++y;
   items.add(new Label("Enable Package USER:"),
             new BooleanEditItem(&enable_user),
-    "Enable package wwiv.user (new engine only): the caller, and other users' names.", 1, y);
+    "Enable package wwiv.user: the caller, and other users' names.", 1, y);
   ++y;
   items.add(new Label("Enable Package FILES:"), new BooleanEditItem(&enable_files),
-            "Enable package wwiv.files (new engine only): list the file areas the user can list.",
+            "Enable package wwiv.files: list the file areas the user can list.",
             1, y);
-  ++y;
-  items.add(new Label("Use New Engine:"),
-            new BooleanEditItem(&engine_next),
-    "Run scripts on wwivbasic, the new engine (needs a BBS built with WWIV_WWIVBASIC_NEXT).", 1, y);
   ++y;
 
   items.relayout_items_and_labels();
@@ -82,5 +77,4 @@ void script_ui(Config& config) {
   config.script_package_msg_write_enabled(enable_msg_write);
   config.script_package_user_enabled(enable_user);
   config.script_package_files_enabled(enable_files);
-  config.script_engine_next(engine_next);
 }

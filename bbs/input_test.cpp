@@ -244,3 +244,34 @@ TEST_F(InputTest, Remote_CtrlW_CtrlE_StayOnRow) {
   EXPECT_EQ(">" + orig.substr(0, 77) + "\xAF", fb.row_as_text(0));
 }
 
+
+TEST(InputTypeAheadTest, KeysAreReadInOrderAfterThoseAlreadyWaiting) {
+  BbsHelper helper{};
+  helper.SetUp();
+  bin.type_ahead("ab");
+  EXPECT_EQ('a', bin.bgetch());
+  // Added after "b", which is still waiting.
+  bin.type_ahead("c");
+  EXPECT_EQ('b', bin.bgetch());
+  EXPECT_EQ('c', bin.bgetch());
+  EXPECT_FALSE(bin.bkbhit());
+  // A NUL would end the buffer; it's dropped.
+  bin.type_ahead(std::string{'d', '\0', 'e'});
+  EXPECT_EQ('d', bin.bgetch());
+  EXPECT_EQ('e', bin.bgetch());
+  EXPECT_FALSE(bin.bkbhit());
+  bin.charbufferpointer_ = 0;
+}
+
+TEST(InputTypeAheadTest, TooManyKeys_AreDropped) {
+  BbsHelper helper{};
+  helper.SetUp();
+  bin.type_ahead(std::string(1000, 'x'));
+  int n = 0;
+  while (bin.bkbhit() && n < 1000) {
+    EXPECT_EQ('x', bin.bgetch());
+    ++n;
+  }
+  EXPECT_EQ(static_cast<int>(sizeof(bin.charbuffer)) - 2, n);
+  bin.charbufferpointer_ = 0;
+}

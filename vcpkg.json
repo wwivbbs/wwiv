@@ -11,7 +11,7 @@
   ],
   "features": {
     "wwivbasic": {
-      "description": "ANTLR runtime for wwivbasic, the new BASIC interpreter (WWIV_WWIVBASIC_NEXT).",
+      "description": "ANTLR runtime for wwivbasic, the WWIVbasic interpreter (WWIV_WWIVBASIC).",
       "dependencies": [
         "antlr4"
       ]

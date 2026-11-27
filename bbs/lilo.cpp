@@ -53,6 +53,7 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "core/version.h"
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"

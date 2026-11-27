@@ -18,21 +18,29 @@
 #include "bbs/basic/next/next_engine.h"
 
 #include "bbs/basic/next/bbs_console.h"
+#include "bbs/basic/next/debug_server.h"
+#include "bbs/basic/next/debug_session.h"
 #include "bbs/basic/file_base.h"
 #include "bbs/basic/message_base.h"
 #include "bbs/basic/user_base.h"
 #include "bbs/basic/next/wwiv_bindings.h"
 
 #include "common/context.h"
+#include "common/input.h"
 #include "common/output.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "fmt/format.h"
+#include "local_io/keycodes.h"
 #include "sdk/config.h"
 #include "wwivbasic/interpreter.h"
 
 #include <algorithm>
+#include <chrono>
+#include <filesystem>
+#include <memory>
 #include <utility>
 #include <optional>
 
@@ -43,8 +51,19 @@ using namespace wwiv::strings;
 
 namespace {
 
+using namespace std::chrono_literals;
+
+// The debugger listens only on this machine: anyone who can reach it can
+// read the script's variables and stop it.
+constexpr char kDebuggerHost[] = "127.0.0.1";
+// How long a script waits for the debugger to attach, as in the legacy engine.
+constexpr auto kDebuggerAttachWait = 120s;
+// How long the debugger stays up after the script ends, so the client's next
+// poll sees "finished" (unless it detaches first).
+constexpr auto kDebuggerFinishedWait = 5s;
+
 // The module name for a script file: its name in lower case without ".bas",
-// as the legacy engine does.
+// as in the legacy engine.
 std::string ScriptBaseName(const std::string& script_name) {
   auto basename = ToStringLowerCase(script_name);
   if (ends_with(basename, ".bas")) {
@@ -54,8 +73,7 @@ std::string ScriptBaseName(const std::string& script_name) {
 }
 
 // Reads scriptdir/script_name, with the same checks and messages as the
-// legacy engine (Basic::RunScript and ReadBasicFile in basic.cpp), except
-// that ".." is rejected before the file is looked for.
+// legacy engine, except that ".." is rejected before the file is looked for.
 std::optional<std::string> ReadScriptFile(common::Output& out, const std::filesystem::path& dir,
                                           const std::string& script_name) {
   // Reject ".." before looking for the file, so the messages don't tell the
@@ -102,8 +120,8 @@ bool NextEngine::RunScript(const std::string& script_name) {
 }
 
 bool NextEngine::RunScript(const std::string& module, const std::string& text) {
-  // The legacy engine keeps this name as given (in upper case; wwiv.data
-  // lowers it again).
+  // The legacy engine kept this name as given (in upper case; wwiv.data
+  // lowered it again).
   return RunText(module, ToStringLowerCase(module), text);
 }
 
@@ -113,15 +131,78 @@ bool NextEngine::RunText(const std::string& name, const std::string& module,
     out_.outstr("WWIVbasic scripting is not enabled on this system.");
     return false;
   }
-  if (ctx_ && ctx_->session_context().debug_wwivbasic()) {
-    // TODO(M6): the debugger (/debug/v1) for the new engine.
-    LOG(WARNING) << "The WWIVbasic debugger isn't supported on the new engine yet; running '"
-                 << module << "' without it.";
-    out_.pl("|#6The debugger isn't supported on the new BASIC engine yet.");
-  }
-
   // Stop the script (and end input) once the caller hangs up.
   auto hung_up = [ctx = ctx_]() { return ctx && ctx->session_context().hangup(); };
+
+  // The full path, so that IMPORT "file.bas" is found next to the script.
+  const auto path = FilePath(config_.scriptdir(), name);
+  // Paths in errors are shown relative to scriptdir: the prefix is whatever
+  // FilePath put before the name.
+  const auto full = path.string();
+  const auto prefix = full.substr(0, full.size() - std::min(full.size(), name.size()));
+  // The debugger's module names: relative to scriptdir, with '/' between
+  // directories. IMPORT normalizes its paths (lexically_normal, which on
+  // Windows also turns '/' into '\'), so this compares normalized paths.
+  auto root = std::filesystem::path(config_.scriptdir()).lexically_normal();
+  if (!root.has_filename() && root.has_relative_path()) {
+    root = root.parent_path();
+  }
+  auto relative = [&root](const std::string& file) {
+    const auto rel = std::filesystem::path(file).lexically_normal().lexically_relative(root);
+    if (rel.empty() || *rel.begin() == "..") {
+      return file;
+    }
+    return rel.generic_string();
+  };
+
+  // With bbs --debug, the script waits for a debugger (wwivdbg) to attach.
+  // The server goes before the session it uses.
+  std::unique_ptr<DebugSession> debug;
+  std::unique_ptr<DebugServer> debug_server;
+  // While waiting or paused, Ctrl-C on the local or remote side ends the
+  // script. Other keys are typed ahead for the script to read.
+  auto debug_cancel = [&]() {
+    if (hung_up()) {
+      return true;
+    }
+    // Only the keyboard and the connection: type_ahead's keys are the
+    // script's, not ours to look at again.
+    std::string keys;
+    while (in_.bkbhitraw()) {
+      const auto ch = in_.bgetchraw();
+      if (ch == wwiv::local::io::CC) {
+        in_.type_ahead(keys);
+        return true;
+      }
+      if (!ch) {
+        // bgetchraw reads nothing without a connection (a local session).
+        break;
+      }
+      keys.push_back(ch);
+    }
+    in_.type_ahead(keys);
+    return false;
+  };
+  if (ctx_ && ctx_->session_context().debug_wwivbasic()) {
+    const auto port = ctx_->session_context().debug_wwivbasic_port();
+    const auto initial_module = relative(full);
+    debug = std::make_unique<DebugSession>(initial_module);
+    debug->AddSource(initial_module, text);
+    debug_server = std::make_unique<DebugServer>(*debug);
+    if (debug_server->Start(kDebuggerHost, port)) {
+      LOG(INFO) << "Waiting for the script debugger to attach on " << kDebuggerHost << ":" << port;
+      out_.print("|#9Waiting for the debugger to attach on port {} (Ctrl-C to skip)...\r\n",
+                 port);
+      if (!debug->WaitForAttach(kDebuggerAttachWait, debug_cancel)) {
+        out_.pl("|#6No debugger attached; running the script without it.");
+      }
+    } else {
+      out_.print("|#6Unable to start the debugger on port {}; running without it.\r\n", port);
+      debug_server.reset();
+      debug.reset();
+    }
+  }
+
   BbsConsole console(in_, out_, hung_up);
   wwivbasic::Interpreter interp(console);
   interp.set_stop_check(hung_up);
@@ -157,21 +238,43 @@ bool NextEngine::RunText(const std::string& name, const std::string& module,
   if (on_setup_) {
     on_setup_(interp);
   }
+  if (debug) {
+    interp.set_statement_hook([&](const wwivbasic::DebugLocation& loc) {
+      const auto module = relative(loc.file);
+      if (!debug->has_source(module)) {
+        if (const auto src = interp.source(loc.file)) {
+          debug->AddSource(module, *src);
+        }
+      }
+      auto snapshot = [&]() {
+        DebugSession::Snapshot snap;
+        for (const auto& f : interp.call_stack()) {
+          const auto where = fmt::format("{}:{}", relative(f.file), f.line);
+          snap.stack.push_back(f.function.empty() ? where
+                                                  : fmt::format("{} ({})", f.function, where));
+        }
+        for (const auto& v : interp.variables()) {
+          snap.vars.push_back({v.name, v.type, v.value, v.frame});
+        }
+        return snap;
+      };
+      return debug->OnStatement(module, loc.line, loc.column, loc.depth, snapshot, debug_cancel);
+    });
+  }
 
-  // The full path, so that IMPORT "file.bas" is found next to the script.
-  const auto path = FilePath(config_.scriptdir(), name);
   const auto result = interp.run_source(path.string(), text);
+  if (debug) {
+    debug->Finished();
+    debug->WaitForDetach(kDebuggerFinishedWait, debug_cancel);
+  }
   if (result.stopped) {
-    LOG(INFO) << "Stopped script '" << module << "': the caller hung up.";
+    LOG(INFO) << "Stopped script '" << module << "': "
+              << (hung_up() ? "the caller hung up." : "the debugger stopped it.");
     return false;
   }
   if (result.ok()) {
     return true;
   }
-  // Paths in errors are shown relative to scriptdir: the prefix is whatever
-  // FilePath put before the name.
-  const auto full = path.string();
-  const auto prefix = full.substr(0, full.size() - std::min(full.size(), name.size()));
   for (const auto& e : result.errors) {
     auto msg = e;
     if (!prefix.empty()) {

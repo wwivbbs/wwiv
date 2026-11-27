@@ -4,7 +4,7 @@ WWIV is a C++23 BBS with its own networking stack (WWIVnet, FidoNet/FTN, BinkP).
 
 ## Build and test
 
-Required submodules (`vcpkg`, `deps/my_basic`, `deps/pdcurses`, `deps/cryptlib`): `git submodule update --init --recursive`. First configure builds vcpkg deps (fmt, cereal, cpp-httplib, nlohmann-json, gtest) and takes several minutes—not hung.
+Required submodules (`vcpkg`, `deps/pdcurses`, `deps/cryptlib`): `git submodule update --init --recursive`. First configure builds vcpkg deps (fmt, cereal, cpp-httplib, nlohmann-json, gtest) and takes several minutes—not hung.
 
 ```bash
 cmake --preset linux-debug                 # configure into _build/linux-debug
@@ -18,9 +18,9 @@ _build/linux-debug/sdk/sdk_tests --gtest_filter='NamesTest.*'   # run a gtest bi
 
 Windows uses `windows-x86-debug` / `windows-x86-release` from an *x86* Native Tools prompt (x64 causes link errors). Don't run `cmake` builds concurrently across multiple subagents—it saturates the VM CPU.
 
-- Test binaries (`_build/<preset>/<dir>/`): `core_tests`, `sdk_tests`, `common_tests`, `bbs_tests`, `fsed_tests`, `net_core_tests`, `binkp_tests`, `networkf_tests`, `wwivconfig_tests`, `wwivd_tests`, plus `wwivbasic_tests` (when `WWIV_WWIVBASIC_NEXT` is on).
+- Test binaries (`_build/<preset>/<dir>/`): `core_tests`, `sdk_tests`, `common_tests`, `bbs_tests`, `fsed_tests`, `net_core_tests`, `binkp_tests`, `networkf_tests`, `wwivconfig_tests`, `wwivd_tests`, plus `wwivbasic_tests` (when `WWIV_WWIVBASIC` is on).
 - Unit tests sit next to code as `*_test.cpp` and must be added to that directory's `CMakeLists.txt`. When running `core_tests` or `sdk_tests` directly, pass `--wwiv_testdata=<repo>/<dir>/testdata` (ctest passes it; without it, testdata tests skip).
-- Key CMake options: `WWIV_SSH_CRYPTLIB=OFF` (skip cryptlib/SSH), `WWIV_WWIVBASIC_NEXT` (build `wwivbasic/` and `bbs/basic/next/`; on by default except on OS/2—turn it off to skip the ANTLR runtime), `WWIV_INSTALL=ON` + `WWIV_ZIP_INSTALL_FILES=ON` (packaging and `data.zip`/`inifiles.zip` for wwivconfig; on in `*-release` presets).
+- Key CMake options: `WWIV_SSH_CRYPTLIB=OFF` (skip cryptlib/SSH), `WWIV_WWIVBASIC` (build `wwivbasic/` and `bbs/basic/next/`; on by default except on OS/2—turn it off to skip the ANTLR runtime, and the BBS can't run scripts), `WWIV_INSTALL=ON` + `WWIV_ZIP_INSTALL_FILES=ON` (packaging and `data.zip`/`inifiles.zip` for wwivconfig; on in `*-release` presets).
 - CI (`.github/workflows/pr-build.yml`) builds and tests `linux-debug` and `windows-x86-debug` with `-DWWIVBASIC_GENERATE_PARSER=OFF`. Windows is 32-bit x86—watch `size_t`/`int64_t` assumptions.
 - Style & gotchas: `.clang-format` (LLVM, 2-space indent, 100 cols, left-aligned pointers); most targets use `-Wall -Wextra` / `/W4` (`set_max_warnings`). Include `"core/wwiv_windows.h"` instead of `<windows.h>`. Preserve each file's existing line endings—some files (e.g. `CMakeLists.txt`, `core/command_line.h`) use CRLF.
 
@@ -36,7 +36,7 @@ Includes are rooted at the repo root (`#include "core/strings.h"`). Libraries, r
 - **`fsed/`**: full-screen editor library used by `bbs` and standalone `wwivfsed/`.
 - **`net_core/`, `binkp/`, `network*/`, `lnet/`**: networking. `network` dispatches; `networkb` handles BinkP (via `binkp/`); `networkc` drives inbound processing; `network1` splits pending packets into outbound/`local.net`; `network2` imports mail/posts; `network3` rebuilds node/routing files; `networkf` handles FTN import/export; `networkt` processes FTN TIC echoes; `lnet` is a packet viewer.
 - **`wwivconfig/`** (sysop config TUI), **`wwivd/`** (telnet/SSH daemon launching `bbs`), **`wwivutil/`** (CLI subcommands).
-- **Scripting**: `bbs/basic/` wraps `deps/my_basic`. `wwivbasic/` is the experimental ANTLR-based replacement—read `wwivbasic/AGENTS.md` before working there. It may depend only on `core/`; its BBS bindings live in `bbs/basic/next/`.
+- **Scripting**: `wwivbasic/` is the ANTLR-based BASIC interpreter—read `wwivbasic/AGENTS.md` before working there. It may depend only on `core/`; its BBS bindings, `NextEngine` and the script debugger live in `bbs/basic/next/`, and `bbs/basic/basic.h` has `RunBasicScript`.
 - **`install/`** (packaged data/menus/gfiles/scripts/platform files), **`builds/`** (CI/release scripts and prereq checkers).
 
 ## Direction for `bbs/` changes

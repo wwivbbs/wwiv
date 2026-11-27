@@ -1,4 +1,4 @@
-# CMake for wwivbasic, the ANTLR-based BASIC interpreter (WWIV_WWIVBASIC_NEXT).
+# CMake for wwivbasic, the ANTLR-based BASIC interpreter (WWIV_WWIVBASIC).
 #
 # Targets:
 #   wwivbasic_interpreter  the interpreter library; embedders use the headers
@@ -124,6 +124,7 @@ set_max_warnings(basicrun)
 
 if(WWIV_BUILD_TESTS)
   add_executable(wwivbasic_tests
+                 "debug_test.cpp"
                  "embedding_test.cpp"
                  "interpreter_test.cpp"
                  "value_test.cpp"

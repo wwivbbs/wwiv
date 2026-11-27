@@ -1,4 +1,5 @@
 #include "wwivbasic/value.h"
+#include "wwivbasic/debug.h"
 #include "wwivbasic/object.h"
 #include "fmt/format.h"
 
@@ -545,6 +546,57 @@ bool Value::operator==(const Value& that) const {
 std::ostream& operator<<(std::ostream& os, const Value& v) {
   os << v.toString();
   return os;
+}
+
+namespace {
+
+void append_debug_string(std::string& out, const Value& v, int depth, bool quote_strings) {
+  constexpr size_t kMaxItems = 100;
+  constexpr int kMaxDepth = 4;
+  switch (v.value_type()) {
+  case Value::Type::STRING:
+    if (quote_strings) {
+      out += fmt::format("\"{}\"", v.toString());
+    } else {
+      out += v.toString();
+    }
+    return;
+  case Value::Type::LIST: {
+    const auto& items = v.list("debug_string")->items;
+    if (depth >= kMaxDepth) {
+      out += items.empty() ? "[]" : "[...]";
+      return;
+    }
+    out += '[';
+    for (size_t i = 0; i < items.size(); i++) {
+      if (i > 0) {
+        out += ", ";
+      }
+      if (i == kMaxItems) {
+        out += fmt::format("... ({} more)", items.size() - kMaxItems);
+        break;
+      }
+      append_debug_string(out, items[i], depth + 1, true);
+    }
+    out += ']';
+    return;
+  }
+  case Value::Type::BOOLEAN:
+  case Value::Type::INTEGER:
+  case Value::Type::REAL:
+  case Value::Type::ITERATOR:
+  case Value::Type::OBJECT:
+    out += v.toString();
+    return;
+  }
+}
+
+} // namespace
+
+std::string debug_string(const Value& v) {
+  std::string out;
+  append_debug_string(out, v, 0, false);
+  return out;
 }
 
 } // namespace wwivbasic

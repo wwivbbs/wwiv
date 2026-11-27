@@ -60,8 +60,8 @@ void HangUpDuringNextRead(wwiv::common::SessionContext& sess) {
 
 } // namespace
 
-// The wwiv, wwiv.io and wwiv.time modules on the new engine. These mirror the
-// legacy engine's tests in bbs/basic/basic_test.cpp. Input is typed ahead into
+// The wwiv, wwiv.io and wwiv.time modules. See also bbs/basic/basic_test.cpp,
+// which began as the legacy engine's tests. Input is typed ahead into
 // bin's character buffer. PAUSE isn't covered.
 class WwivBindingsTest : public ::testing::Test {
 protected:
