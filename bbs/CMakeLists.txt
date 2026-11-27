@@ -181,6 +181,8 @@ if (WWIV_WWIVBASIC_NEXT)
     basic/next/bbs_file_base.cpp
     basic/next/bbs_message_base.cpp
     basic/next/bbs_user_base.cpp
+    basic/next/debug_server.cpp
+    basic/next/debug_session.cpp
     basic/next/next_engine.cpp
     basic/next/script_keys.cpp
     basic/next/wwiv.cpp
@@ -256,6 +258,7 @@ if (WWIV_BUILD_TESTS)
     )
     if (WWIV_WWIVBASIC_NEXT)
       list(APPEND test_sources
+        basic/next/debug_session_test.cpp
         basic/next/next_engine_test.cpp
         basic/next/wwiv_bindings_test.cpp
         basic/next/wwiv_data_test.cpp

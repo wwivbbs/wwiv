@@ -151,8 +151,7 @@ WWIV's existing `bbs/basic` tests pass against the new engine.
 - [x] `ScriptEngine` interface in WWIV (`bbs/basic/script_engine.h`); today's
       `Basic` becomes the legacy engine; `RunBasicScript` picks the engine
       from `config.json` (`script_flags` bit `0x0008`) and
-      `bbs --basic_engine=legacy|next`. With `--debug`, `NextEngine`
-      (`bbs/basic/next/`) warns and runs without the debugger until M6
+      `bbs --basic_engine=legacy|next`
 - [x] `Console` implemented with `bout`/`bin` (`bbs/basic/next/bbs_console.*`);
       `NextEngine` runs scripts, without the `wwiv.*` modules yet
 - [x] `wwiv.*` bindings in WWIV (`bbs/basic/next/`), same names and
@@ -248,7 +247,11 @@ terminal. All of it is new-engine only.
 
 Done when wwivbasic is WWIV's only BASIC engine.
 
-- [ ] Debugger with the same `/debug/v1` HTTP API
+- [x] Debugger with the same `/debug/v1` HTTP API (wwivdbg is the client):
+      `Interpreter::set_statement_hook`, `call_stack()`, `variables()` and
+      `source()` in wwivbasic; `DebugSession` and `DebugServer` in
+      `bbs/basic/next/`. Documented in [DEBUGGER.md](DEBUGGER.md), with how
+      it differs from the legacy debugger
 - [ ] Make the new engine the default; publish the porting guide
 - [ ] Remove `deps/my_basic`, the legacy engine and the CMake option
 
