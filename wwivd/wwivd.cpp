@@ -152,7 +152,9 @@ int Main(CommandLine& cmdline) {
     client.detach();
   };
 
-  SocketSet sockets(10);
+  // Short select timeout so a Ctrl-C (Windows sets need_to_exit from the
+  // console handler without interrupting select) exits within a second.
+  SocketSet sockets(std::chrono::seconds(1));
   if (c.telnet_port > 0) {
     sockets.add(c.telnet_port, telnet_or_ssh_fn, "TELNET");
   }

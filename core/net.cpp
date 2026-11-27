@@ -299,7 +299,11 @@ SocketSet::SocketSet()
 };
 
 SocketSet::SocketSet(int timeout_seconds)
-  : timeout_seconds_(timeout_seconds) {
+  : SocketSet(std::chrono::seconds(timeout_seconds)) {
+};
+
+SocketSet::SocketSet(std::chrono::milliseconds timeout)
+  : timeout_(timeout) {
 };
 
 SocketSet::~SocketSet() = default;
@@ -343,12 +347,12 @@ bool SocketSet::RunOnce() {
   }
 
   VLOG(3) << "About to call select. (" << max_fd << "); timeout: "
-	  << timeout_seconds_;
+	  << timeout_.count() << "ms";
   int status;
-  if (timeout_seconds_ > 0) {
+  if (timeout_.count() > 0) {
     timeval timeout{};
-    timeout.tv_usec = 0;
-    timeout.tv_sec = timeout_seconds_;
+    timeout.tv_sec = static_cast<long>(timeout_.count() / 1000);
+    timeout.tv_usec = static_cast<long>((timeout_.count() % 1000) * 1000);
     status = select(max_fd + 1, &fds, nullptr, nullptr, &timeout);
   } else {
     status = select(max_fd + 1, &fds, nullptr, nullptr, nullptr);

@@ -20,6 +20,7 @@
 #define INCLUDED_CORE_NET_H
 
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <map>
 #include <optional>
@@ -141,6 +142,12 @@ class SocketSet final {
 public:
   SocketSet();
   explicit SocketSet(int timeout_seconds);
+  /**
+   * timeout is how long each select waits, so also how long Run takes to
+   * notice exit_signal. Zero waits forever (exit_signal is then only seen
+   * after a connection).
+   */
+  explicit SocketSet(std::chrono::milliseconds timeout);
   ~SocketSet();
 
   typedef std::function<void(accepted_socket_t)> socketset_accept_fn;
@@ -165,7 +172,7 @@ private:
 
   std::map<SOCKET, int> socket_port_map_;
   std::map<SOCKET, socketset_accept_fn> socket_fn_map_;
-  const int timeout_seconds_;
+  const std::chrono::milliseconds timeout_;
 };
 
 } // namespace

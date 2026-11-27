@@ -564,9 +564,10 @@ int Output::outchr(char c, bool use_buffer) {
 
   if (sess().outcom() && c != TAB) {
     if (c == SOFTRETURN) {
-#ifdef __unix__
+      // Always send CR before LF, so text with bare LFs (e.g. .pro or .msg
+      // files copied from a Unix BBS) doesn't stair-step on the caller's
+      // terminal. An extra CR after one already sent is harmless.
       rputch('\r', use_buffer);
-#endif  // __unix__
       rputch('\n', use_buffer);
     } else {
       rputch(c, use_buffer);

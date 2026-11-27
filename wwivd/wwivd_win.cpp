@@ -77,7 +77,11 @@ static BOOL WINAPI WWIVDConsoleHandlerRoutine(_In_ DWORD dwCtrlType) {
     "CTRL_C_EVENT", "CTRL_BREAK_EVENT", "CTRL_CLOSE_EVENT", "???", "???", "CTRL_LOGOFF_EVENT", "CTRL_SHUTDOWN_EVENT"
   };
   std::cerr << "WWIVDConsoleHandlerRoutine: " << consoleHandlerNames[dwCtrlType] << std::endl;
-  need_to_exit.store(true);
+  if (need_to_exit.exchange(true)) {
+    // Already asked to exit once and still running: let the default
+    // handler end the process.
+    return FALSE;
+  }
   return TRUE;
 }
 
