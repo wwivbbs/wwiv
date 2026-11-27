@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -216,6 +217,48 @@ std::optional<antlr4::tree::ParseTree*> Context::parseTree(const std::filesystem
     return std::nullopt;
   }
   return su->tree();
+}
+
+std::vector<DebugVariable> Context::debug_variables() const {
+  std::vector<DebugVariable> result;
+  auto add_scope = [&](Module* m, const Scope& scope, int frame) {
+    const auto prefix = m == root ? std::string() : m->name() + ".";
+    for (const auto& [name, var] : scope.local_vars) {
+      auto v = const_cast<Var&>(var).value();
+      result.push_back({prefix + name, v.type_name(), debug_string(v), frame});
+    }
+  };
+  // Each module's globals are shown once, with the outermost frame that
+  // runs in that module.
+  std::set<const Module*> shown_globals;
+  std::vector<std::pair<size_t, Module*>> globals;
+  for (size_t i = 0; i < frames.size(); i++) {
+    const auto& f = frames[i];
+    if (f.function.empty() && f.module && shown_globals.insert(f.module).second) {
+      globals.emplace_back(i, f.module);
+    }
+  }
+  const auto n = frames.size();
+  for (size_t i = n; i-- > 0;) {
+    const auto& f = frames[i];
+    const auto frame = static_cast<int>(n - 1 - i);
+    if (!f.function.empty()) {
+      if (f.module && f.scope < f.module->scopes.size()) {
+        // A function's parameters and locals aren't prefixed with the module.
+        for (const auto& [name, var] : f.module->scopes[f.scope].local_vars) {
+          auto v = const_cast<Var&>(var).value();
+          result.push_back({name, v.type_name(), debug_string(v), frame});
+        }
+      }
+      continue;
+    }
+    for (const auto& [gi, m] : globals) {
+      if (gi == i) {
+        add_scope(m, m->scopes.front(), frame);
+      }
+    }
+  }
+  return result;
 }
 
 } // namespace wwivbasic

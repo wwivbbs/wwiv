@@ -10,6 +10,7 @@
 //   for (const auto& e : result.errors) { ... }
 
 #include "wwivbasic/console.h"
+#include "wwivbasic/debug.h"
 #include "wwivbasic/module.h"
 #include "wwivbasic/value.h"
 
@@ -100,6 +101,26 @@ public:
   // true the script stops, and the RunResult has stopped set. WWIV uses it to
   // end a script when the caller hangs up. It should be cheap.
   void set_stop_check(std::function<bool()> stop);
+
+  // For debuggers: called on the script's thread before each statement runs.
+  // When it returns true the script stops, as for the stop check (RunResult
+  // has stopped set). While it runs, call_stack(), variables() and source()
+  // describe the script; a debugger pauses the script by not returning.
+  void set_statement_hook(std::function<bool(const DebugLocation&)> hook);
+
+  // The running script's call stack, innermost frame first. The last frame
+  // is the script's top-level code. Empty if no script is running. Like
+  // variables(), only call it on the script's thread (from the statement
+  // hook or a native function).
+  std::vector<DebugFrame> call_stack() const;
+
+  // The variables visible in each frame of call_stack(), innermost first.
+  std::vector<DebugVariable> variables() const;
+
+  // The text of a source file that has been loaded (the script, or a file
+  // it IMPORTed), by the name DebugLocation::file gives. nullopt if no such
+  // file has been loaded.
+  std::optional<std::string> source(const std::string& file) const;
 
   // Only files under dir can be loaded with IMPORT "file.bas"; importing
   // anything else, such as "../x.bas" or an absolute path elsewhere, is an
