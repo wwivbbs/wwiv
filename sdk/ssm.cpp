@@ -58,7 +58,7 @@ bool SSM::send_remote(const Network& net, uint16_t system_number, uint32_t from_
   }
   nh.length = stl::size_uint32(text);
   nh.method = 0;
-  const auto packet_filename = StrCat(net.dir, "p0.net");
+  const auto packet_filename = FilePath(net.dir, "p0.net");
   File file(packet_filename);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::Whence::end);

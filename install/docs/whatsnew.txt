@@ -134,6 +134,8 @@ Networking / FTN
   to the first network, so the others never got it. Gated posts are now
   written to the network's directory, and keep the line break after a
   local poster's name.
+* Fixed SSMs to users on other systems, which weren't written to the
+  network, and creating the subscriber list when you start hosting a sub.
 * Fixed a couple of other FTN issues.
 
 WWIVbasic
