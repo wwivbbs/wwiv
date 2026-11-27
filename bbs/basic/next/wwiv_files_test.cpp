@@ -51,7 +51,11 @@ namespace {
 // and calling on_user_dirs each time a script checks an area.
 class HookedFileBase final : public FileBase {
 public:
-  explicit HookedFileBase(Application& app) : base_(app) {}
+  /**
+   * opens, when given, counts the calls to open(). It belongs to the test,
+   * since the engine destroys this file base when the script finishes.
+   */
+  explicit HookedFileBase(Application& app, int* opens = nullptr) : base_(app), opens_(opens) {}
 
   [[nodiscard]] std::vector<UserDir> user_dirs() const override {
     if (on_user_dirs) {
@@ -64,16 +68,18 @@ public:
   }
   [[nodiscard]] const Dirs& dirs() const override { return base_.dirs(); }
   [[nodiscard]] std::unique_ptr<FileArea> open(int dirnum) override {
-    ++opens;
+    if (opens_) {
+      ++*opens_;
+    }
     return base_.open(dirnum);
   }
   [[nodiscard]] std::filesystem::path path(int dirnum) const override { return base_.path(dirnum); }
 
-  int opens{0};
   std::function<void()> on_user_dirs;
 
 private:
   BbsFileBase base_;
+  int* opens_;
 };
 
 } // namespace
@@ -423,25 +429,25 @@ TEST_F(BbsFileBaseTest, Path) {
 // Going through an area file by file reads its file list once.
 TEST_F(WwivFilesTest, FileList_ReadOnce) {
   SetUpAreas();
-  auto files = std::make_unique<HookedFileBase>(*a());
-  auto* hooked = files.get();
+  int opens = 0;
+  auto files = std::make_unique<HookedFileBase>(*a(), &opens);
   EXPECT_EQ("first.zip second.txt 1 2 2\r\n", Run(R"(
 a = wwiv.files.area("1")
 n = a.count
 print a.file(2).name; " "; a.file(1).name; " "; a.find("second.txt"); " "; len(a.file(1).extended_description()); " "; len(a.files())
 )",
                                                   std::move(files)));
-  EXPECT_EQ(1, hooked->opens);
+  EXPECT_EQ(1, opens);
 }
 
 // A file list is read again once it changes, so scripts see new uploads.
 TEST_F(WwivFilesTest, FileList_SeesNewUploads) {
   SetUpAreas();
-  auto files = std::make_unique<HookedFileBase>(*a());
-  auto* hooked = files.get();
+  int opens = 0;
+  auto files = std::make_unique<HookedFileBase>(*a(), &opens);
   int checks = 0;
   // AREA() looks at the user's areas once, then each COUNT once.
-  hooked->on_user_dirs = [&] {
+  files->on_user_dirs = [&] {
     if (++checks == 3) {
       AddFile(0, "new.zip", "Just uploaded", 10);
     }
@@ -452,7 +458,7 @@ print a.count
 print a.count
 )",
                               std::move(files)));
-  EXPECT_EQ(2, hooked->opens);
+  EXPECT_EQ(2, opens);
 }
 
 // If directories are inserted while a script holds an area, so that its
