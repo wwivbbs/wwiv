@@ -26,6 +26,8 @@
 #include "core/strings.h"
 #include "sdk/wwivd_config.h"
 #include "wwivd/node_manager.h"
+#include "wwivd/sessions.h"
+#include "wwivd/signals.h"
 #include <atomic>
 #include <iostream>
 #include <csignal>
@@ -37,12 +39,16 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-namespace wwiv::wwivd {
-
-extern std::atomic<bool> need_to_exit;
-} // namespace wwiv
-
 using namespace wwiv::wwivd;
+
+// There's no signal to ask a Windows child to hang up. In pipe mode wwivd
+// owns the caller's socket, so shutting it down already hangs up the BBS;
+// otherwise the child is ended once the grace period is over.
+void wwiv::wwivd::HangupChild(child_process_t) {}
+
+void wwiv::wwivd::KillChild(child_process_t child) {
+  TerminateProcess(static_cast<HANDLE>(child), 1);
+}
 
 void signal_handler(int mysignal) {
   switch (mysignal) {
@@ -56,7 +62,7 @@ void signal_handler(int mysignal) {
   // Interrupts
   case SIGINT: {
     std::cerr << "SIGINT: " << mysignal << std::endl;
-    need_to_exit.store(true);
+    request_exit();
     // call default handler
   } break;
   default: {
@@ -77,7 +83,7 @@ static BOOL WINAPI WWIVDConsoleHandlerRoutine(_In_ DWORD dwCtrlType) {
     "CTRL_C_EVENT", "CTRL_BREAK_EVENT", "CTRL_CLOSE_EVENT", "???", "???", "CTRL_LOGOFF_EVENT", "CTRL_SHUTDOWN_EVENT"
   };
   std::cerr << "WWIVDConsoleHandlerRoutine: " << consoleHandlerNames[dwCtrlType] << std::endl;
-  if (need_to_exit.exchange(true)) {
+  if (request_exit()) {
     // Already asked to exit once and still running: let the default
     // handler end the process.
     return FALSE;
@@ -104,7 +110,8 @@ void SwitchToNonRootUser(const std::string&) {
 
 bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
-                        SocketHandle sock) {
+                        SocketHandle sock, const std::filesystem::path& working_dir,
+                        Sessions* sessions) {
 
   LOG(INFO) << pid << "Invoking Command Line (Win32):" << cmd;
 
@@ -161,7 +168,10 @@ bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node
   // Only inherit handles when there is a socket to hand over.
   const BOOL inherit_handles = sock ? TRUE : FALSE;
 
-  const auto current_dir = File::current_directory().string();
+  // Only the child changes directory: wwivd's own directory is shared by
+  // every thread.
+  const auto current_dir =
+      working_dir.empty() ? File::current_directory().string() : working_dir.string();
   const auto ok = CreateProcess(
     nullptr, 
     cmdstr.data(),
@@ -186,10 +196,17 @@ bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node
   }
 
   node_manager.set_pid(node_number, pi.dwProcessId);
+  if (sessions) {
+    sessions->add_child(pi.hProcess);
+  }
 
   // Wait until child process exits.
   auto dwExitCode = WaitForSingleObject(pi.hProcess, INFINITE);
   GetExitCodeProcess(pi.hProcess, &dwExitCode);
+  // Before the handle is closed, so shutdown never uses a stale one.
+  if (sessions) {
+    sessions->remove_child(pi.hProcess);
+  }
 
   // Close process and thread handles. 
   CloseHandle(pi.hProcess);

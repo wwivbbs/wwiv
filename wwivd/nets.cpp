@@ -30,14 +30,15 @@
 #include "sdk/net/contact.h"
 #include "sdk/net/networks.h"
 #include "wwivd/connection_data.h"
+#include "wwivd/sessions.h"
+#include "wwivd/signals.h"
 #include "wwivd/wwivd.h"
 #include "wwivd/wwivd_non_http.h"
 
-#include <atomic>
 #include <map>
 #include <memory>
 #include <string>
-#include <thread>
+#include <stop_token>
 #include <vector>
 
 namespace wwiv::wwivd {
@@ -49,9 +50,6 @@ using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
-
-std::atomic<bool> need_to_exit;
-std::atomic<bool> need_to_reload_config;
 
 // TODO(rushfan): Add tests for new stuff in here.
 
@@ -66,7 +64,8 @@ static NetworkContact network_contact_from_last_time(const fido::FidoAddress& ad
 }
 
 static void one_net_ftn_callout(const Config& config, const Network& net, const wwivd_config_t& c,
-                                std::shared_ptr<NodeManager> nodes, int network_number) {
+                                std::shared_ptr<NodeManager> nodes, int network_number,
+                                Sessions& sessions) {
   const fido::FidoCallout callout(config.root_directory(), config.max_backups(), net);
 
   // TODO(rushfan): 1. Right now we just keep the map of last call-out
@@ -81,6 +80,9 @@ static void one_net_ftn_callout(const Config& config, const Network& net, const 
   auto& current_last_contact = last_contact[network_number];
 
   for (const auto& [address, node_config] : callout.node_configs_map()) {
+    if (sessions.stopping()) {
+      return;
+    }
     const auto& callout_config = node_config.callout_config;
     if (!allowed_to_call(callout_config)) {
       // Is the call out bit set.
@@ -100,18 +102,23 @@ static void one_net_ftn_callout(const Config& config, const Network& net, const 
     const std::map<char, std::string> params = {{'N', address.as_string()},
                                            {'T', std::to_string(network_number)}};
     const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
-    if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, SocketHandle{})) {
+    if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, SocketHandle{}, {},
+                            &sessions)) {
       LOG(ERROR) << "Error executing command: '" << cmd << "'";
     }
   }
 }
 
 static void one_net_wwivnet_callout(const Network& net, const wwivd_config_t& c,
-                                    std::shared_ptr<NodeManager> nodes, int network_number) {
+                                    std::shared_ptr<NodeManager> nodes, int network_number,
+                                    Sessions& sessions) {
   VLOG(2) << "one_net_wwivnet_callout: @" << net.sysnum << "; name: " << net.name;
   Contact contact(net);
   const Callout callout(net, 0);
   for (const auto& kv : callout.callout_config()) {
+    if (sessions.stopping()) {
+      return;
+    }
     VLOG(2) << "one_net_wwivnet_callout: node @" << kv.first;
     auto* const ncn = contact.contact_rec_for(kv.first);
     if (ncn == nullptr) {
@@ -131,52 +138,53 @@ static void one_net_wwivnet_callout(const Network& net, const wwivd_config_t& c,
     const std::map<char, std::string> params = {{'N', std::to_string(kv.first)},
                                            {'T', std::to_string(network_number)}};
     const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
-    if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, SocketHandle{})) {
+    if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, SocketHandle{}, {},
+                            &sessions)) {
       LOG(ERROR) << "Error executing command: " << cmd;
     }
   }
 }
 
-static void one_callout_loop(const Config& config, const wwivd_config_t& c, std::shared_ptr<NodeManager> nodes) {
+static void one_callout_loop(const Config& config, const wwivd_config_t& c,
+                             std::shared_ptr<NodeManager> nodes, Sessions& sessions) {
   VLOG(1) << "do_wwivd_callouts: one_callout_loop: ";
   const Networks networks(config);
   const auto& nets = networks.networks();
   auto network_number = 0;
   for (const auto& net : nets) {
     if (net.type == network_type_t::wwivnet) {
-      one_net_wwivnet_callout(net, c, nodes, network_number++);
+      one_net_wwivnet_callout(net, c, nodes, network_number++, sessions);
     } else if (net.type == network_type_t::ftn) {
-      one_net_ftn_callout(config, net, c, nodes, network_number++);
+      one_net_ftn_callout(config, net, c, nodes, network_number++, sessions);
     }
   }
 }
 
-// This is called from the thread
-static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& original_config,
-                                  std::shared_ptr<NodeManager> nodes) {
+// Runs on the callout thread until wwivd shuts down.
+static void do_wwivd_callout_loop(const std::stop_token& st, const Config& config,
+                                  const wwivd_config_t& original_config,
+                                  std::shared_ptr<NodeManager> nodes, Sessions& sessions) {
   auto c{original_config};
 
   StatusMgr sm(config.datadir(), [](int) {});
-  auto e = need_to_exit.load();
   auto last_callout = DateTime::now().to_system_clock();
-  while (!e) {
-    // Reload the config if we've gotten a HUP?
-    if (need_to_reload_config.load()) {
-      LOG(INFO) << "Received HUP: Reloading Configuration for Callouts.";
-      need_to_reload_config.store(false);
+  while (!st.stop_requested()) {
+    if (take_reload_request()) {
+      // Only the callout and beginday settings are reloaded. Everything
+      // else (ports, BBSes, blocking) needs wwivd to be restarted.
+      LOG(INFO) << "Received HUP: Reloading the network callout and beginday settings. "
+                   "Restart wwivd to apply other changes.";
       c.Load(config);
     }
     if (c.do_network_callouts) {
       if (auto now = DateTime::now().to_system_clock(); now - last_callout > 60s) {
         last_callout = DateTime::now().to_system_clock();
-        one_callout_loop(config, c, nodes);
+        one_callout_loop(config, c, nodes, sessions);
       }
     }
-    if (need_to_exit.load()) {
+    if (!sleep_unless_stopped(st, 5s)) {
       return;
     }
-    sleep_for(5s);
-    e = need_to_exit.load();
 
     if (c.do_beginday_event) {
       const auto last_date_status = sm.get_status();
@@ -187,7 +195,8 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
         LOG(INFO) << "Executing beginday event. (" << d << " != " << ld << ")";
         const std::map<char, std::string> params{};
         const auto cmd = CreateCommandLine(c.beginday_cmd, params);
-        if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, SocketHandle{})) {
+        if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, SocketHandle{}, {},
+                                &sessions)) {
           LOG(ERROR) << "Error executing [BeginDay Event]: '" << cmd << "'";
         }
       }
@@ -195,15 +204,18 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
   }
 }
 
-void do_wwivd_callouts(const Config& config, const wwivd_config_t& c, std::shared_ptr<NodeManager> nodes) {
+void do_wwivd_callouts(const Config& config, const wwivd_config_t& c,
+                       std::shared_ptr<NodeManager> nodes, Sessions& sessions) {
   if (c.do_network_callouts) {
     LOG(INFO) << "WWIVD is handling network callouts.";
   }
   if (c.do_beginday_event) {
     LOG(INFO) << "WWIVD is handling beginday event.";
   }
-  std::thread callout_thread(do_wwivd_callout_loop, std::cref(config), std::cref(c), nodes);
-  callout_thread.detach();
+  // config outlives sessions (see Main), and c is copied.
+  sessions.start([&config, c, nodes, &sessions](const std::stop_token& st) {
+    do_wwivd_callout_loop(st, config, c, nodes, sessions);
+  });
 }
 
 } // namespace wwiv

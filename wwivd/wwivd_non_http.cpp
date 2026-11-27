@@ -285,8 +285,8 @@ static void socket_pipe_loop(SOCKET sock, Pipe& data_pipe, Pipe& control_pipe) {
  */
 static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
                        const std::string& working_dir, const std::shared_ptr<NodeManager>& nodes,
-                       int node_number, SocketHandle sock, ConnectionType connection_type,
-                       const std::string& remote_peer) {
+                       int node_number, WatchedSocket sock, ConnectionType connection_type,
+                       const std::string& remote_peer, Sessions* sessions) {
 
   const auto wwiv_pid = fmt::format("[{}] ", get_pid());
   nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
@@ -311,15 +311,16 @@ static bool launch_cmd(const wwivd_config_t& wc, const std::string& raw_cmd,
     return telnet_to(raw_cmd.substr(8), node_number, sock.get());
   }
   const auto cmd = CreateCommandLine(raw_cmd, params);
-  File::set_current_directory(working_dir);
-  return ExecCommandAndWait(wc, *nodes, cmd, wwiv_pid, node_number, std::move(sock));
+  // From here the child has the socket, and shutdown hangs it up instead.
+  return ExecCommandAndWait(wc, *nodes, cmd, wwiv_pid, node_number, sock.release(), working_dir,
+                            sessions);
 }
 
 /** Launches bbs on node_number for the caller on sock, taking ownership of sock. */
 static bool launch_node(const Config& config, const wwivd_config_t& wc,
                         const wwivd_matrix_entry_t& bbs, const std::shared_ptr<NodeManager>& nodes,
-                        int node_number, SocketHandle sock, ConnectionType connection_type,
-                        const std::string& remote_peer) {
+                        int node_number, WatchedSocket sock, ConnectionType connection_type,
+                        const std::string& remote_peer, Sessions* sessions) {
   const auto& raw_cmd = connection_type == ConnectionType::SSH ? bbs.ssh_cmd : bbs.telnet_cmd;
   const auto root = config.root_directory();
   const auto working_dir =
@@ -335,7 +336,7 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
     if (bbs.data_mode != wwivd_data_mode_t::pipe) {
       // The child gets the caller's socket directly.
       return launch_cmd(wc, raw_cmd, working_dir, nodes, node_number, std::move(sock),
-                        connection_type, remote_peer);
+                        connection_type, remote_peer, sessions);
     }
 
     // Pipe mode: wwivd keeps the socket and relays it over named pipes; the
@@ -350,8 +351,10 @@ static bool launch_node(const Config& config, const wwivd_config_t& wc,
     std::jthread pipes_thread(socket_pipe_loop, sock.get(), std::ref(data_pipe),
                               std::ref(control_pipe));
 #endif
-    auto result = launch_cmd(wc, raw_cmd, working_dir, nodes, node_number, SocketHandle{},
-                             connection_type, remote_peer);
+    // wwivd keeps reading the socket here, so shutdown hangs the caller up
+    // by shutting it down, which ends the relay and closes the pipes.
+    auto result = launch_cmd(wc, raw_cmd, working_dir, nodes, node_number, WatchedSocket{},
+                             connection_type, remote_peer, sessions);
     VLOG(1) << "after launch_cmd";
 #if defined(WWIV_USE_PIPES)
 #if defined(__OS2__)
@@ -413,7 +416,11 @@ std::string Color(int c, bool ansi) {
 }
 
 ConnectionHandler::ConnectionHandler(ConnectionData d, accepted_socket_t a)
-    : data(std::move(d)), sock_(a.client_socket), port_(a.port) {}
+    : data(std::move(d)), port_(a.port) {
+  SocketHandle sock(a.client_socket);
+  sock_ = data.sessions ? data.sessions->watch(std::move(sock))
+                        : WatchedSocket(nullptr, std::move(sock));
+}
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 std::optional<wwivd_matrix_entry_t> ConnectionHandler::DoMatrixLogon(const wwivd_config_t& c) {
@@ -573,7 +580,7 @@ void ConnectionHandler::HandleBinkPConnection() {
       return;
     }
     launch_cmd(*data.c, data.c->binkp_cmd, "", nodemgr, 0, std::move(sock_), ConnectionType::BINKP,
-               result.remote_peer);
+               result.remote_peer, data.sessions);
   } catch (const std::exception& e) {
     LOG(ERROR) << "HandleBinkPConnection: Handled Uncaught Exception: " << e.what();
   }
@@ -666,10 +673,8 @@ void ConnectionHandler::HandleConnection() {
     // Telnet or SSH connection.  Find open node number and launch the child.
     auto node = -1;
     if (nodemgr->AcquireNode(node, result.remote_peer)) {
-      auto current_dir = File::current_directory();
       launch_node(*data.config, *data.c, *bbs, nodemgr, node, std::move(sock_), connection_type,
-                  result.remote_peer);
-      File::set_current_directory(current_dir);
+                  result.remote_peer, data.sessions);
       VLOG(1) << "Exiting HandleConnection (launch_node)";
     } else {
       LOG(INFO) << "Sending BUSY. No available node to handle connection.";
@@ -682,9 +687,5 @@ void ConnectionHandler::HandleConnection() {
     LOG(ERROR) << "Handled Uncaught Exception: !!!";
   }
 }
-
-void HandleConnection(std::unique_ptr<ConnectionHandler> h) { h->HandleConnection(); }
-
-void HandleBinkPConnection(std::unique_ptr<ConnectionHandler> h) { h->HandleBinkPConnection(); }
 
 } // namespace wwiv
