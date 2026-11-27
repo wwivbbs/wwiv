@@ -427,7 +427,9 @@ next
 | `FILE(n)` | File `n`, from 1 to `COUNT`; an error if there is none |
 | `FIND(name)` | The number of the file named `name` (case doesn't matter) in the area now, or 0 if it has none. `name` may be a `file`, from this area or another. |
 
-Each call reads the area's file list again, so new uploads show. A file's
+Each call sees the area's file list as it is now, so new uploads show (the
+list is kept between calls and read again only once it changes, so going
+through an area file by file with `FILE(n)` is cheap). A file's
 number is its place in the list, newest first: when a file is uploaded, the
 others move down by one. Find a file again with `FIND` before using its
 number.

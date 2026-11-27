@@ -29,10 +29,14 @@
 #include "wwivbasic/interpreter.h"
 #include "wwivbasic/object.h"
 
+#include <cstring>
+#include <filesystem>
 #include <functional>
+#include <list>
 #include <memory>
 #include <optional>
 #include <string>
+#include <system_error>
 #include <vector>
 
 using namespace wwiv::strings;
@@ -48,36 +52,131 @@ namespace {
 // takes.
 constexpr size_t kMaxFileName = 12;
 
+// When a file was last changed, to tell whether a file list read earlier is
+// still current.
+struct FileStamp {
+  std::uintmax_t size{0};
+  std::filesystem::file_time_type time{};
+  bool exists{false};
+
+  static FileStamp of(const std::filesystem::path& p) {
+    std::error_code ec;
+    FileStamp s;
+    s.size = std::filesystem::file_size(p, ec);
+    if (ec) {
+      return {};
+    }
+    s.time = std::filesystem::last_write_time(p, ec);
+    s.exists = !ec;
+    return s;
+  }
+
+  bool operator==(const FileStamp&) const = default;
+};
+
+// Keeps the file lists of the last few areas read, so that a script going
+// through an area file by file (FILE(n), FIND, EXTENDED_DESCRIPTION) doesn't
+// read the whole list each time. A list is read again once its files change
+// on disk, so scripts still see new uploads, from this node or another.
+class AreaCache {
+public:
+  explicit AreaCache(FileBase* files) : files_(files) {}
+
+  [[nodiscard]] FileBase* files() const { return files_; }
+
+  // Directory dirnum's file list, or nullptr if it has none yet. Valid until
+  // the next call.
+  sdk::files::FileArea* open(int dirnum) {
+    for (auto it = entries_.begin(); it != entries_.end(); ++it) {
+      if (it->dirnum != dirnum) {
+        continue;
+      }
+      if (it->dir_stamp == FileStamp::of(it->area->path()) &&
+          it->ext_stamp == FileStamp::of(it->area->ext_path())) {
+        // Most recently used first.
+        entries_.splice(entries_.begin(), entries_, it);
+        return entries_.front().area.get();
+      }
+      entries_.erase(it);
+      break;
+    }
+    auto area = files_->open(dirnum);
+    if (!area) {
+      return nullptr;
+    }
+    // Read the stamps after opening, as path() and ext_path() come from the
+    // area; a change between the two reads is picked up on the next call.
+    Entry e{dirnum, FileStamp::of(area->path()), FileStamp::of(area->ext_path()), std::move(area)};
+    entries_.push_front(std::move(e));
+    if (entries_.size() > kMaxAreas) {
+      entries_.pop_back();
+    }
+    return entries_.front().area.get();
+  }
+
+private:
+  // A large area's list takes a few hundred kilobytes, so only keep a few.
+  static constexpr size_t kMaxAreas = 4;
+
+  struct Entry {
+    int dirnum;
+    FileStamp dir_stamp;
+    FileStamp ext_stamp;
+    std::unique_ptr<sdk::files::FileArea> area;
+  };
+
+  FileBase* files_;
+  std::list<Entry> entries_;
+};
+
 // A file area the user can list (one of FileBase::user_dirs()).
 struct ScriptFileArea {
-  FileBase* files;
+  std::shared_ptr<AreaCache> cache;
   int dirnum;
   std::string key;
+  // The directory's file name (as in dirs()) when the area was chosen, to
+  // tell if dirnum has since come to mean another directory.
+  std::string filename;
 
+  [[nodiscard]] FileBase* files() const { return cache->files(); }
+
+  // The directory, if it's still the one the area was chosen as and the user
+  // can still list it. The directory list can change while a script holds an
+  // area, so that dirnum is another directory, perhaps one the user can't
+  // list.
   [[nodiscard]] const sdk::files::directory_t& dir() const {
-    // The directory list can change while a script holds an area.
-    if (dirnum < 0 || dirnum >= files->dirs().size()) {
-      throw BasicError(fmt::format("file area '{}' no longer exists", key));
+    const auto user_dirs = files()->user_dirs();
+    const auto& dirs = files()->dirs();
+    if (dirnum >= 0 && dirnum < dirs.size() && dirs.dir(dirnum).filename == filename) {
+      for (const auto& u : user_dirs) {
+        if (u.dirnum == dirnum) {
+          return dirs.dir(dirnum);
+        }
+      }
     }
-    return files->dirs().dir(dirnum);
+    throw BasicError(fmt::format("file area '{}' no longer exists", key));
   }
 
   // Stops the script if the directory no longer exists.
   void check() const { static_cast<void>(dir()); }
 
-  // The area's files, read now so that they include new uploads, or nullptr
-  // if it has none yet.
-  [[nodiscard]] std::unique_ptr<sdk::files::FileArea> open() const { return files->open(dirnum); }
+  // The area's files, current as of now so that they include new uploads,
+  // or nullptr if it has none yet. Valid until the next open().
+  [[nodiscard]] sdk::files::FileArea* open() const { return cache->open(dirnum); }
 };
 
 // A file record as scripts see it.
 struct ScriptFile {
-  FileBase* files{nullptr};
+  std::shared_ptr<AreaCache> cache;
   int dirnum{-1};
   // Its position in its area, from 1, when it was read.
   int number{0};
-  // As the BBS stores it ("FOO     .ZIP"), to find it again.
+  // Aligned ("FOO     .ZIP"), as the BBS looks up its extended description
+  // and its file on disk.
   std::string aligned_name;
+  // Exactly as its record has it, to find it again: an old record's name may
+  // be in lower case, which aligned_name isn't.
+  std::string stored_name;
   std::string name;
   std::string description;
   std::string uploaded_by;
@@ -89,12 +188,14 @@ struct ScriptFile {
   bool cdrom{false};
 };
 
-ScriptFile to_script_file(const ScriptFileArea& a, int number, const sdk::files::FileRecord& f) {
+ScriptFile to_script_file(const ScriptFileArea& a, const sdk::files::directory_t& dir, int number,
+                          const sdk::files::FileRecord& f) {
   ScriptFile s;
-  s.files = a.files;
+  s.cache = a.cache;
   s.dirnum = a.dirnum;
   s.number = number;
   s.aligned_name = f.aligned_filename();
+  s.stored_name.assign(f.u().filename, strnlen(f.u().filename, sizeof(f.u().filename)));
   s.name = f.unaligned_filename();
   s.description = f.description();
   s.uploaded_by = f.uploaded_by();
@@ -102,7 +203,7 @@ ScriptFile to_script_file(const ScriptFileArea& a, int number, const sdk::files:
   s.size = f.numbytes();
   s.downloads = f.u().numdloads;
   s.has_extended = f.has_extended_description();
-  s.cdrom = (a.dir().mask & mask_cdrom) != 0;
+  s.cdrom = (dir.mask & mask_cdrom) != 0;
   return s;
 }
 
@@ -129,8 +230,8 @@ std::string to_aligned_mask(const std::string& fn, std::string mask) {
 std::vector<ScriptFile> read_files(const ScriptFileArea& a, const std::string& aligned_mask,
                                    const std::function<bool()>& stopped) {
   std::vector<ScriptFile> out;
-  a.check();
-  auto area = a.open();
+  const auto& dir = a.dir();
+  auto* area = a.open();
   if (!area) {
     return out;
   }
@@ -138,45 +239,51 @@ std::vector<ScriptFile> read_files(const ScriptFileArea& a, const std::string& a
   for (auto i = 1; i <= count && !stopped(); i++) {
     const auto f = area->ReadFile(i);
     if (sdk::files::aligned_wildcard_match(aligned_mask, f.aligned_filename())) {
-      out.push_back(to_script_file(a, i, f));
+      out.push_back(to_script_file(a, dir, i, f));
     }
   }
   return out;
 }
 
 ScriptFile read_file(const ScriptFileArea& a, int number) {
-  const auto& name = a.dir().name;
-  auto area = a.open();
+  const auto& dir = a.dir();
+  auto* area = a.open();
   const auto count = area ? area->number_of_files() : 0;
   if (!area || number < 1 || number > count) {
     throw BasicError(
-        fmt::format("FILE: there is no file {} in '{}' (it has {})", number, name, count));
+        fmt::format("FILE: there is no file {} in '{}' (it has {})", number, dir.name, count));
   }
-  return to_script_file(a, number, area->ReadFile(number));
+  return to_script_file(a, dir, number, area->ReadFile(number));
 }
 
-// The number of the file named name (case doesn't matter) in area a, or 0.
-int find_file(const ScriptFileArea& a, const std::string& name) {
+// The number of the file whose name in its record is stored_name in area a,
+// or 0.
+int find_stored(const ScriptFileArea& a, const std::string& stored_name) {
   a.check();
-  const auto n = StringTrim(name);
-  if (n.empty() || n.size() > kMaxFileName || n.contains('?') || n.contains('*')) {
-    return 0;
-  }
-  auto area = a.open();
+  auto* area = a.open();
   if (!area) {
     return 0;
   }
-  const auto pos = area->FindFile(sdk::files::align(n));
+  const auto pos = area->FindFile(stored_name);
   // Position 0 is the area's header, not a file.
   return pos.value_or(0);
 }
 
+// The number of the file named name (case doesn't matter) in area a, or 0.
+int find_file(const ScriptFileArea& a, const std::string& name) {
+  const auto n = StringTrim(name);
+  if (n.empty() || n.size() > kMaxFileName || n.contains('?') || n.contains('*')) {
+    return 0;
+  }
+  return find_stored(a, sdk::files::align(n));
+}
+
 // The lines of a file's extended description, or none if it has none.
 std::vector<std::string> extended_description(const ScriptFile& f) {
-  if (!f.has_extended || !f.files) {
+  if (!f.has_extended || !f.cache) {
     return {};
   }
-  auto area = f.files->open(f.dirnum);
+  auto* area = f.cache->open(f.dirnum);
   if (!area) {
     return {};
   }
@@ -193,10 +300,10 @@ bool available(const ScriptFile& f) {
   if (f.cdrom) {
     return true;
   }
-  if (!f.files) {
+  if (!f.cache) {
     return false;
   }
-  const auto dir = f.files->path(f.dirnum);
+  const auto dir = f.cache->files()->path(f.dirnum);
   return !dir.empty() &&
          core::File::Exists(sdk::files::FilePath(dir, sdk::files::FileName(f.aligned_name)));
 }
@@ -210,6 +317,7 @@ void RegisterWwivFiles(wwivbasic::Interpreter& interp, const WwivBindings& b) {
     return;
   }
   auto* files = b.files;
+  auto cache = std::make_shared<AreaCache>(files);
   // True once the caller hangs up.
   std::function<bool()> hung_up = [ctx = b.ctx]() {
     return ctx && ctx->session_context().hangup();
@@ -235,7 +343,7 @@ void RegisterWwivFiles(wwivbasic::Interpreter& interp, const WwivBindings& b) {
       .property("count",
                 [](const ScriptFileArea& a) {
                   a.check();
-                  const auto area = a.open();
+                  auto* area = a.open();
                   return area ? area->number_of_files() : 0;
                 })
       // FILES([mask]) lists the area's files, or those matching mask.
@@ -260,7 +368,9 @@ void RegisterWwivFiles(wwivbasic::Interpreter& interp, const WwivBindings& b) {
       // file from this area, to find it again after files were added.
       .method("find", [&file_class](const ScriptFileArea& a, Value v) {
         if (const auto f = file_class.unwrap(v)) {
-          return find_file(a, f->name);
+          // By the name as stored, which align() of the name scripts see
+          // needn't give back (an old record stored in lower case).
+          return find_stored(a, f->stored_name);
         }
         if (v.is_list() || v.is_object()) {
           throw BasicError("file_area.find: expected a file name or a file");
@@ -268,8 +378,9 @@ void RegisterWwivFiles(wwivbasic::Interpreter& interp, const WwivBindings& b) {
         return find_file(a, v.toString());
       });
 
-  auto make_area = [files, &area_class](const FileBase::UserDir& u) {
-    return area_class.wrap(ScriptFileArea{files, u.dirnum, u.key});
+  auto make_area = [files, cache, &area_class](const FileBase::UserDir& u) {
+    return area_class.wrap(
+        ScriptFileArea{cache, u.dirnum, u.key, files->dirs().dir(u.dirnum).filename});
   };
 
   m.native_function("MODULE_NAME", []() { return std::string("wwiv.files"); });

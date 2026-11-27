@@ -27,12 +27,14 @@
 #include "common/output.h"
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/files/dirs.h"
 #include "sdk/files/file_record.h"
 #include "sdk/files/files.h"
 #include "sdk/vardec.h"
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -42,6 +44,39 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::files;
 using testing::HasSubstr;
 using testing::Not;
+
+namespace {
+
+// The BBS's file areas, counting how often a directory's file list is read,
+// and calling on_user_dirs each time a script checks an area.
+class HookedFileBase final : public FileBase {
+public:
+  explicit HookedFileBase(Application& app) : base_(app) {}
+
+  [[nodiscard]] std::vector<UserDir> user_dirs() const override {
+    if (on_user_dirs) {
+      on_user_dirs();
+    }
+    return base_.user_dirs();
+  }
+  [[nodiscard]] std::optional<UserDir> current_user_dir() const override {
+    return base_.current_user_dir();
+  }
+  [[nodiscard]] const Dirs& dirs() const override { return base_.dirs(); }
+  [[nodiscard]] std::unique_ptr<FileArea> open(int dirnum) override {
+    ++opens;
+    return base_.open(dirnum);
+  }
+  [[nodiscard]] std::filesystem::path path(int dirnum) const override { return base_.path(dirnum); }
+
+  int opens{0};
+  std::function<void()> on_user_dirs;
+
+private:
+  BbsFileBase base_;
+};
+
+} // namespace
 
 class WwivFilesTest : public ::testing::Test {
 protected:
@@ -90,8 +125,12 @@ protected:
   }
 
   std::string Run(const std::string& text, bool* ok = nullptr) {
+    return Run(text, std::make_unique<BbsFileBase>(*a()), ok);
+  }
+
+  std::string Run(const std::string& text, std::unique_ptr<FileBase> files, bool* ok = nullptr) {
     NextEngine engine(bin, bout, helper.config(), &helper.context());
-    engine.set_file_base(std::make_unique<BbsFileBase>(*a()));
+    engine.set_file_base(std::move(files));
     const auto r = engine.RunScript("filestest", text);
     if (ok) {
       *ok = r;
@@ -245,6 +284,25 @@ print a.find(f); " "; wwiv.files.area("2").find(f)
 )"));
 }
 
+// FIND(f) finds f by its name as stored, even an old record's name in lower
+// case, which the name scripts see doesn't align back to.
+TEST_F(WwivFilesTest, Find_File_StoredLowerCase) {
+  SetUpAreas();
+  FileRecord f;
+  ASSERT_TRUE(f.set_filename("old.zip"));
+  wwiv::strings::to_char_array(f.u().filename, "old     .zip");
+  ASSERT_TRUE(f.set_description("An old file"));
+  auto area = a()->fileapi()->Open(a()->dirs()[0]);
+  ASSERT_NE(nullptr, area);
+  ASSERT_TRUE(area->AddFile(f));
+  ASSERT_TRUE(area->Close());
+  EXPECT_EQ("old.zip 1\r\n", Run(R"(
+a = wwiv.files.area("1")
+f = a.file(1)
+print f.name; " "; a.find(f)
+)"));
+}
+
 TEST_F(WwivFilesTest, Find_NotAName) {
   SetUpAreas();
   bool ok{true};
@@ -360,4 +418,65 @@ TEST_F(BbsFileBaseTest, Path) {
   const BbsFileBase f(*a());
   EXPECT_EQ(File::absolute(a()->bbspath(), "dloads/dir1"), f.path(1));
   EXPECT_TRUE(f.path(8).empty());
+}
+
+// Going through an area file by file reads its file list once.
+TEST_F(WwivFilesTest, FileList_ReadOnce) {
+  SetUpAreas();
+  auto files = std::make_unique<HookedFileBase>(*a());
+  auto* hooked = files.get();
+  EXPECT_EQ("first.zip second.txt 1 2 2\r\n", Run(R"(
+a = wwiv.files.area("1")
+n = a.count
+print a.file(2).name; " "; a.file(1).name; " "; a.find("second.txt"); " "; len(a.file(1).extended_description()); " "; len(a.files())
+)",
+                                                  std::move(files)));
+  EXPECT_EQ(1, hooked->opens);
+}
+
+// A file list is read again once it changes, so scripts see new uploads.
+TEST_F(WwivFilesTest, FileList_SeesNewUploads) {
+  SetUpAreas();
+  auto files = std::make_unique<HookedFileBase>(*a());
+  auto* hooked = files.get();
+  int checks = 0;
+  // AREA() looks at the user's areas once, then each COUNT once.
+  hooked->on_user_dirs = [&] {
+    if (++checks == 3) {
+      AddFile(0, "new.zip", "Just uploaded", 10);
+    }
+  };
+  EXPECT_EQ("2\r\n3\r\n", Run(R"(
+a = wwiv.files.area("1")
+print a.count
+print a.count
+)",
+                              std::move(files)));
+  EXPECT_EQ(2, hooked->opens);
+}
+
+// If directories are inserted while a script holds an area, so that its
+// number is now another directory, the area no longer exists.
+TEST_F(WwivFilesTest, Area_DirectoryMoved) {
+  SetUpAreas();
+  auto files = std::make_unique<HookedFileBase>(*a());
+  int checks = 0;
+  files->on_user_dirs = [&] {
+    if (++checks == 2) {
+      directory_t d{};
+      d.name = "Sysop only";
+      d.filename = "sysop";
+      ASSERT_TRUE(a()->dirs().insert(0, d));
+    }
+  };
+  bool ok{true};
+  const auto out = Run(R"(
+a = wwiv.files.area("1")
+print a.name
+print "after"
+)",
+                       std::move(files), &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, HasSubstr("no longer exists"));
+  EXPECT_THAT(out, Not(HasSubstr("Sysop only")));
 }
