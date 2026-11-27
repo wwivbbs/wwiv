@@ -279,20 +279,20 @@ struct configrec_header_t {
 constexpr uint16_t script_flag_disable_script = 0x0001;
 constexpr uint16_t script_flag_enable_file    = 0x0002;
 constexpr uint16_t script_flag_enable_os      = 0x0004;
-// Run scripts on wwivbasic (the "next" engine) instead of my_basic.
-constexpr uint16_t script_flag_engine_next   = 0x0008;
-// Turns off wwiv.msg (read-only message areas) on the new engine. It's on by
-// default, since it only shows what the user could read in the BBS.
+// Was "run scripts on wwivbasic instead of my_basic"; unused since my_basic
+// was removed. Don't reuse it: config.json files may still have it set.
+constexpr uint16_t script_flag_unused_0008   = 0x0008;
+// Turns off wwiv.msg (read-only message areas). It's on by default, since it
+// only shows what the user could read in the BBS.
 constexpr uint16_t script_flag_disable_msg   = 0x0010;
-// Turns off wwiv.user (the caller, and other users' public details) on the
-// new engine. On by default, like wwiv.msg.
+// Turns off wwiv.user (the caller, and other users' public details). On by
+// default, like wwiv.msg.
 constexpr uint16_t script_flag_disable_user  = 0x0020;
-// Lets wwiv.msg post and delete messages (new engine only), with the user's
-// own rights. Off by default: a script can post without the user seeing what
-// it posts.
+// Lets wwiv.msg post and delete messages, with the user's own rights. Off by
+// default: a script can post without the user seeing what it posts.
 constexpr uint16_t script_flag_enable_msg_write = 0x0040;
-// Turns off wwiv.files (read-only file areas) on the new engine. On by
-// default, like wwiv.msg: it only shows what the user could list in the BBS.
+// Turns off wwiv.files (read-only file areas). On by default, like wwiv.msg:
+// it only shows what the user could list in the BBS.
 constexpr uint16_t script_flag_disable_files = 0x0080;
 
 // STATIC SYSTEM INFORMATION

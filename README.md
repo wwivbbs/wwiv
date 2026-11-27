@@ -17,7 +17,7 @@ CMake 3.21 or newer is needed to use the presets described below.
 
 WWIV pulls its third-party code in two ways:
 
-* **Git submodules** (`vcpkg`, `deps/my_basic`, `deps/pdcurses`). You must clone
+* **Git submodules** (`vcpkg`, `deps/pdcurses`). You must clone
   with `--recurse-submodules`, or run `git submodule update --init --recursive`
   afterwards. CMake stops with a clear error if they are missing.
 * **vcpkg** (fmt, cereal, cpp-httplib, nlohmann-json, gtest; see `vcpkg.json`).

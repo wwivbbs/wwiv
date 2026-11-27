@@ -63,6 +63,10 @@ public:
   bool bkbhitraw();
   bool bkbhit();
   char getkey(bool allow_extended_input = false);
+  // Queues keys to be read (by bgetch) before anything typed after them, as
+  // if they were typed again: for code that had to read keys while looking
+  // for one in particular (Ctrl-C, say). Keys that don't fit are dropped.
+  void type_ahead(const std::string& keys);
 
   // Key Timeouts
   [[nodiscard]] std::chrono::duration<double> key_timeout() const;

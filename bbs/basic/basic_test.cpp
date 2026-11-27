@@ -20,32 +20,28 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "bbs/basic/basic.h"
-#include "bbs/basic/script_engine.h"
-#include "bbs/basic/util.h"
+#include "bbs/basic/next/next_engine.h"
+#include "bbs/bbs.h"
 #include "bbs/bbs_helper.h"
-#include "core/log.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "deps/my_basic/core/my_basic.h"
 #include "fmt/format.h"
+#include "wwivbasic/interpreter.h"
 #include <cmath>
 #include <optional>
-#include <sstream>
-#include <iostream>
 #include <string>
 #include <vector>
-
-#ifdef WWIV_WWIVBASIC_NEXT
-#include "bbs/basic/next/next_engine.h"
-#include "wwivbasic/interpreter.h"
-#endif
 
 using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::bbs::basic;
 using namespace wwiv::strings;
 
+// Scripts run through NextEngine, as the BBS runs them, with an ASSERT module.
+// These began as the legacy (my_basic) engine's tests, and ran on both
+// engines until it was removed.
 class BasicTest : public ::testing::Test {
 protected:
   void SetUp() override {
@@ -54,54 +50,19 @@ protected:
     helper.config().scripting_enabled(true);
     helper.config().script_package_file_enabled(true);
     helper.config().script_package_os_enabled(true);
-    basic.reset(new Basic(bin, bout, *a()->config(), &helper.context()));
   }
 
-  // The engines in this build. Each test runs its scripts on every one.
-  static std::vector<script_engine_t> Engines() {
-    std::vector<script_engine_t> engines{script_engine_t::legacy};
-    if (script_engine_available(script_engine_t::next)) {
-      engines.push_back(script_engine_t::next);
-    }
-    return engines;
-  }
-
-  // Makes RunScript use engine e, with no output captured yet.
-  void Use(script_engine_t e) {
-    engine_ = e;
-    helper.io()->Clear();
-  }
-
-  // Runs text on the current engine (see Use), with an ASSERT module.
   [[nodiscard]] bool RunScript(const std::string& text) {
     const auto* const test_info = ::testing::UnitTest::GetInstance()->current_test_info();
     const auto module = StrCat(test_info->test_suite_name(), "#", test_info->name());
-
-#ifdef WWIV_WWIVBASIC_NEXT
-    if (engine_ == script_engine_t::next) {
-      NextEngine engine(bin, bout, *a()->config(), &helper.context(), RegisterNextAssertModule);
-      return engine.RunScript(module, text);
-    }
-#endif
-    // The legacy ASSERT reports why it failed on stderr; keep that.
-    std::ostringstream err;
-    struct RestoreCerr {
-      std::streambuf* saved;
-      ~RestoreCerr() { std::cerr.rdbuf(saved); }
-    } restore{std::cerr.rdbuf(err.rdbuf())};
-    RegisterBasicUnitTestModule(basic->bas());
-    const auto r = basic->RunScript(module, text);
-    basic.reset(new Basic(bin, bout, *a()->config(), &helper.context()));
-    legacy_stderr_ = err.str();
-    return r;
+    NextEngine engine(bin, bout, *a()->config(), &helper.context(), RegisterAssertModule);
+    return engine.RunScript(module, text);
   }
 
-#ifdef WWIV_WWIVBASIC_NEXT
-  // ASSERT.EQUALS and ASSERT.NE for the new engine, like the legacy ones
-  // below: values of different types are never equal, and REALs are equal
-  // within 0.001. my_basic had no booleans (TRUE was the integer 1), so a
-  // BOOLEAN compares as the INTEGER 0 or 1.
-  static void RegisterNextAssertModule(wwivbasic::Interpreter& interp) {
+  // ASSERT.EQUALS and ASSERT.NE: values of different types are never equal,
+  // and REALs are equal within 0.001. A BOOLEAN compares as the INTEGER 0 or
+  // 1, as my_basic's ASSERT did (it had no booleans).
+  static void RegisterAssertModule(wwivbasic::Interpreter& interp) {
     using wwivbasic::Value;
     auto normalize = [](const Value& v) {
       return v.value_type() == Value::Type::BOOLEAN ? Value(v.toBool() ? 1 : 0) : v;
@@ -159,124 +120,14 @@ protected:
     m.native_functionl("EQUALS", check("ASSERT.EQUALS", true));
     m.native_functionl("NE", check("ASSERT.NE", false));
   }
-#endif
-
-  static bool IsValueEq(const mb_value_t& v1, const mb_value_t& v2, const std::string& msg) {
-    if (v1.type != v2.type) {
-      LOG(WARNING) << "Different datatypes in ASSERT.EQUALS";
-      return false;
-    }
-    switch (v1.type) {
-    case MB_DT_INT: {
-      const auto eq = v1.value.integer == v2.value.integer;
-      if (!eq) {
-        std::cerr << "FAIL: ASSERT.EQUALS: '" << v1.value.integer << "' != '"
-                  << v2.value.integer << "'" << msg << std::endl;
-      }
-      return eq;
-    }
-    case MB_DT_REAL: {
-      const auto eq =
-          std::abs(v1.value.float_point - v2.value.float_point) < 0.001f;
-      if (!eq) {
-        std::cerr << "FAIL: ASSERT.EQUALS: '" << v1.value.float_point << "' != '"
-                  << v2.value.float_point << "'" << msg << std::endl;
-      }
-      return eq;
-    }
-    case MB_DT_STRING: {
-      const auto eq = IsEquals(v1.value.string, v2.value.string);
-      if (!eq) {
-        std::cerr << "FAIL: ASSERT.EQUALS: '" << v1.value.string << "' != '"
-                  << v2.value.string << "'" << msg << std::endl;
-      }
-      return eq;
-    }
-    case MB_DT_NIL:
-    case MB_DT_UNKNOWN:
-    case MB_DT_NUM:
-    case MB_DT_TYPE:
-    case MB_DT_USERTYPE:
-    case MB_DT_USERTYPE_REF:
-    case MB_DT_ARRAY:
-    case MB_DT_LIST:
-    case MB_DT_LIST_IT:
-    case MB_DT_DICT:
-    case MB_DT_DICT_IT:
-    case MB_DT_COLLECTION:
-    case MB_DT_ITERATOR:
-    case MB_DT_CLASS:
-    case MB_DT_ROUTINE:
-      LOG(ERROR) << "Unknown datatype for LHS: " << v1.type;
-      return false;
-    }
-    return false;
-  }
-
-  static bool IsValueNotEq(const mb_value_t& v1, const mb_value_t& v2, const std::string& msg) {
-    return !IsValueEq(v1, v2, msg);
-  }
-
-  static void RegisterBasicUnitTestModule(mb_interpreter_t* basi) {
-    mb_begin_module(basi, "ASSERT");
-
-    mb_register_func(basi, "EQUALS", [](struct mb_interpreter_t* bas, void** l) -> int {
-      mb_check(mb_attempt_open_bracket(bas, l));
-      auto v1 = wwiv_mb_pop_value(bas, l);
-      auto v2 = wwiv_mb_pop_value(bas, l);
-      if (!v1 || !v2) {
-        LOG(WARNING) << "missing params in ASSERT.EQUALS";
-        return MB_FUNC_ERR;
-      }
-      std::string msg;
-      if (mb_has_arg(bas, l)) {
-        if (const auto rm = wwiv_mb_pop_string(bas, l)) {
-          msg = rm.value();          
-        }
-      }
-      mb_check(mb_attempt_close_bracket(bas, l));
-      return IsValueEq(v1.value(), v2.value(), msg) ? MB_FUNC_OK : MB_FUNC_ERR;
-
-    });
-
-    mb_register_func(basi, "NE", [](struct mb_interpreter_t* bas, void** l) -> int {
-      mb_check(mb_attempt_open_bracket(bas, l));
-      auto v1 = wwiv_mb_pop_value(bas, l);
-      auto v2 = wwiv_mb_pop_value(bas, l);
-      if (!v1 || !v2) {
-        LOG(WARNING) << "missing params in ASSERT.NE";
-        return MB_FUNC_ERR;
-      }
-      std::string msg;
-      if (mb_has_arg(bas, l)) {
-        if (const auto rm = wwiv_mb_pop_string(bas, l)) {
-          msg = rm.value();          
-        }
-      }
-      mb_check(mb_attempt_close_bracket(bas, l));
-      return IsValueNotEq(v1.value(), v2.value(), msg) ? MB_FUNC_OK : MB_FUNC_ERR;
-    });
-
-    mb_end_module(basi);
-  }
 
   // After a script that should fail on an ASSERT: checks that it was the
-  // ASSERT that failed, and why, not some other error. The new engine's
-  // ASSERT says why in the script's error; the legacy one on stderr.
-  void ExpectAssertFailure(const std::string& next_why, const std::string& legacy_why) {
-    if (engine_ == script_engine_t::next) {
-      EXPECT_THAT(helper.io()->captured(),
-                  testing::HasSubstr("ASSERT.EQUALS failed: " + next_why));
-    } else {
-      EXPECT_THAT(legacy_stderr_, testing::HasSubstr(legacy_why));
-    }
+  // ASSERT that failed, and why, not some other error.
+  void ExpectAssertFailure(const std::string& why) {
+    EXPECT_THAT(helper.io()->captured(), testing::HasSubstr("ASSERT.EQUALS failed: " + why));
   }
 
   BbsHelper helper{};
-  std::unique_ptr<Basic> basic;
-  script_engine_t engine_{script_engine_t::legacy};
-  // What the last legacy script wrote to stderr.
-  std::string legacy_stderr_;
 };
 
 #define BASIC_ASSERT_EQUALS(v1, v2)                                                                \
@@ -292,225 +143,136 @@ protected:
   } while (0)
 
 TEST_F(BasicTest, Smoke) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript("print \"Hello World\""));
-    EXPECT_EQ("Hello World", StringTrim(helper.io()->captured()));
-  }
+  EXPECT_TRUE(RunScript("print \"Hello World\""));
+  EXPECT_EQ("Hello World", StringTrim(helper.io()->captured()));
 }
 
 TEST_F(BasicTest, Smoke_Fail) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    // There is no outstr( function.
-    EXPECT_FALSE(RunScript("outstr( \"Hello World\""));
+  // There is no outstr( function.
+  EXPECT_FALSE(RunScript("outstr( \"Hello World\""));
 
-    // Script errors are echoed to the caller so they can see why it failed.
-    const auto captured = StringTrim(helper.io()->captured());
-    if (e == script_engine_t::legacy) {
-      EXPECT_THAT(captured, testing::StartsWith("Error:"));
-      EXPECT_THAT(captured, testing::HasSubstr("Line 1"));
-    } else {
-      // The new engine's errors are "name:line[:column]: error: message".
-      // It's the parse error, not some other failure.
-      EXPECT_THAT(captured, testing::StartsWith("BasicTest#Smoke_Fail:1:22: error: missing ')'"));
-    }
-  }
+  // Script errors are echoed to the caller so they can see why it failed.
+  const auto captured = StringTrim(helper.io()->captured());
+  // Errors are "name:line[:column]: error: message". It's the parse error,
+  // not some other failure.
+  EXPECT_THAT(captured, testing::StartsWith("BasicTest#Smoke_Fail:1:22: error: missing ')'"));
 }
 
 TEST_F(BasicTest, Assert_Int_False) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    BASIC_ASSERT_NE(1, 2);
-    EXPECT_FALSE(RunScript("ASSERT.EQUALS(1, 2)"));
-    ExpectAssertFailure("'1' != '2'", "FAIL: ASSERT.EQUALS: '1' != '2'");
-  }
+  BASIC_ASSERT_NE(1, 2);
+  EXPECT_FALSE(RunScript("ASSERT.EQUALS(1, 2)"));
+  ExpectAssertFailure("'1' != '2'");
 }
 
 TEST_F(BasicTest, Assert_Int_True) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    BASIC_ASSERT_EQUALS(1, 1);
-    EXPECT_TRUE(RunScript("ASSERT.EQUALS(1, 1)"));
-  }
+  BASIC_ASSERT_EQUALS(1, 1);
+  EXPECT_TRUE(RunScript("ASSERT.EQUALS(1, 1)"));
 }
 
 TEST_F(BasicTest, Assert_String_False) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    BASIC_ASSERT_NE("\"hello\"", "\"world\"");
-  }
+  BASIC_ASSERT_NE("\"hello\"", "\"world\"");
 }
 
 TEST_F(BasicTest, Assert_String_True) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    BASIC_ASSERT_EQUALS("\"hello\"", "\"hello\"");
-  }
+  BASIC_ASSERT_EQUALS("\"hello\"", "\"hello\"");
 }
 
 TEST_F(BasicTest, Assert_Real_False) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_FALSE(RunScript("ASSERT.EQUALS(1.1, 1.2)"));
-    ExpectAssertFailure("'1.1' != '1.2'", "FAIL: ASSERT.EQUALS: '1.1' != '1.2'");
-  }
+  EXPECT_FALSE(RunScript("ASSERT.EQUALS(1.1, 1.2)"));
+  ExpectAssertFailure("'1.1' != '1.2'");
 }
 
 TEST_F(BasicTest, Assert_Real_True) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript("ASSERT.EQUALS(1.1, 1.1)"));
-  }
+  EXPECT_TRUE(RunScript("ASSERT.EQUALS(1.1, 1.1)"));
 }
 
 TEST_F(BasicTest, Assert_DifferentTypes) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_FALSE(RunScript(R"( ASSERT.EQUALS("1.1", 1.1) )"));
-    ExpectAssertFailure("different types: a STRING and a REAL",
-                        "Different datatypes in ASSERT.EQUALS");
-  }
+  EXPECT_FALSE(RunScript(R"( ASSERT.EQUALS("1.1", 1.1) )"));
+  ExpectAssertFailure("different types: a STRING and a REAL");
 }
 
 TEST_F(BasicTest, ModuleNames) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS("wwiv", wwiv.module_name()) )"));
-    EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS("wwiv.io", wwiv.io.module_name()) )"));
-    EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS("wwiv.io.file", wwiv.io.file.module_name()) )"));
-    EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS("wwiv.data", wwiv.data.module_name()) )"));
-    EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS("wwiv.os", wwiv.os.module_name()) )"));
-  }
+  EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS("wwiv", wwiv.module_name()) )"));
+  EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS("wwiv.io", wwiv.io.module_name()) )"));
+  EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS("wwiv.io.file", wwiv.io.file.module_name()) )"));
+  EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS("wwiv.data", wwiv.data.module_name()) )"));
+  EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS("wwiv.os", wwiv.os.module_name()) )"));
 }
 
 TEST_F(BasicTest, WWIV_Version) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    const auto script = fmt::format(R"(ASSERT.EQUALS("{}", wwiv.version()) )",
-                                    wwiv::core::short_version());
-    EXPECT_TRUE(RunScript(script));
-  }
+  const auto script = fmt::format(R"(ASSERT.EQUALS("{}", wwiv.version()) )",
+                                  wwiv::core::short_version());
+  EXPECT_TRUE(RunScript(script));
 }
 
 TEST_F(BasicTest, WWIV_Version_Import) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    const auto script = fmt::format(R"(
+  const auto script = fmt::format(R"(
 import "@wwiv"
 ASSERT.EQUALS("{}", version())
 )", wwiv::core::short_version());
-    EXPECT_TRUE(RunScript(script));
-  }
+  EXPECT_TRUE(RunScript(script));
 }
 
 TEST_F(BasicTest, WWIV_IO_PrintFile) {
   helper.files().CreateTempFile("gfiles/file1.msg", "this is file1");
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript("wwiv.io.printfile(\"file1.msg\")"));
-    EXPECT_EQ("this is file1\r\n", helper.io()->captured());
-  }
+  EXPECT_TRUE(RunScript("wwiv.io.printfile(\"file1.msg\")"));
+  EXPECT_EQ("this is file1\r\n", helper.io()->captured());
 }
 
 TEST_F(BasicTest, WWIV_IO_PrintFile_DoesNotExist) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript("wwiv.io.printfile(\"file1.msg\")"));
-    EXPECT_EQ("", helper.io()->captured());
-  }
+  EXPECT_TRUE(RunScript("wwiv.io.printfile(\"file1.msg\")"));
+  EXPECT_EQ("", helper.io()->captured());
 }
 
 TEST_F(BasicTest, WWIV_IO_Outstr) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript("wwiv.io.outstr(\"Hello World\")"));
-    EXPECT_EQ("Hello World", helper.io()->captured());
-  }
+  EXPECT_TRUE(RunScript("wwiv.io.outstr(\"Hello World\")"));
+  EXPECT_EQ("Hello World", helper.io()->captured());
 }
 
 TEST_F(BasicTest, WWIV_IO_Puts) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript("wwiv.io.puts(\"Hello World\")"));
-    EXPECT_EQ("Hello World", helper.io()->captured());
-  }
+  EXPECT_TRUE(RunScript("wwiv.io.puts(\"Hello World\")"));
+  EXPECT_EQ("Hello World", helper.io()->captured());
 }
 
 TEST_F(BasicTest, WWIV_IO_PL) {
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript("wwiv.io.pl(\"Hello World\")"));
-    EXPECT_EQ("Hello World\r\n", helper.io()->captured());
-  }
+  EXPECT_TRUE(RunScript("wwiv.io.pl(\"Hello World\")"));
+  EXPECT_EQ("Hello World\r\n", helper.io()->captured());
 }
 
 TEST_F(BasicTest, WWIV_Eval_Pass) {
   helper.user()->sl(200);
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS(wwiv.eval("user.sl > 100"), TRUE) )"));
-    // ASSERT compares a BOOLEAN as an INTEGER, so also check what PRINT shows:
-    // EVAL returns the integer 1, as in my_basic, not TRUE.
-    helper.io()->Clear();
-    EXPECT_TRUE(RunScript(R"( print wwiv.eval("user.sl > 100") )"));
-    EXPECT_EQ("1\r\n", helper.io()->captured());
-  }
+  EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS(wwiv.eval("user.sl > 100"), TRUE) )"));
+  // ASSERT compares a BOOLEAN as an INTEGER, so also check what PRINT shows:
+  // EVAL returns the integer 1, as in my_basic, not TRUE.
+  helper.io()->Clear();
+  EXPECT_TRUE(RunScript(R"( print wwiv.eval("user.sl > 100") )"));
+  EXPECT_EQ("1\r\n", helper.io()->captured());
 }
 
 TEST_F(BasicTest, WWIV_Eval_Fail) {
   helper.user()->sl(200);
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS(wwiv.eval("user.sl < 200"), FALSE) )"));
-    helper.io()->Clear();
-    EXPECT_TRUE(RunScript(R"( print wwiv.eval("user.sl < 200") )"));
-    EXPECT_EQ("0\r\n", helper.io()->captured());
-  }
+  EXPECT_TRUE(RunScript(R"( ASSERT.EQUALS(wwiv.eval("user.sl < 200"), FALSE) )"));
+  helper.io()->Clear();
+  EXPECT_TRUE(RunScript(R"( print wwiv.eval("user.sl < 200") )"));
+  EXPECT_EQ("0\r\n", helper.io()->captured());
 }
 
 TEST_F(BasicTest, WWIV_IO_FILE_ReadIntoString) {
   const std::string actual = "this is file1";
   helper.files().CreateTempFile("gfiles/file1.msg", actual);
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript(R"( 
+  EXPECT_TRUE(RunScript(R"( 
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "file1.msg", "R")
 s = wwiv.io.file.readintostring(h)
 print s
 )" ));
-    EXPECT_EQ(StrCat(actual, "\r\n"), helper.io()->captured());
-  }
+  EXPECT_EQ(StrCat(actual, "\r\n"), helper.io()->captured());
 }
 
 TEST_F(BasicTest, WWIV_IO_FILE_ReadLines) {
   const std::string expected = "1\r\n2\r\n3\r\n";
   helper.files().CreateTempFile("gfiles/file1.msg", expected);
-  for (const auto e : Engines()) {
-    SCOPED_TRACE(to_string(e));
-    Use(e);
-    EXPECT_TRUE(RunScript(R"(
+  EXPECT_TRUE(RunScript(R"(
 
 def PrintList(l)
   i = iterator(l)
@@ -526,10 +288,9 @@ wwiv.io.file.readlines(h, lines)
 PrintList (lines)
 
 )" ));
-    const auto ex = SplitString(expected, "\r\n", true);
-    EXPECT_EQ(3, wwiv::stl::ssize(ex));
+  const auto ex = SplitString(expected, "\r\n", true);
+  EXPECT_EQ(3, wwiv::stl::ssize(ex));
 
-    const auto actual = SplitString(helper.io()->captured(), "\r\n", true);
-    EXPECT_THAT(actual, testing::ElementsAre("1", "2", "3"));
-  }
+  const auto actual = SplitString(helper.io()->captured(), "\r\n", true);
+  EXPECT_THAT(actual, testing::ElementsAre("1", "2", "3"));
 }

@@ -132,6 +132,20 @@ Networking / FTN
 * Fixed a couple of other FTN issues.
 
 WWIVbasic
+! Scripts now run on wwivbasic, WWIV's new BASIC interpreter, which
+  replaces my_basic. Most scripts run unchanged; wwivbasic/PORTING.md in
+  the source lists the differences, such as PRINT putting "a", b on one
+  line. Data saved with wwiv.data is kept. OS/2 builds can't run scripts
+  for now (there's no ANTLR runtime there).
+- The "Use New Engine" scripting setting is gone, and bbs ignores
+  --basic_engine.
++ The script debugger (bbs -d, with wwivdbg) works with wwivbasic: line
+  breakpoints, step in, step over, and the call stack and variables of
+  each frame.
+! The script debugger listens on 127.0.0.1 only (it used to listen on
+  every interface), since anyone who can reach it can read a script's
+  variables and stop it. To run wwivdbg on another machine, forward the
+  port: ssh -L 9948:localhost:9948 bbs-host.
 * Errors are logged to the log file and shown to the caller.
 * Fixed typo that broke the oneliners.bas script.
 + New sample script msgview.bas, a message viewer written with the new

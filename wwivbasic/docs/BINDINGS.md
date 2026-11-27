@@ -1,10 +1,9 @@
 # WWIV bindings for scripts
 
-The modules WWIV gives scripts. The bindings live in WWIV: the new engine's
-in `bbs/basic/next/`, the legacy (my_basic) engine's in `bbs/basic/`. The
-first six modules are in both engines, with the same names and behaviour
-(see [PORTING.md](../PORTING.md) for the small differences); the rest are new
-in the new engine.
+The modules WWIV gives scripts. The bindings live in WWIV, in
+`bbs/basic/next/`. The first six modules were in the legacy (my_basic) engine
+too, with the same names and behaviour (see [PORTING.md](../PORTING.md) for
+the small differences); the rest are new.
 
 Function and member names are case-insensitive, like the rest of the
 language. Import a module to call its functions without the module name
@@ -13,18 +12,18 @@ language. Import a module to call its functions without the module name
 
 ## Modules
 
-| Module | | Engines | On? |
+| Module | | In my_basic? | On? |
 | --- | --- | --- | --- |
-| [`wwiv`](#wwiv) | The BBS: version, menu commands, ACS checks | both | always |
-| [`wwiv.io`](#wwivio) | Output and input; full-screen primitives (new engine) | both | always |
-| [`wwiv.time`](#wwivtime) | Formatting times | both | always |
-| [`wwiv.data`](#wwivdata) | Saving and loading a list, for all users or per user | both | always |
-| [`wwiv.io.file`](#wwiviofile) | Reading files in gfiles, writing them (new engine) | both | "Enable Package FILE", off by default |
-| [`wwiv.os`](#wwivos) | Running external programs | both | "Enable Package OS", off by default |
-| [`wwiv.msg`](#wwivmsg) | The caller's message areas: reading, and posting | new | "Enable Package MSG", on by default; posting needs "Enable MSG Writing", off by default |
-| [`wwiv.files`](#wwivfiles) | The caller's file areas (read-only) | new | "Enable Package FILES", on by default |
-| [`wwiv.user`](#wwivuser) | The caller, and other users' names | new | "Enable Package USER", on by default |
-| [`wwiv.screen`](#wwivscreen) | Full-screen layouts and lightbar lists | new | always |
+| [`wwiv`](#wwiv) | The BBS: version, menu commands, ACS checks | yes | always |
+| [`wwiv.io`](#wwivio) | Output and input; full-screen primitives (new) | yes | always |
+| [`wwiv.time`](#wwivtime) | Formatting times | yes | always |
+| [`wwiv.data`](#wwivdata) | Saving and loading a list, for all users or per user | yes | always |
+| [`wwiv.io.file`](#wwiviofile) | Reading files in gfiles, writing them (new) | yes | "Enable Package FILE", off by default |
+| [`wwiv.os`](#wwivos) | Running external programs | yes | "Enable Package OS", off by default |
+| [`wwiv.msg`](#wwivmsg) | The caller's message areas: reading, and posting | no | "Enable Package MSG", on by default; posting needs "Enable MSG Writing", off by default |
+| [`wwiv.files`](#wwivfiles) | The caller's file areas (read-only) | no | "Enable Package FILES", on by default |
+| [`wwiv.user`](#wwivuser) | The caller, and other users' names | no | "Enable Package USER", on by default |
+| [`wwiv.screen`](#wwivscreen) | Full-screen layouts and lightbar lists | no | always |
 
 The settings are in wwivconfig's scripting settings (`script_flags` in
 `config.json`). A module that's off isn't there: using it stops the script
@@ -77,7 +76,7 @@ than the caller's data, so they're off until the sysop turns them on.
 Once the caller hangs up, `GETKEY` and `GETS` return `""` and the script
 stops at its next statement.
 
-### New in the new engine
+### New since my_basic
 
 | Function | |
 | --- | --- |
@@ -186,9 +185,9 @@ set's. Off until the sysop turns on "Enable Package FILE" (the
 | `READINTOSTRING(file)` | The whole file as a string |
 | `READLINES(file, list)` | Appends the file's lines to `list` |
 | `LAST_MODIFIED(file)` | When the file was last written, as a time_t; 0 if it doesn't exist |
-| `WRITE(file, text...)` | Writes each argument to a file opened with `"W"` (new engine only) |
-| `WRITELINE(file, text...)` | Writes each argument followed by a newline (new engine only) |
-| `CLOSE(file)` | Closes the file, so the script can open it again (new engine only) |
+| `WRITE(file, text...)` | Writes each argument to a file opened with `"W"` (new) |
+| `WRITELINE(file, text...)` | Writes each argument followed by a newline (new) |
+| `CLOSE(file)` | Closes the file, so the script can open it again (new) |
 | `MODULE_NAME()` | `"wwiv.io.file"` |
 
 Names Windows treats as devices (`CON`, `NUL`, `COM1`...) or that contain `:`

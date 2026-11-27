@@ -83,8 +83,7 @@ std::filesystem::path open_key(const std::filesystem::path& p) {
 #endif
 }
 
-// Like the legacy engine (to_file_location_t in bbs/basic/util.cpp), any name
-// other than MENUS, TEMP or BBS is GFILES. TEMP and BBS can't be opened.
+// As in the legacy engine, any name other than MENUS, TEMP or BBS is GFILES. TEMP and BBS can't be opened.
 file_dir_t to_file_dir(const std::string& s) {
   if (iequals(s, "MENUS")) {
     return file_dir_t::menus;
@@ -145,8 +144,7 @@ void check_readable(const char* fn, const ScriptFile& f) {
 
 } // namespace
 
-// The wwiv.io.file module (bbs/basic/wwiv_file.cpp), registered only when the
-// sysop enables it. Files are read from (and written to) the gfiles directory,
+// The wwiv.io.file module, registered only when the sysop enables it. Files are read from (and written to) the gfiles directory,
 // or read from the current menu set's gfiles directory.
 void RegisterWwivIoFile(wwivbasic::Interpreter& interp, const WwivBindings& b) {
   auto& m = interp.add_module("wwiv.io.file");

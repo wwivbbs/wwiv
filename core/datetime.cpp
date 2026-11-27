@@ -37,6 +37,19 @@ time_t time_t_now() { return time(nullptr); }
 
 daten_t daten_t_now() { return time_t_to_daten(time_t_now()); }
 
+/**
+ * localtime() into out, returning false if t can't be converted.
+ * localtime() returns a buffer every thread shares, and wwivd's connection
+ * threads all convert times.
+ */
+static bool local_tm(time_t t, struct tm& out) {
+#ifdef _WIN32
+  return localtime_s(&out, &t) == 0;
+#else
+  return localtime_r(&t, &out) != nullptr;
+#endif
+}
+
 // This kludge will get us through 2029 and should not interfere anywhere else.
 daten_t date_to_daten(const std::string& datet) {
   if (datet.size() != 8) {
@@ -44,20 +57,21 @@ daten_t date_to_daten(const std::string& datet) {
   }
 
   auto t = time_t_now();
-  auto pTm = localtime(&t);
-  pTm->tm_mon = to_number<int>(datet) - 1;
-  pTm->tm_mday = atoi(datet.c_str() + 3);
+  struct tm tm_now {};
+  local_tm(t, tm_now);
+  tm_now.tm_mon = to_number<int>(datet) - 1;
+  tm_now.tm_mday = atoi(datet.c_str() + 3);
   // N.B. tm_year is years since 1900
-  pTm->tm_year = atoi(datet.c_str() + 6); // fixed for 1930-2029
+  tm_now.tm_year = atoi(datet.c_str() + 6); // fixed for 1930-2029
   if (datet[6] < '3') {
-    pTm->tm_year += 100;
+    tm_now.tm_year += 100;
   }
-  pTm->tm_hour = 0;
-  pTm->tm_min = 0;
-  pTm->tm_sec = 0;
-  pTm->tm_isdst = 0; // Since this is used for arbitrary compare of date strings, this is ok.
+  tm_now.tm_hour = 0;
+  tm_now.tm_min = 0;
+  tm_now.tm_sec = 0;
+  tm_now.tm_isdst = 0; // Since this is used for arbitrary compare of date strings, this is ok.
 
-  return time_t_to_daten(mktime(pTm));
+  return time_t_to_daten(mktime(&tm_now));
 }
 
 std::string daten_to_wwivnet_time(daten_t t) {
@@ -292,11 +306,18 @@ std::string DateTime::to_string(const std::string& format) const {
 }
 
 std::string DateTime::to_string() const {
-  const auto* t = asctime(&tm_);
-  if (!t) {
+  // asctime_r/asctime_s: asctime returns a buffer every thread shares.
+  char buf[64]{};
+#ifdef _WIN32
+  if (asctime_s(buf, sizeof(buf), &tm_) != 0) {
     return {};
   }
-  auto s = std::string(t);
+#else
+  if (!asctime_r(&tm_, buf)) {
+    return {};
+  }
+#endif
+  auto s = std::string(buf);
   StringTrimEnd(&s);
   return s;
 }
@@ -312,13 +333,9 @@ void DateTime::update_tm() noexcept {
   if (t_ < 0) {
     t_ = 1;
   }
-  if (const auto * tm = localtime(&t_);tm) {
-    tm_ = *tm;
-  } else {
-    LOG(ERROR) << "Invalid Time passed to update_tm";    
-    auto tnow = time(nullptr);
-    const auto* nowtm = localtime(&tnow);
-    tm_ = *nowtm;
+  if (!local_tm(t_, tm_)) {
+    LOG(ERROR) << "Invalid Time passed to update_tm";
+    local_tm(time(nullptr), tm_);
   }
 }
 

@@ -19,7 +19,6 @@
 #include "gmock/gmock.h"
 
 #include "bbs/basic/next/next_engine.h"
-#include "bbs/basic/script_engine.h"
 #include "bbs/bbs.h"
 #include "bbs/bbs_helper.h"
 #include "common/input.h"
@@ -39,8 +38,7 @@ using testing::ElementsAre;
 using testing::HasSubstr;
 using testing::Not;
 
-// wwiv.io.file and wwiv.os. Where the legacy engine has the same behaviour,
-// the tests run on both engines.
+// wwiv.io.file and wwiv.os.
 class WwivFileOsTest : public ::testing::Test {
 protected:
   void SetUp() override {
@@ -50,9 +48,9 @@ protected:
     helper.config().script_package_os_enabled(true);
   }
 
-  std::string Run(script_engine_t e, const std::string& text, bool* ok = nullptr) {
-    const auto engine = CreateScriptEngine(e, bin, bout, helper.config(), &helper.context());
-    const auto r = engine->RunScript("filetest", text);
+  std::string Run(const std::string& text, bool* ok = nullptr) {
+    NextEngine engine(bin, bout, helper.config(), &helper.context());
+    const auto r = engine.RunScript("filetest", text);
     if (ok) {
       *ok = r;
     }
@@ -71,60 +69,44 @@ protected:
   BbsHelper helper{};
 };
 
-static constexpr script_engine_t kEngines[] = {script_engine_t::legacy, script_engine_t::next};
-
-TEST_F(WwivFileOsTest, BothEngines_ModuleNames) {
-  for (const auto e : kEngines) {
-    SCOPED_TRACE(to_string(e));
-    EXPECT_EQ("wwiv.io.file\r\nwwiv.os\r\n",
-              Run(e, "print wwiv.io.file.module_name()\nprint wwiv.os.module_name()\n"));
-  }
+TEST_F(WwivFileOsTest, ModuleNames) {
+  EXPECT_EQ("wwiv.io.file\r\nwwiv.os\r\n",
+            Run("print wwiv.io.file.module_name()\nprint wwiv.os.module_name()\n"));
 }
 
-TEST_F(WwivFileOsTest, BothEngines_FilePackageDisabled) {
+TEST_F(WwivFileOsTest, FilePackageDisabled) {
   helper.config().script_package_file_enabled(false);
-  for (const auto e : kEngines) {
-    SCOPED_TRACE(to_string(e));
-    bool ok{true};
-    const auto out = Run(e, "print wwiv.io.file.module_name()\nprint \"after\"\n", &ok);
-    EXPECT_FALSE(ok);
-    EXPECT_THAT(out, Not(HasSubstr("wwiv.io.file\r\n")));
-    EXPECT_THAT(out, Not(HasSubstr("after")));
-  }
+  bool ok{true};
+  const auto out = Run("print wwiv.io.file.module_name()\nprint \"after\"\n", &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, Not(HasSubstr("wwiv.io.file\r\n")));
+  EXPECT_THAT(out, Not(HasSubstr("after")));
 }
 
-TEST_F(WwivFileOsTest, BothEngines_OsPackageDisabled) {
+TEST_F(WwivFileOsTest, OsPackageDisabled) {
   helper.config().script_package_os_enabled(false);
-  for (const auto e : kEngines) {
-    SCOPED_TRACE(to_string(e));
-    bool ok{true};
-    const auto out = Run(e, "print wwiv.os.module_name()\nprint \"after\"\n", &ok);
-    EXPECT_FALSE(ok);
-    EXPECT_THAT(out, Not(HasSubstr("wwiv.os\r\n")));
-    EXPECT_THAT(out, Not(HasSubstr("after")));
-  }
+  bool ok{true};
+  const auto out = Run("print wwiv.os.module_name()\nprint \"after\"\n", &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, Not(HasSubstr("wwiv.os\r\n")));
+  EXPECT_THAT(out, Not(HasSubstr("after")));
 }
 
 // From basic_test.cpp's WWIV_IO_FILE_ReadIntoString.
-TEST_F(WwivFileOsTest, BothEngines_ReadIntoString) {
+TEST_F(WwivFileOsTest, ReadIntoString) {
   helper.files().CreateTempFile("gfiles/file1.msg", "this is file1");
-  for (const auto e : kEngines) {
-    SCOPED_TRACE(to_string(e));
-    EXPECT_EQ("this is file1\r\n", Run(e, R"(
+  EXPECT_EQ("this is file1\r\n", Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "file1.msg", "R")
 s = wwiv.io.file.readintostring(h)
 print s
 )"));
-  }
 }
 
 // From basic_test.cpp's WWIV_IO_FILE_ReadLines; READLINES appends.
-TEST_F(WwivFileOsTest, BothEngines_ReadLines) {
+TEST_F(WwivFileOsTest, ReadLines) {
   helper.files().CreateTempFile("gfiles/file1.msg", "1\r\n2\r\n3\r\n");
-  for (const auto e : kEngines) {
-    SCOPED_TRACE(to_string(e));
-    const auto out = Run(e, R"(
+  const auto out = Run(R"(
 lines = list("0")
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "file1.msg", "R")
@@ -133,77 +115,61 @@ for x in lines
   print x
 next
 )");
-    EXPECT_THAT(SplitString(out, "\r\n", true), ElementsAre("0", "1", "2", "3"));
-  }
+  EXPECT_THAT(SplitString(out, "\r\n", true), ElementsAre("0", "1", "2", "3"));
 }
 
-TEST_F(WwivFileOsTest, BothEngines_OnlyTheFileNameIsUsed) {
+TEST_F(WwivFileOsTest, OnlyTheFileNameIsUsed) {
   helper.files().CreateTempFile("gfiles/file1.msg", "in gfiles");
-  for (const auto e : kEngines) {
-    SCOPED_TRACE(to_string(e));
-    EXPECT_EQ("in gfiles\r\n", Run(e, R"(
+  EXPECT_EQ("in gfiles\r\n", Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "../../somewhere/file1.msg", "R")
 print wwiv.io.file.readintostring(h)
 )"));
-  }
 }
 
-TEST_F(WwivFileOsTest, BothEngines_MissingFileReadsAsEmpty) {
-  for (const auto e : kEngines) {
-    SCOPED_TRACE(to_string(e));
-    bool ok{};
-    EXPECT_EQ("[]\r\n", Run(e, R"(
+TEST_F(WwivFileOsTest, MissingFileReadsAsEmpty) {
+  bool ok{};
+  EXPECT_EQ("[]\r\n", Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "nothere.txt", "R")
 print "[" + wwiv.io.file.readintostring(h) + "]"
 )", &ok));
-    EXPECT_TRUE(ok);
-  }
+  EXPECT_TRUE(ok);
 }
 
-TEST_F(WwivFileOsTest, BothEngines_OpenOptions_TempIsAnError) {
-  for (const auto e : kEngines) {
-    SCOPED_TRACE(to_string(e));
-    bool ok{true};
-    const auto out = Run(e, "o = wwiv.io.file.open_options(\"TEMP\")\nprint \"after\"\n", &ok);
-    EXPECT_FALSE(ok);
-    EXPECT_THAT(out, Not(HasSubstr("after")));
-  }
+TEST_F(WwivFileOsTest, OpenOptions_TempIsAnError) {
+  bool ok{true};
+  const auto out = Run("o = wwiv.io.file.open_options(\"TEMP\")\nprint \"after\"\n", &ok);
+  EXPECT_FALSE(ok);
+  EXPECT_THAT(out, Not(HasSubstr("after")));
 }
 
-TEST_F(WwivFileOsTest, BothEngines_ModeW_Truncates) {
+TEST_F(WwivFileOsTest, ModeW_Truncates) {
   helper.files().CreateTempFile("gfiles/out.txt", "old contents");
-  for (const auto e : kEngines) {
-    SCOPED_TRACE(to_string(e));
-    bool ok{};
-    Run(e, R"(
+  bool ok{};
+  Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "out.txt", "W")
 )", &ok);
-    EXPECT_TRUE(ok);
-    EXPECT_EQ("", ReadFile(GFile("out.txt")));
-  }
+  EXPECT_TRUE(ok);
+  EXPECT_EQ("", ReadFile(GFile("out.txt")));
 }
 
-TEST_F(WwivFileOsTest, BothEngines_LastModified) {
+TEST_F(WwivFileOsTest, LastModified) {
   const auto path = helper.files().CreateTempFile("gfiles/file1.msg", "x");
   const auto expected = File::last_write_time(path);
-  for (const auto e : kEngines) {
-    SCOPED_TRACE(to_string(e));
-    EXPECT_EQ(fmt::format("{}\r\n", expected), Run(e, R"(
+  EXPECT_EQ(fmt::format("{}\r\n", expected), Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "file1.msg", "R")
 print wwiv.io.file.last_modified(h)
 )"));
-  }
 }
 
-// WRITE and WRITELINE are new in the new engine.
+// WRITE and WRITELINE are new (the legacy engine didn't have them).
 
-TEST_F(WwivFileOsTest, Next_WriteAndWriteLine) {
+TEST_F(WwivFileOsTest, WriteAndWriteLine) {
   bool ok{};
-  const auto out = Run(script_engine_t::next, R"(
+  const auto out = Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "scores.txt", "W")
 wwiv.io.file.writeline(h, "Alice 10", "Bob 7")
@@ -213,17 +179,17 @@ wwiv.io.file.write(h, "no ", "newline")
   EXPECT_EQ("Alice 10\nBob 7\nno newline", ReadFile(GFile("scores.txt")));
 }
 
-TEST_F(WwivFileOsTest, Next_WriteThenReadBack) {
+TEST_F(WwivFileOsTest, WriteThenReadBack) {
   bool ok{};
   // The file is written and closed when the first script ends.
-  Run(script_engine_t::next, R"(
+  Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "scores.txt", "W")
 wwiv.io.file.writeline(h, "one")
 wwiv.io.file.writeline(h, 2)
 )", &ok);
   ASSERT_TRUE(ok);
-  const auto out = Run(script_engine_t::next, R"(
+  const auto out = Run(R"(
 lines = list()
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "scores.txt", "R")
@@ -236,10 +202,10 @@ next
   EXPECT_EQ("one\r\n2\r\n", out);
 }
 
-TEST_F(WwivFileOsTest, Next_WriteToFileOpenedForReading_IsAnError) {
+TEST_F(WwivFileOsTest, WriteToFileOpenedForReading_IsAnError) {
   helper.files().CreateTempFile("gfiles/file1.msg", "keep me");
   bool ok{true};
-  const auto out = Run(script_engine_t::next, R"(
+  const auto out = Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "file1.msg", "R")
 wwiv.io.file.write(h, "x")
@@ -249,23 +215,23 @@ wwiv.io.file.write(h, "x")
   EXPECT_EQ("keep me", ReadFile(GFile("file1.msg")));
 }
 
-TEST_F(WwivFileOsTest, Next_WriteNeedsAFile) {
+TEST_F(WwivFileOsTest, WriteNeedsAFile) {
   bool ok{true};
-  const auto out = Run(script_engine_t::next, "wwiv.io.file.write(1, \"x\")\n", &ok);
+  const auto out = Run("wwiv.io.file.write(1, \"x\")\n", &ok);
   EXPECT_FALSE(ok);
   EXPECT_THAT(out, HasSubstr("WRITE: expected a file from wwiv.io.file.open"));
 }
 
-TEST_F(WwivFileOsTest, Next_OpenNeedsOptions) {
+TEST_F(WwivFileOsTest, OpenNeedsOptions) {
   bool ok{true};
-  const auto out = Run(script_engine_t::next, "h = wwiv.io.file.open(1, \"x.txt\", \"R\")\n", &ok);
+  const auto out = Run("h = wwiv.io.file.open(1, \"x.txt\", \"R\")\n", &ok);
   EXPECT_FALSE(ok);
   EXPECT_THAT(out, HasSubstr("OPEN: expected options"));
 }
 
-TEST_F(WwivFileOsTest, Next_OpenNeedsAFileName) {
+TEST_F(WwivFileOsTest, OpenNeedsAFileName) {
   bool ok{true};
-  const auto out = Run(script_engine_t::next, R"(
+  const auto out = Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "..", "W")
 )", &ok);
@@ -276,7 +242,7 @@ h = wwiv.io.file.open(o, "..", "W")
 // MENUS reads from the current menu set's gfiles directory, where printfile
 // looks for menu text, and can't be written (legacy accepted MENUS but used
 // the BBS's gfiles).
-TEST_F(WwivFileOsTest, Next_Menus_ReadsFromTheMenuSetGfiles) {
+TEST_F(WwivFileOsTest, Menus_ReadsFromTheMenuSetGfiles) {
   const auto& dirs = helper.context().session_context().dirs();
   ASSERT_FALSE(dirs.current_menu_directory().empty());
   const auto dir = dirs.current_menu_gfiles_directory();
@@ -286,16 +252,16 @@ TEST_F(WwivFileOsTest, Next_Menus_ReadsFromTheMenuSetGfiles) {
     f.Write("from menus");
   }
   helper.files().CreateTempFile("gfiles/menu.txt", "from gfiles");
-  EXPECT_EQ("from menus\r\n", Run(script_engine_t::next, R"(
+  EXPECT_EQ("from menus\r\n", Run(R"(
 o = wwiv.io.file.open_options("MENUS")
 h = wwiv.io.file.open(o, "menu.txt", "R")
 print wwiv.io.file.readintostring(h)
 )"));
 }
 
-TEST_F(WwivFileOsTest, Next_Menus_CantBeWritten) {
+TEST_F(WwivFileOsTest, Menus_CantBeWritten) {
   bool ok{true};
-  const auto out = Run(script_engine_t::next, R"(
+  const auto out = Run(R"(
 o = wwiv.io.file.open_options("MENUS")
 h = wwiv.io.file.open(o, "menu.txt", "W")
 )", &ok);
@@ -303,9 +269,9 @@ h = wwiv.io.file.open(o, "menu.txt", "W")
   EXPECT_THAT(out, HasSubstr("files in MENUS can only be opened for reading"));
 }
 
-TEST_F(WwivFileOsTest, Next_ExecOptions) {
+TEST_F(WwivFileOsTest, ExecOptions) {
   bool ok{};
-  const auto out = Run(script_engine_t::next, R"(
+  const auto out = Run(R"(
 o = wwiv.os.exec_options("STDIO", "TEMP", "CHAIN.TXT")
 print o
 )", &ok);
@@ -313,16 +279,16 @@ print o
   EXPECT_THAT(out, HasSubstr("exec_options"));
 }
 
-TEST_F(WwivFileOsTest, Next_ExecNeedsOptions) {
+TEST_F(WwivFileOsTest, ExecNeedsOptions) {
   bool ok{true};
-  const auto out = Run(script_engine_t::next, "wwiv.os.exec(1, \"true\")\n", &ok);
+  const auto out = Run("wwiv.os.exec(1, \"true\")\n", &ok);
   EXPECT_FALSE(ok);
   EXPECT_THAT(out, HasSubstr("EXEC: expected options"));
 }
 
-TEST_F(WwivFileOsTest, Next_WriteCloseThenReadInTheSameScript) {
+TEST_F(WwivFileOsTest, WriteCloseThenReadInTheSameScript) {
   bool ok{};
-  const auto out = Run(script_engine_t::next, R"(
+  const auto out = Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 w = wwiv.io.file.open(o, "scores.txt", "W")
 wwiv.io.file.writeline(w, "Alice 10")
@@ -335,14 +301,14 @@ print "[" + wwiv.io.file.readintostring(r) + "]"
   EXPECT_THAT(out, HasSubstr("[Alice 10"));
 }
 
-TEST_F(WwivFileOsTest, Next_OpenAFileTheScriptIsWriting_IsAnError) {
+TEST_F(WwivFileOsTest, OpenAFileTheScriptIsWriting_IsAnError) {
   // Without this check the second OPEN would wait for the first's lock
   // forever on Unix.
   for (const auto* modes : {"W R", "W W", "R W"}) {
     SCOPED_TRACE(modes);
     const auto m = SplitString(modes, " ");
     bool ok{true};
-    const auto out = Run(script_engine_t::next, fmt::format(R"(
+    const auto out = Run(fmt::format(R"(
 o = wwiv.io.file.open_options("GFILES")
 a = wwiv.io.file.open(o, "scores.txt", "{}")
 b = wwiv.io.file.open(o, "scores.txt", "{}")
@@ -354,10 +320,10 @@ print "not reached"
   }
 }
 
-TEST_F(WwivFileOsTest, Next_OpenAFileTwiceForReading_IsFine) {
+TEST_F(WwivFileOsTest, OpenAFileTwiceForReading_IsFine) {
   helper.files().CreateTempFile("gfiles/file1.msg", "x");
   bool ok{};
-  const auto out = Run(script_engine_t::next, R"(
+  const auto out = Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 a = wwiv.io.file.open(o, "file1.msg", "R")
 b = wwiv.io.file.open(o, "file1.msg", "R")
@@ -367,10 +333,10 @@ print wwiv.io.file.readintostring(a) + wwiv.io.file.readintostring(b)
   EXPECT_EQ("xx\r\n", out);
 }
 
-TEST_F(WwivFileOsTest, Next_UseAfterClose_IsAnError) {
+TEST_F(WwivFileOsTest, UseAfterClose_IsAnError) {
   helper.files().CreateTempFile("gfiles/file1.msg", "x");
   bool ok{true};
-  const auto out = Run(script_engine_t::next, R"(
+  const auto out = Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "file1.msg", "R")
 wwiv.io.file.close(h)
@@ -380,11 +346,11 @@ print wwiv.io.file.readintostring(h)
   EXPECT_THAT(out, HasSubstr("READINTOSTRING: 'file1.msg' was closed"));
 }
 
-TEST_F(WwivFileOsTest, Next_WriteFails_IsAnError) {
+TEST_F(WwivFileOsTest, WriteFails_IsAnError) {
   // A directory where the file should be: it can't be opened for writing.
   std::filesystem::create_directories(GFile("out.txt"));
   bool ok{true};
-  const auto out = Run(script_engine_t::next, R"(
+  const auto out = Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "out.txt", "W")
 wwiv.io.file.write(h, "x")
@@ -393,11 +359,11 @@ wwiv.io.file.write(h, "x")
   EXPECT_THAT(out, HasSubstr("WRITE: unable to write to 'out.txt'"));
 }
 
-TEST_F(WwivFileOsTest, Next_DeviceNamesAreNotFileNames) {
+TEST_F(WwivFileOsTest, DeviceNamesAreNotFileNames) {
   for (const auto* name : {"NUL", "con.txt", "Com1", "LPT9.log", "PRN", "aux", "a:b", "c:x.txt", "x.txt:s"}) {
     SCOPED_TRACE(name);
     bool ok{true};
-    const auto out = Run(script_engine_t::next, fmt::format(R"(
+    const auto out = Run(fmt::format(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "{}", "W")
 )", name), &ok);
@@ -408,7 +374,7 @@ h = wwiv.io.file.open(o, "{}", "W")
   for (const auto* name : {"console.txt", "com10", "nullify.txt"}) {
     SCOPED_TRACE(name);
     bool ok{};
-    Run(script_engine_t::next, fmt::format(R"(
+    Run(fmt::format(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "{}", "W")
 )", name), &ok);
@@ -416,10 +382,10 @@ h = wwiv.io.file.open(o, "{}", "W")
   }
 }
 
-TEST_F(WwivFileOsTest, Next_ReadTwice) {
+TEST_F(WwivFileOsTest, ReadTwice) {
   helper.files().CreateTempFile("gfiles/file1.msg", "1\r\n2\r\n");
   bool ok{};
-  const auto out = Run(script_engine_t::next, R"(
+  const auto out = Run(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "file1.msg", "R")
 s = wwiv.io.file.readintostring(h)
@@ -432,11 +398,11 @@ print len(lines)
   EXPECT_EQ("4\r\n", out);
 }
 
-TEST_F(WwivFileOsTest, Next_ReadFromFileOpenedForWriting_IsAnError) {
+TEST_F(WwivFileOsTest, ReadFromFileOpenedForWriting_IsAnError) {
   for (const auto* fn : {"readintostring(h)", "readlines(h, list())"}) {
     SCOPED_TRACE(fn);
     bool ok{true};
-    const auto out = Run(script_engine_t::next, fmt::format(R"(
+    const auto out = Run(fmt::format(R"(
 o = wwiv.io.file.open_options("GFILES")
 h = wwiv.io.file.open(o, "out.txt", "W")
 x = wwiv.io.file.{}
@@ -446,7 +412,7 @@ x = wwiv.io.file.{}
   }
 }
 
-TEST_F(WwivFileOsTest, Next_ExecWithoutASession_IsAnError) {
+TEST_F(WwivFileOsTest, ExecWithoutASession_IsAnError) {
   NextEngine engine(bin, bout, helper.config(), nullptr);
   EXPECT_FALSE(engine.RunScript("filetest", R"(
 o = wwiv.os.exec_options("STDIO", "TEMP", "CHAIN.TXT")
