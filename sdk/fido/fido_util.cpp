@@ -145,31 +145,47 @@ daten_t fido_to_daten(std::string d) {
     std::vector<std::string> months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     std::stringstream stream(d);
-    auto now = time_t_now();
-    auto* t = localtime(&now);
-    stream >> t->tm_mday;
+    // localtime() returns a buffer every thread shares.
+    auto t = DateTime::now().to_tm();
+    stream >> t.tm_mday;
     std::string mon_str;
     stream >> mon_str;
     if (!contains(months, mon_str)) {
       // Unparsable date. return now.
       return daten_t_now();
     }
-    t->tm_mon = static_cast<int>(
+    t.tm_mon = static_cast<int>(
         std::distance(months.begin(), std::find(months.begin(), months.end(), mon_str)));
     int year;
     stream >> year;
     year %= 100;
     // This will work until 2099.
-    t->tm_year = 100 + year;
+    t.tm_year = 100 + year;
 
     std::string hms;
     stream >> hms;
     auto parts = SplitString(hms, ":");
-    t->tm_hour = to_number<int>(at(parts, 0)) - 1;
-    t->tm_min = to_number<int>(at(parts, 1));
-    t->tm_sec = to_number<int>(at(parts, 2));
+    // TODO(rushfan): Investigate the "- 1" on the hour. FTS-0001 hours are
+    // 00-23 and tm_hour is 0-23 too, so this looks like an off-by-one that
+    // makes every FTN date an hour early. daten_to_fido() doesn't subtract
+    // an hour, so a round trip loses one. It came in with the first version
+    // (0e480efa8, 2016-11-17). Guesses as to why:
+    // - Copied from the tm_mon handling, where "- 1" is right since months
+    //   are 1-based. (Here tm_mon comes from an index, so it isn't needed.)
+    // - A DST workaround. The first version started from tm t{}, so
+    //   tm_isdst was 0, and mktime() treated every time as standard time.
+    //   During daylight time that's an hour off, and "- 1" may have been
+    //   tuned against a packet's date rather than fixing tm_isdst. Today t
+    //   starts from now, so tm_isdst is the current DST state, not the
+    //   message date's; setting tm_isdst = -1 would be the real fix.
+    // - Making up for a timezone difference with the sending system (FTN
+    //   dates are the sender's local time, with no zone) seen in testing.
+    // The test only checks the result is > 0, so nothing pins the hour.
+    t.tm_hour = to_number<int>(at(parts, 0)) - 1;
+    t.tm_min = to_number<int>(at(parts, 1));
+    t.tm_sec = to_number<int>(at(parts, 2));
 
-    auto result = mktime(t);
+    auto result = mktime(&t);
     if (result < 0) {
       // Error.. return now so we don't blow stuff up.
       result = time_t_now();

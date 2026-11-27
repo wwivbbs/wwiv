@@ -79,24 +79,23 @@ std::string ctim(std::chrono::duration<double> d) {
 }
 
 system_clock::duration duration_since_midnight(system_clock::time_point now) {
-  auto tnow = system_clock::to_time_t(now);
-  tm* date = std::localtime(&tnow);
-  date->tm_hour = 0;
-  date->tm_min = 0;
-  date->tm_sec = 0;
-  const auto midnight = system_clock::from_time_t(std::mktime(date));
+  // localtime() returns a buffer every thread shares.
+  auto date = DateTime::from_time_t(system_clock::to_time_t(now)).to_tm();
+  date.tm_hour = 0;
+  date.tm_min = 0;
+  date.tm_sec = 0;
+  const auto midnight = system_clock::from_time_t(std::mktime(&date));
 
   return now - midnight;
 }
 
 system_clock::time_point minutes_after_midnight(int minutes) {
-  const auto tnow = time_t_now();
-  auto* date = std::localtime(&tnow);
-  date->tm_hour = minutes / 60;
-  date->tm_min = minutes % 60;
-  date->tm_sec = 0;
+  auto date = DateTime::now().to_tm();
+  date.tm_hour = minutes / 60;
+  date.tm_min = minutes % 60;
+  date.tm_sec = 0;
 
-  return system_clock::from_time_t(std::mktime(date));
+  return system_clock::from_time_t(std::mktime(&date));
 }
 
 int minutes_since_midnight() {
