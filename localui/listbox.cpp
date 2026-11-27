@@ -105,6 +105,37 @@ void ListBox::DrawAllItems(std::vector<ListBoxItem>& items) {
   }
 }
 
+void ListBox::EnsureSelectedVisible(int item_count) {
+  if (item_count <= 0) {
+    return;
+  }
+  const auto first = window_top_ - window_top_min_;
+  const auto last = first + height_ - 1;
+  if (selected_ < first) {
+    window_top_ = selected_ + window_top_min_;
+  } else if (selected_ > last) {
+    window_top_ = selected_ - height_ + 1 + window_top_min_;
+  }
+  const auto max_top = std::max<int>(window_top_min_, item_count - height_ + window_top_min_);
+  window_top_ = std::min<int>(window_top_, max_top);
+  window_top_ = std::max<int>(window_top_, window_top_min_);
+}
+
+bool ListBox::ApplyTypeahead(const std::vector<ListBoxItem>& items) {
+  if (typeahead_.empty() || items.empty()) {
+    return false;
+  }
+  const auto needle = ToStringUpperCase(typeahead_);
+  for (auto i = 0; i < size_int(items); i++) {
+    if (starts_with(ToStringUpperCase(items[i].text()), needle)) {
+      selected_ = i;
+      EnsureSelectedVisible(size_int(items));
+      return true;
+    }
+  }
+  return false;
+}
+
 ListBoxResult ListBox::RunDialog() {
   if (selected_ < 0) {
     selected_ = 0;
@@ -131,7 +162,15 @@ ListBoxResult ListBox::RunDialogInner() {
       window_->Refresh();
     }
     need_redraw = true;
-    switch (auto ch = window_->GetChar(); ch) {
+    const auto ch = window_->GetChar();
+    const auto is_nav = ch == KEY_HOME || ch == KEY_END || ch == KEY_PREVIOUS || ch == KEY_UP ||
+                        ch == KEY_PPAGE || ch == KEY_NEXT || ch == KEY_DOWN || ch == KEY_NPAGE ||
+                        ch == KEY_LEFT || ch == KEY_RIGHT || ch == '/';
+    if (is_nav && !typeahead_.empty()) {
+      typeahead_.clear();
+      DisplayFooter();
+    }
+    switch (ch) {
     case KEY_HOME:
       selected_ = 0;
       window_top_ = window_top_min_;
@@ -238,22 +277,45 @@ ListBoxResult ListBox::RunDialogInner() {
         items.shrink_to_fit();
       }
     } break;
-    default:
-      ch = toupper(ch);
-      if (hotkeys_.find(static_cast<char>(ch & 0xff)) != std::string::npos) {
+    default: {
+      if (typeahead_enabled_ && (ch == KEY_BACKSPACE || ch == 8 || ch == 0x7f)) {
+        if (!typeahead_.empty()) {
+          typeahead_.pop_back();
+          ApplyTypeahead(items);
+          DisplayFooter();
+        } else {
+          need_redraw = false;
+        }
+        break;
+      }
+      const auto key = toupper(ch);
+      if (hotkeys_.find(static_cast<char>(key & 0xff)) != std::string::npos) {
         // Since a hotkey was pressed, update selected_ to match the index
-        // of the item containing the hotkey.
+        // of the item containing the hotkey. Hotkeys always take precedence
+        // over type-ahead so Insert/Delete/etc. keep working.
         auto data = 0;
         for (auto i = 0; i < stl::ssize(items); i++) {
           auto& item = items.at(i);
-          if (item.hotkey() == ch) {
+          if (item.hotkey() == key) {
             selected_ = item.index();
             data = item.data();
             break;
           }
         }
-        return ListBoxResult{ListBoxResultType::HOTKEY, selected_, ch, data};
+        return ListBoxResult{ListBoxResultType::HOTKEY, selected_, key, data};
       }
+      if (typeahead_enabled_ && key >= 32 && key < 127) {
+        typeahead_.push_back(static_cast<char>(key));
+        if (ApplyTypeahead(items)) {
+          DisplayFooter();
+        } else {
+          typeahead_.pop_back();
+          need_redraw = false;
+        }
+        break;
+      }
+      need_redraw = false;
+    }
     }
   }
 }
@@ -263,6 +325,9 @@ void ListBox::DisplayFooter() {
   curses_out->footer()->window()->Move(1, 0);
   curses_out->footer()->window()->ClrtoEol(); 
   curses_out->footer()->ShowHelpItems(0, help_items_);
+  if (!typeahead_.empty()) {
+    curses_out->footer()->ShowContextHelp(StrCat("Find: ", typeahead_));
+  }
 }
 
 }
