@@ -51,6 +51,13 @@ void type(InputLineEditor& ed, const std::string& s) {
 void expect_cursor_ok(const InputLineEditor& ed) {
   const auto cell = ed.cursor_cell();
   ASSERT_GE(cell, 0);
+  if (cell == ed.width()) {
+    // Only a full field puts the cursor just past its last cell.
+    ASSERT_EQ(0, ed.offset()) << field(ed);
+    ASSERT_EQ(static_cast<int>(ed.text().size()), ed.width()) << field(ed);
+    ASSERT_EQ(ed.pos(), ed.width()) << field(ed);
+    return;
+  }
   ASSERT_LT(cell, ed.width());
   const auto kind = ed.cell(cell).kind;
   EXPECT_NE(CellKind::more_left, kind) << field(ed);
@@ -285,9 +292,30 @@ TEST(InputLineEditorTest, ExactFit_TwoCharState) {
   type(ed, "a");
   EXPECT_EQ("CA", ed.text());
   EXPECT_EQ("CA", field(ed));
-  EXPECT_EQ(1, ed.cursor_cell());
+  // The cursor sits just past the full field, so Left visibly moves it.
+  EXPECT_EQ(2, ed.cursor_cell());
   EXPECT_EQ(0, ed.offset());
   EXPECT_FALSE(ed.more_left());
+  expect_cursor_ok(ed);
+  ed.left();
+  EXPECT_EQ(1, ed.cursor_cell());
+  expect_cursor_ok(ed);
+}
+
+TEST(InputLineEditorTest, ExactFit_OverwriteLastChar) {
+  InputLineEditor ed("", 2, 2, InputMode::UPPER, false);
+  type(ed, "ca");
+  EXPECT_EQ(2, ed.cursor_cell());
+  // At the end of a full field there is nothing to overwrite.
+  type(ed, "x");
+  EXPECT_EQ("CA", ed.text());
+  ed.left();
+  EXPECT_EQ(1, ed.cursor_cell());
+  type(ed, "x");
+  EXPECT_EQ("CX", ed.text());
+  EXPECT_EQ("CX", field(ed));
+  EXPECT_EQ(2, ed.cursor_cell());
+  EXPECT_EQ(0, ed.offset());
   expect_cursor_ok(ed);
 }
 
@@ -296,7 +324,7 @@ TEST(InputLineEditorTest, ExactFit_ThreeCharCountry) {
   type(ed, "usa");
   EXPECT_EQ("USA", ed.text());
   EXPECT_EQ("USA", field(ed));
-  EXPECT_EQ(2, ed.cursor_cell());
+  EXPECT_EQ(3, ed.cursor_cell());
   EXPECT_EQ(0, ed.offset());
   EXPECT_FALSE(ed.more_left());
   expect_cursor_ok(ed);
@@ -305,7 +333,7 @@ TEST(InputLineEditorTest, ExactFit_ThreeCharCountry) {
 TEST(InputLineEditorTest, ExactFit_OriginalTextFillsField) {
   InputLineEditor ed("CA", 2, 2, InputMode::UPPER, true);
   EXPECT_EQ("CA", field(ed));
-  EXPECT_EQ(1, ed.cursor_cell());
+  EXPECT_EQ(2, ed.cursor_cell());
   EXPECT_EQ(0, ed.offset());
   expect_cursor_ok(ed);
 }
@@ -324,41 +352,49 @@ TEST(InputLineEditorTest, RandomKeys_InvariantsHold) {
     seed = seed * 1103515245u + 12345u;
     return (seed >> 16) % n;
   };
-  for (const auto width : {1, 3, 4, 5, 10, 78}) {
-    for (const auto insert : {true, false}) {
-      InputLineEditor ed("", 120, width, InputMode::MIXED, insert);
-      std::string model;
-      for (auto i = 0; i < 5000; i++) {
-        switch (next(8)) {
-        case 0: ed.left(); break;
-        case 1: ed.right(); break;
-        case 2: ed.backspace(); break;
-        case 3: ed.del(); break;
-        case 4: if (next(20) == 0) { ed.home(); } break;
-        case 5: if (next(20) == 0) { ed.end(); } break;
-        default: ed.type(static_cast<unsigned char>('a' + next(26))); break;
-        }
-        ASSERT_LE(ed.text().size(), 120u);
-        ASSERT_GE(ed.pos(), 0);
-        ASSERT_LE(ed.pos(), static_cast<int>(ed.text().size()));
-        ASSERT_GE(ed.offset(), 0);
-        ASSERT_LE(ed.offset(), ed.pos());
-        expect_cursor_ok(ed);
-        // Cells show the text that's scrolled into view.
-        for (auto c = 0; c < ed.width(); c++) {
-          const auto cell = ed.cell(c);
-          if (cell.kind == CellKind::text) {
-            ASSERT_EQ(ed.text()[ed.offset() + c], cell.ch);
+  for (const auto width : {1, 2, 3, 4, 5, 10, 78}) {
+    // 120: a viewport that scrolls. width: a full field can't grow
+    // (state, country), so it must never scroll.
+    for (const auto maxlen : {120, width}) {
+      for (const auto insert : {true, false}) {
+        InputLineEditor ed("", maxlen, width, InputMode::MIXED, insert);
+        std::string model;
+        for (auto i = 0; i < 5000; i++) {
+          switch (next(8)) {
+          case 0: ed.left(); break;
+          case 1: ed.right(); break;
+          case 2: ed.backspace(); break;
+          case 3: ed.del(); break;
+          case 4: if (next(20) == 0) { ed.home(); } break;
+          case 5: if (next(20) == 0) { ed.end(); } break;
+          default: ed.type(static_cast<unsigned char>('a' + next(26))); break;
+          }
+          ASSERT_LE(ed.text().size(), static_cast<size_t>(maxlen));
+          ASSERT_GE(ed.pos(), 0);
+          ASSERT_LE(ed.pos(), static_cast<int>(ed.text().size()));
+          ASSERT_GE(ed.offset(), 0);
+          ASSERT_LE(ed.offset(), ed.pos());
+          expect_cursor_ok(ed);
+          // Cells show the text that's scrolled into view.
+          for (auto c = 0; c < ed.width(); c++) {
+            const auto cell = ed.cell(c);
+            if (cell.kind == CellKind::text) {
+              ASSERT_EQ(ed.text()[ed.offset() + c], cell.ch);
+            }
+          }
+          // Nothing stays hidden to the left once all the text fits with room
+          // to spare. When size == width and the field can still grow, a slack
+          // cell is reserved (see ExactFit_* for the can't-grow case).
+          if (static_cast<int>(ed.text().size()) < width) {
+            ASSERT_EQ(0, ed.offset()) << field(ed);
+            ASSERT_FALSE(ed.more_left()) << field(ed);
+          }
+          // A field whose width equals its limit never scrolls.
+          if (maxlen == width) {
+            ASSERT_EQ(0, ed.offset()) << field(ed);
           }
         }
-        // Nothing stays hidden to the left once all the text fits with room
-        // to spare. When size == width and the field can still grow, a slack
-        // cell is reserved (see ExactFit_* for the can't-grow case).
-        if (static_cast<int>(ed.text().size()) < width) {
-          ASSERT_EQ(0, ed.offset()) << field(ed);
-          ASSERT_FALSE(ed.more_left()) << field(ed);
-        }
-      }
+    }
     }
   }
 }
