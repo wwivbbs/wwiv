@@ -24,6 +24,7 @@
 #include "sdk/vardec.h"
 #include "sdk/files/files_ext.h"
 #include <string>
+#include <string_view>
 
 using namespace wwiv::core;
 using namespace wwiv::local::io;
@@ -35,91 +36,50 @@ namespace {
 const char* WWIV_FILE_DATE_FORMAT = "%m/%d/%y";
 }
 
-static void _align(char* fn) {
-  // TODO Modify this to handle long file names
-  char name[40], ext[40];
-
-  auto invalid = false;
-  if (fn[0] == '.') {
-    invalid = true;
-  }
-
-  for (int i = 0; i < ssize(fn); i++) {
-    if (fn[i] == '\\' || fn[i] == '/' || fn[i] == ':' || fn[i] == '<' || fn[i] == '>' ||
-        fn[i] == '|') {
-      invalid = true;
-    }
-  }
-  if (invalid) {
-    strcpy(fn, "        .   ");
-    return;
-  }
-  auto* s2 = strrchr(fn, '.');
-  if (s2 == nullptr || strrchr(fn, '\\') > s2) {
-    ext[0] = '\0';
-  } else {
-    strcpy(ext, &(s2[1]));
-    ext[3] = '\0';
-    s2[0] = '\0';
-  }
-  strcpy(name, fn);
-
-  for (int j = ssize(name); j < 8; j++) {
-    name[j] = ' ';
-  }
-  name[8] = '\0';
+// One part of an aligned name (the name or the extension): cut or padded with
+// spaces to width. After a '*' every character is '?'; in the name
+// (stop_at_space), after a space every character is a space until a '*'.
+static std::string align_part(std::string_view part, size_t width, bool stop_at_space) {
+  std::string out(part.substr(0, width));
+  out.resize(width, ' ');
   auto has_wildcard = false;
   auto has_space = false;
-  for (auto k = 0; k < 8; k++) {
-    if (name[k] == '*') {
+  for (auto& c : out) {
+    if (c == '*') {
       has_wildcard = true;
     }
-    if (name[k] == ' ') {
+    if (stop_at_space && c == ' ') {
       has_space = true;
     }
     if (has_space) {
-      name[k] = ' ';
+      c = ' ';
     }
     if (has_wildcard) {
-      name[k] = '?';
+      c = '?';
     }
   }
-
-  for (int i2 = ssize(ext); i2 < 3; i2++) {
-    ext[i2] = ' ';
-  }
-  ext[3] = '\0';
-  has_wildcard = false;
-  for (int i3 = 0; i3 < 3; i3++) {
-    if (ext[i3] == '*') {
-      has_wildcard = true;
-    }
-    if (has_wildcard) {
-      ext[i3] = '?';
-    }
-  }
-
-  char buffer[MAX_PATH];
-  for (auto i4 = 0; i4 < 12; i4++) {
-    buffer[i4] = SPACE;
-  }
-  strcpy(buffer, name);
-  buffer[8] = '.';
-  strcpy(&(buffer[9]), ext);
-  strcpy(fn, buffer);
-  for (auto i5 = 0; i5 < 12; i5++) {
-    fn[i5] = to_upper_case<char>(fn[i5]);
-  }
+  return out;
 }
 
+// Names of any length are cut to 8.3: up to 8 characters of name (what's
+// before the last '.') and 3 of extension.
 std::string align(const std::string& file_name) {
-  if (file_name.size() >= 1024) {
-    throw std::runtime_error("size to align >=1024 chars");
+  // Up to the first NUL, as when this took a C string.
+  const std::string_view fn(file_name.c_str());
+  if (fn.starts_with('.') || fn.find_first_of("\\/:<>|") != std::string_view::npos) {
+    return "        .   ";
   }
-  char s[1024];
-  to_char_array(s, file_name);
-  _align(s);
-  return s;
+  auto name = fn;
+  std::string_view ext;
+  if (const auto dot = fn.rfind('.'); dot != std::string_view::npos) {
+    name = fn.substr(0, dot);
+    ext = fn.substr(dot + 1);
+  }
+  auto out = StrCat(align_part(name, 8, true), ".", align_part(ext, 3, false));
+  for (auto& c : out) {
+    c = static_cast<char>(::toupper(static_cast<unsigned char>(c)));
+  }
+  return out;
 }
 
 std::string unalign(const std::string& file_name) {
