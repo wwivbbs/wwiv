@@ -388,7 +388,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
     if (nh->main_type == main_type_email_name || nh->main_type == main_type_new_post) {
       nh->length += size_uint32(subtype_or_author) + 1;
     }
-    const auto packet_filename = StrCat(to_net.dir, "p1", a()->network_extension());
+    const auto packet_filename = FilePath(to_net.dir, StrCat("p1", a()->network_extension()));
     File file(packet_filename);
     if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       file.Seek(0L, File::Whence::end);
