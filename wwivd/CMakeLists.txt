@@ -36,6 +36,7 @@ target_link_libraries(wwivd wwivd_lib)
 if (WWIV_BUILD_TESTS)
 
   set(test_sources
+    nets_test.cpp
     sessions_test.cpp
     wwivd_non_http_test.cpp
   )

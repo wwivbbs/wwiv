@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 
+#include "wwivd/nets.h"
+
 #include "core/datetime.h"
 #include "core/log.h"
 #include "core/os.h"
@@ -52,6 +54,23 @@ using namespace wwiv::strings;
 using namespace wwiv::os;
 
 // TODO(rushfan): Add tests for new stuff in here.
+
+bool BeginDayRetry::should_run(const std::string& today, const std::string& last_date,
+                               std::chrono::system_clock::time_point now) const {
+  if (today == last_date) {
+    return false;
+  }
+  if (attempted_date_ != today) {
+    return true;
+  }
+  return now - attempted_at_ >= retry_interval_;
+}
+
+void BeginDayRetry::attempted(const std::string& today,
+                              std::chrono::system_clock::time_point now) {
+  attempted_date_ = today;
+  attempted_at_ = now;
+}
 
 static NetworkContact network_contact_from_last_time(const fido::FidoAddress& address,
                                                      const DateTime& t, int ftn_bytes_waiting) {
@@ -167,6 +186,7 @@ static void do_wwivd_callout_loop(const std::stop_token& st, const Config& confi
   auto c{original_config};
 
   StatusMgr sm(config.datadir(), [](int) {});
+  BeginDayRetry beginday;
   auto last_callout = DateTime::now().to_system_clock();
   while (!st.stop_requested()) {
     if (take_reload_request()) {
@@ -187,17 +207,21 @@ static void do_wwivd_callout_loop(const std::stop_token& st, const Config& confi
     }
 
     if (c.do_beginday_event) {
-      const auto last_date_status = sm.get_status();
-      auto ld = last_date_status->last_date();
+      const auto ld = sm.get_status()->last_date();
       const auto d = date();
       VLOG(4) << "Doing beginday check";
-      if (d != ld) {
+      if (const auto now = std::chrono::system_clock::now(); beginday.should_run(d, ld, now)) {
         LOG(INFO) << "Executing beginday event. (" << d << " != " << ld << ")";
+        beginday.attempted(d, now);
         const std::map<char, std::string> params{};
         const auto cmd = CreateCommandLine(c.beginday_cmd, params);
         if (!ExecCommandAndWait(c, *nodes, cmd, StrCat("[", get_pid(), "]"), -1, SocketHandle{}, {},
                                 &sessions)) {
           LOG(ERROR) << "Error executing [BeginDay Event]: '" << cmd << "'";
+        }
+        if (sm.get_status()->last_date() != d) {
+          LOG(WARNING) << "[BeginDay Event] didn't update the date in status.dat to " << d
+                       << "; trying again in an hour.";
         }
       }
     }

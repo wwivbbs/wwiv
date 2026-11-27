@@ -41,7 +41,7 @@ Done and tested on Linux. The Windows parts (`wwivd_win.cpp`, `core/pipe_win32.c
   - [x] The signal handler uses `std::cerr`.
   - [x] `sigaction(SIGKILL)` always fails, and every failure message says "SIGINT".
 - [ ] `SwitchToNonRootUser`: treat a failed `setuid`/`setgid` as fatal when running as root, and call `initgroups`.
-- [ ] Beginday re-runs every 5 seconds forever if the command fails to update `status.dat`.
+- [x] Beginday re-runs every 5 seconds forever if the command fails to update `status.dat`. (`BeginDayRetry` tries the same day again at most once an hour, and logs a warning when `status.dat` wasn't updated.)
 - [ ] Verify both `SetBlockingMode` helpers:
   - On Windows, `core/net.cpp` sets `FIONBIO=1`, which is *non-blocking*.
   - The anonymous-namespace copy in `socket_connection.cpp` always sets `O_NONBLOCK` on Unix.
