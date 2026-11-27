@@ -25,6 +25,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <shared_mutex>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -44,14 +45,18 @@ private:
   std::unordered_set<std::string> ips_;
 };
 
+/** badip.txt. Every connection thread checks it, and AutoBlocker adds to it. */
 class BadIp {
 public:
   BadIp(const std::filesystem::path& fn, Clock& clock);
-  [[nodiscard]] bool IsBlocked(const std::string& ip);
+  [[nodiscard]] bool IsBlocked(const std::string& ip) const;
+  /** Blocks ip and appends it to badip.txt. */
   bool Block(const std::string& ip);
 
 private:
   const std::filesystem::path fn_;
+  // Guards ips_ and appending to fn_.
+  mutable std::shared_mutex mu_;
   std::unordered_set<std::string> ips_;
   Clock& clock_;
 };
@@ -61,6 +66,11 @@ struct auto_blocked_entry_t {
   time_t expiration{0};
 };
 
+/**
+ * Blocks addresses that connect too often. Connection threads call it at
+ * the same time, and the /blocking endpoint reads it, so every public
+ * method takes mu_.
+ */
 class AutoBlocker final {
 public:
   AutoBlocker(std::shared_ptr<BadIp> bip, sdk::wwivd_blocking_t b, std::filesystem::path datadir, Clock& clock);
@@ -69,14 +79,18 @@ public:
   bool Connection(const std::string& ip);
   bool Save();
 
-  // Used for testing
-  const std::map<std::string, std::set<time_t>>& recent_sessions() const { return sessions_; }
-  // Used for testing
-  const std::map<std::string, auto_blocked_entry_t>& auto_blocked() const { return auto_blocked_; }
+  /** A copy, since connection threads keep changing it. */
+  [[nodiscard]] std::map<std::string, std::set<time_t>> recent_sessions() const;
+  /** A copy, since connection threads keep changing it. */
+  [[nodiscard]] std::map<std::string, auto_blocked_entry_t> auto_blocked() const;
 
   [[nodiscard]] bool blocked(const std::string& ip) const;
 
 private:
+  // These expect mu_ to be held.
+  void escalate_block_locked(const std::string& ip);
+  bool save_locked();
+  [[nodiscard]] bool blocked_locked(const std::string& ip) const;
   bool Load();
   std::shared_ptr<BadIp> bip_;
   sdk::wwivd_blocking_t b_;
@@ -84,7 +98,7 @@ private:
   std::map<std::string, std::set<time_t>> sessions_;
   std::map<std::string, auto_blocked_entry_t> auto_blocked_;
   Clock& clock_;
-  std::mutex mu_;
+  mutable std::mutex mu_;
 };
 
 } // namespace
