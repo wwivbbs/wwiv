@@ -502,3 +502,23 @@ TEST_F(DebuggerEndToEndTest, Stop) {
   EXPECT_THAT(out, HasSubstr("one"));
   EXPECT_THAT(out, testing::Not(HasSubstr("two")));
 }
+
+TEST_F(DebuggerEndToEndTest, KeysTypedWhileWaiting_AreTypedAhead) {
+  CreateScript("keys.bas", "print \"ran\"\n");
+  // Sent by the caller before any debugger attaches: Ctrl-C skips the wait,
+  // and the keys around it are the script's (or the BBS's) to read.
+  auto* remote = static_cast<TestRemoteIO*>(helper.io()->remote_io());
+  helper.sess().incom(true);
+  remote->keys = std::string("ab\x03" "cd");
+  NextEngine engine(bin, bout, helper.config(), &helper.context());
+  EXPECT_TRUE(engine.RunScript("keys.bas"));
+  const auto out = helper.io()->captured();
+  EXPECT_THAT(out, HasSubstr("No debugger attached"));
+  EXPECT_THAT(out, HasSubstr("ran"));
+  std::string keys;
+  while (bin.bkbhit() && keys.size() < 10) {
+    keys.push_back(bin.bgetch());
+  }
+  // Ctrl-C was the debugger's; the rest come back in the order they were sent.
+  EXPECT_EQ("abcd", keys);
+}
