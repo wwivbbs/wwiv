@@ -23,6 +23,7 @@
 #include "sdk/wwivd_config.h"
 #include "wwivd/ips.h"
 #include "wwivd/node_manager.h"
+#include "wwivd/sessions.h"
 #include <map>
 #include <memory>
 
@@ -41,6 +42,8 @@ struct ConnectionData {
   std::shared_ptr<GoodIp> good_ips_;
   std::shared_ptr<BadIp> bad_ips_;
   std::shared_ptr<AutoBlocker> auto_blocker_;
+  /** Where shutdown finds the callers' sockets and children. May be null in tests. */
+  Sessions* sessions{nullptr};
 };
 
 }  // namespace wwivd

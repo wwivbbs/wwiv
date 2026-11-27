@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/net.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "core/test/file_helper.h"
 #include "core/textfile.h"
@@ -77,6 +78,38 @@ TEST(ExecCommandAndWaitTest, ChildInheritsOnlyItsOwnSocket) {
   close(mine[1]);
   close(other[0]);
   close(other[1]);
+}
+
+// The child starts in working_dir, and wwivd's own directory is left alone
+// (other threads are launching children from it at the same time).
+TEST(ExecCommandAndWaitTest, ChildStartsInWorkingDir) {
+  test::FileHelper helper;
+  const Config config(helper.TempDir(), config_t{});
+  NodeManager nodes(config, ConnectionType::TELNET);
+  // The quote checks the directory is passed to the shell safely.
+  ASSERT_TRUE(helper.Mkdir("it's here"));
+  const auto dir = helper.Dir("it's here");
+  const auto out = helper.TempDir() / "pwd.txt";
+  const auto before = File::current_directory();
+
+  const wwivd_config_t wc{};
+  EXPECT_TRUE(ExecCommandAndWait(wc, nodes, fmt::format("pwd -P > '{}'", out.string()), "[test] ",
+                                 1, SocketHandle{}, dir));
+  EXPECT_EQ(before, File::current_directory());
+
+  TextFile tf(out, "rt");
+  ASSERT_TRUE(tf.IsOpen());
+  EXPECT_EQ(StrCat(std::filesystem::canonical(dir).string(), "\n"), tf.ReadFileIntoString());
+}
+
+TEST(ExecCommandAndWaitTest, MissingWorkingDirFails) {
+  test::FileHelper helper;
+  const Config config(helper.TempDir(), config_t{});
+  NodeManager nodes(config, ConnectionType::TELNET);
+
+  const wwivd_config_t wc{};
+  EXPECT_FALSE(ExecCommandAndWait(wc, nodes, "true", "[test] ", 1, SocketHandle{},
+                                  helper.TempDir() / "missing"));
 }
 
 #endif // __linux__

@@ -6,6 +6,8 @@ set(WWIVD_SOURCES
 	ips.cpp
 	nets.cpp
     node_manager.cpp
+    sessions.cpp
+    signals.cpp
     wwivd_http.cpp
     wwivd_non_http.cpp
     )
@@ -34,6 +36,7 @@ target_link_libraries(wwivd wwivd_lib)
 if (WWIV_BUILD_TESTS)
 
   set(test_sources
+    sessions_test.cpp
     wwivd_non_http_test.cpp
   )
   if (UNIX)

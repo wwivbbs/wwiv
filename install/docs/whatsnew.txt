@@ -17,6 +17,17 @@ Legend (starting with 5.3)
 
 What's New in WWIV 5.10.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! wwivd now hangs up every caller when it stops (SIGTERM, Ctrl-C, or
+  systemctl stop) and waits up to 10 seconds for each node to log its
+  caller off, then kills any node still running. On Linux the BBS treats
+  SIGHUP and SIGTERM as the caller hanging up, so the logoff is the normal
+  one. If you installed the systemd unit before this release, add
+  "KillMode=mixed" to the [Service] section of
+  /etc/systemd/system/wwivd.service (or merge in wwivd.service.new) and
+  run "systemctl daemon-reload". Without it systemd signals every node
+  itself, which still logs callers off but doesn't wait for wwivd.
+* wwivd: SIGHUP reloads only the network callout and beginday settings.
+  Restart wwivd for any other change in wwivd.json.
 * cryptlib (used for SSH) updated from 3.4.5 to 3.4.9.6. It's now a git
   submodule (deps/cryptlib) of https://github.com/wwivbbs/cryptlib.
 ! Linux: the SSH server now offers aes128-ctr/aes256-ctr, so current
@@ -36,6 +47,11 @@ What's New in WWIV 5.10.0 (2026)
   its socket. On Linux a door that's still running then gets SIGTERM,
   sent to its whole process group so an emulator started by a launcher
   script is stopped too, and SIGKILL if it hasn't exited 3 seconds later.
+  On Windows the door runs in a job object, so stopping it also stops an
+  emulator its launcher started (e.g. DOSBox-X from WWIVFOSS's dosdoor.cmd).
+  When a socket door returns to the BBS, even after a normal exit, any
+  processes it left running are ended too. A door that needs a helper to
+  outlive it must start the helper with CREATE_BREAKAWAY_FROM_JOB.
 
 What's New in WWIV 5.9.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

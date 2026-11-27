@@ -19,6 +19,7 @@
 #ifndef INCLUDED_WWIV_WWIV_WWIVD_H
 #define INCLUDED_WWIV_WWIV_WWIVD_H
 
+#include <filesystem>
 #include <string>
 #include <tuple>
 #include "core/net.h"
@@ -30,6 +31,7 @@ class wwivd_config_t;
 
 namespace wwiv::wwivd {
 class NodeManager;
+class Sessions;
 }
 
 void BeforeStartServer();
@@ -43,9 +45,19 @@ void SwitchToNonRootUser(const std::string& wwiv_user);
  * only socket the child inherits, and this process's copy is closed as soon
  * as the child has been started, so the connection drops when the child
  * closes it. pid and node_number are only used for logging.
+ *
+ * The child starts in working_dir, or in wwivd's own directory (the BBS
+ * root) when it is empty. wwivd's current directory is never changed, since
+ * other threads are launching children at the same time.
+ *
+ * When sessions is given, the child is registered with it while it runs,
+ * so that shutdown can hang it up. On Unix the child gets its own process
+ * group, so that reaches whatever it starts too.
  */
 bool ExecCommandAndWait(const wwiv::sdk::wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
-                        wwiv::core::SocketHandle sock);
+                        wwiv::core::SocketHandle sock,
+                        const std::filesystem::path& working_dir = {},
+                        wwiv::wwivd::Sessions* sessions = nullptr);
 
 #endif

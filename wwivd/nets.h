@@ -25,8 +25,14 @@
 
 namespace wwiv::wwivd {
 class NodeManager;
+class Sessions;
 
-void do_wwivd_callouts(const sdk::Config& config, const sdk::wwivd_config_t& c, std::shared_ptr<NodeManager> nodes);
+/**
+ * Starts the network callout and beginday thread on sessions. config must
+ * outlive sessions.
+ */
+void do_wwivd_callouts(const sdk::Config& config, const sdk::wwivd_config_t& c,
+                       std::shared_ptr<NodeManager> nodes, Sessions& sessions);
 
 } // namespace
 
