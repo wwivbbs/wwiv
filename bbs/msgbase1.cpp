@@ -48,6 +48,7 @@
 #include "sdk/msgapi/parsed_message.h"
 #include "sdk/net/ftn_msgdupe.h"
 #include "sdk/net/networks.h"
+#include "sdk/net/packets.h"
 #include "sdk/net/subscribers.h"
 #include <memory>
 #include <string>
@@ -101,9 +102,10 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   nhorig.method = 0;
 
   auto message_length = text.size();
-  if (nhorig.length > 32755) {
-    bout.printf("Message truncated by %lu bytes for the network.", nhorig.length - 32755L);
-    nhorig.length = 32755;
+  if (nhorig.length > kMaxNetworkPostLength) {
+    bout.print("Message truncated by {} bytes for the network.",
+               nhorig.length - kMaxNetworkPostLength);
+    nhorig.length = kMaxNetworkPostLength;
     message_length = nhorig.length - strlen(pPostRecord->title) - 1;
   }
   std::unique_ptr<char[]> b1(new char[nhorig.length + 100]);

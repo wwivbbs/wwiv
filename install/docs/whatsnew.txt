@@ -169,7 +169,9 @@ WWIVbasic
   caller's own rights, once the sysop turns on "Enable MSG Writing" in
   wwivconfig's scripting settings (off by default). Scripts can also let
   the caller write a post or reply in their own message editor, and
-  msgview.bas uses that to post and reply.
+  msgview.bas uses that to post and reply. In a networked area, a post
+  longer than the network allows (32755 bytes, which the BBS would cut
+  short) is an error.
 + New wwiv.screen module for the new BASIC engine: full-screen layouts
   like the message reader's (FULLSCREEN), and lightbar lists (LIGHTBAR)
   that can call a script function for each key.

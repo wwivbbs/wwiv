@@ -287,9 +287,12 @@ public:
   }
 
   // The packets written to the network's directory.
-  [[nodiscard]] std::vector<net::NetPacket> packets() const {
+  [[nodiscard]] std::vector<net::NetPacket> packets() const { return packets(net_.dir); }
+
+  // The packets written to a network directory.
+  [[nodiscard]] static std::vector<net::NetPacket> packets(const std::filesystem::path& dir) {
     std::vector<net::NetPacket> result;
-    for (const auto& e : std::filesystem::directory_iterator(net_.dir)) {
+    for (const auto& e : std::filesystem::directory_iterator(dir)) {
       if (!e.path().filename().string().starts_with("p1-")) {
         continue;
       }
@@ -470,6 +473,52 @@ TEST_F(MsgApiNetTest, Hosted_NotSentToSelf) {
   ASSERT_EQ(1u, sent.size());
   EXPECT_EQ(net_.sysnum, sent.front().nh.fromsys);
   EXPECT_EQ((std::vector<uint16_t>{5, 6}), sent.front().list);
+}
+
+// A sub carried on two networks: the post goes out on both, from this BBS's
+// node on each, with the subtype each network uses.
+TEST_F(MsgApiNetTest, TwoNetworks_SentOnBoth) {
+  const net::Network net_a(net::network_type_t::wwivnet, "NetA", helper.CreatePath("neta"), 1);
+  const net::Network net_b(net::network_type_t::wwivnet, "NetB", helper.CreatePath("netb"), 10);
+  MessageApiOptions options;
+  options.overflow_strategy = OverflowStrategy::delete_none;
+  api_ = std::make_unique<WWIVMessageApi>(
+      options, helper.config(), std::vector<net::Network>{net_a, net_b}, new NullLastReadImpl());
+  sub_.filename = "a1";
+  sub_.name = "Two Nets";
+  subboard_network_data_t sa{};
+  sa.stype = "TA";
+  sa.net_num = 0;
+  sa.host = 2;
+  subboard_network_data_t sb{};
+  sb.stype = "TB";
+  sb.net_num = 1;
+  sb.host = 20;
+  sub_.nets = {sa, sb};
+  ASSERT_TRUE(api_->Create(sub_, -1));
+  auto area = api_->Open(sub_, -1);
+  ASSERT_TRUE(area);
+
+  MessageAreaOptions o{};
+  o.send_post_to_network = true;
+  auto m = NewPost(*area, "Title", "");
+  ASSERT_TRUE(area->AddMessage(m, o));
+
+  const auto a_packets = packets(net_a.dir);
+  ASSERT_EQ(1u, a_packets.size());
+  EXPECT_EQ(2, a_packets.front().nh.tosys);
+  EXPECT_EQ(1, a_packets.front().nh.fromsys);
+  EXPECT_EQ(1, a_packets.front().nh.fromuser);
+  EXPECT_TRUE(a_packets.front().text().starts_with("TA\0Title\0SYSOP #1\r\n"s));
+
+  const auto b_packets = packets(net_b.dir);
+  ASSERT_EQ(1u, b_packets.size());
+  EXPECT_EQ(20, b_packets.front().nh.tosys);
+  EXPECT_EQ(10, b_packets.front().nh.fromsys);
+  EXPECT_EQ(1, b_packets.front().nh.fromuser);
+  EXPECT_TRUE(b_packets.front().text().starts_with("TB\0Title\0SYSOP #1\r\n"s));
+  // Both have the same text after the subtype.
+  EXPECT_EQ(a_packets.front().text().substr(2), b_packets.front().text().substr(2));
 }
 
 // On an FTN sub the To: name goes in a ^D0FidoAddr line, except for All in

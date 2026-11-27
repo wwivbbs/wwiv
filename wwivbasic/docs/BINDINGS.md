@@ -330,8 +330,9 @@ BBS:
 - In networked areas, the post goes out on all of the area's networks. In
   an area that needs network validation, it waits for the sysop to validate
   it, as the BBS's posts do: a co-sysop's new post goes out right away, but
-  their replies still wait. (Some details of how the BBS sends posts aren't
-  matched yet: [#1782](https://github.com/wwivbbs/wwiv/issues/1782).)
+  their replies still wait. A post that's too long for the network (more
+  than 32755 bytes, counting the title and the author and date lines) is
+  an error, where the BBS would cut it short.
 - `WRITE_POST` and `REPLY` open the editor the caller uses in the BBS. A
   script with a full-screen layout open should close it first, since the
   editor has the whole screen.

@@ -1315,6 +1315,11 @@ TEST_F(WwivMsgWriteTest, Post_BadArguments) {
               HasSubstr("message_area.post: expected 2 to 4 arguments, got 1"));
 }
 
+// Only posts on a network have a length limit.
+TEST_F(WwivMsgWriteTest, Post_LongInALocalArea) {
+  EXPECT_EQ("1\r\n", Run("print wwiv.msg.area(\"1\").post(\"Hi\", STRING(40000, \"x\"))\n"));
+}
+
 // Anonymous posts follow the area's setting and the user's rights, as in
 // the BBS's post().
 TEST_F(WwivMsgWriteTest, Anonymous) {
@@ -1646,6 +1651,21 @@ TEST_F(WwivMsgNetTest, ValNet_Held) {
   EXPECT_EQ("1\r\n", Run("print wwiv.msg.area(\"1\").post(\"Hi\", \"x\")\n"));
   EXPECT_TRUE(pending(1));
   EXPECT_EQ(0, packets_sent());
+}
+
+// The BBS would cut a post this long short for the network; a script gets
+// an error, and nothing is posted.
+TEST_F(WwivMsgNetTest, TooLongForTheNetwork) {
+  fake->cosysop_ = true;
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\", STRING(32800, \"x\"))\n"),
+              HasSubstr("message_area.post: the post is "));
+  EXPECT_THAT(Run("n = wwiv.msg.area(\"1\").post(\"Hi\", STRING(32800, \"x\"))\n"),
+              HasSubstr(" bytes, too long to send on the network; the most is 32755"));
+  EXPECT_FALSE(Read(0, 1));
+  EXPECT_EQ(0, packets_sent());
+  // A long post that fits is sent.
+  EXPECT_EQ("1\r\n", Run("print wwiv.msg.area(\"1\").post(\"Hi\", STRING(32000, \"x\"))\n"));
+  EXPECT_EQ(1, packets_sent());
 }
 
 // A co-sysop's new posts go out right away, from POST or the editor.

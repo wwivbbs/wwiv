@@ -28,6 +28,7 @@
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_area.h"
 #include "sdk/msgapi/parsed_message.h"
+#include "sdk/net/packets.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "wwivbasic/interpreter.h"
@@ -349,6 +350,25 @@ std::string clean_field(const std::string& s) {
   return StringTrim(out);
 }
 
+// At most how long the post will be on the network, counted as the BBS's
+// send_net_post counts it: the title and a NUL, the author and date lines, the
+// RE:/BY: or FidoAddr lines the SDK adds, and the text.
+size_t network_post_length(const std::string& title, const std::string& from, const std::string& to,
+                           const std::string& text, bool add_re_and_by_line) {
+  // "Fri Jan 01 12:00:00 1999" and CR LF.
+  constexpr size_t kDateLine = 26;
+  auto length = title.size() + 1 + from.size() + 2 + kDateLine + text.size();
+  if (!to.empty()) {
+    // "BY: to" or "^D0FidoAddr: to", and CR LF.
+    length += to.size() + 14;
+  }
+  if (add_re_and_by_line) {
+    // "RE: title" and CR LF.
+    length += title.size() + 6;
+  }
+  return length;
+}
+
 // Saves a post the user wrote in area a, as the BBS's post() does, and returns
 // its number. text follows the author and date lines, which the SDK adds.
 // is_reply is whether it replies to a post.
@@ -357,6 +377,14 @@ int save_post(const ScriptArea& a, const std::string& fn, const std::string& tit
               const std::string& text, bool add_re_and_by_line, std::chrono::seconds writing_time,
               bool is_reply) {
   const auto& sub = a.sub();
+  // The BBS cuts a post that's too long for the network short; a script is
+  // told instead, so none of it is lost without the script knowing.
+  if (const auto length = network_post_length(title, from, to, text, add_re_and_by_line);
+      !sub.nets.empty() && length > sdk::net::kMaxNetworkPostLength) {
+    throw BasicError(fmt::format("{}: the post is {} bytes, too long to send on the network; "
+                                 "the most is {}",
+                                 fn, length, sdk::net::kMaxNetworkPostLength));
+  }
   const auto p = a.msgs->poster(a.subnum);
   auto* area = a.area();
   auto msg = area->CreateMessage();
