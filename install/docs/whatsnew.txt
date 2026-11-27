@@ -141,7 +141,11 @@ WWIVbasic
   --basic_engine.
 + The script debugger (bbs -d, with wwivdbg) works with wwivbasic: line
   breakpoints, step in, step over, and the call stack and variables of
-  each frame. It now listens on 127.0.0.1 only.
+  each frame.
+! The script debugger listens on 127.0.0.1 only (it used to listen on
+  every interface), since anyone who can reach it can read a script's
+  variables and stop it. To run wwivdbg on another machine, forward the
+  port: ssh -L 9948:localhost:9948 bbs-host.
 * Errors are logged to the log file and shown to the caller.
 * Fixed typo that broke the oneliners.bas script.
 + New sample script msgview.bas, a message viewer written with the new

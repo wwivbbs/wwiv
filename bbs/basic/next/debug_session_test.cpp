@@ -53,6 +53,7 @@ public:
     std::string module;
     int line;
     int depth;
+    int column{1};
   };
 
   FakeScript(DebugSession& s, std::vector<Stmt> stmts) : session_(s), stmts_(std::move(stmts)) {}
@@ -61,7 +62,7 @@ public:
   void Start() {
     thread_ = std::thread([this] {
       for (const auto& st : stmts_) {
-        if (session_.OnStatement(st.module, st.line, 1, st.depth, snapshot, cancel)) {
+        if (session_.OnStatement(st.module, st.line, st.column, st.depth, snapshot, cancel)) {
           halted = true;
           break;
         }
@@ -149,8 +150,11 @@ TEST(DebugSessionTest, Breakpoint) {
 TEST(DebugSessionTest, Breakpoint_FiresOncePerLine) {
   DebugSession s("t.bas");
   // Two statements on line 2 (IF x THEN y), then line 2 again from a loop.
-  FakeScript script(
-      s, {{"t.bas", 1, 0}, {"t.bas", 2, 0}, {"t.bas", 2, 0}, {"t.bas", 3, 0}, {"t.bas", 2, 0}});
+  FakeScript script(s, {{"t.bas", 1, 0},
+                        {"t.bas", 2, 0, 1},
+                        {"t.bas", 2, 0, 9},
+                        {"t.bas", 3, 0},
+                        {"t.bas", 2, 0, 1}});
   ASSERT_TRUE(s.Attach());
   s.AddBreakpoint("t.bas", 2);
   script.Start();
@@ -165,6 +169,32 @@ TEST(DebugSessionTest, Breakpoint_FiresOncePerLine) {
   s.Run();
   script.Join();
   EXPECT_EQ(2, s.breakpoints().at(0).hit_count);
+}
+
+TEST(DebugSessionTest, Breakpoint_FiresEachTimeAroundALoop) {
+  DebugSession s("t.bas");
+  // WHILE on line 2 with a one-statement body on line 3: nothing else runs
+  // between one pass's line 3 and the next's.
+  FakeScript script(s, {{"t.bas", 1, 0},
+                        {"t.bas", 2, 0},
+                        {"t.bas", 3, 0, 3},
+                        {"t.bas", 3, 0, 3},
+                        {"t.bas", 3, 0, 3},
+                        {"t.bas", 4, 0}});
+  ASSERT_TRUE(s.Attach());
+  s.AddBreakpoint("t.bas", 3);
+  script.Start();
+  ASSERT_TRUE(s.WaitForPause(0, 5s));
+  for (int pass = 0; pass < 3; pass++) {
+    const auto n = s.Run();
+    ASSERT_TRUE(s.WaitForPause(n, 5s));
+    EXPECT_EQ(3, s.line());
+    EXPECT_EQ(2 + pass, script.ran.load());
+  }
+  s.Run();
+  script.Join();
+  EXPECT_EQ(6, script.ran.load());
+  EXPECT_EQ(3, s.breakpoints().at(0).hit_count);
 }
 
 TEST(DebugSessionTest, StepOver_SkipsCalls) {
@@ -230,6 +260,20 @@ TEST(DebugSessionTest, Detach_RunsOnWithoutBreakpoints) {
   EXPECT_TRUE(s.breakpoints().empty());
 }
 
+TEST(DebugSessionTest, HaltThenDetach_StillHalts) {
+  DebugSession s("t.bas");
+  ASSERT_TRUE(s.Attach());
+  // Stop arrives while the script is between statements, then the client
+  // detaches before the next one.
+  s.Halt();
+  EXPECT_TRUE(s.Detach());
+  FakeScript script(s, {{"t.bas", 1, 0}, {"t.bas", 2, 0}});
+  script.Start();
+  script.Join();
+  EXPECT_TRUE(script.halted.load());
+  EXPECT_EQ(0, script.ran.load());
+}
+
 TEST(DebugSessionTest, WaitForAttach) {
   DebugSession s("t.bas");
   EXPECT_FALSE(s.WaitForAttach(150ms, {}));
@@ -237,6 +281,27 @@ TEST(DebugSessionTest, WaitForAttach) {
   std::thread t([&] { s.Attach(); });
   EXPECT_TRUE(s.WaitForAttach(10s, {}));
   t.join();
+}
+
+TEST(DebugSessionTest, WaitForDetach) {
+  DebugSession s("t.bas");
+  // Not attached: returns at once.
+  s.WaitForDetach(10s, {});
+  ASSERT_TRUE(s.Attach());
+  s.Finished();
+  s.WaitForDetach(150ms, {});
+  s.WaitForDetach(10s, [] { return true; });
+  std::thread t([&] { s.Detach(); });
+  s.WaitForDetach(10s, {});
+  t.join();
+  EXPECT_FALSE(s.attached());
+}
+
+TEST(DebugSessionTest, ModuleNames_BackslashesAreSlashes) {
+  DebugSession s("t.bas");
+  s.AddSource("lib/u.bas", "x = 1\n");
+  EXPECT_EQ("x = 1\n", s.source("lib\\u.bas").value_or("(none)"));
+  EXPECT_EQ("LIB/u.bas", s.AddBreakpoint("LIB\\u.bas", 2)->module);
 }
 
 TEST(DebugSessionTest, Source) {
@@ -375,6 +440,32 @@ print "y=" + str(y)
   EXPECT_THAT(helper.io()->captured(), HasSubstr("y=2"));
 }
 
+TEST_F(DebuggerEndToEndTest, ImportFromSubdirectory_ModuleIsRelativeToScriptdir) {
+  std::filesystem::create_directories(helper.config().scriptdir() / "lib");
+  CreateScript("lib/util.bas", "def f()\n  return 7\nenddef\n");
+  CreateScript("sub.bas", "import \"./lib/../lib/util.bas\"\nprint str(f())\n");
+  std::atomic<bool> ok{false};
+  std::thread script([&] {
+    NextEngine engine(bin, bout, helper.config(), &helper.context());
+    ok = engine.RunScript("sub.bas");
+  });
+  httplib::Client c("127.0.0.1", port_);
+  c.set_read_timeout(10s);
+  ASSERT_TRUE(Attach(c));
+  // As a Windows client might name it.
+  auto res = Post(c, "breakpoint", {{"module", "lib\\util.bas"}, {"typ", "line"}, {"line", "2"}});
+  ASSERT_EQ(200, res->status) << res->body;
+  ASSERT_EQ("paused", WaitPaused(c).at("state"));
+  ASSERT_EQ(200, Post(c, "run")->status);
+  const auto state = WaitPaused(c);
+  ASSERT_EQ("paused", state.at("state")) << state.dump();
+  EXPECT_EQ("lib/util.bas", state.at("location").at("module").get<std::string>());
+  EXPECT_EQ(2, state.at("location").at("row").get<int>());
+  ASSERT_EQ(200, Post(c, "detach")->status);
+  script.join();
+  EXPECT_TRUE(ok.load());
+}
+
 TEST_F(DebuggerEndToEndTest, Stop) {
   CreateScript("stop.bas", "print \"one\"\nprint \"two\"\n");
   std::atomic<bool> ok{true};
@@ -391,6 +482,20 @@ TEST_F(DebuggerEndToEndTest, Stop) {
   ASSERT_EQ(200, res->status);
   EXPECT_EQ(2, json::parse(res->body).at("location").at("row").get<int>());
   ASSERT_EQ(200, Post(c, "stop")->status);
+  // The server stays up after the script ends, so the client can see that
+  // it did, until the client detaches.
+  json state;
+  for (int i = 0; i < 100; i++) {
+    const auto r = c.Get("/debug/v1/state");
+    ASSERT_TRUE(r) << "the server went away before the client saw the script finish";
+    state = json::parse(r->body);
+    if (state.at("state") == "finished") {
+      break;
+    }
+    std::this_thread::sleep_for(50ms);
+  }
+  EXPECT_EQ("finished", state.at("state"));
+  ASSERT_EQ(200, Post(c, "detach")->status);
   script.join();
   EXPECT_FALSE(ok.load());
   const auto out = helper.io()->captured();

@@ -39,6 +39,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <filesystem>
 #include <memory>
 #include <utility>
 #include <optional>
@@ -57,6 +58,9 @@ using namespace std::chrono_literals;
 constexpr char kDebuggerHost[] = "127.0.0.1";
 // How long a script waits for the debugger to attach, as in the legacy engine.
 constexpr auto kDebuggerAttachWait = 120s;
+// How long the debugger stays up after the script ends, so the client's next
+// poll sees "finished" (unless it detaches first).
+constexpr auto kDebuggerFinishedWait = 5s;
 
 // The module name for a script file: its name in lower case without ".bas",
 // as in the legacy engine.
@@ -132,29 +136,58 @@ bool NextEngine::RunText(const std::string& name, const std::string& module,
 
   // The full path, so that IMPORT "file.bas" is found next to the script.
   const auto path = FilePath(config_.scriptdir(), name);
-  // Paths in errors and the debugger are shown relative to scriptdir: the
-  // prefix is whatever FilePath put before the name.
+  // Paths in errors are shown relative to scriptdir: the prefix is whatever
+  // FilePath put before the name.
   const auto full = path.string();
   const auto prefix = full.substr(0, full.size() - std::min(full.size(), name.size()));
-  auto relative = [&prefix](const std::string& file) {
-    return !prefix.empty() && starts_with(file, prefix) ? file.substr(prefix.size()) : file;
+  // The debugger's module names: relative to scriptdir, with '/' between
+  // directories. IMPORT normalizes its paths (lexically_normal, which on
+  // Windows also turns '/' into '\'), so this compares normalized paths.
+  auto root = std::filesystem::path(config_.scriptdir()).lexically_normal();
+  if (!root.has_filename() && root.has_relative_path()) {
+    root = root.parent_path();
+  }
+  auto relative = [&root](const std::string& file) {
+    const auto rel = std::filesystem::path(file).lexically_normal().lexically_relative(root);
+    if (rel.empty() || *rel.begin() == "..") {
+      return file;
+    }
+    return rel.generic_string();
   };
 
   // With bbs --debug, the script waits for a debugger (wwivdbg) to attach.
   // The server goes before the session it uses.
   std::unique_ptr<DebugSession> debug;
   std::unique_ptr<DebugServer> debug_server;
-  // While paused, Ctrl-C on the local or remote side ends the script.
+  // While waiting or paused, Ctrl-C on the local or remote side ends the
+  // script. Other keys are typed ahead for the script to read.
   auto debug_cancel = [&]() {
     if (hung_up()) {
       return true;
     }
-    return in_.bkbhit() && in_.bgetchraw() == wwiv::local::io::CC;
+    // Only the keyboard and the connection: type_ahead's keys are the
+    // script's, not ours to look at again.
+    std::string keys;
+    while (in_.bkbhitraw()) {
+      const auto ch = in_.bgetchraw();
+      if (ch == wwiv::local::io::CC) {
+        in_.type_ahead(keys);
+        return true;
+      }
+      if (!ch) {
+        // bgetchraw reads nothing without a connection (a local session).
+        break;
+      }
+      keys.push_back(ch);
+    }
+    in_.type_ahead(keys);
+    return false;
   };
   if (ctx_ && ctx_->session_context().debug_wwivbasic()) {
     const auto port = ctx_->session_context().debug_wwivbasic_port();
-    debug = std::make_unique<DebugSession>(name);
-    debug->AddSource(name, text);
+    const auto initial_module = relative(full);
+    debug = std::make_unique<DebugSession>(initial_module);
+    debug->AddSource(initial_module, text);
     debug_server = std::make_unique<DebugServer>(*debug);
     if (debug_server->Start(kDebuggerHost, port)) {
       LOG(INFO) << "Waiting for the script debugger to attach on " << kDebuggerHost << ":" << port;
@@ -232,6 +265,7 @@ bool NextEngine::RunText(const std::string& name, const std::string& module,
   const auto result = interp.run_source(path.string(), text);
   if (debug) {
     debug->Finished();
+    debug->WaitForDetach(kDebuggerFinishedWait, debug_cancel);
   }
   if (result.stopped) {
     LOG(INFO) << "Stopped script '" << module << "': "

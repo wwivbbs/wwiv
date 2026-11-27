@@ -76,8 +76,9 @@ public:
   // Attaches a client; the script pauses at its next statement. False if a
   // client is already attached.
   bool Attach();
-  // Detaches the client: breakpoints are removed and the script runs on.
-  // False if no client is attached.
+  // Detaches the client: breakpoints are removed and the script runs on
+  // (unless Halt was called and the script hasn't stopped yet). False if no
+  // client is attached.
   bool Detach();
   bool attached() const;
 
@@ -124,12 +125,17 @@ public:
   // 100ms, to notice a hangup). Returns true if the script should stop.
   //
   // Breakpoints fire when a line is entered: a second statement on the same
-  // line at the same depth doesn't fire it again.
+  // line at the same depth doesn't fire it again, but running the line again
+  // (as a loop does) does.
   bool OnStatement(const std::string& module, int line, int column, int depth,
                    const std::function<Snapshot()>& take_snapshot,
                    const std::function<bool()>& cancel);
   // The script has ended.
   void Finished();
+  // After Finished, so the client can see that the script finished: waits
+  // until the client detaches, timeout passes or cancel returns true
+  // (checked every 100ms). Returns at once if no client is attached.
+  void WaitForDetach(std::chrono::milliseconds timeout, const std::function<bool()>& cancel);
 
 private:
   enum class Mode { RUN, STEP_IN, STEP_OVER, PAUSE, HALT };
@@ -150,6 +156,7 @@ private:
   // The previous statement, for "breakpoints fire when a line is entered".
   std::string prev_module_;
   int prev_line_{0};
+  int prev_column_{0};
   int prev_depth_{-1};
 
   Snapshot snapshot_;

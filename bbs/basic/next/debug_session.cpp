@@ -28,6 +28,16 @@ using namespace std::chrono_literals;
 using wwiv::strings::iequals;
 using wwiv::strings::ToStringLowerCase;
 
+namespace {
+
+// Module names use '/' between directories; clients on Windows may send '\\'.
+std::string ModuleName(std::string m) {
+  std::ranges::replace(m, '\\', '/');
+  return m;
+}
+
+} // namespace
+
 DebugSession::DebugSession(std::string initial_module)
     : initial_module_(std::move(initial_module)) {}
 
@@ -51,7 +61,10 @@ bool DebugSession::Detach() {
   }
   attached_ = false;
   breakpoints_.clear();
-  mode_ = Mode::RUN;
+  // A pending Halt still ends the script.
+  if (mode_ != Mode::HALT) {
+    mode_ = Mode::RUN;
+  }
   cv_.notify_all();
   return true;
 }
@@ -67,7 +80,8 @@ std::optional<DebugSession::Breakpoint> DebugSession::AddBreakpoint(const std::s
     return std::nullopt;
   }
   std::lock_guard lock(mu_);
-  const auto m = module.empty() ? (module_.empty() ? initial_module_ : module_) : module;
+  const auto m =
+      module.empty() ? (module_.empty() ? initial_module_ : module_) : ModuleName(module);
   // Setting the same breakpoint twice returns the existing one.
   for (const auto& b : breakpoints_) {
     if (b.line == line && iequals(b.module, m)) {
@@ -170,7 +184,8 @@ DebugSession::Snapshot DebugSession::snapshot() const {
 
 std::optional<std::string> DebugSession::source(const std::string& module) const {
   std::lock_guard lock(mu_);
-  const auto& m = module.empty() ? (module_.empty() ? initial_module_ : module_) : module;
+  const auto m =
+      module.empty() ? (module_.empty() ? initial_module_ : module_) : ModuleName(module);
   if (const auto it = sources_.find(ToStringLowerCase(m)); it != sources_.end()) {
     return it->second;
   }
@@ -212,10 +227,13 @@ bool DebugSession::OnStatement(const std::string& module, int line, int column, 
                                const std::function<Snapshot()>& take_snapshot,
                                const std::function<bool()>& cancel) {
   std::unique_lock lock(mu_);
-  const auto new_line =
-      prev_line_ != line || prev_depth_ != depth || !iequals(prev_module_, module);
+  // A later statement on the same line starts at a later column; the same
+  // column or an earlier one means a loop came back around to this line.
+  const auto new_line = prev_line_ != line || prev_depth_ != depth ||
+                        column <= prev_column_ || !iequals(prev_module_, module);
   prev_module_ = module;
   prev_line_ = line;
+  prev_column_ = column;
   prev_depth_ = depth;
   module_ = module;
   line_ = line;
@@ -273,6 +291,23 @@ void DebugSession::Finished() {
   std::lock_guard lock(mu_);
   finished_ = true;
   cv_.notify_all();
+}
+
+void DebugSession::WaitForDetach(std::chrono::milliseconds timeout,
+                                 const std::function<bool()>& cancel) {
+  const auto deadline = std::chrono::steady_clock::now() + timeout;
+  std::unique_lock lock(mu_);
+  while (attached_ && std::chrono::steady_clock::now() < deadline) {
+    cv_.wait_for(lock, 100ms);
+    if (attached_ && cancel) {
+      lock.unlock();
+      const auto stop = cancel();
+      lock.lock();
+      if (stop) {
+        return;
+      }
+    }
+  }
 }
 
 } // namespace wwiv::bbs::basic
