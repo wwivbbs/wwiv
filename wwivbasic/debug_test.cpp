@@ -117,7 +117,8 @@ TEST_F(DebugTest, ImportedFilesHaveTheirOwnFrameAndSource) {
   const auto lib = (dir / "lib.bas").string();
   const auto main = (dir / "main.bas").string();
   {
-    std::ofstream f(lib);
+    // Binary, so Windows doesn't write "\r\n" and the source compares as written.
+    std::ofstream f(lib, std::ios::binary);
     f << "libvar = 1\n";
   }
   record_locations();
