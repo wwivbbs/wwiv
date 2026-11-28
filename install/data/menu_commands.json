@@ -883,6 +883,11 @@
         },
         {
             "cat": "User",
+            "cmd": "user:personal_info",
+            "help": "Allows the user to view and change their personal info:\n  real name, address, phone numbers and callsign.  Only the items that are\n  not Unused in wwivconfig's New User Registration settings are shown"
+        },
+        {
+            "cat": "User",
             "cmd": "user:phone",
             "help": "Allows the user to change their voice phone number"
         },

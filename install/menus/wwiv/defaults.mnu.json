@@ -287,6 +287,23 @@
                 ]
             },
             {
+                "item_key": "O",
+                "item_text": "Personal info",
+                "visible": true,
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "user:personal_info",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
                 "item_key": "K",
                 "item_text": "Configure Menus",
                 "visible": true,

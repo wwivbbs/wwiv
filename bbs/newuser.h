@@ -27,6 +27,8 @@ void input_dataphone();
 void input_name();
 void input_realname();
 bool valid_phone(const std::string& phoneNumber);
+/** Returns true if name has at least a first and a last name. */
+bool containsFirstAndLastName(const std::string& name);
 void input_street();
 void input_city();
 void input_state();

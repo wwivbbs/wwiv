@@ -33,5 +33,7 @@ void modify_mailbox();
 void change_optional_lines();
 void change_email_address();
 void change_colors();
+/** Lets the user view and edit their address, phone and similar personal info. */
+void change_personal_info();
 
 #endif

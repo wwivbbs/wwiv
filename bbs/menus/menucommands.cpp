@@ -314,6 +314,14 @@ Runs a WWIVbasic Script
                                         input_callsign();
                                         a()->WriteCurrentUser();
                                       }));
+  m.emplace("user:personal_info",
+            MenuItem(R"(Allows the user to view and change their personal info:
+  real name, address, phone numbers and callsign.  Only the items that are
+  not Unused in wwivconfig's New User Registration settings are shown)",
+                     MENU_CAT_USER, [](MenuContext&) {
+                       change_personal_info();
+                       a()->WriteCurrentUser();
+                     }));
   m.emplace("user:editor", MenuItem(R"(Allows the user to change their default editor)",
                                     MENU_CAT_USER, [](MenuContext&) {
                                       select_editor();
