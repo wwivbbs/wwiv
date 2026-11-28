@@ -37,6 +37,12 @@ std::string to_string(const std::vector<wwiv::sdk::wwivd_matrix_entry_t>& elemen
 std::filesystem::path node_file(const wwiv::sdk::Config& config, ConnectionType ct,
                                 int node_number);
 std::string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params);
+/**
+ * Returns the ANSI sequence to change from color current to c (or nothing
+ * when ansi is false), and sets current to c. Each caller has their own
+ * current color.
+ */
+std::string Color(int c, bool ansi, int& current);
 
 class ConnectionHandler {
 public:
