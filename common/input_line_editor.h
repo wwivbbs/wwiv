@@ -69,8 +69,12 @@ public:
   [[nodiscard]] int width() const noexcept { return width_; }
   [[nodiscard]] int offset() const noexcept { return offset_; }
   [[nodiscard]] bool insert() const noexcept { return insert_; }
-  /** The cell the cursor is in. */
-  [[nodiscard]] int cursor_cell() const noexcept { return pos_ - offset_; }
+  // The cell the cursor is in. When the text fills the field, the cursor
+  // sits on the last character (there is no empty cell after it).
+  [[nodiscard]] int cursor_cell() const noexcept {
+    const auto cell = pos_ - offset_;
+    return cell < width_ ? cell : width_ - 1;
+  }
   /** true when text is hidden to the left of the field. */
   [[nodiscard]] bool more_left() const noexcept;
   /** true when text is hidden to the right of the field. */

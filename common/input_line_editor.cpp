@@ -56,6 +56,15 @@ bool InputLineEditor::more_right() const noexcept { return more_right_at(offset_
 // jump to the right, up to a third of the field may be empty past the end of
 // the text.
 void InputLineEditor::scroll_to_cursor() {
+  // When the text fills the field and can't grow (width == max_length),
+  // keep every character visible and put the cursor on the last one.
+  // Reserving a slack cell after the text -- correct when the field is a
+  // viewport that can still grow -- would hide the first character, so a
+  // 2-character state field showed only the second letter.
+  if (len() < width_ || (len() <= width_ && !can_grow())) {
+    offset_ = 0;
+    return;
+  }
   // With arrows the jump must be at least 1 (to get the cursor off the left
   // arrow); without them, fields under 3 cells can't jump at all.
   const auto jump = arrows() ? std::max(1, width_ / 3) : width_ / 3;
@@ -102,8 +111,12 @@ void InputLineEditor::home() {
 
 void InputLineEditor::end() {
   pos_ = len();
-  // Show as much text as fits, with the cursor in the last cell.
-  offset_ = std::max(0, len() - (width_ - 1));
+  if (len() < width_ || (len() <= width_ && !can_grow())) {
+    offset_ = 0;
+  } else {
+    // Show as much text as fits, with the cursor in the last cell.
+    offset_ = len() - (width_ - 1);
+  }
   scroll_to_cursor();
 }
 
@@ -123,7 +136,9 @@ void InputLineEditor::toggle_insert() {
 // After text is deleted, scrolls back so no text stays hidden to the left
 // that would now fit.
 void InputLineEditor::pull_back() {
-  offset_ = std::min(offset_, std::max(0, len() - (width_ - 1)));
+  const auto max_off =
+      (len() < width_ || (len() <= width_ && !can_grow())) ? 0 : len() - (width_ - 1);
+  offset_ = std::min(offset_, std::max(0, max_off));
 }
 
 void InputLineEditor::del() {

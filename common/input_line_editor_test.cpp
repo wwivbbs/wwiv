@@ -272,6 +272,44 @@ TEST(InputLineEditorTest, NarrowField_NoArrows) {
   expect_cursor_ok(ed);
 }
 
+// When text exactly fills the field, do not scroll the first character off
+// to reserve a cursor cell after the text. That made 2- and 3-character
+// fields (state, country) look like each new key overwrote the last.
+TEST(InputLineEditorTest, ExactFit_TwoCharState) {
+  InputLineEditor ed("", 2, 2, InputMode::UPPER, true);
+  type(ed, "c");
+  EXPECT_EQ("C", ed.text());
+  EXPECT_EQ("C.", field(ed));
+  EXPECT_EQ(1, ed.cursor_cell());
+  EXPECT_EQ(0, ed.offset());
+  type(ed, "a");
+  EXPECT_EQ("CA", ed.text());
+  EXPECT_EQ("CA", field(ed));
+  EXPECT_EQ(1, ed.cursor_cell());
+  EXPECT_EQ(0, ed.offset());
+  EXPECT_FALSE(ed.more_left());
+  expect_cursor_ok(ed);
+}
+
+TEST(InputLineEditorTest, ExactFit_ThreeCharCountry) {
+  InputLineEditor ed("", 3, 3, InputMode::UPPER, true);
+  type(ed, "usa");
+  EXPECT_EQ("USA", ed.text());
+  EXPECT_EQ("USA", field(ed));
+  EXPECT_EQ(2, ed.cursor_cell());
+  EXPECT_EQ(0, ed.offset());
+  EXPECT_FALSE(ed.more_left());
+  expect_cursor_ok(ed);
+}
+
+TEST(InputLineEditorTest, ExactFit_OriginalTextFillsField) {
+  InputLineEditor ed("CA", 2, 2, InputMode::UPPER, true);
+  EXPECT_EQ("CA", field(ed));
+  EXPECT_EQ(1, ed.cursor_cell());
+  EXPECT_EQ(0, ed.offset());
+  expect_cursor_ok(ed);
+}
+
 TEST(InputLineEditorTest, ControlCharsIgnored) {
   InputLineEditor ed("", 20, 20, InputMode::MIXED, true);
   ed.type(7);
@@ -313,8 +351,11 @@ TEST(InputLineEditorTest, RandomKeys_InvariantsHold) {
             ASSERT_EQ(ed.text()[ed.offset() + c], cell.ch);
           }
         }
-        // Nothing stays hidden to the left once all the text fits.
+        // Nothing stays hidden to the left once all the text fits with room
+        // to spare. When size == width and the field can still grow, a slack
+        // cell is reserved (see ExactFit_* for the can't-grow case).
         if (static_cast<int>(ed.text().size()) < width) {
+          ASSERT_EQ(0, ed.offset()) << field(ed);
           ASSERT_FALSE(ed.more_left()) << field(ed);
         }
       }
