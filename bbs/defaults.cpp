@@ -53,6 +53,8 @@
 #include "sdk/files/dirs.h"
 #include "sdk/net/networks.h"
 
+#include <functional>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -224,6 +226,7 @@ static void print_cur_stat() {
                (a()->user()->has_flag(User::fullScreenReader) ? "Full-Screen" : "Traditional"));
   }
   bout.print("|#1I|#9) Internet Address  : |#2{}\r\n", inet_addr);
+  bout.pl("|#1O|#9) Personal info");
   bout.print("|#1K|#9) Configure Menus                      ");
   if (okansi()) {
     bout.print("|#1L|#9) ListPlus Enabled   : |#2{}", YesNoString(a()->user()->data.lp_options & cfl_enable));
@@ -793,6 +796,277 @@ void change_email_address() {
   }
 }
 
+/**
+ * Prompts for a text value that starts out as the current value, so Enter keeps it.
+ * Returns std::nullopt if the caller hung up.  An empty value is only accepted
+ * when the field is not required.
+ */
+static std::optional<std::string> edit_personal_text(const std::string& prompt,
+                                                     const std::string& current, int max_len,
+                                                     bool upper, bool required,
+                                                     const std::string& required_msg) {
+  while (!a()->sess().hangup()) {
+    bout.nl();
+    bout.outstr(prompt);
+    bout.outstr("|#2:");
+    const auto s = upper ? bin.input_upper(current, max_len) : bin.input_proper(current, max_len);
+    if (a()->sess().hangup()) {
+      break;
+    }
+    if (!s.empty() || !required) {
+      return s;
+    }
+    bout.nl();
+    bout.outstr(required_msg);
+  }
+  return std::nullopt;
+}
+
+/**
+ * Prompts for a phone number that starts out as the current value, so Enter keeps it.
+ * Returns std::nullopt if the caller hung up.  An empty value is only accepted
+ * when the field is not required.
+ */
+static std::optional<std::string> edit_personal_phone(const std::string& prompt,
+                                                      const std::string& current, bool required) {
+  while (!a()->sess().hangup()) {
+    bout.nl();
+    bout.outstr(prompt);
+    const auto s = bin.input_phonenumber(current, 12);
+    if (a()->sess().hangup()) {
+      break;
+    }
+    if (s.empty() && !required) {
+      return s;
+    }
+    if (!s.empty() && valid_phone(s)) {
+      return s;
+    }
+    bout.nl();
+    bout.outstr("|#6Please enter a valid phone number in the correct format.\r\n");
+  }
+  return std::nullopt;
+}
+
+namespace {
+
+/** One line of the personal info menu. */
+struct PersonalInfoItem {
+  std::string label;
+  // Returns the current value of the field.
+  std::function<std::string()> value;
+  // Edits the field and returns true if the caller changed it.  Must leave the
+  // user record alone if the caller hangs up.
+  std::function<bool()> edit;
+};
+
+bool is_required(newuser_item_type_t t) { return t == newuser_item_type_t::required; }
+
+bool is_enabled(newuser_item_type_t t) { return t != newuser_item_type_t::unused; }
+
+/**
+ * Stores v using set if the caller finished the edit and the value is different from
+ * current.  Returns true if it was stored.
+ */
+bool store_if_changed(const std::optional<std::string>& v, const std::string& current,
+                      void (User::*set)(const std::string&)) {
+  if (!v.has_value() || *v == current) {
+    return false;
+  }
+  (a()->user()->*set)(*v);
+  return true;
+}
+
+bool edit_real_name() {
+  const auto& nc = a()->config()->newuser_config();
+  const auto current = a()->user()->real_name_or_empty();
+  const auto required = is_required(nc.use_real_name);
+  const auto msg = "|#6Sorry, you must enter your FULL real name.\r\n";
+  while (!a()->sess().hangup()) {
+    const auto v =
+        edit_personal_text("|#3Enter your FULL real name.\r\n", current, 30, false, required, msg);
+    if (v.has_value() && required && is_required(nc.first_last_name_required) &&
+        !containsFirstAndLastName(*v)) {
+      bout.nl();
+      bout.outstr(msg);
+      continue;
+    }
+    return store_if_changed(v, current, &User::real_name);
+  }
+  return false;
+}
+
+bool edit_street() {
+  const auto current = a()->user()->street();
+  const auto required = is_required(a()->config()->newuser_config().use_address_street);
+  return store_if_changed(
+      edit_personal_text("|#3Enter your street address.\r\n", current, 30, false, required,
+                         "|#6I'm sorry, you must enter your street address.\r\n"),
+      current, &User::street);
+}
+
+bool edit_city() {
+  const auto current = a()->user()->city();
+  const auto required = is_required(a()->config()->newuser_config().use_address_city_state);
+  return store_if_changed(edit_personal_text("|#3Enter your city (i.e San Francisco). \r\n",
+                                             current, 30, false, required,
+                                             "|#6I'm sorry, you must enter your city.\r\n"),
+                          current, &User::city);
+}
+
+bool edit_state() {
+  const auto current = a()->user()->state();
+  const auto required = is_required(a()->config()->newuser_config().use_address_city_state);
+  const std::string prompt = iequals(a()->user()->country(), "CAN")
+                                 ? "|#3Enter your province (i.e. QC).\r\n"
+                                 : "|#3Enter your state (i.e. CA). \r\n";
+  return store_if_changed(
+      edit_personal_text(prompt, current, 2, true, required,
+                         "|#6I'm sorry, you must enter your state or province.\r\n"),
+      current, &User::state);
+}
+
+bool edit_zip_code() {
+  const auto current = a()->user()->zip_code();
+  const auto required = is_required(a()->config()->newuser_config().use_address_zipcode);
+  const auto usa = iequals(a()->user()->country(), "USA");
+  const std::string prompt =
+      usa ? "|#3Enter your zipcode as #####-#### \r\n" : "|#3Enter your postal code as L#L-#L#\r\n";
+  return store_if_changed(edit_personal_text(prompt, current, usa ? 10 : 7, true, required,
+                                             "|#6I'm sorry, you must enter your zipcode.\r\n"),
+                          current, &User::zip_code);
+}
+
+bool edit_country() {
+  const auto& nc = a()->config()->newuser_config();
+  const auto current = a()->user()->country();
+  auto v = edit_personal_text("|#9Enter your country.  Hit Enter for \"|#1USA|#9\"\r\n", current, 3,
+                              true, false, "");
+  // Same as new user signup: an empty country means USA.
+  if (v.has_value() && v->empty()) {
+    v = "USA";
+  }
+  if (!store_if_changed(v, current, &User::country)) {
+    return false;
+  }
+  // The state and postal code formats depend on the country.
+  if (is_enabled(nc.use_address_zipcode) || is_enabled(nc.use_address_city_state)) {
+    bout.nl();
+    bout.outstr(
+        "|#9Your country changed, please check your state or province and postal code.\r\n");
+    bout.pausescr();
+  }
+  return true;
+}
+
+bool edit_voice_phone() {
+  const auto current = a()->user()->voice_phone();
+  const auto required = is_required(a()->config()->newuser_config().use_voice_phone);
+  return store_if_changed(
+      edit_personal_phone("|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:",
+                          current, required),
+      current, &User::voice_phone);
+}
+
+bool edit_data_phone() {
+  const auto current = a()->user()->data_phone();
+  const auto required = is_required(a()->config()->newuser_config().use_data_phone);
+  const auto voice = a()->user()->voice_phone();
+  // Same as new user signup: a required data phone defaults to the voice phone.
+  const auto prompt = required ? fmt::format("|#9Enter your DATA phone no. in the form. \r\n|#9 "
+                                             "###-###-#### - Press Enter to use [{}].\r\n|#2:",
+                                             voice)
+                               : std::string("|#9Enter your DATA phone no. in the form. \r\n|#9 "
+                                             "###-###-####\r\n|#2:");
+  auto v = edit_personal_phone(prompt, current, false);
+  if (required && v.has_value() && v->empty()) {
+    v = voice;
+  }
+  if (required && v.has_value() && v->empty()) {
+    return false;
+  }
+  return store_if_changed(v, current, &User::data_phone);
+}
+
+bool edit_callsign() {
+  const auto current = a()->user()->callsign();
+  const auto required = is_required(a()->config()->newuser_config().use_callsign);
+  return store_if_changed(edit_personal_text("|#3Enter your amateur radio callsign.\r\n", current,
+                                             6, true, required,
+                                             "|#6I'm sorry, you must enter your callsign.\r\n"),
+                          current, &User::callsign);
+}
+
+} // namespace
+
+void change_personal_info() {
+  const auto& nc = a()->config()->newuser_config();
+
+  // The same items, and the same Required/Optional/Unused settings, as new user
+  // registration.  Birthday and gender are left out on purpose, see the patch notes.
+  std::vector<PersonalInfoItem> items;
+  // Same rule as input_realname(): the real name is only separate from the
+  // handle when aliases are allowed.
+  if (is_enabled(nc.use_real_name) && (a()->config()->sysconfig_flags() & sysconfig_allow_alias)) {
+    items.push_back(
+        {"Real name", [] { return a()->user()->real_name_or_empty(); }, edit_real_name});
+  }
+  if (is_enabled(nc.use_address_street)) {
+    items.push_back({"Street address", [] { return a()->user()->street(); }, edit_street});
+  }
+  if (is_enabled(nc.use_address_city_state)) {
+    items.push_back({"City", [] { return a()->user()->city(); }, edit_city});
+    items.push_back({"State or province", [] { return a()->user()->state(); }, edit_state});
+  }
+  if (is_enabled(nc.use_address_zipcode)) {
+    items.push_back({"ZIP or postal code", [] { return a()->user()->zip_code(); }, edit_zip_code});
+  }
+  if (is_enabled(nc.use_address_country)) {
+    items.push_back({"Country", [] { return a()->user()->country(); }, edit_country});
+  }
+  if (is_enabled(nc.use_voice_phone)) {
+    items.push_back({"Voice phone", [] { return a()->user()->voice_phone(); }, edit_voice_phone});
+  }
+  if (is_enabled(nc.use_data_phone)) {
+    items.push_back({"Data phone", [] { return a()->user()->data_phone(); }, edit_data_phone});
+  }
+  if (is_enabled(nc.use_callsign)) {
+    items.push_back({"Callsign", [] { return a()->user()->callsign(); }, edit_callsign});
+  }
+
+  if (items.empty()) {
+    bout.nl();
+    bout.outstr("|#6This system does not ask for any personal information.\r\n\n");
+    bout.pausescr();
+    return;
+  }
+
+  auto done = false;
+  do {
+    bout.cls();
+    bout.litebar("Personal Information");
+    std::string allowed("Q");
+    for (auto i = 0; i < size_int(items); i++) {
+      const auto value = items[i].value();
+      bout.print("|#1{}|#9) {:<19}: |#2{}\r\n", i + 1, items[i].label,
+                 value.empty() ? "|#6(not set)" : value);
+      allowed.push_back(static_cast<char>('1' + i));
+    }
+    bout.nl();
+    bout.outstr("|#9Item to change or [|#1Q|#9] to quit: |#0");
+    const auto ch = onek(allowed);
+    if (a()->sess().hangup() || ch == 'Q') {
+      done = true;
+      continue;
+    }
+    const auto& item = items.at(ch - '1');
+    if (item.edit()) {
+      a()->WriteCurrentUser();
+      sysoplog(fmt::format("Changed personal info: {}", item.label));
+    }
+  } while (!done && !a()->sess().hangup());
+}
+
 void defaults(bool& need_menu_reload) {
   auto done = false;
   do {
@@ -803,7 +1077,7 @@ void defaults(bool& need_menu_reload) {
     }
     bout.nl();
     bout.outstr("|#9Defaults: ");
-    std::string allowable = "Q?1234567BCDIKMNTUW";
+    std::string allowable = "Q?1234567BCDIKMNOTUW";
     if (okansi()) {
       allowable.append("89ALS");
       if (a()->fullscreen_read_prompt()) {
@@ -882,6 +1156,9 @@ void defaults(bool& need_menu_reload) {
       break;
     case 'N':
       wwiv::bbs::qwk::qwk_config_user();
+      break;
+    case 'O':
+      change_personal_info();
       break;
     case 'S':
       a()->user()->toggle_flag(User::clearScreen);

@@ -17,6 +17,13 @@ Legend (starting with 5.3)
 
 What's New in WWIV 5.10.0 (2026)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ Users can now view and change their real name, address, phone numbers and
+  callsign from Defaults with the new O) Personal info item. It shows only
+  the items that aren't Unused in wwivconfig's New User Registration
+  settings, and doesn't let a user blank an item that is Required. The
+  built-in Defaults screen has it already. If your Defaults is the menu
+  (menus/<menuset>/defaults.mnu.json), add an item with key O and action
+  user:personal_info (or copy the new defaults.mnu.json and defaults.msg).
 ! wwivd now hangs up every caller when it stops (SIGTERM, Ctrl-C, or
   systemctl stop) and waits up to 10 seconds for each node to log its
   caller off, then kills any node still running. On Linux the BBS treats

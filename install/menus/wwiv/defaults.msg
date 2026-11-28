@@ -9,6 +9,7 @@
 |#1B|#9) Optional lines    : |#2|{user.optional_lines}                |#1C|#9) Conferencing      : |#2|{yesno "user.conferencing == true"}
 |#1D|#9) Show Hidden Lines : |#2|{yesno "user.show_controlcodes == true", "<16"} |#1G|#9) Message Reader    : |#2|{if "user.fs_reader == true", "Full-Screen", "Traditional"}
 |#1I|#9) Internet Address  : |#2|{user.email}
+|#1O|#9) Personal info
 |#1K|#9) Configure Menus
 |#1M|#9) Allow user msgs   : |#2|{yesno "user.ignore_msgs == false", "<16"} |#1N|#9) Configure QWK
 |#1S|#9) Cls Between Msgs? : |#2|{yesno "user.clear_screen == true", "<16"} |#1T|#9) 12hr or 24hr clock: |#2|{if "user.twentyfour_clock == true", "24hr", "12hr"}
