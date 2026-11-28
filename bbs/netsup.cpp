@@ -294,7 +294,8 @@ std::string gate_msg_from_name(net_header_rec& nh, std::string nm, bool from_thi
   if (from_this_system) {
     const auto at = nm.rfind('@');
     if (at == std::string::npos) {
-      return nm;
+      // A name from this system with no system number, like "SYSOP #1".
+      return StrCat(nm, "\r\n");
     }
     // Replace the system number after the last '@' with ours.
     auto rest = at + 1;
@@ -357,9 +358,11 @@ std::string gate_msg_from_name(net_header_rec& nh, std::string nm, bool from_thi
 }
 
 void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
-              const std::string& subtype_or_author, std::vector<uint16_t> list, int nFromNetworkNumber) {
-  const auto& from_net = a()->nets()[nFromNetworkNumber];
+              const std::string& subtype_or_author, std::vector<uint16_t> list,
+              int nFromNetworkNumber) {
   const auto& to_net = a()->nets()[nNetNumber];
+  // -1 is a message from this system, which came in on no network.
+  const auto* from_net = nFromNetworkNumber >= 0 ? &a()->nets()[nFromNetworkNumber] : nullptr;
 
   if (strlen(messageText) >= 80) {
     return;
@@ -381,8 +384,10 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
     ntl = ntl - static_cast<uint16_t>(ss - messageText);
     messageText = ss;
 
-    const auto from_this_system = nFromNetworkNumber == -1 || nh->fromsys == from_net.sysnum;
-    const auto newname = gate_msg_from_name(*nh, nm, from_this_system, from_net, to_net.sysnum);
+    const auto from_this_system = !from_net || nh->fromsys == from_net->sysnum;
+    // from_net is only used for a message from another system.
+    const auto newname =
+        gate_msg_from_name(*nh, nm, from_this_system, from_net ? *from_net : to_net, to_net.sysnum);
 
     nh->length += size_uint32(newname);
     if (nh->main_type == main_type_email_name || nh->main_type == main_type_new_post) {

@@ -49,7 +49,7 @@ TEST_F(GateMsgFromNameTest, FromThisSystem_KeepsTextAfterSystemNumber) {
 }
 
 TEST_F(GateMsgFromNameTest, FromThisSystem_NoAt) {
-  EXPECT_EQ("SYSOP", gate_msg_from_name(nh, "SYSOP", true, wwivnet, kToSysnum));
+  EXPECT_EQ("SYSOP\r\n", gate_msg_from_name(nh, "SYSOP", true, wwivnet, kToSysnum));
   EXPECT_EQ(100, nh.fromsys);
 }
 

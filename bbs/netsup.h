@@ -33,7 +33,9 @@ void cleanup_net();
  * Builds the "from" name line written when gating a message from from_net to
  * the network whose system number is to_sysnum, and updates nh.fromsys and
  * nh.fromuser to match. nm is the message's original name line, without its
- * "\r\n". from_this_system is true when the message originated on this system.
+ * "\r\n". from_this_system is true when the message originated on this system;
+ * from_net is then not used. The result ends in "\r\n", except for a name
+ * from an internet or news gateway.
  */
 std::string gate_msg_from_name(net_header_rec& nh, std::string nm, bool from_this_system,
                                const wwiv::sdk::net::Network& from_net, uint16_t to_sysnum);

@@ -89,6 +89,7 @@ set(test_sources
   "names_test.cpp"
   "phone_numbers_test.cpp"
   "qscan_test.cpp"
+  "ssm_test.cpp"
   "subxtr_test.cpp"
   "user_test.cpp"
 
