@@ -31,6 +31,8 @@
 #include "wwivd/connection_data.h"
 #include "wwivd/nets.h"
 #include "wwivd/node_manager.h"
+#include "wwivd/sessions.h"
+#include "wwivd/signals.h"
 #include "wwivd/wwivd_http.h"
 #include "wwivd/wwivd_non_http.h"
 #include <atomic>
@@ -67,9 +69,6 @@ using namespace wwiv::os;
 #endif // DELETE
 
 namespace wwiv::wwivd {
-
-extern std::atomic<bool> need_to_exit;
-extern std::atomic<bool> need_to_reload_config;
 
 static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
   // Delete telnet/SSH node semaphore files.
@@ -143,16 +142,23 @@ int Main(CommandLine& cmdline) {
     data.auto_blocker_ = std::make_shared<AutoBlocker>(data.bad_ips_, c.blocking, config.datadir(), clock);
   }
 
+  // Every thread that uses the locals above runs on sessions. It's declared
+  // after them, so even on an exception it is stopped (hanging up every
+  // caller and waiting for every thread) before they go away.
+  Sessions sessions;
+  data.sessions = &sessions;
+
   auto telnet_or_ssh_fn = [&](accepted_socket_t r) {
-    std::thread client(HandleConnection, std::make_unique<ConnectionHandler>(data, r));
-    client.detach();
+    // The handler owns the socket from here, so it's closed if the thread
+    // isn't started.
+    sessions.start([h = std::make_unique<ConnectionHandler>(data, r)] { h->HandleConnection(); });
   };
   auto binkp_fn = [&](accepted_socket_t r) {
-    std::thread client(HandleBinkPConnection, std::make_unique<ConnectionHandler>(data, r));
-    client.detach();
+    sessions.start(
+        [h = std::make_unique<ConnectionHandler>(data, r)] { h->HandleBinkPConnection(); });
   };
 
-  // Short select timeout so a Ctrl-C (Windows sets need_to_exit from the
+  // Short select timeout so a Ctrl-C (Windows asks to exit from the
   // console handler without interrupting select) exits within a second.
   SocketSet sockets(std::chrono::seconds(1));
   if (c.telnet_port > 0) {
@@ -166,12 +172,10 @@ int Main(CommandLine& cmdline) {
   }
 
   SwitchToNonRootUser(wwiv_user);
-  need_to_exit.store(false);
-  need_to_reload_config.store(false);
 
   // Do network callouts if enabled.
   auto& nodemgr = data.nodes->at("BINKP");
-  do_wwivd_callouts(config, c, nodemgr);
+  do_wwivd_callouts(config, c, nodemgr, sessions);
 
   std::unique_ptr<httplib::Server> svr;
   std::thread srv_thread;
@@ -195,15 +199,18 @@ int Main(CommandLine& cmdline) {
   }
 
   int result = EXIT_SUCCESS;
-  if (!sockets.Run(need_to_exit)) {
+  if (!sockets.Run(exit_flag())) {
     LOG(INFO) << "Error accepting client socket. " << errno;
     result = 2;
   }
+  LOG(INFO) << "wwivd is shutting down; hanging up every caller.";
 
   if (svr) {
     svr->stop();
     srv_thread.join();
   }
+  sessions.stop();
+  LOG(INFO) << "All sessions have ended.";
 
   return result;
 }

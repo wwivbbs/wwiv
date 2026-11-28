@@ -346,7 +346,8 @@ void BlockingHandler(ConnectionData* data, const httplib::Request&, httplib::Res
   // Add auto-blocked IPs
   std::vector<ip_entry_t> auto_blocked;
   if (data->auto_blocker_) {
-    const auto& auto_blocked_map = data->auto_blocker_->auto_blocked();
+    // A copy: connection threads keep changing the live one.
+    const auto auto_blocked_map = data->auto_blocker_->auto_blocked();
     const auto now = std::chrono::system_clock::now();
     const auto now_time_t = std::chrono::system_clock::to_time_t(now);
 

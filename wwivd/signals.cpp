@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2022, WWIV Software Services             */
+/*                          WWIV BBS Software                             */
+/*             Copyright (C)2026, WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,15 +15,23 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_BBS_BASIC_WWIV_DATA_H
-#define INCLUDED_BBS_BASIC_WWIV_DATA_H
+#include "wwivd/signals.h"
 
-struct mb_interpreter_t;
+#include <atomic>
 
-namespace wwiv::bbs::basic {
+namespace wwiv::wwivd {
 
-bool RegisterNamespaceData(mb_interpreter_t* basi);
+// Lock-free atomics, so the handlers may touch them.
+static std::atomic<bool> exit_requested{false};
+static std::atomic<bool> reload_requested{false};
+static_assert(std::atomic<bool>::is_always_lock_free);
 
-}
+bool request_exit() noexcept { return exit_requested.exchange(true); }
 
-#endif
+std::atomic<bool>& exit_flag() noexcept { return exit_requested; }
+
+void request_reload() noexcept { reload_requested.store(true); }
+
+bool take_reload_request() noexcept { return reload_requested.exchange(false); }
+
+} // namespace wwiv::wwivd

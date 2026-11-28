@@ -30,9 +30,12 @@
 #include "core/strings.h"
 #include "sdk/wwivd_config.h"
 #include "wwivd/node_manager.h"
+#include "wwivd/sessions.h"
+#include "wwivd/signals.h"
 
 #include <atomic>
 #include <iostream>
+#include <mutex>
 #include <csignal>
 #include <string>
 #include <process.h>
@@ -43,12 +46,13 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-namespace wwiv::wwivd {
-
-extern std::atomic<bool> need_to_exit;
-} // namespace wwiv
-
 using namespace wwiv::wwivd;
+
+void wwiv::wwivd::HangupChild(child_process_t) {}
+
+void wwiv::wwivd::KillChild(child_process_t child) {
+  DosKillProcess(DKP_PROCESSTREE, static_cast<PID>(child));
+}
 
 void signal_handler(int mysignal) {
   switch (mysignal) {
@@ -62,7 +66,7 @@ void signal_handler(int mysignal) {
   // Interrupts
   case SIGINT: {
     std::cerr << "SIGINT: " << mysignal << std::endl;
-    need_to_exit.store(true);
+    request_exit();
     // call default handler
   } break;
   default: {
@@ -85,7 +89,8 @@ void SwitchToNonRootUser(const std::string&) {
 
 bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node_manager,
                         const std::string& cmd, const std::string& pid, int node_number,
-                        SocketHandle sock) {
+                        SocketHandle sock, const std::filesystem::path& working_dir,
+                        Sessions* sessions) {
 
   LOG(INFO) << pid << "Invoking Command Line (Win32):" << cmd;
 
@@ -130,17 +135,37 @@ bool ExecCommandAndWait(const wwivd_config_t& wc, wwiv::wwivd::NodeManager& node
   data.SessionType = SSF_TYPE_WINDOWABLEVIO;
 
   ULONG ulSid = 0, ulPid = 0;
-  APIRET arc = DosStartSession(&data, &ulSid, &ulPid);
+  APIRET arc;
+  {
+    // DosStartSession has no directory argument: the child starts in
+    // ours. Other threads launch children too, so change it only while
+    // holding this lock, and put it back before letting go.
+    static std::mutex chdir_mu;
+    std::lock_guard lock(chdir_mu);
+    const auto saved_dir = File::current_directory();
+    if (!working_dir.empty()) {
+      File::set_current_directory(working_dir);
+    }
+    arc = DosStartSession(&data, &ulSid, &ulPid);
+    if (!working_dir.empty()) {
+      File::set_current_directory(saved_dir);
+    }
+  }
   LOG(INFO) << "DosStartSession ret: " << arc << "; child pid: " << ulPid;
   int child_pid = ulPid;
 
   RESULTCODES code;  // Result code for the child process
   PID pidOut = child_pid;
   node_manager.set_pid(node_number, child_pid);
-
+  if (sessions) {
+    sessions->add_child(child_pid);
+  }
 
   if(APIRET rc = DosWaitChild(DCWA_PROCESS, DCWW_WAIT, &code, &pidOut, child_pid); rc != NO_ERROR) {
     LOG(ERROR) << "DosWaitChild failed: Error: " << rc;
+  }
+  if (sessions) {
+    sessions->remove_child(child_pid);
   }
 
   // We're done with this socket.

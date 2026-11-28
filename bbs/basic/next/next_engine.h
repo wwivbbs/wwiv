@@ -18,8 +18,6 @@
 #ifndef INCLUDED_BBS_BASIC_NEXT_NEXT_ENGINE_H
 #define INCLUDED_BBS_BASIC_NEXT_NEXT_ENGINE_H
 
-#include "bbs/basic/script_engine.h"
-
 #include <functional>
 #include <memory>
 #include <string>
@@ -28,15 +26,26 @@ namespace wwivbasic {
 class Interpreter;
 }
 
+namespace wwiv::common {
+class Context;
+class Input;
+class Output;
+} // namespace wwiv::common
+
+namespace wwiv::sdk {
+class Config;
+}
+
 namespace wwiv::bbs::basic {
 
 // Runs scripts on wwivbasic, with a BbsConsole over bout/bin and the wwiv.*
-// modules (wwiv_bindings.h). Built only with WWIV_WWIVBASIC_NEXT.
+// modules (wwiv_bindings.h). Built only with WWIV_WWIVBASIC. With bbs --debug,
+// each script waits for a debugger to attach (wwivbasic/docs/DEBUGGER.md).
 class FileBase;
 class MessageBase;
 class UserBase;
 
-class NextEngine final : public ScriptEngine {
+class NextEngine final {
 public:
   // Called with each script's interpreter after the wwiv.* modules are added
   // and before the script runs. Tests use it to add an ASSERT module.
@@ -44,10 +53,14 @@ public:
 
   NextEngine(common::Input& in, common::Output& out, const sdk::Config& config,
              common::Context* ctx, setup_fn on_setup = {});
-  ~NextEngine() override;
+  ~NextEngine();
+  NextEngine(const NextEngine&) = delete;
+  NextEngine& operator=(const NextEngine&) = delete;
 
-  bool RunScript(const std::string& script_name) override;
-  bool RunScript(const std::string& module, const std::string& text) override;
+  // Runs the script scriptdir/script_name.
+  bool RunScript(const std::string& script_name);
+  // Runs script text as the module named module.
+  bool RunScript(const std::string& module, const std::string& text);
 
   // What wwiv.msg reads. Without one, scripts have no wwiv.msg module.
   void set_message_base(std::unique_ptr<MessageBase> msgs);

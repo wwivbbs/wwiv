@@ -1,20 +1,22 @@
 # wwivbasic
 
 A BASIC interpreter for WWIV scripts, written in C++23 on top of
-an ANTLR 4 grammar. It is intended to replace the my_basic interpreter that WWIV uses today.
-Most existing WWIVbasic scripts should run unchanged.
+an ANTLR 4 grammar. It replaced my_basic, the interpreter WWIV used before; most WWIVbasic
+scripts written for my_basic run unchanged.
 
 ## Status
 
-Built with WWIV by default (`WWIV_WWIVBASIC_NEXT`, off on OS/2), but WWIV still runs scripts
-on my_basic unless the sysop turns on "Use New Engine" in wwivconfig's scripting settings (or
-`bbs --basic_engine=next`). See [docs/PLAN.md](docs/PLAN.md) for the milestones.
+WWIV's only BASIC engine, built by default (`WWIV_WWIVBASIC`; off on OS/2, which has no ANTLR
+runtime, so the BBS there can't run scripts). See [docs/PLAN.md](docs/PLAN.md) for the
+milestones, [docs/BINDINGS.md](docs/BINDINGS.md) for the `wwiv.*` modules, and
+[docs/DEBUGGER.md](docs/DEBUGGER.md) for debugging scripts.
 
 - Done: build and test baseline (M0), parsing the existing WWIV scripts (M1), lists, imports
   and stub `wwiv.*` modules so those scripts run (M2), and the embedding API with object values
   and member access (M3).
-  Running inside the BBS with the `wwiv.*` modules as bindings (M4).
-- Next: SDK bindings such as messages and users (M5).
+  Running inside the BBS with the `wwiv.*` modules as bindings (M4), SDK bindings for
+  messages, files and users (M5), full-screen UIs (M5b), and the debugger, replacing my_basic
+  (M6).
 
 wwivbasic was developed in its own repository (github.com/wwiv/wwivbasic, now archived) and
 moved here at the start of M4.
@@ -43,8 +45,8 @@ print "count: ", count
 
 ## Building
 
-wwivbasic builds as part of WWIV when `WWIV_WWIVBASIC_NEXT` is on (the default except on
-OS/2; pass `-DWWIV_WWIVBASIC_NEXT=OFF` to skip it). That also adds the
+wwivbasic builds as part of WWIV when `WWIV_WWIVBASIC` is on (the default except on
+OS/2; pass `-DWWIV_WWIVBASIC=OFF` to skip it, and the BBS can't run scripts). That also adds the
 `wwivbasic` feature in WWIV's `vcpkg.json`, which installs the ANTLR runtime. From the top of
 the WWIV tree:
 

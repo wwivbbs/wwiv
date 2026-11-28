@@ -37,13 +37,13 @@
 #include "bbs/subedit.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
+#include "bbs/hangup_signal.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/tag.h"
 #include "bbs/wfc.h"
 #include "bbs/wqscn.h"
 #include "bbs/basic/basic.h"
-#include "bbs/basic/script_engine.h"
 #include "bbs/menus/mainmenu.h"
 #include "bbs/menus/printcommands.h"
 #include "common/datetime.h"
@@ -193,6 +193,7 @@ Application::Application(LocalIO* localIO)
 
 Application::~Application() {
   if (comm_ && sess().ok_modem_stuff()) {
+    wwiv::bbs::StopHangupOnSignal();
     comm_->close(false);
     comm_.reset(nullptr);
   }
@@ -299,6 +300,11 @@ void Application::CreateComm(unsigned int nHandle, unsigned int /* parent_pid*/,
   }
   bout.SetComm(comm_.get());
   bin.SetComm(comm_.get());
+  if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
+    // So wwivd's shutdown (SIGHUP) or systemd's (SIGTERM) logs the caller
+    // off instead of killing the BBS.
+    wwiv::bbs::HangupOnSignal(static_cast<int>(nHandle));
+  }
 }
 
 void Application::SetCommForTest(RemoteIO* remote_io) {
@@ -853,9 +859,9 @@ int Application::Run(int argc, char* argv[]) {
   cmdline.add_argument({"sysop_cmd", 'c', "Executes a sysop command (b/c/d)", ""});
   cmdline.add_argument(BooleanCommandLineArgument{"debug", 'd', "Debug WWIVbasic Scripts", false});
   cmdline.add_argument({"debug_port", "Debug WWIVbasic Script Port Number", "9948"});
-  cmdline.add_argument({"basic_engine",
-                        "WWIVbasic engine to run scripts on (legacy or next); overrides config",
-                        ""});
+  // Chose the BASIC engine while there were two; accepted and ignored, so
+  // command lines that still pass it keep working.
+  cmdline.add_argument({"basic_engine", "Ignored (wwivbasic is the only BASIC engine)", ""});
   cmdline.add_argument(
       BooleanCommandLineArgument{"beginday", 'e', "Load for beginday event only", false});
   cmdline.add_argument({"handle", 'h', "Socket handle", "0"});
@@ -923,18 +929,8 @@ int Application::Run(int argc, char* argv[]) {
     auto debug_port = cmdline.iarg("debug_port");
     sess().debug_wwivbasic_port(debug_port);
   }
-  if (const auto engine = cmdline.sarg("basic_engine"); !engine.empty()) {
-    const auto e = wwiv::bbs::basic::to_script_engine_t(engine);
-    if (!e) {
-      std::clog << "Unknown --basic_engine '" << engine << "' (use legacy or next)" << std::endl;
-      return errorlevel_;
-    }
-    if (!wwiv::bbs::basic::script_engine_available(e.value())) {
-      std::clog << "--basic_engine=" << engine
-                << ": this build doesn't include that engine (WWIV_WWIVBASIC_NEXT)" << std::endl;
-      return errorlevel_;
-    }
-    sess().basic_engine(wwiv::bbs::basic::to_string(e.value()));
+  if (!cmdline.sarg("basic_engine").empty()) {
+    LOG(WARNING) << "Ignoring --basic_engine: wwivbasic is the only BASIC engine.";
   }
 
   auto this_usernum_from_commandline = static_cast<uint16_t>(cmdline.iarg("user_num"));
@@ -1469,6 +1465,8 @@ void Application::Hangup(hangup_type_t t) {
     return;
   }
   sess().hangup(true);
+  // Before the socket is closed and its number can be reused.
+  wwiv::bbs::StopHangupOnSignal();
   // Force close the socket to stop it from waiting for the caller.
   // TODO - See if this should happen somewhere else.
   comm_->close(false);

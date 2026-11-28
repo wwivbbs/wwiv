@@ -22,6 +22,7 @@
 #include "sdk/wwivd_config.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
+#include "wwivd/sessions.h"
 #include <filesystem>
 #include <map>
 #include <memory>
@@ -36,6 +37,12 @@ std::string to_string(const std::vector<wwiv::sdk::wwivd_matrix_entry_t>& elemen
 std::filesystem::path node_file(const wwiv::sdk::Config& config, ConnectionType ct,
                                 int node_number);
 std::string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params);
+/**
+ * Returns the ANSI sequence to change from color current to c (or nothing
+ * when ansi is false), and sets current to c. Each caller has their own
+ * current color.
+ */
+std::string Color(int c, bool ansi, int& current);
 
 class ConnectionHandler {
 public:
@@ -65,14 +72,12 @@ private:
   /**
    * The caller's socket. This is the only owner: it is either moved into
    * the child launch (which closes it once the child has its own copy), or
-   * closed when the handler is destroyed.
+   * closed when the handler is destroyed. While wwivd reads and writes it,
+   * shutdown can hang it up.
    */
-  wwiv::core::SocketHandle sock_;
+  WatchedSocket sock_;
   int port_{0};
 };
-
-void HandleConnection(std::unique_ptr<ConnectionHandler> h);
-void HandleBinkPConnection(std::unique_ptr<ConnectionHandler> h);
 
 } // namespace
 

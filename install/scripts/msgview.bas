@@ -2,8 +2,7 @@
 ' A message viewer: lists the message areas you can read, the messages in
 ' an area, and reads them.
 '
-' A sample of the wwiv.msg and wwiv.screen modules. It needs the new BASIC
-' engine (bbs --basic_engine=next, or the engine setting in wwivconfig).
+' A sample of the wwiv.msg and wwiv.screen modules.
 '
 ' With ANSI it's full-screen: lightbar lists of the areas and messages, and a
 ' reader that scrolls. Without ANSI it's line by line.

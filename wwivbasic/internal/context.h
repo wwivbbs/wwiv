@@ -4,6 +4,7 @@
 
 #include "wwivbasic/internal/antlr.h"
 #include "wwivbasic/console.h"
+#include "wwivbasic/debug.h"
 #include "wwivbasic/module.h"
 #include "wwivbasic/value.h"
 #include "core/stl.h"
@@ -123,6 +124,39 @@ public:
       throw StopScript{};
     }
   }
+
+  // A function call or a file's top-level code that is running, for the
+  // debugger. frames.front() is the script's top-level code.
+  struct Frame {
+    // The function's name, or "" for a file's top-level code.
+    std::string function;
+    std::string file;
+    // The statement running in this frame (updated before each statement).
+    int line{0};
+    // The module whose variables the frame uses, and for a function call,
+    // the index of its scope in module->scopes (0, the globals, otherwise).
+    Module* module{nullptr};
+    size_t scope{0};
+  };
+  std::vector<Frame> frames;
+
+  // Pushes a frame and pops it when destroyed.
+  class FramePush {
+  public:
+    FramePush(Context& ec, Frame f) : ec_(ec) { ec_.frames.push_back(std::move(f)); }
+    ~FramePush() { ec_.frames.pop_back(); }
+    FramePush(const FramePush&) = delete;
+    FramePush& operator=(const FramePush&) = delete;
+
+  private:
+    Context& ec_;
+  };
+
+  // Set by Interpreter::set_statement_hook.
+  std::function<bool(const DebugLocation&)> statement_hook;
+
+  // For Interpreter::variables().
+  std::vector<DebugVariable> debug_variables() const;
 
   // Set by Interpreter::set_import_root: IMPORT "file.bas" may only load files
   // under this directory (normalized, without a trailing separator).

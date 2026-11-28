@@ -4,11 +4,11 @@ Guidance for coding agents working on wwivbasic (`wwivbasic/` in the WWIV tree).
 
 ## What this is
 
-wwivbasic is a BASIC interpreter written in C++23 on top of an ANTLR 4 grammar. The goal is to
-replace the my_basic interpreter behind `RunBasicScript` in WWIV (the BBS). Most existing
-scripts should keep running unchanged.
+wwivbasic is a BASIC interpreter written in C++23 on top of an ANTLR 4 grammar. It runs WWIV's
+scripts (`RunBasicScript` in the BBS), replacing my_basic; scripts written for my_basic should
+keep running unchanged.
 
-- `docs/PLAN.md` lists the milestones (M0–M6), the architecture (engine switch, bindings, repo layout) and open decisions. Tick items off there when
+- `docs/PLAN.md` lists the milestones (M0–M6), the architecture (bindings, repo layout) and open decisions. Tick items off there when
   they land.
 - `PORTING.md` records every intentional difference from my_basic. If a change breaks
   compatibility with my_basic, add an entry (old form, new form, why) in the same change.
@@ -37,7 +37,7 @@ wwivbasic depends only on WWIV's `core/`, the ANTLR runtime and fmt. It must not
 
 ## Build
 
-wwivbasic is built when `WWIV_WWIVBASIC_NEXT` is on (the default, except on OS/2), which also
+wwivbasic is built when `WWIV_WWIVBASIC` is on (the default, except on OS/2), which also
 turns on the `wwivbasic` feature in WWIV's `vcpkg.json` (the antlr4 runtime). When updating vcpkg's `builtin-baseline`,
 keep `antlr/antlr-*-complete.jar` at the same version as the antlr4 runtime. From the top of
 the WWIV tree:

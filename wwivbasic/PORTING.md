@@ -4,7 +4,8 @@ Most WWIVbasic scripts written for my_basic run unchanged. This guide lists
 every place where wwivbasic intentionally differs, with the old form, the new
 form, and why.
 
-> Draft: entries are added as each difference lands.
+WWIV ran scripts on my_basic until wwivbasic replaced it. If a script that
+worked before stops working, look for it here; if it isn't, it's a bug.
 
 ## What stays the same
 
@@ -151,7 +152,7 @@ to the list. Two things to know:
 
 ## New modules
 
-The new engine adds modules the legacy engine doesn't have, documented in
+wwivbasic adds modules my_basic didn't have, documented in
 [docs/BINDINGS.md](docs/BINDINGS.md):
 
 - `wwiv.msg`: read the message areas the caller can read, and post in them
@@ -162,7 +163,7 @@ The new engine adds modules the legacy engine doesn't have, documented in
 
 ## New string functions
 
-The new engine adds the QBasic/VB string functions (without the `$`):
+wwivbasic adds the QBasic/VB string functions (without the `$`):
 `UCASE(s)`, `LCASE(s)`, `SPACE(n)`, `STRING(n, c)` (`c` a character or a
 character code), `TRIM(s)`, `LTRIM(s)`, `RTRIM(s)` and `INSTR(s, find[,
 start])`. `INSTR` counts positions from 0, as `MID`, `LEFT` and `RIGHT` do

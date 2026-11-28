@@ -49,8 +49,7 @@ struct ExecOptions {
   std::string dropfile;
 };
 
-// The same names as the legacy engine (bbs/basic/util.cpp); anything else is
-// the default.
+// The same names as the legacy engine took; anything else is the default.
 exec_chain_t to_exec_chain(const std::string& s) {
   if (iequals(s, "FOSSIL")) {
     return exec_chain_t::fossil;
@@ -77,7 +76,7 @@ exec_dir_t to_exec_dir(const std::string& s) {
   return exec_dir_t::gfiles;
 }
 
-// As chain_type_to_flags in bbs/basic/wwiv_os.cpp.
+// The same flags as the legacy engine used.
 uint32_t exec_flags(const ExecOptions& o) {
   uint32_t flags = 0;
   switch (o.chain) {
@@ -101,7 +100,7 @@ uint32_t exec_flags(const ExecOptions& o) {
 
 } // namespace
 
-// The wwiv.os module (bbs/basic/wwiv_os.cpp), registered only when the sysop
+// The wwiv.os module, registered only when the sysop
 // enables it: runs external programs.
 void RegisterWwivOs(wwivbasic::Interpreter& interp, const WwivBindings& b) {
   auto& m = interp.add_module("wwiv.os");

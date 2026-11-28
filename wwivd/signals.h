@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2022, WWIV Software Services             */
+/*                          WWIV BBS Software                             */
+/*             Copyright (C)2026, WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,15 +15,25 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_BBS_BASIC_WWIV_IO_H
-#define INCLUDED_BBS_BASIC_WWIV_IO_H
+#ifndef INCLUDED_WWIVD_SIGNALS_H
+#define INCLUDED_WWIVD_SIGNALS_H
 
-struct mb_interpreter_t;
+#include <atomic>
 
-namespace wwiv::bbs::basic {
+// What the signal and console handlers ask of wwivd. All of these are safe
+// to call from a signal handler.
+namespace wwiv::wwivd {
 
-bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi);
+/** Asks wwivd to shut down. Returns true if that had already been asked. */
+bool request_exit() noexcept;
+/** The flag request_exit sets, for SocketSet::Run. */
+std::atomic<bool>& exit_flag() noexcept;
 
-}
+/** Asks wwivd to reload its configuration (SIGHUP). */
+void request_reload() noexcept;
+/** Returns whether a reload was asked for since the last call. */
+[[nodiscard]] bool take_reload_request() noexcept;
+
+} // namespace wwiv::wwivd
 
 #endif

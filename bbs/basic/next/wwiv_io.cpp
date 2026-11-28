@@ -95,7 +95,7 @@ private:
 
 } // namespace
 
-// The wwiv.io module (bbs/basic/wwiv_io.cpp).
+// The wwiv.io module.
 void RegisterWwivIo(wwivbasic::Interpreter& interp, const WwivBindings& b) {
   auto& m = interp.add_module("wwiv.io");
 

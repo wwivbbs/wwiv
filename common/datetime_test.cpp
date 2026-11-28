@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2022, WWIV Software Services             */
+/*               Copyright (C)2026, WWIV Software Services           */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,44 +14,34 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#include  "bbs/basic/wwiv_time.h"
+#include "common/datetime.h"
 
-#include "bbs/basic/util.h"
-#include "common/input.h"
-#include "common/output.h"
-#include "deps/my_basic/core/my_basic.h"
-#include <string>
+#include "gtest/gtest.h"
+#include <chrono>
+#include <ctime>
 
-namespace wwiv::bbs::basic {
+using namespace std::chrono;
+using namespace wwiv::common;
 
-bool RegisterNamespaceWWIVTIME(mb_interpreter_t* basi) {
-
-  mb_begin_module(basi, "WWIV.TIME");
-
-  mb_register_func(basi, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
-    mb_check(mb_empty_function(bas, l));
-    return mb_push_string(bas, l, BasicStrDup("wwiv.time"));
-  });
-
-  mb_register_func(basi, "FORMAT", [](struct mb_interpreter_t* bas, void** l) -> int {
-    mb_check(mb_attempt_open_bracket(bas, l));
-    char* raw_arg{nullptr};
-    int t{};
-    mb_check(mb_pop_int(bas, l, &t));
-    mb_check(mb_pop_string(bas, l, &raw_arg));
-    if (!raw_arg) {
-      LOG(WARNING) << "FORMAT: Expected format style";
-      return MB_FUNC_ERR;
-    }
-    const auto s = core::DateTime::from_time_t(t).to_string(raw_arg);
-    const auto ret = wwiv_mb_make_string(s);
-    mb_check(mb_attempt_close_bracket(bas, l));
-
-    return mb_push_value(bas, l, ret);
-  });
-
-  return mb_end_module(basi) == MB_FUNC_OK;
+// A local time today, built through mktime like the code under test.
+static system_clock::time_point today_at(int hour, int min, int sec) {
+  auto t = wwiv::core::DateTime::now().to_tm();
+  t.tm_hour = hour;
+  t.tm_min = min;
+  t.tm_sec = sec;
+  t.tm_isdst = -1;
+  return system_clock::from_time_t(std::mktime(&t));
 }
 
+TEST(CommonDateTimeTest, DurationSinceMidnight) {
+  EXPECT_EQ(hours(10) + minutes(30) + seconds(15),
+            duration_since_midnight(today_at(10, 30, 15)));
+  EXPECT_EQ(seconds(0), duration_since_midnight(today_at(0, 0, 0)));
+}
+
+TEST(CommonDateTimeTest, MinutesAfterMidnight) {
+  EXPECT_EQ(today_at(13, 45, 0), minutes_after_midnight(13 * 60 + 45));
+  EXPECT_EQ(today_at(0, 0, 0), minutes_after_midnight(0));
 }
