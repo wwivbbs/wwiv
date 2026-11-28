@@ -69,12 +69,12 @@ public:
   [[nodiscard]] int width() const noexcept { return width_; }
   [[nodiscard]] int offset() const noexcept { return offset_; }
   [[nodiscard]] bool insert() const noexcept { return insert_; }
-  // The cell the cursor is in. When the text fills the field, the cursor
-  // sits on the last character (there is no empty cell after it).
-  [[nodiscard]] int cursor_cell() const noexcept {
-    const auto cell = pos_ - offset_;
-    return cell < width_ ? cell : width_ - 1;
-  }
+  /**
+   * The cell the cursor is in. When the text exactly fills a field that
+   * can't grow, this is width(), the cell just past the field, as in old
+   * WWIV. Input1 keeps that cell on the row whenever max_length <= room.
+   */
+  [[nodiscard]] int cursor_cell() const noexcept { return pos_ - offset_; }
   /** true when text is hidden to the left of the field. */
   [[nodiscard]] bool more_left() const noexcept;
   /** true when text is hidden to the right of the field. */
@@ -87,6 +87,13 @@ public:
 private:
   [[nodiscard]] int len() const noexcept { return static_cast<int>(text_.size()); }
   [[nodiscard]] bool can_grow() const noexcept { return len() < max_length_; }
+  /**
+   * true when all the text is shown with offset 0: it is shorter than the
+   * field, or exactly fills a field that can't grow (width == max_length).
+   */
+  [[nodiscard]] bool fits() const noexcept {
+    return len() < width_ || (len() == width_ && !can_grow());
+  }
   [[nodiscard]] bool arrows() const noexcept { return width_ >= 4; }
   [[nodiscard]] bool more_left_at(int offset) const noexcept;
   [[nodiscard]] bool more_right_at(int offset) const noexcept;
