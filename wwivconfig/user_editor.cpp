@@ -118,6 +118,7 @@ static int JumpToUser(CursesWindow* window, const std::filesystem::path& datadir
 
   ListBox list(window, "Select User", items);
   list.set_help_items({{"Esc", "Exit"}, {"Enter", "Select"}, {"/", "Filter"}, {"I", "Insert"}});
+  list.set_typeahead(true);
   if (const auto result = list.Run(); result.type == ListBoxResultType::SELECTION) {
     return items[result.selected].data();
   }

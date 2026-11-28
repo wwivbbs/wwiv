@@ -87,6 +87,10 @@ public:
   }
   // Sets the extra help items.
   void set_help_items(const std::vector<HelpItem>& items) { help_items_ = items; }
+  // If true, printable keys that are not registered hotkeys accumulate a
+  // prefix and jump to the first item whose text starts with that prefix.
+  // Arrow keys, PgUp/PgDn, Home, End, and '/' reset the prefix.
+  void set_typeahead(bool typeahead) noexcept { typeahead_enabled_ = typeahead; }
 
 private:
   ListBox(UIWindow* parent, const std::string& title, int max_x, int max_y,
@@ -95,6 +99,8 @@ private:
   ListBoxResult RunDialog();
   void DrawAllItems(std::vector<ListBoxItem>& items);
   void DisplayFooter();
+  void EnsureSelectedVisible(int item_count);
+  bool ApplyTypeahead(const std::vector<ListBoxItem>& items);
 
   int selected_ = -1;
   const std::string title_;
@@ -108,6 +114,8 @@ private:
   const int window_top_min_;
   std::string hotkeys_;
   bool selection_returns_hotkey_{false};
+  bool typeahead_enabled_{false};
+  std::string typeahead_;
   UIWindow* parent_{nullptr};
 };
 
