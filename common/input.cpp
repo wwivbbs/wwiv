@@ -70,6 +70,27 @@ static bool okansi(const wwiv::sdk::User& user) { return user.ansi(); }
 Input::Input() { memset(charbuffer, 0, sizeof(charbuffer)); }
 Input::~Input() = default;
 
+void Input::type_ahead(const std::string& keys) {
+  // charbuffer holds the keys still to be read, from charbufferpointer_ (which
+  // is 0 when there are none) up to a NUL. Move them to the start (index 1)
+  // to make room, then add these after them.
+  std::string pending;
+  if (charbufferpointer_) {
+    pending = &charbuffer[charbufferpointer_];
+  }
+  for (const auto ch : keys) {
+    if (ch && pending.size() < sizeof(charbuffer) - 2) {
+      pending.push_back(ch);
+    }
+  }
+  if (pending.empty()) {
+    return;
+  }
+  charbuffer[0] = 0;
+  std::memcpy(&charbuffer[1], pending.c_str(), pending.size() + 1);
+  charbufferpointer_ = 1;
+}
+
 // This will input an upper-case string
 void Input::input(char* out_text, int max_length, bool auto_mpl) {
   input1(out_text, max_length, InputMode::UPPER, true, auto_mpl);

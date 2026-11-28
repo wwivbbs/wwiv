@@ -403,15 +403,12 @@ static bool check_ansi(SocketConnection& conn) {
   return false;
 }
 
-std::string Color(int c, bool ansi) {
-  static auto wwivd_curatr = 7;
+std::string Color(int c, bool ansi, int& current) {
   if (!ansi) {
     return "";
   }
-
-  // Not const so we can move s
-  auto s = ansi::makeansi(c, wwivd_curatr);
-  wwivd_curatr = 0;
+  auto s = ansi::makeansi(c, current);
+  current = c;
   return s;
 }
 
@@ -436,9 +433,12 @@ std::optional<wwivd_matrix_entry_t> ConnectionHandler::DoMatrixLogon(const wwivd
   }
 
   const auto ansi = check_ansi(conn);
+  // This caller's current color, starting from the terminal's default.
+  auto curatr = 7;
+  const auto color = [&](int c) { return Color(c, ansi, curatr); };
   const auto d = 1s;
   for (auto tries = 0; tries < 3; tries++) {
-    conn.send_line(StrCat(Color(10, ansi), "Matrix Logon Menu"), d);
+    conn.send_line(StrCat(color(10), "Matrix Logon Menu"), d);
     conn.send_line("\r\n", d);
     for (const auto& b : c.bbses) {
       // Skip ones that require ANSI.
@@ -446,18 +446,18 @@ std::optional<wwivd_matrix_entry_t> ConnectionHandler::DoMatrixLogon(const wwivd
         continue;
       }
       std::ostringstream ss;
-      ss << Color(14, ansi) << b.key << Color(3, ansi) << ") " << Color(10, ansi) << b.name;
+      ss << color(14) << b.key << color(3) << ") " << color(10) << b.name;
       if (!b.description.empty()) {
-        ss << Color(11, ansi) << "  (" << b.description << ")";
+        ss << color(11) << "  (" << b.description << ")";
       }
       conn.send_line(ss.str(), d);
     }
     std::ostringstream ss;
-    ss << Color(14, ansi) << '!' << Color(3, ansi) << ") " << Color(11, ansi) << " Logoff/Quit.";
+    ss << color(14) << '!' << color(3) << ") " << color(11) << " Logoff/Quit.";
     conn.send_line(ss.str(), d);
 
     conn.send_line("\r\n", d);
-    conn.send(StrCat(Color(3, ansi), "Enter Selection: "), d);
+    conn.send(StrCat(color(3), "Enter Selection: "), d);
     const auto key_str = conn.receive_upto(1, std::chrono::seconds(15));
     // dump left overs
     conn.receive_upto(1024, std::chrono::milliseconds(1));

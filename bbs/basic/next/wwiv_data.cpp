@@ -45,9 +45,8 @@ using Args = std::vector<Value>;
 
 namespace {
 
-// The on-disk format of wwiv.data files. This must stay the same as in the
-// legacy engine (bbs/basic/wwiv_data.cpp), so both engines read each other's
-// files: {"data": [{"type": 0, "s": "..."}, {"type": 1, "i": 1}, ...]}.
+// The on-disk format of wwiv.data files, the same as the legacy (my_basic)
+// engine wrote, so scripts keep their data: {"data": [{"type": 0, "s": "..."}, {"type": 1, "i": 1}, ...]}.
 enum class next_script_data_type_t { STRING, INT, REAL };
 
 struct next_script_data_t {
@@ -157,7 +156,7 @@ std::filesystem::path DataFileName(const char* fn, const WwivBindings& b, data_s
 
 } // namespace
 
-// The wwiv.data module (bbs/basic/wwiv_data.cpp): SAVE and LOAD a list of
+// The wwiv.data module: SAVE and LOAD a list of
 // integers, reals and strings, for all users (scope "GLOBAL") or for the
 // current user (scope "USER").
 void RegisterWwivData(wwivbasic::Interpreter& interp, const WwivBindings& b) {

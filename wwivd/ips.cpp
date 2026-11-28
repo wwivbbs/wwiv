@@ -84,13 +84,13 @@ BadIp::BadIp(const std::filesystem::path& fn, Clock& clock) : fn_(fn), clock_(cl
   }
 }
 
-bool BadIp::IsBlocked(const std::string& ip) {
-  if (ips_.empty()) {
-    return false;
-  }
-  return ips_.find(ip) != ips_.end();
+bool BadIp::IsBlocked(const std::string& ip) const {
+  std::shared_lock lock(mu_);
+  return ips_.contains(ip);
 }
+
 bool BadIp::Block(const std::string& ip) {
+  std::unique_lock lock(mu_);
   ips_.emplace(ip);
   TextFile appender(fn_, "at");
   const auto now = clock_.Now();
@@ -127,7 +127,7 @@ AutoBlocker::AutoBlocker(std::shared_ptr<BadIp> bip, wwivd_blocking_t b, std::fi
     }
   }
   if (modified) {
-    Save();
+    save_locked();
   }
 }
 
@@ -135,6 +135,11 @@ AutoBlocker::~AutoBlocker() = default;
 
 
 void AutoBlocker::escalate_block(const std::string& ip) {
+  std::lock_guard lock(mu_);
+  escalate_block_locked(ip);
+}
+
+void AutoBlocker::escalate_block_locked(const std::string& ip) {
   LOG(INFO) << "escalate_block: " << ip;
   auto& item = auto_blocked_[ip];
   const auto now = clock_.Now();
@@ -150,7 +155,7 @@ void AutoBlocker::escalate_block(const std::string& ip) {
     auto_blocked_.erase(ip);
     bip_->Block(ip);
   }
-  Save();
+  save_locked();
 }
 
 bool AutoBlocker::Connection(const std::string& ip) {
@@ -166,7 +171,7 @@ bool AutoBlocker::Connection(const std::string& ip) {
   //
   std::lock_guard<std::mutex> lock(mu_);
 
-  if (blocked(ip)) {
+  if (blocked_locked(ip)) {
     // We have an auto-block and we're still blocked.
     LOG(INFO) << "Still in auto-block for ip: " << ip;
     return false;
@@ -196,7 +201,7 @@ bool AutoBlocker::Connection(const std::string& ip) {
     LOG(INFO) << "Blocking since we have " << s.size() << " sessions within " << auto_bl_seconds
               << " seconds.";
     // Don't do the hard block here, just escalate.
-    escalate_block(ip);
+    escalate_block_locked(ip);
     return false;
   }
   VLOG(1) << "OK: num sessions: " << size_int(s);
@@ -210,12 +215,32 @@ void serialize(Archive & ar, auto_blocked_entry_t &a) {
 }
 
 bool AutoBlocker::Save() {
+  std::lock_guard lock(mu_);
+  return save_locked();
+}
+
+bool AutoBlocker::save_locked() {
   LOG(INFO) << "AutoBlocker: Save";
   JsonFile<std::map<std::string, auto_blocked_entry_t>> file(FilePath(datadir_, "wwivd.autoblock.json"), "autoblock", auto_blocked_);
   return file.Save();
 }
 
+std::map<std::string, std::set<time_t>> AutoBlocker::recent_sessions() const {
+  std::lock_guard lock(mu_);
+  return sessions_;
+}
+
+std::map<std::string, auto_blocked_entry_t> AutoBlocker::auto_blocked() const {
+  std::lock_guard lock(mu_);
+  return auto_blocked_;
+}
+
 bool AutoBlocker::blocked(const std::string& ip) const {
+  std::lock_guard lock(mu_);
+  return blocked_locked(ip);
+}
+
+bool AutoBlocker::blocked_locked(const std::string& ip) const {
   const auto now = clock_.Now();
   if (const auto iter = auto_blocked_.find(ip); iter != std::end(auto_blocked_)) {
     if (iter->second.expiration > now.to_time_t()) {

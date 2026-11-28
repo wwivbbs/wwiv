@@ -51,8 +51,8 @@ struct WwivBindings {
   const sdk::Config& config;
   common::Context* ctx;
   // The script's module name in lower case: its file name without ".bas", or
-  // the name given to ScriptEngine::RunScript(module, text). wwiv.data names
-  // its files after it, as the legacy engine does.
+  // the name given to NextEngine::RunScript(module, text). wwiv.data names
+  // its files after it, as the legacy engine did.
   std::string module;
   // What wwiv.msg reads, or nullptr for no wwiv.msg module.
   MessageBase* msgs{nullptr};
@@ -63,7 +63,7 @@ struct WwivBindings {
 };
 
 // The wwiv.* modules, with the same functions, arguments, return values and
-// side effects as the legacy (my_basic) ones in bbs/basic/wwiv*.cpp.
+// side effects as the legacy (my_basic) engine's (see wwivbasic/PORTING.md).
 void RegisterWwiv(wwivbasic::Interpreter& interp, const WwivBindings& b);
 void RegisterWwivIo(wwivbasic::Interpreter& interp, const WwivBindings& b);
 void RegisterWwivData(wwivbasic::Interpreter& interp, const WwivBindings& b);

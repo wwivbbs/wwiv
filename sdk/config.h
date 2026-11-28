@@ -410,9 +410,6 @@ public:
   /** Is WWIVBasic package wwiv.files (read-only file areas) enabled; on by default */
   [[nodiscard]] bool script_package_files_enabled() const noexcept;
   void script_package_files_enabled(bool) noexcept;
-  /** Run WWIVbasic scripts on the new engine (wwivbasic) instead of my_basic */
-  [[nodiscard]] bool script_engine_next() const noexcept;
-  void script_engine_next(bool) noexcept;
 
   /** Modern header */
   [[nodiscard]] config_header_t& header() { return config_.header; }

@@ -34,6 +34,7 @@ static RunResult run_loaded(Context& ctx, const std::filesystem::path& path,
 
   ExecutionVisitor v(ctx, filename);
   RunningExecutor running(ctx, &v);
+  Context::FramePush frame(ctx, {"", filename, 0, ctx.root, 0});
   try {
     v.visit(tree.value());
   } catch (const EndScript&) {
@@ -119,6 +120,27 @@ Value Interpreter::call(const std::string& name, const std::vector<Value>& args)
     throw EndScript{};
   }
   return result;
+}
+
+void Interpreter::set_statement_hook(std::function<bool(const DebugLocation&)> hook) {
+  ctx_->statement_hook = std::move(hook);
+}
+
+std::vector<DebugFrame> Interpreter::call_stack() const {
+  std::vector<DebugFrame> result;
+  for (auto it = ctx_->frames.rbegin(); it != ctx_->frames.rend(); ++it) {
+    result.push_back({it->function, it->file, it->line});
+  }
+  return result;
+}
+
+std::vector<DebugVariable> Interpreter::variables() const { return ctx_->debug_variables(); }
+
+std::optional<std::string> Interpreter::source(const std::string& file) const {
+  if (const auto it = ctx_->sources.find(file); it != ctx_->sources.end()) {
+    return it->second->text_;
+  }
+  return std::nullopt;
 }
 
 bool Interpreter::has_function(const std::string& name) const {

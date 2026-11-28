@@ -32,9 +32,9 @@ Done and tested on Linux. The Windows parts (`wwivd_win.cpp`, `core/pipe_win32.c
 
 ## Phase 3: data races and process handling
 
-- [ ] `BadIp::Block` writes the `unordered_set` while other threads call `IsBlocked`, with no lock. Use a `std::shared_mutex`.
-- [ ] `BlockingHandler` iterates `AutoBlocker::auto_blocked()` without holding `mu_`. Return a snapshot copy under the lock.
-- [ ] `Color()` keeps its state in a `static` that every connection thread shares.
+- [x] `BadIp::Block` writes the `unordered_set` while other threads call `IsBlocked`, with no lock. Use a `std::shared_mutex`.
+- [x] `BlockingHandler` iterates `AutoBlocker::auto_blocked()` without holding `mu_`. Return a snapshot copy under the lock. (`blocked()`, `escalate_block()` and `Save()` take the lock too.)
+- [x] `Color()` keeps its state in a `static` that every connection thread shares. (It was also reset to 0 instead of the color just sent, so bold was never turned off.)
 - [ ] Unix:
   - [x] `signal(SIGCHLD, SIG_IGN)` auto-reaps children, so `waitpid` returns `ECHILD` and the logged exit code is always 0.
   - [x] `bbs_pid` is a non-atomic global overwritten by every spawn, so SIGINT goes to the last process started. (Removed: SIGINT now shuts wwivd down like SIGTERM.)
@@ -48,6 +48,7 @@ Done and tested on Linux. The Windows parts (`wwivd_win.cpp`, `core/pipe_win32.c
 
 ## Phase 4: correctness bugs
 
+- [ ] `AutoBlocker` keeps each address's recent connections in a `std::set<time_t>`, so any number of connections in the same second count as one, and a burst never triggers the auto-block. Keep a count (or a `std::multiset`).
 - [ ] `nets.cpp`: `network_number` only increments for wwivnet and ftn networks, so `@T` is wrong when an internet or news network comes earlier in the list.
 - [ ] `DoMatrixLogon` hides BBSes that need ANSI from non-ANSI callers but still accepts their key.
 - [ ] `use_dns_rbl` / `dns_rbl_server` default to on but are never checked. Implement the check or remove the setting.

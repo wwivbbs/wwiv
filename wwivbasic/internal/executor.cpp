@@ -48,6 +48,11 @@ std::any ExecutionVisitor::visitMain(BasicParser::MainContext* context) {
   flow_ = Flow::NORMAL;
   for (auto* child : context->children) {
     try {
+      // A top-level IMPORT isn't a statement, but a debugger can stop on it.
+      if (auto* import = dynamic_cast<BasicParser::ImportModuleContext*>(child)) {
+        ec_.check_stop();
+        before_statement(import);
+      }
       visit(child);
     } catch (BasicError& e) {
       // Top-level IMPORT/MODULE are not statements, so give their errors a
@@ -112,6 +117,7 @@ Value ExecutionVisitor::call(const std::string& name, const std::vector<Value>& 
       --v->call_depth_;
     }
   } restore{this, owner, saved_module, saved_filename};
+  Context::FramePush frame(ec_, {fn->name, filename_, 0, owner, owner->scopes.size() - 1});
 
   return_value_ = Value();
   visit(static_cast<BasicParser::ProcedureDefinitionContext*>(fn->def_fn)->statements());
@@ -380,6 +386,7 @@ void ExecutionVisitor::import_file(const std::string& name) {
   ExecutionVisitor v(ec_, path.string());
   v.call_depth_ = call_depth_;
   RunningExecutor running(ec_, &v);
+  Context::FramePush frame(ec_, {"", path.string(), 0, ec_.module, 0});
   v.visit(tree.value());
   if (v.ended()) {
     flow_ = Flow::END;
@@ -396,8 +403,29 @@ std::any ExecutionVisitor::visitStatements(BasicParser::StatementsContext* conte
   return {};
 }
 
+void ExecutionVisitor::before_statement(antlr4::ParserRuleContext* context) {
+  if (!ec_.frames.empty()) {
+    const auto* start = context->getStart();
+    auto& frame = ec_.frames.back();
+    frame.line = static_cast<int>(start->getLine());
+    // Top-level code runs in whichever module is current (MODULE can change it).
+    if (frame.function.empty()) {
+      frame.module = ec_.module;
+    }
+    if (ec_.statement_hook) {
+      const DebugLocation loc{frame.file, frame.line,
+                              static_cast<int>(start->getCharPositionInLine()) + 1,
+                              static_cast<int>(ec_.frames.size()) - 1};
+      if (ec_.statement_hook(loc)) {
+        throw StopScript{};
+      }
+    }
+  }
+}
+
 std::any ExecutionVisitor::visitStatement(BasicParser::StatementContext* context) {
   ec_.check_stop();
+  before_statement(context);
   try {
     return visitChildren(context);
   } catch (BasicError& e) {
