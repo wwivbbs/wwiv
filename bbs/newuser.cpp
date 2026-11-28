@@ -110,8 +110,8 @@ void input_dataphone() {
   bool ok = true;
   do {
     bout.nl();
-    bout.outstr("|#9Enter your DATA phone no. in the form. \r\n");
-    bout.print("|#9 ###-###-#### - Press Enter to use [{}].\r\n", a()->user()->voice_phone());
+    bout.outstr("|#3Enter your DATA phone no. in the form:\r\n");
+    bout.print("|#3 ###-###-#### - Press Enter to use [{}].\r\n|#2:", a()->user()->voice_phone());
     auto data_phone_number = bin.input_phonenumber(a()->user()->data_phone(), 12);
     if (data_phone_number[0] == '\0') {
       data_phone_number = a()->user()->voice_phone();
@@ -287,8 +287,8 @@ void input_country() {
   std::string country;
   do {
     bout.nl();
-    bout.outstr("|#9Enter your country.  Hit Enter for \"|#1USA|#9\"\r\n");
-    bout.outstr("|#7: ");
+    bout.outstr("|#3Enter your country.  Hit Enter for \"|#1USA|#3\"\r\n");
+    bout.outstr("|#2:");
     country = bin.input_upper(3);
     if (country.empty()) {
       country = "USA";
