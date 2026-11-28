@@ -17,7 +17,9 @@
 /**************************************************************************/
 #ifndef INCLUDED_WWIVD_NETS_H
 #define INCLUDED_WWIVD_NETS_H
+#include <chrono>
 #include <memory>
+#include <string>
 
 #include "sdk/config.h"
 // ReSharper disable once CppUnusedIncludeDirective
@@ -26,6 +28,30 @@
 namespace wwiv::wwivd {
 class NodeManager;
 class Sessions;
+
+/**
+ * Decides when the callout thread runs the beginday command. It runs when
+ * the date in status.dat isn't today. If the command fails, or doesn't
+ * update status.dat, it's tried again no sooner than retry_interval later
+ * instead of on every pass of the loop.
+ */
+class BeginDayRetry {
+public:
+  explicit BeginDayRetry(std::chrono::system_clock::duration retry_interval =
+                             std::chrono::hours(1))
+      : retry_interval_(retry_interval) {}
+
+  /** today is date(); last_date is status.dat's last date. */
+  [[nodiscard]] bool should_run(const std::string& today, const std::string& last_date,
+                                std::chrono::system_clock::time_point now) const;
+  /** Records that the command was run for today at now. */
+  void attempted(const std::string& today, std::chrono::system_clock::time_point now);
+
+private:
+  std::chrono::system_clock::duration retry_interval_;
+  std::string attempted_date_;
+  std::chrono::system_clock::time_point attempted_at_{};
+};
 
 /**
  * Starts the network callout and beginday thread on sessions. config must

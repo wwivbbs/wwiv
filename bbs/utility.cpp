@@ -123,7 +123,7 @@ long nsl() {
 
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text,
               const std::string& byname) {
-  const auto filename = StrCat(a()->network_directory(), "p1", a()->network_extension());
+  const auto filename = FilePath(a()->network_directory(), StrCat("p1", a()->network_extension()));
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;

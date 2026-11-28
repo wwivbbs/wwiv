@@ -313,8 +313,8 @@ static void init_files(UIWindow* window, const std::string& bbsdir, bool unzip_f
     unzip_file(window, "scripts.zip", "scripts");
     unzip_file(window, "data.zip", "data");
     unzip_file(window, "menus.zip", "menus");
-    unzip_file(window, "regions.zip", StrCat("data", File::pathSeparatorChar, "regions"));
-    unzip_file(window, "zip-city.zip", StrCat("data", File::pathSeparatorChar, "zip-city"));
+    unzip_file(window, "regions.zip", FilePath("data", "regions").string());
+    unzip_file(window, "zip-city.zip", FilePath("data", "zip-city").string());
 
 #ifdef WIN32
     // Unzip netfoss to "${WWIV_DIR}/netfoss"

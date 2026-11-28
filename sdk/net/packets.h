@@ -323,6 +323,13 @@ std::string net_info_minor_type_name(uint16_t typ);
  */
 std::string get_subtype_from_packet_text(const std::string& text);
 
+/**
+ * The longest a post can be on the network: its title, a NUL and its text
+ * (author and date lines included). The BBS's send_net_post cuts longer posts
+ * short.
+ */
+constexpr uint32_t kMaxNetworkPostLength = 32755;
+
 /** Creates an outbound NetPacket to be sent */
 NetPacket create_packet_from_wwiv_message(const wwiv::sdk::msgapi::Message& m,
                                        const std::string& subtype, std::set<uint16_t> receipients);

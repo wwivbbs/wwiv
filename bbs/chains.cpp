@@ -316,7 +316,7 @@ void do_chains() {
     show_chains(chains_map);
     a()->tleft(true);
     bout.nl();
-    bout.print("|#5Which Chain (1-{}, Q=Quit, {}?=List): ", size_int(chains_map.chains) + 1,
+    bout.print("|#5Which Chain (1-{}, Q=Quit, {}?=List): ", size_int(chains_map.chains),
                (so() ? "*=ChainEdit, " : ""));
 
     std::string ss;
